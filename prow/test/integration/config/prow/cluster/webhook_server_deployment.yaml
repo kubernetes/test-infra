@@ -20,12 +20,12 @@ metadata:
   labels:
     app: webhook-server
 spec:
-  replicas: 1
+  replicas: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: webhook-server
@@ -45,16 +45,19 @@ spec:
           containerPort: 8008
         args:
         - --config-path=/etc/config/config.yaml
-        - --filesys-path=./prowjob-webhook-ca-cert
+        - --filesys-path=/mnt/prowjob-webhook-ca-cert
         volumeMounts:
         - name: config
           mountPath: /etc/config
           readOnly: true
+        - name: prowjob-webhook-ca-cert
+          mountPath: /mnt/prowjob-webhook-ca-cert
+          readOnly: false
         livenessProbe:
           httpGet:
             path: /healthz
             port: 8081
-          initialDelaySeconds: 1
+          initialDelaySeconds: 3
           periodSeconds: 3
         readinessProbe:
           httpGet:
@@ -67,3 +70,7 @@ spec:
       - name: config
         configMap:
           name: config
+      - name: prowjob-webhook-ca-cert
+        hostPath:
+          path: /mnt/prowjob-webhook-ca-cert
+          type: DirectoryOrCreate

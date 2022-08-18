@@ -41,6 +41,7 @@ const (
 )
 
 func (wa *webhookAgent) serveValidate(w http.ResponseWriter, r *http.Request) {
+	logrus.Info("here")
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		logrus.WithError(err).Info("unable to read request")
@@ -64,11 +65,8 @@ func (wa *webhookAgent) serveValidate(w http.ResponseWriter, r *http.Request) {
 	}
 	var admissionResponse *v1beta1.AdmissionResponse
 	if admissionRequest.Operation == "CREATE" {
-		if err := validateProwJobClusterOnCreate(prowJob, wa.statuses); err != nil {
-			admissionResponse = createValidatingAdmissionResponse(admissionRequest.UID, err)
-		} else {
-			admissionResponse = createValidatingAdmissionResponse(admissionRequest.UID, nil)
-		}
+		err := validateProwJobClusterOnCreate(prowJob, wa.statuses)
+		admissionResponse = createValidatingAdmissionResponse(admissionRequest.UID, err)
 	}
 	admissionReview.Response = admissionResponse
 	resp, err := json.Marshal(admissionReview)

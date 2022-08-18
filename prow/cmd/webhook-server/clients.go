@@ -119,13 +119,13 @@ func (l *localFSClient) AddSecretVersion(ctx context.Context, secretName string,
 		return err
 	}
 	if err := ioutil.WriteFile(certFile, []byte(serverCertPerm), 0666); err != nil {
-		return fmt.Errorf("could not write contents of cert file")
+		return fmt.Errorf("could not write contents of cert file %v", err)
 	}
 	if err := ioutil.WriteFile(privKeyFile, []byte(serverPrivKey), 0666); err != nil {
-		return fmt.Errorf("could not write contents of privkey file")
+		return fmt.Errorf("could not write contents of privkey file %v", err)
 	}
 	if err := ioutil.WriteFile(caBundleFile, []byte(caPem), 0666); err != nil {
-		return fmt.Errorf("could not write contents of caBundle file")
+		return fmt.Errorf("could not write contents of caBundle file %v", err)
 	}
 	return nil
 }
@@ -140,7 +140,7 @@ func (l *localFSClient) GetSecretValue(ctx context.Context, secretName string, v
 	secretsMap := make(map[string]string)
 	files, err := ioutil.ReadDir(l.path)
 	if err != nil {
-		return nil, false, fmt.Errorf("could not read file path")
+		return nil, false, fmt.Errorf("could not read file path %v", err)
 	}
 	for _, f := range files {
 		content, err := ioutil.ReadFile(filepath.Join(l.path, f.Name()))
@@ -176,7 +176,7 @@ func (l *localFSClient) checkSecret(ctx context.Context, secretName string) erro
 		return err
 	}
 	if len(files) < 2 {
-		return nil
+		return os.ErrNotExist
 	}
 	for _, f := range files {
 		_, err := ioutil.ReadFile(filepath.Join(l.path, f.Name()))

@@ -53,9 +53,10 @@ func (wa *webhookAgent) serveMutate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("unable to unmarshal prowjob %v", err), http.StatusBadRequest)
 		return
 	}
+	plank := wa.configAgent.Config().Plank
 	var mutatedProwJobPatch []byte
 	if admissionRequest.Operation == "CREATE" {
-		mutatedProwJobPatch, err = generateMutatingPatch(&prowJob, wa.plank)
+		mutatedProwJobPatch, err = generateMutatingPatch(&prowJob, plank)
 		if err != nil {
 			logrus.WithError(err).Info("unable to return mutated prowjob patch")
 			http.Error(w, fmt.Sprintf("unable to return mutated prowjob patch %v", err), http.StatusInternalServerError)

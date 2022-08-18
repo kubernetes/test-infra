@@ -146,5 +146,4 @@ func TestUpdateSecret(t *testing.T) {
 			}
 		})
 	}
-
 }

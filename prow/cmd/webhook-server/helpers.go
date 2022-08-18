@@ -436,42 +436,52 @@ func reconcileWebhooks(ctx context.Context, caPem string, cl ctrlruntimeclient.C
 }
 
 // this method runs on a go routine as a periodic task to continuously fetch the clusters in the config
-func (wa *webhookAgent) fetchClusters(d time.Duration, ctx context.Context, statuses *map[string]plank.ClusterStatus, configAgent *config.Agent) error {
+func (wa *webhookAgent) fetchClustersPeriodically(d time.Duration, ctx context.Context) error {
 	ticker := time.NewTicker(d)
 	defer ticker.Stop()
-	cfg := configAgent.Config()
+	cfg := wa.configAgent.Config()
 	opener, err := io.NewOpener(context.Background(), wa.storage.GCSCredentialsFile, wa.storage.S3CredentialsFile)
 	if err != nil {
 		return err
 	}
-
+	if err := wa.populateClusters(cfg, opener); err != nil {
+		return err
+	}
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case <-ticker.C:
-			if location := cfg.Plank.BuildClusterStatusFile; location != "" {
-				reader, err := opener.Reader(context.Background(), location)
-				if err != nil {
-					if !io.IsNotExist(err) {
-						return fmt.Errorf("error opening build cluster status file for reading: %w", err)
-					}
-					logrus.Warnf("Build cluster status file location was specified, but could not be found: %v. This is expected when the location is first configured, before plank creates the file.", err)
-				} else {
-					defer reader.Close()
-					b, err := ioutil.ReadAll(reader)
-					if err != nil {
-						return fmt.Errorf("error reading build cluster status file: %w", err)
-					}
-					var tempMap map[string]plank.ClusterStatus
-					if err := json.Unmarshal(b, &tempMap); err != nil {
-						return fmt.Errorf("error unmarshaling build cluster status file: %w", err)
-					}
-					wa.mu.Lock()
-					wa.statuses = tempMap
-					wa.mu.Unlock()
-				}
-			}
+			wa.populateClusters(cfg, opener)
 		}
 	}
+}
+
+
+func (wa *webhookAgent) populateClusters(cfg *config.Config, opener io.Opener) error {
+	var tempMap map[string]plank.ClusterStatus
+	location := cfg.Plank.BuildClusterStatusFile
+	if location == "" {
+		return nil
+	}
+	reader, err := opener.Reader(context.Background(), location)
+	if err != nil {
+		if !io.IsNotExist(err) {
+			return fmt.Errorf("error opening build cluster status file for reading: %w", err)
+		}
+		logrus.WithError(err).Info("Build cluster status file location was specified, but could not be found. This is expected when the location is first configured, before plank creates the file.")
+	} else {
+		defer reader.Close()
+		b, err := ioutil.ReadAll(reader)
+		if err != nil {
+			return fmt.Errorf("error reading build cluster status file: %w", err)
+		}
+		if err := json.Unmarshal(b, &tempMap); err != nil {
+			return fmt.Errorf("error unmarshaling build cluster status file: %w", err)
+		}
+	}
+	wa.mu.Lock()
+	wa.statuses = tempMap
+	wa.mu.Unlock()
+	return nil
 }

@@ -64,7 +64,7 @@ type options struct {
 	fileSystemPath string
 	config         configflagutil.ConfigOptions
 	storage        prowflagutil.StorageClientOptions
-	time           int
+	time           time.Duration
 	dryRun         bool
 }
 
@@ -75,10 +75,10 @@ type clientOptions struct {
 }
 
 type webhookAgent struct {
-	storage  prowflagutil.StorageClientOptions
-	statuses map[string]plank.ClusterStatus
-	mu       sync.Mutex
-	plank    config.Plank
+	storage     prowflagutil.StorageClientOptions
+	statuses    map[string]plank.ClusterStatus
+	mu          sync.Mutex
+	configAgent *config.Agent
 }
 
 func (o *options) DefaultAndValidate() error {
@@ -98,6 +98,9 @@ func (o *options) DefaultAndValidate() error {
 	if o.projectId != "" && o.secretID == "" {
 		return fmt.Errorf("secretID must be specified if choosing to use a GCP project")
 	}
+	if o.time < 0 {
+		return fmt.Errorf("cannot have a negative refresh time interval")
+	}
 	if o.dnsNames.StringSet().Len() == 0 {
 		o.dnsNames.Add(prowjobAdmissionServiceName + ".default.svc")
 	}
@@ -107,12 +110,12 @@ func (o *options) DefaultAndValidate() error {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	fs.StringVar(&o.projectId, "project-id", "", "Project ID for storing GCP Secrets")
-	fs.StringVar(&o.fileSystemPath, "filesys-path", "./prowjob-webhook-ca-cert", "File system path for storing ca-cert secrets")
+	fs.StringVar(&o.fileSystemPath, "filesys-path", "", "File system path for storing ca-cert secrets")
 	fs.StringVar(&o.secretID, "secret-id", "", "GCP Project secret name")
 	fs.IntVar(&o.expiryInYears, "expiry-years", 30, "CA certificate expiry in years")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state")
-	fs.IntVar(&o.time, "time", 1, "duration in minutes to fetch build clusters")
-	fs.Var(&o.dnsNames, "dns", "DNS Names CA-Cert config")
+	fs.DurationVar(&o.time, "cluster-status-refresh-interval", time.Minute, "duration in minutes to fetch build clusters")
+	fs.Var(&o.dnsNames, "domain-names", "DNS Names CA-Cert config")
 	optionGroups := []flagutil.OptionGroup{&o.kubernetes, &o.config}
 	for _, optionGroup := range optionGroups {
 		optionGroup.AddFlags(fs)
@@ -129,7 +132,6 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 	defer interrupts.WaitForGracefulShutdown()
-	health := pjutil.NewHealth()
 	kubeCfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kubeconfig")
@@ -173,14 +175,13 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("could not create config agent")
 	}
-	cfg := configAgent.Config()
 	wa := &webhookAgent{
-		storage:  o.storage,
-		statuses: statuses,
-		plank:    cfg.Plank,
+		storage:     o.storage,
+		statuses:    statuses,
+		configAgent: configAgent,
 	}
 	interrupts.Run(func(ctx context.Context) {
-		wa.fetchClusters(time.Duration(o.time*int(time.Minute)), ctx, &wa.statuses, configAgent)
+		wa.fetchClustersPeriodically(time.Duration(o.time), ctx)
 	})
 
 	mux := http.NewServeMux()
@@ -195,6 +196,7 @@ func main() {
 	}
 	logrus.Info("Listening on port 8008...")
 	interrupts.ListenAndServeTLS(&s, certFile, privKeyFile, 5*time.Second)
+	health := pjutil.NewHealth()
 	health.ServeReady(func() bool {
 		return true
 	})
@@ -224,6 +226,7 @@ func handleSecrets(client ClientInterface, ctx context.Context, clientoptions cl
 		}
 		cert = secretsMap[certFile]
 		privKey = secretsMap[privKeyFile]
+		caPem = secretsMap[caBundleFile]
 		if err := isCertValid(cert); err != nil {
 			logrus.WithError(err).Info("Certificate is not valid, will replace.")
 			cert, privKey, caPem, err = updateSecret(client, ctx, clientoptions)
