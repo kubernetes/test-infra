@@ -656,7 +656,7 @@ func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 						errChan <- err
 					}
 				case "migrate":
-					issues, err := gc.FindIssues(fmt.Sprintf("is:open repo:%s/%s label:\"%s\" -label:\"%s\"", org, repo, update.Current.Name, update.Wanted.Name), "", false)
+					issues, err := gc.FindIssuesWithOrg(org, fmt.Sprintf("is:open repo:%s/%s label:\"%s\" -label:\"%s\"", org, repo, update.Current.Name, update.Wanted.Name), "", false)
 					if err != nil {
 						errChan <- err
 					}
@@ -702,7 +702,7 @@ type client interface {
 	DeleteRepoLabel(org, repo, label string) error
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
-	FindIssues(query, order string, ascending bool) ([]github.Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 	GetRepoLabels(string, string) ([]github.Label, error)
 	SetMax404Retries(int)
