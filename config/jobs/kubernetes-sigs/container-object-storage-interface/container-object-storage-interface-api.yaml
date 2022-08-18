@@ -12,7 +12,7 @@ presubmits:
       description: Build test in container-object-storage-interface-api repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220804-4fa19ea91a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
         command:
         # Plain make runs also verify
         - make
@@ -36,7 +36,7 @@ presubmits:
       description: Unit tests in container-object-storage-interface-api repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220804-4fa19ea91a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
         command:
         - make
         args:
