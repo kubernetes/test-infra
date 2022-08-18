@@ -138,7 +138,7 @@ func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
 	// it will completely override previously configured gerrit hosts and projects.
 	// it will also by the way authenticate gerrit
-	applyGlobalConfig(cfg, gc, cookiefilePath)
+	gc.ApplyGlobalConfig(cfg, nil, cookiefilePath, "", func() {})
 
 	// Authenticate creates a goroutine for rotating token secrets when called the first
 	// time, afterwards it only authenticate once.
@@ -155,33 +155,6 @@ func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][
 
 	c.prLocks.RunCleanup()
 	return c, nil
-}
-
-func applyGlobalConfig(cfg config.Getter, gerritClient *client.Client, cookiefilePath string) {
-	applyGlobalConfigOnce(cfg, gerritClient, cookiefilePath)
-
-	go func() {
-		for {
-			applyGlobalConfigOnce(cfg, gerritClient, cookiefilePath)
-			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
-			time.Sleep(time.Second)
-		}
-	}()
-}
-
-func applyGlobalConfigOnce(cfg config.Getter, gerritClient *client.Client, cookiefilePath string) {
-	orgReposConfig := cfg().Gerrit.OrgReposConfig
-	if orgReposConfig == nil {
-		return
-	}
-	// Updates clients based on global gerrit config.
-	gerritClient.UpdateClients(orgReposConfig.AllRepos())
-	// Authenticate creates a goroutine for rotating token secrets when called the first
-	// time, afterwards it only authenticate once.
-	// Newly added orgs/repos are only authenticated by the goroutine when token secret is
-	// rotated, which is up to 1 hour after config change. Explicitly call Authenticate
-	// here to get them authenticated immediately.
-	gerritClient.Authenticate(cookiefilePath, "")
 }
 
 // GetName returns the name of the reporter

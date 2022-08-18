@@ -70,6 +70,14 @@ type fgc struct {
 	instanceMap map[string]*gerrit.AccountInfo
 }
 
+func (f *fgc) ApplyGlobalConfig(cfg config.Getter, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
+
+}
+
+func (f *fgc) Authenticate(cookiefilePath, tokenPath string) {
+
+}
+
 func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
 	return nil
 }

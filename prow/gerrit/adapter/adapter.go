@@ -90,6 +90,8 @@ type prowJobClient interface {
 }
 
 type gerritClient interface {
+	ApplyGlobalConfig(cfg config.Getter, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func())
+	Authenticate(cookiefilePath, tokenPath string)
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	QueryChangesForInstance(instance string, lastState client.LastSyncState, rateLimit int) []client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
@@ -136,12 +138,8 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 			projectsOptOutHelpMap[i] = sets.NewString(p...)
 		}
 	}
-	lastSyncTracker := &syncTime{
-		path:   lastSyncFallback,
-		ctx:    ctx,
-		opener: op,
-	}
-	if err := lastSyncTracker.init(projects); err != nil {
+	lastSyncTracker := client.NewSyncTime(lastSyncFallback, op, ctx)
+	if err := lastSyncTracker.Init(projects); err != nil {
 		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
 	}
 	gerritClient, err := client.NewClient(client.ProjectsFlagToConfig(projects))
@@ -168,50 +166,25 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
 	// it will completely override previously configured gerrit hosts and projects.
 	// it will also by the way authenticate gerrit
-	c.applyGlobalConfig(cfg, gerritClient, lastSyncTracker, cookiefilePath, tokenPathOverride)
+	c.gc.ApplyGlobalConfig(cfg, lastSyncTracker, cookiefilePath, tokenPathOverride, func() {
+		orgReposConfig := cfg().Gerrit.OrgReposConfig
+		if orgReposConfig == nil {
+			return
+		}
+		c.lock.Lock()
+		// Updates a map, lock to make sure it's thread safe.
+		c.projectsOptOutHelp = orgReposConfig.OptOutHelpRepos()
+		c.lock.Unlock()
+	})
 
 	// Authenticate creates a goroutine for rotating token secrets when called the first
 	// time, afterwards it only authenticate once.
 	// applyGlobalConfig calls authenticate only when global gerrit config presents,
 	// call it here is required for cases where gerrit repos are defined as command
 	// line arg(which is going to be deprecated).
-	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
+	c.gc.Authenticate(cookiefilePath, tokenPathOverride)
 
 	return c
-}
-
-func (c *Controller) applyGlobalConfig(cfg config.Getter, gerritClient *client.Client, lastSyncTracker *syncTime, cookiefilePath, tokenPathOverride string) {
-	c.applyGlobalConfigOnce(cfg, gerritClient, lastSyncTracker, cookiefilePath, tokenPathOverride)
-
-	go func() {
-		for {
-			c.applyGlobalConfigOnce(cfg, gerritClient, lastSyncTracker, cookiefilePath, tokenPathOverride)
-			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
-			time.Sleep(time.Second)
-		}
-	}()
-}
-
-func (c *Controller) applyGlobalConfigOnce(cfg config.Getter, gerritClient *client.Client, lastSyncTracker *syncTime, cookiefilePath, tokenPathOverride string) {
-	orgReposConfig := cfg().Gerrit.OrgReposConfig
-	if orgReposConfig == nil {
-		return
-	}
-	// Use globally defined gerrit repos if present
-	if err := gerritClient.UpdateClients(orgReposConfig.AllRepos()); err != nil {
-		logrus.WithError(err).Error("Updating clients.")
-	}
-	if err := lastSyncTracker.update(orgReposConfig.AllRepos()); err != nil {
-		logrus.WithError(err).Error("Syncing states.")
-	}
-
-	c.lock.Lock()
-	// Updates a map, lock to make sure it's thread safe.
-	c.projectsOptOutHelp = orgReposConfig.OptOutHelpRepos()
-	c.lock.Unlock()
-	// Authenticate creates a goroutine for rotating token secrets when called the first
-	// time, afterwards it only authenticate once.
-	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
 }
 
 // Helper function to create the cache used for InRepoConfig. Currently only attempts to create cache and returns nil if failed.
