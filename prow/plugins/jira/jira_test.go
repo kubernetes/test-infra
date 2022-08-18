@@ -324,6 +324,18 @@ func TestHandle(t *testing.T) {
 			existingIssues: []jira.Issue{{ID: "ENTERPRISE-4"}},
 		},
 		{
+			name: "Valid issue in disabled project, multiple references, with markdown link, case insensitive matching, nothing to do",
+			event: github.GenericCommentEvent{
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "ABC-123: Fixes Some issue",
+				Body:       "Some text and also [ABC-123](https://my-jira.com/browse/ABC-123)",
+				Repo:       github.Repo{FullName: "org/repo"},
+				Number:     3,
+			},
+			projectCache: &threadsafeSet{data: sets.NewString("abc")},
+			cfg:          &plugins.Jira{DisabledJiraProjects: []string{"abc"}},
+		},
+		{
 			name: "Project 404 gets served from cache, nothing happens",
 			event: github.GenericCommentEvent{
 				HTMLURL:    "https://github.com/org/repo/issues/3",
