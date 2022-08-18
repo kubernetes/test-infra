@@ -2,12 +2,15 @@ periodics:
 - name: periodic-cluster-api-test-main
   interval: 1h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
       command:
@@ -23,12 +26,15 @@ periodics:
 - name: periodic-cluster-api-test-mink8s-main
   interval: 1h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
       command:
@@ -52,6 +58,8 @@ periodics:
 - name: periodic-cluster-api-e2e-upgrade-v0-3-to-main
   interval: 1h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -65,6 +73,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
@@ -96,6 +105,8 @@ periodics:
 - name: periodic-cluster-api-e2e-upgrade-v1-2-to-main
   interval: 1h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -109,6 +120,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
       args:
