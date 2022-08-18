@@ -6,8 +6,6 @@ presubmits:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
-    labels:
-      preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -28,8 +26,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     optional: true
-    labels:
-      preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -50,7 +46,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     branches:
     # The script this job runs is not in all branches.
@@ -76,8 +71,6 @@ presubmits:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
-    labels:
-      preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -100,8 +93,6 @@ presubmits:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
-    labels:
-      preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^main$
