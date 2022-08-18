@@ -374,8 +374,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     always_run: true
     optional: true
-    labels:
-      preset-service-account: "true"
     branches:
     - ^main$
     spec:
