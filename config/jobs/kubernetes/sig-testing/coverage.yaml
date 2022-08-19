@@ -168,6 +168,7 @@ periodics:
 
 - interval: 1h
   name: ci-kubernetes-coverage-unit
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -196,5 +197,12 @@ periodics:
         ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
         ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
         exit $result
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
       securityContext:
         privileged: true
