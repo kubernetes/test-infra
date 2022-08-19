@@ -114,6 +114,8 @@ postsubmits:
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
     - ^master$
     max_concurrency: 1
