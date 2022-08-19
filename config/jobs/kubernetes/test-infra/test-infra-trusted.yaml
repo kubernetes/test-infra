@@ -148,10 +148,13 @@ postsubmits:
     cluster: test-infra-trusted
     run_if_changed: 'config/prow/config.yaml'
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
     - ^master$
     max_concurrency: 1
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-prow/hmac:v20220818-6dcd812eb2
         command:
