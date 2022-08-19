@@ -442,6 +442,8 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: '^config/(jobs|testgrids)/.*$'
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
