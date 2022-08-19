@@ -589,11 +589,14 @@ periodics:
   name: ci-test-infra-autobump-prow-for-auto-deploy
   cluster: test-infra-trusted
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes
     repo: test-infra
     base_ref: master
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220818-6dcd812eb2
       command:
