@@ -114,6 +114,8 @@ postsubmits:
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
     - ^master$
     max_concurrency: 1
@@ -146,10 +148,13 @@ postsubmits:
     cluster: test-infra-trusted
     run_if_changed: 'config/prow/config.yaml'
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
     - ^master$
     max_concurrency: 1
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-prow/hmac:v20220819-de76c58889
         command:
@@ -437,6 +442,8 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: '^config/(jobs|testgrids)/.*$'
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
@@ -582,11 +589,14 @@ periodics:
   name: ci-test-infra-autobump-prow-for-auto-deploy
   cluster: test-infra-trusted
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes
     repo: test-infra
     base_ref: master
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220819-de76c58889
       command:
@@ -619,11 +629,14 @@ periodics:
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes
     repo: test-infra
     base_ref: master
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220819-de76c58889
       command:
