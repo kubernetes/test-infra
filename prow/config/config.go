@@ -2316,6 +2316,12 @@ func parseProwConfig(c *Config) error {
 		c.Gerrit.RateLimit = 5
 	}
 
+	if c.Tide.Gerrit != nil {
+		if c.Tide.Gerrit.RateLimit == 0 {
+			c.Tide.Gerrit.RateLimit = 5
+		}
+	}
+
 	if len(c.GitHubReporter.JobTypesToReport) == 0 {
 		c.GitHubReporter.JobTypesToReport = append(c.GitHubReporter.JobTypesToReport, prowapi.PresubmitJob, prowapi.PostsubmitJob)
 	}

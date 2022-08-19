@@ -1229,6 +1229,17 @@ tide:
     # creates. The default is to only mention the one to which we are closest (Calculated
     # by total number of requirements - fulfilled number of requirements).
     display_all_tide_queries_in_status: true
+    gerrit:
+        queries:
+          - filters:
+                branches:
+                  - ""
+                excluded_branches:
+                  - ""
+            opt_out_help: true
+            org: ' '
+            repos:
+              - ""
 
     # A key/value pair of an org/repo as the key and Go template to override
     # the default merge commit title and/or message. Template is passed the
@@ -1309,7 +1320,7 @@ tide:
     # Defaults to the value of SyncPeriod.
     status_update_period: 0s
 
-    # SyncPeriod specifies how often Tide will sync jobs with provider. Defaults to 1m.
+    # SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
     sync_period: 0s
 
     # URL for tide status contexts.

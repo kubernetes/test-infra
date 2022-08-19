@@ -147,8 +147,8 @@ func (gi *GitHubProvider) GetRef(org, repo, ref string) (string, error) {
 	return gi.ghc.GetRef(org, repo, ref)
 }
 
-func (gi *GitHubProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string) (contextChecker, error) {
-	return gi.cfg().GetTideContextPolicy(gitClient, org, repo, branch, baseSHAGetter, headSHA)
+func (gi *GitHubProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error) {
+	return gi.cfg().GetTideContextPolicy(gitClient, org, repo, branch, baseSHAGetter, pr.HeadRefOID)
 }
 
 func (gi *GitHubProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
