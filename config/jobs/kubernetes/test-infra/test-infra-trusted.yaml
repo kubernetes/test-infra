@@ -192,6 +192,8 @@ postsubmits:
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
     run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|gencred|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     labels:
       # Building deck requires docker for typescript compilation.
       preset-dind-enabled: "true"
