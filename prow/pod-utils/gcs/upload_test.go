@@ -21,13 +21,45 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"sync"
 	"testing"
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 
 	"k8s.io/test-infra/prow/io"
+	pkgio "k8s.io/test-infra/prow/io"
 )
+
+func TestDataUploads(t *testing.T) {
+	uploadFunc := DataUpload(bytes.NewBuffer([]byte("foo")))
+	tmpDir := t.TempDir()
+	opener, err := pkgio.NewOpener(context.Background(), "", "")
+	if err != nil {
+		t.Fatalf("new opener: %v", err)
+	}
+
+	writer := &openerObjectWriter{Opener: opener, Context: context.Background(), Bucket: tmpDir, Dest: "foo.txt"}
+
+	uploadFunc(writer)
+	got, err := ioutil.ReadFile(path.Join(tmpDir, "foo.txt"))
+	if err != nil {
+		t.Fatalf("Failed read file the first time: %v", err)
+	}
+	if string(got) != "foo" {
+		t.Fatalf("First time. Want: foo, got: %s", string(got))
+	}
+
+	// simulate retry
+	uploadFunc(writer)
+	got, err = ioutil.ReadFile(path.Join(tmpDir, "foo.txt"))
+	if err != nil {
+		t.Fatalf("Failed read file the second time: %v", err)
+	}
+	if string(got) != "foo" {
+		t.Fatalf("Second time. Want: foo, got: %s", string(got))
+	}
+}
 
 func TestUploadWithRetries(t *testing.T) {
 
