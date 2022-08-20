@@ -219,7 +219,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	action := genericCommentAction(string(pr.Action))
 	if action == "" {
 		if !nonCommentPullRequestActions[pr.Action] {
-			l.Errorf(failedCommentCoerceFmt, "pull_request", string(pr.Action))
+			l.Infof(failedCommentCoerceFmt, "pull_request", string(pr.Action))
 		}
 		return
 	}
