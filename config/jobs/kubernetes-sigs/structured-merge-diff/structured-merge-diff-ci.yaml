@@ -42,6 +42,7 @@ periodics:
     testgrid-dashboards: sig-api-machinery-structured-merge-diff
     testgrid-tab-name: ci-gofmt
 - name: ci-structured-merge-diff-benchmark
+  cluster: k8s-infra-prow-build
   interval: 1h
   decorate: true
   extra_refs:
