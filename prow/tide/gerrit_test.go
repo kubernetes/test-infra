@@ -63,14 +63,14 @@ func (f *fakeGerritClient) GetBranchRevision(instance, project, branch string) (
 	return "abc", nil
 }
 
-func (f *fakeGerritClient) addChange(instance, project string, change gerrit.ChangeInfo) {
+func (f *fakeGerritClient) addChanges(instance, project string, changes []gerrit.ChangeInfo) {
 	if _, ok := f.changes[instance]; !ok {
 		f.changes[instance] = make(map[string][]gerrit.ChangeInfo)
 	}
 	if _, ok := f.changes[instance][project]; !ok {
 		f.changes[instance][project] = []gerrit.ChangeInfo{}
 	}
-	f.changes[instance][project] = append(f.changes[instance][project], change)
+	f.changes[instance][project] = append(f.changes[instance][project], changes...)
 }
 
 func TestQuery(t *testing.T) {
@@ -79,6 +79,7 @@ func TestQuery(t *testing.T) {
 		queries config.GerritOrgRepoConfigs
 		prs     map[string]map[string][]gerrit.ChangeInfo
 		expect  map[string]CodeReviewCommon
+		wantErr bool
 	}{
 		{
 			name: "single",
@@ -193,7 +194,7 @@ func TestQuery(t *testing.T) {
 					},
 				},
 			},
-			expect: map[string]CodeReviewCommon{},
+			wantErr: true,
 		},
 		{
 			name: "no-pr",
@@ -203,7 +204,11 @@ func TestQuery(t *testing.T) {
 					Repos: []string{"bar1"},
 				},
 			},
-			prs:    map[string]map[string][]gerrit.ChangeInfo{},
+			prs: map[string]map[string][]gerrit.ChangeInfo{
+				"foo1": {
+					"bar1": {},
+				},
+			},
 			expect: map[string]CodeReviewCommon{},
 		},
 	}
@@ -226,16 +231,14 @@ func TestQuery(t *testing.T) {
 
 			for instance, projs := range tc.prs {
 				for project, changes := range projs {
-					for _, change := range changes {
-						fgc.addChange(instance, project, change)
-					}
+					fgc.addChanges(instance, project, changes)
 				}
 			}
 			fc.gc = fgc
 
 			got, err := fc.Query()
-			if err != nil {
-				t.Fatal(err)
+			if (tc.wantErr && err == nil) || (!tc.wantErr && err != nil) {
+				t.Fatalf("Error mismatch. Want: %v, got: %v", tc.wantErr, err)
 			}
 			if diff := cmp.Diff(tc.expect, got); diff != "" {
 				t.Fatalf("Query result mismatch. Want(-), got(+):\n%s", diff)

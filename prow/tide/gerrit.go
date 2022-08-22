@@ -21,8 +21,10 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -132,23 +134,56 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 	// should be 1970,1,1.
 	var lastUpdate time.Time
 
-	res := make(map[string]CodeReviewCommon)
+	var wg sync.WaitGroup
+	errChan := make(chan error)
+	type changesFromProject struct {
+		instance string
+		project  string
+		changes  []gerrit.ChangeInfo
+	}
+	resChan := make(chan changesFromProject)
 	// This is querying serially, which would safely guard against quota issues.
 	// TODO(chaodai): parallize this to boot the performance.
 	for instance, projs := range p.cfg().Tide.Gerrit.Queries.AllRepos() {
+		instance, projs := instance, projs
 		for projName := range projs {
-			changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, []string{gerritDefaultQueryParam})
-			if err != nil {
-				p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName}).WithError(err).Error("Querying gerrit project for changes.")
-				continue
-			}
-			for _, pr := range changes {
-				crc := CodeReviewCommonFromGerrit(&pr, instance)
-				res[prKey(crc)] = *crc
-			}
+			wg.Add(1)
+			go func(projName string) {
+				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, []string{gerritDefaultQueryParam})
+				if err != nil {
+					p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName}).WithError(err).Warn("Querying gerrit project for changes.")
+					errChan <- fmt.Errorf("failed querying project '%s' from instance '%s': %v", projName, instance, err)
+					return
+				}
+				resChan <- changesFromProject{instance: instance, project: projName, changes: changes}
+			}(projName)
 		}
 	}
 
+	var combinedErrs []error
+	res := make(map[string]CodeReviewCommon)
+	go func() {
+		for {
+			select {
+			case err := <-errChan:
+				combinedErrs = append(combinedErrs, err)
+				wg.Done()
+			case changes := <-resChan:
+				for _, pr := range changes.changes {
+					crc := CodeReviewCommonFromGerrit(&pr, changes.instance)
+					res[prKey(crc)] = *crc
+				}
+				wg.Done()
+			}
+		}
+	}()
+
+	wg.Wait()
+
+	// Let's not return error unless all queries failed.
+	if len(combinedErrs) > 0 && len(res) == 0 {
+		return nil, utilerrors.NewAggregate(combinedErrs)
+	}
 	return res, nil
 }
 
