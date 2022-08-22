@@ -4808,8 +4808,7 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.11
   name: redhat-openshift-ocp-release-4.11-informing
 test_groups:
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-arm64
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-arm64
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-arm64-single-node
@@ -4823,11 +4822,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-heterogeneous
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-heterogeneous
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-ovn-arm64
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-ovn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-ovn-arm64
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-upi-arm64
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-upi-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-upi-arm64
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-compact-remote-libvirt-ppc64le
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-compact-remote-libvirt-ppc64le
@@ -4859,8 +4856,7 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-ppc64le
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-image-ecosystem-remote-libvirt-s390x
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-installer-e2e-aws-ovn-arm64
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-installer-e2e-aws-ovn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-installer-e2e-aws-ovn-arm64
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-jenkins-e2e-aws-arm64
@@ -4869,39 +4865,31 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-jenkins-e2e-remote-libvirt-ppc64le
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-jenkins-e2e-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-jenkins-e2e-remote-libvirt-s390x
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-nightly-4.10-ocp-e2e-aws-arm64
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-nightly-4.10-ocp-e2e-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-nightly-4.10-ocp-e2e-aws-arm64
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-nightly-4.10-ocp-remote-libvirt-ppc64le
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-nightly-4.10-ocp-remote-libvirt-ppc64le
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-nightly-4.10-ocp-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-nightly-4.10-ocp-remote-libvirt-s390x
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-stable-4.10-ocp-e2e-aws-arm64
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-stable-4.10-ocp-e2e-aws-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-upgrade-from-stable-4.10-ocp-e2e-aws-arm64
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws
-- days_of_results: 13
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-cgroupsv2
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-cgroupsv2
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-cgroupsv2
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-cilium
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-cilium
-- days_of_results: 13
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-crun
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-crun
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-crun
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-imdsv2
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-imdsv2
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn
-- days_of_results: 33
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn-serial
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn-serial
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-ovn-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-sdn-multitenant
@@ -4912,29 +4900,23 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-techpreview-serial
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-techpreview-serial
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-upgrade-ovn-single-node
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-upgrade-ovn-single-node
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-upgrade-ovn-single-node
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-aws-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-aws-upgrade-rollback
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-azure
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-cilium
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-azure-cilium
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-ovn
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-ovn
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-azure-ovn
-- days_of_results: 8
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-ovn-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-azure-ovn-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-serial
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-azure-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-techpreview
@@ -4942,23 +4924,18 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-techpreview-serial
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-azure-techpreview-serial
-- days_of_results: 17
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-azure-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-upgrade-ovn-single-node
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-azure-upgrade-ovn-single-node
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-azure-upgrade-ovn-single-node
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-gcp
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-cilium
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-cilium
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-ovn
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-ovn
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-ovn
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-serial
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-techpreview
@@ -4966,8 +4943,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-techpreview-serial
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-techpreview-serial
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-e2e-gcp-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-e2e-network-migration
@@ -4978,11 +4954,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-ovn-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-ovn-upgrade-rollback
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-ovn-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-ovn-upgrade-rollback
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-infra
@@ -4990,32 +4964,25 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-rollback
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-workload
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-workload
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-workload
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-uwm
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-aws-uwm
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-azure-ovn-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-azure-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-azure-ovn-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-azure-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-azure-upgrade
-- days_of_results: 25
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-ovn-rt-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-ovn-rt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-ovn-rt-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-ovn-upgrade
-- days_of_results: 17
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-upgrade
-- days_of_results: 25
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-ovirt-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-ovirt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-ovirt-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-vsphere-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-vsphere-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-vsphere-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-from-stable-4.9-e2e-aws-upgrade
@@ -5026,23 +4993,18 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-credentials-request-freeze
   name: periodic-ci-openshift-release-master-nightly-4.11-credentials-request-freeze
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-alibaba
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-alibaba
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-alibaba
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-alibaba-csi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-alibaba-csi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-alibaba-csi
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws
-- days_of_results: 13
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-cgroupsv2
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-cgroupsv2
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-cgroupsv2
-- days_of_results: 13
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-crun
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-crun
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-crun
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-csi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-csi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-csi
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-csi-migration
@@ -5058,22 +5020,17 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-ovn-local-gateway
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-ovn-local-gateway
-- days_of_results: 33
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-ovn-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-ovn-serial
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-ovn-serial
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-proxy
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-proxy
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node-serial
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node-serial
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node-workers
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node-workers
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-single-node-workers
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-upgrade-rollback-oldest-supported
@@ -5086,11 +5043,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-azure
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-csi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-csi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-csi
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-deploy-cnv
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-deploy-cnv
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-deploy-cnv
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-fips
@@ -5098,14 +5053,12 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-fips-serial
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-upgrade-cnv
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-upgrade-cnv
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-upgrade-cnv
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-upi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-azure-upi
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azurestack-csi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azurestack-csi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-azurestack-csi
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-azurestack-upi
@@ -5113,8 +5066,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp-csi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp-csi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp-csi
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp-csi-migration
@@ -5133,8 +5085,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp-upi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp-upi
-- days_of_results: 25
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-bm
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-bm
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-bm
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-compact
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-compact
@@ -5164,29 +5115,23 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-upgrade-ovn-ipv6
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-virtualmedia
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-virtualmedia
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-live-iso
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-live-iso
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-live-iso
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-with-worker-live-iso
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-with-worker-live-iso
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-with-worker-live-iso
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt-csi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt-csi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt-csi
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt-ovn
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt-ovn
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-telco5g
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-telco5g
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-telco5g
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-csi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-csi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-csi
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-ovn
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-ovn
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-ovn
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-serial
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-serial
@@ -5200,17 +5145,13 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-upi-serial
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-install-analysis-vsphere-sdn-ipi
   name: periodic-ci-openshift-release-master-nightly-4.11-install-analysis-vsphere-sdn-ipi
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-openshift-e2e-aws-single-node-workers-upgrade-conformance
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-openshift-e2e-aws-single-node-workers-upgrade-conformance
   name: periodic-ci-openshift-release-master-nightly-4.11-openshift-e2e-aws-single-node-workers-upgrade-conformance
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-ovn-single-node
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-ovn-single-node
   name: periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade-ovn-single-node
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-azure-upgrade-ovn-single-node
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-azure-upgrade-ovn-single-node
   name: periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-azure-upgrade-ovn-single-node
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-metal-ipi-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-metal-ipi-upgrade
