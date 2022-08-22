@@ -56,9 +56,7 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-nightly-4.10-e2e-aws-serial
   name: redhat-openshift-ocp-release-4.10-blocking
 test_groups:
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.10-e2e-aws-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.10-e2e-aws-serial
   name: periodic-ci-openshift-release-master-ci-4.10-e2e-aws-serial
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-e2e-aws-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-e2e-aws-serial
   name: periodic-ci-openshift-release-master-nightly-4.10-e2e-aws-serial
