@@ -16,7 +16,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
         env:
         - name: DOCKER_IN_DOCKER_IPV6_ENABLED
           value: "true"
@@ -61,7 +61,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
       env:
       - name: DOCKER_IN_DOCKER_IPV6_ENABLED
         value: "true"
