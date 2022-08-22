@@ -83,8 +83,12 @@ func newGerritProvider(
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
+	orgRepoConfigGetter := func() *config.GerritOrgRepoConfigs {
+		return &cfg().Tide.Gerrit.Queries
+	}
+	gerritClient.ApplyGlobalConfig(orgRepoConfigGetter, nil, cookiefilePath, tokenPathOverride, nil)
 
-	gp := &GerritProvider{
+	return &GerritProvider{
 		logger:            logger,
 		cfg:               cfg,
 		pjclientset:       pjclientset,
@@ -93,36 +97,6 @@ func newGerritProvider(
 		tokenPathOverride: tokenPathOverride,
 		mergeChecker:      mergeChecker,
 	}
-
-	gp.applyGlobalConfig(cfg, gerritClient, cookiefilePath, tokenPathOverride)
-
-	return gp
-}
-
-func (p *GerritProvider) applyGlobalConfig(cfg config.Getter, gerritClient *client.Client, cookiefilePath, tokenPathOverride string) {
-	p.applyGlobalConfigOnce(cfg, gerritClient, cookiefilePath, tokenPathOverride)
-
-	go func() {
-		for {
-			p.applyGlobalConfigOnce(cfg, gerritClient, cookiefilePath, tokenPathOverride)
-			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
-			time.Sleep(time.Second)
-		}
-	}()
-}
-
-func (p *GerritProvider) applyGlobalConfigOnce(cfg config.Getter, gerritClient *client.Client, cookiefilePath, tokenPathOverride string) {
-	gerritCfg := cfg().Tide.Gerrit
-	if gerritCfg == nil {
-		return
-	}
-
-	if err := gerritClient.UpdateClients(gerritCfg.Queries.AllRepos()); err != nil {
-		logrus.WithError(err).Error("Updating clients.")
-	}
-	// Authenticate creates a goroutine for rotating token secrets when called the first
-	// time, afterwards it only authenticate once.
-	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
 }
 
 // Query returns all PRs from configured gerrit org/repos.
