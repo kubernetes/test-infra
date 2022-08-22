@@ -576,14 +576,21 @@ type EnforceAdmins struct {
 
 // RequiredPullRequestReviews exposes the state of review rights.
 type RequiredPullRequestReviews struct {
-	DismissalRestrictions        *Restrictions `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool          `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool          `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int           `json:"required_approving_review_count"`
+	DismissalRestrictions        *DismissalRestrictions `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                   `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                   `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                    `json:"required_approving_review_count"`
 }
 
-// Restrictions exposes restrictions in github for an activity to people/teams.
+// DismissalRestrictions exposes restrictions in github for an activity to people/teams.
+type DismissalRestrictions struct {
+	Users []User `json:"users,omitempty"`
+	Teams []Team `json:"teams,omitempty"`
+}
+
+// Restrictions exposes restrictions in github for an activity to apps/people/teams.
 type Restrictions struct {
+	Apps  []App  `json:"apps,omitempty"`
 	Users []User `json:"users,omitempty"`
 	Teams []Team `json:"teams,omitempty"`
 }
@@ -617,18 +624,31 @@ type RequiredStatusChecks struct {
 
 // RequiredPullRequestReviewsRequest controls a request for review rights.
 type RequiredPullRequestReviewsRequest struct {
-	DismissalRestrictions        RestrictionsRequest `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool                `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool                `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int                 `json:"required_approving_review_count"`
+	DismissalRestrictions        DismissalRestrictionsRequest `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                         `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                         `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                          `json:"required_approving_review_count"`
 }
 
-// RestrictionsRequest tells github to restrict an activity to people/teams.
+// DismissalRestrictionsRequest tells github to restrict an activity to people/teams.
 //
 // Use *[]string in order to distinguish unset and empty list.
 // This is needed by dismissal_restrictions to distinguish
 // do not restrict (empty object) and restrict everyone (nil user/teams list)
+type DismissalRestrictionsRequest struct {
+	// Users is a list of user logins
+	Users *[]string `json:"users,omitempty"`
+	// Teams is a list of team slugs
+	Teams *[]string `json:"teams,omitempty"`
+}
+
+// RestrictionsRequest tells github to restrict an activity to apps/people/teams.
+//
+// Use *[]string in order to distinguish unset and empty list.
+// do not restrict (empty object) and restrict everyone (nil apps/user/teams list)
 type RestrictionsRequest struct {
+	// Apps is a list of app names
+	Apps *[]string `json:"apps,omitempty"`
 	// Users is a list of user logins
 	Users *[]string `json:"users,omitempty"`
 	// Teams is a list of team slugs
@@ -1431,6 +1451,7 @@ type InstallationPermissions struct {
 // AppInstallation represents a GitHub Apps installation.
 type AppInstallation struct {
 	ID                  int64                   `json:"id,omitempty"`
+	AppSlug             string                  `json:"app_slug,omitempty"`
 	NodeID              string                  `json:"node_id,omitempty"`
 	AppID               int64                   `json:"app_id,omitempty"`
 	TargetID            int64                   `json:"target_id,omitempty"`
@@ -1445,6 +1466,12 @@ type AppInstallation struct {
 	Permissions         InstallationPermissions `json:"permissions,omitempty"`
 	CreatedAt           string                  `json:"created_at,omitempty"`
 	UpdatedAt           string                  `json:"updated_at,omitempty"`
+}
+
+// AppInstallationList represents the result of an AppInstallationList search.
+type AppInstallationList struct {
+	Total         int               `json:"total_count,omitempty"`
+	Installations []AppInstallation `json:"installations,omitempty"`
 }
 
 // AppInstallationToken is the response when retrieving an app installation

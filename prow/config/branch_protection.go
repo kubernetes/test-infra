@@ -80,8 +80,8 @@ type ContextPolicy struct {
 // Any nil values inherit the policy from the parent, otherwise bool/ints are overridden.
 // Non-empty lists are appended to parent lists.
 type ReviewPolicy struct {
-	// Restrictions appends users/teams that are allowed to merge
-	DismissalRestrictions *Restrictions `json:"dismissal_restrictions,omitempty"`
+	// DismissalRestrictions appends users/teams that are allowed to merge
+	DismissalRestrictions *DismissalRestrictions `json:"dismissal_restrictions,omitempty"`
 	// DismissStale overrides whether new commits automatically dismiss old reviews if set
 	DismissStale *bool `json:"dismiss_stale_reviews,omitempty"`
 	// RequireOwners overrides whether CODEOWNERS must approve PRs if set
@@ -90,9 +90,17 @@ type ReviewPolicy struct {
 	Approvals *int `json:"required_approving_review_count,omitempty"`
 }
 
-// Restrictions limits who can merge
+// DismissalRestrictions limits who can merge
 // Users and Teams items are appended to parent lists.
+type DismissalRestrictions struct {
+	Users []string `json:"users,omitempty"`
+	Teams []string `json:"teams,omitempty"`
+}
+
+// Restrictions limits who can merge
+// Apps, Users and Teams items are appended to parent lists.
 type Restrictions struct {
+	Apps  []string `json:"apps,omitempty"`
 	Users []string `json:"users,omitempty"`
 	Teams []string `json:"teams,omitempty"`
 }
@@ -147,10 +155,23 @@ func mergeReviewPolicy(parent, child *ReviewPolicy) *ReviewPolicy {
 		return child
 	}
 	return &ReviewPolicy{
-		DismissalRestrictions: mergeRestrictions(parent.DismissalRestrictions, child.DismissalRestrictions),
+		DismissalRestrictions: mergeDismissalRestrictions(parent.DismissalRestrictions, child.DismissalRestrictions),
 		DismissStale:          selectBool(parent.DismissStale, child.DismissStale),
 		RequireOwners:         selectBool(parent.RequireOwners, child.RequireOwners),
 		Approvals:             selectInt(parent.Approvals, child.Approvals),
+	}
+}
+
+func mergeDismissalRestrictions(parent, child *DismissalRestrictions) *DismissalRestrictions {
+	if child == nil {
+		return parent
+	}
+	if parent == nil {
+		return child
+	}
+	return &DismissalRestrictions{
+		Users: unionStrings(parent.Users, child.Users),
+		Teams: unionStrings(parent.Teams, child.Teams),
 	}
 }
 
@@ -162,6 +183,7 @@ func mergeRestrictions(parent, child *Restrictions) *Restrictions {
 		return child
 	}
 	return &Restrictions{
+		Apps:  unionStrings(parent.Apps, child.Apps),
 		Users: unionStrings(parent.Users, child.Users),
 		Teams: unionStrings(parent.Teams, child.Teams),
 	}

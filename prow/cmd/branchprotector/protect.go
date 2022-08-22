@@ -43,9 +43,10 @@ const (
 )
 
 type options struct {
-	config             configflagutil.ConfigOptions
-	confirm            bool
-	verifyRestrictions bool
+	config                 configflagutil.ConfigOptions
+	confirm                bool
+	verifyRestrictions     bool
+	enableAppsRestrictions bool
 
 	github           flagutil.GitHubOptions
 	githubEnablement flagutil.GitHubEnablementOptions
@@ -71,7 +72,8 @@ func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
-	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized collaborators/teams")
+	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized apps/collaborators/teams")
+	fs.BoolVar(&o.enableAppsRestrictions, "enable-apps-restrictions", false, "Enable feature to enforce apps restrictions in branch protection rules")
 	o.config.AddFlags(fs)
 	o.github.AddCustomizedFlags(fs, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	o.githubEnablement.AddFlags(fs)
@@ -120,14 +122,15 @@ func main() {
 	}
 
 	p := protector{
-		client:             githubClient,
-		cfg:                cfg,
-		updates:            make(chan requirements),
-		errors:             Errors{},
-		completedRepos:     make(map[string]bool),
-		done:               make(chan []error),
-		verifyRestrictions: o.verifyRestrictions,
-		enabled:            o.githubEnablement.EnablementChecker(),
+		client:                 githubClient,
+		cfg:                    cfg,
+		updates:                make(chan requirements),
+		errors:                 Errors{},
+		completedRepos:         make(map[string]bool),
+		done:                   make(chan []error),
+		verifyRestrictions:     o.verifyRestrictions,
+		enableAppsRestrictions: o.enableAppsRestrictions,
+		enabled:                o.githubEnablement.EnablementChecker(),
 	}
 
 	go p.configureBranches()
@@ -149,19 +152,21 @@ type client interface {
 	GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
 	GetRepos(org string, user bool) ([]github.Repo, error)
+	ListAppInstallationsForOrg(org string) ([]github.AppInstallation, error)
 	ListCollaborators(org, repo string) ([]github.User, error)
 	ListRepoTeams(org, repo string) ([]github.Team, error)
 }
 
 type protector struct {
-	client             client
-	cfg                *config.Config
-	updates            chan requirements
-	errors             Errors
-	completedRepos     map[string]bool
-	done               chan []error
-	verifyRestrictions bool
-	enabled            func(org, repo string) bool
+	client                 client
+	cfg                    *config.Config
+	updates                chan requirements
+	errors                 Errors
+	completedRepos         map[string]bool
+	done                   chan []error
+	verifyRestrictions     bool
+	enableAppsRestrictions bool
+	enabled                func(org, repo string) bool
 }
 
 func (p *protector) configureBranches() {
@@ -331,8 +336,14 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 		}
 	}
 
-	var collaborators, teams []string
+	var apps, collaborators, teams []string
 	if p.verifyRestrictions {
+		apps, err = p.authorizedApps(orgName)
+		if err != nil {
+			logrus.Infof("%s: error getting list of installed apps: %v", orgName, err)
+			return err
+		}
+
 		collaborators, err = p.authorizedCollaborators(orgName, repoName)
 		if err != nil {
 			logrus.Infof("%s/%s: error getting list of collaborators: %v", orgName, repoName, err)
@@ -350,12 +361,28 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 	for bn, githubBranch := range branches {
 		if branch, err := repo.GetBranch(bn); err != nil {
 			errs = append(errs, fmt.Errorf("get %s: %w", bn, err))
-		} else if err = p.UpdateBranch(orgName, repoName, bn, *branch, githubBranch.Protected, collaborators, teams); err != nil {
+		} else if err = p.UpdateBranch(orgName, repoName, bn, *branch, githubBranch.Protected, apps, collaborators, teams); err != nil {
 			errs = append(errs, fmt.Errorf("update %s from protected=%t: %w", bn, githubBranch.Protected, err))
 		}
 	}
 
 	return utilerrors.NewAggregate(errs)
+}
+
+// authorizedApps returns the list of slugs for apps that are authorized
+// to write to repositories of the org.
+func (p *protector) authorizedApps(org string) ([]string, error) {
+	appInstallations, err := p.client.ListAppInstallationsForOrg(org)
+	if err != nil {
+		return nil, err
+	}
+	var authorized []string
+	for _, a := range appInstallations {
+		if a.Permissions.Contents == string(github.Write) {
+			authorized = append(authorized, a.AppSlug)
+		}
+	}
+	return authorized, nil
 }
 
 // authorizedCollaborators returns the list of Logins for users that are
@@ -390,12 +417,17 @@ func (p *protector) authorizedTeams(org, repo string) ([]string, error) {
 	return authorized, nil
 }
 
-func validateRestrictions(org, repo string, bp *github.BranchProtectionRequest, authorizedCollaborators, authorizedTeams []string) []error {
+func validateRestrictions(org, repo string, bp *github.BranchProtectionRequest, authorizedApps, authorizedCollaborators, authorizedTeams []string) []error {
 	if bp == nil || bp.Restrictions == nil {
 		return nil
 	}
 
 	var errs []error
+	if bp.Restrictions.Apps != nil {
+		if unauthorized := sets.NewString(*bp.Restrictions.Apps...).Difference(sets.NewString(authorizedApps...)); unauthorized.Len() > 0 {
+			errs = append(errs, fmt.Errorf("the following apps are not authorized for %s/%s: %s", org, repo, unauthorized.List()))
+		}
+	}
 	if bp.Restrictions.Users != nil {
 		if unauthorized := sets.NewString(*bp.Restrictions.Users...).Difference(sets.NewString(authorizedCollaborators...)); unauthorized.Len() > 0 {
 			errs = append(errs, fmt.Errorf("the following collaborators are not authorized for %s/%s: %s", org, repo, unauthorized.List()))
@@ -410,7 +442,7 @@ func validateRestrictions(org, repo string, bp *github.BranchProtectionRequest, 
 }
 
 // UpdateBranch updates the branch with the specified configuration
-func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch config.Branch, protected bool, authorizedCollaborators, authorizedTeams []string) error {
+func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch config.Branch, protected bool, authorizedApps, authorizedCollaborators, authorizedTeams []string) error {
 	if branch.Unmanaged != nil && *branch.Unmanaged {
 		return nil
 	}
@@ -426,14 +458,19 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 		return nil
 	}
 
+	// Return error if apps restrictions if feature is disabled, but there are apps restrictions in the config
+	if !p.enableAppsRestrictions && bp != nil && bp.Restrictions != nil && bp.Restrictions.Apps != nil {
+		return fmt.Errorf("'enable-apps-restrictions' command line flag is not true, but Apps Restrictions are maintained for %s/%s=%s", orgName, repo, branchName)
+	}
+
 	var req *github.BranchProtectionRequest
 	if *bp.Protect {
-		r := makeRequest(*bp)
+		r := makeRequest(*bp, p.enableAppsRestrictions)
 		req = &r
 	}
 
 	if p.verifyRestrictions {
-		if validationErrors := validateRestrictions(orgName, repo, req, authorizedCollaborators, authorizedTeams); len(validationErrors) != 0 {
+		if validationErrors := validateRestrictions(orgName, repo, req, authorizedApps, authorizedCollaborators, authorizedTeams); len(validationErrors) != 0 {
 			logrus.Warnf("invalid branch protection request: %s/%s=%s: %v", orgName, repo, branchName, validationErrors)
 			errs := make([]string, 0, len(validationErrors))
 			for _, e := range validationErrors {
@@ -556,13 +593,13 @@ func equalRequiredPullRequestReviews(state *github.RequiredPullRequestReviews, r
 		return state.DismissStaleReviews == request.DismissStaleReviews &&
 			state.RequireCodeOwnerReviews == request.RequireCodeOwnerReviews &&
 			state.RequiredApprovingReviewCount == request.RequiredApprovingReviewCount &&
-			equalRestrictions(state.DismissalRestrictions, &request.DismissalRestrictions)
+			equalDismissalRestrictions(state.DismissalRestrictions, &request.DismissalRestrictions)
 	default:
 		return false
 	}
 }
 
-func equalRestrictions(state *github.Restrictions, request *github.RestrictionsRequest) bool {
+func equalDismissalRestrictions(state *github.DismissalRestrictions, request *github.DismissalRestrictionsRequest) bool {
 	switch {
 	case state == nil && request == nil:
 		return true
@@ -573,24 +610,59 @@ func equalRestrictions(state *github.Restrictions, request *github.RestrictionsR
 		// effect, this is identical to making no request for restriction.
 		return request.Users == nil && request.Teams == nil
 	case state != nil && request != nil:
-		var users []string
-		for _, user := range state.Users {
-			users = append(users, github.NormLogin(user.Login))
-		}
-		var teams []string
-		for _, team := range state.Teams {
-			// RestrictionsRequests record the teams by slug, not name
-			teams = append(teams, team.Slug)
-		}
-
-		var requestUsers []string
-		if request.Users != nil {
-			for _, user := range *request.Users {
-				requestUsers = append(requestUsers, github.NormLogin(user))
-			}
-		}
-		return equalStringSlices(&teams, request.Teams) && equalStringSlices(&users, &requestUsers)
+		return equalTeams(state.Teams, request.Teams) && equalUsers(state.Users, request.Users)
 	default:
 		return false
 	}
+}
+
+func equalRestrictions(state *github.Restrictions, request *github.RestrictionsRequest) bool {
+	switch {
+	case state == nil && request == nil:
+		return true
+	case state == nil && request != nil:
+		// when there are no restrictions on apps, users or teams, GitHub will
+		// omit the fields from the response we get when asking for the
+		// current state. If we _are_ making a request but it has no real
+		// effect, this is identical to making no request for restriction.
+		return request.Apps == nil && request.Users == nil && request.Teams == nil
+	case state != nil && request != nil:
+		return equalApps(state.Apps, request.Apps) && equalTeams(state.Teams, request.Teams) && equalUsers(state.Users, request.Users)
+	default:
+		return false
+	}
+}
+
+func equalApps(stateApps []github.App, requestApps *[]string) bool {
+	var apps []string
+	for _, app := range stateApps {
+		// RestrictionsRequests record the app by slug, not name
+		apps = append(apps, app.Slug)
+	}
+	// Treat unspecified Apps configuration as no change that we do not create a breaking change when introducing Apps in branchprotector
+	// TODO: could be changed when "enableAppsRestrictions" flag is not needed anymore
+	return equalStringSlices(&apps, requestApps) || requestApps == nil
+}
+
+func equalTeams(stateTeams []github.Team, requestTeams *[]string) bool {
+	var teams []string
+	for _, team := range stateTeams {
+		// RestrictionsRequests record the team by slug, not name
+		teams = append(teams, team.Slug)
+	}
+	return equalStringSlices(&teams, requestTeams)
+}
+
+func equalUsers(stateUsers []github.User, requestUsers *[]string) bool {
+	var users []string
+	for _, user := range stateUsers {
+		users = append(users, github.NormLogin(user.Login))
+	}
+	var requestUsersNorm []string
+	if requestUsers != nil {
+		for _, user := range *requestUsers {
+			requestUsersNorm = append(requestUsersNorm, github.NormLogin(user))
+		}
+	}
+	return equalStringSlices(&users, &requestUsersNorm)
 }
