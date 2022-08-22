@@ -163,6 +163,10 @@ type Blunderbuss struct {
 	// IgnoreDrafts instructs the plugin to ignore assigning reviewers
 	// to the PR that is in Draft state. Default it's false.
 	IgnoreDrafts bool `json:"ignore_drafts,omitempty"`
+	// IgnoreAuthors skips requesting reviewers for specified users.
+	// This is useful when a bot user or admin opens a PR that will be
+	// merged regardless of approvals.
+	IgnoreAuthors []string `json:"ignore_authors,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.

@@ -576,6 +576,7 @@ func TestHandlePullRequest(t *testing.T) {
 		expectedRequested []string
 		draft             bool
 		ignoreDrafts      bool
+		ignoreAuthors     []string
 	}{
 		{
 			name:              "PR opened",
@@ -622,6 +623,12 @@ func TestHandlePullRequest(t *testing.T) {
 			reviewerCount:     1,
 			expectedRequested: []string{"al"},
 		},
+		{
+			name:          "PR opened by ignored author, do not assign review to PR",
+			action:        github.PullRequestActionOpened,
+			filesChanged:  []string{"a.go"},
+			ignoreAuthors: []string{"author"},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -633,6 +640,7 @@ func TestHandlePullRequest(t *testing.T) {
 				MaxReviewerCount: 0,
 				ExcludeApprovers: false,
 				IgnoreDrafts:     tc.ignoreDrafts,
+				IgnoreAuthors:    tc.ignoreAuthors,
 			}
 
 			if err := handlePullRequest(
