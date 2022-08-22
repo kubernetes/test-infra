@@ -295,25 +295,33 @@ presubmits:
     optional: true
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    branches:
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         command:
         - runner.sh
-        - bash
         args:
+        - bash
         - -c
         - |
           result=0
           ./scripts/ci-test-coverage.sh || result=$?
-          cd ../test-infra/gopherage
+          cp coverage.* ${ARTIFACTS}
+          cd ../../k8s.io/test-infra/gopherage
           GO111MODULE=on go build .
-          find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
-          ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-          ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
           exit $result
         securityContext:
-        privileged: true
+          privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-coverage
