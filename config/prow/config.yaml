@@ -38,6 +38,10 @@ plank:
     config:
       gcs_credentials_secret: ""
       default_service_account_name: "prowjob-default-sa"
+  - cluster: gke_k8s-prow_us-central1-f_prow
+    config:
+      gcs_credentials_secret: ""
+      default_service_account_name: "prowjob-default-sa"
 
 sinker:
   resync_period: 1m
