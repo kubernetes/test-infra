@@ -92,7 +92,7 @@ func (arr *appsRoundTripper) canonicalizedPath(url *url.URL) string {
 	return strings.TrimPrefix(url.Path, arr.hostPrefixMapping[url.Host])
 }
 
-var installationPath = regexp.MustCompile("^/repos/(\\w*)/(\\w*)/installation$")
+var installationPath = regexp.MustCompile(`^/repos/(\w*)/(\w*)/installation$`)
 
 func (arr *appsRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	path := arr.canonicalizedPath(r.URL)
