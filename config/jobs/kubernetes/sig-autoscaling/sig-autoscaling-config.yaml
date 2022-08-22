@@ -283,7 +283,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=120
+      - --timeout=260
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
@@ -293,7 +293,7 @@ periodics:
       # Enable HPAContainerMetrics. Required for container metrics tests.
       - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
       - --extract=ci/latest
-      - --timeout=100m
+      - --timeout=240m
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
         --minStartupPods=8
       - --ginkgo-parallel=1
