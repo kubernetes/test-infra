@@ -1,7 +1,7 @@
 periodics:
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-release-0-4
-  interval: 48h
+  interval: 96h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -48,7 +48,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-release-0-4
-  interval: 48h
+  interval: 96h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -95,7 +95,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-release-0-4
-  interval: 48h
+  interval: 96h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -142,7 +142,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-0-4
-  interval: 48h
+  interval: 96h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -189,7 +189,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-0-4
-  interval: 48h
+  interval: 96h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
