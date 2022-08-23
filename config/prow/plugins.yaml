@@ -785,7 +785,7 @@ require_matching_label:
   org: kubernetes-sigs
   repo: cluster-api-provider-aws
   issues: true
-  prs: true
+  prs: false
   regexp: ^triage/accepted$
   missing_comment: |
     This issue is currently awaiting triage.
