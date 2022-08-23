@@ -114,8 +114,6 @@ postsubmits:
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
     - ^master$
     max_concurrency: 1
@@ -148,13 +146,10 @@ postsubmits:
     cluster: test-infra-trusted
     run_if_changed: 'config/prow/config.yaml'
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
     - ^master$
     max_concurrency: 1
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-prow/hmac:v20220823-faf6c3edb0
         command:
@@ -197,8 +192,6 @@ postsubmits:
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
     run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|gencred|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     labels:
       # Building deck requires docker for typescript compilation.
       preset-dind-enabled: "true"
@@ -442,8 +435,6 @@ postsubmits:
     max_concurrency: 1
     run_if_changed: '^config/(jobs|testgrids)/.*$'
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
@@ -589,14 +580,11 @@ periodics:
   name: ci-test-infra-autobump-prow-for-auto-deploy
   cluster: test-infra-trusted
   decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes
     repo: test-infra
     base_ref: master
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220823-faf6c3edb0
       command:
@@ -629,14 +617,11 @@ periodics:
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
   decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes
     repo: test-infra
     base_ref: master
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220823-faf6c3edb0
       command:
