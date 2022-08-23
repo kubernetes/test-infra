@@ -378,10 +378,10 @@ func TestAppsAuth(t *testing.T) {
 			cachedTokens:        map[int64]*AppInstallationToken{1: {Token: "the-token", ExpiresAt: time.Now().Add(time.Hour)}},
 			cachedInstallations: map[string]AppInstallation{"kuber": {ID: 1}},
 			doRequest: func(c Client) error {
-				_, err := c.IsAppInstalled("kuber", "k8s")
+				_, err := c.IsAppInstalled("kuber", "k8.s-repo")
 				return err
 			},
-			responses: map[string]*http.Response{"/repos/kuber/k8s/installation": {
+			responses: map[string]*http.Response{"/repos/kuber/k8.s-repo/installation": {
 				StatusCode: 200,
 				Body:       serializeOrDie(AppInstallation{}),
 			}},
