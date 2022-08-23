@@ -127,19 +127,33 @@ dashboards:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: branch-ci-stackrox-stackrox-nightlies-nightly-tag
   - base_options: width=10
-    name: branch-ci-stackrox-stackrox-nightlies-openshift-4-operator-e2e-tests
+    name: branch-ci-stackrox-stackrox-nightlies-openshift-oldest-operator-e2e-tests
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-4-operator-e2e-tests
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-oldest-operator-e2e-tests
   - base_options: width=10
-    name: branch-ci-stackrox-stackrox-nightlies-openshift-4-qa-e2e-tests
+    name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-operator-e2e-tests
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-4-qa-e2e-tests
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-operator-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-openshift-penultimate-operator-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-penultimate-operator-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-qa-e2e-tests
   - base_options: width=10
     name: branch-ci-stackrox-stackrox-nightlies-osd-gcp-qa-e2e-tests
     open_test_template:
@@ -220,10 +234,14 @@ test_groups:
   name: branch-ci-stackrox-stackrox-nightlies-mitre-bundles-checks
 - gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-nightly-tag
   name: branch-ci-stackrox-stackrox-nightlies-nightly-tag
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-4-operator-e2e-tests
-  name: branch-ci-stackrox-stackrox-nightlies-openshift-4-operator-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-4-qa-e2e-tests
-  name: branch-ci-stackrox-stackrox-nightlies-openshift-4-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-oldest-operator-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-openshift-oldest-operator-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-newest-operator-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-operator-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-penultimate-operator-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-openshift-penultimate-operator-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-openshift-newest-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-nightlies-openshift-newest-qa-e2e-tests
 - gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-osd-gcp-qa-e2e-tests
   name: branch-ci-stackrox-stackrox-nightlies-osd-gcp-qa-e2e-tests
 - gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-policy-checks
