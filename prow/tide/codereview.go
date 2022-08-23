@@ -256,6 +256,6 @@ type provider interface {
 	// into a context.
 	headContexts(pr *CodeReviewCommon) ([]Context, error)
 	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error
-	GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error)
+	GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error)
 	prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error)
 }

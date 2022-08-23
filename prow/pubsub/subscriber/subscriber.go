@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 
 	"cloud.google.com/go/pubsub"
 
@@ -35,8 +34,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -59,75 +56,6 @@ type prowCfgClient interface {
 	AllPeriodics() []config.Periodic
 	GetPresubmitsStatic(identifier string) []config.Presubmit
 	GetPostsubmitsStatic(identifier string) []config.Postsubmit
-}
-
-type InRepoConfigCacheGetter struct {
-	CacheSize     int
-	CacheCopies   int
-	Agent         *config.Agent
-	mu            sync.Mutex
-	GitHubOptions flagutil.GitHubOptions
-	DryRun        bool
-
-	CacheMap map[string]*config.InRepoConfigCacheHandler
-}
-
-func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCacheHandler, error) {
-	// No repo is cloned in getCache, Since this function should happen fast it is safe to lock the whole function.
-	irc.mu.Lock()
-	defer irc.mu.Unlock()
-	if irc.CacheMap == nil {
-		irc.CacheMap = map[string]*config.InRepoConfigCacheHandler{}
-	}
-
-	var key string
-	// We are using github with IRC
-	if irc.GitHubOptions.Host != "" && (irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "") {
-		key = irc.GitHubOptions.Host
-		// We are using Gerrit with IRC
-	} else {
-		key = cloneURI
-	}
-
-	if cache, ok := irc.CacheMap[key]; ok {
-		return cache, nil
-	}
-
-	var gitClientFactory git.ClientFactory
-	var cache *config.InRepoConfigCacheHandler
-	var err error
-	if irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "" {
-		gitClient, err := irc.GitHubOptions.GitClient(irc.DryRun)
-		if err != nil {
-			return nil, fmt.Errorf("Error getting git client: %w", err)
-		}
-		gitClientFactory = git.ClientFactoryFrom(gitClient)
-	} else {
-		opts := git.ClientFactoryOpts{
-			CloneURI: cloneURI,
-			Host:     host,
-		}
-		gitClientFactory, err = git.NewClientFactory(opts.Apply)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
-		}
-	}
-
-	// Initialize cache for fetching Presubmit and Postsubmit information. If
-	// the cache cannot be initialized, exit with an error.
-	cache, err = config.NewInRepoConfigCacheHandler(
-		irc.CacheSize,
-		irc.Agent,
-		config.NewInRepoConfigGitCache(gitClientFactory),
-		irc.CacheCopies)
-	// If we cannot initialize the cache, exit with an error.
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
-	}
-
-	irc.CacheMap[key] = cache
-	return cache, nil
-
 }
 
 // ProwJobEvent contains the minimum information required to start a ProwJob.
@@ -181,7 +109,7 @@ type Subscriber struct {
 	Metrics                 *Metrics
 	ProwJobClient           ProwJobClient
 	Reporter                reportClient
-	InRepoConfigCacheGetter *InRepoConfigCacheGetter
+	InRepoConfigCacheGetter *config.InRepoConfigCacheGetter
 }
 
 type messageInterface interface {
@@ -532,7 +460,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	var err error
 	if eType != PeriodicProwJobEvent {
 		cloneURI, host := tryGetCloneURIAndHost(pe)
-		cache, err = s.InRepoConfigCacheGetter.getCache(cloneURI, host)
+		cache, err = s.InRepoConfigCacheGetter.GetCache(cloneURI, host)
 		if err != nil {
 			return err
 		}

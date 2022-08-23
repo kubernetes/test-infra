@@ -61,13 +61,13 @@ var _ provider = (*GerritProvider)(nil)
 //
 // Tide Controller should only use GerritProvider for communicating with Gerrit.
 type GerritProvider struct {
-	cfg config.Getter
-	gc  gerritClient
-
+	cfg         config.Getter
+	gc          gerritClient
 	pjclientset ctrlruntimeclient.Client
 
-	cookiefilePath    string
-	tokenPathOverride string
+	cookiefilePath          string
+	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter
+	tokenPathOverride       string
 
 	*mergeChecker
 	logger *logrus.Entry
@@ -77,6 +77,7 @@ func newGerritProvider(
 	logger *logrus.Entry,
 	cfg config.Getter,
 	pjclientset ctrlruntimeclient.Client,
+	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter,
 	mergeChecker *mergeChecker,
 	cookiefilePath string,
 	tokenPathOverride string,
@@ -91,13 +92,14 @@ func newGerritProvider(
 	gerritClient.ApplyGlobalConfig(orgRepoConfigGetter, nil, cookiefilePath, tokenPathOverride, nil)
 
 	return &GerritProvider{
-		logger:            logger,
-		cfg:               cfg,
-		pjclientset:       pjclientset,
-		gc:                gerritClient,
-		cookiefilePath:    cookiefilePath,
-		tokenPathOverride: tokenPathOverride,
-		mergeChecker:      mergeChecker,
+		logger:                  logger,
+		cfg:                     cfg,
+		pjclientset:             pjclientset,
+		gc:                      gerritClient,
+		inRepoConfigCacheGetter: inRepoConfigCacheGetter,
+		cookiefilePath:          cookiefilePath,
+		tokenPathOverride:       tokenPathOverride,
+		mergeChecker:            mergeChecker,
 	}
 }
 
@@ -229,7 +231,7 @@ func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdate
 
 // GetTideContextPolicy gets context policy defined by users + requirements from
 // prow jobs.
-func (p *GerritProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
+func (p *GerritProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
 	pr := crc.Gerrit
 	if pr == nil {
 		return nil, errors.New("programmer error: crc.Gerrit cannot be nil for GerritProvider")
@@ -242,9 +244,21 @@ func (p *GerritProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, 
 	headSHAGetter := func() (string, error) {
 		return crc.HeadRefOID, nil
 	}
-	presubmits, err := p.cfg().GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get presubmits: %w", err)
+	orgRepo := org + "/" + repo
+	// Get presubmits from Config alone.
+	presubmits := p.cfg().GetPresubmitsStatic(orgRepo)
+	// If InRepoConfigCache is provided, then it means that we also want to fetch
+	// from an inrepoconfig.
+	if p.inRepoConfigCacheGetter != nil {
+		handler, err := p.inRepoConfigCacheGetter.GetCache(cloneURI, org)
+		if err != nil {
+			return nil, fmt.Errorf("faled to get inrepoconfig cache: %v", err)
+		}
+		presubmitsFromCache, err := handler.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetter)
+		if err != nil {
+			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
+		}
+		presubmits = append(presubmits, presubmitsFromCache...)
 	}
 
 	requireLabels := sets.NewString()

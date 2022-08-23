@@ -147,7 +147,7 @@ func (gi *GitHubProvider) GetRef(org, repo, ref string) (string, error) {
 	return gi.ghc.GetRef(org, repo, ref)
 }
 
-func (gi *GitHubProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error) {
+func (gi *GitHubProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error) {
 	return gi.cfg().GetTideContextPolicy(gitClient, org, repo, branch, baseSHAGetter, pr.HeadRefOID)
 }
 
