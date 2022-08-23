@@ -40,7 +40,7 @@ const (
 )
 
 var (
-	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$)`)
+	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$|]|\))`)
 	projectCache   = &threadsafeSet{data: sets.String{}}
 )
 

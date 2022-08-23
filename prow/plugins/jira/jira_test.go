@@ -89,6 +89,11 @@ func TestRegex(t *testing.T) {
 			name:  "Trailing special characters, no match",
 			input: "rehearse-15676-pull",
 		},
+		{
+			name:     "Included in markdown link",
+			input:    "[Jira Bug ABC-123](https://my-jira.com/browse/ABC-123)",
+			expected: []string{"ABC-123", "ABC-123"},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -271,7 +276,7 @@ func TestHandle(t *testing.T) {
 			},
 			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
-			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "Some issue"}}}},
+			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "org/repo#3: Some issue"}}}},
 		},
 		{
 			name: "Link exists but title is different, replacing it",
@@ -317,6 +322,18 @@ func TestHandle(t *testing.T) {
 			projectCache:   &threadsafeSet{data: sets.NewString("enterprise")},
 			cfg:            &plugins.Jira{DisabledJiraProjects: []string{"Enterprise"}},
 			existingIssues: []jira.Issue{{ID: "ENTERPRISE-4"}},
+		},
+		{
+			name: "Valid issue in disabled project, multiple references, with markdown link, case insensitive matching, nothing to do",
+			event: github.GenericCommentEvent{
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "ABC-123: Fixes Some issue",
+				Body:       "Some text and also [ABC-123](https://my-jira.com/browse/ABC-123)",
+				Repo:       github.Repo{FullName: "org/repo"},
+				Number:     3,
+			},
+			projectCache: &threadsafeSet{data: sets.NewString("abc")},
+			cfg:          &plugins.Jira{DisabledJiraProjects: []string{"abc"}},
 		},
 		{
 			name: "Project 404 gets served from cache, nothing happens",
