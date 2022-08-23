@@ -93,12 +93,12 @@ func TestFlags(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
-				dryRun:                  false,
-				instrumentationOptions:  flagutil.DefaultInstrumentationOptions(),
-				inRepoConfigCacheSize:   100,
-				inRepoConfigCacheCopies: 1,
-				changeWorkerPoolSize:    1,
+				dryRun:                 false,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
+				changeWorkerPoolSize:   1,
 			}
 			expected.projects.Set("foo=bar,baz")
 			expected.projectsOptOutHelp.Set("foo=bar")
