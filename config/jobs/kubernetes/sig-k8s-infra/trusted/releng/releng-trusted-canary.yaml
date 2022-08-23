@@ -1,0 +1,74 @@
+postsubmits:
+  kubernetes-sigs/oci-proxy:
+  - name: post-k8sio-image-promo-canary
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    extra_refs:
+    # We clone the below repo automatically (via Pod Utilities), and get dropped
+    # into /home/prow/go/src/github.com/kubernetes-sigs/oci-proxy
+    - org: kubernetes-sigs
+      repo: oci-proxy
+      base_ref: main
+    decoration_config:
+      timeout: 4h
+    run_if_changed: 'registry.k8s.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.4-1
+        command:
+        - /kpromo
+        args:
+        - cip
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/oci-proxy/registry.k8s.io
+        - --use-service-account=k8s-infra-gcr-promoter@k8s-cip-test-prod.iam.gserviceaccount.com
+        - --confirm
+      resources:
+        requests:
+          cpu: 2
+          memory: "4Gi"
+        limits:
+          cpu: 2
+          memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-canaries
+      testgrid-num-failures-to-alert: '2'
+
+periodics:
+- name: ci-k8sio-image-promo-canary
+  cluster: k8s-infra-prow-build-trusted
+  interval: 1h
+  max_concurrency: 1
+  # Enable Pod Utilities.
+  # See https://git.k8s.io/test-infra/prow/pod-utilities.md.
+  decorate: true
+  extra_refs:
+  # We clone the below repo automatically (via Pod Utilities), and get dropped
+  # into /home/prow/go/src/github.com/kubernetes-sigs/oci-proxy
+  - org: kubernetes-sigs
+    repo: oci-proxy
+    base_ref: main
+  spec:
+    # The k8s-artifacts-prod name was chosen in
+    # https://github.com/kubernetes/k8s.io/pull/695.
+    serviceAccountName: k8s-infra-gcr-promoter
+    containers:
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.4-1
+      command:
+      - /kpromo
+      args:
+      - cip
+      - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/oci-proxy/registry.k8s.io
+      - --confirm
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
