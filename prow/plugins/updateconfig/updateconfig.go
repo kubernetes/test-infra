@@ -191,6 +191,9 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 		for _, data := range cm.Data {
 			size += float64(len(data))
 		}
+		for _, data := range cm.BinaryData {
+			size += float64(len(data))
+		}
 		// in a strict sense this can race to update the value with other goroutines
 		// handling other events, but as events are serialized due to the fact that
 		// merges are serial in repositories, this is effectively not an issue here
