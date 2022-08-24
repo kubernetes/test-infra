@@ -1134,7 +1134,7 @@ type Deck struct {
 	// SkipStoragePathValidation skips validation that restricts artifact requests to specific buckets.
 	// By default, buckets listed in the GCSConfiguration are automatically allowed.
 	// Additional locations can be allowed via `AdditionalAllowedBuckets` fields.
-	// When unspecified (nil), it defaults to true (until ~Jan 2021).
+	// When unspecified (nil), it defaults to false
 	SkipStoragePathValidation *bool `json:"skip_storage_path_validation,omitempty"`
 	// AdditionalAllowedBuckets is a list of storage buckets to allow in artifact requests
 	// (in addition to those listed in the GCSConfiguration).
@@ -1202,7 +1202,7 @@ func (c *Config) ValidateStorageBucket(bucketName string) error {
 // Validation could be either enabled by default or explicitly turned off.
 func (d *Deck) shouldValidateStorageBuckets() bool {
 	if d.SkipStoragePathValidation == nil {
-		return true
+		return false
 	}
 	return !*d.SkipStoragePathValidation
 }

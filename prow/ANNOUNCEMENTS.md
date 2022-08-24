@@ -195,6 +195,12 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
+ - *August 24th, 2022* Deck by default validating storage buckets, can still opt
+   out by setting `deck.skip_storage_path_validation: true` in your Prow config.
+   Buckets specified in job configs (`<job>.gcs_configuration.bucket`) and plank
+   configs (`plank.default_decoration_configs[*].gcs_configuration.bucket`) are
+   automatically allowed access. Additional buckets can be allowed by adding
+   them to the `deck.additional_allowed_buckets` list.
  - *May 27th, 2022* Crier flags `--gcs-workers` and `--kubernetes-gcs-workers` are
    removed in favor of `--blob-storage-workers` and `--kubernetes-blob-storage-workers`.
  - *May 27th, 2022* The `owners_dir_blacklist` field in prow config is removed
