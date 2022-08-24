@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"net/http"
 	"os"
@@ -44,12 +43,10 @@ import (
 )
 
 type options struct {
-	client                  prowflagutil.KubernetesOptions
-	github                  prowflagutil.GitHubOptions
-	port                    int
-	inRepoConfigCacheSize   int
-	inRepoConfigCacheCopies int
-	cookiefilePath          string
+	client         prowflagutil.KubernetesOptions
+	github         prowflagutil.GitHubOptions
+	port           int
+	cookiefilePath string
 
 	config configflagutil.ConfigOptions
 
@@ -66,9 +63,6 @@ func (o *options) validate() error {
 		}
 	}
 
-	if o.inRepoConfigCacheCopies < 1 {
-		errs = append(errs, errors.New("in-repo-config-cache-copies must be at least 1"))
-	}
 	return utilerrors.NewAggregate(errs)
 }
 
@@ -77,8 +71,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.IntVar(&o.port, "port", 80, "HTTP Port.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	fs.IntVar(&o.inRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
-	fs.IntVar(&o.inRepoConfigCacheCopies, "in-repo-config-cache-copies", 1, "Copy of caches for ProwYAMLs read from in-repo configs.")
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for github or anonymous")
 	for _, group := range []flagutil.OptionGroup{&o.client, &o.github, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
@@ -141,8 +133,8 @@ func main() {
 	}
 
 	cacheGetter := subscriber.InRepoConfigCacheGetter{
-		CacheSize:     o.inRepoConfigCacheSize,
-		CacheCopies:   o.inRepoConfigCacheCopies,
+		CacheSize:     o.config.InRepoConfigCacheSize,
+		CacheCopies:   o.config.InRepoConfigCacheCopies,
 		Agent:         configAgent,
 		GitHubOptions: o.github,
 		DryRun:        o.dryRun,
