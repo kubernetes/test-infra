@@ -41,6 +41,7 @@ import (
 )
 
 func TestExpectedStatus(t *testing.T) {
+	neededLabelsWithAlt := []string{"need-1", "need-2", "need-a-very-super-duper-extra-not-short-at-all-label-name,need-3"}
 	neededLabels := []string{"need-1", "need-2", "need-a-very-super-duper-extra-not-short-at-all-label-name"}
 	forbiddenLabels := []string{"forbidden-1", "forbidden-2"}
 	testcases := []struct {
@@ -98,7 +99,7 @@ func TestExpectedStatus(t *testing.T) {
 			inPool:            false,
 
 			state: github.StatusPending,
-			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name label."),
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name or need-3 label."),
 		},
 		{
 			name:              "has forbidden labels",
@@ -742,7 +743,7 @@ func TestExpectedStatus(t *testing.T) {
 					Orgs:             []string{""},
 					ExcludedBranches: tc.branchDenyList,
 					IncludedBranches: tc.branchAllowList,
-					Labels:           neededLabels,
+					Labels:           neededLabelsWithAlt,
 					MissingLabels:    forbiddenLabels,
 					Author:           tc.firstQueryAuthor,
 					Milestone:        "v1.0",

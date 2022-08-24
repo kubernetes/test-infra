@@ -4169,6 +4169,7 @@ func TestPickSmallestPassingNumber(t *testing.T) {
 		{Labels: []string{"kind/failing-test"}},
 		{Labels: []string{"area/deflake"}},
 		{Labels: []string{"kind/bug", "priority/critical-urgent"}},
+		{Labels: []string{"kind/feature,kind/enhancement,kind/undefined"}},
 	}
 	testCases := []struct {
 		name     string
@@ -4182,6 +4183,14 @@ func TestPickSmallestPassingNumber(t *testing.T) {
 				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
 			},
 			expected: 3,
+		},
+		{
+			name: "any of given label alternatives",
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 3, githubql.MergeableStateMergeable, []string{"kind/enhancement", "kind/undefined"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 1, githubql.MergeableStateMergeable, []string{"kind/enhancement"})),
+			},
+			expected: 1,
 		},
 		{
 			name: "deflake PR",

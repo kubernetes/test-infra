@@ -806,8 +806,13 @@ func hasAllLabels(pr CodeReviewCommon, wantLabels []string) bool {
 			prLabels.Insert(string(l2.Name))
 		}
 	}
-	requiredLabels := sets.NewString(wantLabels...)
-	return prLabels.Intersection(requiredLabels).Equal(requiredLabels)
+	for _, label := range wantLabels {
+		altLabels := strings.Split(label, ",")
+		if !prLabels.HasAny(altLabels...) {
+			return false
+		}
+	}
+	return true
 }
 
 func pickHighestPriorityPR(log *logrus.Entry, prs []CodeReviewCommon, cc map[int]contextChecker, isPassingTestsFunc func(*logrus.Entry, *CodeReviewCommon, contextChecker) bool, priorities []config.TidePriority) (bool, CodeReviewCommon) {
