@@ -683,10 +683,12 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 	return []github.Team{
 		{
 			ID:   0,
+			Slug: "admins",
 			Name: "Admins",
 		},
 		{
 			ID:   42,
+			Slug: "leads",
 			Name: "Leads",
 		},
 	}, nil
@@ -704,6 +706,24 @@ func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]git
 		42: {{Login: "sig-lead"}},
 	}
 	members, ok := teams[teamID]
+	if !ok {
+		return []github.TeamMember{}, nil
+	}
+	return members, nil
+}
+
+// ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
+func (f *FakeClient) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	if role != github.RoleAll {
+		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
+	}
+	teams := map[string][]github.TeamMember{
+		"admins": {{Login: "default-sig-lead"}},
+		"leads":  {{Login: "sig-lead"}},
+	}
+	members, ok := teams[teamSlug]
 	if !ok {
 		return []github.TeamMember{}, nil
 	}

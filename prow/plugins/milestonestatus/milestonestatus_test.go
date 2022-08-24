@@ -134,10 +134,10 @@ func TestMilestoneStatus(t *testing.T) {
 			User:   github.User{Login: tc.commenter},
 		}
 
-		repoMilestone := map[string]plugins.Milestone{"": {MaintainersID: 0}}
+		repoMilestone := map[string]plugins.Milestone{"": {MaintainersTeam: "admins"}}
 
 		if !tc.noRepoMaintainer {
-			repoMilestone["org/repo"] = plugins.Milestone{MaintainersID: 42}
+			repoMilestone["org/repo"] = plugins.Milestone{MaintainersTeam: "leads"}
 		}
 
 		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, repoMilestone); err != nil {
