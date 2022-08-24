@@ -51,10 +51,10 @@ spec:
           cpu: 100m
     timeout: 2h0m0s
     utility_images:
-      clonerefs: 'gcr.io/k8s-prow/clonerefs:v20220823-d8b7cc7e22'
-      entrypoint: 'gcr.io/k8s-prow/entrypoint:v20220823-d8b7cc7e22'
-      initupload: 'gcr.io/k8s-prow/initupload:v20220823-d8b7cc7e22'
-      sidecar: 'gcr.io/k8s-prow/sidecar:v20220823-d8b7cc7e22'
+      clonerefs: 'gcr.io/k8s-prow/clonerefs:v20220824-4b7e21a13f'
+      entrypoint: 'gcr.io/k8s-prow/entrypoint:v20220824-4b7e21a13f'
+      initupload: 'gcr.io/k8s-prow/initupload:v20220824-4b7e21a13f'
+      sidecar: 'gcr.io/k8s-prow/sidecar:v20220824-4b7e21a13f'
   extra_refs:
     - base_ref: master
       org: kubernetes
