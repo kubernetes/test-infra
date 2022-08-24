@@ -396,7 +396,7 @@ deck:
     # SkipStoragePathValidation skips validation that restricts artifact requests to specific buckets.
     # By default, buckets listed in the GCSConfiguration are automatically allowed.
     # Additional locations can be allowed via `AdditionalAllowedBuckets` fields.
-    # When unspecified (nil), it defaults to true (until ~Jan 2021).
+    # When unspecified (nil), it defaults to false
     skip_storage_path_validation: false
 
     # Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck.
