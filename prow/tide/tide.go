@@ -619,8 +619,10 @@ func (c *syncController) initSubpoolData(sp *subpool) error {
 	if err != nil {
 		return fmt.Errorf("error determining required presubmit prowjobs: %w", err)
 	}
-	// CloneURI is used for Gerrit to retrieve inrepoconfig, this is not used by
-	// GitHub at all. Blindly trust that it's identical among jobs.
+	// CloneURI is used by Gerrit to retrieve inrepoconfig; this is not used by
+	// GitHub at all.
+	// It's known that cloneURI is the only reliable way for Gerrit to correctly
+	// clone, so it should be safe to assume that cloneURI is identical among jobs.
 	var cloneURI string
 	for _, presubmits := range sp.presubmits {
 		for _, p := range presubmits {

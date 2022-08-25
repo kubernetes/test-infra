@@ -138,7 +138,7 @@ func main() {
 
 	cacheGetter, err := config.NewInRepoConfigCacheGetter(ca, o.config.InRepoConfigCacheSize, o.config.InRepoConfigCacheCopies, o.config.InRepoConfigCacheDirBase, prowflagutil.GitHubOptions{}, o.cookiefilePath, o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error createing InRepoConfigCacheGetter.")
+		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
 	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, cacheGetter)
 

@@ -135,7 +135,7 @@ func main() {
 
 	cacheGetter, err := config.NewInRepoConfigCacheGetter(configAgent, o.config.InRepoConfigCacheSize, o.config.InRepoConfigCacheCopies, o.config.InRepoConfigCacheDirBase, o.github, o.cookiefilePath, o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error createing InRepoConfigCacheGetter.")
+		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
 
 	s := &subscriber.Subscriber{
