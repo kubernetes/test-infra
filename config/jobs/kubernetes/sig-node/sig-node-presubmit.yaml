@@ -1295,7 +1295,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220804-4fa19ea91a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"

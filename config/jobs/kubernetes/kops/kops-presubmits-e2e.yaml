@@ -285,7 +285,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-kops-test
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220722-16ae0286c2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
         imagePullPolicy: Always
         command:
         - runner.sh
