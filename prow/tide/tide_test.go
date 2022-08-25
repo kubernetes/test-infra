@@ -904,6 +904,7 @@ func TestDividePool(t *testing.T) {
 			"k/k heads/release-1.6": "789",
 		},
 	}
+
 	configGetter := func() *config.Config {
 		return &config.Config{
 			ProwConfig: config.ProwConfig{
@@ -912,18 +913,18 @@ func TestDividePool(t *testing.T) {
 		}
 	}
 
-	log := logrus.NewEntry(logrus.StandardLogger())
 	mmc := newMergeChecker(configGetter, fc)
+	log := logrus.NewEntry(logrus.StandardLogger())
+	ghProvider := newGitHubProvider(log, fc, configGetter, mmc, false)
 	mgr := newFakeManager()
 	c, err := newSyncController(
 		context.Background(),
 		log,
-		fc,
 		mgr,
+		ghProvider,
 		configGetter,
 		nil,
 		nil,
-		mmc,
 		false,
 		&statusUpdate{
 			dontUpdateStatus: &threadSafePRSet{},
@@ -1938,14 +1939,15 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				return prs
 			}
 			fgc := fgc{mergeErrs: tc.mergeErrs}
+			log := logrus.WithField("controller", "tide")
+			ghProvider := newGitHubProvider(log, &fgc, ca.Config, nil, false)
 			c, err := newSyncController(
 				context.Background(),
-				logrus.WithField("controller", "tide"),
-				&fgc,
+				log,
 				newFakeManager(tc.preExistingJobs...),
+				ghProvider,
 				ca.Config,
 				gc,
-				nil,
 				nil,
 				false,
 				&statusUpdate{
@@ -1957,7 +1959,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				t.Fatalf("failed to construct sync controller: %v", err)
 			}
 			c.changedFiles = &changedFilesAgent{
-				ghc:             &fgc,
+				provider:        ghProvider,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			}
 			var batchPending []CodeReviewCommon
@@ -2231,19 +2233,16 @@ func TestSync(t *testing.T) {
 			}
 			go sc.run()
 			defer sc.shutdown()
+			log := logrus.WithField("controller", "sync")
+			ghProvider := newGitHubProvider(log, fgc, ca.Config, mergeChecker, false)
 			c := &syncController{
-				config: ca.Config,
-				provider: &GitHubProvider{
-					cfg:          ca.Config,
-					ghc:          fgc,
-					mergeChecker: mergeChecker,
-					logger:       logrus.WithField("controller", "sync"),
-				},
+				config:        ca.Config,
+				provider:      ghProvider,
 				gc:            nil,
 				prowJobClient: fakectrlruntimeclient.NewFakeClient(),
-				logger:        logrus.WithField("controller", "sync"),
+				logger:        log,
 				changedFiles: &changedFilesAgent{
-					ghc:             fgc,
+					provider:        ghProvider,
 					nextChangeCache: make(map[changeCacheKey][]string),
 				},
 				History: hist,
@@ -3112,60 +3111,60 @@ func TestPresubmitsByPull(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		t.Logf("Starting test case: %q", tc.name)
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.initialChangeCache == nil {
+				tc.initialChangeCache = map[changeCacheKey][]string{}
+			}
+			if tc.expectedChangeCache == nil {
+				tc.expectedChangeCache = map[changeCacheKey][]string{}
+			}
 
-		if tc.initialChangeCache == nil {
-			tc.initialChangeCache = map[changeCacheKey][]string{}
-		}
-		if tc.expectedChangeCache == nil {
-			tc.expectedChangeCache = map[changeCacheKey][]string{}
-		}
-
-		cfg := &config.Config{}
-		cfg.SetPresubmits(map[string][]config.Presubmit{
-			"/":       tc.presubmits,
-			"foo/bar": {{Reporter: config.Reporter{Context: "wrong-repo"}, AlwaysRun: true}},
+			cfg := &config.Config{}
+			cfg.SetPresubmits(map[string][]config.Presubmit{
+				"/":       tc.presubmits,
+				"foo/bar": {{Reporter: config.Reporter{Context: "wrong-repo"}, AlwaysRun: true}},
+			})
+			if tc.prowYAMLGetter != nil {
+				cfg.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+				cfg.ProwYAMLGetterWithDefaults = tc.prowYAMLGetter
+			}
+			cfgAgent := &config.Agent{}
+			cfgAgent.Set(cfg)
+			sp := &subpool{
+				branch: defaultBranch,
+				sha:    "master-sha",
+				prs:    append(tc.prs, *CodeReviewCommonFromPullRequest(&samplePR)),
+			}
+			log := logrus.WithField("test", tc.name)
+			ghProvider := newGitHubProvider(log, &fgc{}, cfgAgent.Config, newMergeChecker(cfgAgent.Config, &fgc{}), false)
+			c := &syncController{
+				config:   cfgAgent.Config,
+				provider: ghProvider,
+				gc:       nil,
+				changedFiles: &changedFilesAgent{
+					provider:        ghProvider,
+					changeCache:     tc.initialChangeCache,
+					nextChangeCache: make(map[changeCacheKey][]string),
+				},
+				logger: log,
+			}
+			presubmits, err := c.presubmitsByPull(sp)
+			if err != nil {
+				t.Fatalf("unexpected error from presubmitsByPull: %v", err)
+			}
+			c.changedFiles.prune()
+			// for equality we need to clear the compiled regexes
+			for _, jobs := range presubmits {
+				config.ClearCompiledRegexes(jobs)
+			}
+			if !equality.Semantic.DeepEqual(presubmits, tc.expectedPresubmits) {
+				t.Errorf("got incorrect presubmit mapping: %v\n", diff.ObjectReflectDiff(tc.expectedPresubmits, presubmits))
+			}
+			if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
+				t.Errorf("got incorrect file change cache: %v", diff.ObjectReflectDiff(tc.expectedChangeCache, got))
+			}
 		})
-		if tc.prowYAMLGetter != nil {
-			cfg.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
-			cfg.ProwYAMLGetterWithDefaults = tc.prowYAMLGetter
-		}
-		cfgAgent := &config.Agent{}
-		cfgAgent.Set(cfg)
-		sp := &subpool{
-			branch: defaultBranch,
-			sha:    "master-sha",
-			prs:    append(tc.prs, *CodeReviewCommonFromPullRequest(&samplePR)),
-		}
-		c := &syncController{
-			config: cfgAgent.Config,
-			provider: &GitHubProvider{
-				ghc:          &fgc{},
-				mergeChecker: newMergeChecker(cfgAgent.Config, &fgc{}),
-			},
-			gc: nil,
-			changedFiles: &changedFilesAgent{
-				ghc:             &fgc{},
-				changeCache:     tc.initialChangeCache,
-				nextChangeCache: make(map[changeCacheKey][]string),
-			},
-			logger: logrus.WithField("test", tc.name),
-		}
-		presubmits, err := c.presubmitsByPull(sp)
-		if err != nil {
-			t.Fatalf("unexpected error from presubmitsByPull: %v", err)
-		}
-		c.changedFiles.prune()
-		// for equality we need to clear the compiled regexes
-		for _, jobs := range presubmits {
-			config.ClearCompiledRegexes(jobs)
-		}
-		if !equality.Semantic.DeepEqual(presubmits, tc.expectedPresubmits) {
-			t.Errorf("got incorrect presubmit mapping: %v\n", diff.ObjectReflectDiff(tc.expectedPresubmits, presubmits))
-		}
-		if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
-			t.Errorf("got incorrect file change cache: %v", diff.ObjectReflectDiff(tc.expectedChangeCache, got))
-		}
 	}
 }
 
@@ -4789,15 +4788,15 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	if err != nil {
 		t.Fatalf("failed to construct history: %v", err)
 	}
+	ghProvider := newGitHubProvider(log, ghc, configGetter, mmc, false)
 	c, err := newSyncController(
 		context.Background(),
 		log,
-		ghc,
 		mgr,
+		ghProvider,
 		configGetter,
 		nil,
 		history,
-		mmc,
 		false,
 		&statusUpdate{
 			dontUpdateStatus: &threadSafePRSet{},
@@ -5071,15 +5070,15 @@ func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to construct history: %v", err)
 	}
+	ghProvider := newGitHubProvider(log, ghc, configGetter, mmc, false)
 	c, err := newSyncController(
 		context.Background(),
 		log,
-		ghc,
 		mgr,
+		ghProvider,
 		configGetter,
 		nil,
 		history,
-		mmc,
 		false,
 		&statusUpdate{
 			dontUpdateStatus: &threadSafePRSet{},

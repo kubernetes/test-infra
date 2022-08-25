@@ -356,7 +356,8 @@ func NewController(
 	}
 	go sc.run()
 
-	syncCtrl, err := newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, hist, mergeChecker, usesGitHubAppsAuth, statusUpdate)
+	provider := newGitHubProvider(logger, ghcSync, cfg, mergeChecker, usesGitHubAppsAuth)
+	syncCtrl, err := newSyncController(ctx, logger, mgr, provider, cfg, gc, hist, usesGitHubAppsAuth, statusUpdate)
 	if err != nil {
 		return nil, err
 	}
@@ -397,12 +398,11 @@ func newStatusController(
 func newSyncController(
 	ctx context.Context,
 	logger *logrus.Entry,
-	ghcSync githubClient,
 	mgr manager,
+	provider provider,
 	cfg config.Getter,
 	gc git.ClientFactory,
 	hist *history.History,
-	mergeChecker *mergeChecker,
 	usesGitHubAppsAuth bool,
 	statusUpdate *statusUpdate,
 ) (*syncController, error) {
@@ -423,7 +423,6 @@ func newSyncController(
 		return nil, fmt.Errorf("failed to add index for non failed batches: %w", err)
 	}
 
-	provider := newGitHubProvider(logger, ghcSync, cfg, mergeChecker, usesGitHubAppsAuth)
 	return &syncController{
 		ctx:           ctx,
 		logger:        logger.WithField("controller", "sync"),
@@ -433,7 +432,7 @@ func newSyncController(
 		provider:      provider,
 		pickNewBatch:  pickNewBatch(gc, cfg, provider),
 		changedFiles: &changedFilesAgent{
-			ghc:             ghcSync,
+			provider:        provider,
 			nextChangeCache: make(map[changeCacheKey][]string),
 		},
 		History:      hist,
@@ -1418,7 +1417,7 @@ func (c *syncController) takeAction(sp subpool, batchPending, successes, pending
 // changedFilesAgent queries and caches the names of files changed by PRs.
 // Cache entries expire if they are not used during a sync loop.
 type changedFilesAgent struct {
-	ghc         githubClient
+	provider    provider
 	changeCache map[changeCacheKey][]string
 	// nextChangeCache caches file change info that is relevant this sync for use next sync.
 	// This becomes the new changeCache when prune() is called at the end of each sync.
@@ -1459,7 +1458,7 @@ func (c *changedFilesAgent) prChanges(pr *CodeReviewCommon) config.ChangedFilesP
 		c.RUnlock()
 
 		// We need to query the changes from GitHub.
-		changes, err := c.ghc.GetPullRequestChanges(
+		changes, err := c.provider.GetChangedFiles(
 			pr.Org,
 			pr.Repo,
 			pr.Number,
@@ -1467,11 +1466,9 @@ func (c *changedFilesAgent) prChanges(pr *CodeReviewCommon) config.ChangedFilesP
 		if err != nil {
 			return nil, fmt.Errorf("error getting PR changes for #%d: %w", pr.Number, err)
 		}
-		changedFiles = make([]string, 0, len(changes))
-		for _, change := range changes {
-			changedFiles = append(changedFiles, change.Filename)
-		}
 
+		changedFiles = make([]string, 0, len(changes))
+		changedFiles = append(changedFiles, changes...)
 		c.Lock()
 		c.nextChangeCache[cacheKey] = changedFiles
 		c.Unlock()

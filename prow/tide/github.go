@@ -376,6 +376,18 @@ func (gi *GitHubProvider) headContexts(pr *CodeReviewCommon) ([]Context, error) 
 	return contexts, nil
 }
 
+func (gi *GitHubProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {
+	changes, err := gi.ghc.GetPullRequestChanges(org, repo, number)
+	if err != nil {
+		return nil, fmt.Errorf("failed get PR changes: %v", err)
+	}
+	files := make([]string, 0, len(changes))
+	for _, c := range changes {
+		files = append(files, c.Filename)
+	}
+	return files, nil
+}
+
 // dateToken generates a GitHub search query token for the specified date range.
 // See: https://help.github.com/articles/understanding-the-search-syntax/#query-for-dates
 func dateToken(start, end time.Time) string {

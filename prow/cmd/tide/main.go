@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"net/http"
 	"os"
@@ -25,17 +26,24 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	prowgit "k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/tide"
+)
+
+const (
+	githubProviderName = "github"
+	gerritProviderName = "gerrit"
 )
 
 type options struct {
@@ -68,6 +76,9 @@ type options struct {
 	// b) the default acls do not expose any private info
 	statusURI string
 
+	// providerName is
+	providerName string
+
 	// Gerrit-related options
 	cookiefilePath string
 }
@@ -77,6 +88,9 @@ func (o *options) Validate() error {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
+	}
+	if o.providerName != "" && !sets.NewString(githubProviderName, gerritProviderName).Has(o.providerName) {
+		return errors.New("--provider should be github or gerrit")
 	}
 	return nil
 }
@@ -98,6 +112,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	// Gerrit-related flags
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile; leave empty for anonymous access or if you are using GitHub")
 
+	fs.StringVar(&o.providerName, "provider", "", "The source code provider, only supported providers are github and gerrit, this should be set only when both GitHub and Gerrit configs are set for tide. By default provider is auto-detected as github if `tide.queries` is set, and gerrit if `tide.gerrit` is set.")
 	fs.Parse(args)
 	return o
 }
@@ -125,30 +140,6 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	githubSync, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "sync"})
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting GitHub client for sync.")
-	}
-
-	githubStatus, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "status-update"})
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting GitHub client for status.")
-	}
-
-	// The sync loop should be allowed more tokens than the status loop because
-	// it has to list all PRs in the pool every loop while the status loop only
-	// has to list changed PRs every loop.
-	// The sync loop should have a much lower burst allowance than the status
-	// loop which may need to update many statuses upon restarting Tide after
-	// changing the context format or starting Tide on a new repo.
-	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod.Duration))
-	githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
-
-	gitClient, err := o.github.GitClient(o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Git client.")
-	}
-
 	kubeCfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kubeconfig.")
@@ -159,33 +150,87 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
-	c, err := tide.NewController(
-		githubSync,
-		githubStatus,
-		mgr,
-		cfg,
-		git.ClientFactoryFrom(gitClient),
-		o.maxRecordsPerPool,
-		opener,
-		o.historyURI,
-		o.statusURI,
-		nil,
-		o.github.AppPrivateKeyPath != "",
-	)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating Tide controller.")
+
+	if cfg().Tide.Gerrit != nil && cfg().Tide.Queries.QueryMap() != nil && o.providerName == "" {
+		logrus.Fatal("Both github and gerrit are configured in tide config but provider is not set.")
 	}
+
+	var c *tide.Controller
+	var gitClient *prowgit.Client
+	if o.providerName == gerritProviderName || cfg().Tide.Gerrit != nil {
+		c, err = tide.NewGerritController(
+			mgr,
+			configAgent,
+			o.maxRecordsPerPool,
+			opener,
+			o.historyURI,
+			o.statusURI,
+			nil,
+			o.config,
+			o.cookiefilePath,
+		)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating Tide controller.")
+		}
+	}
+
+	// If providerName is not configured, by default work with GitHub.
+	if o.providerName == githubProviderName || cfg().Tide.Queries.QueryMap() != nil {
+		githubSync, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "sync"})
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting GitHub client for sync.")
+		}
+
+		githubStatus, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "status-update"})
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting GitHub client for status.")
+		}
+
+		// The sync loop should be allowed more tokens than the status loop because
+		// it has to list all PRs in the pool every loop while the status loop only
+		// has to list changed PRs every loop.
+		// The sync loop should have a much lower burst allowance than the status
+		// loop which may need to update many statuses upon restarting Tide after
+		// changing the context format or starting Tide on a new repo.
+		githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod.Duration))
+		githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
+
+		gitClient, err = o.github.GitClient(o.dryRun)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Git client.")
+		}
+
+		c, err = tide.NewController(
+			githubSync,
+			githubStatus,
+			mgr,
+			cfg,
+			git.ClientFactoryFrom(gitClient),
+			o.maxRecordsPerPool,
+			opener,
+			o.historyURI,
+			o.statusURI,
+			nil,
+			o.github.AppPrivateKeyPath != "",
+		)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating Tide controller.")
+		}
+	}
+
 	interrupts.Run(func(ctx context.Context) {
 		if err := mgr.Start(ctx); err != nil {
 			logrus.WithError(err).Fatal("Mgr failed.")
 		}
 		logrus.Info("Mgr finished gracefully.")
 	})
+
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer mgrSyncCtxCancel()
 	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 		logrus.Fatal("Timed out waiting for cachesync")
 	}
+
 	interrupts.OnInterrupt(func() {
 		c.Shutdown()
 		if err := gitClient.Clean(); err != nil {

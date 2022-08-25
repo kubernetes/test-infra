@@ -258,4 +258,6 @@ type provider interface {
 	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error
 	GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error)
 	prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error)
+
+	GetChangedFiles(org, repo string, number int) ([]string, error)
 }
