@@ -260,9 +260,19 @@ function deploy_prow() {
   # enough to only redeploy those components who configurations have changed as
   # a result of newly built images (from build_prow_images()).
   pushd "${SCRIPT_ROOT}/config/prow"
+  declare -a workers
   do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
+  workers+=($!)
   do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
+  workers+=($!)
   do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f - &
+  workers+=($!)
+  for worker in ${workers[@]}; do
+    if ! wait $worker; then
+      echo >&2 "kubectl apply failed"
+      return 1
+    fi
+  done
   popd
 
   deploy_components "${fakepubsub_node_port}"
