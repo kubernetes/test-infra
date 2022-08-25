@@ -67,6 +67,9 @@ type options struct {
 	// a) the gcs credentials can write to this bucket
 	// b) the default acls do not expose any private info
 	statusURI string
+
+	// Gerrit-related options
+	cookiefilePath string
 }
 
 func (o *options) Validate() error {
@@ -92,6 +95,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.IntVar(&o.maxRecordsPerPool, "max-records-per-pool", 1000, "The maximum number of history records stored for an individual Tide pool.")
 	fs.StringVar(&o.historyURI, "history-uri", "", "The /local/path,gs://path/to/object or s3://path/to/object to store tide action history. GCS writes will use the default object ACL for the bucket")
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
+	// Gerrit-related flags
+	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile; leave empty for anonymous access or if you are using GitHub")
 
 	fs.Parse(args)
 	return o

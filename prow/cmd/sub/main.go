@@ -32,6 +32,7 @@ import (
 	"k8s.io/test-infra/pkg/flagutil"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -132,12 +133,9 @@ func main() {
 		}
 	}
 
-	cacheGetter := subscriber.InRepoConfigCacheGetter{
-		CacheSize:     o.config.InRepoConfigCacheSize,
-		CacheCopies:   o.config.InRepoConfigCacheCopies,
-		Agent:         configAgent,
-		GitHubOptions: o.github,
-		DryRun:        o.dryRun,
+	cacheGetter, err := config.NewInRepoConfigCacheGetter(configAgent, o.config.InRepoConfigCacheSize, o.config.InRepoConfigCacheCopies, o.config.InRepoConfigCacheDirBase, o.github, o.cookiefilePath, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
 
 	s := &subscriber.Subscriber{
@@ -145,7 +143,7 @@ func main() {
 		Metrics:                 promMetrics,
 		ProwJobClient:           kubeClient,
 		Reporter:                pubsub.NewReporter(configAgent.Config), // reuse crier reporter
-		InRepoConfigCacheGetter: &cacheGetter,
+		InRepoConfigCacheGetter: cacheGetter,
 	}
 
 	subMux := http.NewServeMux()

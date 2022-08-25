@@ -619,9 +619,23 @@ func (c *syncController) initSubpoolData(sp *subpool) error {
 	if err != nil {
 		return fmt.Errorf("error determining required presubmit prowjobs: %w", err)
 	}
+	// CloneURI is used by Gerrit to retrieve inrepoconfig; this is not used by
+	// GitHub at all.
+	// It's known that cloneURI is the only reliable way for Gerrit to correctly
+	// clone, so it should be safe to assume that cloneURI is identical among jobs.
+	var cloneURI string
+	for _, presubmits := range sp.presubmits {
+		for _, p := range presubmits {
+			if p.CloneURI != "" {
+				cloneURI = p.CloneURI
+				break
+			}
+		}
+	}
+
 	sp.cc = make(map[int]contextChecker, len(sp.prs))
 	for _, pr := range sp.prs {
-		sp.cc[pr.Number], err = c.provider.GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, refGetterFactory(string(sp.sha)), &pr)
+		sp.cc[pr.Number], err = c.provider.GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, cloneURI, refGetterFactory(string(sp.sha)), &pr)
 		if err != nil {
 			return fmt.Errorf("error setting up context checker for pr %d: %w", pr.Number, err)
 		}

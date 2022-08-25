@@ -27,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
@@ -135,7 +136,11 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}
 
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.config.InRepoConfigCacheDirBase, o.config.InRepoConfigCacheSize, o.config.InRepoConfigCacheCopies, o.changeWorkerPoolSize)
+	cacheGetter, err := config.NewInRepoConfigCacheGetter(ca, o.config.InRepoConfigCacheSize, o.config.InRepoConfigCacheCopies, o.config.InRepoConfigCacheDirBase, prowflagutil.GitHubOptions{}, o.cookiefilePath, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
+	}
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, cacheGetter)
 
 	logrus.Infof("Starting gerrit fetcher")
 

@@ -37,6 +37,7 @@ import (
 	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/git/v2"
@@ -1363,12 +1364,16 @@ func TestProcessChange(t *testing.T) {
 
 			var gc fgc
 			gc.instanceMap = tc.instancesMap
+			inRepoConfigCacheGetter, err := config.NewInRepoConfigCacheGetter(nil, 1, 1, "", flagutil.GitHubOptions{}, "", false)
+			if err != nil {
+				t.Fatalf("Failed creating cache getter: %v", err)
+			}
 			c := &Controller{
-				config:        fca.Config,
-				prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-				gc:            &gc,
-				tracker:       &fakeSync{val: fakeLastSync},
-				repoCacheMap:  map[string]*config.InRepoConfigCacheHandler{},
+				config:                  fca.Config,
+				prowJobClient:           fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				gc:                      &gc,
+				tracker:                 &fakeSync{val: fakeLastSync},
+				inRepoConfigCacheGetter: inRepoConfigCacheGetter,
 			}
 			cloneURI, err := makeCloneURI(tc.instance, tc.change.Project)
 			if err != nil {

@@ -38,7 +38,6 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -101,23 +100,20 @@ type gerritClient interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config               config.Getter
-	prowJobClient        prowJobClient
-	gc                   gerritClient
-	tracker              LastSyncTracker
-	projectsOptOutHelp   map[string]sets.String
-	lock                 sync.RWMutex
-	cookieFilePath       string
-	cacheSize            int
-	cacheCopies          int
-	configAgent          *config.Agent
-	repoCacheMap         map[string]*config.InRepoConfigCacheHandler
-	inRepoConfigFailures map[string]bool
-	instancesWithWorker  map[string]bool
-	repoCacheMapMux      sync.Mutex
-	latestMux            sync.Mutex
-	workerPoolSize       int
-	cacheDirBase         string
+	config                  config.Getter
+	prowJobClient           prowJobClient
+	gc                      gerritClient
+	tracker                 LastSyncTracker
+	projectsOptOutHelp      map[string]sets.String
+	lock                    sync.RWMutex
+	cookieFilePath          string
+	configAgent             *config.Agent
+	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter
+	inRepoConfigFailures    map[string]bool
+	instancesWithWorker     map[string]bool
+	repoCacheMapMux         sync.Mutex
+	latestMux               sync.Mutex
+	workerPoolSize          int
 }
 
 type LastSyncTracker interface {
@@ -127,7 +123,7 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback, cacheDirBase string, cacheSize, cacheCopies, workerPoolSize int) *Controller {
+	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCacheGetter *config.InRepoConfigCacheGetter) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
@@ -147,20 +143,17 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 	c := &Controller{
-		prowJobClient:        prowJobClient,
-		config:               cfg,
-		gc:                   gerritClient,
-		tracker:              lastSyncTracker,
-		projectsOptOutHelp:   projectsOptOutHelpMap,
-		cookieFilePath:       cookiefilePath,
-		cacheSize:            cacheSize,
-		cacheCopies:          cacheCopies,
-		configAgent:          ca,
-		repoCacheMap:         map[string]*config.InRepoConfigCacheHandler{},
-		inRepoConfigFailures: map[string]bool{},
-		instancesWithWorker:  make(map[string]bool),
-		workerPoolSize:       workerPoolSize,
-		cacheDirBase:         cacheDirBase,
+		prowJobClient:           prowJobClient,
+		config:                  cfg,
+		gc:                      gerritClient,
+		tracker:                 lastSyncTracker,
+		projectsOptOutHelp:      projectsOptOutHelpMap,
+		cookieFilePath:          cookiefilePath,
+		configAgent:             ca,
+		inRepoConfigCacheGetter: inRepoConfigCacheGetter,
+		inRepoConfigFailures:    map[string]bool{},
+		instancesWithWorker:     make(map[string]bool),
+		workerPoolSize:          workerPoolSize,
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -190,32 +183,6 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 	return c
 }
 
-// Helper function to create the cache used for InRepoConfig. Currently only attempts to create cache and returns nil if failed.
-func createCache(cloneURI *url.URL, cookieFilePath, cacheDirBase string, cacheSize, cacheCopies int, configAgent *config.Agent) (cache *config.InRepoConfigCacheHandler, err error) {
-	opts := git.ClientFactoryOpts{
-		CloneURI:       cloneURI.String(),
-		Host:           cloneURI.Host,
-		CookieFilePath: cookieFilePath,
-		CacheDirBase:   &cacheDirBase,
-	}
-	gc, err := git.NewClientFactory(opts.Apply)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
-	}
-	// Initialize cache for fetching Presubmit and Postsubmit information. If
-	// the cache cannot be initialized, exit with an error.
-	cache, err = config.NewInRepoConfigCacheHandler(
-		cacheSize,
-		configAgent,
-		config.NewInRepoConfigGitCache(gc),
-		cacheCopies)
-	// If we cannot initialize the cache, exit with an error.
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", cacheSize, err)
-	}
-	return cache, nil
-}
-
 type Change struct {
 	changeInfo gerrit.ChangeInfo
 	instance   string
@@ -238,18 +205,12 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 			log.WithError(err).Error("makeCloneURI.")
 		}
 
-		c.repoCacheMapMux.Lock()
-		cache, ok := c.repoCacheMap[cloneURI.String()]
-		if !ok {
-			if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheDirBase, c.cacheSize, c.cacheCopies, c.configAgent); err != nil {
-				c.repoCacheMapMux.Unlock()
-				wg.Done()
-				log.WithError(err).Error("create repo cache.")
-				continue
-			}
-			c.repoCacheMap[cloneURI.String()] = cache
+		cache, err := c.inRepoConfigCacheGetter.GetCache(cloneURI.String(), instance)
+		if err != nil {
+			wg.Done()
+			log.WithError(err).Error("create repo cache.")
+			continue
 		}
-		c.repoCacheMapMux.Unlock()
 
 		result := client.ResultSuccess
 		if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {

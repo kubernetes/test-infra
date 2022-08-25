@@ -226,7 +226,7 @@ func TestQuery(t *testing.T) {
 				},
 			}
 
-			fc := newGerritProvider(logrus.WithContext(context.Background()), func() *config.Config { return &cfg }, nil, nil, "", "")
+			fc := newGerritProvider(logrus.WithContext(context.Background()), func() *config.Config { return &cfg }, nil, nil, nil, "", "")
 			fgc := newFakeGerritClient()
 
 			for instance, projs := range tc.prs {
@@ -551,6 +551,7 @@ func TestGetTideContextPolicy(t *testing.T) {
 	tests := []struct {
 		name       string
 		pr         gerrit.ChangeInfo
+		cloneURI   string
 		presubmits map[string][]config.Presubmit
 		want       contextChecker
 		wantErr    error
@@ -655,7 +656,7 @@ func TestGetTideContextPolicy(t *testing.T) {
 			cfg := config.Config{JobConfig: config.JobConfig{PresubmitsStatic: tc.presubmits}}
 			fc := &GerritProvider{cfg: func() *config.Config { return &cfg }}
 
-			got, gotErr := fc.GetTideContextPolicy(nil, "foo1", tc.pr.Project, tc.pr.Branch, nil, CodeReviewCommonFromGerrit(&tc.pr, "foo1"))
+			got, gotErr := fc.GetTideContextPolicy(nil, "foo1", tc.pr.Project, tc.pr.Branch, tc.cloneURI, nil, CodeReviewCommonFromGerrit(&tc.pr, "foo1"))
 
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Blocker mismatch. Want(-), got(+):\n%s", diff)

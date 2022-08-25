@@ -306,7 +306,7 @@ func TestHandleMessage(t *testing.T) {
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
 				ConfigAgent:   ca,
 				Reporter:      &fr,
-				InRepoConfigCacheGetter: &InRepoConfigCacheGetter{
+				InRepoConfigCacheGetter: &config.InRepoConfigCacheGetter{
 					CacheSize:     100,
 					CacheCopies:   1,
 					Agent:         ca,
