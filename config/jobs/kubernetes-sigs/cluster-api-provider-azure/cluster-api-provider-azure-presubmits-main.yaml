@@ -122,6 +122,10 @@ presubmits:
         args:
           - ./scripts/ci-e2e.sh
         env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.22"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.23"
           - name: GINKGO_FOCUS
             value: \[CSI Migration\]
           - name: GINKGO_SKIP
