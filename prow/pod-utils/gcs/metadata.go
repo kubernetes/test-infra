@@ -20,19 +20,9 @@ import (
 	"mime"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/testgrid/metadata"
-
 	"k8s.io/test-infra/prow/io"
 	utilpointer "k8s.io/utils/pointer"
 )
-
-// TODO(fejta): migrate usage off type alias.
-
-// Started holds started.json data
-type Started = metadata.Started
-
-// Finished holds finished.json data
-type Finished = metadata.Finished
 
 // WriterOptionsFromFileName guesses file attributes from the filename
 // and returns the writerOptions and a simplified filename.  For example,

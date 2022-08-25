@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 const reporterName = "gcsreporter"
@@ -71,10 +72,9 @@ func (gr *gcsReporter) reportJobState(ctx context.Context, log *logrus.Entry, pj
 // happen before the pod itself gets to upload one, at which point the pod will
 // upload its own. If for some reason one already exists, it will not be overwritten.
 func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
-	s := metadata.Started{
-		Timestamp: pj.Status.StartTime.Unix(),
-		Metadata:  metadata.Metadata{"uploader": "crier"},
-	}
+	s := downwardapi.PjToStarted(pj, nil)
+	s.Metadata = metadata.Metadata{"uploader": "crier"}
+
 	output, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
 		return fmt.Errorf("failed to marshal started metadata: %w", err)
