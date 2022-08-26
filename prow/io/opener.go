@@ -485,6 +485,17 @@ func (o *opener) Iterator(ctx context.Context, prefix, delimiter string) (Object
 	}, nil
 }
 
+func ReadContent(ctx context.Context, logger *logrus.Entry, opener Opener, path string) ([]byte, error) {
+	log := logger.WithFields(logrus.Fields{"path": path})
+	log.Debug("Reading")
+	r, err := opener.Reader(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	return ioutil.ReadAll(r)
+}
+
 func WriteContent(ctx context.Context, logger *logrus.Entry, opener Opener, path string, content []byte, opts ...WriterOptions) error {
 	log := logger.WithFields(logrus.Fields{"path": path, "write-options": opts})
 	log.Debug("Uploading")

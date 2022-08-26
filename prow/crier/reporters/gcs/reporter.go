@@ -85,14 +85,49 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 		return nil
 	}
 
-	// Try read clone record
-	var cloneRecord []clone.Record
-	cloneRecordBytes, err := util.ReadContent(ctx, gr.author, bucketName, path.Join(dir, prowv1.CloneRecordFile))
+	// Best-effort read of existing started.json; it's overwritten only if it's uploaded
+	// by crier and there is something new (clone record).
+	var existingStarted metadata.Started
+	var existing bool
+	content, err := io.ReadContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)))
 	if err != nil {
-		log.WithError(err).Warn("Failed to read clone records.")
+		if !io.IsNotExist(err) {
+			log.WithError(err).Warn("Failed to read started.json.")
+		}
+	} else {
+		err = json.Unmarshal(content, &existingStarted)
+		if err != nil {
+			log.WithError(err).Warn("Failed to unmarshal started.json.")
+		} else {
+			existing = true
+		}
+	}
+
+	if existing && (existingStarted.Metadata == nil || existingStarted.Metadata["uploader"] != "crier") {
+		// Uploaded by prowjob itself, skip reporting
+		log.Debug("Uploaded by pod-utils, skipping")
+		return nil
+	}
+
+	staticRevision := downwardapi.GetRevisionFromRefs(pj.Spec.Refs, pj.Spec.ExtraRefs)
+	if pj.Spec.Refs == nil || (existingStarted.RepoCommit != "" && existingStarted.RepoCommit != staticRevision) {
+		// RepoCommit could only be "", BaseRef, or the final resolved SHA,
+		// which shouldn't change for a given presubmit job. Avoid query GCS is
+		// this is already done.
+		log.Debug("RepoCommit already resolved before, skipping")
+		return nil
+	}
+
+	// Try to read clone records
+	cloneRecord := make([]clone.Record, 0)
+	cloneRecordBytes, err := io.ReadContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.CloneRecordFile)))
+	if err != nil {
+		if !io.IsNotExist(err) {
+			log.WithError(err).Warn("Failed to read clone records.")
+		}
 	} else {
 		if err := json.Unmarshal(cloneRecordBytes, &cloneRecord); err != nil {
-			log.WithError(err).Warn("Failed unmarshal clone records.")
+			log.WithError(err).Warn("Failed to unmarshal clone records.")
 		}
 	}
 	s := downwardapi.PjToStarted(pj, cloneRecord)
@@ -103,24 +138,12 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 		return fmt.Errorf("failed to marshal started metadata: %w", err)
 	}
 
-	// Best effort read existing started.json, it's overwritten only if uploaded
-	// by crier and there is something new(clone record).
-	var existingStarted metadata.Started
-	if content, err := util.ReadContent(ctx, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile)); err == nil {
-		st := string(content)
-		log.Info(st)
-		if err := json.Unmarshal(content, &existingStarted); err != nil {
-			log.WithError(err).Warn("Failed to unmarshal started.json.")
-		}
-	} else {
-		log.WithError(err).Warn("Failed to read started.json.")
+	// Overwrite if it was uploaded by crier and there might be something new
+	var opts []io.WriterOptions
+	if existing {
+		opts = append(opts, io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(false)})
 	}
-
-	var overwrite bool
-	if existingStarted.Metadata["uploader"] == "crier" && len(cloneRecord) > 0 {
-		overwrite = true
-	}
-	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)), output)
+	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)), output, opts...)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
