@@ -1,7 +1,7 @@
 presubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: pull-node-feature-discovery-verify
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
     - ^release-0.6
@@ -19,7 +19,7 @@ presubmits:
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-verify-0-9
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     branches:
     - ^release-0.6
     - ^release-0.7
@@ -36,7 +36,7 @@ presubmits:
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-verify-docs
-    always_run: true
+    run_if_changed: "^docs/"
     skip_branches:
     - gh-pages
     decorate: true
@@ -50,7 +50,7 @@ presubmits:
         command:
         - scripts/test-infra/mdlint.sh
   - name: pull-node-feature-discovery-build
-    always_run: true
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
     decorate: true
@@ -64,7 +64,7 @@ presubmits:
         command:
         - scripts/test-infra/build.sh
   - name: pull-node-feature-discovery-build-image
-    always_run: true
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
     decorate: true
@@ -84,7 +84,7 @@ presubmits:
         args:
         - scripts/test-infra/build-image.sh
   - name: pull-node-feature-discovery-build-image-cross
-    always_run: true
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
     - ^release-0.6
@@ -108,7 +108,7 @@ presubmits:
         args:
         - scripts/test-infra/build-image-cross.sh
   - name: pull-node-feature-discovery-build-gh-pages
-    always_run: true
+    run_if_changed: "^docs/"
     skip_branches:
     - gh-pages
     decorate: true
