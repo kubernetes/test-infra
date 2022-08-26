@@ -2,6 +2,7 @@
 periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-latest
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:
@@ -37,9 +38,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
-        requests:
-          memory: "9000Mi"
+        limits:
           cpu: 2000m
+          memory: "9000Mi"
+        requests:
+          cpu: 2000m
+          memory: "9000Mi"
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-25
   interval: 12h
