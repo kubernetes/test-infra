@@ -151,6 +151,7 @@ gen-client() {
     --clientset-name versioned \
     --input-base "" \
     --input github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --input github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1 \
     --output-package k8s.io/test-infra/prow/pipeline/clientset
   copyfiles "./prow/pipeline/clientset" "*.go"
 }
@@ -169,6 +170,7 @@ gen-lister() {
   "$listergen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1 \
     --output-package k8s.io/test-infra/prow/pipeline/listers
   copyfiles "./prow/pipeline/listers" "*.go"
 }
@@ -189,6 +191,7 @@ gen-informer() {
   "$informergen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1 \
     --versioned-clientset-package k8s.io/test-infra/prow/pipeline/clientset/versioned \
     --listers-package k8s.io/test-infra/prow/pipeline/listers \
     --output-package k8s.io/test-infra/prow/pipeline/informers
