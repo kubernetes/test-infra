@@ -35,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
+	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -74,14 +75,6 @@ func (gr *gcsReporter) reportJobState(ctx context.Context, log *logrus.Entry, pj
 // happen before the pod itself gets to upload one, at which point the pod will
 // upload its own. If for some reason one already exists, it will not be overwritten.
 func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
-	s := downwardapi.PjToStarted(pj, nil)
-	s.Metadata = metadata.Metadata{"uploader": "crier"}
-
-	output, err := json.MarshalIndent(s, "", "\t")
-	if err != nil {
-		return fmt.Errorf("failed to marshal started metadata: %w", err)
-	}
-
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		return fmt.Errorf("failed to get job destination: %w", err)
@@ -90,6 +83,42 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 	if gr.dryRun {
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload started.json")
 		return nil
+	}
+
+	// Try read clone record
+	var cloneRecord []clone.Record
+	cloneRecordBytes, err := util.ReadContent(ctx, gr.author, bucketName, path.Join(dir, prowv1.CloneRecordFile))
+	if err != nil {
+		log.WithError(err).Warn("Failed to read clone records.")
+	} else {
+		if err := json.Unmarshal(cloneRecordBytes, &cloneRecord); err != nil {
+			log.WithError(err).Warn("Failed unmarshal clone records.")
+		}
+	}
+	s := downwardapi.PjToStarted(pj, cloneRecord)
+	s.Metadata = metadata.Metadata{"uploader": "crier"}
+
+	output, err := json.MarshalIndent(s, "", "\t")
+	if err != nil {
+		return fmt.Errorf("failed to marshal started metadata: %w", err)
+	}
+
+	// Best effort read existing started.json, it's overwritten only if uploaded
+	// by crier and there is something new(clone record).
+	var existingStarted metadata.Started
+	if content, err := util.ReadContent(ctx, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile)); err == nil {
+		st := string(content)
+		log.Info(st)
+		if err := json.Unmarshal(content, &existingStarted); err != nil {
+			log.WithError(err).Warn("Failed to unmarshal started.json.")
+		}
+	} else {
+		log.WithError(err).Warn("Failed to read started.json.")
+	}
+
+	var overwrite bool
+	if existingStarted.Metadata["uploader"] == "crier" && len(cloneRecord) > 0 {
+		overwrite = true
 	}
 	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)), output)
 }

@@ -94,7 +94,7 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 
 	}
 	uploadTargets["clone-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
-	uploadTargets["clone-records.json"] = gcs.FileUpload(logfile)
+	uploadTargets[prowv1.CloneRecordFile] = gcs.FileUpload(logfile)
 
 	if failed {
 		uploadTargets["build-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))

@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"strings"
 	"testing"
 	"time"
@@ -34,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/testutil"
 	"k8s.io/test-infra/prow/io/fakeopener"
+	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
 func TestReportJobFinished(t *testing.T) {
@@ -151,9 +153,146 @@ func TestReportJobFinished(t *testing.T) {
 }
 
 func TestReportJobStarted(t *testing.T) {
-	states := []prowv1.ProwJobState{prowv1.TriggeredState, prowv1.PendingState, prowv1.SuccessState, prowv1.AbortedState, prowv1.ErrorState, prowv1.FailureState}
-	for _, state := range states {
-		t.Run(fmt.Sprintf("report %s job started", state), func(t *testing.T) {
+	tests := []struct {
+		name            string
+		existingStarted *metadata.Started
+		state           prowv1.ProwJobState
+		cloneRecord     []clone.Record
+		expect          metadata.Started
+	}{
+		{
+			name:  "TriggeredState",
+			state: prowv1.TriggeredState,
+			expect: metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "PendingState",
+			state: prowv1.PendingState,
+			expect: metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "SuccessState",
+			state: prowv1.SuccessState,
+			expect: metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "AbortedState",
+			state: prowv1.AbortedState,
+			expect: metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "ErrorState",
+			state: prowv1.ErrorState,
+			expect: metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "FailureState",
+			state: prowv1.ErrorState,
+			expect: metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "overwrite-crier-uploaded",
+			state: prowv1.SuccessState,
+			existingStarted: &metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+			cloneRecord: []clone.Record{
+				{
+					Refs: prowv1.Refs{
+						Org:   "kubernetes",
+						Repo:  "test-infra",
+						Pulls: []prowv1.Pull{{Number: 12345}},
+					},
+					FinalSHA: "abc123",
+				},
+			},
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+				RepoCommit:            "abc123",
+				DeprecatedRepoVersion: "abc123",
+			},
+		},
+		{
+			name:  "no-overwrite-others-uploaded",
+			state: prowv1.SuccessState,
+			existingStarted: &metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+			},
+			cloneRecord: []clone.Record{
+				{
+					Refs: prowv1.Refs{
+						Org:   "kubernetes",
+						Repo:  "test-infra",
+						Pulls: []prowv1.Pull{{Number: 12345}},
+					},
+					FinalSHA: "abc123",
+				},
+			},
+			expect: metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+			},
+		},
+		{
+			name:  "no-cloneref-self-update",
+			state: prowv1.SuccessState,
+			existingStarted: &metadata.Started{
+				Timestamp: 100, // Intentional wrong timestamp, Crier would change it if it overwrites
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+			expect: metadata.Started{
+				Timestamp: 100,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": ",12345:"},
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
@@ -171,8 +310,31 @@ func TestReportJobStarted(t *testing.T) {
 					},
 				},
 			}}.Config
-			fakeOpener := &fakeopener.FakeOpener{}
-			reporter := New(cfg, fakeOpener, false)
+			// Storage path decided by Prow
+			const subDir = "some-prefix/pr-logs/pull/test-infra/12345/my-little-job/123"
+
+			ta := &testutil.TestAuthor{}
+			// Pretending uploads from previous runs, either pod-utils or Crier.
+			if tc.existingStarted != nil {
+				content, err := json.Marshal(*tc.existingStarted)
+				if err != nil {
+					t.Fatalf("Failed marshal started.json: %v", err)
+				}
+				if err := util.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), ta, "kubernetes-jenkins", path.Join(subDir, "started.json"), false, content); err != nil {
+					t.Fatalf("Failed seeding started.json: %v", err)
+				}
+			}
+			if len(tc.cloneRecord) > 0 {
+				content, err := json.Marshal(tc.cloneRecord)
+				if err != nil {
+					t.Fatalf("Failed marshal clone record: %v", err)
+				}
+				if err := util.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), ta, "kubernetes-jenkins", path.Join(subDir, "clone-records.json"), false, content); err != nil {
+					t.Fatalf("Failed seeding clone-records.json: %v", err)
+				}
+			}
+
+			reporter := newWithAuthor(cfg, ta, false)
 
 			pj := &prowv1.ProwJob{
 				Spec: prowv1.ProwJobSpec{
@@ -186,7 +348,7 @@ func TestReportJobStarted(t *testing.T) {
 					Job:   "my-little-job",
 				},
 				Status: prowv1.ProwJobStatus{
-					State:     state,
+					State:     tc.state,
 					StartTime: metav1.Time{Time: time.Date(2010, 10, 10, 18, 30, 0, 0, time.UTC)},
 					PodName:   "some-pod",
 					BuildID:   "123",
@@ -213,8 +375,8 @@ func TestReportJobStarted(t *testing.T) {
 			if err := json.Unmarshal(content, &result); err != nil {
 				t.Errorf("Couldn't decode result as metadata.Started: %v", err)
 			}
-			if result.Timestamp != pj.Status.StartTime.Unix() {
-				t.Errorf("Expected started.json timestamp to be %d, but got %d", pj.Status.StartTime.Unix(), result.Timestamp)
+			if diff := cmp.Diff(tc.expect, result); diff != "" {
+				t.Fatalf("Started.json mismatch. Want(-), got(+):\n%s", diff)
 			}
 		})
 	}

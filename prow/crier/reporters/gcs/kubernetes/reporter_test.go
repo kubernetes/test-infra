@@ -432,7 +432,22 @@ func TestReportPodInfo(t *testing.T) {
 				if len(content) > 0 {
 					t.Fatalf("Expected nothing to be written, but something was written: %s", string(content))
 				}
-				return
+			}
+
+			var result PodReport
+			// Single file is expected
+			var content []byte
+			for _, files := range author.Handlers {
+				for _, c := range files {
+					if len(content) > 0 {
+						t.Fatalf("Expecting single file, got more.")
+					}
+					content = c.Content
+				}
+			}
+			err = json.Unmarshal(content, &result)
+			if err != nil {
+				t.Fatalf("Couldn't unmarshal reported JSON: %v", err)
 			}
 
 			if !cmp.Equal(result.Pod, tc.pod) {

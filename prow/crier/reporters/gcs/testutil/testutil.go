@@ -18,10 +18,12 @@ package testutil
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
 	"k8s.io/test-infra/prow/config"
+	pkgio "k8s.io/test-infra/prow/io"
 )
 
 type Fca struct {
@@ -33,35 +35,88 @@ func (ca Fca) Config() *config.Config {
 }
 
 type TestAuthor struct {
-	AlreadyUsed bool
-	Bucket      string
-	Path        string
-	Content     []byte
-	Overwrite   bool
-	Closed      bool
+	Handlers map[string]map[string]*TestFileHandler
+}
+
+func (ta *TestAuthor) GetOrNewHandler(bucket, path string, create bool) *TestFileHandler {
+	if ta.Handlers == nil {
+		ta.Handlers = make(map[string]map[string]*TestFileHandler)
+	}
+	if _, ok := ta.Handlers[bucket]; !ok {
+		ta.Handlers[bucket] = make(map[string]*TestFileHandler)
+	}
+	if _, ok := ta.Handlers[bucket][path]; !ok && create {
+		ta.Handlers[bucket][path] = &TestFileHandler{}
+	}
+	return ta.Handlers[bucket][path]
+}
+
+type TestFileHandler struct {
+	Bucket    string
+	Path      string
+	Content   []byte
+	Offset    int
+	Overwrite bool
+	Closed    bool
 }
 
 type TestAuthorWriteCloser struct {
-	author *TestAuthor
+	handler *TestFileHandler
 }
 
 func (wc *TestAuthorWriteCloser) Write(p []byte) (int, error) {
-	wc.author.Content = append(wc.author.Content, p...)
+	if len(wc.handler.Content) > 0 {
+		if !wc.handler.Overwrite {
+			return 0, fmt.Errorf("already exist: %w", pkgio.PreconditionFailedObjectAlreadyExists)
+		}
+		wc.handler.Content = make([]byte, 0)
+	}
+	wc.handler.Content = append(wc.handler.Content, p...)
 	return len(p), nil
 }
 
 func (wc *TestAuthorWriteCloser) Close() error {
-	wc.author.Closed = true
+	wc.handler.Closed = true
 	return nil
 }
 
-func (ta *TestAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error) {
-	if ta.AlreadyUsed {
-		panic(fmt.Sprintf("NewWriter called on testAuthor twice: first for %q/%q, now for %q/%q", ta.Bucket, ta.Path, bucket, path))
+type TestAuthorReadCloser struct {
+	handler *TestFileHandler
+}
+
+func (wc *TestAuthorReadCloser) Read(p []byte) (int, error) {
+	if wc.handler == nil {
+		return 0, errors.New("not exist")
 	}
-	ta.AlreadyUsed = true
-	ta.Bucket = bucket
-	ta.Path = path
-	ta.Overwrite = overwrite
-	return &TestAuthorWriteCloser{author: ta}, nil
+	if len(p) == 0 {
+		return 0, nil
+	}
+	var count int
+	for i := 0; i < len(p); i++ {
+		if wc.handler.Offset == len(wc.handler.Content) {
+			break
+		}
+		p[i] = wc.handler.Content[wc.handler.Offset]
+		wc.handler.Offset++
+		count++
+	}
+	if count == 0 {
+		return count, io.EOF
+	}
+	return count, nil
+}
+
+func (wc *TestAuthorReadCloser) Close() error {
+	wc.handler.Closed = true
+	return nil
+}
+
+func (ta *TestAuthor) NewReader(ctx context.Context, bucket, path string) (io.ReadCloser, error) {
+	return &TestAuthorReadCloser{handler: ta.GetOrNewHandler(bucket, path, false)}, nil
+}
+
+func (ta *TestAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error) {
+	handler := ta.GetOrNewHandler(bucket, path, true)
+	handler.Overwrite = overwrite
+	return &TestAuthorWriteCloser{handler: handler}, nil
 }
