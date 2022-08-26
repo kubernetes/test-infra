@@ -25,54 +25,6 @@ presets:
 
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-gce
-    always_run: false
-    cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+\.\d+ # per-release image
-    annotations:
-      fork-per-release: "true"
-      testgrid-alert-stale-results-hours: "24"
-      testgrid-create-test-group: "true"
-      testgrid-num-failures-to-alert: "10"
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=quick
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        # Panic if anything mutates a shared informer cache
-        - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-        - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
-        resources:
-          requests:
-            cpu: 4
-            memory: 14Gi
-          limits:
-            cpu: 4
-            memory: 14Gi
-        securityContext:
-          privileged: true
   - name: pull-kubernetes-e2e-gce-no-stage
     always_run: false
     cluster: k8s-infra-prow-build
@@ -164,61 +116,7 @@ presubmits:
         - --use-built-binaries # use the kubectl, e2e.test, and ginkgo binaries built during --build as opposed to from a GCS release tarball
 
 
-  - name: pull-kubernetes-e2e-gce-canary
-    cluster: k8s-infra-prow-build
-    always_run: false
-    skip_report: true
-    skip_branches:
-    - release-\d+\.\d+ # per-release image
-    annotations:
-      fork-per-release: "true"
-      testgrid-alert-stale-results-hours: "24"
-      testgrid-create-test-group: "true"
-      testgrid-num-failures-to-alert: "10"
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=quick
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=gci
-        - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
-        - --provider=gce
-        # Panic if anything mutates a shared informer cache
-        - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-        - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        env:
-        - name: BOOTSTRAP_FETCH_TEST_INFRA
-          value: "true"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 4
-            memory: 14Gi
-          limits:
-            cpu: 4
-            memory: 14Gi
-
-  - name: pull-kubernetes-e2e-gce-ubuntu-containerd
+  - name: pull-kubernetes-e2e-gce
     cluster: k8s-infra-prow-build
     always_run: true
     skip_branches:
@@ -264,7 +162,7 @@ presubmits:
             - --gcp-zone=us-west1-b
             - --ginkgo-parallel=30
             - --provider=gce
-            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd
+            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
@@ -278,7 +176,7 @@ presubmits:
           securityContext:
             privileged: true
 
-  - name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary
+  - name: pull-kubernetes-e2e-gce-canary
     cluster: k8s-infra-prow-build
     always_run: false
     skip_report: false
@@ -323,7 +221,7 @@ presubmits:
             - --gcp-zone=us-west1-b
             - --ginkgo-parallel=30
             - --provider=gce
-            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd-canary
+            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
             - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
@@ -383,7 +281,7 @@ presubmits:
     annotations:
       testgrid-create-test-group: 'true'
 
-  - name: pull-kubernetes-e2e-gce-ubuntu-containerd-serial
+  - name: pull-kubernetes-e2e-gce-serial
     cluster: k8s-infra-prow-build
     optional: true
     always_run: false
@@ -430,7 +328,7 @@ presubmits:
             - --gcp-zone=us-west1-b
             - --ginkgo-parallel=1
             - --provider=gce
-            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd
+            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
             - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
             - --timeout=500m
           image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master

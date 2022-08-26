@@ -55,6 +55,9 @@ dashboards:
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
     test_group_name: pull-kubernetes-conformance-kind-ga-only-parallel
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce
+    test_group_name: pull-kubernetes-e2e-gce
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd
     test_group_name: pull-kubernetes-e2e-gce-ubuntu-containerd
     base_options: width=10
