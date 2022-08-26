@@ -41,6 +41,8 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
+
+	testgridmetadata "github.com/GoogleCloudPlatform/testgrid/metadata"
 )
 
 const LogFileName = "sidecar-logs.json"
@@ -264,7 +266,7 @@ func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed
 	}
 
 	now := time.Now().Unix()
-	finished := gcs.Finished{
+	finished := testgridmetadata.Finished{
 		Timestamp: &now,
 		Passed:    &passed,
 		Result:    result,

@@ -23,63 +23,14 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"reflect"
-	"strconv"
 	"time"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
-
-// specToStarted translate a jobspec into a started struct
-// optionally overwrite RepoVersion with provided cloneRecords
-func specToStarted(spec *downwardapi.JobSpec, cloneRecords []clone.Record) gcs.Started {
-	var version string
-
-	started := gcs.Started{
-		Timestamp: time.Now().Unix(),
-	}
-
-	if mainRefs := spec.MainRefs(); mainRefs != nil {
-		version = shaForRefs(*mainRefs, cloneRecords)
-	}
-
-	if version == "" {
-		version = downwardapi.GetRevisionFromSpec(spec)
-	}
-
-	started.DeprecatedRepoVersion = version
-	started.RepoCommit = version
-
-	// TODO(fejta): VM name
-
-	if spec.Refs != nil && len(spec.Refs.Pulls) > 0 {
-		started.Pull = strconv.Itoa(spec.Refs.Pulls[0].Number)
-	}
-
-	started.Repos = map[string]string{}
-
-	if spec.Refs != nil {
-		started.Repos[spec.Refs.Org+"/"+spec.Refs.Repo] = spec.Refs.String()
-	}
-	for _, ref := range spec.ExtraRefs {
-		started.Repos[ref.Org+"/"+ref.Repo] = ref.String()
-	}
-
-	return started
-}
-
-// shaForRefs finds the resolved SHA after cloning and merging for the given refs
-func shaForRefs(refs prowv1.Refs, cloneRecords []clone.Record) string {
-	for _, record := range cloneRecords {
-		if reflect.DeepEqual(refs, record.Refs) {
-			return record.FinalSHA
-		}
-	}
-	return ""
-}
 
 // Run will start the initupload job to upload the artifacts, logs and clone status.
 func (o Options) Run() error {
@@ -98,7 +49,7 @@ func (o Options) Run() error {
 		}
 	}
 
-	started := specToStarted(spec, cloneRecords)
+	started := downwardapi.SpecToStarted(spec, cloneRecords)
 
 	startedData, err := json.Marshal(&started)
 	if err != nil {
@@ -150,7 +101,7 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 
 		passed := !failed
 		now := time.Now().Unix()
-		finished := gcs.Finished{
+		finished := metadata.Finished{
 			Timestamp: &now,
 			Passed:    &passed,
 			Result:    "FAILURE",
