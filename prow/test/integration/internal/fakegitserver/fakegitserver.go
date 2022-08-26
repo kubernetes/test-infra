@@ -28,6 +28,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -122,7 +123,7 @@ func GitCGIHandler(gitBinary, gitReposParentDir string) http.Handler {
 
 // SetupRepoHandler executes a JSON payload of instructions to set up a Git
 // repo.
-func SetupRepoHandler(gitReposParentDir string) http.Handler {
+func SetupRepoHandler(gitReposParentDir string, mux *sync.Mutex) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		buf, err := ioutil.ReadAll(req.Body)
 		defer req.Body.Close()
@@ -141,7 +142,11 @@ func SetupRepoHandler(gitReposParentDir string) http.Handler {
 			return
 		}
 
-		repo, err := setupRepo(gitReposParentDir, &repoSetup)
+		// setupRepo might need to access global git config, concurrent
+		// modifications of which could result in error like "exit status 255
+		// error: could not lock config file /root/.gitconfig". Use a mux to
+		// avoid this
+		repo, err := setupRepo(gitReposParentDir, &repoSetup, mux)
 		if err != nil {
 			// Just log the error if the setup fails so that the developer can
 			// fix their error and retry without having to restart this server.
@@ -160,7 +165,7 @@ func SetupRepoHandler(gitReposParentDir string) http.Handler {
 	})
 }
 
-func setupRepo(gitReposParentDir string, repoSetup *RepoSetup) (*git.Repository, error) {
+func setupRepo(gitReposParentDir string, repoSetup *RepoSetup, mux *sync.Mutex) (*git.Repository, error) {
 	dir := filepath.Join(gitReposParentDir, repoSetup.Name+".git")
 	logger := logrus.WithField("directory", dir)
 
@@ -186,6 +191,9 @@ func setupRepo(gitReposParentDir string, repoSetup *RepoSetup) (*git.Repository,
 		return nil, err
 	}
 
+	// Steps below might update global git config, lock it to avoid collision.
+	mux.Lock()
+	defer mux.Unlock()
 	if err := setGitConfigOptions(repo); err != nil {
 		logger.Error("config setup failed")
 		return nil, err
