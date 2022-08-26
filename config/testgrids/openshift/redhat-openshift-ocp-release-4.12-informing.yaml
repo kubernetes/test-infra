@@ -5111,8 +5111,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.12-e2e-ovirt-ovn
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.12-e2e-ovirt-sdn
   name: periodic-ci-openshift-release-master-nightly-4.12-e2e-ovirt-sdn
-- days_of_results: 25
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.12-e2e-telco5g
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.12-e2e-telco5g
   name: periodic-ci-openshift-release-master-nightly-4.12-e2e-telco5g
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.12-e2e-vsphere-ovn
