@@ -540,3 +540,42 @@ func TestProjectCachingJiraClient(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterOutDisabledJiraProjects(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name           string
+		candidates     []string
+		jiraConfig     *plugins.Jira
+		expectedOutput []string
+	}{{
+		name:           "empty jira config",
+		candidates:     []string{"ABC-123", "DEF-567"},
+		jiraConfig:     nil,
+		expectedOutput: []string{"ABC-123", "DEF-567"},
+	}, {
+		name:           "upper case disabled list",
+		candidates:     []string{"ABC-123", "DEF-567"},
+		jiraConfig:     &plugins.Jira{DisabledJiraProjects: []string{"ABC"}},
+		expectedOutput: []string{"DEF-567"},
+	}, {
+		name:           "lower case disabled list",
+		candidates:     []string{"ABC-123", "DEF-567"},
+		jiraConfig:     &plugins.Jira{DisabledJiraProjects: []string{"abc"}},
+		expectedOutput: []string{"DEF-567"},
+	}, {
+		name:           "multiple disabled projects",
+		candidates:     []string{"ABC-123", "DEF-567"},
+		jiraConfig:     &plugins.Jira{DisabledJiraProjects: []string{"abc", "def"}},
+		expectedOutput: []string{},
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output := filterOutDisabledJiraProjects(tc.candidates, tc.jiraConfig)
+			if diff := cmp.Diff(tc.expectedOutput, output); diff != "" {
+				t.Fatalf("actual output differes from expected output: %s", diff)
+			}
+		})
+	}
+}
