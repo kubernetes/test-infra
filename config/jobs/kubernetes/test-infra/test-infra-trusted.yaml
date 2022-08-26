@@ -387,7 +387,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20220607-33951ed1ed
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20210913-fc7c4e8
         command:
         - gsutil
         args:
