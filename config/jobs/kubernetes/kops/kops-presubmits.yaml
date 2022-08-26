@@ -260,6 +260,8 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-boilerplate
   - name: pull-kops-verify-gofmt
+    branches:
+    - master
     always_run: true
     labels:
       preset-service-account: "true"
@@ -281,6 +283,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gofmt
+  - name: pull-kops-verify-gofmt-go118
+    branches:
+    - release-1.24
+    - release-1.23
+    - release-1.22
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-1.24
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-gofmt"
+        resources:
+          requests:
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-gofmt-go118
   - name: pull-kops-verify-govet
     always_run: true
     labels:
