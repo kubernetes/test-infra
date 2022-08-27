@@ -1026,9 +1026,9 @@ def generate_presubmits_e2e():
         presubmit_test(
             k8s_version='stable',
             kops_channel='alpha',
-            name='pull-kops-e2e-kubernetes-aws',
+            name='pull-kops-e2e-k8s-aws-calico',
             networking='calico',
-            tab_name='e2e-containerd',
+            tab_name='e2e-aws-calico',
             always_run=True,
         ),
         presubmit_test(
