@@ -1475,6 +1475,7 @@ presubmits:
   - name: pull-kops-e2e-aws-karpenter
     branches:
     - master
+    run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/'
     always_run: false
     optional: false
     skip_report: false
