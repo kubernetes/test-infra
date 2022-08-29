@@ -17,84 +17,14 @@ limitations under the License.
 package util
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-
-	"github.com/sirupsen/logrus"
-	"google.golang.org/api/googleapi"
-	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-	utilpointer "k8s.io/utils/pointer"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
-	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
-
-type Author interface {
-	NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error)
-}
-
-type StorageAuthor struct {
-	Opener pkgio.Opener
-	Opts   *pkgio.WriterOptions
-}
-
-func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error) {
-	pp, err := prowv1.ParsePath(bucket)
-	if err != nil {
-		return nil, err
-	}
-	opts := pkgio.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)}
-	if sa.Opts != nil {
-		sa.Opts.Apply(&opts)
-	}
-	return sa.Opener.Writer(ctx, fmt.Sprintf("%s://%s/%s", pp.StorageProvider(), pp.Bucket(), path), opts)
-}
-
-func WriteContent(ctx context.Context, logger *logrus.Entry, author Author, bucket, path string, overwrite bool, content []byte) error {
-	log := logger.WithFields(logrus.Fields{"bucket": bucket, "path": path, "overwrite": overwrite})
-	log.Debug("Uploading")
-	w, err := author.NewWriter(ctx, bucket, path, overwrite)
-	if err != nil {
-		return err
-	}
-	_, err = w.Write(content)
-	var writeErr error
-	if isErrUnexpected(err) {
-		writeErr = err
-		log.WithError(err).Warn("Uploading info to storage failed (write)")
-	}
-	err = w.Close()
-	var closeErr error
-	if isErrUnexpected(err) {
-		closeErr = err
-		log.WithError(err).Warn("Uploading info to storage failed (close)")
-	}
-	return utilerrors.NewAggregate([]error{writeErr, closeErr})
-}
-
-func isErrUnexpected(err error) bool {
-	if err == nil {
-		return false
-	}
-	// Precondition Failed is expected and we can silently ignore it.
-	if e, ok := err.(*googleapi.Error); ok {
-		if e.Code == http.StatusPreconditionFailed {
-			return false
-		}
-	}
-	// Precondition file already exists is expected
-	if errors.Is(err, pkgio.PreconditionFailedObjectAlreadyExists) {
-		return false
-	}
-
-	return true
-}
 
 func GetJobDestination(cfg config.Getter, pj *prowv1.ProwJob) (bucket, dir string, err error) {
 	// We can't divine a destination for jobs that don't have a build ID, so don't try.

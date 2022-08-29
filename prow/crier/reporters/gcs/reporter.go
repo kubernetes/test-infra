@@ -27,12 +27,14 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -41,7 +43,7 @@ const reporterName = "gcsreporter"
 type gcsReporter struct {
 	cfg    config.Getter
 	dryRun bool
-	author util.Author
+	opener io.Opener
 }
 
 func (gr *gcsReporter) Report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
@@ -89,7 +91,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload started.json")
 		return nil
 	}
-	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile), false, output)
+	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)), output)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
@@ -119,7 +121,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload finished.json")
 		return nil
 	}
-	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.FinishedStatusFile), false, output)
+	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile)), output)
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
@@ -138,7 +140,8 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj 
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload pod info")
 		return nil
 	}
-	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.ProwJobFile), true, output)
+	overWriteOpts := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(false)}
+	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.ProwJobFile)), output, overWriteOpts)
 }
 
 func (gr *gcsReporter) GetName() string {
@@ -153,13 +156,9 @@ func (gr *gcsReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prow
 }
 
 func New(cfg config.Getter, opener io.Opener, dryRun bool) *gcsReporter {
-	return newWithAuthor(cfg, util.StorageAuthor{Opener: opener}, dryRun)
-}
-
-func newWithAuthor(cfg config.Getter, author util.Author, dryRun bool) *gcsReporter {
 	return &gcsReporter{
 		cfg:    cfg,
 		dryRun: dryRun,
-		author: author,
+		opener: opener,
 	}
 }

@@ -133,3 +133,9 @@ func TestParseStoragePath(t *testing.T) {
 		})
 	}
 }
+
+func TestGCSStoragePath(t *testing.T) {
+	if want, got := "gs://a/b", providers.GCSStoragePath("a", "b"); want != got {
+		t.Fatalf("Got wrong GCS storage path. Want: %s, got: %s", want, got)
+	}
+}

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -30,10 +31,13 @@ import (
 	"sync"
 	"time"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"gocloud.dev/blob"
 	"gocloud.dev/gcerrors"
+	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs" // TODO(fejta): move this logic here
@@ -479,4 +483,44 @@ func (o *opener) Iterator(ctx context.Context, prefix, delimiter string) (Object
 			Delimiter: delimiter,
 		}),
 	}, nil
+}
+
+func WriteContent(ctx context.Context, logger *logrus.Entry, opener Opener, path string, content []byte, opts ...WriterOptions) error {
+	log := logger.WithFields(logrus.Fields{"path": path, "write-options": opts})
+	log.Debug("Uploading")
+	w, err := opener.Writer(ctx, path, opts...)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(content)
+	var writeErr error
+	if isErrUnexpected(err) {
+		writeErr = err
+		log.WithError(err).Warn("Uploading info to storage failed (write)")
+	}
+	err = w.Close()
+	var closeErr error
+	if isErrUnexpected(err) {
+		closeErr = err
+		log.WithError(err).Warn("Uploading info to storage failed (close)")
+	}
+	return utilerrors.NewAggregate([]error{writeErr, closeErr})
+}
+
+func isErrUnexpected(err error) bool {
+	if err == nil {
+		return false
+	}
+	// Precondition Failed is expected and we can silently ignore it.
+	if e, ok := err.(*googleapi.Error); ok {
+		if e.Code == http.StatusPreconditionFailed {
+			return false
+		}
+	}
+	// Precondition file already exists is expected
+	if errors.Is(err, PreconditionFailedObjectAlreadyExists) {
+		return false
+	}
+
+	return true
 }

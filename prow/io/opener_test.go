@@ -22,11 +22,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 	"testing"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/googleapi"
 )
 
 func Test_opener_SignedURL(t *testing.T) {
@@ -200,6 +202,44 @@ func TestIsNotExist(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if result := IsNotExist(tc.err); result != tc.expectMatch {
 				t.Errorf("expect match: %t, got match: %t", tc.expectMatch, result)
+			}
+		})
+	}
+}
+
+func TestIsErrUnexpected(t *testing.T) {
+	tests := []struct {
+		name       string
+		err        error
+		unexpected bool
+	}{
+		{
+			name:       "standard errors are unexpected",
+			err:        errors.New("this is just a normal error"),
+			unexpected: true,
+		},
+		{
+			name:       "nil errors are expected",
+			err:        nil,
+			unexpected: false,
+		},
+		{
+			name:       "googleapi errors other than Precondition Failed are unexpected",
+			err:        &googleapi.Error{Code: http.StatusNotFound},
+			unexpected: true,
+		},
+		{
+			name:       "Precondition Failed googleapi errors are expected",
+			err:        &googleapi.Error{Code: http.StatusPreconditionFailed},
+			unexpected: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := isErrUnexpected(tc.err)
+			if result != tc.unexpected {
+				t.Errorf("Expected isErrUnexpected() to return %v, got %v", tc.unexpected, result)
 			}
 		})
 	}
