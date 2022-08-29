@@ -40,7 +40,6 @@ import (
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	slackclient "k8s.io/test-infra/prow/slack"
@@ -264,7 +263,7 @@ func main() {
 	}
 
 	if o.blobStorageWorkers > 0 || o.k8sBlobStorageWorkers > 0 {
-		opener, err := io.NewOpener(context.Background(), o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
+		opener, err := o.storage.StorageClient(context.Background())
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating opener")
 		}
