@@ -25,7 +25,7 @@ migrate() {
     exit 1
   fi
   "${REPO_ROOT}/_bin/migratestatus" \
-    --dry-run=false --alsologtostderr \
+    --dry-run=false \
     --org=kubernetes \
     --repo=kubernetes \
     --tokenfile ~/github-token \
