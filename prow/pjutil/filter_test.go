@@ -120,6 +120,7 @@ func TestCommandFilter(t *testing.T) {
 	var testCases = []struct {
 		name         string
 		body         string
+		half         int
 		presubmits   []config.Presubmit
 		expected     [][]bool
 		expectedName string
@@ -149,7 +150,8 @@ func TestCommandFilter(t *testing.T) {
 		{
 			name: "truncate-name",
 			body: `/test trigger
-fill in random content so that it exceeds the limit of 50 chars`,
+fill in random content so that it exceeds the limit of half*2 chars`,
+			half: 10,
 			presubmits: []config.Presubmit{
 				{
 					JobBase: config.JobBase{
@@ -160,8 +162,9 @@ fill in random content so that it exceeds the limit of 50 chars`,
 				},
 			},
 			expected: [][]bool{{true, true, true}},
-			expectedName: `command-filter: /test trigger
-fill in random content so that it ex`,
+			expectedName: `command-filter: /test trig
+...
+lf*2 chars`,
 		},
 	}
 
@@ -174,6 +177,9 @@ fill in random content so that it ex`,
 				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)
 			}
 			filter := NewCommandFilter(testCase.body)
+			if testCase.half > 0 {
+				filter.half = testCase.half
+			}
 			for i, presubmit := range testCase.presubmits {
 				actualFiltered, actualForced, actualDefault := filter.ShouldRun(presubmit)
 				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]
