@@ -618,8 +618,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeC
 		"run",
 		util.K8s("kubernetes", "test", "e2e_node", "runner", "remote", "run_remote.go"),
 		"--cleanup",
-		"--logtostderr",
-		"--vmodule=*=4",
+		"-vmodule=*=4", // This causes more runtime overhead than -v=4, but perhaps there is a reason for using it?
 		"--ssh-env=gce",
 		fmt.Sprintf("--results-dir=%s", artifactsDir),
 		fmt.Sprintf("--project=%s", project),
