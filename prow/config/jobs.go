@@ -243,7 +243,7 @@ type Periodic struct {
 	Interval string `json:"interval,omitempty"`
 	// MinimumInterval to wait between two runs of the job.
 	// Consecutive jobs are run at `interval` + `duration of previous job` apart.
-	MinimumInterval string `json:"minimun_interval,omitempty"`
+	MinimumInterval string `json:"minimum_interval,omitempty"`
 	// Cron representation of job trigger time
 	Cron string `json:"cron,omitempty"`
 	// Tags for config entries
