@@ -191,6 +191,13 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 			shouldnotRun++
 			continue
 		}
+		// Add a trace log for debugging an internal bug.
+		// (TODO: chaodaiG) Remove this once root cause is discovered.
+		logger.WithFields(logrus.Fields{
+			"pj":      presubmit.Name,
+			"trigger": presubmit.Trigger,
+			"filters": filter.Name(),
+		}).Trace("Job should be triggered.")
 		toTrigger = append(toTrigger, presubmit)
 		namesToTrigger = append(namesToTrigger, presubmit.Name)
 	}
