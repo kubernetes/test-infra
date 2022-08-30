@@ -58,6 +58,5 @@ dashboards:
 test_groups:
 - gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.1-nightly
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.1-nightly
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1
