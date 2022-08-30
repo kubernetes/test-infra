@@ -41,7 +41,7 @@ import (
 const pluginName = "override"
 
 var (
-	overrideRe = regexp.MustCompile(`(?mi)^/override( (.+?)\s*)?$`)
+	overrideRe = regexp.MustCompile(`(?mi)^/override( (.+))?$`)
 )
 
 type Context struct {
@@ -182,11 +182,11 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		overrideConfig = config.Override
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/override [context]",
-		Description: "Forces a github status context to green (one per line).",
+		Usage:       "/override [context1] [context2]",
+		Description: "Forces github status contexts to green (multiple can be given).",
 		Featured:    false,
 		WhoCanUse:   whoCanUse(overrideConfig, "", ""),
-		Examples:    []string{"/override pull-repo-whatever", "/override ci/circleci", "/override deleted-job"},
+		Examples:    []string{"/override pull-repo-whatever", "/override ci/circleci", "/override deleted-job other-job"},
 	})
 	return pluginHelp, nil
 }
@@ -323,11 +323,11 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	overrides := sets.NewString()
 	for _, m := range mat {
 		if m[1] == "" {
-			resp := "/override requires a failed status context to operate on, but none was given"
+			resp := "/override requires failed status contexts to operate on, but none was given"
 			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
-		overrides.Insert(strings.TrimSpace(m[2]))
+		overrides.Insert(strings.Fields(m[2])...)
 	}
 
 	authorized := authorizedUser(oc, log, org, repo, user)
@@ -442,7 +442,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	}
 
 	if unknown := overrides.Difference(contexts); unknown.Len() > 0 {
-		resp := fmt.Sprintf(`/override requires a failed status context, check run or a prowjob name to operate on.
+		resp := fmt.Sprintf(`/override requires failed status contexts, check run or a prowjob name to operate on.
 The following unknown contexts/checkruns were given:
 %s
 
