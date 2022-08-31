@@ -611,7 +611,7 @@ func validatePeriodicDefaultCloneConfig(cfg config.JobConfig) error {
 	for _, job := range cfg.Periodics {
 		// Top level clone configs don't make sense for periodics jobs.
 		if job.CloneDepth != 0 || job.CloneURI != "" || job.PathAlias != "" {
-			validationErrs = append(validationErrs, errors.New("periodic jobs might clone 0, 1, or more repos, top level `clone_depth`, `clone_uri`, and `path_alias` don't have any effect"))
+			validationErrs = append(validationErrs, fmt.Errorf("periodic jobs might clone 0, 1, or more repos, top level `clone_depth`, `clone_uri`, and `path_alias` don't have any effect. Name: %q", job.Name))
 		}
 	}
 	return utilerrors.NewAggregate(validationErrs)
