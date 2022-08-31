@@ -35,6 +35,7 @@ import (
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/version"
 )
 
 const (
@@ -179,6 +180,17 @@ func (l LastSyncState) DeepCopy() LastSyncState {
 	return result
 }
 
+type roundTripperWithHeader struct {
+	upstream http.RoundTripper
+}
+
+func (rt *roundTripperWithHeader) RoundTrip(r *http.Request) (*http.Response, error) {
+	r.Header.Add("user-agent", "prow")
+	// Also include component name
+	r.Header.Add("user-agent", "prow/"+version.Name)
+	return rt.upstream.RoundTrip(r)
+}
+
 // NewClient returns a new gerrit client
 func NewClient(instances map[string]map[string]*config.GerritQueryFilter) (*Client, error) {
 	c := &Client{
@@ -186,7 +198,10 @@ func NewClient(instances map[string]map[string]*config.GerritQueryFilter) (*Clie
 		accounts: map[string]*gerrit.AccountInfo{},
 	}
 	for instance := range instances {
-		gc, err := gerrit.NewClient(instance, nil)
+		httpClient := http.Client{
+			Transport: &roundTripperWithHeader{upstream: http.DefaultTransport},
+		}
+		gc, err := gerrit.NewClient(instance, &httpClient)
 		if err != nil {
 			return nil, err
 		}
