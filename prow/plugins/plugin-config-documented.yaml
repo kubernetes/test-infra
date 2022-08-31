@@ -407,6 +407,15 @@ config_updater:
             use_full_path_as_key: true
 dco:
     "":
+        # ContributingBranch allows setting a custom branch where to find CONTRIBUTING.md
+        contributing_branch: ' '
+
+        # ContributingPath is used to override the default path to CONTRIBUTING.md
+        contributing_path: ' '
+
+        # ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
+        contributing_repo: ' '
+
         # SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
         skip_dco_check_for_collaborators: true
 
