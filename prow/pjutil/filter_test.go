@@ -126,6 +126,24 @@ func TestCommandFilter(t *testing.T) {
 		expectedName string
 	}{
 		{
+			name: "loose-trigger",
+			body: "something/test job-abcdefg",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "trigger",
+					},
+					Trigger:      `/test job-a`,
+					RerunCommand: "/test job-a", // rerun command has to be set when trigger is set.
+				},
+			},
+			// Loose trigger without `^` and `$` means it would match the text
+			// from anywhere in the message. For example a comment like:
+			// `something/test job-abcdefg` would match this job.
+			expected:     [][]bool{{true, true, true}},
+			expectedName: "command-filter: something/test job-abcdefg",
+		},
+		{
 			name: "command filter matches jobs whose triggers match the body",
 			body: "/test trigger",
 			presubmits: []config.Presubmit{
