@@ -45,6 +45,7 @@ var (
 	extraSystemdServices = pflag.StringSlice("extra-systemd-services", []string{}, "Extra systemd services to dump")
 	gcsPath              = pflag.String("gcs-path", "", "Path to the GCS directory under which to upload logs, for eg: gs://my-logs-bucket/logs")
 	gcloudAuthFilePath   = pflag.String("gcloud-auth-file-path", "/etc/service-account/service-account.json", "Path to gcloud service account file, for authenticating gsutil to write to GCS bucket")
+	useAdc               = pflag.Bool("use-application-default-credentials", false, "Whether to use Application Default Credentials instead of the provided service account file")
 	journalPath          = pflag.String("journal-path", "/var/log/journal", "Path where the systemd journal dir is mounted")
 	nodeName             = pflag.String("node-name", "", "Name of the node this log exporter is running on")
 	sleepDuration        = pflag.Duration("sleep-duration", 60*time.Second, "Duration to sleep before exiting with success. Useful for making pods schedule with hard anti-affinity when run as a job on a k8s cluster")
@@ -80,10 +81,12 @@ func checkConfigValidity() error {
 	if *gcsPath == "" {
 		return fmt.Errorf("Flag --gcs-path has its value unspecified")
 	}
-	if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
-		return fmt.Errorf("Could not find the gcloud service account file: %w", err)
-	} else if err := runCommand("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath); err != nil {
-		return fmt.Errorf("Failed to activate gcloud service account: %w", err)
+	if !*useAdc {
+		if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
+			return fmt.Errorf("Could not find the gcloud service account file: %w", err)
+		} else if err := runCommand("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath); err != nil {
+			return fmt.Errorf("Failed to activate gcloud service account: %w", err)
+		}
 	}
 	return nil
 }
