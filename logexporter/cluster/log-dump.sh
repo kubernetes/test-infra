@@ -698,13 +698,16 @@ function dump_nodes_with_logexporter() {
   fi
 
   # Obtain parameters required by logexporter.
-  local -r service_account_credentials="$(base64 "${GOOGLE_APPLICATION_CREDENTIALS}" | tr -d '\n')"
+  if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+    local -r service_account_credentials="$(base64 "${GOOGLE_APPLICATION_CREDENTIALS}" | tr -d '\n')"
+  fi
   local -r cloud_provider="${KUBERNETES_PROVIDER}"
   local -r enable_hollow_node_logs="${ENABLE_HOLLOW_NODE_LOGS:-false}"
   local -r logexport_sleep_seconds="$(( 90 + NUM_NODES / 3 ))"
   if [[ -z "${ZONE_NODE_SELECTOR_DISABLED:-}" ]]; then
     local -r node_selector="${ZONE_NODE_SELECTOR_LABEL:-topology.kubernetes.io/zone}: ${ZONE}"
   fi
+  local -r use_application_default_credentials="${LOGEXPORTER_USE_APPLICATION_DEFAULT_CREDENTIALS:-false}"
 
   # Fill in the parameters in the logexporter daemonset template.
   local -r tmp="${KUBE_TEMP}/logexporter"
@@ -715,13 +718,14 @@ function dump_nodes_with_logexporter() {
 
   sed -i'' -e "s@{{.NodeSelector}}@${node_selector:-}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.LogexporterNamespace}}@${logexporter_namespace}@g" "${manifest_yaml}"
-  sed -i'' -e "s@{{.ServiceAccountCredentials}}@${service_account_credentials}@g" "${manifest_yaml}"
+  sed -i'' -e "s@{{.ServiceAccountCredentials}}@${service_account_credentials:-}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.CloudProvider}}@${cloud_provider}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.GCSPath}}@${gcs_artifacts_dir}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.EnableHollowNodeLogs}}@${enable_hollow_node_logs}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.DumpSystemdJournal}}@${dump_systemd_journal}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.ExtraLogFiles}}@${extra_log_files}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.ExtraSystemdServices}}@${extra_systemd_services}@g" "${manifest_yaml}"
+  sed -i'' -e "s@{{.UseApplicationDefaultCredentials}}@${use_application_default_credentials}@g" "${manifest_yaml}"
 
   # Create the logexporter namespace, service-account secret and the logexporter daemonset within that namespace.
   if ! kubectl create -f "${manifest_yaml}"; then
