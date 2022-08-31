@@ -82,7 +82,8 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 	sem := semaphore.NewWeighted(4)
 	group.Add(len(uploadTargets))
 	for dest, upload := range uploadTargets {
-		log := logrus.WithField("dest", dest)
+		writer := dtw(dest)
+		log := logrus.WithField("dest", writer.fullUploadPath())
 		log.Info("Queued for upload")
 		go func(f UploadFunc, writer dataWriter, log *logrus.Entry) {
 			defer group.Done()
@@ -113,7 +114,7 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 			} else {
 				log.Info("Finished upload")
 			}
-		}(upload, dtw(dest), log)
+		}(upload, writer, log)
 	}
 	group.Wait()
 	close(errCh)
@@ -195,6 +196,7 @@ func DataUploadWithOptions(src io.Reader, attrs pkgio.WriterOptions) UploadFunc 
 
 type dataWriter interface {
 	io.WriteCloser
+	fullUploadPath() string
 	ApplyWriterOptions(opts pkgio.WriterOptions)
 }
 
@@ -209,7 +211,7 @@ type openerObjectWriter struct {
 
 func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
 	if w.writeCloser == nil {
-		w.writeCloser, err = w.Opener.Writer(w.Context, fmt.Sprintf("%s/%s", w.Bucket, w.Dest), w.opts...)
+		w.writeCloser, err = w.Opener.Writer(w.Context, w.fullUploadPath(), w.opts...)
 		if err != nil {
 			return 0, err
 		}
@@ -234,4 +236,8 @@ func (w *openerObjectWriter) Close() error {
 
 func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
 	w.opts = append(w.opts, opts)
+}
+
+func (w *openerObjectWriter) fullUploadPath() string {
+	return fmt.Sprintf("%s/%s", w.Bucket, w.Dest)
 }

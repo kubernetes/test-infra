@@ -236,3 +236,33 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 		})
 	}
 }
+
+func Test_openerObjectWriter_fullUploadPath(t *testing.T) {
+	tests := []struct {
+		name   string
+		bucket string
+		dest   string
+		want   string
+	}{
+		{
+			name:   "simple path",
+			bucket: "bucket-A",
+			dest:   "path/to/some/file.json",
+			want:   "gs://bucket-A/path/to/some/file.json",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &openerObjectWriter{
+				Bucket: fmt.Sprintf("gs://%s", tt.bucket),
+				Dest:   tt.dest,
+			}
+			got := w.fullUploadPath()
+
+			if got != tt.want {
+				t.Errorf("fullUploadPath(): got %v, want %v", got, tt.want)
+				return
+			}
+		})
+	}
+}
