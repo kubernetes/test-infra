@@ -104,7 +104,7 @@ presubmits:
           - bash
           - -c
           - >
-            cp /secrets/cloud-config ./cloud-config && cat ./cloud-config && mv /mybin ./bin && make test
+            mv /mybin ./bin && make test
           resources:
             requests:
               memory: "8Gi"
@@ -112,12 +112,3 @@ presubmits:
             limits:
               memory: "8Gi"
               cpu: "1024m"
-          volumeMounts:
-          - mountPath: /secrets
-            name: secrets
-            readOnly: true
-        volumes:
-        - name: secrets
-          secret:
-            defaultMode: 256
-            secretName: cloudstack-token
