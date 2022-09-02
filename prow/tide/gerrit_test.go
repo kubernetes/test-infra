@@ -51,7 +51,7 @@ func newFakeGerritClient() *fakeGerritClient {
 	}
 }
 
-func (f *fakeGerritClient) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters []string) ([]gerrit.ChangeInfo, error) {
+func (f *fakeGerritClient) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error) {
 	if f.changes == nil || f.changes[instance] == nil || f.changes[instance][project] == nil {
 		return nil, errors.New("queries project doesn't exist")
 	}

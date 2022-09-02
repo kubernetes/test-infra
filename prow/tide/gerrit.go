@@ -50,11 +50,11 @@ const (
 	// ref:
 	// https://gerrit-review.googlesource.com/Documentation/user-search.html#_search_operators.
 	// Also good to know: `(repo:repo-A OR repo:repo-B)`
-	gerritDefaultQueryParam = "status:open -is:wip is:submittable is:mergeable"
+	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable+is:mergeable"
 )
 
 type gerritClient interface {
-	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters []string) ([]gerrit.ChangeInfo, error)
+	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error)
 	GetChange(instance, id string) (*gerrit.ChangeInfo, error)
 	GetBranchRevision(instance, project, branch string) (string, error)
 }
@@ -167,7 +167,7 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 		for projName := range projs {
 			wg.Add(1)
 			go func(projName string) {
-				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, []string{gerritDefaultQueryParam})
+				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritDefaultQueryParam)
 				if err != nil {
 					p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName}).WithError(err).Warn("Querying gerrit project for changes.")
 					errChan <- fmt.Errorf("failed querying project '%s' from instance '%s': %v", projName, instance, err)
