@@ -405,7 +405,7 @@ func (c *Client) QueryChangesForInstance(instance string, lastState LastSyncStat
 // whether all other projects have been queries or not yet. So caller of this
 // method is responsible for making sure that LastSyncState is up-to-date, if
 // the lastUpdate time is used by caller.
-func (c *Client) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, additionalFilters []string) ([]ChangeInfo, error) {
+func (c *Client) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]ChangeInfo, error) {
 	log := logrus.WithContext(context.Background()).WithField("instance", instance)
 
 	c.lock.RLock()
@@ -420,7 +420,7 @@ func (c *Client) QueryChangesForProject(instance, project string, lastUpdate tim
 		return []ChangeInfo{}, fmt.Errorf("project %q from instance %q not registered in gerrit handler, it might not have been initialized yet", project, instance)
 	}
 
-	changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, queryStringsFromQueryFilter(queryFilters))
+	changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, append(queryStringsFromQueryFilter(queryFilters), additionalFilters...)...)
 	if err != nil {
 		return []ChangeInfo{}, fmt.Errorf("failed to query changes for project %q of %q instance: %v", project, instance, err)
 	}
@@ -542,7 +542,7 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 			lastUpdate = timeNow
 			log.WithField("now", timeNow).Warn("lastState not found, defaulting to now")
 		}
-		changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, queryStringsFromQueryFilter(filters))
+		changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, queryStringsFromQueryFilter(filters)...)
 		if err != nil {
 			clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultError).Inc()
 			// don't halt on error from one project, log & continue
@@ -603,25 +603,24 @@ func queryStringsFromQueryFilter(filters *config.GerritQueryFilter) []string {
 		branchFilter = append(branchFilter, fmt.Sprintf("branch:'%s'", br))
 	}
 	if len(branchFilter) > 0 {
-		res = append(res, fmt.Sprintf("(%s)", strings.Join(branchFilter, " OR ")))
+		res = append(res, fmt.Sprintf("(%s)", strings.Join(branchFilter, "+OR+")))
 	}
 	var excludedBranchFilter []string
 	for _, br := range filters.ExcludedBranches {
 		excludedBranchFilter = append(excludedBranchFilter, fmt.Sprintf("-branch:'%s'", br))
 	}
 	if len(excludedBranchFilter) > 0 {
-		res = append(res, fmt.Sprintf("(%s)", strings.Join(excludedBranchFilter, " AND ")))
+		res = append(res, fmt.Sprintf("(%s)", strings.Join(excludedBranchFilter, "+AND+")))
 	}
 
 	return res
 }
 
-func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, additionalFilters []string) ([]gerrit.ChangeInfo, error) {
+func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]gerrit.ChangeInfo, error) {
 	var pending []gerrit.ChangeInfo
 
 	var opt gerrit.QueryChangeOptions
-	opt.Query = append(opt.Query, "project:"+project)
-	opt.Query = append(opt.Query, additionalFilters...)
+	opt.Query = append(opt.Query, strings.Join(append(additionalFilters, "project:"+project), "+"))
 	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES"}
 
 	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
