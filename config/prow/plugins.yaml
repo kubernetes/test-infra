@@ -157,6 +157,42 @@ label:
           - pushkarj
         # This label is used to filter/tag CVEs announced by SRC
         label: official-cve-feed
+    kubernetes/enhancements:
+      # Restrict setting of tracked/* labels to the enhancements team.
+      - label: tracked/no
+        allowed_teams:
+        - enhancements
+      - label: tracked/yes
+        allowed_teams:
+        - enhancements
+      - label: tracked/out-of-tree
+        allowed_teams:
+        - enhancements
+      # Restrict setting of 'lead-opted-in' label to SIG leads.
+      - label: lead-opted-in  
+        allowed_teams:
+        - sig-api-machinery-leads
+        - sig-apps-leads
+        - sig-architecture-leads
+        - sig-auth-leads
+        - sig-autoscaling-leads
+        - sig-cli-leads
+        - sig-cloud-provider-leads
+        - sig-cluster-lifecycle-leads
+        - sig-contributor-experience-leads
+        - sig-docs-leads
+        - sig-instrumentation-leads
+        - sig-k8s-infra-leads
+        - sig-multicluster-leads
+        - sig-network-leads
+        - sig-node-leads
+        - sig-release-leads
+        - sig-scalability-leads
+        - sig-scheduling-leads
+        - sig-security-leads
+        - sig-storage-leads
+        - sig-testing-leads
+        - sig-windows-leads
 
 lgtm:
 - repos:
