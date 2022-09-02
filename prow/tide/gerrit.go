@@ -24,16 +24,21 @@ import (
 	"sync"
 	"time"
 
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/tide/blockers"
+	"k8s.io/test-infra/prow/tide/history"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/andygrunwald/go-gerrit"
@@ -50,7 +55,47 @@ const (
 
 type gerritClient interface {
 	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters []string) ([]gerrit.ChangeInfo, error)
+	GetChange(instance, id string) (*gerrit.ChangeInfo, error)
 	GetBranchRevision(instance, project, branch string) (string, error)
+}
+
+// NewController makes a Controller out of the given clients.
+func NewGerritController(
+	mgr manager,
+	cfgAgent *config.Agent,
+	maxRecordsPerPool int,
+	opener io.Opener,
+	historyURI,
+	statusURI string,
+	logger *logrus.Entry,
+	configOptions configflagutil.ConfigOptions,
+	cookieFilePath string,
+) (*Controller, error) {
+	if logger == nil {
+		logger = logrus.NewEntry(logrus.StandardLogger())
+	}
+	hist, err := history.New(maxRecordsPerPool, opener, historyURI)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing history client from %q: %w", historyURI, err)
+	}
+
+	ctx := context.Background()
+	// Shared fields
+	statusUpdate := &statusUpdate{
+		dontUpdateStatus: &threadSafePRSet{},
+		newPoolPending:   make(chan bool),
+	}
+
+	cacheGetter, err := config.NewInRepoConfigCacheGetter(cfgAgent, configOptions.InRepoConfigCacheSize, configOptions.InRepoConfigCacheCopies, configOptions.InRepoConfigCacheDirBase, flagutil.GitHubOptions{}, cookieFilePath, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
+	}
+	provider := newGerritProvider(logger, cfgAgent.Config, nil, cacheGetter, cookieFilePath, "")
+	syncCtrl, err := newSyncController(ctx, logger, mgr, provider, cfgAgent.Config, nil, hist, false, statusUpdate)
+	if err != nil {
+		return nil, err
+	}
+	return &Controller{syncCtrl: syncCtrl}, nil
 }
 
 // Enforcing interface implementation check at compile time
@@ -69,7 +114,6 @@ type GerritProvider struct {
 	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter
 	tokenPathOverride       string
 
-	*mergeChecker
 	logger *logrus.Entry
 }
 
@@ -78,7 +122,6 @@ func newGerritProvider(
 	cfg config.Getter,
 	pjclientset ctrlruntimeclient.Client,
 	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter,
-	mergeChecker *mergeChecker,
 	cookiefilePath string,
 	tokenPathOverride string,
 ) *GerritProvider {
@@ -99,7 +142,6 @@ func newGerritProvider(
 		inRepoConfigCacheGetter: inRepoConfigCacheGetter,
 		cookiefilePath:          cookiefilePath,
 		tokenPathOverride:       tokenPathOverride,
-		mergeChecker:            mergeChecker,
 	}
 }
 
@@ -331,4 +373,16 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequest
 	}
 
 	return res, nil
+}
+
+func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {
+	change, err := p.gc.GetChange(org, strconv.Itoa(number))
+	if err != nil {
+		return nil, fmt.Errorf("failed get change: %v", err)
+	}
+	var files []string
+	for f := range change.Revisions[change.CurrentRevision].Files {
+		files = append(files, f)
+	}
+	return files, nil
 }
