@@ -92,7 +92,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
-        timeout: 3h
+        timeout: 4h
       path_alias: sigs.k8s.io/cloud-provider-azure
       branches:
         - release-1.1
@@ -199,7 +199,7 @@ presubmits:
       skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
-        timeout: 3h
+        timeout: 4h
       path_alias: sigs.k8s.io/cloud-provider-azure
       branches:
         - release-1.1
