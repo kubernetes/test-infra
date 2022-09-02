@@ -159,3 +159,8 @@ func ParseStoragePath(storagePath string) (storageProvider, bucket, relativePath
 	}
 	return storageProvider, bucket, relativePath, nil
 }
+
+// GCSStoragePath is the reverse of ParseStoragePath.
+func GCSStoragePath(bucket, path string) string {
+	return fmt.Sprintf("%s://%s/%s", GS, bucket, path)
+}

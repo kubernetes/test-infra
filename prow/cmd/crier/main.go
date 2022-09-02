@@ -281,7 +281,7 @@ func main() {
 				logrus.WithError(err).Fatal("Error building pod client sets for Kubernetes GCS workers")
 			}
 
-			k8sGcsReporter := k8sgcsreporter.New(cfg, opener, coreClients, float32(o.k8sReportFraction), o.dryrun)
+			k8sGcsReporter := k8sgcsreporter.New(cfg, opener, k8sgcsreporter.NewK8sResourceGetter(coreClients), float32(o.k8sReportFraction), o.dryrun)
 			if err := crier.New(mgr, k8sGcsReporter, o.k8sBlobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 				logrus.WithError(err).Fatal("failed to construct k8sgcsreporter controller")
 			}
