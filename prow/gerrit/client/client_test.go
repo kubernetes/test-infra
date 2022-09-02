@@ -176,14 +176,14 @@ func TestQueryStringsFromQueryFilter(t *testing.T) {
 			filters: &config.GerritQueryFilter{
 				Branches: []string{"foo"},
 			},
-			expected: []string{"(branch:'foo')"},
+			expected: []string{"(branch:foo)"},
 		},
 		{
 			name: "multiple-branches",
 			filters: &config.GerritQueryFilter{
 				Branches: []string{"foo1", "foo2", "foo3"},
 			},
-			expected: []string{"(branch:'foo1'+OR+branch:'foo2'+OR+branch:'foo3')"},
+			expected: []string{"(branch:foo1+OR+branch:foo2+OR+branch:foo3)"},
 		},
 		{
 			name: "branches-and-excluded",
@@ -192,8 +192,8 @@ func TestQueryStringsFromQueryFilter(t *testing.T) {
 				ExcludedBranches: []string{"bar1", "bar2", "bar3"},
 			},
 			expected: []string{
-				"(branch:'foo1'+OR+branch:'foo2'+OR+branch:'foo3')",
-				"(-branch:'bar1'+AND+-branch:'bar2'+AND+-branch:'bar3')",
+				"(branch:foo1+OR+branch:foo2+OR+branch:foo3)",
+				"(-branch:bar1+AND+-branch:bar2+AND+-branch:bar3)",
 			},
 		},
 	}
