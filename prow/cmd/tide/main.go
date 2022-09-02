@@ -27,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -157,25 +158,9 @@ func main() {
 
 	var c *tide.Controller
 	var gitClient *prowgit.Client
-	if o.providerName == gerritProviderName || cfg().Tide.Gerrit != nil {
-		c, err = tide.NewGerritController(
-			mgr,
-			configAgent,
-			o.maxRecordsPerPool,
-			opener,
-			o.historyURI,
-			o.statusURI,
-			nil,
-			o.config,
-			o.cookiefilePath,
-		)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error creating Tide controller.")
-		}
-	}
-
-	// If providerName is not configured, by default work with GitHub.
-	if o.providerName == githubProviderName || cfg().Tide.Queries.QueryMap() != nil {
+	provider := provider(o.providerName, cfg().Tide)
+	switch provider {
+	case githubProviderName:
 		githubSync, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "sync"})
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client for sync.")
@@ -216,6 +201,23 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating Tide controller.")
 		}
+	case gerritProviderName:
+		c, err = tide.NewGerritController(
+			mgr,
+			configAgent,
+			o.maxRecordsPerPool,
+			opener,
+			o.historyURI,
+			o.statusURI,
+			nil,
+			o.config,
+			o.cookiefilePath,
+		)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating Tide controller.")
+		}
+	default:
+		logrus.Fatalf("Unsupported provider type '%s', this should not happen", provider)
 	}
 
 	interrupts.Run(func(ctx context.Context) {
@@ -269,6 +271,24 @@ func sync(c *tide.Controller) {
 	if err := c.Sync(); err != nil {
 		logrus.WithError(err).Error("Error syncing.")
 	}
+}
+
+func provider(wantProvider string, tideConfig config.Tide) string {
+	if wantProvider != "" {
+		if !sets.NewString(githubProviderName, gerritProviderName).Has(wantProvider) {
+			return ""
+		}
+		return wantProvider
+	}
+	// Default to GitHub if GitHub queries are configured
+	if len([]config.TideQuery(tideConfig.Queries)) > 0 {
+		return githubProviderName
+	}
+	if tideConfig.Gerrit != nil && len([]config.GerritOrgRepoConfig(tideConfig.Gerrit.Queries)) > 0 {
+		return gerritProviderName
+	}
+	// When nothing is configured, don't fail tide. Assuming
+	return githubProviderName
 }
 
 func tokensPerIteration(hourlyTokens int, iterPeriod time.Duration) int {
