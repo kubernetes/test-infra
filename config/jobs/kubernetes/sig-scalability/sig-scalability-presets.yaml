@@ -107,6 +107,8 @@ presets:
     value: true
   - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
     value: pd.csi.storage.gke.io
+  - name: NODE_SCOPES
+    value: "monitoring,logging-write,storage-rw"
 
 ### kubemark-gce-scale
 - labels:
@@ -255,6 +257,8 @@ presets:
     value: pd.csi.storage.gke.io
   - name: KUBE_APISERVER_GODEBUG
     value: gctrace=1
+  - name: NODE_SCOPES
+    value: "monitoring,logging-write,storage-rw"
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.

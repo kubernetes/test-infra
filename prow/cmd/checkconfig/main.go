@@ -122,6 +122,7 @@ const (
 	validateGitHubAppInstallationWarning          = "validate-github-app-installation"
 	validateLabelWarning                          = "validate-label"
 	requiredJobAnnotationsWarning                 = "required-job-annotations"
+	periodicDefaultCloneWarning                   = "periodic-default-clone-config"
 
 	defaultHourlyTokens = 3000
 	defaultAllowedBurst = 100
@@ -146,6 +147,7 @@ var defaultWarnings = []string{
 	validateUnmanagedBranchConfigHasNoSubconfig,
 	validateLabelWarning,
 	requiredJobAnnotationsWarning,
+	periodicDefaultCloneWarning,
 }
 
 var expensiveWarnings = []string{
@@ -332,6 +334,11 @@ func validate(o options) error {
 	}
 	if o.warningEnabled(jobRefsDuplicationWarning) {
 		if err := validateJobExtraRefs(cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(periodicDefaultCloneWarning) {
+		if err := validatePeriodicDefaultCloneConfig(cfg.JobConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -594,6 +601,17 @@ func validateJobExtraRefs(cfg config.JobConfig) error {
 			if err := config.ValidateRefs(repo, presubmit.JobBase); err != nil {
 				validationErrs = append(validationErrs, err)
 			}
+		}
+	}
+	return utilerrors.NewAggregate(validationErrs)
+}
+
+func validatePeriodicDefaultCloneConfig(cfg config.JobConfig) error {
+	var validationErrs []error
+	for _, job := range cfg.Periodics {
+		// Top level clone configs don't make sense for periodics jobs.
+		if job.CloneDepth != 0 || job.CloneURI != "" || job.PathAlias != "" {
+			validationErrs = append(validationErrs, fmt.Errorf("periodic jobs might clone 0, 1, or more repos, top level `clone_depth`, `clone_uri`, and `path_alias` don't have any effect. Name: %q", job.Name))
 		}
 	}
 	return utilerrors.NewAggregate(validationErrs)

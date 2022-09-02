@@ -680,6 +680,12 @@ type Dco struct {
 	TrustedOrg string `json:"trusted_org,omitempty"`
 	// SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
 	SkipDCOCheckForCollaborators bool `json:"skip_dco_check_for_collaborators,omitempty"`
+	// ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
+	ContributingRepo string `json:"contributing_repo,omitempty"`
+	// ContributingBranch allows setting a custom branch where to find CONTRIBUTING.md
+	ContributingBranch string `json:"contributing_branch,omitempty"`
+	// ContributingPath is used to override the default path to CONTRIBUTING.md
+	ContributingPath string `json:"contributing_path,omitempty"`
 }
 
 // CherryPickUnapproved is the config for the cherrypick-unapproved plugin.

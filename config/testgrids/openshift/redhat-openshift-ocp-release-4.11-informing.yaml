@@ -3097,6 +3097,33 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-nightly-4.11-e2e-ibmcloud-csi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.11-e2e-ibmcloud-csi
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-bm
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -3375,33 +3402,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-upgrade-ovn-ipv6
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-virtualmedia
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-virtualmedia
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -3799,14 +3799,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.11-install-analysis-vsphere-sdn-ipi
+    name: periodic-ci-openshift-release-master-nightly-4.11-install-analysis-all
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.11-install-analysis-vsphere-sdn-ipi
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.11-install-analysis-all
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -5085,6 +5085,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp-upi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-gcp-upi
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-ibmcloud-csi
+  name: periodic-ci-openshift-release-master-nightly-4.11-e2e-ibmcloud-csi
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-bm
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-bm
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-compact
@@ -5113,8 +5116,6 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-upgrade-ovn-ipv6
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-upgrade-ovn-ipv6
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-virtualmedia
-  name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-virtualmedia
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-live-iso
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-live-iso
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-single-node-with-worker-live-iso
@@ -5143,8 +5144,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-upi
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-upi-serial
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere-upi-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-install-analysis-vsphere-sdn-ipi
-  name: periodic-ci-openshift-release-master-nightly-4.11-install-analysis-vsphere-sdn-ipi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-install-analysis-all
+  name: periodic-ci-openshift-release-master-nightly-4.11-install-analysis-all
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-openshift-e2e-aws-single-node-workers-upgrade-conformance
   name: periodic-ci-openshift-release-master-nightly-4.11-openshift-e2e-aws-single-node-workers-upgrade-conformance
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-upgrade-from-stable-4.10-e2e-aws-upgrade

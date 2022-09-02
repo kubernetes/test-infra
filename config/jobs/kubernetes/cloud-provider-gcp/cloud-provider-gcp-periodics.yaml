@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       resources:
         limits:
           cpu: 4
@@ -44,10 +44,12 @@ periodics:
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         export GO111MODULE=on;
+        export BAZEL_VERSION=5.3.0;
+        /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --master-size n1-standard-2  -- --test-package-version=v1.24.2 --focus-regex='\[Conformance\]'
+        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --master-size n1-standard-2  -- --test-package-version=v1.25.0 --focus-regex='\[Conformance\]'
 - interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-cloud-provider-gcp-e2e-latest
@@ -69,7 +71,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       resources:
         limits:
           cpu: 4
@@ -93,7 +95,9 @@ periodics:
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         export GO111MODULE=on;
+        export BAZEL_VERSION=5.3.0;
+        /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --node-size n1-standard-4 --master-size n1-standard-8 -- --test-package-version=v1.24.2 --parallel=30 --test-args='--minStartupPods=8 --ginkgo.flakeAttempts=3' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --node-size n1-standard-4 --master-size n1-standard-8 -- --test-package-version=v1.25.0 --parallel=30 --test-args='--minStartupPods=8 --ginkgo.flakeAttempts=3' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'

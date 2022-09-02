@@ -1,9 +1,21 @@
 presubmits:
   kubernetes-sigs/kernel-module-management:
-  - name: pull-kernel-module-management-lint
+  - name: pull-kernel-module-management-check-commits-count
     always_run: true
     decorate: true
     optional: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: check-commits-count
+      description: "make sure each PR to kernel-module-management has a single commit."
+    spec:
+      containers:
+      - image: bitnami/git:latest
+        command:
+        - ci/prow/check-commits-count
+  - name: pull-kernel-module-management-lint
+    always_run: true
+    decorate: true
     annotations:
       testgrid-dashboards: sig-node-kernel-module-management
       testgrid-tab-name: lint
@@ -16,7 +28,6 @@ presubmits:
   - name: pull-kernel-module-management-unit-tests
     always_run: true
     decorate: true
-    optional: true
     annotations:
       testgrid-dashboards: sig-node-kernel-module-management
       testgrid-tab-name: unit-tests

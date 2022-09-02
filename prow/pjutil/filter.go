@@ -108,10 +108,14 @@ func (af *ArbitraryFilter) Name() string {
 // CommandFilter builds a filter for `/test foo`
 type CommandFilter struct {
 	body string
+	// half is used by `.Name`. For large body only the first and last "half"
+	// chars are part of `.Name`. The default is 70, define here for easier unit
+	// test purpose.
+	half int
 }
 
 func NewCommandFilter(body string) *CommandFilter {
-	return &CommandFilter{body: body}
+	return &CommandFilter{body: body, half: 70}
 }
 
 func (cf *CommandFilter) ShouldRun(p config.Presubmit) (bool, bool, bool) {
@@ -119,12 +123,13 @@ func (cf *CommandFilter) ShouldRun(p config.Presubmit) (bool, bool, bool) {
 }
 
 func (cf *CommandFilter) Name() string {
-	// Arbitrarily grabbing the first 50 chars for debugging purpose
-	end := 50
-	if len(cf.body) < 50 {
-		end = len(cf.body)
+	var body string
+	if len(cf.body) <= cf.half*2 {
+		body = cf.body
+	} else {
+		body = cf.body[:cf.half] + "\n...\n" + cf.body[len(cf.body)-cf.half:]
 	}
-	return "command-filter: " + cf.body[:end]
+	return "command-filter: " + body
 }
 
 // TestAllFilter builds a filter for the automatic behavior of `/test all`.
@@ -191,6 +196,13 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 			shouldnotRun++
 			continue
 		}
+		// Add a trace log for debugging an internal bug.
+		// (TODO: chaodaiG) Remove this once root cause is discovered.
+		logger.WithFields(logrus.Fields{
+			"pj":      presubmit.Name,
+			"trigger": presubmit.Trigger,
+			"filters": filter.Name(),
+		}).Trace("Job should be triggered.")
 		toTrigger = append(toTrigger, presubmit)
 		namesToTrigger = append(namesToTrigger, presubmit.Name)
 	}

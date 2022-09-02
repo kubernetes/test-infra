@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220822-9f275332ba-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -121,10 +121,10 @@ def build_test(cloud='aws',
 
     node_ig_overrides = ""
     cp_ig_overrides = ""
-    if distro == "flatcar":
-        # https://github.com/flatcar-linux/Flatcar/issues/220
-        node_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
-        cp_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
+    # if distro == "flatcar":
+    #     # https://github.com/flatcar-linux/Flatcar/issues/220
+    #     node_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
+    #     cp_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
 
     if tab in skip_jobs:
         return None
