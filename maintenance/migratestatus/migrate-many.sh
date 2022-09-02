@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,11 +17,14 @@
 set -o errexit
 set -o xtrace
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
+cd "${REPO_ROOT}"
+
 migrate() {
   if [[ -z "${2}" ]]; then
     exit 1
   fi
-  bazel-bin/maintenance/migratestatus/migratestatus \
+  "${REPO_ROOT}/_bin/migratestatus" \
     --dry-run=false --alsologtostderr \
     --org=kubernetes \
     --repo=kubernetes \
@@ -30,7 +33,7 @@ migrate() {
     --dest="${2}"
 }
 
-bazel build //maintenance/migratestatus || exit 1
+./hack/make-rules/go-run/arbitrary.sh build -o "${REPO_ROOT}/_bin/migratestatus" ./maintenance/migratestatus || exit 1
 
 #migrate "Bazel test" pull-test-infra-bazel
 #migrate "Gubernator tests" pull-test-infra-gubernator

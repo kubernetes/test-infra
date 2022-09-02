@@ -18,11 +18,9 @@ package subscriber
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
+	"errors"
 	"reflect"
-	"strconv"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -32,26 +30,9 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-const (
-	tokenLabel = "token"
-)
-
-type message struct {
-	Attributes map[string]string
-	Data       []byte
-	ID         string `json:"message_id"`
-}
-
-// pushRequest is the format of the push Pub/Sub subscription received form the WebHook.
-type pushRequest struct {
-	Message      message
-	Subscription string
-}
-
-// PushServer implements http.Handler. It validates incoming Pub/Sub subscriptions handle them.
-type PushServer struct {
-	Subscriber     *Subscriber
-	TokenGenerator func() []byte
+type configToWatch struct {
+	config.PubSubTriggers
+	config.PubsubSubscriptions
 }
 
 // PullServer listen to Pull Pub/Sub subscriptions and handle them.
@@ -68,51 +49,6 @@ func NewPullServer(s *Subscriber) *PullServer {
 	}
 }
 
-// ServeHTTP validates an incoming Push Pub/Sub subscription and handle them.
-func (s *PushServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	HTTPCode := http.StatusOK
-	subscription := "unknown-subscription"
-	var finalError error
-
-	defer func() {
-		s.Subscriber.Metrics.ResponseCounter.With(prometheus.Labels{
-			subscriptionLabel: subscription,
-			responseCodeLabel: strconv.Itoa(HTTPCode),
-		}).Inc()
-		if finalError != nil {
-			http.Error(w, finalError.Error(), HTTPCode)
-		}
-	}()
-
-	if s.TokenGenerator != nil {
-		token := r.URL.Query().Get(tokenLabel)
-		if token != string(s.TokenGenerator()) {
-			finalError = fmt.Errorf("wrong token")
-			HTTPCode = http.StatusForbidden
-			return
-		}
-	}
-	// Get the payload and act on it.
-	pr := &pushRequest{}
-	if err := json.NewDecoder(r.Body).Decode(pr); err != nil {
-		finalError = err
-		HTTPCode = http.StatusBadRequest
-		return
-	}
-
-	msg := pubsub.Message{
-		Data:       pr.Message.Data,
-		ID:         pr.Message.ID,
-		Attributes: pr.Message.Attributes,
-	}
-
-	if err := s.Subscriber.handleMessage(&pubSubMessage{Message: msg}, pr.Subscription); err != nil {
-		finalError = err
-		HTTPCode = http.StatusNotModified
-		return
-	}
-}
-
 // For testing
 type subscriptionInterface interface {
 	string() string
@@ -122,7 +58,7 @@ type subscriptionInterface interface {
 // pubsubClientInterface interfaces with Cloud Pub/Sub client for testing reason
 type pubsubClientInterface interface {
 	new(ctx context.Context, project string) (pubsubClientInterface, error)
-	subscription(id string) subscriptionInterface
+	subscription(id string, maxOutstandingMessages int) subscriptionInterface
 }
 
 // pubSubClient is used to interface with a new Cloud Pub/Sub Client
@@ -155,29 +91,42 @@ func (c *pubSubClient) new(ctx context.Context, project string) (pubsubClientInt
 	return c, nil
 }
 
-// Subscription creates a subscription from the Cloud Pub/Sub Client
-func (c *pubSubClient) subscription(id string) subscriptionInterface {
+// Subscription creates a reference to an existing subscription via the Cloud Pub/Sub Client.
+func (c *pubSubClient) subscription(id string, maxOutstandingMessages int) subscriptionInterface {
+	sub := c.client.Subscription(id)
+	sub.ReceiveSettings.MaxOutstandingMessages = maxOutstandingMessages
+	// Without this setting, a single Receiver can occupy more than the number of `MaxOutstandingMessages`,
+	// and other replicas of sub will have nothing to work on.
+	// cjwagner and chaodaiG understand it might not make much sense to set both MaxOutstandingMessages
+	// and Synchronous, nor did the GoDoc https://github.com/googleapis/google-cloud-go/blob/22ffc18e522c0f943db57f8c943e7356067bedfd/pubsub/subscription.go#L501
+	// agrees clearly with us, but trust us, both are required for making sure that every replica has something to do
+	sub.ReceiveSettings.Synchronous = true
 	return &pubSubSubscription{
-		sub: c.client.Subscription(id),
+		sub: sub,
 	}
 }
 
 // handlePulls pull for Pub/Sub subscriptions and handle them.
-func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions config.PubsubSubscriptions) (*errgroup.Group, context.Context, error) {
+func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions config.PubSubTriggers) (*errgroup.Group, context.Context, error) {
 	// Since config might change we need be able to cancel the current run
 	errGroup, derivedCtx := errgroup.WithContext(ctx)
-	for project, subscriptions := range projectSubscriptions {
+	for _, topics := range projectSubscriptions {
+		project, subscriptions, allowedClusters := topics.Project, topics.Topics, topics.AllowedClusters
 		client, err := s.Client.new(ctx, project)
 		if err != nil {
 			return errGroup, derivedCtx, err
 		}
 		for _, subName := range subscriptions {
-			sub := client.subscription(subName)
+			sub := client.subscription(subName, topics.MaxOutstandingMessages)
+			logger := logrus.WithFields(logrus.Fields{
+				"subscription": sub.string(),
+				"project":      project,
+			})
 			errGroup.Go(func() error {
-				logrus.Infof("Listening for subscription %s on project %s", sub.string(), project)
-				defer logrus.Warnf("Stopped Listening for subscription %s on project %s", sub.string(), project)
+				logger.Info("Listening for subscription")
+				defer logger.Warn("Stopped Listening for subscription")
 				err := sub.receive(derivedCtx, func(ctx context.Context, msg messageInterface) {
-					if err = s.Subscriber.handleMessage(msg, sub.string()); err != nil {
+					if err = s.Subscriber.handleMessage(msg, sub.string(), allowedClusters); err != nil {
 						s.Subscriber.Metrics.ACKMessageCounter.With(prometheus.Labels{subscriptionLabel: sub.string()}).Inc()
 					} else {
 						s.Subscriber.Metrics.NACKMessageCounter.With(prometheus.Labels{subscriptionLabel: sub.string()}).Inc()
@@ -185,7 +134,15 @@ func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions confi
 					msg.ack()
 				})
 				if err != nil {
-					logrus.WithError(err).Errorf("failed to listen for subscription %s on project %s", sub.string(), project)
+					if errors.Is(derivedCtx.Err(), context.Canceled) {
+						logger.WithError(err).Debug("Exiting as context cancelled")
+						return nil
+					}
+					if strings.Contains(err.Error(), "code = PermissionDenied") {
+						logger.WithError(err).Warn("Seems like missing permission.")
+						return nil
+					}
+					logger.WithError(err).Error("Failed to listen for subscription")
 					return err
 				}
 				return nil
@@ -204,12 +161,15 @@ func (s *PullServer) Run(ctx context.Context) error {
 	var err error
 	defer func() {
 		if err != nil {
-			logrus.WithError(ctx.Err()).Error("Pull server shutting down")
+			logrus.WithError(ctx.Err()).Error("Pull server shutting down.")
 		}
-		logrus.Warn("Pull server shutting down")
+		logrus.Debug("Pull server shutting down.")
 	}()
-	currentConfig := s.Subscriber.ConfigAgent.Config().PubSubSubscriptions
-	errGroup, derivedCtx, err := s.handlePulls(ctx, currentConfig)
+	currentConfig := configToWatch{
+		s.Subscriber.ConfigAgent.Config().PubSubTriggers,
+		s.Subscriber.ConfigAgent.Config().PubSubSubscriptions,
+	}
+	errGroup, derivedCtx, err := s.handlePulls(ctx, currentConfig.PubSubTriggers)
 	if err != nil {
 		return err
 	}
@@ -218,21 +178,24 @@ func (s *PullServer) Run(ctx context.Context) error {
 		select {
 		// Parent context. Shutdown
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		// Current thread context, it may be failing already
 		case <-derivedCtx.Done():
 			err = errGroup.Wait()
 			return err
 		// Checking for update config
 		case event := <-configEvent:
-			newConfig := event.After.PubSubSubscriptions
+			newConfig := configToWatch{
+				event.After.PubSubTriggers,
+				event.After.PubSubSubscriptions,
+			}
 			logrus.Info("Received new config")
 			if !reflect.DeepEqual(currentConfig, newConfig) {
-				logrus.Warn("New config found, reloading pull Server")
+				logrus.Info("New config found, reloading pull Server")
 				// Making sure the current thread finishes before starting a new one.
 				errGroup.Wait()
 				// Starting a new thread with new config
-				errGroup, derivedCtx, err = s.handlePulls(ctx, newConfig)
+				errGroup, derivedCtx, err = s.handlePulls(ctx, newConfig.PubSubTriggers)
 				if err != nil {
 					return err
 				}

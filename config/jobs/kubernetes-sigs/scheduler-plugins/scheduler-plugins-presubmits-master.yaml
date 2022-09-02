@@ -1,7 +1,7 @@
 # sigs.k8s.io/scheduler-plugins presubmits
 presubmits:
   kubernetes-sigs/scheduler-plugins:
-  - name: pull-scheduler-plugins-verify-gofmt-master
+  - name: pull-scheduler-plugins-verify
     decorate: true
     path_alias: sigs.k8s.io/scheduler-plugins
     branches:
@@ -9,11 +9,11 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.10
+      - image: golang:1.17.11
         command:
         - make
         args:
-        - verify-gofmt
+        - verify
   - name: pull-scheduler-plugins-verify-build-master
     decorate: true
     path_alias: sigs.k8s.io/scheduler-plugins
@@ -22,7 +22,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.10
+      - image: golang:1.17.11
         command:
         - make
         args:
@@ -35,22 +35,20 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.10
+      - image: golang:1.17.11
         command:
         - make
         args:
         - unit-test
   - name: pull-scheduler-plugins-integration-test-master
     decorate: true
-    decoration_config:
-      timeout: 40m
     path_alias: sigs.k8s.io/scheduler-plugins
     branches:
     - ^master$
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.10
+      - image: golang:1.17.11
         command:
         - make
         args:

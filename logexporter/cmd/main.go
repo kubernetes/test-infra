@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// TODO(shyamjvs): Make this exporter work for master too, currently facing
+// TODO: Make this exporter work for master too, currently facing
 // gcloud auth error when run from within a pod on the master.
 
 package main
@@ -33,7 +33,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Initialize the log exporter's configuration related flags.
@@ -45,6 +45,7 @@ var (
 	extraSystemdServices = pflag.StringSlice("extra-systemd-services", []string{}, "Extra systemd services to dump")
 	gcsPath              = pflag.String("gcs-path", "", "Path to the GCS directory under which to upload logs, for eg: gs://my-logs-bucket/logs")
 	gcloudAuthFilePath   = pflag.String("gcloud-auth-file-path", "/etc/service-account/service-account.json", "Path to gcloud service account file, for authenticating gsutil to write to GCS bucket")
+	useAdc               = pflag.Bool("use-application-default-credentials", false, "Whether to use Application Default Credentials instead of the provided service account file")
 	journalPath          = pflag.String("journal-path", "/var/log/journal", "Path where the systemd journal dir is mounted")
 	nodeName             = pflag.String("node-name", "", "Name of the node this log exporter is running on")
 	sleepDuration        = pflag.Duration("sleep-duration", 60*time.Second, "Duration to sleep before exiting with success. Useful for making pods schedule with hard anti-affinity when run as a job on a k8s cluster")
@@ -80,10 +81,12 @@ func checkConfigValidity() error {
 	if *gcsPath == "" {
 		return fmt.Errorf("Flag --gcs-path has its value unspecified")
 	}
-	if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
-		return fmt.Errorf("Could not find the gcloud service account file: %v", err)
-	} else if err := runCommand("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath); err != nil {
-		return fmt.Errorf("Failed to activate gcloud service account: %v", err)
+	if !*useAdc {
+		if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
+			return fmt.Errorf("Could not find the gcloud service account file: %w", err)
+		} else if err := runCommand("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath); err != nil {
+			return fmt.Errorf("Failed to activate gcloud service account: %w", err)
+		}
 	}
 	return nil
 }
@@ -102,11 +105,11 @@ func createSystemdLogfile(service string, outputMode string, outputDir string) e
 	// Run the command and record the output to a file.
 	output, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("Journalctl command for '%v' service failed: %v", service, err)
+		return fmt.Errorf("Journalctl command for '%v' service failed: %w", service, err)
 	}
 	logfile := filepath.Join(outputDir, service+".log")
 	if err := ioutil.WriteFile(logfile, output, 0444); err != nil {
-		return fmt.Errorf("Writing to file of journalctl logs for '%v' service failed: %v", service, err)
+		return fmt.Errorf("Writing to file of journalctl logs for '%v' service failed: %w", service, err)
 	}
 	return nil
 }
@@ -117,11 +120,11 @@ func createFullSystemdLogfile(outputDir string) error {
 	// Run the command and record the output to a file.
 	output, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("Journalctl command failed: %v", err)
+		return fmt.Errorf("Journalctl command failed: %w", err)
 	}
 	logfile := filepath.Join(outputDir, "systemd.log")
 	if err := ioutil.WriteFile(logfile, output, 0444); err != nil {
-		return fmt.Errorf("Writing full journalctl logs to file failed: %v", err)
+		return fmt.Errorf("Writing full journalctl logs to file failed: %w", err)
 	}
 	return nil
 }
@@ -195,7 +198,7 @@ func uploadLogfilesToGCS(logDir string) error {
 	cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf("ls %v/*", logDir))
 	output, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("Could not list any logfiles: %v", err)
+		return fmt.Errorf("Could not list any logfiles: %w", err)
 	}
 	klog.Infof("List of logfiles available: %v", string(output))
 
@@ -210,7 +213,7 @@ func uploadLogfilesToGCS(logDir string) error {
 		}
 		return writeSuccessMarkerFile()
 	}
-	return fmt.Errorf("Multiple attempts of gsutil failed, the final one due to: %v", err)
+	return fmt.Errorf("Multiple attempts of gsutil failed, the final one due to: %w", err)
 }
 
 // Write a marker file to GCS named after this node to indicate logexporter's success.
@@ -221,12 +224,12 @@ func writeSuccessMarkerFile() error {
 	cmd := exec.Command("gsutil", "-q", "cp", "-", markerFilePath)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return fmt.Errorf("Failed to get stdin pipe to write marker file: %v", err)
+		return fmt.Errorf("Failed to get stdin pipe to write marker file: %w", err)
 	}
 	io.WriteString(stdin, "")
 	stdin.Close()
 	if err = cmd.Run(); err != nil {
-		return fmt.Errorf("Failed to write marker file to GCS: %v", err)
+		return fmt.Errorf("Failed to write marker file to GCS: %w", err)
 	}
 	return nil
 }

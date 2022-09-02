@@ -8,7 +8,7 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         - go
         args:
@@ -19,6 +19,24 @@ presubmits:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-test
       testgrid-num-columns-recent: '30'
+  - name: pull-structured-merge-diff-vet
+    labels:
+      preset-service-account: "true"
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/structured-merge-diff
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - go
+        args:
+        - vet
+        - ./...
+    annotations:
+      testgrid-dashboards: sig-api-machinery-structured-merge-diff
+      testgrid-tab-name: pr-vet
+      testgrid-num-columns-recent: '30'
   - name: pull-structured-merge-diff-gofmt
     labels:
       preset-service-account: "true"
@@ -27,7 +45,7 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         - bash
         - -c
@@ -43,7 +61,7 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/benchmarkjunit:latest
+      - image: gcr.io/k8s-staging-test-infra/benchmarkjunit:latest
         command:
         - /benchmarkjunit
         args:

@@ -82,8 +82,7 @@ func main() {
 		log.Fatal("empty --token-path")
 	}
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{o.tokenPath}); err != nil {
+	if err := secret.Add(o.tokenPath); err != nil {
 		log.Fatalf("Error starting secrets agent: %v", err)
 	}
 
@@ -102,9 +101,12 @@ func main() {
 
 	var c client
 	if o.confirm {
-		c = github.NewClient(secretAgent.GetTokenGenerator(o.tokenPath), secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		c, err = github.NewClient(secret.GetTokenGenerator(o.tokenPath), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.tokenPath), secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		c, err = github.NewDryRunClient(secret.GetTokenGenerator(o.tokenPath), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+	}
+	if err != nil {
+		log.Fatalf("failed to construgt GitHub client: %v", err)
 	}
 
 	// get all open PRs

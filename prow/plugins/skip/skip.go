@@ -91,7 +91,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	baseSHAGetter := func() (string, error) {
 		baseSHA, err := gc.GetRef(org, repo, "heads/"+pr.Base.Ref)
 		if err != nil {
-			return "", fmt.Errorf("failed to get baseSHA: %v", err)
+			return "", fmt.Errorf("failed to get baseSHA: %w", err)
 		}
 		return baseSHA, nil
 	}
@@ -100,7 +100,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	}
 	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
 	if err != nil {
-		return fmt.Errorf("failed to get presubmits: %v", err)
+		return fmt.Errorf("failed to get presubmits: %w", err)
 	}
 
 	combinedStatus, err := gc.GetCombinedStatus(org, repo, pr.Head.SHA)

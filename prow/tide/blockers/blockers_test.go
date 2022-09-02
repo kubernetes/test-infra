@@ -17,11 +17,15 @@ limitations under the License.
 package blockers
 
 import (
+	"context"
+	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
+	"sync"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
@@ -128,9 +132,9 @@ func TestBlockerQuery(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		got := sets.NewString(strings.Split(blockerQuery("blocker", tc.orgRepoQuery), " ")...)
-		if !reflect.DeepEqual(got, tc.expected) {
-			t.Errorf("Expected blockerQuery(\"blocker\", %q)==%q, but got %q.", tc.orgRepoQuery, tc.expected, got)
+		got := sets.NewString(blockerQuery("blocker", tc.orgRepoQuery)...)
+		if diff := cmp.Diff(got, tc.expected); diff != "" {
+			t.Errorf("Actual result differs from expected: %s", diff)
 		}
 	}
 }
@@ -427,5 +431,72 @@ func TestBlockers(t *testing.T) {
 				t.Errorf("expected blockers %v, but got %v", c.blockers, nums)
 			}
 		}
+	}
+}
+
+type fakeGitHubClient struct {
+	lock    sync.Mutex
+	queries map[string][]string
+}
+
+func (fghc *fakeGitHubClient) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
+	if query := vars["query"]; query == nil || string(query.(githubql.String)) == "" {
+		return fmt.Errorf("query variable was unset, variables: %+v", vars)
+	}
+
+	fghc.lock.Lock()
+	defer fghc.lock.Unlock()
+
+	if fghc.queries == nil {
+		fghc.queries = map[string][]string{}
+	}
+	fghc.queries[org] = append(fghc.queries[org], string(vars["query"].(githubql.String)))
+
+	return nil
+}
+
+func TestBlockersFindAll(t *testing.T) {
+	t.Parallel()
+
+	orgRepoTokensByOrg := map[string]string{
+		"org-a": `org:"org-a" -repo:"org-a/repo-b"`,
+		"org-b": `org:"org-b" -repo:"org-b/repo-b"`,
+	}
+	const blockerLabel = "tide/merge-blocker"
+	testCases := []struct {
+		name         string
+		usesAppsAuth bool
+
+		expectedQueries map[string][]string
+	}{
+		{
+			name:         "Apps auth, query is split by org",
+			usesAppsAuth: true,
+			expectedQueries: map[string][]string{
+				"org-a": {`-repo:"org-a/repo-b" is:issue label:"tide/merge-blocker" org:"org-a" state:open`},
+				"org-b": {`-repo:"org-b/repo-b" is:issue label:"tide/merge-blocker" org:"org-b" state:open`},
+			},
+		},
+		{
+			name:         "No apps auth, one query",
+			usesAppsAuth: false,
+			expectedQueries: map[string][]string{
+				"": {`-repo:"org-a/repo-b" -repo:"org-b/repo-b" is:issue label:"tide/merge-blocker" org:"org-a" org:"org-b" state:open`},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ghc := &fakeGitHubClient{}
+
+			if _, err := FindAll(ghc, logrus.WithField("tc", tc.name), blockerLabel, orgRepoTokensByOrg, tc.usesAppsAuth); err != nil {
+				t.Fatalf("FindAll: %v", err)
+			}
+
+			if diff := cmp.Diff(ghc.queries, tc.expectedQueries, cmpopts.SortSlices(func(a, b string) bool { return a < b })); diff != "" {
+				t.Errorf("actual queries differ from expected: %v", diff)
+			}
+		})
 	}
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -136,7 +137,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		PJs []prowapi.ProwJob `json:"items"`
 	}
 	if err := json.Unmarshal(data, &list); err != nil {
-		return fmt.Errorf("cannot unmarshal data from deck: %v", err)
+		return fmt.Errorf("cannot unmarshal data from deck: %w", err)
 	}
 
 	pr, err := s.ghc.GetPullRequest(org, repo, num)
@@ -168,7 +169,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 
 	jenkinsConfig := s.configAgent.Config().JenkinsOperators
 	kubeReport := s.configAgent.Config().Plank.ReportTemplateForRepo(&prowapi.Refs{Org: org, Repo: repo})
-	reportTypes := s.configAgent.Config().GitHubReporter.JobTypesToReport
+	reportConfig := s.configAgent.Config().GitHubReporter
 	for _, pj := range pjutil.GetLatestProwJobs(presubmits, prowapi.PresubmitJob) {
 		var reportTemplate *template.Template
 		switch pj.Spec.Agent {
@@ -182,7 +183,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		}
 
 		s.log.WithFields(l.Data).Infof("Refreshing the status of job %q (pj: %s)", pj.Spec.Job, pj.ObjectMeta.Name)
-		if err := report.Report(s.ghc, reportTemplate, pj, reportTypes); err != nil {
+		if err := report.Report(context.Background(), s.ghc, reportTemplate, pj, reportConfig); err != nil {
 			s.log.WithError(err).WithFields(l.Data).Info("Failed report.")
 		}
 	}

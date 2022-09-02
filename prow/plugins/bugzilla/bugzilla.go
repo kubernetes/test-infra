@@ -322,6 +322,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
+	WasLabelAddedByHuman(org, repo string, num int, label string) (bool, error)
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
 
@@ -337,7 +338,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (err e
 	}
 	if event != nil {
 		options := pc.PluginConfig.Bugzilla.OptionsForBranch(event.org, event.repo, event.baseRef)
-		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger)
+		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
 	}
 	return nil
 }
@@ -354,7 +355,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (err error
 		return err
 	}
 	if event != nil {
-		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger)
+		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
 	}
 	return nil
 }
@@ -365,7 +366,7 @@ func getCherryPickMatch(pre github.PullRequestEvent) (bool, int, string, error) 
 		cherrypickOf, err := strconv.Atoi(cherrypickMatch[1])
 		if err != nil {
 			// should be impossible based on the regex
-			return false, 0, "", fmt.Errorf("Failed to parse cherrypick bugID as int - is the regex correct? Err: %v", err)
+			return false, 0, "", fmt.Errorf("Failed to parse cherrypick bugID as int - is the regex correct? Err: %w", err)
 		}
 		return true, cherrypickOf, pre.PullRequest.Base.Ref, nil
 	}
@@ -576,7 +577,7 @@ func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) str
 	}
 }
 
-func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
 	comment := e.comment(gc)
 	// check if bug is part of a restricted group
 	if !e.missing {
@@ -603,7 +604,7 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 	}
 	// merges follow a different pattern from the normal validation
 	if e.merged {
-		return handleMerge(e, gc, bc, options, log)
+		return handleMerge(e, gc, bc, options, log, allRepos)
 	}
 	// close events follow a different pattern from the normal validation
 	if e.closed && !e.merged {
@@ -748,6 +749,22 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 	if severityLabel != "" && severityLabel != severityLabelToRemove {
 		if err := gc.AddLabel(e.org, e.repo, e.number, severityLabel); err != nil {
 			log.WithError(err).Error("Failed to add severity bug label.")
+		}
+	}
+
+	if hasValidLabel && !needsValidLabel {
+		humanLabelled, err := gc.WasLabelAddedByHuman(e.org, e.repo, e.number, labels.ValidBug)
+		if err != nil {
+			// Return rather than potentially doing the wrong thing. The user can re-trigger us.
+			return fmt.Errorf("failed to check if %s label was added by a human: %w", labels.ValidBug, err)
+		}
+		if humanLabelled {
+			// This will make us remove the invalid label if it exists but saves us another check if it was
+			// added by a human. It is reasonable to assume that it should be absent if the valid label was
+			// manually added.
+			needsInvalidLabel = false
+			needsValidLabel = true
+			response += fmt.Sprintf("\n\nRetaining the %s label as it was manually added.", labels.ValidBug)
 		}
 	}
 
@@ -917,7 +934,7 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 	return valid, validations, errors
 }
 
-func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
 	comment := e.comment(gc)
 
 	if options.StateAfterMerge == nil {
@@ -964,6 +981,12 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			merged = e.merged
 			state = e.state
 		} else {
+			// This could be literally anything, only process PRs in repos that are mentioned in our config, otherwise this will potentially
+			// fail.
+			if !allRepos.Has(item.Org + "/" + item.Repo) {
+				logrus.WithField("pr", item.Org+"/"+item.Repo+"#"+strconv.Itoa(item.Num)).Debug("Not processing PR from third-party repo")
+				continue
+			}
 			pr, err := gc.GetPullRequest(item.Org, item.Repo, item.Num)
 			if err != nil {
 				log.WithError(err).Warn("Unexpected error checking merge state of related pull request.")
@@ -1229,17 +1252,12 @@ func isBugAllowed(bug *bugzilla.Bug, allowedGroups []string) bool {
 		return true
 	}
 
+	allowed := sets.NewString(allowedGroups...)
 	for _, group := range bug.Groups {
-		found := false
-		for _, allowed := range allowedGroups {
-			if group == allowed {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !allowed.Has(group) {
 			return false
 		}
 	}
+
 	return true
 }

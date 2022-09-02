@@ -32,7 +32,7 @@ import (
 
 func TestHook(t *testing.T) {
 	const (
-		commentFile = "./examples/test_comment.json"
+		commentFile = "./testdata/test_comment.json"
 		url         = "http://localhost/hook"
 		hmac        = "abcde12345"
 		org         = "fake-org-hook"
@@ -42,7 +42,10 @@ func TestHook(t *testing.T) {
 
 	t.Parallel()
 
-	githubClient := github.NewClient(func() []byte { return nil }, func(b []byte) []byte { return b }, "", "http://localhost/fakeghserver")
+	githubClient, err := github.NewClient(func() []byte { return nil }, func(b []byte) []byte { return b }, "", "http://localhost/fakeghserver")
+	if err != nil {
+		t.Fatalf("failed to construct GitHub client: %v", err)
+	}
 
 	issueID, err := githubClient.CreateIssue(org, repo, "Dummy PR, do not merge", "", 0, []string{}, []string{})
 	if err != nil {
@@ -80,7 +83,7 @@ func TestHook(t *testing.T) {
 	if err := wait.Poll(500*time.Millisecond, 1*time.Minute, func() (bool, error) {
 		gotLabels, err := githubClient.GetIssueLabels(org, repo, issueID)
 		if err != nil {
-			return false, fmt.Errorf("failed listing issue labels: %v", err)
+			return false, fmt.Errorf("failed listing issue labels: %w", err)
 		}
 		for _, l := range gotLabels {
 			if l.Name == label {

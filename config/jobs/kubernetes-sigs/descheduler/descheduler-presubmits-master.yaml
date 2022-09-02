@@ -13,7 +13,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.16.1
+      - image: golang:1.18.2
         command:
         - make
         args:
@@ -30,7 +30,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.16.1
+      - image: golang:1.18.2
         command:
         - make
         args:
@@ -44,18 +44,19 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
-    always_run: true
+    always_run: false
+    run_if_changed: '\.go$'
     spec:
       containers:
-      - image: golang:1.16.1
+      - image: golang:1.18.2
         command:
         - make
         args:
         - test-unit
-  - name: pull-descheduler-test-e2e-k8s-master-1-21
+  - name: pull-descheduler-test-e2e-k8s-master-1-24
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.21
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.24
     decorate: true
     decoration_config:
       timeout: 20m
@@ -67,13 +68,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.21.1"
+          value: "v1.24.0"
         - name: KIND_E2E
           value: "true"
         args:
@@ -82,10 +83,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-test-e2e-k8s-master-1-20
+  - name: pull-descheduler-test-e2e-k8s-master-1-23
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.20
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.23
     decorate: true
     decoration_config:
       timeout: 20m
@@ -97,13 +98,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.20.7"
+          value: "v1.23.0"
         - name: KIND_E2E
           value: "true"
         args:
@@ -112,10 +113,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-test-e2e-k8s-master-1-19
+  - name: pull-descheduler-test-e2e-k8s-master-1-22
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.19
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.22
     decorate: true
     decoration_config:
       timeout: 20m
@@ -127,13 +128,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.19.11"
+          value: "v1.22.1"
         - name: KIND_E2E
           value: "true"
         args:

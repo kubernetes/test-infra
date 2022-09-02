@@ -108,7 +108,7 @@ func (t *kubeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs 
 	org, repo := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name
 	baseSHA, err := t.githubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
 	if err != nil {
-		return fmt.Errorf("failed to get baseSHA: %v", err)
+		return fmt.Errorf("failed to get baseSHA: %w", err)
 	}
 	return trigger.RunRequested(
 		trigger.Client{
@@ -227,7 +227,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 		}
 		prs, err := c.githubClient.GetPullRequests(org, repo)
 		if err != nil {
-			triggerErrors = append(triggerErrors, fmt.Errorf("failed to list pull requests for %s: %v", orgrepo, err))
+			triggerErrors = append(triggerErrors, fmt.Errorf("failed to list pull requests for %s: %w", orgrepo, err))
 			if !c.continueOnError {
 				return utilerrors.NewAggregate(triggerErrors)
 			}
@@ -244,9 +244,9 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			// we want to appropriately trigger and skip from the set of identified presubmits that were
 			// added. we know all of the presubmits we are filtering need to be forced to run, so we can
 			// enforce that with a custom filter
-			filter := func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+			filter := pjutil.NewArbitraryFilter(func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
 				return true, false, true
-			}
+			}, "inline-filter")
 			org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 			changes := config.NewGitHubDeferredChangedFilesProvider(c.githubClient, org, repo, number)
 			logger := log.WithFields(logrus.Fields{"org": org, "repo": repo, "number": number, "branch": branch})
@@ -255,7 +255,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 				return err
 			}
 			if err := c.triggerIfTrusted(org, repo, pr, toTrigger); err != nil {
-				triggerErrors = append(triggerErrors, fmt.Errorf("failed to trigger jobs for %s#%d: %v", orgrepo, pr.Number, err))
+				triggerErrors = append(triggerErrors, fmt.Errorf("failed to trigger jobs for %s#%d: %w", orgrepo, pr.Number, err))
 				if !c.continueOnError {
 					return utilerrors.NewAggregate(triggerErrors)
 				}
@@ -269,7 +269,7 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 func (c *Controller) triggerIfTrusted(org, repo string, pr github.PullRequest, toTrigger []config.Presubmit) error {
 	trusted, err := c.trustedChecker.trustedPullRequest(pr.User.Login, org, repo, pr.Number)
 	if err != nil {
-		return fmt.Errorf("failed to determine if %s/%s#%d is trusted: %v", org, repo, pr.Number, err)
+		return fmt.Errorf("failed to determine if %s/%s#%d is trusted: %w", org, repo, pr.Number, err)
 	}
 	if !trusted {
 		return nil
@@ -372,7 +372,7 @@ func addedBlockingPresubmits(old, new map[string][]config.Presubmit, log *logrus
 							"name": oldPresubmit.Name,
 						}).Debug("Identified a newly-reporting blocking presubmit.")
 					}
-					if oldPresubmit.RunIfChanged != newPresubmit.RunIfChanged {
+					if oldPresubmit.RunIfChanged != newPresubmit.RunIfChanged || oldPresubmit.SkipIfOnlyChanged != newPresubmit.SkipIfOnlyChanged {
 						added[repo] = append(added[repo], newPresubmit)
 						log.WithFields(logrus.Fields{
 							"repo": repo,

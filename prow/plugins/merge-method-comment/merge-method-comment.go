@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -94,13 +95,13 @@ func needsComment(c config.Tide, pe github.PullRequestEvent) (bool, string) {
 	comment := fmt.Sprintf("This PR has multiple commits, and the default merge method is: %s.\n", method)
 
 	switch {
-	case method == github.MergeSquash && c.MergeLabel != "":
+	case method == types.MergeSquash && c.MergeLabel != "":
 		comment = fmt.Sprintf("%sYou can request commits to be merged using the label: %s", comment, c.MergeLabel)
-	case method == github.MergeSquash && c.MergeLabel == "":
+	case method == types.MergeSquash && c.MergeLabel == "":
 		comment = comment + "Commits will be squashed, as no merge labels are defined"
-	case method == github.MergeMerge && c.SquashLabel != "":
+	case method == types.MergeMerge && c.SquashLabel != "":
 		comment = fmt.Sprintf("%sYou can request commits to be squashed using the label: %s", comment, c.SquashLabel)
-	case method == github.MergeMerge && c.SquashLabel == "":
+	case method == types.MergeMerge && c.SquashLabel == "":
 		comment = comment + "Commits will be merged, as no squash labels are defined"
 	}
 
@@ -115,7 +116,7 @@ func issueHasComment(gc githubClient, org, repo string, number int, comment stri
 
 	comments, err := gc.ListIssueComments(org, repo, number)
 	if err != nil {
-		return false, fmt.Errorf("error listing issue comments: %v", err)
+		return false, fmt.Errorf("error listing issue comments: %w", err)
 	}
 
 	for _, c := range comments {

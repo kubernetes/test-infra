@@ -42,6 +42,7 @@ annotations:
   testgrid-alert-stale-results-hours: "12" # optionally, send an email if this many hours pass with no results at all.
   testgrid-in-cell-metric: coverage        # optionally, text property metric value to be evaluated, with the resulting
                                            # numeric value placed visually inside the test result cells.
+  testgrid-base-options: base-options      # optionally, sets 'base_options' tab option.
 ```
 
 This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a _different_
@@ -184,7 +185,7 @@ dashboard_groups:
 
 ## Testing your configuration
 
-Run [`bazel test //config/tests/testgrids/..`](/config/tests/testgrids) to ensure the configuration is valid.
+Run [`go test ./config/tests/testgrids`](/config/tests/testgrids) to ensure the configuration is valid.
 
 ## Advanced configuration
 

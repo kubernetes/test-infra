@@ -37,7 +37,7 @@ We need to fulfil those requirements to use this tool:
     to be used by this tool to push changes and create PRs against the remote repo.
 
 * a yaml config file that specifies the follwing information passed in with the flag -config=FILEPATH:
-  * For info about what should go in the config look at [the documentation for the Options here](https://pkg.go.dev/k8s.io/test-infra/experiment/autobumper/bumper#Options) and look at the example below.
+* For info about what should go in the config look at [the documentation for the Options here](https://pkg.go.dev/k8s.io/test-infra/prow/cmd/generic-autobumper/bumper#Options) and look at the example below.
   
 e.g.,
 ```yaml
@@ -71,7 +71,7 @@ prefixes:
     consistentImages: true
   - name: "Boskos"
     prefix: "gcr.io/k8s-staging-boskos/"
-    refConfigFile: "config/prow/cluster/boskos.yaml"
+    refConfigFile: "config/prow/cluster/build/boskos.yaml"
     stagingRefConfigFile: "config/prow-staging/cluster/boskos.yaml"
     repo: "https://github.com/kubernetes-sigs/boskos"
     summarise: false

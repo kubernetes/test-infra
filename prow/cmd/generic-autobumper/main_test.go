@@ -39,6 +39,8 @@ func TestGetAssignment(t *testing.T) {
 		oncallURL            string
 		oncallGroup          string
 		oncallServerResponse string
+		skipOncallAssignment bool
+		selfAssign           bool
 		expectResKeyword     string
 		expectOncallActive   bool
 	}{
@@ -99,6 +101,35 @@ func TestGetAssignment(t *testing.T) {
 			expectResKeyword:     "fake-oncall-name",
 			expectOncallActive:   true,
 		},
+		{
+			description:          "skip",
+			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"},"Active":{"testinfra":true}}`,
+			skipOncallAssignment: true,
+			expectResKeyword:     "",
+			expectOncallActive:   true,
+		},
+		{
+			description:          "self-assign-with-oncall",
+			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"},"Active":{"testinfra":true}}`,
+			skipOncallAssignment: true,
+			selfAssign:           true,
+			expectResKeyword:     "/cc",
+			expectOncallActive:   true,
+		},
+		{
+			description:          "self-assign-without-oncall",
+			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: `{"Oncall":{"testinfra":""},"Active":{"testinfra":false}}`,
+			skipOncallAssignment: true,
+			selfAssign:           true,
+			expectResKeyword:     "/cc",
+			expectOncallActive:   false,
+		},
 	}
 
 	for _, tc := range cases {
@@ -112,7 +143,7 @@ func TestGetAssignment(t *testing.T) {
 				tc.oncallURL = testServer.URL
 			}
 
-			res := getAssignment(tc.oncallURL, tc.oncallGroup)
+			res := getAssignment(tc.oncallURL, tc.oncallGroup, tc.skipOncallAssignment, tc.selfAssign)
 			if !strings.Contains(res, tc.expectResKeyword) {
 				t.Errorf("Expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
 			}

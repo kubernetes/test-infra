@@ -28,20 +28,21 @@ import (
 	"k8s.io/klog/v2"
 )
 
-const longOutputLen = 10000
-const truncatedSep = "\n...[truncated]...\n"
-const maxClusterTextLen = longOutputLen + len(truncatedSep)
+const defaultMaxClusterTextLength = 10000
+const defaultMaxFailureTextLength = 100000
 
 // summarizeFlags represents the command-line arguments to the summarize and their values.
 type summarizeFlags struct {
-	builds       string
-	tests        []string
-	previous     string
-	owners       string
-	output       string
-	outputSlices string
-	numWorkers   int
-	memoize      bool
+	builds               string
+	tests                []string
+	previous             string
+	owners               string
+	output               string
+	outputSlices         string
+	numWorkers           int
+	memoize              bool
+	maxClusterTextLength int
+	maxFailureTextLength int
 }
 
 // parseFlags parses command-line arguments and returns them as a summarizeFlags object.
@@ -55,6 +56,8 @@ func parseFlags() summarizeFlags {
 	flag.StringVar(&flags.outputSlices, "output_slices", "", "path to slices output (must include PREFIX in template)")
 	flag.IntVar(&flags.numWorkers, "num_workers", 2*runtime.NumCPU()-1, "number of worker goroutines to spawn for parallelized functions") // This has shown to be a sensible number of workers
 	flag.BoolVar(&flags.memoize, "memoize", false, "whether to memoize certain function results to JSON (and use previously memoized results if they exist)")
+	flag.IntVar(&flags.maxClusterTextLength, "max_cluster_text_length", defaultMaxClusterTextLength, "truncate failure text to this length for clustering purposes")
+	flag.IntVar(&flags.maxFailureTextLength, "max_failure_text_length", defaultMaxFailureTextLength, "truncate failure text to this length for output purposes")
 
 	flag.Parse()
 	// list of tests files comes from arguments
@@ -106,14 +109,14 @@ func summarize(flags summarizeFlags) {
 		}
 	}
 
-	clusteredLocal := clusterLocal(failedTests, flags.numWorkers, flags.memoize)
+	clusteredLocal := clusterLocal(failedTests, flags.numWorkers, flags.memoize, flags.maxClusterTextLength)
 
-	clustered := clusterGlobal(clusteredLocal, previousClustered, flags.memoize)
+	clustered := clusterGlobal(clusteredLocal, previousClustered, flags.memoize, flags.maxClusterTextLength)
 
 	klog.V(2).Infof("Rendering results...")
 	start := time.Now()
 
-	data := render(builds, clustered)
+	data := render(builds, clustered, flags.maxFailureTextLength)
 
 	// Load the owners from the file, if given
 	var owners map[string][]string

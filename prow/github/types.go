@@ -78,18 +78,6 @@ const (
 	stateCannotBeChangedMessagePrefix = "state cannot be changed."
 )
 
-// PullRequestMergeType enumerates the types of merges the GitHub API can
-// perform
-// https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
-type PullRequestMergeType string
-
-// Possible types of merges for the GitHub merge API
-const (
-	MergeMerge  PullRequestMergeType = "merge"
-	MergeRebase PullRequestMergeType = "rebase"
-	MergeSquash PullRequestMergeType = "squash"
-)
-
 func unmarshalClientError(b []byte) error {
 	var errors []error
 	clientError := ClientError{}
@@ -255,6 +243,7 @@ const (
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
 	ID                 int               `json:"id"`
+	NodeID             string            `json:"node_id"`
 	Number             int               `json:"number"`
 	HTMLURL            string            `json:"html_url"`
 	User               User              `json:"user"`
@@ -264,6 +253,7 @@ type PullRequest struct {
 	Title              string            `json:"title"`
 	Body               string            `json:"body"`
 	RequestedReviewers []User            `json:"requested_reviewers"`
+	RequestedTeams     []Team            `json:"requested_teams"`
 	Assignees          []User            `json:"assignees"`
 	State              string            `json:"state"`
 	Draft              bool              `json:"draft"`
@@ -347,6 +337,7 @@ type Repo struct {
 	HasIssues     bool   `json:"has_issues"`
 	HasProjects   bool   `json:"has_projects"`
 	HasWiki       bool   `json:"has_wiki"`
+	NodeID        string `json:"node_id"`
 	// Permissions reflect the permission level for the requester, so
 	// on a repository GET call this will be for the user whose token
 	// is being used, if listing a team's repos this will be for the
@@ -395,6 +386,11 @@ type RepoRequest struct {
 	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
 	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
 	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+}
+
+type WorkflowRuns struct {
+	Count       int           `json:"total_count,omitempty"`
+	WorflowRuns []WorkflowRun `json:"workflow_runs"`
 }
 
 // RepoCreateRequest contains metadata used in requests to create a repo.
@@ -552,6 +548,24 @@ type BranchProtection struct {
 	EnforceAdmins              EnforceAdmins               `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
 	Restrictions               *Restrictions               `json:"restrictions"`
+	AllowForcePushes           AllowForcePushes            `json:"allow_force_pushes"`
+	RequiredLinearHistory      RequiredLinearHistory       `json:"required_linear_history"`
+	AllowDeletions             AllowDeletions              `json:"allow_deletions"`
+}
+
+// AllowDeletions specifies whether to permit users with push access to delete matching branches.
+type AllowDeletions struct {
+	Enabled bool `json:"enabled"`
+}
+
+// RequiredLinearHistory specifies whether to prevent merge commits from being pushed to matching branches.
+type RequiredLinearHistory struct {
+	Enabled bool `json:"enabled"`
+}
+
+// AllowForcePushes specifies whether to permit force pushes for all users with push access.
+type AllowForcePushes struct {
+	Enabled bool `json:"enabled"`
 }
 
 // EnforceAdmins specifies whether to enforce the
@@ -562,14 +576,21 @@ type EnforceAdmins struct {
 
 // RequiredPullRequestReviews exposes the state of review rights.
 type RequiredPullRequestReviews struct {
-	DismissalRestrictions        *Restrictions `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool          `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool          `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int           `json:"required_approving_review_count"`
+	DismissalRestrictions        *DismissalRestrictions `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                   `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                   `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                    `json:"required_approving_review_count"`
 }
 
-// Restrictions exposes restrictions in github for an activity to people/teams.
+// DismissalRestrictions exposes restrictions in github for an activity to people/teams.
+type DismissalRestrictions struct {
+	Users []User `json:"users,omitempty"`
+	Teams []Team `json:"teams,omitempty"`
+}
+
+// Restrictions exposes restrictions in github for an activity to apps/people/teams.
 type Restrictions struct {
+	Apps  []App  `json:"apps,omitempty"`
 	Users []User `json:"users,omitempty"`
 	Teams []Team `json:"teams,omitempty"`
 }
@@ -603,18 +624,31 @@ type RequiredStatusChecks struct {
 
 // RequiredPullRequestReviewsRequest controls a request for review rights.
 type RequiredPullRequestReviewsRequest struct {
-	DismissalRestrictions        RestrictionsRequest `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool                `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool                `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int                 `json:"required_approving_review_count"`
+	DismissalRestrictions        DismissalRestrictionsRequest `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                         `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                         `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                          `json:"required_approving_review_count"`
 }
 
-// RestrictionsRequest tells github to restrict an activity to people/teams.
+// DismissalRestrictionsRequest tells github to restrict an activity to people/teams.
 //
 // Use *[]string in order to distinguish unset and empty list.
 // This is needed by dismissal_restrictions to distinguish
 // do not restrict (empty object) and restrict everyone (nil user/teams list)
+type DismissalRestrictionsRequest struct {
+	// Users is a list of user logins
+	Users *[]string `json:"users,omitempty"`
+	// Teams is a list of team slugs
+	Teams *[]string `json:"teams,omitempty"`
+}
+
+// RestrictionsRequest tells github to restrict an activity to apps/people/teams.
+//
+// Use *[]string in order to distinguish unset and empty list.
+// do not restrict (empty object) and restrict everyone (nil apps/user/teams list)
 type RestrictionsRequest struct {
+	// Apps is a list of app names
+	Apps *[]string `json:"apps,omitempty"`
 	// Users is a list of user logins
 	Users *[]string `json:"users,omitempty"`
 	// Teams is a list of team slugs
@@ -743,6 +777,7 @@ type IssueCommentEvent struct {
 // Issue represents general info about an issue.
 type Issue struct {
 	ID        int       `json:"id"`
+	NodeID    string    `json:"node_id"`
 	User      User      `json:"user"`
 	Number    int       `json:"number"`
 	Title     string    `json:"title"`
@@ -904,6 +939,7 @@ const (
 // Review describes a Pull Request review.
 type Review struct {
 	ID          int         `json:"id"`
+	NodeID      string      `json:"node_id"`
 	User        User        `json:"user"`
 	Body        string      `json:"body"`
 	State       ReviewState `json:"state"`
@@ -950,6 +986,7 @@ const (
 // ReviewComment describes a Pull Request review.
 type ReviewComment struct {
 	ID        int       `json:"id"`
+	NodeID    string    `json:"node_id"`
 	ReviewID  int       `json:"pull_request_review_id"`
 	User      User      `json:"user"`
 	Body      string    `json:"body"`
@@ -1056,6 +1093,7 @@ type Organization struct {
 	// Login has the same meaning as Name, but it's more reliable to use as Name can sometimes be empty,
 	// see https://developer.github.com/v3/orgs/#list-organizations
 	Login string `json:"login"`
+	Id    int    `json:"id"`
 	// BillingEmail holds private billing address
 	BillingEmail string `json:"billing_email"`
 	Company      string `json:"company"`
@@ -1168,7 +1206,8 @@ const (
 // Issue and PR "closed" events are not coerced to the "deleted" Action and do not trigger
 // a GenericCommentEvent because these events don't actually remove the comment content from GH.
 type GenericCommentEvent struct {
-	ID           int `json:"id"`
+	ID           int    `json:"id"`
+	NodeID       string `json:"node_id"`
 	CommentID    *int
 	IsPR         bool
 	Action       GenericCommentEventAction
@@ -1412,6 +1451,7 @@ type InstallationPermissions struct {
 // AppInstallation represents a GitHub Apps installation.
 type AppInstallation struct {
 	ID                  int64                   `json:"id,omitempty"`
+	AppSlug             string                  `json:"app_slug,omitempty"`
 	NodeID              string                  `json:"node_id,omitempty"`
 	AppID               int64                   `json:"app_id,omitempty"`
 	TargetID            int64                   `json:"target_id,omitempty"`
@@ -1426,6 +1466,12 @@ type AppInstallation struct {
 	Permissions         InstallationPermissions `json:"permissions,omitempty"`
 	CreatedAt           string                  `json:"created_at,omitempty"`
 	UpdatedAt           string                  `json:"updated_at,omitempty"`
+}
+
+// AppInstallationList represents the result of an AppInstallationList search.
+type AppInstallationList struct {
+	Total         int               `json:"total_count,omitempty"`
+	Installations []AppInstallation `json:"installations,omitempty"`
 }
 
 // AppInstallationToken is the response when retrieving an app installation
@@ -1446,4 +1492,51 @@ type DirectoryContent struct {
 	Type string `json:"type"`
 	Name string `json:"name"`
 	Path string `json:"path"`
+}
+
+// WorkflowRunEvent holds information about an `workflow_run` GitHub webhook event.
+// see // https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#workflow_run
+type WorkflowRunEvent struct {
+	Action       string       `json:"action"`
+	WorkflowRun  WorkflowRun  `json:"workflow_run"`
+	Workflow     Workflow     `json:"workflow"`
+	Repo         *Repo        `json:"repository"`
+	Organization Organization `json:"organization"`
+	Sender       User         `json:"sender"`
+
+	// GUID is included in the header of the request received by GitHub.
+	GUID string
+}
+
+type WorkflowRun struct {
+	ID               int           `json:"id"`
+	Name             string        `json:"name"`
+	NodeID           string        `json:"node_id"`
+	HeadBranch       string        `json:"head_branch"`
+	HeadSha          string        `json:"head_sha"`
+	RunNumber        int           `json:"run_number"`
+	Event            string        `json:"event"`
+	Status           string        `json:"status"`
+	Conclusion       string        `json:"conclusion"`
+	WorkflowID       int           `json:"workflow_id"`
+	CheckSuiteID     int64         `json:"check_suite_id"`
+	CheckSuiteNodeID string        `json:"check_suite_node_id"`
+	URL              string        `json:"url"`
+	PullRequests     []PullRequest `json:"pull_requests"`
+	CreatedAt        time.Time     `json:"created_at"`
+	UpdatedAt        time.Time     `json:"updated_at"`
+	RunAttempt       int           `json:"run_attempt"`
+	RunStartedAt     time.Time     `json:"run_started_at"`
+	HeadCommit       *Commit       `json:"head_commit"`
+	Repository       *Repo         `json:"repository"`
+}
+
+type Workflow struct {
+	ID        int       `json:"id"`
+	NodeID    string    `json:"node_id"`
+	Name      string    `json:"name"`
+	Path      string    `json:"path"`
+	State     string    `json:"state"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

@@ -158,6 +158,12 @@ func TestConfigToMap(t *testing.T) {
 			configString: "[access]\n\towner = group Test Group\n\towner = group Test Group 2\n[access \"refs/*\"]\n\tread = group Test Group 3",
 			orderedIDs:   []string{"[access]", "[access \"refs/*\"]"},
 		},
+		{
+			name:         "empty line end of file",
+			configString: "[access]\n\towner=group Test Group\n",
+			configMap:    map[string][]string{"[access]": {"\towner=group Test Group"}},
+			orderedIDs:   []string{"[access]"},
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -254,7 +260,7 @@ func TestEnsureUUID(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			res, err := ensureUUID(tc.groupsString, tc.id, tc.group)
 			if err != nil && !tc.err {
-				t.Errorf("expected no error but got %w", err)
+				t.Errorf("expected no error but got %v", err)
 			}
 			if err == nil && tc.err {
 				t.Error("expected error but got none")
@@ -469,6 +475,43 @@ func TestAddSection(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.expectedIDs, orderedKeys, cmpopts.SortSlices(func(x, y string) bool { return strings.Compare(x, y) > 0 })); diff != "" {
 				t.Errorf("configToMap returned unexpected ordredKeys value(-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGetRepoClonedName(t *testing.T) {
+	cases := []struct {
+		name     string
+		repo     string
+		expected string
+	}{
+		{
+			name:     "No slashes",
+			repo:     "test-infra",
+			expected: "test-infra",
+		},
+		{
+			name:     "empty",
+			repo:     "",
+			expected: "",
+		},
+		{
+			name:     "one slash",
+			repo:     "testing/test-infra",
+			expected: "test-infra",
+		},
+		{
+			name:     "multiple slashes",
+			repo:     "testing/two/test-infra",
+			expected: "test-infra",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			workdir := getRepoClonedName(tc.repo)
+			if diff := cmp.Diff(workdir, tc.expected); diff != "" {
+				t.Errorf("configToMap returned unexpected map value(-want +got):\n%s", diff)
 			}
 		})
 	}

@@ -60,7 +60,7 @@ Returns:
 		...
 	}
 */
-func clusterLocal(failuresByTest failuresGroup, numWorkers int, memoize bool) nestedFailuresGroups {
+func clusterLocal(failuresByTest failuresGroup, numWorkers int, memoize bool, maxClusterTextLength int) nestedFailuresGroups {
 	const memoPath string = "memo_cluster_local.json"
 	const memoMessage string = "clustering inside each test"
 
@@ -131,7 +131,7 @@ func clusterLocal(failuresByTest failuresGroup, numWorkers int, memoize bool) ne
 			for pair := range workQueue {
 				doneQueue <- doneGroup{
 					pair,
-					clusterTest(pair.Failures),
+					clusterTest(pair.Failures, maxClusterTextLength),
 				}
 			}
 		}()
@@ -210,9 +210,10 @@ Returns:
 		...
 	}
 */
-func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster, memoize bool) nestedFailuresGroups {
+func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []jsonCluster, memoize bool, maxClusterTextLength int) nestedFailuresGroups {
 	const memoPath string = "memo_cluster_global.json"
 	const memoMessage string = "clustering across tests"
+	truncatedClusterTextLength := maxClusterTextLength + len(truncatedSep)
 
 	// The eventual global clusters
 	clusters := make(nestedFailuresGroups)
@@ -232,7 +233,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 		n := 0
 		for _, cluster := range previouslyClustered {
 			key := cluster.Key
-			normalizedKey := normalize(key)
+			normalizedKey := normalize(key, maxClusterTextLength)
 			if key != normalizedKey {
 				klog.V(4).Infof(key)
 				klog.V(4).Infof(normalizedKey)
@@ -283,7 +284,7 @@ func clusterGlobal(newlyClustered nestedFailuresGroups, previouslyClustered []js
 
 				// Copy the contents into the test's failure slice
 				clusters[key][testName] = append(clusters[key][testName], tests...)
-			} else if time.Since(testStart).Seconds() > 30 && fTextLen > maxClusterTextLen/2 && numTests == 1 {
+			} else if time.Since(testStart).Seconds() > 30 && fTextLen > truncatedClusterTextLength/2 && numTests == 1 {
 				// if we've taken longer than 30 seconds for this test, bail on pathological / low value cases
 				clusterCase = "BAILED"
 			} else {
@@ -343,12 +344,12 @@ Returns:
 		...
 	}
 */
-func clusterTest(failures []failure) failuresGroup {
+func clusterTest(failures []failure, maxClusterTextLength int) failuresGroup {
 	result := make(failuresGroup, len(failures))
 	start := time.Now()
 
 	for _, flr := range failures {
-		fNorm := normalize(flr.FailureText)
+		fNorm := normalize(flr.FailureText, maxClusterTextLength)
 
 		// If this string is already in the result list, store it
 		if _, ok := result[fNorm]; ok {

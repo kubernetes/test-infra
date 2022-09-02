@@ -120,9 +120,9 @@ func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptio
 					}
 					if mungeErr := mungePR(pr); mungeErr != nil {
 						if pr.Number == nil {
-							mungeErr = fmt.Errorf("error munging pull request with nil Number field: %v", mungeErr)
+							mungeErr = fmt.Errorf("error munging pull request with nil Number field: %w", mungeErr)
 						} else {
-							mungeErr = fmt.Errorf("error munging pull request #%d: %v", *pr.Number, mungeErr)
+							mungeErr = fmt.Errorf("error munging pull request #%d: %w", *pr.Number, mungeErr)
 						}
 						if !continueOnError {
 							return nil, resp, &retryAbort{mungeErr}

@@ -18,10 +18,11 @@ package releasenote
 
 import (
 	"fmt"
-	"k8s.io/test-infra/prow/labels"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"k8s.io/test-infra/prow/labels"
 
 	"github.com/sirupsen/logrus"
 
@@ -51,7 +52,7 @@ var (
 
 	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
-	noneRe        = regexp.MustCompile(`(?i)^\W*NONE\W*$`)
+	noneRe        = regexp.MustCompile(`(?i)^\W*(NONE|NO)\W*$`)
 
 	allRNLabels = []string{
 		labels.ReleaseNoteNone,
@@ -61,6 +62,7 @@ var (
 	}
 
 	releaseNoteRe               = regexp.MustCompile(`(?mi)^/release-note\s*$`)
+	releaseNoteEditRe           = regexp.MustCompile(`(?mi)^/release-note-edit\s*$`)
 	releaseNoteNoneRe           = regexp.MustCompile(`(?mi)^/release-note-none\s*$`)
 	releaseNoteActionRequiredRe = regexp.MustCompile(`(?mi)^/release-note-action-required\s*$`)
 )
@@ -86,6 +88,12 @@ func helpProvider(_ *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.Plu
 		WhoCanUse:   "PR Authors and Org Members.",
 		Examples:    []string{"/release-note-none"},
 	})
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/release-note-edit",
+		Description: "Replaces the release note block in the top level comment with the provided one.",
+		WhoCanUse:   "Org Members.",
+		Examples:    []string{"/release-note-edit\r\n```release-note\r\nThe new release note\r\n```"},
+	})
 	return pluginHelp, nil
 }
 
@@ -98,6 +106,7 @@ type githubClient interface {
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	BotUserChecker() (func(candidate string) bool, error)
+	EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error)
 }
 
 func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
@@ -113,6 +122,10 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 	org := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
+
+	if releaseNoteEditRe.MatchString(ic.Comment.Body) {
+		return editReleaseNote(gc, log, ic)
+	}
 
 	// Which label does the comment want us to add?
 	var nl string
@@ -235,7 +248,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 
 	prInitLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
 	if err != nil {
-		return fmt.Errorf("failed to list labels on PR #%d. err: %v", pr.Number, err)
+		return fmt.Errorf("failed to list labels on PR #%d. err: %w", pr.Number, err)
 	}
 	prLabels := labelsSet(prInitLabels)
 
@@ -243,6 +256,10 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body, prLabels)
 
 	if labelToAdd == labels.ReleaseNoteLabelNeeded {
+		//Do not add do not merge label when the PR is merged
+		if pr.PullRequest.Merged {
+			return nil
+		}
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
 			return clearStaleComments(gc, log, pr, prLabels, nil)
@@ -258,7 +275,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		} else {
 			comments, err = gc.ListIssueComments(org, repo, pr.Number)
 			if err != nil {
-				return fmt.Errorf("failed to list comments on %s/%s#%d. err: %v", org, repo, pr.Number, err)
+				return fmt.Errorf("failed to list comments on %s/%s#%d. err: %w", org, repo, pr.Number, err)
 			}
 			if containsNoneCommand(comments) {
 				labelToAdd = labels.ReleaseNoteNone
@@ -450,4 +467,61 @@ func labelsSet(labels []github.Label) sets.String {
 		prLabels.Insert(label.Name)
 	}
 	return prLabels
+}
+
+// editReleaseNote is used to edit the top level release note.
+// Since the edit itself triggers an event we don't need to worry
+// about labels because the plugin will run again and handle them.
+func editReleaseNote(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+	org := ic.Repo.Owner.Login
+	repo := ic.Repo.Name
+	user := ic.Comment.User.Login
+
+	isMember, err := gc.IsMember(org, user)
+	if err != nil {
+		return fmt.Errorf("unable to fetch if %s is an org member of %s: %w", user, org, err)
+	}
+	if !isMember {
+		return gc.CreateComment(
+			org, repo, ic.Issue.Number,
+			plugins.FormatResponseRaw(ic.Comment.Body, ic.Issue.HTMLURL, user, "You must be an org member to edit the release note."),
+		)
+	}
+
+	newNote := getReleaseNote(ic.Comment.Body)
+	if newNote == "" {
+		return gc.CreateComment(
+			org, repo, ic.Issue.Number,
+			plugins.FormatResponseRaw(ic.Comment.Body, ic.Comment.HTMLURL, user, "/release-note-edit must be used with a release note block."),
+		)
+	}
+
+	// 0: start of release note block
+	// 1: end of release note block
+	// 2: start of release note content
+	// 3: end of release note content
+	i := noteMatcherRE.FindStringSubmatchIndex(ic.Issue.Body)
+	if len(i) != 4 {
+		return gc.CreateComment(
+			org, repo, ic.Issue.Number,
+			plugins.FormatResponseRaw(ic.Comment.Body, ic.Comment.HTMLURL, user, "/release-note-edit must be used with a single release note block."),
+		)
+	}
+	// Splice in the contents of the new release note block to the top level comment
+	// This accounts for all older regex matches
+	b := []byte(ic.Issue.Body)
+	replaced := append(b[:i[2]], append([]byte("\r\n"+strings.TrimSpace(newNote)+"\r\n"), b[i[3]:]...)...)
+	ic.Issue.Body = string(replaced)
+
+	_, err = gc.EditIssue(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, &ic.Issue)
+	if err != nil {
+		return fmt.Errorf("unable to edit issue: %w", err)
+	}
+	log.WithFields(logrus.Fields{
+		"user":        user,
+		"org":         org,
+		"repo":        repo,
+		"issueNumber": ic.Issue.Number,
+	}).Info("edited release note")
+	return nil
 }

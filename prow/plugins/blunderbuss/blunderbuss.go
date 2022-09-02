@@ -68,6 +68,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 			MaxReviewerCount:      3,
 			ExcludeApprovers:      true,
 			UseStatusAvailability: true,
+			IgnoreAuthors:         []string{},
 		},
 	})
 	if err != nil {
@@ -144,10 +145,19 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 }
 
 func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.PullRequestEventAction, pr *github.PullRequest, repo *github.Repo) error {
-	if action != github.PullRequestActionOpened || assign.CCRegexp.MatchString(pr.Body) {
+	if !(action == github.PullRequestActionOpened || action == github.PullRequestActionReadyForReview) || assign.CCRegexp.MatchString(pr.Body) {
 		return nil
 	}
-
+	if pr.Draft && config.IgnoreDrafts {
+		// ignore Draft PR when IgnoreDrafts is true
+		return nil
+	}
+	// Ignore PRs submitted by users matching logins set in IgnoreAuthors
+	for _, user := range config.IgnoreAuthors {
+		if user == pr.User.Login {
+			return nil
+		}
+	}
 	return handle(
 		ghc,
 		roc,
@@ -187,7 +197,7 @@ func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.En
 
 	pr, err := ghc.GetPullRequest(repo.Owner.Login, repo.Name, prNumber)
 	if err != nil {
-		return fmt.Errorf("error loading PullRequest: %v", err)
+		return fmt.Errorf("error loading PullRequest: %w", err)
 	}
 
 	return handle(
@@ -206,12 +216,12 @@ func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.En
 func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerCount *int, maxReviewers int, excludeApprovers bool, useStatusAvailability bool, repo *github.Repo, pr *github.PullRequest) error {
 	oc, err := roc.LoadRepoOwners(repo.Owner.Login, repo.Name, pr.Base.Ref)
 	if err != nil {
-		return fmt.Errorf("error loading RepoOwners: %v", err)
+		return fmt.Errorf("error loading RepoOwners: %w", err)
 	}
 
 	changes, err := ghc.GetPullRequestChanges(repo.Owner.Login, repo.Name, pr.Number)
 	if err != nil {
-		return fmt.Errorf("error getting PR changes: %v", err)
+		return fmt.Errorf("error getting PR changes: %w", err)
 	}
 
 	var reviewers []string
@@ -271,6 +281,9 @@ func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, autho
 	leafReviewers := layeredsets.NewString()
 	busyReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
+	if minReviewers == 0 {
+		return reviewers.List(), requiredReviewers.List(), nil
+	}
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
 	for _, file := range files {
 		ownersFile := rc.FindReviewersOwnersForFile(file.Filename)
@@ -333,12 +346,13 @@ func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability boo
 		}
 		busy, err := isUserBusy(ghc, candidate)
 		if err != nil {
-			log.Errorf("error checking user availability: %v", err)
+			log.WithField("user", candidate).WithError(err).Error("Error checking user availability")
 		}
 		if !busy {
 			return candidate
 		}
 		// if we haven't returned the candidate, then they must be busy.
+		log.WithField("user", candidate).Debug("User marked as a busy reviewer")
 		busyReviewers.Insert(candidate)
 	}
 	return ""

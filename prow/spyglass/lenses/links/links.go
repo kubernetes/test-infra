@@ -28,6 +28,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -38,7 +40,7 @@ const (
 	title    = "Debugging links"
 	priority = 20
 
-	bytesLimit = 10 * 1024
+	bytesLimit = 20 * 1024
 )
 
 func init() {
@@ -70,12 +72,12 @@ func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config jso
 func renderTemplate(resourceDir, block string, params interface{}) (string, error) {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
-		return "", fmt.Errorf("Failed to parse template: %v", err)
+		return "", fmt.Errorf("Failed to parse template: %w", err)
 	}
 
 	var buf bytes.Buffer
 	if err := t.ExecuteTemplate(&buf, block, params); err != nil {
-		return "", fmt.Errorf("Failed to execute template: %v", err)
+		return "", fmt.Errorf("Failed to execute template: %w", err)
 	}
 	return buf.String(), nil
 }
@@ -88,7 +90,7 @@ func humanReadableName(name string) string {
 	name = strings.TrimSuffix(name, ".txt")
 	words := strings.Split(name, "-")
 	if len(words) > 0 {
-		words[0] = strings.Title(words[0])
+		words[0] = cases.Title(language.English).String(words[0])
 	}
 	return strings.Join(words, " ")
 }
@@ -113,9 +115,14 @@ func clickableLink(link string, spyglassConfig config.Spyglass) string {
 }
 
 type link struct {
-	Name string
-	URL  string
-	Link string
+	Name string `json:"name"`
+	URL  string `json:"url"`
+	Link string `json:"-"`
+}
+
+type linkGroup struct {
+	Title string `json:"title"`
+	Links []link `json:"links"`
 }
 
 func toLink(jobPath string, content []byte, spyglassConfig config.Spyglass) link {
@@ -127,24 +134,51 @@ func toLink(jobPath string, content []byte, spyglassConfig config.Spyglass) link
 	}
 }
 
+func parseLinkFile(jobPath string, content []byte, spyglassConfig config.Spyglass) (linkGroup, error) {
+	if extension := filepath.Ext(jobPath); extension == ".json" {
+		group := linkGroup{}
+		if err := json.Unmarshal(content, &group); err != nil {
+			return group, err
+		}
+		for i := range group.Links {
+			group.Links[i].Link = clickableLink(group.Links[i].URL, spyglassConfig)
+		}
+		return group, nil
+	}
+	// Wrap a single link inside a linkGroup.
+	wrappedLink := toLink(jobPath, content, spyglassConfig)
+	return linkGroup{
+		Title: wrappedLink.Name,
+		Links: []link{
+			wrappedLink,
+		},
+	}, nil
+}
+
 // Body renders link to logs.
 func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
-	var links []link
+	var linkGroups []linkGroup
 	for _, artifact := range artifacts {
+		jobPath := artifact.JobPath()
 		content, err := artifact.ReadAtMost(bytesLimit)
 		if err != nil && err != io.EOF {
-			logrus.WithError(err).Warnf("Failed to read artifact file: %q", artifact.JobPath())
+			logrus.WithError(err).Warnf("Failed to read artifact file: %q", jobPath)
 			continue
 		}
-		links = append(links, toLink(artifact.JobPath(), content, spyglassConfig))
+		group, err := parseLinkFile(jobPath, content, spyglassConfig)
+		if err != nil {
+			logrus.WithError(err).Warnf("Failed to parse link file: %q", jobPath)
+			continue
+		}
+		linkGroups = append(linkGroups, group)
 	}
 
-	sort.Slice(links, func(i, j int) bool { return links[i].Name < links[j].Name })
+	sort.Slice(linkGroups, func(i, j int) bool { return linkGroups[i].Title < linkGroups[j].Title })
 
 	params := struct {
-		Links []link
+		LinkGroups []linkGroup
 	}{
-		Links: links,
+		LinkGroups: linkGroups,
 	}
 
 	output, err := renderTemplate(resourceDir, "body", params)

@@ -35,5 +35,5 @@ export type Language =
     "yaml";
 
 export interface Prettify {
-    prettyPrint(): void;
+  prettyPrint(): void;
 }

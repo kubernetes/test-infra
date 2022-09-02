@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"sync"
 
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -43,12 +44,17 @@ type StorageArtifact struct {
 	// ctx provides context for cancellation and timeout. Embedded in struct to preserve
 	// conformance with io.ReaderAt
 	ctx context.Context
+
+	attrs *pkgio.Attributes
+
+	lock sync.RWMutex
 }
 
 type artifactHandle interface {
 	Attrs(ctx context.Context) (pkgio.Attributes, error)
 	NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error)
 	NewReader(ctx context.Context) (io.ReadCloser, error)
+	UpdateAttrs(context.Context, pkgio.ObjectAttrsToUpdate) (*pkgio.Attributes, error)
 }
 
 // NewStorageArtifact returns a new StorageArtifact with a given handle, canonical link, and path within the job
@@ -62,13 +68,56 @@ func NewStorageArtifact(ctx context.Context, handle artifactHandle, link string,
 	}
 }
 
+func (a *StorageArtifact) fetchAttrs() (*pkgio.Attributes, error) {
+	a.lock.RLock()
+	attrs := a.attrs
+	a.lock.RUnlock()
+	if attrs != nil {
+		return attrs, nil
+	}
+	if a.attrs != nil {
+		return a.attrs, nil
+	}
+	{
+		attrs, err := a.handle.Attrs(a.ctx)
+		if err != nil {
+			return nil, err
+		}
+		a.lock.Lock()
+		defer a.lock.Unlock()
+		a.attrs = &attrs
+	}
+	return a.attrs, nil
+}
+
 // Size returns the size of the artifact in GCS
 func (a *StorageArtifact) Size() (int64, error) {
-	attrs, err := a.handle.Attrs(a.ctx)
+	attrs, err := a.fetchAttrs()
 	if err != nil {
-		return 0, fmt.Errorf("error getting gcs attributes for artifact: %v", err)
+		return 0, fmt.Errorf("error getting gcs attributes for artifact: %w", err)
 	}
 	return attrs.Size, nil
+}
+
+func (a *StorageArtifact) Metadata() (map[string]string, error) {
+	attrs, err := a.fetchAttrs()
+	if err != nil {
+		return nil, fmt.Errorf("fetch attributes: %w", err)
+	}
+	return attrs.Metadata, nil
+}
+
+func (a *StorageArtifact) UpdateMetadata(meta map[string]string) error {
+	attrs, err := a.handle.UpdateAttrs(a.ctx, pkgio.ObjectAttrsToUpdate{
+		Metadata: meta,
+	})
+	if err != nil {
+		return err
+	}
+	a.lock.Lock()
+	a.attrs = attrs
+	a.lock.Unlock()
+	return nil
 }
 
 // JobPath gets the GCS path of the artifact within the current job
@@ -88,14 +137,14 @@ func (a *StorageArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 	}
 	gzipped, err := a.gzipped()
 	if err != nil {
-		return 0, fmt.Errorf("error checking artifact for gzip compression: %v", err)
+		return 0, fmt.Errorf("error checking artifact for gzip compression: %w", err)
 	}
 	if gzipped {
 		return 0, lenses.ErrGzipOffsetRead
 	}
 	artifactSize, err := a.Size()
 	if err != nil {
-		return 0, fmt.Errorf("error getting artifact size: %v", err)
+		return 0, fmt.Errorf("error getting artifact size: %w", err)
 	}
 	if off >= artifactSize {
 		return 0, fmt.Errorf("offset must be less than artifact size")
@@ -109,7 +158,7 @@ func (a *StorageArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 	}
 	reader, err := a.handle.NewRangeReader(a.ctx, off, toRead)
 	if err != nil {
-		return 0, fmt.Errorf("error getting artifact reader: %v", err)
+		return 0, fmt.Errorf("error getting artifact reader: %w", err)
 	}
 	defer reader.Close()
 	// We need to keep reading until we fill the buffer or hit EOF.
@@ -121,7 +170,7 @@ func (a *StorageArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 			if err == io.EOF && gotEOF {
 				break
 			}
-			return 0, fmt.Errorf("error reading from artifact: %v", err)
+			return 0, fmt.Errorf("error reading from artifact: %w", err)
 		}
 	}
 	if gotEOF {
@@ -140,17 +189,17 @@ func (a *StorageArtifact) ReadAtMost(n int64) ([]byte, error) {
 	var p []byte
 	gzipped, err := a.gzipped()
 	if err != nil {
-		return nil, fmt.Errorf("error checking artifact for gzip compression: %v", err)
+		return nil, fmt.Errorf("error checking artifact for gzip compression: %w", err)
 	}
 	if gzipped {
 		reader, err = a.handle.NewReader(a.ctx)
 		if err != nil {
-			return nil, fmt.Errorf("error getting artifact reader: %v", err)
+			return nil, fmt.Errorf("error getting artifact reader: %w", err)
 		}
 		defer reader.Close()
 		p, err = ioutil.ReadAll(reader) // Must readall for gzipped files
 		if err != nil {
-			return nil, fmt.Errorf("error reading all from artifact: %v", err)
+			return nil, fmt.Errorf("error reading all from artifact: %w", err)
 		}
 		artifactSize := int64(len(p))
 		readRange := n
@@ -163,7 +212,7 @@ func (a *StorageArtifact) ReadAtMost(n int64) ([]byte, error) {
 	}
 	artifactSize, err := a.Size()
 	if err != nil {
-		return nil, fmt.Errorf("error getting artifact size: %v", err)
+		return nil, fmt.Errorf("error getting artifact size: %w", err)
 	}
 	readRange := n
 	var gotEOF bool
@@ -173,12 +222,12 @@ func (a *StorageArtifact) ReadAtMost(n int64) ([]byte, error) {
 	}
 	reader, err = a.handle.NewRangeReader(a.ctx, 0, readRange)
 	if err != nil {
-		return nil, fmt.Errorf("error getting artifact reader: %v", err)
+		return nil, fmt.Errorf("error getting artifact reader: %w", err)
 	}
 	defer reader.Close()
 	p, err = ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("error reading all from artifact: %v", err)
+		return nil, fmt.Errorf("error reading all from artifact: %w", err)
 	}
 	if gotEOF {
 		return p, io.EOF
@@ -190,19 +239,19 @@ func (a *StorageArtifact) ReadAtMost(n int64) ([]byte, error) {
 func (a *StorageArtifact) ReadAll() ([]byte, error) {
 	size, err := a.Size()
 	if err != nil {
-		return nil, fmt.Errorf("error getting artifact size: %v", err)
+		return nil, fmt.Errorf("error getting artifact size: %w", err)
 	}
 	if size > a.sizeLimit {
 		return nil, lenses.ErrFileTooLarge
 	}
 	reader, err := a.handle.NewReader(a.ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error getting artifact reader: %v", err)
+		return nil, fmt.Errorf("error getting artifact reader: %w", err)
 	}
 	defer reader.Close()
 	p, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("error reading all from artifact: %v", err)
+		return nil, fmt.Errorf("error reading all from artifact: %w", err)
 	}
 	return p, nil
 }
@@ -214,14 +263,14 @@ func (a *StorageArtifact) ReadTail(n int64) ([]byte, error) {
 	}
 	gzipped, err := a.gzipped()
 	if err != nil {
-		return nil, fmt.Errorf("error checking artifact for gzip compression: %v", err)
+		return nil, fmt.Errorf("error checking artifact for gzip compression: %w", err)
 	}
 	if gzipped {
 		return nil, lenses.ErrGzipOffsetRead
 	}
 	size, err := a.Size()
 	if err != nil {
-		return nil, fmt.Errorf("error getting artifact size: %v", err)
+		return nil, fmt.Errorf("error getting artifact size: %w", err)
 	}
 	var offset int64
 	if n >= size {
@@ -231,12 +280,12 @@ func (a *StorageArtifact) ReadTail(n int64) ([]byte, error) {
 	}
 	reader, err := a.handle.NewRangeReader(a.ctx, offset, -1)
 	if err != nil && err != io.EOF {
-		return nil, fmt.Errorf("error getting artifact reader: %v", err)
+		return nil, fmt.Errorf("error getting artifact reader: %w", err)
 	}
 	defer reader.Close()
 	read, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("error reading all from artiact: %v", err)
+		return nil, fmt.Errorf("error reading all from artiact: %w", err)
 	}
 	return read, nil
 }
@@ -245,7 +294,7 @@ func (a *StorageArtifact) ReadTail(n int64) ([]byte, error) {
 func (a *StorageArtifact) gzipped() (bool, error) {
 	attrs, err := a.handle.Attrs(a.ctx)
 	if err != nil {
-		return false, fmt.Errorf("error getting gcs attributes for artifact: %v", err)
+		return false, fmt.Errorf("error getting gcs attributes for artifact: %w", err)
 	}
 	return attrs.ContentEncoding == "gzip", nil
 }

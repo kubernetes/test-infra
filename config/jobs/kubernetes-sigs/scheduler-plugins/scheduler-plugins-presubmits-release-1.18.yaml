@@ -42,8 +42,6 @@ presubmits:
         - unit-test
   - name: pull-scheduler-plugins-integration-test-release-1-18
     decorate: true
-    decoration_config:
-      timeout: 40m
     path_alias: sigs.k8s.io/scheduler-plugins
     branches:
     - ^release-1.18$

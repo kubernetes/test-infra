@@ -63,7 +63,7 @@ func (n localCluster) getScript(scriptPath string) (string, error) {
 	if _, err := os.Stat(path); err == nil {
 		return path, nil
 	}
-	return "", fmt.Errorf("unable to find script %v in directory %v", scriptPath, cwd)
+	return "", fmt.Errorf("unable to find script %v in directory %s", scriptPath, cwd)
 }
 
 func (n localCluster) Up() error {

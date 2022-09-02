@@ -34,7 +34,7 @@ import (
 // Make sure that our plugins are valid.
 func TestPlugins(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
-	if err := pa.Load("../../../config/prow/plugins.yaml", nil, "", true); err != nil {
+	if err := pa.Load("../../../config/prow/plugins.yaml", nil, "", true, false); err != nil {
 		t.Fatalf("Could not load plugins: %v.", err)
 	}
 }
@@ -69,14 +69,6 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
-		{
 			name: "explicitly set --plugin-config",
 			args: map[string]string{
 				"--plugin-config": "/random/value",
@@ -85,16 +77,28 @@ func Test_gatherOptions(t *testing.T) {
 				o.pluginsConfig.PluginConfigPath = "/random/value"
 			},
 		},
+		{
+			name: "explicitly set --webhook-path",
+			args: map[string]string{
+				"--webhook-path": "/random/hook",
+			},
+			expected: func(o *options) {
+				o.webhookPath = "/random/hook"
+			},
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				port: 8888,
+				webhookPath: "/hook",
+				port:        8888,
 				config: configflagutil.ConfigOptions{
 					ConfigPath:                            "yo",
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					PluginConfigPath:                         "/etc/plugins/plugins.yaml",
@@ -103,7 +107,6 @@ func Test_gatherOptions(t *testing.T) {
 				},
 				dryRun:                 true,
 				gracePeriod:            180 * time.Second,
-				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				webhookSecretFile:      "/etc/webhook/hmac",
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
@@ -115,7 +118,6 @@ func Test_gatherOptions(t *testing.T) {
 
 			argMap := map[string]string{
 				"--config-path": "yo",
-				"--deck-url":    "http://whatever",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v

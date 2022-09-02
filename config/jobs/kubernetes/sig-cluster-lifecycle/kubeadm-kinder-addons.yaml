@@ -24,11 +24,11 @@ periodics:
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
-    base_ref: master
+    base_ref: main
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

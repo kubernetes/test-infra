@@ -2,66 +2,70 @@ dashboard_groups:
 - name: kops
   dashboard_names:
   - kops-presubmits
+  - kops-conformance
   - kops-distros
   - kops-network-plugins
   - kops-versions
   - kops-misc
-  - kops-kubetest2
+  - kops-ipv6
   - kops-gce
   - kops-grid
   - kops-distro-amzn2
-  - kops-distro-centos7
-  - kops-distro-centos8
-  - kops-distro-deb9
   - kops-distro-deb10
+  - kops-distro-deb11
   - kops-distro-flatcar
-  - kops-distro-rhel7
   - kops-distro-rhel8
+  - kops-distro-rocky8
   - kops-distro-u1804
   - kops-distro-u2004
   - kops-distro-u2004arm64
-  - kops-distro-u2010
-  - kops-k8s-1.17
-  - kops-k8s-1.18
-  - kops-k8s-1.19
+  - kops-distro-u2204
+  - kops-distro-u2204arm64
   - kops-k8s-1.20
   - kops-k8s-1.21
+  - kops-k8s-1.22
+  - kops-k8s-1.23
+  - kops-k8s-1.24
   - kops-k8s-ci
   - kops-k8s-latest
   - kops-k8s-stable
-  - kops-1.20
-  - kops-1.21
+  - kops-1.23
+  - kops-1.24
   - kops-latest
+  - kops-upgrades
+  - kops-upgrades-many-addons
 
 dashboards:
 - name: kops-presubmits
+- name: kops-conformance
 - name: kops-distros
 - name: kops-network-plugins
 - name: kops-versions
 - name: kops-misc
-- name: kops-kubetest2
+- name: kops-ipv6
 - name: kops-gce
 - name: kops-grid
 - name: kops-distro-amzn2
-- name: kops-distro-centos7
-- name: kops-distro-centos8
-- name: kops-distro-deb9
 - name: kops-distro-deb10
+- name: kops-distro-deb11
 - name: kops-distro-flatcar
-- name: kops-distro-rhel7
 - name: kops-distro-rhel8
+- name: kops-distro-rocky8
 - name: kops-distro-u1804
 - name: kops-distro-u2004
 - name: kops-distro-u2004arm64
-- name: kops-distro-u2010
-- name: kops-k8s-1.17
-- name: kops-k8s-1.18
-- name: kops-k8s-1.19
+- name: kops-distro-u2204
+- name: kops-distro-u2204arm64
 - name: kops-k8s-1.20
 - name: kops-k8s-1.21
+- name: kops-k8s-1.22
+- name: kops-k8s-1.23
+- name: kops-k8s-1.24
 - name: kops-k8s-ci
 - name: kops-k8s-latest
 - name: kops-k8s-stable
-- name: kops-1.20
-- name: kops-1.21
+- name: kops-1.23
+- name: kops-1.24
 - name: kops-latest
+- name: kops-upgrades
+- name: kops-upgrades-many-addons

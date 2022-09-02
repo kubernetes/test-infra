@@ -4,7 +4,7 @@ Plank is the controller that manages the job execution and lifecycle for jobs ru
 
 ### Usage
 ```bash
-$ bazel run //prow/cmd/prow-controller-manager -- --help
+$ go run ./prow/cmd/prow-controller-manager --help
 ```
 
 ### Configuration
@@ -20,7 +20,7 @@ plank:
   # used to link to job results for non decorated jobs (without pod utilities)
   job_url_template: 'https://<domain>/view/<bucket-name>/pr-logs/pull/{{.Spec.Refs.Repo}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}'
   report_template: '[Full PR test history](https://<domain>/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}})'
-  default_decoration_configs:
+  default_decoration_config_entries:
   # All entries that match a job are used, later entries override previous values.
   # Omission of 'repo' and 'cluster' fields makes this entry match all jobs.
   - config:

@@ -341,7 +341,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		kopsBin := filepath.Join(tmpdir, "kops")
 		f, err := os.Create(kopsBin)
 		if err != nil {
-			return nil, fmt.Errorf("error creating file %q: %v", kopsBin, err)
+			return nil, fmt.Errorf("error creating file %q: %w", kopsBin, err)
 		}
 		defer f.Close()
 		if err := httpRead(kopsBinURL, f); err != nil {
@@ -433,7 +433,7 @@ func (k kops) Up() error {
 	if k.adminAccess == "" {
 		externalIPRange, err := getExternalIPRange()
 		if err != nil {
-			return fmt.Errorf("external IP cannot be retrieved: %v", err)
+			return fmt.Errorf("external IP cannot be retrieved: %w", err)
 		}
 
 		log.Printf("Using external IP for admin access: %v", externalIPRange)
@@ -480,12 +480,12 @@ func (k kops) Up() error {
 	createArgs = append(createArgs, "--yes")
 
 	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
-		return fmt.Errorf("kops create cluster failed: %v", err)
+		return fmt.Errorf("kops create cluster failed: %w", err)
 	}
 
 	// TODO: Once this gets support for N checks in a row, it can replace the above node readiness check
 	if err := control.FinishRunning(exec.Command(k.path, "validate", "cluster", k.cluster, "--wait", "15m")); err != nil {
-		return fmt.Errorf("kops validate cluster failed: %v", err)
+		return fmt.Errorf("kops validate cluster failed: %w", err)
 	}
 
 	// We require repeated successes, so we know that the cluster is stable
@@ -496,7 +496,7 @@ func (k kops) Up() error {
 
 	// Wait for nodes to become ready
 	if err := waitForReadyNodes(k.nodes+1, *kopsUpTimeout, requiredConsecutiveSuccesses); err != nil {
-		return fmt.Errorf("kops nodes not ready: %v", err)
+		return fmt.Errorf("kops nodes not ready: %w", err)
 	}
 
 	return nil
@@ -549,12 +549,12 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 	}
 	key, err := ioutil.ReadFile(privateKeyPath)
 	if err != nil {
-		return fmt.Errorf("error reading private key %q: %v", k.sshPrivateKey, err)
+		return fmt.Errorf("error reading private key %q: %w", k.sshPrivateKey, err)
 	}
 
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		return fmt.Errorf("error parsing private key %q: %v", k.sshPrivateKey, err)
+		return fmt.Errorf("error parsing private key %q: %w", k.sshPrivateKey, err)
 	}
 
 	sshConfig := &ssh.ClientConfig{
@@ -600,7 +600,7 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 func (k *kops) dumpAllNodes(ctx context.Context, d *logDumper) error {
 	// Make sure kubeconfig is set, in particular before calling DumpAllNodes, which calls kubectlGetNodes
 	if err := k.TestSetup(); err != nil {
-		return fmt.Errorf("error setting up kubeconfig: %v", err)
+		return fmt.Errorf("error setting up kubeconfig: %w", err)
 	}
 
 	var additionalIPs []string
@@ -641,7 +641,7 @@ func (k kops) TestSetup() error {
 	}
 
 	if err := control.FinishRunning(exec.Command(k.path, "export", "kubecfg", k.cluster)); err != nil {
-		return fmt.Errorf("failure from 'kops export kubecfg %s': %v", k.cluster, err)
+		return fmt.Errorf("failure from 'kops export kubecfg %s': %w", k.cluster, err)
 	}
 
 	// Double-check that the file was exported
@@ -660,7 +660,7 @@ func (k kops) TestSetup() error {
 func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 	kubecfg, err := parseKubeconfig(k.kubecfg)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing kubeconfig %q: %v", k.kubecfg, err)
+		return nil, fmt.Errorf("error parsing kubeconfig %q: %w", k.kubecfg, err)
 	}
 
 	log.Printf("running ginkgo tests directly")
@@ -722,7 +722,7 @@ func (k kops) Down() error {
 		ctx := context.Background()
 		client, err := storage.NewClient(ctx)
 		if err != nil {
-			return fmt.Errorf("error building storage API client: %v", err)
+			return fmt.Errorf("error building storage API client: %w", err)
 		}
 		bkt := client.Bucket(*kopsState)
 		if err := bkt.Delete(ctx); err != nil {
@@ -767,7 +767,7 @@ func (k *kops) runKopsDump() (*kopsDump, error) {
 
 	dump := &kopsDump{}
 	if err := json.Unmarshal(o, dump); err != nil {
-		return nil, fmt.Errorf("error parsing kops toolbox dump output: %v", err)
+		return nil, fmt.Errorf("error parsing kops toolbox dump output: %w", err)
 	}
 
 	return dump, nil
@@ -813,7 +813,7 @@ func getRandomAWSZones(masterCount int, multipleZones bool) ([]string, error) {
 		// az for a region. AWS Go API does not allow us to make a single call
 		zoneResults, err := ec2Session.DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{})
 		if err != nil {
-			return nil, fmt.Errorf("unable to call aws api DescribeAvailabilityZones for %q: %v", awsRegions[i], err)
+			return nil, fmt.Errorf("unable to call aws api DescribeAvailabilityZones for %q: %w", awsRegions[i], err)
 		}
 
 		var selectedZones []string
@@ -844,7 +844,7 @@ func getAWSEC2Session(region string) (*ec2.EC2, error) {
 
 	s, err := session.NewSession(config)
 	if err != nil {
-		return nil, fmt.Errorf("unable to build aws API session with region: %q: %v", region, err)
+		return nil, fmt.Errorf("unable to build aws API session with region: %q: %w", region, err)
 	}
 
 	return ec2.New(s, config), nil
@@ -871,7 +871,7 @@ func parseKubeconfig(kubeconfigPath string) (*kubeconfig, error) {
 
 	cfg := &kubeconfig{}
 	if err := json.Unmarshal(o, cfg); err != nil {
-		return nil, fmt.Errorf("error parsing kubectl config view output: %v", err)
+		return nil, fmt.Errorf("error parsing kubectl config view output: %w", err)
 	}
 
 	return cfg, nil
@@ -882,7 +882,7 @@ func setupGCEStateStore(projectId string) (*string, error) {
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error building storage API client: %v", err)
+		return nil, fmt.Errorf("error building storage API client: %w", err)
 	}
 	name := gceBucketName(projectId)
 	bkt := client.Bucket(name)

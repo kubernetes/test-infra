@@ -25,7 +25,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -122,13 +121,12 @@ func TestGitHubOptions_Validate(t *testing.T) {
 // settings, like for example for the throttling.
 func TestGitHubOptionsConstructsANewClientOnEachInvocation(t *testing.T) {
 	o := &GitHubOptions{}
-	secretAgent := &secret.Agent{}
 
-	firstClient, err := o.githubClient(secretAgent, false)
+	firstClient, err := o.githubClient(false)
 	if err != nil {
 		t.Fatalf("failed to construct first client: %v", err)
 	}
-	secondClient, err := o.githubClient(secretAgent, false)
+	secondClient, err := o.githubClient(false)
 	if err != nil {
 		t.Fatalf("failed to construct second client: %v", err)
 	}

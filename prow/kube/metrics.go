@@ -41,14 +41,16 @@ var (
 		"base_ref",
 		// the cluster the job runs on
 		"cluster",
+		// whether or not the job was a retest
+		"retest",
 	}
 	prowJobs = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "prowjobs",
-		Help: "Number of prowjobs in the system",
+		Help: "Number of prowjobs in the system.",
 	}, metricLabels)
 	prowJobTransitions = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "prowjob_state_transitions",
-		Help: "Number of prowjobs transitioning states",
+		Help: "Number of prowjobs transitioning states.",
 	}, metricLabels)
 )
 
@@ -61,10 +63,11 @@ type jobLabel struct {
 	repo         string
 	baseRef      string
 	cluster      string
+	retest       string
 }
 
 func (jl *jobLabel) values() []string {
-	return []string{jl.jobNamespace, jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef, jl.cluster}
+	return []string{jl.jobNamespace, jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef, jl.cluster, jl.retest}
 }
 
 func init() {
@@ -92,6 +95,12 @@ func getJobLabel(pj prowapi.ProwJob) jobLabel {
 		jl.org = pj.Spec.ExtraRefs[0].Org
 		jl.repo = pj.Spec.ExtraRefs[0].Repo
 		jl.baseRef = pj.Spec.ExtraRefs[0].BaseRef
+	}
+
+	if retest, exists := pj.ObjectMeta.Labels[RetestLabel]; exists && retest == "true" {
+		jl.retest = "true"
+	} else {
+		jl.retest = "false"
 	}
 
 	return jl

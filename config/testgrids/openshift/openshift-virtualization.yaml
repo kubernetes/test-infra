@@ -1,0 +1,234 @@
+---
+dashboards:
+  - name: redhat-openshift-virtualization
+    dashboard_tab:
+      # 4.9
+      - name: e2e-deploy-4.9
+        test_group_name: branch-ci-openshift-cnv-cnv-ci-release-4.9-e2e-deploy
+        base_options: width=14
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+        file_bug_template:
+          options:
+            - key: classification
+              value: Red Hat
+            - key: product
+              value: OpenShift Virtualization
+            - key: short_desc
+              value: 'test: <test-name>'
+            - key: cf_environment
+              value: 'test: <test-name>'
+            - key: comment
+              value: 'test: <test-name> failed, see job: <test-url>'
+          url: https://bugzilla.redhat.com/enter_bug.cgi
+        open_bug_template:
+          url: https://github.com/openshift-cnv/cnv-ci/issues/
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+        code_search_path: https://github.com/kubevirt/kubevirt/search
+        code_search_url_template:
+          url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+      - name: e2e-upgrade-4.9
+        test_group_name: branch-ci-openshift-cnv-cnv-ci-release-4.9-e2e-upgrade
+        base_options: width=14
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+        file_bug_template:
+          options:
+            - key: classification
+              value: Red Hat
+            - key: product
+              value: OpenShift Virtualization
+            - key: short_desc
+              value: 'test: <test-name>'
+            - key: cf_environment
+              value: 'test: <test-name>'
+            - key: comment
+              value: 'test: <test-name> failed, see job: <test-url>'
+          url: https://bugzilla.redhat.com/enter_bug.cgi
+        open_bug_template:
+          url: https://github.com/openshift-cnv/cnv-ci/issues/
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+        code_search_path: https://github.com/kubevirt/kubevirt/search
+        code_search_url_template:
+          url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+      # 4.10
+      - name: e2e-deploy-4.10
+        test_group_name: branch-ci-openshift-cnv-cnv-ci-release-4.10-e2e-deploy
+        base_options: width=14
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+        file_bug_template:
+          options:
+            - key: classification
+              value: Red Hat
+            - key: product
+              value: OpenShift Virtualization
+            - key: short_desc
+              value: 'test: <test-name>'
+            - key: cf_environment
+              value: 'test: <test-name>'
+            - key: comment
+              value: 'test: <test-name> failed, see job: <test-url>'
+          url: https://bugzilla.redhat.com/enter_bug.cgi
+        open_bug_template:
+          url: https://github.com/openshift-cnv/cnv-ci/issues/
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+        code_search_path: https://github.com/kubevirt/kubevirt/search
+        code_search_url_template:
+          url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+      - name: e2e-upgrade-4.10
+        test_group_name: branch-ci-openshift-cnv-cnv-ci-release-4.10-e2e-upgrade
+        base_options: width=14
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+        file_bug_template:
+          options:
+            - key: classification
+              value: Red Hat
+            - key: product
+              value: OpenShift Virtualization
+            - key: short_desc
+              value: 'test: <test-name>'
+            - key: cf_environment
+              value: 'test: <test-name>'
+            - key: comment
+              value: 'test: <test-name> failed, see job: <test-url>'
+          url: https://bugzilla.redhat.com/enter_bug.cgi
+        open_bug_template:
+          url: https://github.com/openshift-cnv/cnv-ci/issues/
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+        code_search_path: https://github.com/kubevirt/kubevirt/search
+        code_search_url_template:
+          url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+      # 4.11
+      - name: e2e-deploy-4.11
+        test_group_name: branch-ci-openshift-cnv-cnv-ci-release-4.11-e2e-deploy
+        base_options: width=14
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+        file_bug_template:
+          options:
+            - key: classification
+              value: Red Hat
+            - key: product
+              value: OpenShift Virtualization
+            - key: short_desc
+              value: 'test: <test-name>'
+            - key: cf_environment
+              value: 'test: <test-name>'
+            - key: comment
+              value: 'test: <test-name> failed, see job: <test-url>'
+          url: https://bugzilla.redhat.com/enter_bug.cgi
+        open_bug_template:
+          url: https://github.com/openshift-cnv/cnv-ci/issues/
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+        code_search_path: https://github.com/kubevirt/kubevirt/search
+        code_search_url_template:
+          url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+      - name: e2e-upgrade-4.11
+        test_group_name: branch-ci-openshift-cnv-cnv-ci-release-4.11-e2e-upgrade
+        base_options: width=14
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+        file_bug_template:
+          options:
+            - key: classification
+              value: Red Hat
+            - key: product
+              value: OpenShift Virtualization
+            - key: short_desc
+              value: 'test: <test-name>'
+            - key: cf_environment
+              value: 'test: <test-name>'
+            - key: comment
+              value: 'test: <test-name> failed, see job: <test-url>'
+          url: https://bugzilla.redhat.com/enter_bug.cgi
+        open_bug_template:
+          url: https://github.com/openshift-cnv/cnv-ci/issues/
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+        code_search_path: https://github.com/kubevirt/kubevirt/search
+        code_search_url_template:
+          url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+      # 4.12
+      - name: e2e-deploy-4.12
+        test_group_name: branch-ci-openshift-cnv-cnv-ci-release-4.12-e2e-deploy
+        base_options: width=14
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+        file_bug_template:
+          options:
+            - key: classification
+              value: Red Hat
+            - key: product
+              value: OpenShift Virtualization
+            - key: short_desc
+              value: 'test: <test-name>'
+            - key: cf_environment
+              value: 'test: <test-name>'
+            - key: comment
+              value: 'test: <test-name> failed, see job: <test-url>'
+          url: https://bugzilla.redhat.com/enter_bug.cgi
+        open_bug_template:
+          url: https://github.com/openshift-cnv/cnv-ci/issues/
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+        code_search_path: https://github.com/kubevirt/kubevirt/search
+        code_search_url_template:
+          url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+      - name: e2e-upgrade-4.12
+        test_group_name: branch-ci-openshift-cnv-cnv-ci-release-4.12-e2e-upgrade
+        base_options: width=14
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+        file_bug_template:
+          options:
+            - key: classification
+              value: Red Hat
+            - key: product
+              value: OpenShift Virtualization
+            - key: short_desc
+              value: 'test: <test-name>'
+            - key: cf_environment
+              value: 'test: <test-name>'
+            - key: comment
+              value: 'test: <test-name> failed, see job: <test-url>'
+          url: https://bugzilla.redhat.com/enter_bug.cgi
+        open_bug_template:
+          url: https://github.com/openshift-cnv/cnv-ci/issues/
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+        code_search_path: https://github.com/kubevirt/kubevirt/search
+        code_search_url_template:
+          url: https://github.com/kubevirt/kubevirt/compare/<start-custom-0>...<end-custom-0>
+
+test_groups:
+  - days_of_results: 21
+    gcs_prefix: origin-ci-test/logs/branch-ci-openshift-cnv-cnv-ci-release-4.9-e2e-deploy
+    name: branch-ci-openshift-cnv-cnv-ci-release-4.9-e2e-deploy
+  - days_of_results: 21
+    gcs_prefix: origin-ci-test/logs/branch-ci-openshift-cnv-cnv-ci-release-4.9-e2e-upgrade
+    name: branch-ci-openshift-cnv-cnv-ci-release-4.9-e2e-upgrade
+  - days_of_results: 21
+    gcs_prefix: origin-ci-test/logs/branch-ci-openshift-cnv-cnv-ci-release-4.10-e2e-deploy
+    name: branch-ci-openshift-cnv-cnv-ci-release-4.10-e2e-deploy
+  - days_of_results: 21
+    gcs_prefix: origin-ci-test/logs/branch-ci-openshift-cnv-cnv-ci-release-4.10-e2e-upgrade
+    name: branch-ci-openshift-cnv-cnv-ci-release-4.10-e2e-upgrade
+  - days_of_results: 21
+    gcs_prefix: origin-ci-test/logs/branch-ci-openshift-cnv-cnv-ci-release-4.11-e2e-deploy
+    name: branch-ci-openshift-cnv-cnv-ci-release-4.11-e2e-deploy
+  - days_of_results: 21
+    gcs_prefix: origin-ci-test/logs/branch-ci-openshift-cnv-cnv-ci-release-4.11-e2e-upgrade
+    name: branch-ci-openshift-cnv-cnv-ci-release-4.11-e2e-upgrade
+  - days_of_results: 21
+    gcs_prefix: origin-ci-test/logs/branch-ci-openshift-cnv-cnv-ci-release-4.12-e2e-deploy
+    name: branch-ci-openshift-cnv-cnv-ci-release-4.12-e2e-deploy
+  - days_of_results: 21
+    gcs_prefix: origin-ci-test/logs/branch-ci-openshift-cnv-cnv-ci-release-4.12-e2e-upgrade
+    name: branch-ci-openshift-cnv-cnv-ci-release-4.12-e2e-upgrade

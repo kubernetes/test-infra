@@ -48,7 +48,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		var err error
 		baseSHA, err = c.GitHubClient.GetRef(org, repo, "heads/"+pr.PullRequest.Base.Ref)
 		if err != nil {
-			return "", fmt.Errorf("failed to get baseSHA: %v", err)
+			return "", fmt.Errorf("failed to get baseSHA: %w", err)
 		}
 		return baseSHA, nil
 	}
@@ -72,7 +72,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "/ok-to-test". There's no need to look for previous
 		// "/ok-to-test" comments since the PR was just opened!
-		trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedOrg, author, org, repo)
+		trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedApps, trigger.TrustedOrg, author, org, repo)
 		member := trustedResponse.IsTrusted
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
@@ -88,7 +88,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
-			return fmt.Errorf("could not welcome non-org member %q: %v", author, err)
+			return fmt.Errorf("could not welcome non-org member %q: %w", author, err)
 		}
 	case github.PullRequestActionReopened:
 		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
@@ -286,8 +286,17 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 %s
 </details>
 `, author, org, org, more, joinOrgURL, labels.OkToTest, encodedRepoFullName, plugins.AboutThisBotWithoutCommands)
-		if err := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest); err != nil {
+
+		l, err := ghc.GetIssueLabels(org, repo, pr.Number)
+		if err != nil {
 			errors = append(errors, err)
+		} else if !github.HasLabel(labels.OkToTest, l) {
+			// It is possible for bots and other automations to automatically
+			// add the ok-to-test label. If that's the case, then we will not
+			// add the needs-ok-to-test-label any more.
+			if err := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest); err != nil {
+				errors = append(errors, err)
+			}
 		}
 	}
 
@@ -313,8 +322,8 @@ func draftMsg(ghc githubClient, pr github.PullRequest) error {
 // If already known, GitHub labels should be provided to save tokens. Otherwise, it fetches them.
 func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
-	if trustedResponse, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedOrg, author, org, repo); err != nil {
-		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)
+	if trustedResponse, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedApps, trigger.TrustedOrg, author, org, repo); err != nil {
+		return l, false, fmt.Errorf("error checking %s for trust: %w", author, err)
 	} else if trustedResponse.IsTrusted {
 		return l, true, nil
 	}
@@ -342,7 +351,7 @@ func buildAllButDrafts(c Client, pr *github.PullRequest, eventGUID string, baseS
 func buildAll(c Client, pr *github.PullRequest, eventGUID string, baseSHA string, presubmits []config.Presubmit) error {
 	org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 	changes := config.NewGitHubDeferredChangedFilesProvider(c.GitHubClient, org, repo, number)
-	toTest, err := pjutil.FilterPresubmits(pjutil.TestAllFilter(), changes, branch, presubmits, c.Logger)
+	toTest, err := pjutil.FilterPresubmits(pjutil.NewTestAllFilter(), changes, branch, presubmits, c.Logger)
 	if err != nil {
 		return err
 	}

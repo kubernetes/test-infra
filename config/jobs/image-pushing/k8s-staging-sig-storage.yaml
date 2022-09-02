@@ -13,8 +13,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -27,7 +30,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -50,8 +53,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -64,7 +70,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -87,8 +93,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -101,7 +110,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -124,8 +133,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -138,7 +150,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -161,8 +173,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -175,7 +190,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -198,8 +213,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -212,7 +230,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -235,8 +253,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -249,7 +270,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -272,8 +293,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -286,7 +310,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -309,8 +333,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -323,7 +350,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -346,8 +373,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -360,7 +390,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -383,8 +413,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -397,7 +430,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -420,8 +453,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -434,7 +470,87 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-sig-storage
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
+  kubernetes-csi/lib-volume-populator:
+    - name: post-lib-volume-populator-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+      decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
+      branches:
+        # For publishing canary images.
+        - ^master$
+        - ^release-
+        # For publishing tagged images. Those will only get built once, i.e.
+        # existing images are not getting overwritten. A new tag must be set to
+        # trigger another image build. Images are only built for tags that follow
+        # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-sig-storage
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
+  kubernetes-csi/volume-data-source-validator:
+    - name: post-volume-data-source-validator-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+      decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
+      branches:
+        # For publishing canary images.
+        - ^master$
+        - ^release-
+        # For publishing tagged images. Those will only get built once, i.e.
+        # existing images are not getting overwritten. A new tag must be set to
+        # trigger another image build. Images are only built for tags that follow
+        # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -457,8 +573,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -471,7 +590,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -494,8 +613,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -508,7 +630,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -531,8 +653,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -545,7 +670,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -568,8 +693,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -582,7 +710,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -605,8 +733,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -619,7 +750,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -642,8 +773,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -656,7 +790,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -679,8 +813,11 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -693,7 +830,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -715,468 +852,530 @@ postsubmits:
 # which produces the "canary" images. While other branches
 # could produce release-x.y-canary images, we don't use those.
 periodics:
-- name: canary-csi-driver-host-path-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: csi-driver-host-path
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-csi-driver-smb-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: csi-driver-smb
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-csi-test-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: csi-test
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-external-attacher-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: external-attacher
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-external-health-monitor-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: external-health-monitor
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-external-provisioner-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: external-provisioner
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-external-resizer-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: external-resizer
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-external-snapshotter-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: external-snapshotter
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-livenessprobe-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: livenessprobe
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-node-driver-registrar-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: node-driver-registrar
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-csi-driver-nfs-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: csi-driver-nfs
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-csi-driver-iscsi-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: csi-driver-iscsi
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-sig-storage-local-static-provisioner-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: sig-storage-local-static-provisioner
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-nfs-ganesha-server-and-external-provisioner-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: nfs-ganesha-server-and-external-provisioner
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
-- name: canary-nfs-subdir-external-provisioner-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: nfs-subdir-external-provisioner
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
+  - name: canary-csi-driver-host-path-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: csi-driver-host-path
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-csi-driver-smb-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: csi-driver-smb
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-csi-test-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: csi-test
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-external-attacher-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: external-attacher
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-external-health-monitor-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: external-health-monitor
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-external-provisioner-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: external-provisioner
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-external-resizer-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: external-resizer
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-external-snapshotter-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: external-snapshotter
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-livenessprobe-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: livenessprobe
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-node-driver-registrar-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: node-driver-registrar
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-csi-driver-nfs-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: csi-driver-nfs
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-csi-driver-iscsi-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: csi-driver-iscsi
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-lib-volume-populator-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: lib-volume-populator
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-volume-data-source-validator-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: volume-data-source-validator
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-sig-storage-local-static-provisioner-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-sigs
+        repo: sig-storage-local-static-provisioner
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-nfs-ganesha-server-and-external-provisioner-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-sigs
+        repo: nfs-ganesha-server-and-external-provisioner
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
+  - name: canary-nfs-subdir-external-provisioner-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-sigs
+        repo: nfs-subdir-external-provisioner
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .

@@ -55,5 +55,5 @@ If you just need some data from Prow you may be able to get it from the JSON exp
 
 ## Building, Testing, and Deploying:
 
-You can build, test, and deploy Prow’s binaries, container images, and cluster resources using [`bazel`](https://bazel.build). See [`getting_started_deploy.md`](/prow/getting_started_deploy.md) for initially deploying Prow and [`build_test_update.md`](/prow/build_test_update.md) for iterating on an existing deployment.
+You can build, test, and deploy Prow’s binaries, container images, and cluster resources. See [`getting_started_deploy.md`](/prow/getting_started_deploy.md) for initially deploying Prow and [`build_test_update.md`](/prow/build_test_update.md) for iterating on an existing deployment.
 

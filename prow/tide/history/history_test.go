@@ -59,17 +59,19 @@ func TestHistory(t *testing.T) {
 		t.Fatalf("Failed to create history client: %v", err)
 	}
 	time1 := nextTime()
-	hist.Record("pool A", "TRIGGER", "sha A", "", []prowapi.Pull{testMeta(1, "bob")})
+	hist.Record("pool A", "TRIGGER", "sha A", "", []prowapi.Pull{testMeta(1, "bob")}, nil)
 	nextTime()
-	hist.Record("pool B", "MERGE", "sha B1", "", []prowapi.Pull{testMeta(2, "joe")})
+	hist.Record("pool B", "MERGE", "sha B1", "", []prowapi.Pull{testMeta(2, "joe")}, nil)
 	time3 := nextTime()
-	hist.Record("pool B", "MERGE", "sha B2", "", []prowapi.Pull{testMeta(3, "jeff")})
+	hist.Record("pool B", "MERGE", "sha B2", "", []prowapi.Pull{testMeta(3, "jeff")}, nil)
 	time4 := nextTime()
-	hist.Record("pool B", "MERGE_BATCH", "sha B3", "", []prowapi.Pull{testMeta(4, "joe"), testMeta(5, "jim")})
+	hist.Record("pool B", "MERGE_BATCH", "sha B3", "", []prowapi.Pull{testMeta(4, "joe"), testMeta(5, "jim")}, nil)
 	time5 := nextTime()
-	hist.Record("pool C", "TRIGGER_BATCH", "sha C1", "", []prowapi.Pull{testMeta(6, "joe"), testMeta(8, "me")})
+	hist.Record("pool C", "TRIGGER_BATCH", "sha C1", "", []prowapi.Pull{testMeta(6, "joe"), testMeta(8, "me")}, nil)
 	time6 := nextTime()
-	hist.Record("pool B", "TRIGGER", "sha B4", "", []prowapi.Pull{testMeta(7, "abe")})
+	hist.Record("pool B", "TRIGGER", "sha B4", "", []prowapi.Pull{testMeta(7, "abe")}, []string{})
+	time7 := nextTime()
+	hist.Record("pool D", "TRIGGER", "sha D1", "", []prowapi.Pull{testMeta(8, "joe")}, []string{"testID"})
 
 	expected := map[string][]*Record{
 		"pool A": {
@@ -90,6 +92,7 @@ func TestHistory(t *testing.T) {
 				Target: []prowapi.Pull{
 					testMeta(7, "abe"),
 				},
+				TenantIDs: []string{},
 			},
 			&Record{
 				Time:    time4,
@@ -118,6 +121,17 @@ func TestHistory(t *testing.T) {
 					testMeta(6, "joe"),
 					testMeta(8, "me"),
 				},
+			},
+		},
+		"pool D": {
+			&Record{
+				Time:    time7,
+				BaseSHA: "sha D1",
+				Action:  "TRIGGER",
+				Target: []prowapi.Pull{
+					testMeta(8, "joe"),
+				},
+				TenantIDs: []string{"testID"},
 			},
 		},
 	}
@@ -278,14 +292,14 @@ func TestWriteHistory(t *testing.T) {
 			recMap: map[string][]*Record{
 				"o/r:b": {{Action: "MERGE"}},
 			},
-			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}]}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE","tenantids":null}]}`,
 		},
 		{
 			name: "write history with multiple records",
 			recMap: map[string][]*Record{
 				"o/r:b": {{Action: "MERGE3"}, {Action: "MERGE2"}, {Action: "MERGE1"}},
 			},
-			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE3"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE1"}]}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE3","tenantids":null},{"time":"0001-01-01T00:00:00Z","action":"MERGE2","tenantids":null},{"time":"0001-01-01T00:00:00Z","action":"MERGE1","tenantids":null}]}`,
 		},
 		{
 			name: "write history, with multiple pools",
@@ -293,7 +307,7 @@ func TestWriteHistory(t *testing.T) {
 				"o/r:b":  {{Action: "MERGE"}},
 				"o/r:b2": {{Action: "MERGE2"}, {Action: "MERGE1"}},
 			},
-			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"o/r:b2":[{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE1"}]}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE","tenantids":null}],"o/r:b2":[{"time":"0001-01-01T00:00:00Z","action":"MERGE2","tenantids":null},{"time":"0001-01-01T00:00:00Z","action":"MERGE1","tenantids":null}]}`,
 		},
 	}
 

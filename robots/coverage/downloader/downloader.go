@@ -50,7 +50,7 @@ func listGcsObjects(ctx context.Context, client *storage.Client, bucketName, pre
 			break
 		}
 		if err != nil {
-			return objects, fmt.Errorf("error iterating: %v", err)
+			return objects, fmt.Errorf("error iterating: %w", err)
 		}
 
 		if attrs.Prefix != "" {
@@ -66,7 +66,7 @@ func readGcsObject(ctx context.Context, client *storage.Client, bucket, object s
 	o := client.Bucket(bucket).Object(object)
 	reader, err := o.NewReader(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("cannot read object '%s': %v", object, err)
+		return nil, fmt.Errorf("cannot read object '%s': %w", object, err)
 	}
 	return ioutil.ReadAll(reader)
 }
@@ -80,7 +80,7 @@ func FindBaseProfile(ctx context.Context, client *storage.Client, bucket, prowJo
 
 	strBuilds, err := listGcsObjects(ctx, client, bucket, dirOfJob+"/", "/")
 	if err != nil {
-		return nil, fmt.Errorf("error listing gcs objects: %v", err)
+		return nil, fmt.Errorf("error listing gcs objects: %w", err)
 	}
 
 	builds := sortBuilds(strBuilds)

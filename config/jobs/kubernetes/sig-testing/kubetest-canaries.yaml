@@ -1,101 +1,3 @@
-presubmits:
-  kubernetes/kubernetes:
-  - name: pull-kubernetes-bazel-build-canary
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-      testgrid-tab-name: pull-bazel-build
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-kubernetes-master
-        imagePullPolicy: Always
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - build
-        - --
-        - //...
-        - -//vendor/...
-        - -//build/...
-        - //build/release-tars
-        resources:
-          limits:
-            cpu: 4
-            memory: 36Gi
-          requests:
-            cpu: 4
-            memory: 36Gi
-  - name: pull-kubernetes-bazel-test-canary
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-      testgrid-tab-name: pull-bazel-test
-      description: runs bazel test //... -//build/... -//vendor/... without RBE
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-kubernetes-master
-        imagePullPolicy: Always
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - test
-        - --config=unit
-        - //...
-        - --
-        - -//build/...
-        - -//vendor/...
-        resources:
-          limits:
-            cpu: 4
-            memory: 38Gi
-          requests:
-            cpu: 4
-            memory: 38Gi
-  - name: pull-kubernetes-bazel-test-integration-canary
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - "--test=//test/integration/..."
-        - "--test-args=--config=integration"
-        - "--timeout=60"
-        resources:
-          requests:
-            memory: "6Gi"
-
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-      testgrid-tab-name: pull-bazel-test-integration
 periodics:
 - name: ci-kubernetes-e2e-prow-canary
   interval: 1h
@@ -105,7 +7,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -138,7 +40,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --cluster=canary-e2e
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
@@ -147,71 +48,11 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=40m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: gce
-
-- interval: 2h
-  name: ci-kubernetes-e2e-gce-scalability-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-big-canary
-      - --extract=ci/latest
-      - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8
-      - --timeout=120m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: sig-testing-canaries
-    testgrid-tab-name: scalability
-
-- interval: 30m
-  name: ci-kubernetes-e2e-gke-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=
-      - --deployment=gke
-      - --extract=gke-latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel
-      - --gke-environment=staging
-      - --provider=gke
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-gke, sig-testing-canaries
-    testgrid-tab-name: gke-canary
 
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
@@ -226,7 +67,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -234,8 +75,12 @@ periodics:
       args:
       - --deployment=node
       - --gcp-zone=us-west1-b
-      - --node-args=--images=cos-stable-60-9592-76-0 --image-project=cos-cloud
-      - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        # node_e2e doesn't support passing an image-family on the CLI, only via
+        # a file, so here we manually specify an image to run tests against.
+        # To find the latest cos-97-lts image run:
+        #   gcloud compute images describe-from-family cos-97-lts --project cos-cloud --format='value(name)'
+      - --node-args=--images=cos-97-16919-29-21 --image-project=cos-cloud
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
@@ -246,42 +91,3 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: node
-
-- name: ci-kubernetes-kubemark-100-canary
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-    preset-e2e-kubemark-common: "true"
-  decorate: true
-  decoration_config:
-    timeout: 260m
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=kubemark-100-canary
-      - --extract=ci/latest
-      - --gcp-master-size=n1-standard-2
-      - --gcp-node-size=n1-standard-4
-      - --gcp-nodes=3
-      - --gcp-zone=us-west1-b
-      - --kubemark
-      - --kubemark-nodes=100
-      - --provider=gce
-      - --test=false
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
-      - --timeout=240m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-testing-canaries
-    testgrid-tab-name: kubemark

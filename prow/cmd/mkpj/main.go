@@ -21,14 +21,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
@@ -39,6 +37,7 @@ type options struct {
 	jobName     string
 	config      configflagutil.ConfigOptions
 	triggerJob  bool
+	failWithJob bool
 	outputPath  string
 	kubeOptions prowflagutil.KubernetesOptions
 	baseRef     string
@@ -58,7 +57,7 @@ type options struct {
 
 func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJobSpec) {
 	for fullRepoName, ps := range conf.PresubmitsStatic {
-		org, repo, err := splitRepoName(fullRepoName)
+		org, repo, err := config.SplitRepoName(fullRepoName)
 		if err != nil {
 			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
 			continue
@@ -80,7 +79,7 @@ func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJ
 		}
 	}
 	for fullRepoName, ps := range conf.PostsubmitsStatic {
-		org, repo, err := splitRepoName(fullRepoName)
+		org, repo, err := config.SplitRepoName(fullRepoName)
 		if err != nil {
 			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
 			continue
@@ -110,7 +109,7 @@ func (o *options) getPullRequest() (*github.PullRequest, error) {
 	}
 	pr, err := o.githubClient.GetPullRequest(o.org, o.repo, o.pullNumber)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch PullRequest from GitHub: %v", err)
+		return nil, fmt.Errorf("failed to fetch PullRequest from GitHub: %w", err)
 	}
 	o.pullRequest = pr
 	return pr, nil
@@ -211,6 +210,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
 	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
+	fs.BoolVar(&o.failWithJob, "fail-with-job", false, "Exit with a non-zero exit code if the triggered job fails")
 	o.config.AddFlags(fs)
 	o.kubeOptions.AddFlags(fs)
 	o.github.AddFlags(fs)
@@ -232,11 +232,7 @@ func main() {
 	}
 	conf := ca.Config()
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(nil); err != nil {
-		logrus.WithError(err).Fatal("Failed to start secret agent")
-	}
-	o.githubClient, err = o.github.GitHubClient(secretAgent, false)
+	o.githubClient, err = o.github.GitHubClient(false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}
@@ -272,19 +268,9 @@ func main() {
 		return
 	}
 
-	if err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
+	if succeeded, err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
 		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
+	} else if !succeeded && o.failWithJob {
+		os.Exit(1)
 	}
-}
-
-func splitRepoName(repo string) (string, string, error) {
-	// Normalize repo name to remove http:// or https://, this is the case for some
-	// of the gerrit instances.
-	repo = strings.TrimPrefix(repo, "http://")
-	repo = strings.TrimPrefix(repo, "https://")
-	s := strings.SplitN(repo, "/", 2)
-	if len(s) != 2 {
-		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)
-	}
-	return s[0], s[1], nil
 }

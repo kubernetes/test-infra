@@ -20,10 +20,11 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -52,10 +53,11 @@ func init() {
 // and other resources on the infrastructure cluster, as well as Pods
 // on build clusters.
 type KubernetesOptions struct {
-	kubeconfig         string
-	projectedTokenFile string
-
-	DeckURI string
+	kubeconfig               string
+	kubeconfigDir            string
+	projectedTokenFile       string
+	noInClusterConfig        bool
+	NOInClusterConfigDefault bool
 
 	// from resolution
 	resolved                    bool
@@ -91,12 +93,21 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 				return
 			}
 		}
-		if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
-			for _, element := range sets.NewString(filepath.SplitList(envVal)...).List() {
-				err = watcher.Add(element)
-				if err != nil {
-					err = fmt.Errorf("failed to watch %s: %w", element, err)
-					return
+		if o.kubeconfigDir != "" {
+			err = watcher.Add(o.kubeconfigDir)
+			if err != nil {
+				err = fmt.Errorf("failed to watch %s: %w", o.kubeconfigDir, err)
+				return
+			}
+		}
+		if o.kubeconfig == "" && o.kubeconfigDir == "" {
+			if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
+				for _, element := range sets.NewString(filepath.SplitList(envVal)...).List() {
+					err = watcher.Add(element)
+					if err != nil {
+						err = fmt.Errorf("failed to watch %s: %w", element, err)
+						return
+					}
 				}
 			}
 		}
@@ -129,28 +140,58 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 	return nil
 }
 
-// AddFlags injects Kubernetes options into the given FlagSet.
-func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default are used as build clusters.")
-	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
-	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
-}
-
-// Validate validates Kubernetes options.
-func (o *KubernetesOptions) Validate(dryRun bool) error {
-	if dryRun && o.DeckURI == "" {
-		return errors.New("a dry-run was requested but required flag -deck-url was unset")
-	}
-
-	if o.DeckURI != "" {
-		if _, err := url.ParseRequestURI(o.DeckURI); err != nil {
-			return fmt.Errorf("invalid -deck-url URI: %q", o.DeckURI)
+// LoadClusterConfigs returns the resolved rest.Configs and each callback function will be executed if
+// the underlying kubeconfig files are modified. This function is for the case where the rest.Configs are
+// needed without interests of the clients.
+func (o *KubernetesOptions) LoadClusterConfigs(callBacks ...func()) (map[string]rest.Config, error) {
+	var errs []error
+	if !o.resolved {
+		if err := o.resolve(o.dryRun); err != nil {
+			errs = append(errs, fmt.Errorf("failed to resolve the kubeneates options: %w", err))
 		}
 	}
 
+	if o.kubeconfig == "" && o.kubeconfigDir == "" {
+		if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
+			if kubeconfigsFromEnv := strings.Split(envVal, ":"); len(kubeconfigsFromEnv) > 0 &&
+				len(kubeconfigsFromEnv) > len(o.clusterConfigs) {
+				errs = append(errs, fmt.Errorf("%s env var with value %s had %d elements but only got %d kubeconfigs",
+					clientcmd.RecommendedConfigPathEnvVar, envVal, len(kubeconfigsFromEnv), len(o.clusterConfigs)))
+			}
+		}
+	}
+
+	for i, callBack := range callBacks {
+		if callBack != nil {
+			if err := o.AddKubeconfigChangeCallback(callBack); err != nil {
+				errs = append(errs, fmt.Errorf("failed to add the %d-th kubeconfig change call back: %w", i, err))
+			}
+		}
+	}
+	return o.clusterConfigs, utilerrors.NewAggregate(errs)
+}
+
+// AddFlags injects Kubernetes options into the given FlagSet.
+func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
+	fs.StringVar(&o.kubeconfigDir, "kubeconfig-dir", "", "Path to the directory containing kubeconfig files. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
+	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
+	fs.BoolVar(&o.noInClusterConfig, "no-in-cluster-config", o.NOInClusterConfigDefault, "Not resolving InCluster Config if set.")
+}
+
+// Validate validates Kubernetes options.
+func (o *KubernetesOptions) Validate(_ bool) error {
 	if o.kubeconfig != "" {
 		if _, err := os.Stat(o.kubeconfig); err != nil {
-			return fmt.Errorf("error accessing --kubeconfig: %v", err)
+			return fmt.Errorf("error accessing --kubeconfig: %w", err)
+		}
+	}
+
+	if o.kubeconfigDir != "" {
+		if fileInfo, err := os.Stat(o.kubeconfigDir); err != nil {
+			return fmt.Errorf("error accessing --kubeconfig-dir: %w", err)
+		} else if !fileInfo.IsDir() {
+			return fmt.Errorf("--kubeconfig-dir must be a directory")
 		}
 	}
 
@@ -165,9 +206,11 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 
 	o.kubeconfigWach = &sync.Once{}
 
-	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig, o.projectedTokenFile)
+	clusterConfigs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig),
+		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile),
+		kube.NoInClusterConfig(o.noInClusterConfig)))
 	if err != nil {
-		return fmt.Errorf("load --kubeconfig=%q configs: %v", o.kubeconfig, err)
+		return fmt.Errorf("load --kubeconfig=%q configs: %w", o.kubeconfig, err)
 	}
 	o.clusterConfigs = clusterConfigs
 
@@ -175,7 +218,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 	for context, config := range clusterConfigs {
 		client, err := kubernetes.NewForConfig(&config)
 		if err != nil {
-			return fmt.Errorf("create %s kubernetes client: %v", context, err)
+			return fmt.Errorf("create %s kubernetes client: %w", context, err)
 		}
 		clients[context] = client
 	}
@@ -200,7 +243,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 }
 
 // ProwJobClientset returns a ProwJob clientset for use in informer factories.
-func (o *KubernetesOptions) ProwJobClientset(namespace string, dryRun bool) (prowJobClientset prow.Interface, err error) {
+func (o *KubernetesOptions) ProwJobClientset(dryRun bool) (prowJobClientset prow.Interface, err error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -219,9 +262,8 @@ func (o *KubernetesOptions) ProwJobClient(namespace string, dryRun bool) (prowJo
 	}
 
 	if o.dryRun {
-		return kube.NewDryRunProwJobClient(o.DeckURI), nil
+		return nil, errors.New("no dry-run prowjob client is supported in dry-run mode")
 	}
-
 	return o.prowJobClientset.ProwV1().ProwJobs(namespace), nil
 }
 
@@ -292,13 +334,13 @@ func (o *KubernetesOptions) BuildClusterCoreV1Clients(dryRun bool) (v1Clients ma
 
 var clientCreationFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "kubernetes_failed_client_creations",
-	Help: "The number of clusters for which we failed to create a client",
+	Help: "The number of clusters for which we failed to create a client.",
 }, []string{"cluster"})
 
 // BuildClusterManagers returns a manager per buildCluster.
 // Per default, LeaderElection and the metrics listener are disabled, as we assume
 // that there is another manager for ProwJobs that handles that.
-func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*manager.Options)) (map[string]manager.Manager, error) {
+func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), opts ...func(*manager.Options)) (map[string]manager.Manager, error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -314,19 +356,51 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 
 	res := map[string]manager.Manager{}
 	var errs []error
+	var lock sync.Mutex
+	var threads sync.WaitGroup
+	threads.Add(len(o.clusterConfigs))
 	for buildCluserName, buildClusterConfig := range o.clusterConfigs {
-		// We pass a pointer, need to capture it here. Dragons will fall if this is changed.
-		cfg := buildClusterConfig
-		mgr, err := manager.New(&cfg, options)
-		if err != nil {
-			clientCreationFailures.WithLabelValues(buildCluserName).Add(1)
-			errs = append(errs, fmt.Errorf("failed to construct manager for cluster %s: %w", buildCluserName, err))
-			continue
-		}
-		res[buildCluserName] = mgr
+		go func(name string, config rest.Config) {
+			defer threads.Done()
+			mgr, err := manager.New(&config, options)
+			lock.Lock()
+			defer lock.Unlock()
+			if err != nil {
+				clientCreationFailures.WithLabelValues(name).Add(1)
+				errs = append(errs, fmt.Errorf("failed to construct manager for cluster %s: %w", name, err))
+				return
+			}
+			res[name] = mgr
+		}(buildCluserName, buildClusterConfig)
 	}
+	threads.Wait()
 
-	return res, utilerrors.NewAggregate(errs)
+	aggregatedErr := utilerrors.NewAggregate(errs)
+
+	if aggregatedErr != nil {
+		// Retry the build clusters that failed to be connected initially, execute
+		// callback function when they become reachable later on.
+		// This is useful where a build cluster is not reachable transiently, for
+		// example API server upgrade caused connection problem.
+		go func() {
+			for {
+				for buildCluserName, buildClusterConfig := range o.clusterConfigs {
+					if _, ok := res[buildCluserName]; ok {
+						continue
+					}
+					if _, err := manager.New(&buildClusterConfig, options); err == nil {
+						logrus.WithField("build-cluster", buildCluserName).Info("Build cluster that failed to connect initially now worked.")
+						callBack()
+					}
+				}
+				// Sleep arbitrarily amount of time
+				time.Sleep(5 * time.Second)
+			}
+		}()
+	} else {
+		logrus.Debug("No error constructing managers for build clusters, skip polling build clusters.")
+	}
+	return res, aggregatedErr
 }
 
 // BuildClusterUncachedRuntimeClients returns ctrlruntimeclients for the build cluster in a non-caching implementation.
@@ -352,4 +426,11 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 	}
 
 	return clients, utilerrors.NewAggregate(errs)
+}
+
+func (o *KubernetesOptions) KnownClusters(dryRun bool) (sets.String, error) {
+	if err := o.resolve(dryRun); err != nil {
+		return nil, err
+	}
+	return sets.StringKeySet(o.clusterConfigs), nil
 }

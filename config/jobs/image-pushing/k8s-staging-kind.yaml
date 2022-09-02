@@ -3,14 +3,14 @@ postsubmits:
     - name: post-kind-push-binaries
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-kind
+        testgrid-dashboards: sig-testing-kind, sig-k8s-infra-gcb
         testgrid-alert-email: kubernetes-engprod+alerts@google.com,antonio.ojea.garcia@gmail.com
         testgrid-num-columns-recent: '3'
       decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:

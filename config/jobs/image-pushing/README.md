@@ -142,7 +142,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20190906-d5d7ce3
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210913-fc7c4e84f6
             command:
               - /run.sh
             args:
@@ -155,7 +155,7 @@ postsubmits:
               - .
 ```
 
-[gcr instructions]: https://github.com/kubernetes/k8s.io/blob/master/k8s.gcr.io/README.md
+[gcr instructions]: https://github.com/kubernetes/k8s.io/blob/main/k8s.gcr.io/README.md
 [gcb documentation]: https://cloud.google.com/cloud-build/docs/configuring-builds/create-basic-configuration
 [gcb-docker-gcloud]: https://github.com/kubernetes/test-infra/blob/master/images/gcb-docker-gcloud/Dockerfile
 [substitution docs]: https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values#using_user-defined_substitutions

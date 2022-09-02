@@ -1,0 +1,120 @@
+periodics:
+#  Periodic CI job for running snyk scans against k/k master
+# - It installs snyk CLI and requires 'snyk-token' secret available
+#   in test infra with key name 'SNYK_TOKEN'. This secret is used to
+#   populate env var 'SNYK_TOKEN', required for snyk CLI auth.
+# - Licenses and few false positive deps (eg version '0.0.0') are
+#   filtered from the snyk scan results.
+- name: ci-kubernetes-snyk-master
+  interval: 6h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: golang
+      envFrom:
+      - secretRef:
+          # secret key should be defined as SNYK_TOKEN
+          name: snyk-token
+      command:
+      - /bin/bash
+      args:
+      - -c
+      - |
+        set -euo pipefail
+        apt update && apt -y install jq
+        wget -q -O /usr/local/bin/snyk https://github.com/snyk/cli/releases/download/v1.993.0/snyk-linux && chmod +x /usr/local/bin/snyk
+        mkdir -p "${ARTIFACTS}"
+        if [ -z "${SNYK_TOKEN}" ]; then
+          echo "SNYK_TOKEN env var is not set, required for snyk scan"
+          exit 1
+        fi
+        echo "Running snyk scan .."
+        EXIT_CODE=0
+        RESULT_UNFILTERED=$(snyk test -d --json) || EXIT_CODE=$?
+        if [ $EXIT_CODE -gt 1 ]; then
+          echo "Failed to run snyk scan with exit code $EXIT_CODE "
+          exit 1
+        fi
+        RESULT=$(echo $RESULT_UNFILTERED | jq \
+        '{vulnerabilities: .vulnerabilities | map(select((.type != "license") and (.version !=  "0.0.0"))) | select(length > 0) }')
+        if [[ ${RESULT} ]]; then
+          CVE_IDs=$(echo $RESULT | jq '.vulnerabilities[].identifiers.CVE')
+          #convert string to array
+          CVE_IDs_array=(`echo ${CVE_IDs}`)
+          #TODO:Implement deduplication of CVE IDs in future
+          for i in "${CVE_IDs_array[@]}"
+          do
+              if [[ "$i" == *"CVE"* ]]; then
+                  #Look for presence of GitHub Issues for detected CVEs. If no issues are present, this CVE needs triage
+                  #Once the job fails, CVE is triaged by SIG Security and a tracking issue is created.
+                  #This will allow in the next run for the job to pass again
+                  TOTAL_COUNT=$(curl -H "Accept: application/vnd.github.v3+json" "https://api.github.com/search/issues?q=repo:kubernetes/kubernetes+${i}" | jq .total_count)
+                  if [[ $TOTAL_COUNT -eq 0 ]]; then
+                    echo "Vulnerability filtering failed"
+                    exit 1
+                  fi
+              fi
+          done
+        fi
+        echo "Build time dependency scan completed"
+
+        # container images scan
+        echo "Fetch the list of k8s images"
+        curl -Ls https://sbom.k8s.io/$(curl -Ls https://dl.k8s.io/release/latest.txt)/release | grep 'PackageName: registry.k8s.io/' | awk '{print $2}' > images
+        while read image; do
+          echo "Running container image scan.."
+          EXIT_CODE=0
+          RESULT_UNFILTERED=$(snyk container test $image -d --json) || EXIT_CODE=$?
+          if [ $EXIT_CODE -gt 1 ]; then
+            echo "Failed to run snyk scan with exit code $EXIT_CODE . Error message: $RESULT_UNFILTERED"
+            exit 1
+          fi
+          RESULT=$(echo $RESULT_UNFILTERED | jq \
+          '{vulnerabilities: .vulnerabilities | map(select(.isUpgradable == true or .isPatchable == true)) | select(length > 0) }')
+          if [[ ${RESULT} ]]; then
+            echo "Vulnerability filtering failed"
+            # exit 1 (To allow other images to be scanned even if one fails)
+          else
+            echo "Scan completed image $image"
+          fi
+        done < images
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-alert-email: security-tooling-private@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+    testgrid-dashboards: sig-security-snyk-scan
+    description: Run snyk scan on k/k master periodically
+- name: auto-refreshing-official-cve-feed
+  interval: 2h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: sig-security
+    base_ref: main
+    workdir: true
+  labels:
+    preset-service-account: "true"
+  spec:
+    serviceAccountName: k8s-cve-feed
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220607-33951ed1ed
+      command:
+      - sh
+      - "-c"
+      - "cd sig-security-tooling/cve-feed/hack/ && ./fetch-cve-feed.sh"
+      env:
+      - name: CVE_GCS_PATH
+        value: "gs://k8s-cve-feed"
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-alert-email: security-tooling-private@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+    testgrid-dashboards: sig-security-cve-feed
+    description: Auto refreshing official cve feed KEP 3203

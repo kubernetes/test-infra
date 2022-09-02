@@ -38,7 +38,6 @@ import (
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/ghhook"
@@ -127,18 +126,13 @@ func main() {
 		logrus.WithError(err).Fatalf("Error creating Kubernetes client for cluster %q.", o.kubeconfigCtx)
 	}
 
-	agent := &secret.Agent{}
-	if err := agent.Start(nil); err != nil {
-		logrus.WithError(err).Fatalf("Error starting secret agent %s", o.github.TokenPath)
-	}
-
 	configAgent, err := o.config.ConfigAgent()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	newHMACConfig := configAgent.Config().ManagedWebhooks
 
-	gc, err := o.github.GitHubClient(agent, o.dryRun)
+	gc, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating github client")
 	}
@@ -266,20 +260,20 @@ func (c *client) handleConfigUpdate() error {
 
 	// Remove the webhooks for the given repos, as well as removing the tokens from the current hmac map.
 	if err := c.handleRemovedRepo(repoRemoved); err != nil {
-		return fmt.Errorf("error handling hmac update for removed repos: %v", err)
+		return fmt.Errorf("error handling hmac update for removed repos: %w", err)
 	}
 
 	// Generate new hmac token for required repos, do batch update for the hmac token secret,
 	// and then iteratively update the webhook for each repo.
 	if err := c.handleAddedRepo(repoAdded); err != nil {
-		return fmt.Errorf("error handling hmac update for new repos: %v", err)
+		return fmt.Errorf("error handling hmac update for new repos: %w", err)
 	}
 	if err := c.handledRotatedRepo(repoRotated); err != nil {
-		return fmt.Errorf("error handling hmac rotations for the repos: %v", err)
+		return fmt.Errorf("error handling hmac rotations for the repos: %w", err)
 	}
 	// Update the hmac token secret first, to guarantee the new tokens are available to hook.
 	if err := c.updateHMACTokenSecret(); err != nil {
-		return fmt.Errorf("error updating hmac tokens: %v", err)
+		return fmt.Errorf("error updating hmac tokens: %w", err)
 	}
 	// HACK: waiting for the hmac k8s secret update to propagate to the pods that are using the secret,
 	// so that components like hook can start respecting the new hmac values.
@@ -288,7 +282,7 @@ func (c *client) handleConfigUpdate() error {
 
 	// Do necessary cleanups after the token and webhook updates are done.
 	if err := c.cleanup(); err != nil {
-		errs = append(errs, fmt.Errorf("error cleaning up %v", err))
+		errs = append(errs, fmt.Errorf("error cleaning up %w", err))
 	}
 
 	return utilerrors.NewAggregate(errs)
@@ -316,12 +310,12 @@ func (c *client) handleRemovedRepo(removed map[string]bool) error {
 			Confirm:          true,
 		}
 		if err := o.Validate(); err != nil {
-			return fmt.Errorf("error validating the options: %v", err)
+			return fmt.Errorf("error validating the options: %w", err)
 		}
 
 		logrus.WithField("repos", repos).Debugf("Deleting webhooks for %q", c.options.hookUrl)
 		if err := o.HandleWebhookConfigChange(); err != nil {
-			return fmt.Errorf("error deleting webhook for repos %q: %v", repos, err)
+			return fmt.Errorf("error deleting webhook for repos %q: %w", repos, err)
 		}
 
 		for _, repo := range repos {
@@ -369,7 +363,7 @@ func (c *client) handledRotatedRepo(rotated map[string]config.ManagedWebhookInfo
 func (c *client) addRepoToBatchUpdate(repo string) error {
 	generatedToken, err := generateNewHMACToken()
 	if err != nil {
-		return fmt.Errorf("error generating a new hmac token for %q: %v", repo, err)
+		return fmt.Errorf("error generating a new hmac token for %q: %w", repo, err)
 	}
 
 	updatedTokenList := github.HMACsForRepo{}
@@ -408,7 +402,7 @@ func (c *client) onboardNewTokenForRepo(repo, generatedToken string) error {
 		Confirm: true,
 	}
 	if err := o.Validate(); err != nil {
-		return fmt.Errorf("error validating the options: %v", err)
+		return fmt.Errorf("error validating the options: %w", err)
 	}
 
 	logrus.WithField("repo", repo).Debugf("Updating the webhook for %q", c.options.hookUrl)
@@ -439,7 +433,7 @@ func (c *client) cleanup() error {
 	}
 	// Update the secret.
 	if err := c.updateHMACTokenSecret(); err != nil {
-		return fmt.Errorf("error updating hmac tokens: %v", err)
+		return fmt.Errorf("error updating hmac tokens: %w", err)
 	}
 	return nil
 }
@@ -453,14 +447,14 @@ func (c *client) updateHMACTokenSecret() error {
 
 	secretContent, err := yaml.Marshal(&c.currentHMACMap)
 	if err != nil {
-		return fmt.Errorf("error converting hmac map to yaml: %v", err)
+		return fmt.Errorf("error converting hmac map to yaml: %w", err)
 	}
 	sec := &corev1.Secret{}
 	sec.Name = c.options.hmacTokenSecretName
 	sec.Namespace = c.options.hmacTokenSecretNamespace
 	sec.StringData = map[string]string{c.options.hmacTokenKey: string(secretContent)}
 	if _, err = c.kubernetesClient.CoreV1().Secrets(c.options.hmacTokenSecretNamespace).Update(context.TODO(), sec, metav1.UpdateOptions{}); err != nil {
-		return fmt.Errorf("error updating the secret: %v", err)
+		return fmt.Errorf("error updating the secret: %w", err)
 	}
 	return nil
 }
@@ -493,7 +487,7 @@ func generateNewHMACToken() (string, error) {
 func getCurrentHMACTokens(kc kubernetes.Interface, ns, secName, key string) ([]byte, error) {
 	sec, err := kc.CoreV1().Secrets(ns).Get(context.TODO(), secName, metav1.GetOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
-		return nil, fmt.Errorf("error getting hmac secret %q: %v", secName, err)
+		return nil, fmt.Errorf("error getting hmac secret %q: %w", secName, err)
 	}
 	if err == nil {
 		buf, ok := sec.Data[key]
@@ -502,5 +496,5 @@ func getCurrentHMACTokens(kc kubernetes.Interface, ns, secName, key string) ([]b
 		}
 		return nil, fmt.Errorf("error getting key %q from the hmac secret %q", key, secName)
 	}
-	return nil, fmt.Errorf("error getting hmac token values: %v", err)
+	return nil, fmt.Errorf("error getting hmac token values: %w", err)
 }

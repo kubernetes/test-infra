@@ -35,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/initupload"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/clone"
@@ -59,7 +60,6 @@ const (
 	s3CredentialsMountPath  = "/secrets/s3-storage"
 	outputMountName         = "output"
 	outputMountPath         = "/output"
-	oauthTokenFilename      = "oauth-token"
 )
 
 // Labels returns a string slice with label consts from kube.
@@ -68,8 +68,19 @@ func Labels() []string {
 }
 
 // VolumeMounts returns a string set with *MountName consts in it.
-func VolumeMounts() sets.String {
-	return sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+func VolumeMounts(dc *prowapi.DecorationConfig) sets.String {
+	ret := sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+	if dc == nil {
+		return ret
+	}
+
+	if dc.OauthTokenSecret != nil {
+		ret.Insert(dc.OauthTokenSecret.Name)
+	}
+	for _, sshKeySecret := range dc.SSHKeySecrets {
+		ret.Insert(sshKeySecret)
+	}
+	return ret
 }
 
 // VolumeMountsOnTestContainer returns a string set with *MountName consts in it which are applied to the test container.
@@ -216,7 +227,7 @@ func ProwJobToPodLocal(pj prowapi.ProwJob, outputDir string) (*coreapi.Pod, erro
 		}
 	} else {
 		if err := decorate(spec, &pj, rawEnv, outputDir); err != nil {
-			return nil, fmt.Errorf("error decorating podspec: %v", err)
+			return nil, fmt.Errorf("error decorating podspec: %w", err)
 		}
 	}
 
@@ -255,11 +266,10 @@ func CloneLogPath(logMount coreapi.VolumeMount) string {
 
 // Exposed for testing
 const (
-	entrypointName   = "place-entrypoint"
-	initUploadName   = "initupload"
-	sidecarName      = "sidecar"
-	cloneRefsName    = "clonerefs"
-	cloneRefsCommand = "/clonerefs"
+	entrypointName = "place-entrypoint"
+	initUploadName = "initupload"
+	sidecarName    = "sidecar"
+	cloneRefsName  = "clonerefs"
 )
 
 // cloneEnv encodes clonerefs Options into json and puts it into an environment variable
@@ -299,13 +309,32 @@ func oauthVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
 					SecretName: secret,
 					Items: []coreapi.KeyToPath{{
 						Key:  key,
-						Path: fmt.Sprintf("./%s", oauthTokenFilename),
+						Path: fmt.Sprintf("./%s", key),
 					}},
 				},
 			},
 		}, coreapi.VolumeMount{
 			Name:      secret,
 			MountPath: "/secrets/oauth",
+			ReadOnly:  true,
+		}
+}
+
+func githubAppVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
+	return coreapi.Volume{
+			Name: secret,
+			VolumeSource: coreapi.VolumeSource{
+				Secret: &coreapi.SecretVolumeSource{
+					SecretName: secret,
+					Items: []coreapi.KeyToPath{{
+						Key:  key,
+						Path: fmt.Sprintf("./%s", key),
+					}},
+				},
+			},
+		}, coreapi.VolumeMount{
+			Name:      secret,
+			MountPath: "/secrets/github-app",
 			ReadOnly:  true,
 		}
 }
@@ -415,8 +444,21 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	if pj.Spec.DecorationConfig.OauthTokenSecret != nil {
 		oauthVolume, oauthMount := oauthVolume(pj.Spec.DecorationConfig.OauthTokenSecret.Name, pj.Spec.DecorationConfig.OauthTokenSecret.Key)
 		cloneMounts = append(cloneMounts, oauthMount)
-		oauthMountPath = filepath.Join(oauthMount.MountPath, oauthTokenFilename)
+		oauthMountPath = filepath.Join(oauthMount.MountPath, pj.Spec.DecorationConfig.OauthTokenSecret.Key)
 		cloneVolumes = append(cloneVolumes, oauthVolume)
+	}
+
+	githubAPIEndpoints := pj.Spec.DecorationConfig.GitHubAPIEndpoints
+	if len(githubAPIEndpoints) == 0 {
+		githubAPIEndpoints = []string{github.DefaultAPIEndpoint}
+	}
+
+	var githubAppPrivateKeyMountPath string
+	if pj.Spec.DecorationConfig.GitHubAppPrivateKeySecret != nil {
+		keyVolume, keyMount := githubAppVolume(pj.Spec.DecorationConfig.GitHubAppPrivateKeySecret.Name, pj.Spec.DecorationConfig.GitHubAppPrivateKeySecret.Key)
+		cloneMounts = append(cloneMounts, keyMount)
+		githubAppPrivateKeyMountPath = filepath.Join(keyMount.MountPath, pj.Spec.DecorationConfig.GitHubAppPrivateKeySecret.Key)
+		cloneVolumes = append(cloneVolumes, keyVolume)
 	}
 
 	volume, mount := tmpVolume("clonerefs-tmp")
@@ -426,8 +468,8 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	var cloneArgs []string
 	var cookiefilePath string
 
-	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
-		v, vm, vp := cookiefileVolume(cp)
+	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != nil && *cp != "" {
+		v, vm, vp := cookiefileVolume(*cp)
 		cloneMounts = append(cloneMounts, vm)
 		cloneVolumes = append(cloneVolumes, v)
 		cookiefilePath = vp
@@ -435,24 +477,26 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	}
 
 	env, err := cloneEnv(clonerefs.Options{
-		CookiePath:       cookiefilePath,
-		GitRefs:          refs,
-		GitUserEmail:     clonerefs.DefaultGitUserEmail,
-		GitUserName:      clonerefs.DefaultGitUserName,
-		HostFingerprints: pj.Spec.DecorationConfig.SSHHostFingerprints,
-		KeyFiles:         sshKeyPaths,
-		Log:              CloneLogPath(logMount),
-		SrcRoot:          codeMount.MountPath,
-		OauthTokenFile:   oauthMountPath,
+		CookiePath:              cookiefilePath,
+		GitRefs:                 refs,
+		GitUserEmail:            clonerefs.DefaultGitUserEmail,
+		GitUserName:             clonerefs.DefaultGitUserName,
+		HostFingerprints:        pj.Spec.DecorationConfig.SSHHostFingerprints,
+		KeyFiles:                sshKeyPaths,
+		Log:                     CloneLogPath(logMount),
+		SrcRoot:                 codeMount.MountPath,
+		OauthTokenFile:          oauthMountPath,
+		GitHubAPIEndpoints:      githubAPIEndpoints,
+		GitHubAppID:             pj.Spec.DecorationConfig.GitHubAppID,
+		GitHubAppPrivateKeyFile: githubAppPrivateKeyMountPath,
 	})
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("clone env: %v", err)
+		return nil, nil, nil, fmt.Errorf("clone env: %w", err)
 	}
 
 	container := coreapi.Container{
 		Name:         cloneRefsName,
 		Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
-		Command:      []string{cloneRefsCommand},
 		Args:         cloneArgs,
 		Env:          env,
 		VolumeMounts: append([]coreapi.VolumeMount{logMount, codeMount}, cloneMounts...),
@@ -528,8 +572,7 @@ func PlaceEntrypoint(config *prowapi.DecorationConfig, toolsMount coreapi.Volume
 	container := coreapi.Container{
 		Name:         entrypointName,
 		Image:        config.UtilityImages.Entrypoint,
-		Command:      []string{"/bin/cp"},
-		Args:         []string{"/entrypoint", entrypointLocation(toolsMount)},
+		Args:         []string{"--copy-mode-only"},
 		VolumeMounts: []coreapi.VolumeMount{toolsMount},
 	}
 	if config.Resources != nil && config.Resources.PlaceEntrypoint != nil {
@@ -603,12 +646,11 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 	// TODO(fejta): use flags
 	initUploadConfigEnv, err := initupload.Encode(initUploadOptions)
 	if err != nil {
-		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
+		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %w", err)
 	}
 	container := &coreapi.Container{
-		Name:    initUploadName,
-		Image:   config.UtilityImages.InitUpload,
-		Command: []string{"/initupload"}, // TODO(fejta): remove this, use image's entrypoint and delete /initupload symlink
+		Name:  initUploadName,
+		Image: config.UtilityImages.InitUpload,
 		Env: KubeEnv(map[string]string{
 			downwardapi.JobSpecEnv:      encodedJobSpec,
 			initupload.JSONConfigEnvVar: initUploadConfigEnv,
@@ -693,7 +735,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 
 	cloner, refs, cloneVolumes, err := CloneRefs(*pj, codeMount, logMount)
 	if err != nil {
-		return fmt.Errorf("create clonerefs container: %v", err)
+		return fmt.Errorf("create clonerefs container: %w", err)
 	}
 	var cloneLogMount *coreapi.VolumeMount
 	if cloner != nil {
@@ -704,7 +746,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	encodedJobSpec := rawEnv[downwardapi.JobSpecEnv]
 	initUpload, err := InitUpload(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, cloneLogMount, outputMount, encodedJobSpec)
 	if err != nil {
-		return fmt.Errorf("create initupload container: %v", err)
+		return fmt.Errorf("create initupload container: %w", err)
 	}
 	spec.InitContainers = append(
 		spec.InitContainers,
@@ -742,7 +784,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		}
 		wrapperOptions, err := InjectEntrypoint(&spec.Containers[i], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
 		if err != nil {
-			return fmt.Errorf("wrap container: %v", err)
+			return fmt.Errorf("wrap container: %w", err)
 		}
 		for _, volumeMount := range spec.Containers[i].VolumeMounts {
 			if containsSecretData(volumeMount.Name) {
@@ -756,7 +798,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 
 	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, ignoreInterrupts, secretVolumeMounts, wrappers...)
 	if err != nil {
-		return fmt.Errorf("create sidecar: %v", err)
+		return fmt.Errorf("create sidecar: %w", err)
 	}
 
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume)
@@ -841,14 +883,14 @@ func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blo
 	}
 
 	container := &coreapi.Container{
-		Name:    sidecarName,
-		Image:   config.UtilityImages.Sidecar,
-		Command: []string{"/sidecar"}, // TODO(fejta): remove, use image's entrypoint
+		Name:  sidecarName,
+		Image: config.UtilityImages.Sidecar,
 		Env: KubeEnv(map[string]string{
 			sidecar.JSONConfigEnvVar: sidecarConfigEnv,
 			downwardapi.JobSpecEnv:   encodedJobSpec, // TODO: shouldn't need this?
 		}),
-		VolumeMounts: mounts,
+		VolumeMounts:             mounts,
+		TerminationMessagePolicy: coreapi.TerminationMessageFallbackToLogsOnError,
 	}
 	if config.Resources != nil && config.Resources.Sidecar != nil {
 		container.Resources = *config.Resources.Sidecar

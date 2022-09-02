@@ -18,6 +18,7 @@ package tide
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -30,6 +31,7 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -60,18 +62,16 @@ type storedState struct {
 	PreviousQuery string
 }
 
+// statusController is a goroutine runs in the background
 type statusController struct {
-	pjClient ctrlruntimeclient.Client
-	logger   *logrus.Entry
-	config   config.Getter
-	ghc      githubClient
-	gc       git.ClientFactory
+	pjClient           ctrlruntimeclient.Client
+	logger             *logrus.Entry
+	config             config.Getter
+	ghProvider         *GitHubProvider
+	ghc                githubClient
+	gc                 git.ClientFactory
+	usesGitHubAppsAuth bool
 
-	mergeChecker *mergeChecker
-
-	// newPoolPending is a size 1 chan that signals that the main Tide loop has
-	// updated the 'poolPRs' field with a freshly updated pool.
-	newPoolPending chan bool
 	// shutDown is used to signal to the main controller that the statusController
 	// has completed processing after newPoolPending is closed.
 	shutDown chan bool
@@ -80,20 +80,32 @@ type statusController struct {
 	// the minimum status update period.
 	lastSyncStart time.Time
 
+	storedState     map[string]storedState
+	storedStateLock sync.Mutex
+	opener          io.Opener
+	path            string
+
+	// Shared fields with sync controller
+	*statusUpdate
+}
+
+// statusUpdate contains the required fields from syncController when there is a
+// pending pool update.
+//
+// statusController will use the values from syncController blindly.
+type statusUpdate struct {
+	blocks           blockers.Blockers
+	poolPRs          map[string]CodeReviewCommon
+	baseSHAs         map[string]string
+	requiredContexts map[string][]string
+	sync.Mutex
 	// dontUpdateStatus contains all PRs for which the Tide sync controller
 	// updated the status to success prior to merging. As the name suggests,
 	// the status controller must not update their status.
-	dontUpdateStatus threadSafePRSet
-
-	sync.Mutex
-	poolPRs          map[string]PullRequest
-	requiredContexts map[string][]string
-	blocks           blockers.Blockers
-	baseSHAs         map[string]string
-
-	storedState
-	opener io.Opener
-	path   string
+	dontUpdateStatus *threadSafePRSet
+	// newPoolPending is a size 1 chan that signals that the main Tide loop has
+	// updated the 'poolPRs' field with a freshly updated pool.
+	newPoolPending chan bool
 }
 
 func (sc *statusController) shutdown() {
@@ -101,7 +113,7 @@ func (sc *statusController) shutdown() {
 	<-sc.shutDown
 }
 
-// requirementDiff calculates the diff between a PR and a TideQuery.
+// requirementDiff calculates the diff between a GitHub PR and a TideQuery.
 // This diff is defined with a string that describes some subset of the
 // differences and an integer counting the total number of differences.
 // The diff count should always reflect the scale of the differences between
@@ -148,7 +160,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		}
 	}
 	if targetBranchDenied || !targetBranchAllowed {
-		diff += 1000
+		diff += 2000
 		if desc == "" {
 			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
 		}
@@ -241,34 +253,46 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		}
 	}
 
-	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
-	// PR query.
-
+	if q.ReviewApprovedRequired && pr.ReviewDecision != githubql.PullRequestReviewDecisionApproved {
+		diff += 50
+		if desc == "" {
+			desc = " PullRequest is missing sufficient approving GitHub review(s)"
+		}
+	}
 	return desc, diff
 }
 
-// Returns expected status state and description.
+// expectedStatus returns expected GitHub status state and description.
 // If a PR is not mergeable, we have to select a TideQuery to compare it against
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, pr *PullRequest, pool map[string]PullRequest, ccg contextCheckerGetter, blocks blockers.Blockers, baseSHA string) (string, string, error) {
-	repo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
+func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, crc *CodeReviewCommon, pool map[string]CodeReviewCommon, ccg contextCheckerGetter, blocks blockers.Blockers, baseSHA string) (string, string, error) {
+	// Get PullRequest struct for GitHub specific logic
+	pr := crc.GitHub
+	if pr == nil {
+		// This should not happen, as this mergeChecker is meant to be used by
+		// GitHub repos only
+		return "", "", errors.New("unexpected error: CodeReviewCommon should carry PullRequest struct")
+	}
 
-	if reason, err := sc.mergeChecker.isAllowed(pr); err != nil {
-		return "", "", fmt.Errorf("error checking if merge is allowed: %v", err)
+	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
+
+	if reason, err := sc.ghProvider.isAllowedToMerge(crc); err != nil {
+		return "", "", fmt.Errorf("error checking if merge is allowed: %w", err)
 	} else if reason != "" {
+		log.WithField("reason", reason).Debug("The PR is not mergeable")
 		return github.StatusError, fmt.Sprintf(statusNotInPool, " "+reason), nil
 	}
 
 	cc, err := ccg()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to set up context register: %v", err)
+		return "", "", fmt.Errorf("failed to set up context register: %w", err)
 	}
 
-	if _, ok := pool[prKey(pr)]; !ok {
+	if _, ok := pool[prKey(crc)]; !ok {
 		// if the branch is blocked forget checking for a diff
-		blockingIssues := blocks.GetApplicable(string(pr.Repository.Owner.Login), string(pr.Repository.Name), string(pr.BaseRef.Name))
+		blockingIssues := blocks.GetApplicable(crc.Org, crc.Repo, crc.BaseRefName)
 		var numbers []string
 		for _, issue := range blockingIssues {
 			numbers = append(numbers, strconv.Itoa(issue.Number))
@@ -280,19 +304,44 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 			}
 			return github.StatusError, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Merging is blocked by issue%s %s.", s, strings.Join(numbers, ", "))), nil
 		}
+
+		// hasFullfilledQuery is a weird state, it means that the PR is not in the pool but should be. It happens when all requirements were fulfilled
+		// at the time the status controller queried GitHub but not at the time the sync controller queried GitHub.
+		// We just fall through to check if there are missing jobs to avoid wasting api tokens by sending it to pending and then to success in the next
+		// sync or status controller iteration.
+		var hasFullfilledQuery bool
+
 		minDiffCount := -1
 		var minDiff string
 		for _, q := range queryMap.ForRepo(repo) {
 			diff, diffCount := requirementDiff(pr, &q, cc)
-			if minDiffCount == -1 || diffCount < minDiffCount {
+			if diffCount == 0 {
+				hasFullfilledQuery = true
+				break
+			} else if sc.config().Tide.DisplayAllQueriesInStatus {
+				if diffCount >= 2000 {
+					// Query is for wrong branch
+					continue
+				}
+				if minDiff != "" {
+					minDiff = strings.TrimSuffix(minDiff, ".") + " OR"
+				}
+				minDiff += diff
+			} else if minDiffCount == -1 || diffCount < minDiffCount {
 				minDiffCount = diffCount
 				minDiff = diff
 			}
 		}
-		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff), nil
+		if sc.config().Tide.DisplayAllQueriesInStatus && minDiff == "" {
+			minDiff = " No Tide query for branch " + crc.BaseRefName + " found."
+		}
+
+		if !hasFullfilledQuery {
+			return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff), nil
+		}
 	}
 
-	indexKey := indexKeyPassingJobs(repo, baseSHA, string(pr.HeadRefOID))
+	indexKey := indexKeyPassingJobs(repo, baseSHA, crc.HeadRefOID)
 	passingUpToDatePJs := &prowapi.ProwJobList{}
 	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingFields{indexNamePassingJobs: indexKey}); err != nil {
 		// Just log the error and return success, as the PR is in the merge pool
@@ -326,9 +375,17 @@ func retestingStatus(retested []string) string {
 // targetURL determines the URL used for more details in the status
 // context on GitHub. If no PR dashboard is configured, we will use
 // the administrative Prow overview.
-func targetURL(c *config.Config, pr *PullRequest, log *logrus.Entry) string {
+func targetURL(c *config.Config, crc *CodeReviewCommon, log *logrus.Entry) string {
+	// Get PullRequest struct for GitHub specific logic
+	pr := crc.GitHub
+	if pr == nil {
+		// This should not happen, as this mergeChecker is meant to be used by
+		// GitHub repos only
+		return ""
+	}
+
 	var link string
-	orgRepo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
+	orgRepo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 	if tideURL := c.Tide.GetTargetURL(orgRepo); tideURL != "" {
 		link = tideURL
 	} else if baseURL := c.Tide.GetPRStatusBaseURL(orgRepo); baseURL != "" {
@@ -336,7 +393,7 @@ func targetURL(c *config.Config, pr *PullRequest, log *logrus.Entry) string {
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
 		} else {
-			prQuery := fmt.Sprintf("is:pr repo:%s author:%s head:%s", pr.Repository.NameWithOwner, pr.Author.Login, pr.HeadRefName)
+			prQuery := fmt.Sprintf("is:pr repo:%s author:%s head:%s", pr.Repository.NameWithOwner, crc.AuthorLogin, crc.HeadRefName)
 			values := parseURL.Query()
 			values.Set("query", prQuery)
 			parseURL.RawQuery = values.Encode()
@@ -346,26 +403,27 @@ func targetURL(c *config.Config, pr *PullRequest, log *logrus.Entry) string {
 	return link
 }
 
-func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest, blocks blockers.Blockers, baseSHAs map[string]string, requiredContexts map[string][]string) {
+// setStatues sets GitHub context status.
+func (sc *statusController) setStatuses(all []CodeReviewCommon, pool map[string]CodeReviewCommon, blocks blockers.Blockers, baseSHAs map[string]string, requiredContexts map[string][]string) {
 	c := sc.config()
 	// queryMap caches which queries match a repo.
 	// Make a new one each sync loop as queries will change.
 	queryMap := c.Tide.Queries.QueryMap()
 	processed := sets.NewString()
 
-	process := func(pr *PullRequest) {
+	process := func(pr *CodeReviewCommon) {
 		processed.Insert(prKey(pr))
 		log := sc.logger.WithFields(pr.logFields())
-		contexts, err := headContexts(log, sc.ghc, pr)
+		contexts, err := sc.ghProvider.headContexts(pr)
 		if err != nil {
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
 
-		org := string(pr.Repository.Owner.Login)
-		repo := string(pr.Repository.Name)
-		branch := string(pr.BaseRef.Name)
-		headSHA := string(pr.HeadRefOID)
+		org := pr.Org
+		repo := pr.Repo
+		branch := pr.BaseRefName
+		headSHA := pr.HeadRefOID
 		// baseSHA is an empty string for any PR that doesn't have a corresponding merge pool
 		baseSHA := baseSHAs[poolKey(org, repo, branch)]
 		baseSHAGetter := newBaseSHAGetter(baseSHAs, sc.ghc, org, repo, branch)
@@ -391,7 +449,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			log.WithField("original-desc", original).Warn("GitHub status description needed to be truncated to fit GH API limit")
 		}
 		actualState = githubql.StatusState(strings.ToLower(string(actualState)))
-		if !sc.dontUpdateStatus.has(string(pr.Repository.Owner.Login), string(pr.Repository.Name), int(pr.Number)) && (wantState != string(actualState) || wantDesc != actualDesc) {
+		if !sc.dontUpdateStatus.has(pr.Org, pr.Repo, pr.Number) && (wantState != string(actualState) || wantDesc != actualDesc) {
 			if err := sc.ghc.CreateStatus(
 				org,
 				repo,
@@ -452,12 +510,19 @@ func (sc *statusController) load() {
 		return
 	}
 
-	var stored storedState
+	var stored map[string]storedState
 	if err := yaml.Unmarshal(buf, &stored); err != nil {
-		entry.WithError(err).Warn("Cannot unmarshal stored state")
-		return
+		var singleStored storedState
+		if singleStoredErr := yaml.Unmarshal(buf, &singleStored); singleStoredErr == nil {
+			stored = map[string]storedState{"": singleStored}
+		} else {
+			entry.WithError(err).Warn("Cannot unmarshal stored state")
+			return
+		}
 	}
+	sc.storedStateLock.Lock()
 	sc.storedState = stored
+	sc.storedStateLock.Unlock()
 }
 
 func (sc *statusController) save(ticker *time.Ticker) {
@@ -466,7 +531,9 @@ func (sc *statusController) save(ticker *time.Ticker) {
 			return
 		}
 		entry := sc.logger.WithField("path", sc.path)
+		sc.storedStateLock.Lock()
 		current := sc.storedState
+		sc.storedStateLock.Unlock()
 		buf, err := yaml.Marshal(current)
 		if err != nil {
 			entry.WithError(err).Warn("Cannot marshal state")
@@ -515,7 +582,7 @@ func (sc *statusController) waitSync() {
 	for {
 		select {
 		case <-wait:
-			sc.Lock()
+			sc.statusUpdate.Lock()
 			pool := sc.poolPRs
 			blocks := sc.blocks
 			baseSHAs := sc.baseSHAs
@@ -523,7 +590,7 @@ func (sc *statusController) waitSync() {
 				baseSHAs = map[string]string{}
 			}
 			requiredContexts := sc.requiredContexts
-			sc.Unlock()
+			sc.statusUpdate.Unlock()
 			sc.sync(pool, blocks, baseSHAs, requiredContexts)
 			return
 		case more := <-sc.newPoolPending:
@@ -534,7 +601,7 @@ func (sc *statusController) waitSync() {
 	}
 }
 
-func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Blockers, baseSHAs map[string]string, requiredContexts map[string][]string) {
+func (sc *statusController) sync(pool map[string]CodeReviewCommon, blocks blockers.Blockers, baseSHAs map[string]string, requiredContexts map[string][]string) {
 	sc.lastSyncStart = time.Now()
 	defer func() {
 		duration := time.Since(sc.lastSyncStart)
@@ -546,47 +613,97 @@ func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Bl
 	sc.setStatuses(sc.search(), pool, blocks, baseSHAs, requiredContexts)
 }
 
-func (sc *statusController) search() []PullRequest {
-	queries := sc.config().Tide.Queries
-	if len(queries) == 0 {
+func (sc *statusController) search() []CodeReviewCommon {
+	rawQueries := sc.config().Tide.Queries
+	if len(rawQueries) == 0 {
 		return nil
 	}
 
-	orgExceptions, repos := queries.OrgExceptionsAndRepos()
+	orgExceptions, repos := rawQueries.OrgExceptionsAndRepos()
 	orgs := sets.StringKeySet(orgExceptions)
-	query := openPRsQuery(orgs.List(), repos.List(), orgExceptions)
-	now := time.Now()
-	log := sc.logger.WithField("query", query)
-	if query != sc.PreviousQuery {
-		// Query changed and/or tide restarted, recompute everything
-		log.WithField("previously", sc.PreviousQuery).Info("Query changed, resetting start time to zero")
-		sc.LatestPR = metav1.Time{}
-		sc.PreviousQuery = query
+	queries := openPRsQueries(orgs.List(), repos.List(), orgExceptions)
+	if !sc.usesGitHubAppsAuth {
+		var query string
+		for _, orgQuery := range queries {
+			query += " " + orgQuery
+		}
+		queries = map[string]string{"": query}
 	}
 
-	// TODO @alvaroaleman: Add github apps support
-	prs, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, sc.LatestPR.Time, now, "")
-	log.WithField("duration", time.Since(now).String()).Debugf("Found %d open PRs.", len(prs))
+	if sc.storedState == nil {
+		sc.storedState = map[string]storedState{}
+	}
+
+	var prs []CodeReviewCommon
+	var errs []error
+	var lock sync.Mutex
+	var wg sync.WaitGroup
+
+	for org, query := range queries {
+		org, query := org, query
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			now := time.Now()
+			log := sc.logger.WithField("query", query)
+
+			sc.storedStateLock.Lock()
+			latestPR := sc.storedState[org].LatestPR
+			if query != sc.storedState[org].PreviousQuery {
+				// Query changed and/or tide restarted, recompute everything
+				log.WithField("previously", sc.storedState[org].PreviousQuery).Info("Query changed, resetting start time to zero")
+				sc.storedState[org] = storedState{PreviousQuery: query}
+			}
+			sc.storedStateLock.Unlock()
+
+			result, err := sc.ghProvider.search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
+			log.WithField("duration", time.Since(now).String()).WithField("result_count", len(result)).Debug("Searched for open PRs.")
+
+			func() {
+				sc.storedStateLock.Lock()
+				defer sc.storedStateLock.Unlock()
+
+				log := log.WithField("latestPR", sc.storedState[org].LatestPR)
+				if len(result) == 0 {
+					log.Debug("no new results")
+					return
+				}
+				latest := result[len(result)-1].UpdatedAt
+				if latest.IsZero() {
+					log.Debug("latest PR has zero time")
+					return
+				}
+				sc.storedState[org] = storedState{
+					LatestPR:      metav1.Time{Time: latest.Add(-30 * time.Second)},
+					PreviousQuery: sc.storedState[org].PreviousQuery,
+				}
+				log.WithField("latestPR", sc.storedState[org].LatestPR).Debug("Advanced start time")
+			}()
+
+			lock.Lock()
+			defer lock.Unlock()
+
+			for _, pr := range result {
+				pr := pr
+				prs = append(prs, *CodeReviewCommonFromPullRequest(&pr))
+			}
+			errs = append(errs, err)
+		}()
+
+	}
+	wg.Wait()
+
+	err := utilerrors.NewAggregate(errs)
 	if err != nil {
-		log := log.WithError(err)
+		log := sc.logger.WithError(err)
 		if len(prs) == 0 {
 			log.Error("Search failed")
 			return nil
 		}
 		log.Warn("Search partially completed")
 	}
-	if len(prs) == 0 {
-		log.WithField("latestPR", sc.LatestPR).Debug("no new results")
-		return nil
-	}
 
-	latest := prs[len(prs)-1].UpdatedAt.Time
-	if latest.IsZero() {
-		log.WithField("latestPR", sc.LatestPR).Debug("latest PR has zero time")
-		return prs
-	}
-	sc.LatestPR.Time = latest.Add(-30 * time.Second)
-	log.WithField("latestPR", sc.LatestPR).Debug("Advanced start time")
 	return prs
 }
 
@@ -606,8 +723,12 @@ func newBaseSHAGetter(baseSHAs map[string]string, ghc githubClient, org, repo, b
 	}
 }
 
-func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {
-	return "is:pr state:open sort:updated-asc " + orgRepoQueryString(orgs, repos, orgExceptions)
+func openPRsQueries(orgs, repos []string, orgExceptions map[string]sets.String) map[string]string {
+	result := map[string]string{}
+	for org, query := range orgRepoQueryStrings(orgs, repos, orgExceptions) {
+		result[org] = "is:pr state:open sort:updated-asc archived:false " + query
+	}
+	return result
 }
 
 const indexNamePassingJobs = "tide-passing-jobs"

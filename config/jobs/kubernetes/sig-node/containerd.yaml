@@ -5,11 +5,9 @@ presets:
   - name: LOG_DUMP_SYSTEMD_SERVICES
     value: containerd containerd-installation
   - name: KUBE_MASTER_EXTRA_METADATA
-    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/env
   - name: KUBE_NODE_EXTRA_METADATA
-    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-  - name: KUBE_CONTAINER_RUNTIME
-    value: remote
+    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/env
   - name: KUBE_CONTAINER_RUNTIME_ENDPOINT
     value: unix:///run/containerd/containerd.sock
   - name: KUBE_CONTAINER_RUNTIME_NAME
@@ -35,8 +33,6 @@ presets:
   env:
   - name: LOG_DUMP_SYSTEMD_SERVICES
     value: containerd
-  - name: KUBE_CONTAINER_RUNTIME
-    value: containerd
 
 periodics:
 - name: ci-containerd-build
@@ -46,9 +42,9 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --root=/go/src
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=execute
@@ -62,27 +58,25 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build
     description: "builds development in progress branch of upstream containerd"
-- name: ci-containerd-build-1-4
+- name: ci-containerd-build-1-5
   interval: 30m
   labels:
     preset-service-account: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         args:
-          - --repo=github.com/containerd/containerd=release/1.4
-          - --repo=github.com/containerd/cri=release/1.4
+          - --repo=github.com/containerd/containerd=release/1.5
           - --root=/go/src
           - --upload=gs://kubernetes-jenkins/logs
           - --scenario=execute
           - --
-          - --env=GO111MODULE=off
-          - --env=DEPLOY_DIR=containerd/release-1.4
-          - /go/src/github.com/containerd/cri/test/containerd/build.sh
+          - --env=DEPLOY_DIR=release-1.5
+          - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-build-1.4
-    description: "builds release/1.4 branch of upstream containerd"
+    testgrid-tab-name: containerd-build-1.5
+    description: "builds release/1.5 branch of upstream containerd"
 - name: ci-containerd-build-test-images
   interval: 4h
   labels:
@@ -90,9 +84,9 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         args:
-          - --repo=github.com/containerd/containerd=master
+          - --repo=github.com/containerd/containerd=main
           - --root=/go/src
           - --upload=gs://kubernetes-jenkins/logs
           - --scenario=execute
@@ -106,65 +100,25 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build-test-images
     description: "builds test images for development in progress branch of upstream containerd"
-- interval: 1h
-  name: ci-containerd-e2e-cos-gce
+- name: ci-containerd-build-1-6
+  interval: 30m
   labels:
     preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-containerd: "true"
-    preset-e2e-containerd-image-load: "true"
   spec:
     containers:
-    - args:
-      - --repo=github.com/containerd/containerd=master
-      - --timeout=70
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-nodes=4
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=30
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-  annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
-    testgrid-tab-name: containerd-e2e-cos
-- interval: 1h
-  name: ci-containerd-e2e-cos-gce-1-4
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-containerd: "true"
-    preset-e2e-containerd-image-load: "true"
-  spec:
-    containers:
-      - args:
-          - --repo=github.com/containerd/cri=release/1.4
-          - --timeout=70
-          - --scenario=kubernetes_e2e
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        args:
+          - --repo=github.com/containerd/containerd=release/1.6
+          - --root=/go/src
+          - --upload=gs://kubernetes-jenkins/logs
+          - --scenario=execute
           - --
-          - --check-leaked-resources
-          - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.4/env
-          - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.4/env
-          - --env=ENABLE_POD_SECURITY_POLICY=true
-          - --extract=ci/latest-1.20
-          - --gcp-node-image=gci
-          - --gcp-nodes=4
-          - --gcp-zone=us-west1-b
-          - --ginkgo-parallel=30
-          - --provider=gce
-          - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-          - --timeout=50m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+          - --env=DEPLOY_DIR=release-1.6
+          - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
-    testgrid-tab-name: containerd-e2e-cos-1.4
-
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: containerd-build-1.6
+    description: "builds release/1.6 branch of upstream containerd"
 - interval: 1h
   name: ci-containerd-e2e-ubuntu-gce
   labels:
@@ -175,11 +129,12 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
+      - --env=KUBE_GCE_MASTER_IMAGE=cos-85-13310-1308-1
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
@@ -187,63 +142,32 @@ periodics:
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-ubuntu
-- name: ci-containerd-node-e2e
+- name: ci-cos-cgroupv1-containerd-node-e2e
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
       - --deployment=node
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
-      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
-      - --timeout=65m
-      env:
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cri
-    testgrid-tab-name: containerd-node-conformance
-    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-- name: ci-containerd-node-e2e-1-4
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-      args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.21
-      - --repo=github.com/containerd/cri=release/1.4
-      - --timeout=90
-      - --scenario=kubernetes_e2e
-      - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.4/image-config.yaml
-      - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
-      - --gcp-zone=us-central1-b
-      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
@@ -253,67 +177,193 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-1.4
-- name: ci-containerd-node-e2e-features
+    testgrid-tab-name: cos-cgroupv1-containerd-node-e2e
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+- name: ci-cos-cgroupv1-containerd-node-e2e-features
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
       - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-central1-b
-      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=65m
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cri
-    testgrid-tab-name: containerd-node-features
-- name: ci-containerd-node-e2e-features-1-4
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: cos-cgroupv1-containerd-node-features
+- name: ci-containerd-node-e2e-1-5
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.22
       args:
       - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.21
-      - --repo=github.com/containerd/cri=release/1.4
+      - --repo=k8s.io/kubernetes=release-1.22
+      - --repo=github.com/containerd/containerd=release/1.5
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.4/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.5/image-config.yaml
       - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=65m
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-features-1.4
+    testgrid-tab-name: containerd-node-e2e-1.5
+- name: ci-containerd-node-e2e-1-6
+  cluster: k8s-infra-prow-build
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.23
+        args:
+          - --root=/go/src
+          - --repo=k8s.io/kubernetes=release-1.23
+          - --repo=github.com/containerd/containerd=release/1.6
+          - --timeout=90
+          - --scenario=kubernetes_e2e
+          - --
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.6/image-config.yaml
+          - --deployment=node
+          - --gcp-zone=us-central1-b
+          - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
+          - --timeout=65m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: containerd-node-e2e-1.6
+- name: ci-containerd-node-e2e-features-1-5
+  cluster: k8s-infra-prow-build
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.22
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=release-1.22
+      - --repo=github.com/containerd/containerd=release/1.5
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.5/image-config.yaml
+      - --deployment=node
+      - --gcp-zone=us-central1-b
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: containerd-node-e2e-features-1.5
+- name: ci-containerd-node-e2e-features-1-6
+  cluster: k8s-infra-prow-build
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.23
+        args:
+          - --root=/go/src
+          - --repo=k8s.io/kubernetes=release-1.23
+          - --repo=github.com/containerd/containerd=release/1.6
+          - --timeout=90
+          - --scenario=kubernetes_e2e
+          - --
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.6/image-config.yaml
+          - --deployment=node
+          - --gcp-zone=us-central1-b
+          - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+          - --timeout=65m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: containerd-node-e2e-features-1.6
 - interval: 12h
   name: ci-containerd-soak-cos-gce
   labels:
@@ -324,7 +374,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=1220
       - --scenario=kubernetes_e2e
       - --
@@ -337,12 +387,12 @@ periodics:
       - --provider=gce
       - --save=gs://kubernetes-e2e-soak-configs/ci-containerd-soak-gci-gce
       - --soak
-      - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: soak-cos-gce
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   cron: "30 1-23/3 * * *"
@@ -355,7 +405,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=300
       - --scenario=kubernetes_e2e
       - --
@@ -367,7 +417,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-cos-device-plugin-gpu
@@ -383,53 +433,93 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos
-- interval: 2h
-  name: ci-cri-containerd-e2e-cos-gce-alpha-features
+# TODO (https://github.com/kubernetes/test-infra/issues/26127) consider restoring once we will figure out the right set of alpha features.
+# - interval: 2h
+#   name: ci-cri-containerd-e2e-cos-gce-alpha-features
+#   labels:
+#     preset-service-account: "true"
+#     preset-k8s-ssh: "true"
+#     preset-e2e-containerd: "true"
+#     preset-e2e-containerd-image-load: "true"
+#   spec:
+#     containers:
+#     - args:
+#       - --repo=github.com/containerd/containerd=main
+#       - --timeout=200
+#       - --scenario=kubernetes_e2e
+#       - --
+#       - --check-leaked-resources
+#       - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false
+#       - --env=KUBE_PROXY_DAEMONSET=true
+#       - --env=ENABLE_POD_PRIORITY=true
+#       - --extract=ci/latest
+#       - --gcp-node-image=gci
+#       - --gcp-zone=us-west1-b
+#       - --provider=gce
+#       - --runtime-config=api/all=true
+#       - --test_args=--ginkgo.focus=\[Feature:()\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|Feature:SCTPConnectivity --minStartupPods=8
+#       - --timeout=180m
+#       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+#   annotations:
+#     testgrid-dashboards: sig-node-cos
+#     testgrid-tab-name: e2e-cos-alpha-features
+
+- name: ci-kubernetes-node-kubelet-containerd-eviction
+  cluster: k8s-infra-prow-build
+  interval: 4h30m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-e2e-containerd: "true"
-    preset-e2e-containerd-image-load: "true"
   spec:
     containers:
-    - args:
-      - --repo=github.com/containerd/containerd=master
-      - --timeout=200
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=320
+      - --root=/go/src
       - --scenario=kubernetes_e2e
       - --
-      - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false,InTreePluginGCEUnregister=false
-      - --env=KUBE_PROXY_DAEMONSET=true
-      - --env=ENABLE_POD_PRIORITY=true
-      - --extract=ci/latest
-      - --gcp-node-image=gci
+      - --deployment=node
       - --gcp-zone=us-west1-b
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
+      - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - --node-tests=true
       - --provider=gce
-      - --runtime-config=api/all=true
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|VolumeSubpathEnvExpansion|RunAsGroup|NodeLease)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|Feature:SCTPConnectivity --minStartupPods=8
-      - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]"
+      - --timeout=300m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
-    testgrid-tab-name: e2e-cos-alpha-features
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: node-kubelet-containerd-eviction
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Uses kubetest to run node-e2e Eviction tests"
+
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-flaky
   labels:
@@ -440,7 +530,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
@@ -451,9 +541,9 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-flaky
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-ingress
@@ -465,7 +555,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=340
       - --scenario=kubernetes_e2e
       - --
@@ -479,9 +569,9 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-network-gce, sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-network-gce, sig-node-cos
     testgrid-tab-name: e2e-cos-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
@@ -494,7 +584,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -507,11 +597,11 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-ip-alias
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-proto
@@ -523,7 +613,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
@@ -534,11 +624,11 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-proto
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce-reboot
@@ -550,7 +640,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
@@ -561,9 +651,9 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-reboot
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce-serial
@@ -575,7 +665,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=520
       - --scenario=kubernetes_e2e
       - --
@@ -584,11 +674,11 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-serial
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce-slow
@@ -600,7 +690,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=170
       - --scenario=kubernetes_e2e
       - --
@@ -610,130 +700,87 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-slow
-- interval: 1h
-  name: ci-cri-containerd-e2e-ubuntu-gce
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-containerd: "true"
-    preset-e2e-containerd-image-load: "true"
-  spec:
-    containers:
-    - args:
-      - --repo=github.com/containerd/containerd=master
-      - --timeout=70
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --extract=ci/latest
-      - --gcp-node-image=ubuntu
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=30
-      - --image-family=ubuntu-2004-lts
-      - --image-project=ubuntu-os-cloud
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-  annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: e2e-ubuntu
-- name: ci-cri-containerd-node-e2e
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-      args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
-      - --timeout=90
-      - --scenario=kubernetes_e2e
-      - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
-      - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
-      - --gcp-zone=us-central1-b
-      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
-      - --timeout=65m
-      env:
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: node-e2e
-- name: ci-cri-containerd-node-e2e-benchmark
-  interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-      args:
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
-      - --timeout=90
-      - --scenario=kubernetes_e2e
-      - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/benchmark-config.yaml
-      - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
-      - --gcp-zone=us-central1-b
-      - '--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=1 --skip="\[Flaky\]"
-      - --timeout=65m
-      env:
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: node-e2e-benchmark
 - name: ci-cri-containerd-node-e2e-features
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
       - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-west1-b
-      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=65m
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-features
+- name: ci-cri-containerd-node-e2e-unlabelled
+  cluster: k8s-infra-prow-build
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=400
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
+      - --deployment=node
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
+      - --timeout=300m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: node-e2e-unlabelled
+    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 - interval: 1h
   name: ci-cos-containerd-e2e-cos-gce
   labels:
@@ -748,7 +795,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -757,9 +803,9 @@ periodics:
       - --image-family=cos-89-lts
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-cos-e2e
@@ -781,23 +827,24 @@ periodics:
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      - --image-family=pipeline-1-20
+      - --image-family=pipeline-1-24
       - --image-project=ubuntu-os-gke-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-ubuntu-e2e
 - name: ci-cos-containerd-node-e2e
+  cluster: k8s-infra-prow-build
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -806,9 +853,156 @@ periodics:
       - --
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
       - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-west1-b
-      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: image-validation-node-e2e
+- name: ci-cos-containerd-node-e2e-features
+  cluster: k8s-infra-prow-build
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
+      - --deployment=node
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: image-validation-node-features
+- name: ci-cos-cgroupv2-containerd-node-e2e-features
+  cluster: k8s-infra-prow-build
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=200
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2.yaml
+      - --deployment=node
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: cos-cgroupv2-containerd-node-features
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+- name: ci-cos-cgroupv2-containerd-node-e2e
+  cluster: k8s-infra-prow-build
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=200
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2.yaml
+      - --deployment=node
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+      - --timeout=180m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: cos-cgroupv2-containerd-node-e2e
+- name: ci-cgroup-systemd-containerd-node-e2e
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
+      - --deployment=node
+      - --gcp-project-type=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
@@ -818,33 +1012,330 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: image-validation-node-e2e
-- name: ci-cos-containerd-node-e2e-features
-  interval: 1h
+    testgrid-tab-name: cgroup-systemd-containerd-node-e2e
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+- interval: 12h
+  name: ci-cos-cgroupv2-containerd-e2e-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ENABLE_POD_SECURITY_POLICY=true
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+      - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --image-family=cos-97-lts
+      - --image-project=cos-cloud
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: cos-cgroupv2-containerd-e2e
+- interval: 12h
+  name: ci-cos-cgroupv1-containerd-e2e-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ENABLE_POD_SECURITY_POLICY=true
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
+      - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --image-family=cos-97-lts
+      - --image-project=cos-cloud
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: cos-cgroupv1-containerd-e2e
+- name: ci-cos-cgroupv2-containerd-node-e2e-serial
+  cluster: k8s-infra-prow-build
+  interval: 12h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --timeout=90
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=260
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2-serial.yaml
       - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-west1-b
-      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
-      - --timeout=65m
+      - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+      - --timeout=240m
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: image-validation-node-features
+    testgrid-tab-name: cos-cgroupv2-containerd-node-e2e-serial
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-containerd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --provider=gce
+      # [Driver: gcepd] tests are skipped because CSIMigrationGCE is on in 1.23 and can be un-skipped once the cluster-up process
+      # uses cloud-provider-gcp. see issue https://github.com/kubernetes/cloud-provider-gcp/issues/293
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+  annotations:
+    testgrid-dashboards: google-gce, sig-storage-kubernetes
+    testgrid-tab-name: gce-containerd
+    description: node gce e2e tests for master branch using containerd
+- name: ci-kubernetes-node-kubelet-containerd-resource-managers
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=120
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
+          - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]"
+          - --timeout=90m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: node-kubelet-containerd-resource-managers
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Executes CPU, Memory and Topology manager e2e tests"
+- name: ci-kubernetes-node-kubelet-containerd-hugepages
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=120
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial-hugepages.yaml
+          - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"
+          - --timeout=90m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: node-kubelet-containerd-hugepages
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Executes hugepages e2e tests"
+
+- name: ci-kubernetes-node-swap-ubuntu
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
+          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --feature-gates=NodeSwap=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          requests:
+            memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-swap-ubuntu
+    testgrid-alert-email: ehashman@redhat.com, mkmir@google.com
+    description: Executes E2E suite with swap enabled on Ubuntu
+- name: ci-kubernetes-node-kubelet-containerd-performance-test
+  cluster: k8s-infra-prow-build
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --repo=github.com/containerd/containerd=main
+          - --timeout=90
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/perf-image-config.yaml
+          - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}" --server-start-timeout=420s'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="Node Performance Testing"
+          - --timeout=60m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: node-kubelet-containerd-performance-test
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Executes performance e2e tests"
+- name: ci-kubernetes-node-kubelet-lock-contention
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
+          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service --lock-file=/var/run/kubelet.lock --exit-on-lock-contention=true" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[NodeSpecialFeature:LockContention\]" --skip="\[Flaky\]|\[Serial\]"
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-lock-contention
+    description: "Contains disruptive tests for the Lock Contention feature."
+- name: ci-kubernetes-node-kubelet-credential-provider
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
+          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--feature-gates=KubeletCredentialProviders=true,DisableKubeletCloudCredentialProviders=true --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:KubeletCredentialProviders\]" --skip="\[Flaky\]|\[Serial\]"
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-credential-provider
+    description: "tests alpha feature kubelet image credential provider"

@@ -3,10 +3,10 @@
 reviewers:
 - mborsz
 - mm4tt
-- shyamjvs
 - wojtek-t
 approvers:
 - mborsz
 - mm4tt
-- shyamjvs
 - wojtek-t
+emeritus_approvers:
+- shyamjvs

@@ -29,7 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/git/v2"
@@ -68,6 +67,9 @@ type options struct {
 	// a) the gcs credentials can write to this bucket
 	// b) the default acls do not expose any private info
 	statusURI string
+
+	// Gerrit-related options
+	cookiefilePath string
 }
 
 func (o *options) Validate() error {
@@ -93,6 +95,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.IntVar(&o.maxRecordsPerPool, "max-records-per-pool", 1000, "The maximum number of history records stored for an individual Tide pool.")
 	fs.StringVar(&o.historyURI, "history-uri", "", "The /local/path,gs://path/to/object or s3://path/to/object to store tide action history. GCS writes will use the default object ACL for the bucket")
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
+	// Gerrit-related flags
+	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile; leave empty for anonymous access or if you are using GitHub")
 
 	fs.Parse(args)
 	return o
@@ -121,17 +125,12 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(nil); err != nil {
-		logrus.WithError(err).Fatal("Error starting secrets agent.")
-	}
-
-	githubSync, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "sync"})
+	githubSync, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "sync"})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client for sync.")
 	}
 
-	githubStatus, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "status-update"})
+	githubStatus, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "status-update"})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client for status.")
 	}
@@ -145,7 +144,7 @@ func main() {
 	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod.Duration))
 	githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
-	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
+	gitClient, err := o.github.GitClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
@@ -160,7 +159,19 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
-	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil, o.github.AppPrivateKeyPath != "")
+	c, err := tide.NewController(
+		githubSync,
+		githubStatus,
+		mgr,
+		cfg,
+		git.ClientFactoryFrom(gitClient),
+		o.maxRecordsPerPool,
+		opener,
+		o.historyURI,
+		o.statusURI,
+		nil,
+		o.github.AppPrivateKeyPath != "",
+	)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
@@ -182,18 +193,11 @@ func main() {
 		}
 	})
 
-	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
-	// to make the kubelet restart us.
-	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
-		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
-		interrupts.Terminate()
-	}); err != nil {
-		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
-	}
-
-	http.Handle("/", c)
-	http.Handle("/history", c.History)
-	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
+	// Deck consumes these endpoints
+	controllerMux := http.NewServeMux()
+	controllerMux.Handle("/", c)
+	controllerMux.Handle("/history", c.History())
+	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: controllerMux}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	metrics.ExposeMetrics("tide", cfg().PushGateway, o.instrumentationOptions.MetricsPort)

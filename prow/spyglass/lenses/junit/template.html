@@ -36,8 +36,12 @@
               <td colspan="2" class="mdl-data-table__cell--non-numeric">
                 <div>{{$firstTest.Failure}}</div>
                 {{if $firstTest.Output}}
-                <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                <a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
                 <pre style="display: none;">{{$firstTest.Output}}</pre>
+                {{end}}
+                {{if $firstTest.Error}}
+                <a href="#" class="open-stdout-stderr">open stderr<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                <pre style="display: none;">{{$firstTest.Error}}</pre>
                 {{end}}
               </td>
             </tr>
@@ -66,8 +70,12 @@
                           <td colspan="2" class="mdl-data-table__cell--non-numeric">
                             <div>{{$indTest.Failure}}</div>
                             {{if $indTest.Output}}
-                            <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                            <a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
                             <pre style="display: none;">{{$indTest.Output}}</pre>
+                            {{end}}
+                            {{if $indTest.Error}}
+                            <a href="#" class="open-stdout-stderr">open stderr<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                            <pre style="display: none;">{{$indTest.Error}}</pre>
                             {{end}}
                           </td>
                         </tr>
@@ -114,8 +122,12 @@
                           <td colspan="2" class="mdl-data-table__cell--non-numeric">
                             <div>{{$indTest.Failure}}</div>
                             {{if $indTest.Output}}
-                            <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                            <a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
                             <pre style="display: none;">{{$indTest.Output}}</pre>
+                            {{end}}
+                            {{if $indTest.Error}}
+                            <a href="#" class="open-stdout-stderr">open stderr<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                            <pre style="display: none;">{{$indTest.Error}}</pre>
                             {{end}}
                           </td>
                         </tr>
@@ -156,7 +168,11 @@
       {{range .Skipped}}
         {{$firstTest := index .Junit 0}}
         <tr>
-          <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}</td>
+	   {{if eq $firstTest.SkippedReason "" }}
+	   <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}</td>
+	   {{else}}
+	   <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}</br> </br><b>Reason:</b> {{$firstTest.SkippedReason}}</td>
+	   {{end}}
           <td class="mdl-data-table__cell--non-numeric">{{$firstTest.Duration}}</td>
         </tr>
       {{end}}
@@ -166,3 +182,4 @@
 </div>
 {{end}}
 {{end}}
+

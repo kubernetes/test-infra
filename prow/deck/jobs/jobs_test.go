@@ -20,9 +20,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -271,6 +273,7 @@ func TestListProwJobs(t *testing.T) {
 		showHidden  bool
 		expected    sets.String
 		expectedErr bool
+		tenantIDs   []string
 	}{
 		{
 			name:        "list error results in filter error",
@@ -471,6 +474,245 @@ func TestListProwJobs(t *testing.T) {
 			},
 			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
 		},
+		{
+			name: "tenantID on lister will not show jobs without id",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "no ID"
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "no ID hidden"
+					in.Spec.Hidden = true
+					return in
+				},
+			},
+			expected:  sets.NewString(),
+			tenantIDs: []string{"ID"},
+		},
+		{
+			name: "tenantID ID on lister will show jobs with id",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "no ID"
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+			},
+			expected:  sets.NewString("ID"),
+			tenantIDs: []string{"ID"},
+		},
+		{
+			name: "tenantID on lister will not show jobs with different id",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Wrong ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Wrong ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+			},
+			expected:  sets.NewString("ID"),
+			tenantIDs: []string{"ID"},
+		},
+		{
+			name: "tenantIDs on lister will show all matching jobs",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Wrong ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Wrong ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Other ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Other ID"}
+					return in
+				},
+			},
+			expected:  sets.NewString("ID", "Other ID"),
+			tenantIDs: []string{"ID", "Other ID"},
+		},
+		{
+			name: "tenantIDs on lister will show hidden jobs with correct ID",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Wrong ID"
+					in.Spec.Hidden = true
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Wrong ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					in.Spec.Hidden = true
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Other ID"
+					in.Spec.Hidden = true
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Other ID"}
+					return in
+				},
+			},
+			expected:  sets.NewString("ID", "Other ID"),
+			tenantIDs: []string{"ID", "Other ID"},
+		},
+		{
+			name: "hidden repo with correct ID still shows if matching tenantIDs",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-repo"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hide", Repo: "me"}}
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-org"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hidden-org"}}
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+			},
+			expected:    sets.NewString("hidden-repo", "hidden-org"),
+			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+			tenantIDs:   []string{"ID"},
+		},
+		{
+			name: "hidden repo with tenantIDs will still show if show hidden",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-repo"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hide", Repo: "me"}}
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-org"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hidden-org"}}
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+			},
+			expected:    sets.NewString("hidden-repo", "hidden-org"),
+			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+			showHidden:  true,
+		},
+		{
+			name: "hidden repo with tenantIDs will still show if hidden only",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-repo"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hide", Repo: "me"}}
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "hidden-org"
+					in.Spec.ExtraRefs = []prowapi.Refs{{Org: "hidden-org"}}
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+			},
+			expected:    sets.NewString("hidden-repo", "hidden-org"),
+			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+			hiddenOnly:  true,
+		},
+		{
+			name: "pjs with tenantIDs marked hidden will still show up if showHidden is true",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "ID"
+					in.Spec.Hidden = true
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Other ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Other ID"}
+					return in
+				},
+			},
+			expected:   sets.NewString("ID"),
+			showHidden: true,
+		},
+		{
+			name: "pjs with tenantIDs will show up on Deck with hiddenOnly",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Hidden ID"
+					in.Spec.Hidden = true
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Other ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Other ID"}
+					return in
+				},
+			},
+			expected:   sets.NewString("Hidden ID"),
+			hiddenOnly: true,
+		},
+		{
+			name: "pjs with tenantIDs will not show up on Deck with no tenantID",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "tenantedID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Other ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Other ID"}
+					return in
+				},
+			},
+			expected: sets.NewString(),
+		},
+		{
+			name: "pjs with Default ID will  show up on Deck with no tenantID",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "tenantedID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: config.DefaultTenantID}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Other ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Other ID"}
+					return in
+				},
+			},
+			expected: sets.NewString("tenantedID"),
+		},
+		{
+			name: "empty tenantID counts as no tenantID",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "empty tenant id"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: ""}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "No ProwJobDefault"
+					return in
+				},
+			},
+			expected: sets.NewString("empty tenant id", "No ProwJobDefault"),
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -489,6 +731,7 @@ func TestListProwJobs(t *testing.T) {
 			},
 			hiddenOnly: testCase.hiddenOnly,
 			showHidden: testCase.showHidden,
+			tenantIDs:  testCase.tenantIDs,
 			cfg:        func() *config.Config { return &config.Config{} },
 		}
 
@@ -527,4 +770,24 @@ func (p *possiblyErroringFakeCtrlRuntimeClient) List(
 		return errors.New("could not list ProwJobs")
 	}
 	return p.Client.List(ctx, pjl, opts...)
+}
+
+func TestByPJStartTime(t *testing.T) {
+	now := metav1.Now()
+	in := []prowapi.ProwJob{
+		{Spec: prowapi.ProwJobSpec{Job: "foo"}},
+		{Spec: prowapi.ProwJobSpec{Job: "bar"}, Status: prowapi.ProwJobStatus{StartTime: now}},
+		{Spec: prowapi.ProwJobSpec{Job: "bar"}},
+	}
+	expected := []prowapi.ProwJob{
+		{Spec: prowapi.ProwJobSpec{Job: "bar"}, Status: prowapi.ProwJobStatus{StartTime: now}},
+		{Spec: prowapi.ProwJobSpec{Job: "bar"}},
+		{Spec: prowapi.ProwJobSpec{Job: "foo"}},
+	}
+
+	sort.Sort(byPJStartTime(in))
+
+	if diff := cmp.Diff(in, expected); diff != "" {
+		t.Errorf("actual differs from expected: %s", diff)
+	}
 }

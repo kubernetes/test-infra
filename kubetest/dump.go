@@ -164,7 +164,7 @@ func (d *logDumper) dumpNode(ctx context.Context, name string, ip string) error 
 
 	n, err := d.connectToNode(ctx, name, ip)
 	if err != nil {
-		return fmt.Errorf("could not connect: %v", err)
+		return fmt.Errorf("could not connect: %w", err)
 	}
 
 	// As long as we connect to the node we will not return an error;
@@ -249,7 +249,7 @@ type logDumperNode struct {
 func (d *logDumper) connectToNode(ctx context.Context, nodeName string, host string) (*logDumperNode, error) {
 	client, err := d.sshClientFactory.Dial(ctx, host)
 	if err != nil {
-		return nil, fmt.Errorf("unable to SSH to %q: %v", host, err)
+		return nil, fmt.Errorf("unable to SSH to %q: %w", host, err)
 	}
 	return &logDumperNode{
 		client:      client,
@@ -293,7 +293,7 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 	// Capture logs from any systemd services in our list, that are registered
 	services, err := n.listSystemdUnits(ctx)
 	if err != nil {
-		errors = append(errors, fmt.Errorf("error listing systemd services: %v", err))
+		errors = append(errors, fmt.Errorf("error listing systemd services: %w", err))
 	}
 	for _, s := range n.dumper.services {
 		name := s + ".service"
@@ -309,7 +309,7 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 	// Capture any file logs where the files exist
 	fileList, err := n.findFiles(ctx, "/var/log")
 	if err != nil {
-		errors = append(errors, fmt.Errorf("error reading /var/log: %v", err))
+		errors = append(errors, fmt.Errorf("error reading /var/log: %w", err))
 	}
 	for _, name := range n.dumper.files {
 		prefix := "/var/log/" + name + ".log"
@@ -333,7 +333,7 @@ func (n *logDumperNode) findFiles(ctx context.Context, dir string) ([]string, er
 
 	err := n.client.ExecPiped(ctx, "sudo find "+dir+" -print0", &stdout, &stderr)
 	if err != nil {
-		return nil, fmt.Errorf("error listing %q: %v", dir, err)
+		return nil, fmt.Errorf("error listing %q: %w", dir, err)
 	}
 
 	paths := []string{}
@@ -354,7 +354,7 @@ func (n *logDumperNode) listSystemdUnits(ctx context.Context) ([]string, error) 
 
 	err := n.client.ExecPiped(ctx, "sudo systemctl list-units -t service --no-pager --no-legend --all", &stdout, &stderr)
 	if err != nil {
-		return nil, fmt.Errorf("error listing systemd units: %v", err)
+		return nil, fmt.Errorf("error listing systemd units: %w", err)
 	}
 
 	var services []string
@@ -376,12 +376,12 @@ func (n *logDumperNode) shellToFile(ctx context.Context, command string, destPat
 
 	f, err := os.Create(destPath)
 	if err != nil {
-		return fmt.Errorf("error creating file %q: %v", destPath, err)
+		return fmt.Errorf("error creating file %q: %w", destPath, err)
 	}
 	defer f.Close()
 
 	if err := n.client.ExecPiped(ctx, command, f, f); err != nil {
-		return fmt.Errorf("error executing command %q: %v", command, err)
+		return fmt.Errorf("error executing command %q: %w", command, err)
 	}
 
 	return nil
@@ -404,7 +404,7 @@ func (s *sshClientImplementation) ExecPiped(ctx context.Context, cmd string, std
 	go func() {
 		session, err := s.client.NewSession()
 		if err != nil {
-			finished <- fmt.Errorf("error creating ssh session: %v", err)
+			finished <- fmt.Errorf("error creating ssh session: %w", err)
 			return
 		}
 		defer session.Close()

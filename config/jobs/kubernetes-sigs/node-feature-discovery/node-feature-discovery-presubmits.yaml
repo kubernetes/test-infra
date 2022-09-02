@@ -1,9 +1,13 @@
 presubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: pull-node-feature-discovery-verify
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
+    - ^release-0.6
+    - ^release-0.7
+    - ^release-0.8
+    - ^release-0.9
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -11,11 +15,28 @@ presubmits:
       description: "Verify source code of node-feature-discovery: check formatting, lint etc."
     spec:
       containers:
+      - image: golang:1.18
+        command:
+        - scripts/test-infra/verify.sh
+  - name: pull-node-feature-discovery-verify-0-9
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    branches:
+    - ^release-0.6
+    - ^release-0.7
+    - ^release-0.8
+    - ^release-0.9
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: verify-0.9
+      description: "Verify source code of pre golang 1.17 release branches"
+    spec:
+      containers:
       - image: golang:1.16
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-verify-docs
-    always_run: true
+    run_if_changed: "^docs/"
     skip_branches:
     - gh-pages
     decorate: true
@@ -29,7 +50,7 @@ presubmits:
         command:
         - scripts/test-infra/mdlint.sh
   - name: pull-node-feature-discovery-build
-    always_run: true
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
     decorate: true
@@ -39,11 +60,11 @@ presubmits:
       description: "Build node-feature-discovery binaries"
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.18
         command:
         - scripts/test-infra/build.sh
   - name: pull-node-feature-discovery-build-image
-    always_run: true
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
     decorate: true
@@ -55,15 +76,39 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         securityContext:
           privileged: true
         command:
         - runner.sh
         args:
         - scripts/test-infra/build-image.sh
+  - name: pull-node-feature-discovery-build-image-cross
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    skip_branches:
+    - gh-pages
+    - ^release-0.6
+    - ^release-0.7
+    - ^release-0.8
+    - ^release-0.9
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build-image-cross
+      description: "Build multiarch container images of node-feature-discovery"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - scripts/test-infra/build-image-cross.sh
   - name: pull-node-feature-discovery-build-gh-pages
-    always_run: true
+    run_if_changed: "^docs/"
     skip_branches:
     - gh-pages
     decorate: true
@@ -75,7 +120,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         securityContext:
           privileged: true
         command:

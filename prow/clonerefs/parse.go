@@ -73,7 +73,7 @@ func ParseRefs(value string) (*prowapi.Refs, error) {
 		}
 		pullNumber, err := strconv.Atoi(refParts[0])
 		if err != nil {
-			return gitRef, fmt.Errorf("refspec %s invalid: pull request identifier not a number: %v", refValue, err)
+			return gitRef, fmt.Errorf("refspec %s invalid: pull request identifier not a number: %w", refValue, err)
 		}
 		pullRef := prowapi.Pull{
 			Number: pullNumber,

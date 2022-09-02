@@ -115,6 +115,10 @@ type fakeOwnersClient struct {
 	dirDenylist       []*regexp.Regexp
 }
 
+func (foc *fakeOwnersClient) AllOwners() sets.String {
+	return sets.String{}
+}
+
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
 	return ownersconfig.FakeFilenames
 }
@@ -315,6 +319,11 @@ var (
 			reviewerCount:     1,
 			expectedRequested: []string{"non-author"},
 		},
+		{
+			name:          "reviewerCount==0",
+			filesChanged:  []string{"f.go"},
+			reviewerCount: 0,
+		},
 	}
 )
 
@@ -513,6 +522,11 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 			maxReviewerCount:  2,
 			expectedRequested: []string{"leafApprover1", "leafApprover2"},
 		},
+		{
+			name:          "reviewerCount==0",
+			filesChanged:  []string{"g.go"},
+			reviewerCount: 0,
+		},
 	}
 	for _, tc := range testcases {
 		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
@@ -560,41 +574,78 @@ func TestHandlePullRequest(t *testing.T) {
 		filesChanged      []string
 		reviewerCount     int
 		expectedRequested []string
+		draft             bool
+		ignoreDrafts      bool
+		ignoreAuthors     []string
 	}{
 		{
 			name:              "PR opened",
 			action:            github.PullRequestActionOpened,
 			body:              "/auto-cc",
 			filesChanged:      []string{"a.go"},
+			reviewerCount:     1,
 			expectedRequested: []string{"al"},
 		},
 		{
-			name:         "PR opened with /cc command",
-			action:       github.PullRequestActionOpened,
-			body:         "/cc",
-			filesChanged: []string{"a.go"},
+			name:          "PR opened with /cc command",
+			action:        github.PullRequestActionOpened,
+			body:          "/cc",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 		{
-			name:         "PR closed",
-			action:       github.PullRequestActionClosed,
-			body:         "/auto-cc",
+			name:          "PR closed",
+			action:        github.PullRequestActionClosed,
+			body:          "/auto-cc",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
+		},
+		{
+			name:         "draft pr opened, ignoreDrafts true, do not assign review to PR",
+			action:       github.PullRequestActionOpened,
 			filesChanged: []string{"a.go"},
+			draft:        true,
+			ignoreDrafts: true,
+		},
+		{
+			name:              "non-draft pr opened, ignoreDrafts true, assign review to PR",
+			action:            github.PullRequestActionOpened,
+			filesChanged:      []string{"a.go"},
+			draft:             false,
+			ignoreDrafts:      true,
+			reviewerCount:     1,
+			expectedRequested: []string{"al"},
+		},
+		{
+			name:              "draft is ready for review, ignoreDrafts true, assign review to PR",
+			action:            github.PullRequestActionReadyForReview,
+			filesChanged:      []string{"a.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"al"},
+		},
+		{
+			name:          "PR opened by ignored author, do not assign review to PR",
+			action:        github.PullRequestActionOpened,
+			filesChanged:  []string{"a.go"},
+			ignoreAuthors: []string{"author"},
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}, Body: tc.body}
+			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}, Body: tc.body, Draft: tc.draft}
 			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
 			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
-			config := plugins.Blunderbuss{
+			c := plugins.Blunderbuss{
 				ReviewerCount:    &tc.reviewerCount,
 				MaxReviewerCount: 0,
 				ExcludeApprovers: false,
+				IgnoreDrafts:     tc.ignoreDrafts,
+				IgnoreAuthors:    tc.ignoreAuthors,
 			}
 
 			if err := handlePullRequest(
 				fghc, froc, logrus.WithField("plugin", PluginName),
-				config, tc.action, &pr, &repo,
+				c, tc.action, &pr, &repo,
 			); err != nil {
 				t.Fatalf("unexpected error from handle: %v", err)
 			}
@@ -637,38 +688,43 @@ func TestHandleGenericComment(t *testing.T) {
 			isPR:              true,
 			body:              "/auto-cc",
 			filesChanged:      []string{"a.go"},
+			reviewerCount:     1,
 			expectedRequested: []string{"al"},
 		},
 		{
-			name:         "comment with an invalid command in an open PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionCreated,
-			issueState:   "open",
-			isPR:         true,
-			body:         "/automatic-review",
-			filesChanged: []string{"a.go"},
+			name:          "comment with an invalid command in an open PR will not trigger auto-assignment",
+			action:        github.GenericCommentActionCreated,
+			issueState:    "open",
+			isPR:          true,
+			body:          "/automatic-review",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 		{
-			name:         "comment with a valid command in a closed PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionCreated,
-			issueState:   "closed",
-			isPR:         true,
-			body:         "/auto-cc",
-			filesChanged: []string{"a.go"},
+			name:          "comment with a valid command in a closed PR will not trigger auto-assignment",
+			action:        github.GenericCommentActionCreated,
+			issueState:    "closed",
+			isPR:          true,
+			body:          "/auto-cc",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 		{
-			name:         "comment deleted from an open PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionDeleted,
-			issueState:   "open",
-			isPR:         true,
-			body:         "/auto-cc",
-			filesChanged: []string{"a.go"},
+			name:          "comment deleted from an open PR will not trigger auto-assignment",
+			action:        github.GenericCommentActionDeleted,
+			issueState:    "open",
+			isPR:          true,
+			body:          "/auto-cc",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 		{
-			name:       "comment with valid command in an open issue will not trigger auto-assignment",
-			action:     github.GenericCommentActionCreated,
-			issueState: "open",
-			isPR:       false,
-			body:       "/auto-cc",
+			name:          "comment with valid command in an open issue will not trigger auto-assignment",
+			action:        github.GenericCommentActionCreated,
+			issueState:    "open",
+			isPR:          false,
+			body:          "/auto-cc",
+			reviewerCount: 1,
 		},
 	}
 	for _, tc := range testcases {

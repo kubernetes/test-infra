@@ -158,7 +158,7 @@ func (c *Cron) addJob(name, cron string) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("cronAgent fails to add job %s with cron %s: %v", name, cron, err)
+		return fmt.Errorf("cronAgent fails to add job %s with cron %s: %w", name, cron, err)
 	}
 
 	c.jobs[name] = &jobStatus{

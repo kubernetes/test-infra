@@ -21,7 +21,7 @@ window.addEventListener(&quot;load&quot;, function(){
     var config = { attributes: true, childList: true, characterData: true, subtree:true}; // PT2
     observer.observe(window.document, config);                                            // PT3
 });
-</script>" title="file.html" sandbox="allow-scripts" id="file.html" width="100%" scrolling="no"></iframe>
+</script>" title="file.html" sandbox="allow-scripts allow-popups allow-same-origin" id="file.html" width="100%" scrolling="no"></iframe>
       </td>
     </tr>
     

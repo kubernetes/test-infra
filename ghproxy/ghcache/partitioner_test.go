@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"sync"
 	"testing"
+	"time"
 )
 
 type fakeRoundTripperCreator struct {
@@ -28,7 +29,7 @@ type fakeRoundTripperCreator struct {
 	roundTrippers map[string]*fakeRoundTripper
 }
 
-func (frtc *fakeRoundTripperCreator) createRoundTripper(partitionKey string) http.RoundTripper {
+func (frtc *fakeRoundTripperCreator) createRoundTripper(partitionKey string, expiresAt *time.Time) http.RoundTripper {
 	frtc.lock.Lock()
 	defer frtc.lock.Unlock()
 	_, alreadyExists := frtc.roundTrippers[partitionKey]

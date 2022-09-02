@@ -1,17 +1,16 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- amwat
-- shyamjvs
 - wojtek-t # For European timezone emergencies.
 - feiskyer
 approvers:
-- amwat
-- shyamjvs
 - wojtek-t # For European timezone emergencies.
 - feiskyer
 emeritus_approvers:
+- amwat
+- BenTheElder
 - krzyzacy
+- shyamjvs
 
 labels:
 - area/kubetest

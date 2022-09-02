@@ -18,7 +18,9 @@ package plank
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 	"text/template"
@@ -31,6 +33,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -45,6 +48,7 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/io"
 )
 
 func TestAdd(t *testing.T) {
@@ -168,7 +172,7 @@ func TestAdd(t *testing.T) {
 				predicateResultChan <- !b
 			}
 			var errMsg string
-			if err := add(mgr, buildMgrs, cfg, "", tc.additionalSelector, reconcile, predicateCallBack, 1); err != nil {
+			if err := add(mgr, buildMgrs, nil, cfg, nil, "", tc.additionalSelector, reconcile, predicateCallBack, 1); err != nil {
 				errMsg = err.Error()
 			}
 			if errMsg != tc.expectedError {
@@ -277,6 +281,7 @@ func TestProwJobIndexer(t *testing.T) {
 	t.Parallel()
 	const pjNS = "prowjobs"
 	const pjName = "my-pj"
+	const pjJobQueue = "pj-queue"
 	pj := func(modify ...func(*prowv1.ProwJob)) *prowv1.ProwJob {
 		pj := &prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
@@ -284,8 +289,9 @@ func TestProwJobIndexer(t *testing.T) {
 				Name:      "some-job",
 			},
 			Spec: prowv1.ProwJobSpec{
-				Job:   pjName,
-				Agent: prowv1.KubernetesAgent,
+				Job:          pjName,
+				JobQueueName: pjJobQueue,
+				Agent:        prowv1.KubernetesAgent,
 			},
 			Status: prowv1.ProwJobStatus{
 				State: prowv1.PendingState,
@@ -302,13 +308,22 @@ func TestProwJobIndexer(t *testing.T) {
 		expected []string
 	}{
 		{
-			name:     "Matches all keys",
-			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyPending, pendingTriggeredIndexKeyByName(pjName)},
+			name: "Matches all keys",
+			expected: []string{
+				prowJobIndexKeyAll,
+				prowJobIndexKeyPending,
+				pendingTriggeredIndexKeyByName(pjName),
+				pendingTriggeredIndexKeyByJobQueueName(pjJobQueue),
+			},
 		},
 		{
-			name:     "Triggered goes into triggeredPending",
-			modify:   func(pj *prowv1.ProwJob) { pj.Status.State = prowv1.TriggeredState },
-			expected: []string{prowJobIndexKeyAll, pendingTriggeredIndexKeyByName(pjName)},
+			name:   "Triggered goes into triggeredPending",
+			modify: func(pj *prowv1.ProwJob) { pj.Status.State = prowv1.TriggeredState },
+			expected: []string{
+				prowJobIndexKeyAll,
+				pendingTriggeredIndexKeyByName(pjName),
+				pendingTriggeredIndexKeyByJobQueueName(pjJobQueue),
+			},
 		},
 		{
 			name:   "Wrong namespace, no key",
@@ -324,9 +339,24 @@ func TestProwJobIndexer(t *testing.T) {
 			expected: []string{prowJobIndexKeyAll},
 		},
 		{
-			name:     "Changing name changes notCompletedByName index",
-			modify:   func(pj *prowv1.ProwJob) { pj.Spec.Job = "some-name" },
-			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyPending, pendingTriggeredIndexKeyByName("some-name")},
+			name:   "Changing name changes pendingTriggeredIndexKeyByName index",
+			modify: func(pj *prowv1.ProwJob) { pj.Spec.Job = "some-name" },
+			expected: []string{
+				prowJobIndexKeyAll,
+				prowJobIndexKeyPending,
+				pendingTriggeredIndexKeyByName("some-name"),
+				pendingTriggeredIndexKeyByJobQueueName(pjJobQueue),
+			},
+		},
+		{
+			name:   "Changing job queue name changes pendingTriggeredIndexKeyByJobQueueName index",
+			modify: func(pj *prowv1.ProwJob) { pj.Spec.JobQueueName = "some-name" },
+			expected: []string{
+				prowJobIndexKeyAll,
+				prowJobIndexKeyPending,
+				pendingTriggeredIndexKeyByName(pjName),
+				pendingTriggeredIndexKeyByJobQueueName("some-name"),
+			},
 		},
 	}
 
@@ -379,7 +409,7 @@ func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
 		}}}}
 	}
 
-	r := newReconciler(context.Background(), pjClient, nil, cfg, "")
+	r := newReconciler(context.Background(), pjClient, nil, cfg, nil, "")
 	r.buildClients = map[string]ctrlruntimeclient.Client{pja.Spec.Cluster: fakectrlruntimeclient.NewFakeClient()}
 
 	wg := &sync.WaitGroup{}
@@ -479,5 +509,152 @@ func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 	}
 	if err := r.buildClients["default"].Get(context.Background(), types.NamespacedName{Name: "name"}, &corev1.Pod{}); err != nil {
 		t.Errorf("couldn't get pod, this likely means startPod didn't block: %v", err)
+	}
+}
+
+type erroringFakeCtrlRuntimeClient struct {
+	ctrlruntimeclient.Client
+}
+
+func (p *erroringFakeCtrlRuntimeClient) List(
+	ctx context.Context,
+	objs ctrlruntimeclient.ObjectList,
+	opts ...ctrlruntimeclient.ListOption) error {
+	return errors.New("could not list resources")
+}
+
+type fakeOpener struct {
+	io.Opener
+	strings.Builder
+	signal chan<- bool
+}
+
+func (fo *fakeOpener) Writer(ctx context.Context, path string, opts ...io.WriterOptions) (io.WriteCloser, error) {
+	fo.Reset()
+	return fo, nil
+}
+
+func (fo *fakeOpener) Write(b []byte) (int, error) {
+	n, err := fo.Builder.Write(b)
+	fo.signal <- true
+	return n, err
+}
+
+func (fo fakeOpener) Close() error {
+	return nil
+}
+
+func TestSyncClusterStatus(t *testing.T) {
+	tcs := []struct {
+		name             string
+		location         string
+		statuses         map[string]ClusterStatus
+		expectedStatuses map[string]ClusterStatus // This is set to statuses ^^ if unspecified.
+		knownClusters    sets.String
+		noWriteExpected  bool
+	}{
+		{
+			name:            "No location set, don't upload.",
+			statuses:        map[string]ClusterStatus{"default": ClusterStatusReachable},
+			knownClusters:   sets.NewString("default"),
+			noWriteExpected: true,
+		},
+		{
+			name:          "Single cluster reachable",
+			location:      "gs://my-bucket/build-cluster-statuses.json",
+			statuses:      map[string]ClusterStatus{"default": ClusterStatusReachable},
+			knownClusters: sets.NewString("default"),
+		},
+		{
+			name:          "Single cluster unreachable",
+			location:      "gs://my-bucket/build-cluster-statuses.json",
+			statuses:      map[string]ClusterStatus{"default": ClusterStatusUnreachable},
+			knownClusters: sets.NewString("default"),
+		},
+		{
+			name:             "Single cluster build manager creation failed",
+			location:         "gs://my-bucket/build-cluster-statuses.json",
+			expectedStatuses: map[string]ClusterStatus{"default": ClusterStatusNoManager},
+			knownClusters:    sets.NewString("default"),
+		},
+		{
+			name:     "Multiple clusters mixed reachability",
+			location: "gs://my-bucket/build-cluster-statuses.json",
+			statuses: map[string]ClusterStatus{
+				"default":            ClusterStatusReachable,
+				"test-infra-trusted": ClusterStatusReachable,
+				"sad-build-cluster":  ClusterStatusUnreachable,
+			},
+			expectedStatuses: map[string]ClusterStatus{
+				"default":                  ClusterStatusReachable,
+				"test-infra-trusted":       ClusterStatusReachable,
+				"sad-build-cluster":        ClusterStatusUnreachable,
+				"always-sad-build-cluster": ClusterStatusNoManager,
+			},
+			knownClusters: sets.NewString("default", "test-infra-trusted", "sad-build-cluster", "always-sad-build-cluster"),
+		},
+	}
+	for i := range tcs {
+		tc := tcs[i]
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			cfg := func() *config.Config {
+				return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{BuildClusterStatusFile: tc.location}}}
+			}
+			clients := map[string]ctrlruntimeclient.Client{}
+			for alias, status := range tc.statuses {
+				switch status {
+				case ClusterStatusReachable:
+					clients[alias] = fakectrlruntimeclient.NewFakeClient()
+				case ClusterStatusUnreachable:
+					clients[alias] = &erroringFakeCtrlRuntimeClient{fakectrlruntimeclient.NewFakeClient()}
+				}
+			}
+			// Test harness signals true to indicate completion of a write, false to indicate
+			// completion of cluster status sync loop.
+			signal := make(chan bool)
+			opener := &fakeOpener{signal: signal}
+			r := &reconciler{
+				config:       cfg,
+				log:          logrus.WithField("component", "prow-controller-manager"),
+				buildClients: clients,
+				opener:       opener,
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			go func() {
+				r.syncClusterStatus(time.Millisecond, tc.knownClusters)(ctx)
+				signal <- false
+			}()
+			if !tc.noWriteExpected {
+				<-signal // Wait for the first write
+			}
+			// No need to sleep to confirm no write occurs, race detector should handle it.
+			cancel()
+			for running := range signal {
+				if !running {
+					break
+				}
+			}
+
+			content := opener.String()
+			if tc.noWriteExpected {
+				if content != "" {
+					t.Errorf("No write was expected, but found: %q.", opener.String())
+				}
+			} else {
+				result := map[string]ClusterStatus{}
+				if err := json.Unmarshal([]byte(opener.String()), &result); err != nil {
+					t.Fatalf("Failed to unmarshal output: %v.", err)
+				}
+				expected := tc.expectedStatuses
+				if expected == nil {
+					expected = tc.statuses
+				}
+				if diff := deep.Equal(result, expected); diff != nil {
+					t.Errorf("result differs from expected: %v", diff)
+				}
+			}
+		})
 	}
 }

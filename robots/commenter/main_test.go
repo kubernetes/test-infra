@@ -95,6 +95,7 @@ func TestMakeQuery(t *testing.T) {
 		query      string
 		archived   bool
 		closed     bool
+		locked     bool
 		dur        time.Duration
 		expected   []string
 		unexpected []string
@@ -107,18 +108,25 @@ func TestMakeQuery(t *testing.T) {
 			unexpected: []string{"updated:", "openhello", "worldis"},
 		},
 		{
-			name:       "basic closed",
-			query:      "hello world",
-			closed:     true,
-			expected:   []string{"hello world", "archived:false"},
-			unexpected: []string{"is:open"},
-		},
-		{
 			name:       "basic archived",
 			query:      "hello world",
 			archived:   true,
-			expected:   []string{"hello world", "is:open"},
+			expected:   []string{"hello world", "is:open", "is:unlocked"},
 			unexpected: []string{"archived:false"},
+		},
+		{
+			name:       "basic closed",
+			query:      "hello world",
+			closed:     true,
+			expected:   []string{"hello world", "archived:false", "is:unlocked"},
+			unexpected: []string{"is:open"},
+		},
+		{
+			name:       "basic locked",
+			query:      "hello world",
+			locked:     true,
+			expected:   []string{"hello world", "is:open", "archived:false"},
+			unexpected: []string{"is:unlocked"},
 		},
 		{
 			name:     "basic duration",
@@ -133,15 +141,15 @@ func TestMakeQuery(t *testing.T) {
 			unexpected: []string{"%", "+"},
 		},
 		{
+			name:     "linebreaks are replaced by whitespaces",
+			query:    "label:foo\nlabel:bar",
+			expected: []string{"label:foo label:bar"},
+		},
+		{
 			name:   "include closed with is:open query errors",
 			query:  "hello is:open",
 			closed: true,
 			err:    true,
-		},
-		{
-			name:  "is:closed without includeClosed",
-			query: "hello is:closed",
-			err:   true,
 		},
 		{
 			name:     "archived:false with include-archived errors",
@@ -154,10 +162,26 @@ func TestMakeQuery(t *testing.T) {
 			query: "hello archived:true",
 			err:   true,
 		},
+		{
+			name:  "is:closed without includeClosed errors",
+			query: "hello is:closed",
+			err:   true,
+		},
+		{
+			name:  "is:locked without includeLocked errors",
+			query: "hello is:locked",
+			err:   true,
+		},
+		{
+			name:   "is:unlocked with includeLocked errors",
+			query:  "hello is:unlocked",
+			locked: true,
+			err:    true,
+		},
 	}
 
 	for _, tc := range cases {
-		actual, err := makeQuery(tc.query, tc.archived, tc.closed, tc.dur)
+		actual, err := makeQuery(tc.query, tc.archived, tc.closed, tc.locked, tc.dur)
 		if err != nil && !tc.err {
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		} else if err == nil && tc.err {

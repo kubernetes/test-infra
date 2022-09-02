@@ -1,0 +1,61 @@
+presubmits:
+  kubernetes-sigs/aws-iam-authenticator:
+  - name: pull-aws-iam-authenticator-unit
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: provider-aws-iam-authenticator
+      testgrid-tab-name: pull-unit-test
+      description: AWS IAM Authenticator unit test on pull request
+      testgrid-num-columns-recent: '30'
+  - name: pull-aws-iam-authenticator-integration
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration
+    annotations:
+      testgrid-dashboards: provider-aws-iam-authenticator
+      testgrid-tab-name: pull-integration
+      description: AWS IAM Authenticator integration test on pull request
+      testgrid-num-columns-recent: '30'
+  - name: pull-aws-iam-authenticator-e2e
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - e2e
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-aws-iam-authenticator
+      testgrid-tab-name: pull-e2e
+      description: AWS IAM Authenticator end-to-end test on pull request
+      testgrid-num-columns-recent: '30'

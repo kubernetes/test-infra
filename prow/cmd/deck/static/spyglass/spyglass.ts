@@ -1,9 +1,17 @@
+import {ProwJobState} from "../api/prow";
+import {createAbortProwJobIcon} from "../common/abort";
+import {createRerunProwJobIcon} from "../common/rerun";
+import {getParameterByName} from "../common/urls";
 import {isTransitMessage, serialiseHashes} from "./common";
 
 declare const src: string;
 declare const lensArtifacts: {[index: string]: string[]};
 declare const lensIndexes: number[];
 declare const csrfToken: string;
+declare const rerunCreatesJob: boolean;
+declare const prowJob: string;
+declare const prowJobName: string;
+declare const prowJobState: ProwJobState;
 
 // Loads views for this job
 function loadLenses(): void {
@@ -60,7 +68,7 @@ function parseHash(): {[index: string]: string} {
       continue;
     }
     const [index, hash] = part.split(':');
-    result[index] = '#' + unescape(hash);
+    result[index] = `#${  unescape(hash)}`;
   }
   return result;
 }
@@ -78,7 +86,7 @@ window.addEventListener('message', async (e) => {
     const index = Number(frame.dataset.lensIndex!);
 
     const respond = (response: string): void => {
-      frame.contentWindow!.postMessage({id, message: {type: 'response', data: response}}, '*');
+      frame.contentWindow.postMessage({id, message: {type: 'response', data: response}}, '*');
     };
 
     switch (message.type) {
@@ -86,7 +94,7 @@ window.addEventListener('message', async (e) => {
         frame.style.height = `${message.height}px`;
         frame.style.visibility = 'visible';
         if (frame.dataset.hideTitle) {
-          frame.parentElement!.parentElement!.classList.add('hidden-title');
+          frame.parentElement.parentElement.classList.add('hidden-title');
         }
         document.querySelector<HTMLElement>(`#${lens}-loading`)!.style.display = 'none';
         respond('');
@@ -159,5 +167,43 @@ window.addEventListener('hashchange', (e) => {
 
 // We can't use DOMContentLoaded here or we end up with a bunch of flickering. This appears to be MDL's fault.
 window.addEventListener('load', () => {
-    loadLenses();
+  loadLenses();
+  handleRerunButton();
+  handleAbortButton();
 });
+
+function handleRerunButton() {
+  // In case prowJob is unavailable, the rerun button shouldn't be shown
+  if (!prowJobName) {
+    return;
+  }
+
+  const rerunStatus = getParameterByName("rerun");
+  const modal = document.getElementById('rerun')!;
+  const modalContent = document.querySelector('.modal-content')!;
+
+  const r = document.getElementById("header-title")!;
+  const c = document.createElement("div");
+  c.appendChild(createRerunProwJobIcon(modal, modalContent, prowJobName, rerunCreatesJob, csrfToken));
+  r.appendChild(c);
+
+  if (rerunStatus === "gh_redirect") {
+    modal.style.display = "block";
+    modalContent.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
+  }
+}
+
+function handleAbortButton(): void {
+  // In case prowJob is unavailable, the abort button shouldn't be shown
+  if (!prowJobName) {
+    return;
+  }
+
+  const modal = document.getElementById('rerun')!;
+  const modalContent = document.querySelector('.modal-content')!;
+
+  const r = document.getElementById("header-title")!;
+  const c = document.createElement("div");
+  c.appendChild(createAbortProwJobIcon(modal, modalContent, prowJob, prowJobState, prowJobName, csrfToken));
+  r.appendChild(c);
+}

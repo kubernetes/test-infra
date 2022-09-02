@@ -82,12 +82,6 @@ dashboards:
       description: storage snapshot e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
-    - name: kops-selinux
-      test_group_name: ci-kubernetes-e2e-storage-selinux
-      base_options: include-filter-by-regex=Volume%7Cstorage
-      description: storage selinux e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
 
 - name: sig-storage-local-static-provisioner
   dashboard_tab:
@@ -97,10 +91,6 @@ dashboards:
       description: E2E tests against latest kubernetes on GCE
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
-    - name: master-gke-default
-      test_group_name: ci-sig-storage-local-static-provisioner-master-gke-default
-      base_options: include-filter-by-regex=sig-storage
-      description: E2E tests against default kubernetes on GKE
 
 - name: sig-storage-csi-ci
 - name: sig-storage-csi-csi-driver-host-path

@@ -120,7 +120,7 @@ func WaitForGracefulShutdown() {
 	}
 }
 
-// Context returns a context that stays is cancelled when an interrupt hits.
+// Context returns a context that is cancelled when an interrupt hits.
 // Using this context is a weak guarantee that your work will finish before
 // process exit as callers cannot signal that they are finished. Prefer to use
 // Run().

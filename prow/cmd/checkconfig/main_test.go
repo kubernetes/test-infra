@@ -17,10 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -41,6 +43,8 @@ import (
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/plank"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -383,7 +387,6 @@ func TestValidateUnknownFields(t *testing.T) {
 		name, filename string
 		cfg            interface{}
 		configBytes    []byte
-		config         interface{}
 		expectedErr    string
 	}{
 		{
@@ -459,19 +462,19 @@ triggers:
 		//  kube/kube:
 		//  - size
 		//  - config-updater
-		//config_updater:
+		// config_updater:
 		//  maps:
 		//    # Update the plugins configmap whenever plugins.yaml changes
 		//    kube/plugins.yaml:
 		//      name: plugins
 		//    kube/config.yaml:
 		//      validation: config
-		//size:
+		// size:
 		//  s: 1`),
 		//			expectedErr: "validation",
 		//		},
 		{
-			//only one invalid element is printed in the error
+			// only one invalid element is printed in the error
 			name:     "multiple invalid elements",
 			filename: "multiple.yaml",
 			cfg:      &plugins.Configuration{},
@@ -538,8 +541,10 @@ size:
 		},
 	}
 
-	for _, tc := range testCases {
+	for i := range testCases {
+		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			if err := yaml.Unmarshal(tc.configBytes, tc.cfg); err != nil {
 				t.Fatalf("Unable to unmarhsal yaml: %v", err)
 			}
@@ -564,6 +569,164 @@ size:
 	}
 }
 
+func TestValidateUnknownFieldsAll(t *testing.T) {
+	testcases := []struct {
+		name             string
+		configContent    string
+		jobConfigContent map[string]string
+		expectedErr      bool
+	}{
+		{
+			name: "no separate job-config, all known fields",
+			configContent: `
+plank:
+  default_decoration_config_entries:
+    - config:
+        timeout: 2h
+        grace_period: 15s
+        utility_images:
+          clonerefs: "clonerefs:default"
+          initupload: "initupload:default"
+          entrypoint: "entrypoint:default"
+          sidecar: "sidecar:default"
+        gcs_configuration:
+          bucket: "default-bucket"
+          path_strategy: "legacy"
+          default_org: "kubernetes"
+          default_repo: "kubernetes"
+        gcs_credentials_secret: "default-service-account"
+
+presubmits:
+  kube/kube:
+  - name: test-presubmit
+    decorate: true
+    spec:
+      containers:
+      - image: alpine
+        command: ["/bin/printenv"]
+`,
+		},
+		{
+			name: "no separate job-config, unknown field",
+			configContent: `
+presubmits:
+  kube/kube:
+  - name: test-presubmit
+    never_run: true      // I'm unknown
+    spec:
+      containers:
+      - image: alpine
+`,
+			expectedErr: true,
+		},
+		{
+			name: "separate job-configs, all known field",
+			configContent: `
+presubmits:
+  kube/kube:
+  - name: kube-presubmit
+    run_if_changed: "^src/"
+    spec:
+      containers:
+      - image: alpine
+`,
+			jobConfigContent: map[string]string{
+				"org-repo-presubmits.yaml": `
+presubmits:
+  org/repo:
+  - name: org-repo-presubmit
+    always_run: true
+    spec:
+      containers:
+      - image: alpine
+`,
+				"org-repo2-presubmits.yaml": `
+presubmits:
+  org/repo2:
+  - name: org-repo2-presubmit
+    always_run: true
+    spec:
+      containers:
+      - image: alpine
+`,
+			},
+		},
+		{
+			name: "separate job-configs, unknown field in second job config",
+			configContent: `
+presubmits:
+  kube/kube:
+  - name: kube-presubmit
+    never_run: true      // I'm unknown
+    spec:
+      containers:
+      - image: alpine
+`,
+			jobConfigContent: map[string]string{
+				"org-repo-presubmits.yaml": `
+presubmits:
+  org/repo:
+  - name: org-repo-presubmit
+    always_run: true
+    spec:
+      containers:
+      - image: alpine
+`,
+				"org-repo2-presubmits.yaml": `
+presubmits:
+  org/repo2:
+  - name: org-repo2-presubmit
+    never_run: true       // I'm unknown
+    spec:
+      containers:
+      - image: alpine
+`,
+			},
+			expectedErr: true,
+		},
+	}
+	for i := range testcases {
+		tc := testcases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			// Set up config files
+			root, err := ioutil.TempDir("", fmt.Sprintf("TestValidateUnknownFieldsAll-%s_*", tc.name))
+			if err != nil {
+				t.Fatalf("Error creating temp dir: %v.", err)
+			}
+			defer os.RemoveAll(root) // clean up
+
+			prowConfigFile := filepath.Join(root, "config.yaml")
+			if err := ioutil.WriteFile(prowConfigFile, []byte(tc.configContent), 0666); err != nil {
+				t.Fatalf("Error writing config.yaml file: %v.", err)
+			}
+			var jobConfigDir string
+			if len(tc.jobConfigContent) > 0 {
+				jobConfigDir = filepath.Join(root, "job-config")
+				if err := os.Mkdir(jobConfigDir, 0777); err != nil {
+					t.Fatalf("Error creating job-config directory: %v.", err)
+				}
+				for file, content := range tc.jobConfigContent {
+					file = filepath.Join(jobConfigDir, file)
+					if err := ioutil.WriteFile(file, []byte(content), 0666); err != nil {
+						t.Fatalf("Error writing %q file: %v.", file, err)
+					}
+				}
+			}
+			// Test validation
+			_, err = config.LoadStrict(prowConfigFile, jobConfigDir, nil, "")
+			if (err != nil) != tc.expectedErr {
+				if tc.expectedErr {
+					t.Error("Expected an error, but did not receive one.")
+				} else {
+					content, _ := ioutil.ReadFile(prowConfigFile)
+					t.Log(string(content))
+					t.Errorf("Unexpected error: %v.", err)
+				}
+			}
+		})
+	}
+}
+
 func TestValidateStrictBranches(t *testing.T) {
 	trueVal := true
 	falseVal := false
@@ -578,9 +741,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: no strict config",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes"},
+							},
 						},
 					},
 				},
@@ -611,10 +776,12 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: tide repo exclusion",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs:          []string{"kubernetes"},
-							ExcludedRepos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs:          []string{"kubernetes"},
+								ExcludedRepos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -645,9 +812,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: protection repo exclusion",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -678,9 +847,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: tide more general",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes"},
+							},
 						},
 					},
 				},
@@ -711,9 +882,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: tide more specific",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -739,9 +912,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: org level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes", "k8s"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes", "k8s"},
+							},
 						},
 					},
 				},
@@ -767,12 +942,14 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: repo level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/kubernetes"},
-						},
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/kubernetes"},
+							},
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -802,13 +979,15 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: branch level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos:            []string{"kubernetes/test-infra"},
-							IncludedBranches: []string{"master"},
-						},
-						{
-							Repos: []string{"kubernetes/kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos:            []string{"kubernetes/test-infra"},
+								IncludedBranches: []string{"master"},
+							},
+							{
+								Repos: []string{"kubernetes/kubernetes"},
+							},
 						},
 					},
 				},
@@ -842,9 +1021,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: global strict",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -1284,6 +1465,8 @@ func TestOptions(t *testing.T) {
 					ConfigPath:                            "prow/config.yaml",
 					JobConfigPath:                         "config/jobs/org/job.yaml",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					PluginConfigPath:                         "prow/plugins/plugin.yaml",
@@ -1295,33 +1478,6 @@ func TestOptions(t *testing.T) {
 				strict:          true,
 				expensive:       false,
 				github:          defaultGitHubOptions,
-			},
-			expectedError: false,
-		},
-		{
-			name: "prow-yaml-path gets defaulted",
-			args: []string{
-				"--config-path=prow/config.yaml",
-				"--plugin-config=prow/plugins/plugin.yaml",
-				"--job-config-path=config/jobs/org/job.yaml",
-				"--prow-yaml-repo-name=my/repo",
-			},
-			expectedOptions: &options{
-				pluginsConfig: pluginsflagutil.PluginOptions{
-					PluginConfigPath:                         "prow/plugins/plugin.yaml",
-					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
-					CheckUnknownPlugins:                      true,
-				},
-				config: configflagutil.ConfigOptions{
-					ConfigPathFlagName:                    "config-path",
-					JobConfigPathFlagName:                 "job-config-path",
-					ConfigPath:                            "prow/config.yaml",
-					JobConfigPath:                         "config/jobs/org/job.yaml",
-					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
-				},
-				prowYAMLRepoName: "my/repo",
-				prowYAMLPath:     "/home/prow/go/src/github.com/my/repo/.prow.yaml",
-				github:           defaultGitHubOptions,
 			},
 			expectedError: false,
 		},
@@ -1408,6 +1564,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 	testCases := []struct {
 		name         string
 		prowYAMLData []byte
+		strict       bool
 		expectedErr  string
 	}{
 		{
@@ -1417,15 +1574,21 @@ func TestValidateInRepoConfig(t *testing.T) {
 		{
 			name:         "Invalid prowYAML presubmit, err",
 			prowYAMLData: []byte(`presubmits: [{"name": "hans"}]`),
-			expectedErr:  "failed to validate .prow.yaml: invalid presubmit job hans: kubernetes jobs require a spec",
+			expectedErr:  "failed to validate Prow YAML: invalid presubmit job hans: kubernetes jobs require a spec",
 		},
 		{
 			name:         "Invalid prowYAML postsubmit, err",
 			prowYAMLData: []byte(`postsubmits: [{"name": "hans"}]`),
-			expectedErr:  "failed to validate .prow.yaml: invalid postsubmit job hans: kubernetes jobs require a spec",
+			expectedErr:  "failed to validate Prow YAML: invalid postsubmit job hans: kubernetes jobs require a spec",
 		},
 		{
 			name: "Absent prowYAML, no err",
+		},
+		{
+			name:         "unknown field prowYAML fails strict validation",
+			strict:       true,
+			prowYAMLData: []byte(`presubmits: [{"name": "hans", "never_run": "true", "spec": {"containers": [{}]}}]`),
+			expectedErr:  "error unmarshaling JSON: while decoding JSON: json: unknown field \"never_run\"",
 		},
 	}
 
@@ -1433,28 +1596,16 @@ func TestValidateInRepoConfig(t *testing.T) {
 		prowYAMLFileName := "/this-must-not-exist"
 
 		if tc.prowYAMLData != nil {
-			tempFile, err := ioutil.TempFile("", "prow-test")
-			if err != nil {
-				t.Fatalf("failed to get tempfile: %v", err)
-			}
-			defer func() {
-				if err := tempFile.Close(); err != nil {
-					t.Errorf("failed to close tempFile: %v", err)
-				}
-				if err := os.Remove(tempFile.Name()); err != nil {
-					t.Errorf("failed to remove tempfile: %v", err)
-				}
-			}()
-
-			if _, err := tempFile.Write(tc.prowYAMLData); err != nil {
+			fileName := filepath.Join(t.TempDir(), ".prow.yaml")
+			if err := ioutil.WriteFile(fileName, tc.prowYAMLData, 0666); err != nil {
 				t.Fatalf("failed to write to tempfile: %v", err)
 			}
 
-			prowYAMLFileName = tempFile.Name()
+			prowYAMLFileName = fileName
 		}
 
 		// Need an empty file to load the config from so we go through its defaulting
-		tempConfig, err := ioutil.TempFile("/tmp", "prow-test")
+		tempConfig, err := ioutil.TempFile("", "prow-test")
 		if err != nil {
 			t.Fatalf("failed to get tempfile: %v", err)
 		}
@@ -1471,13 +1622,13 @@ func TestValidateInRepoConfig(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to load config: %v", err)
 		}
-		err = validateInRepoConfig(cfg, prowYAMLFileName, "my/repo")
+		err = validateInRepoConfig(cfg, prowYAMLFileName, "my/repo", tc.strict)
 		var errString string
 		if err != nil {
 			errString = err.Error()
 		}
 
-		if errString != tc.expectedErr {
+		if errString != tc.expectedErr && !strings.Contains(errString, tc.expectedErr) {
 			t.Errorf("expected error %q does not match actual error %q", tc.expectedErr, errString)
 		}
 	}
@@ -1587,11 +1738,30 @@ func TestValidate(t *testing.T) {
 	}
 }
 
+type fakeOpener struct {
+	io.Opener
+	content   string
+	readError error
+}
+
+func (fo *fakeOpener) Reader(ctx context.Context, path string) (io.ReadCloser, error) {
+	if fo.readError != nil {
+		return nil, fo.readError
+	}
+	return ioutil.NopCloser(strings.NewReader(fo.content)), nil
+}
+
+func (fo *fakeOpener) Close() error {
+	return nil
+}
+
 func TestValidateClusterField(t *testing.T) {
 	testCases := []struct {
-		name          string
-		cfg           *config.Config
-		expectedError string
+		name              string
+		cfg               *config.Config
+		clusterStatusFile string
+		readError         error
+		expectedError     string
 	}{
 		{
 			name: "Jenkins job with unset cluster",
@@ -1659,12 +1829,98 @@ func TestValidateClusterField(t *testing.T) {
 								},
 							}}}}},
 		},
+		{
+			name: "cluster validates with lone reachable default cluster",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "default",
+								},
+							}}}}},
+			clusterStatusFile: fmt.Sprintf(`{"default": %q}`, plank.ClusterStatusReachable),
+		},
+		{
+			name: "cluster validates with multiple clusters, specified is reachable",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "build1",
+								},
+							}}}}},
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+		},
+		{
+			name: "cluster validates with multiple clusters, specified is unreachable (just warn)",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Name:    "my-job",
+									Cluster: "build2",
+								},
+							}}}}},
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+		},
+		{
+			name: "cluster fails validation with multiple clusters, specified is unrecognized",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Name:    "my-job",
+									Cluster: "build3",
+								},
+							}}}}},
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+			expectedError:     "org1/repo1: job configuration for \"my-job\" specifies unknown 'cluster' value \"build3\"",
+		},
+		{
+			name: "cluster validation skipped if status file does not exist yet",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "build1",
+								},
+							}}}}},
+			readError: os.ErrNotExist,
+		},
 	}
 
-	for _, tc := range testCases {
+	for i := range testCases {
+		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			opener := fakeOpener{content: tc.clusterStatusFile, readError: tc.readError}
 			errMsg := ""
-			if err := validateCluster(tc.cfg); err != nil {
+			if err := validateCluster(tc.cfg, &opener); err != nil {
 				errMsg = err.Error()
 			}
 			if errMsg != tc.expectedError {
@@ -1706,6 +1962,12 @@ blunderbuss:
   request_count: 2
   use_status_availability: true`
 	const validOrgPluginsConfig = `
+label:
+  restricted_labels:
+    my-org:
+    - label: cherry-pick-approved
+      allowed_teams:
+      - patch-managers
 plugins:
   my-org:
     plugins:
@@ -1872,7 +2134,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 				bp.Unmanaged = utilpointer.BoolPtr(true)
 			}),
 
-			expectedErrorMsg: `[branch protection is globally set to unmanaged, but has configuration, branch protection config is globally set to unmanaged but has configuration for org my-org]`,
+			expectedErrorMsg: `[branch protection is globally set to unmanaged, but has configuration, branch protection config is globally set to unmanaged but has configuration for org my-org without setting the org to unmanaged: false]`,
 		},
 		{
 			name: "Org-level disabled, errors for org policy and repos",
@@ -1882,7 +2144,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 				bp.Orgs["my-org"] = p
 			}),
 
-			expectedErrorMsg: `[branch protection config for org my-org is set to unmanaged, but it defines settings, branch protection config for repo my-org/my-repo is defined, but branch protection is unmanaged for org my-org]`,
+			expectedErrorMsg: `[branch protection config for org my-org is set to unmanaged, but it defines settings, branch protection config for repo my-org/my-repo is defined, but branch protection is unmanaged for org my-org without setting the repo to unmanaged: false]`,
 		},
 
 		{
@@ -1893,7 +2155,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 				bp.Orgs["my-org"].Repos["my-repo"] = p
 			}),
 
-			expectedErrorMsg: `[branch protection config for repo my-org/my-repo is set to unmanaged, but it defines settings, branch protection for repo my-org/my-repo is set to unmanaged, but it defines settings for branch my-branch]`,
+			expectedErrorMsg: `[branch protection config for repo my-org/my-repo is set to unmanaged, but it defines settings, branch protection for repo my-org/my-repo is set to unmanaged, but it defines settings for branch my-branch without setting the branch to unmanaged: false]`,
 		},
 
 		{
@@ -1906,6 +2168,17 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 
 			expectedErrorMsg: `branch protection config for branch my-branch in repo my-org/my-repo is set to unmanaged but defines settings`,
 		},
+		{
+			name: "unmanaged repo level is overridden by branch level, no errors",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				repoP := bp.Orgs["my-org"].Repos["my-repo"]
+				repoP.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Orgs["my-org"].Repos["my-repo"] = repoP
+				p := bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"]
+				p.Unmanaged = utilpointer.BoolPtr(false)
+				bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"] = p
+			}),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1917,5 +2190,277 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 		if tc.expectedErrorMsg != errMsg {
 			t.Errorf("expected error message\n%s\ngot error message\n%s", tc.expectedErrorMsg, errMsg)
 		}
+	}
+}
+
+type fakeGhAppListingClient struct {
+	installations []github.AppInstallation
+}
+
+func (f *fakeGhAppListingClient) ListAppInstallations() ([]github.AppInstallation, error) {
+	return f.installations, nil
+}
+
+func TestValidateGitHubAppIsInstalled(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		allRepos      sets.String
+		installations []github.AppInstallation
+
+		expectedErrorMsg string
+	}{
+		{
+			name:     "Installations exist",
+			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+			installations: []github.AppInstallation{
+				{Account: github.User{Login: "org"}},
+				{Account: github.User{Login: "org-a"}},
+				{Account: github.User{Login: "org-b"}},
+			},
+		},
+		{
+			name:     "Some installations exist",
+			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+			installations: []github.AppInstallation{
+				{Account: github.User{Login: "org"}},
+				{Account: github.User{Login: "org-a"}},
+			},
+
+			expectedErrorMsg: `There is configuration for the GitHub org "org-b" but the GitHub app is not installed there`,
+		},
+		{
+			name:     "No installations exist",
+			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+
+			expectedErrorMsg: `[There is configuration for the GitHub org "org-a" but the GitHub app is not installed there, There is configuration for the GitHub org "org-b" but the GitHub app is not installed there, There is configuration for the GitHub org "org" but the GitHub app is not installed there]`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var actualErrMsg string
+			if err := validateGitHubAppIsInstalled(&fakeGhAppListingClient{installations: tc.installations}, tc.allRepos); err != nil {
+				actualErrMsg = err.Error()
+			}
+
+			if actualErrMsg != tc.expectedErrorMsg {
+				t.Errorf("expected error %q, got error %q", tc.expectedErrorMsg, actualErrMsg)
+			}
+		})
+	}
+}
+
+func TestVerifyLabelPlugin(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name             string
+		label            plugins.Label
+		expectedErrorMsg string
+	}{
+		{
+			name: "empty label config is valid",
+		},
+		{
+			name: "cannot use the empty string as label name",
+			label: plugins.Label{
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"openshift/machine-config-operator": {
+						{
+							Label:        "",
+							AllowedTeams: []string{"openshift-patch-managers"},
+						},
+						{
+							Label:        "backport-risk-assessed",
+							AllowedUsers: []string{"kikisdeliveryservice", "sinnykumari", "yuqi-zhang"},
+						},
+					},
+				},
+			},
+			expectedErrorMsg: "the following orgs or repos have configuration of label plugin using the empty string as label name in restricted labels: openshift/machine-config-operator",
+		},
+		{
+			name: "valid after removing the restricted labels for the empty string",
+			label: plugins.Label{
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"openshift/machine-config-operator": {
+						{
+							Label:        "backport-risk-assessed",
+							AllowedUsers: []string{"kikisdeliveryservice", "sinnykumari", "yuqi-zhang"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "two invalid label configs",
+			label: plugins.Label{
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"orgRepo1": {
+						{
+							Label:        "",
+							AllowedTeams: []string{"some-team"},
+						},
+					},
+					"orgRepo2": {
+						{
+							Label:        "",
+							AllowedUsers: []string{"some-user"},
+						},
+					},
+				},
+			},
+			expectedErrorMsg: "the following orgs or repos have configuration of label plugin using the empty string as label name in restricted labels: orgRepo1, orgRepo2",
+		},
+		{
+			name: "invalid when additional and restricted labels are the same",
+			label: plugins.Label{
+				AdditionalLabels: []string{"cherry-pick-approved"},
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"orgRepo1": {
+						{
+							Label: "cherry-pick-approved",
+						},
+					},
+				},
+			},
+			expectedErrorMsg: "the following orgs or repos have configuration of label plugin using the restricted label cherry-pick-approved which is also configured as an additional label: orgRepo1",
+		},
+		{
+			name: "invalid when additional and restricted labels are the same in multiple orgRepos and empty string",
+			label: plugins.Label{
+				AdditionalLabels: []string{"cherry-pick-approved"},
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"orgRepo1": {
+						{
+							Label: "cherry-pick-approved",
+						},
+					},
+					"orgRepo2": {
+						{
+							Label: "",
+						},
+					},
+					"orgRepo3": {
+						{
+							Label: "cherry-pick-approved",
+						},
+					},
+				},
+			},
+			expectedErrorMsg: "[the following orgs or repos have configuration of label plugin using the restricted label cherry-pick-approved which is also configured as an additional label: orgRepo1, orgRepo3, " +
+				"the following orgs or repos have configuration of label plugin using the empty string as label name in restricted labels: orgRepo2]",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var actualErrMsg string
+			if err := verifyLabelPlugin(tc.label); err != nil {
+				actualErrMsg = err.Error()
+			}
+			if actualErrMsg != tc.expectedErrorMsg {
+				t.Errorf("expected error %q, got error %q", tc.expectedErrorMsg, actualErrMsg)
+			}
+		})
+	}
+}
+
+func TestValidateRequiredJobAnnotations(t *testing.T) {
+	tc := []struct {
+		name                string
+		presubmits          []config.Presubmit
+		postsubmits         []config.Postsubmit
+		periodics           []config.Periodic
+		expectedErr         bool
+		expectedAnnotations []string
+	}{
+		{
+			name: "no annotation is required, pass",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/cat": "meow"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			expectedErr:         false,
+			expectedAnnotations: nil,
+		},
+		{
+			name: "jobs don't have required annotation, fail",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/cat": "meow"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			expectedAnnotations: []string{"prow.k8s.io/maintainer"},
+			expectedErr:         true,
+		},
+		{
+			name: "jobs have required annotations, pass",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			expectedAnnotations: []string{"prow.k8s.io/maintainer"},
+			expectedErr:         false,
+		},
+	}
+
+	for _, c := range tc {
+		t.Run(c.name, func(t *testing.T) {
+			jcfg := config.JobConfig{
+				PresubmitsStatic:  map[string][]config.Presubmit{"org/repo": c.presubmits},
+				PostsubmitsStatic: map[string][]config.Postsubmit{"org/repo": c.postsubmits},
+				Periodics:         c.periodics,
+			}
+			err := validateRequiredJobAnnotations(c.expectedAnnotations, jcfg)
+			if c.expectedErr && err == nil {
+				t.Errorf("Expected error but got none")
+			}
+			if !c.expectedErr && err != nil {
+				t.Errorf("Got error but didn't expect one: %v", err)
+			}
+		})
 	}
 }

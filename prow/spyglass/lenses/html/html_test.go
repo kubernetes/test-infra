@@ -46,6 +46,14 @@ func (fa *FakeArtifact) Size() (int64, error) {
 	return int64(len(fa.content)), nil
 }
 
+func (fa *FakeArtifact) Metadata() (map[string]string, error) {
+	return nil, nil
+}
+
+func (fa *FakeArtifact) UpdateMetadata(map[string]string) error {
+	return nil
+}
+
 func (fa *FakeArtifact) CanonicalLink() string {
 	return fa.path
 }
@@ -88,6 +96,27 @@ func TestRenderBody(t *testing.T) {
 			artifact: FakeArtifact{
 				path:    "https://s3.internal/bucket/file.html",
 				content: []byte(`<body>"Hello world!"</body>`),
+			},
+		},
+		{
+			name: "With title",
+			artifact: FakeArtifact{
+				path:    "https://s3.internal/bucket/file.html",
+				content: []byte(`<head><title>Custom Title</title><body>Hello world!</body>`),
+			},
+		},
+		{
+			name: "With description",
+			artifact: FakeArtifact{
+				path:    "https://s3.internal/bucket/file.html",
+				content: []byte(`<head><meta name="description" content="Loki is a log aggregation system"></head><body>Hello world!</body>`),
+			},
+		},
+		{
+			name: "With description and title",
+			artifact: FakeArtifact{
+				path:    "https://s3.internal/bucket/file.html",
+				content: []byte(`<head><meta name="description" content="Loki is a log aggregation system"><title>Custom tools</title><body></body>`),
 			},
 		},
 	}

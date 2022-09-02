@@ -50,7 +50,7 @@ func NewClient(projectID string, dryrun bool) (*Client, error) {
 	ctx := context.Background()
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to setup client: %v", err)
+		return nil, fmt.Errorf("failed to setup client: %w", err)
 	}
 	return &Client{ProjectID: projectID, client: client, dryrun: dryrun}, nil
 }
@@ -168,7 +168,7 @@ func (c *Client) GetSecretValue(ctx context.Context, secretName, versionName str
 	// Call the API.
 	result, err := c.client.AccessSecretVersion(ctx, accessRequest)
 	if err != nil {
-		return nil, fmt.Errorf("failed to access secret version: %v", err)
+		return nil, fmt.Errorf("failed to access secret version: %w", err)
 	}
 	return result.Payload.Data, nil
 }

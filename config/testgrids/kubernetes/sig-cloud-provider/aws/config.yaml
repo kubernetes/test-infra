@@ -7,6 +7,7 @@ dashboard_groups:
     - provider-aws-ebs-csi-driver
     - provider-aws-efs-csi-driver
     - provider-aws-fsx-csi-driver
+    - provider-aws-iam-authenticator
 
 dashboards:
 - name: provider-aws-encryption-provider
@@ -15,3 +16,4 @@ dashboards:
 - name: provider-aws-ebs-csi-driver
 - name: provider-aws-efs-csi-driver
 - name: provider-aws-fsx-csi-driver
+- name: provider-aws-iam-authenticator

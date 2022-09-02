@@ -103,6 +103,8 @@ type Bug struct {
 	UpdateToken string `json:"update_token,omitempty"`
 	// URL is a URL that demonstrates the problem described in the bug, or is somehow related to the bug report.
 	URL string `json:"url,omitempty"`
+	// Verified is a custom field in redhat bugzilla that indicates the status of verification by QA
+	Verified []string `json:"cf_verified,omitempty"`
 	// Version are the versions the bug was reported against.
 	Version []string `json:"version,omitempty"`
 	// Whiteboard is he value of the "status whiteboard" field on the bug.
@@ -112,6 +114,7 @@ type Bug struct {
 }
 
 // BugCreate holds the info needed to create a new bug
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#create-bug
 type BugCreate struct {
 	// Alias is an optional list of unique aliases of this bug.
 	Alias []string `json:"alias,omitempty"`
@@ -160,6 +163,8 @@ type BugCreate struct {
 	TargetMilestone string `json:"target_milestone,omitempty"`
 	// Version are the versions the bug was reported against.
 	Version []string `json:"version,omitempty"`
+	// TargetRelease are the releases that the bug will be fixed in.
+	TargetRelease []string `json:"target_release,omitempty"`
 }
 
 // Comment holds information about a comment
@@ -244,6 +249,8 @@ type BugUpdate struct {
 	TargetRelease []string `json:"target_release,omitempty"`
 	// Version is the version the bug was reported against.
 	Version string `json:"version,omitempty"`
+	// The Status Whiteboard field of a bug.
+	Whiteboard string `json:"whiteboard,omitempty"`
 }
 
 // IDUpdate is the struct used in Update calls to update fields that are arrays of IDs (ex. DependsOn)
@@ -282,8 +289,6 @@ type ExternalBugType struct {
 // AddExternalBugParameters are the parameters required to add an external
 // tracker bug to a Bugzilla bug
 type AddExternalBugParameters struct {
-	// APIKey is the API key to use when authenticating with Bugzilla
-	APIKey string `json:"api_key"`
 	// BugIDs are the IDs of Bugzilla bugs to update
 	BugIDs []int `json:"bug_ids"`
 	// ExternalBugs are the external bugs to add
@@ -309,8 +314,6 @@ type ExternalBugIdentifier struct {
 // RemoveExternalBugParameters are the parameters required to remove an external
 // tracker bug from a Bugzilla bug
 type RemoveExternalBugParameters struct {
-	// APIKey is the API key to use when authenticating with Bugzilla
-	APIKey string `json:"api_key"`
 	// BugIDs are the IDs of Bugzilla bugs to update
 	BugIDs []int `json:"bug_ids"`
 	// The inline identifier for which external bug to remove

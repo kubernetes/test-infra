@@ -6,14 +6,14 @@ postsubmits:
       annotations:
         testgrid-num-failures-to-alert: "1"
         testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com, k8s-infra-staging-slack-infra@kubernetes.io
-        testgrid-dashboards: sig-contribex-slack-infra
+        testgrid-dashboards: sig-contribex-slack-infra, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:

@@ -42,11 +42,6 @@ dashboards:
       description: network gci-gce e2e tests in ipvs proxier mode
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com, lionwei1992+alerts@gmail.com
-    - name: pull-gci-gce-ipvs
-      test_group_name: pull-kubernetes-e2e-gci-gce-ipvs
-      description: presubmit network gci-gce e2e tests in ipvs proxier mode
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-coredns
       test_group_name: ci-kubernetes-e2e-gci-gce-coredns
       description: network gci-gce tests with CoreDNS

@@ -1,0 +1,58 @@
+presubmits:
+  kubernetes-sigs/ibm-vpc-block-csi-driver:
+  - name: pull-ibm-vpc-block-csi-driver-build
+    always_run: true
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    skip_branches:
+    - gh-pages
+    path_alias: sigs.k8s.io/ibm-vpc-block-csi-driver
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-ibm-vpc-block-csi-driver
+      testgrid-tab-name: build
+      description: Build test in ibm-vpc-block-csi-driver repo.
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - runner.sh
+        args:
+        - make
+        securityContext:
+          privileged: true
+  - name: pull-ibm-vpc-block-csi-driver-unit
+    always_run: true
+    decorate: true
+    skip_branches:
+    - gh-pages
+    path_alias: sigs.k8s.io/ibm-vpc-block-csi-driver
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-ibm-vpc-block-csi-driver
+      testgrid-tab-name: unit
+      description: Unit tests in ibm-vpc-block-csi-driver repo.
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - make
+        args:
+        - test
+
+  - name: pull-ibm-vpc-block-csi-driver-verify
+    always_run: true
+    decorate: true
+    skip_branches:
+    - gh-pages
+    path_alias: sigs.k8s.io/ibm-vpc-block-csi-driver
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-ibm-vpc-block-csi-driver
+      testgrid-tab-name: verify
+      description: ibm-vpc-block-csi-driver basic code verification.
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - make
+        args:
+        - verify

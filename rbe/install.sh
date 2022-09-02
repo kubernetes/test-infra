@@ -49,11 +49,19 @@ log() {
 
 log gcloud services enable remotebuildexecution.googleapis.com  "--project=$proj"
 
-check=(
-  gcloud alpha remote-build-execution
-  worker-pools describe
-  "$pool" "--project=$proj" --instance=default_instance
+check_instance=(
+    gcloud alpha remote-build-execution instances describe default_instance "--project=$proj"
 )
+
+check_pools=(
+  gcloud alpha remote-build-execution worker-pools describe "$pool" "--project=$proj" --instance=default_instance
+)
+
+if ! "${check_instance[@]}" 2>/dev/null; then
+  log gcloud alpha remote-build-execution instances create  \
+    default_instance \
+    "--project=$proj"
+fi
 
 if [[ -z $pool ]]; then
     echo "Existing pools:" >&2
@@ -67,7 +75,8 @@ if [[ -z $pool ]]; then
     exit 1
 fi
 
-if ! "${check[@]}" 2>/dev/null; then
+
+if ! "${check_pools[@]}" 2>/dev/null; then
   log gcloud alpha remote-build-execution worker-pools create  \
     "$pool" \
     "--project=$proj" \

@@ -42,10 +42,7 @@ than needed, and will be periodically bumped by PRs. These are sources of
 technical debt that are often not very well maintained. Use at your own risk,
 eg:
 
-- [pull-community-verify] uses `gcr.io/k8s-testimages/gcloud-in-go:v20190125`
-  to run `make verify`, which ends up invoking some `bash` scripts, which use
-  commands like `git` and `go`. The `gcloud` dependency is not needed at all.
-- [periodic-kubernetes-e2e-packages-pushed] uses `gcr.io/k8s-testimages/kubekins:latest-master`
+- [periodic-kubernetes-e2e-packages-pushed] uses `gcr.io/k8s-staging-test-infra/kubekins:latest-master`
   to run `./tests/e2e/packages/verify_packages_published.sh` which ends up
   running `apt-get` and `yum` commands. Perhaps a `debian` image would be
   better.
@@ -139,7 +136,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200428-06f6e3b-1.15
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       command:
       - "./scripts/ci-aws-cred-test.sh"
 ```
@@ -217,7 +214,7 @@ accomplish this, eg:
 
 ```sh
 # from test-infra root
-$ bazel run //releng/config-forker -- \
+$ go run ./releng/config-forker \
   --job-config $(pwd)/config/jobs \
   --version 1.15 \
   --output $(pwd)/config/jobs/kubernetes/sig-release/release-branch-jobs/1.15.yaml

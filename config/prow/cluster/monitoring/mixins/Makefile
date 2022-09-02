@@ -12,27 +12,67 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The targets defined here are only for local testing and debuging
-# There is no intention of using it in CI/CD pipeline for the moment
-
 SHELL=/bin/bash -o pipefail
 
-all: grafana-dashboards prow_prometheusrule.yaml
+include ../../../../../hack/Makefile.gcloud.mk
 
-grafana-dashboards:
-	for name in boskos-http boskos deck ghproxy hook plank prow sinker slo tide; do echo "Generating $${name}.json ..."; jsonnet -J vendor/ -J lib/ "grafana_dashboards/$${name}.jsonnet" > "./dashboards_out/$${name}.json"; done
+PROJECT       ?= k8s-prow
+CLUSTER       ?= prow
+ZONE          ?= us-central1-f
 
-prow_prometheusrule.yaml:
+export PATH
+
+expose-gobin:
+	$(eval PATH=${PATH}:${GOPATH}/bin)
+
+grafana-dashboards: install clean-dashboard-out
+	@mkdir -p dashboards_out
+	@for input in $(shell ls grafana_dashboards); do \
+		if [[ ! $${input} =~ .*\.jsonnet ]]; then \
+			continue; \
+		fi; \
+		output="$${input%.*}.json"; \
+		echo "Generating $${output} from $${input} ..."; \
+		jsonnet -J vendor/ -J lib/ "grafana_dashboards/$${input}" > "./dashboards_out/$${output}"; \
+	done
+
+prow_prometheusrule.yaml: install clean-prometheus-out
+	@mkdir -p prometheus_out
 	@echo "Generating prow_prometheusrule.yaml ..."
 	jsonnet -J lib/ ./prometheus/prow_prometheusrule.jsonnet | gojsontoyaml > prometheus_out/$@
 
-clean-vendor:
-	rm -rfv ./vendor
+apply-configmaps: get-cluster-credentials grafana-dashboards
+	@for input in $(shell ls dashboards_out); do \
+		if [[ ! $${input} =~ .*\.json ]]; then \
+			continue; \
+		fi; \
+		dashboard_name="grafana-dashboard-$${input%.*}"; \
+		echo "Generating dashboard $${dashboard_name} from $${input} ..."; \
+		kubectl create configmap -n prow-monitoring "$${dashboard_name}" --from-file="$${input}=dashboards_out/$${input}" --dry-run -o yaml | kubectl apply -f -; \
+	done
 
-clean:
+apply-prow-prometheusrule: get-cluster-credentials prow_prometheusrule.yaml
+	kubectl apply -f prometheus_out/
+
+apply: apply-configmaps apply-prow-prometheusrule clean
+
+clean-dashboard-out:
 	rm -rfv ./dashboards_out/*.json
+
+clean-prometheus-out:
 	rm -rfv ./prometheus_out/*.json
 	rm -rfv ./prometheus_out/*.yaml
 
-install:
-	jb install
+clean: clean-dashboard-out clean-prometheus-out
+
+install: expose-gobin
+	@if ! command -v jsonnet>/dev/null; then \
+	  echo "Install jsonnet"; \
+	  go install github.com/google/go-jsonnet/cmd/jsonnet@v0.17.0; \
+	fi
+	@ if ! command -v gojsontoyaml>/dev/null; then \
+	  echo "Install gojsontoyaml"; \
+	  go install github.com/brancz/gojsontoyaml@v0.1.0; \
+	fi
+
+.PHONY: expose-gobin grafana-dashboards prow_prometheusrule.yaml apply-configmaps apply-prow-prometheusrule apply clean-dashboard-out clean-prometheus-out clean install

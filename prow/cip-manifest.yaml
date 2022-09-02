@@ -1,5 +1,5 @@
 # Container Image Promoter manifest file for promoting images from gcr.io/k8s-prow-edge to gcr.io/k8s-prow
-# https://github.com/kubernetes-sigs/k8s-container-image-promoter/tree/master
+# https://sigs.k8s.io/promo-tools
 registries:
 - name: gcr.io/k8s-prow-edge # publicly readable, does not need a service account for access
   src: true # mark it as the source registry (required)

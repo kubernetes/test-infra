@@ -1,0 +1,71 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-nested:
+  - name: pull-cluster-api-provider-nested-test-release-0-1
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-nested"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.1
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - "runner.sh"
+        - "./scripts/ci-test.sh"
+        resources:
+          requests:
+            memory: "6Gi"
+            cpu: "2"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-nested
+      testgrid-tab-name: pr-test-release-0-1
+  - name: pull-cluster-api-provider-nested-build-release-0-1
+    always_run: true
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-nested"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.1
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - "runner.sh"
+        - "./scripts/ci-build.sh"
+        resources:
+          requests:
+            memory: "6Gi"
+            cpu: "2"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-nested
+      testgrid-tab-name: pr-build-release-0-1
+  - name: pull-cluster-api-provider-nested-make-release-0-1
+    always_run: true
+    optional: false
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-nested"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.1
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        command:
+        - "runner.sh"
+        - "./scripts/ci-make.sh"
+        resources:
+          requests:
+            memory: "6Gi"
+            cpu: "2"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-nested
+      testgrid-tab-name: pr-make-release-0-1

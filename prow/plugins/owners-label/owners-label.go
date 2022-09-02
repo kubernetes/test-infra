@@ -62,7 +62,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 
 	oc, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
 	if err != nil {
-		return fmt.Errorf("error loading RepoOwners: %v", err)
+		return fmt.Errorf("error loading RepoOwners: %w", err)
 	}
 
 	return handle(pc.GitHubClient, oc, pc.Logger, &pre)
@@ -76,7 +76,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.Pu
 	// First see if there are any labels requested based on the files changed.
 	changes, err := ghc.GetPullRequestChanges(org, repo, number)
 	if err != nil {
-		return fmt.Errorf("error getting PR changes: %v", err)
+		return fmt.Errorf("error getting PR changes: %w", err)
 	}
 	neededLabels := sets.NewString()
 	for _, change := range changes {

@@ -350,7 +350,7 @@ func AddedLines(patch string) (map[int]int, error) {
 		}
 		_, oldLen, newLine, newLen, err := parseHunkLine(lines[i])
 		if err != nil {
-			return nil, fmt.Errorf("couldn't parse hunk on line %d in patch %s: %v", i, patch, err)
+			return nil, fmt.Errorf("couldn't parse hunk on line %d in patch %s: %w", i, patch, err)
 		}
 		oldAdd := 0
 		newAdd := 0

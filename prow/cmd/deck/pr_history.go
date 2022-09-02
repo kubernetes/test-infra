@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -36,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -143,7 +143,11 @@ func getPRBuildData(ctx context.Context, bucket storageBucket, jobs []jobBuilds)
 			go func(j int, jobName, buildPrefix string) {
 				build, err := getBuildData(ctx, bucket, buildPrefix)
 				if err != nil {
-					logrus.WithError(err).Warningf("build %s information incomplete", buildPrefix)
+					if pkgio.IsNotExist(err) {
+						logrus.WithError(err).WithField("prefix", buildPrefix).Debug("Build information incomplete.")
+					} else {
+						logrus.WithError(err).WithField("prefix", buildPrefix).Warning("Build information incomplete.")
+					}
 				}
 				split := strings.Split(strings.TrimSuffix(buildPrefix, "/"), "/")
 				build.SpyglassLink = path.Join(spyglassPrefix, bucket.getStorageProvider(), bucket.getName(), buildPrefix)
@@ -199,7 +203,7 @@ func parsePullURL(u *url.URL) (org, repo string, pr int, err error) {
 	prStr = vals.Get("pr")
 	pr, err = strconv.Atoi(prStr)
 	if err != nil {
-		return "", "", 0, fmt.Errorf("invalid PR number %q: %v", prStr, err)
+		return "", "", 0, fmt.Errorf("invalid PR number %q: %w", prStr, err)
 	}
 	return org, repo, pr, nil
 }
@@ -210,12 +214,13 @@ func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitCli
 	fullRepo := org + "/" + repo
 
 	if c.InRepoConfigEnabled(fullRepo) && gitHubClient == nil {
-		return nil, errors.New("inrepoconfig is enabled but no --github-token-path configured on deck")
+		logrus.Info("Unable to get InRepoConfig PRs for PR History.")
+		return nil, nil
 	}
 	prRefGetter := config.NewRefGetterForGitHubPullRequest(gitHubClient, org, repo, prNumber)
 	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, prRefGetter.BaseSHA, prRefGetter.HeadSHA)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get Presubmits for pull request %s/%s#%d: %v", org, repo, prNumber, err)
+		return nil, fmt.Errorf("failed to get Presubmits for pull request %s/%s#%d: %w", org, repo, prNumber, err)
 	}
 	if len(presubmits) == 0 {
 		return toSearch, fmt.Errorf("couldn't find presubmits for %q in config", fullRepo)
@@ -266,14 +271,14 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 
 	org, repo, pr, err := parsePullURL(prHistoryURL)
 	if err != nil {
-		return template, fmt.Errorf("failed to parse URL %s: %v", prHistoryURL.String(), err)
+		return template, fmt.Errorf("failed to parse URL %s: %w", prHistoryURL.String(), err)
 	}
 	template.Name = fmt.Sprintf("%s/%s #%d", org, repo, pr)
 	template.Link = githubPRLink(githubHost, org, repo, pr) // TODO(ibzib) support Gerrit :/
 
 	toSearch, err := getStorageDirsForPR(config, gitHubClient, gitClient, org, repo, pr)
 	if err != nil {
-		return template, fmt.Errorf("failed to list directories for PR %s: %v", template.Name, err)
+		return template, fmt.Errorf("failed to list directories for PR %s: %w", template.Name, err)
 	}
 
 	builds := []buildData{}
@@ -294,7 +299,7 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 		for storagePath := range storagePaths {
 			jobPrefixes, err := bucket.listSubDirs(ctx, storagePath)
 			if err != nil {
-				return template, fmt.Errorf("failed to get job names: %v", err)
+				return template, fmt.Errorf("failed to get job names: %w", err)
 			}
 			// We assume job names to be unique, as enforced during config validation.
 			for _, jobPrefix := range jobPrefixes {

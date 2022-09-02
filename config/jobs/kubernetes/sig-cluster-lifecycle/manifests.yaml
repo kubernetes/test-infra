@@ -9,11 +9,11 @@ periodics:
     containers:
     - args:
       - --timeout=60
-      - --repo=k8s.io/kubeadm=master
+      - --repo=k8s.io/kubeadm=main
       - --scenario=execute
       - --
       - ./tests/e2e/manifests/verify_manifest_lists.sh
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-all
     testgrid-tab-name: periodic-manifest-lists

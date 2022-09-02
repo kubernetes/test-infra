@@ -91,7 +91,7 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 
 	currentLabels, err := pc.GitHubClient.GetIssueLabels(org, repo, number)
 	if err != nil {
-		return fmt.Errorf("could not get labels for PR %s/%s:%d in WIP plugin: %v", org, repo, number, err)
+		return fmt.Errorf("could not get labels for PR %s/%s:%d in WIP plugin: %w", org, repo, number, err)
 	}
 	hasLabel := false
 	for _, l := range currentLabels {

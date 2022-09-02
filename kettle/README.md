@@ -2,7 +2,7 @@
 
 This collects test results scattered across a variety of GCS buckets,
 stores them in a local SQLite database, and outputs newline-delimited
-JSON files for import into BigQuery. *See [overview](./overview.md) for more details.*
+JSON files for import into BigQuery. *See [overview](./OVERVIEW.md) for more details.*
 
 Results are stored in the [k8s-gubernator:build BigQuery dataset][Big Query Tables],
 which is publicly accessible.
@@ -104,7 +104,7 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 
 Kettle `stream.py` leverages Google Cloud [PubSub] to alert on GCS changes within the `kubernetes-jenkins` bucket. These events are tied to the `gcs-changes` Topic in the `kubernetes-jenkins` project where Prow job artifacts are collated. Each time an artifact is finalized, a PubSub event is triggered and Kettle collects job information when it sees a resource uploaded called `finished.json` (indicating the build completed).
 
-[Topic Creation] can be performed by running `gsutil notification create -t gcs-chances -f json gs://kubernetes-jenkins`
+[Topic Creation] can be performed by running `gcloud config set project kubernetes-jenkins` and `gsutil notification create -t gcs-changes -f json gs://kubernetes-jenkins`
 
 [Subscriptions] are in Kuberenetes Jenkins Build - PubSub.
 - kettle

@@ -20,7 +20,7 @@ steps:
     - ./pkg/benchmarkjunit
 substitutions:
   _GIT_TAG: '12345'
-  _GO_VERSION: 1.13-alpine
+  _GO_VERSION: 1.18-alpine
 images:
   - 'gcr.io/$PROJECT_ID/benchmarkjunit:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/benchmarkjunit:latest'

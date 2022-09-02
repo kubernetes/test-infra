@@ -56,7 +56,7 @@ func getProjectID() (string, error) {
 	cmd := exec.Command("gcloud", "config", "get-value", "project")
 	projectID, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("failed to get project_id: %v", err)
+		return "", fmt.Errorf("failed to get project_id: %w", err)
 	}
 	return string(projectID), nil
 }
@@ -65,7 +65,7 @@ func getImageName(o options, tag string, config string) (string, error) {
 	var cloudbuildyamlFile CloudBuildYAMLFile
 	buf, _ := ioutil.ReadFile(o.cloudbuildFile)
 	if err := yaml.Unmarshal(buf, &cloudbuildyamlFile); err != nil {
-		return "", fmt.Errorf("failed to get image name: %v", err)
+		return "", fmt.Errorf("failed to get image name: %w", err)
 	}
 	projectID := o.project
 	// if projectID wasn't set explicitly, discover it
@@ -129,7 +129,7 @@ func (o *options) validateConfigDir() error {
 func (o *options) uploadBuildDir(targetBucket string) (string, error) {
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
-		return "", fmt.Errorf("failed to create temp file: %v", err)
+		return "", fmt.Errorf("failed to create temp file: %w", err)
 	}
 	name := f.Name()
 	_ = f.Close()
@@ -208,7 +208,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 		f, err := os.Create(logFilePath)
 
 		if err != nil {
-			return fmt.Errorf("couldn't create %s: %v", logFilePath, err)
+			return fmt.Errorf("couldn't create %s: %w", logFilePath, err)
 		}
 
 		defer f.Sync()
@@ -226,7 +226,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 			buildLog, _ := ioutil.ReadFile(logFilePath)
 			fmt.Println(string(buildLog))
 		}
-		return fmt.Errorf("error running %s: %v", cmd.Args, err)
+		return fmt.Errorf("error running %s: %w", cmd.Args, err)
 	}
 
 	return nil
@@ -238,7 +238,7 @@ func getVariants(o options) (variants, error) {
 	content, err := ioutil.ReadFile(path.Join(o.configDir, "variants.yaml"))
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return nil, fmt.Errorf("failed to load variants.yaml: %v", err)
+			return nil, fmt.Errorf("failed to load variants.yaml: %w", err)
 		}
 		if o.variant != "" {
 			return nil, fmt.Errorf("no variants.yaml found, but a build variant (%q) was specified", o.variant)
@@ -249,7 +249,7 @@ func getVariants(o options) (variants, error) {
 		Variants variants `json:"variants"`
 	}{}
 	if err := yaml.UnmarshalStrict(content, &v); err != nil {
-		return nil, fmt.Errorf("failed to read variants.yaml: %v", err)
+		return nil, fmt.Errorf("failed to read variants.yaml: %w", err)
 	}
 	if o.variant != "" {
 		va, ok := v.Variants[o.variant]
@@ -268,7 +268,7 @@ func runBuildJobs(o options) []error {
 			var err error
 			uploaded, err = o.uploadBuildDir(o.scratchBucket + gcsSourceDir)
 			if err != nil {
-				return []error{fmt.Errorf("failed to upload source: %v", err)}
+				return []error{fmt.Errorf("failed to upload source: %w", err)}
 			}
 		}
 	} else {
@@ -278,7 +278,7 @@ func runBuildJobs(o options) []error {
 	log.Println("Running build jobs...")
 	tag, err := getVersion()
 	if err != nil {
-		return []error{fmt.Errorf("failed to get current tag: %v", err)}
+		return []error{fmt.Errorf("failed to get current tag: %w", err)}
 	}
 
 	if !o.allowDirty && strings.HasSuffix(tag, "-dirty") {
@@ -311,7 +311,7 @@ func runBuildJobs(o options) []error {
 			defer w.Done()
 			log.Printf("Starting job %q...\n", job)
 			if err := runSingleJob(o, job, uploaded, tag, mergeMaps(extraSubs, vc)); err != nil {
-				errors = append(errors, fmt.Errorf("job %q failed: %v", job, err))
+				errors = append(errors, fmt.Errorf("job %q failed: %w", job, err))
 				log.Printf("Job %q failed: %v\n", job, err)
 			} else {
 				var imageName, _ = getImageName(o, tag, job)
@@ -377,12 +377,6 @@ func parseFlags() options {
 
 func main() {
 	o := parseFlags()
-
-	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
-		if err := os.Chdir(bazelWorkspace); err != nil {
-			log.Fatalf("Failed to chdir to bazel workspace (%s): %v", bazelWorkspace, err)
-		}
-	}
 
 	if o.buildDir == "" {
 		o.buildDir = o.configDir

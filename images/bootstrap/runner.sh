@@ -34,6 +34,9 @@ cleanup_dind() {
 }
 
 early_exit_handler() {
+    if [ -n "${WRAPPED_COMMAND_PID:-}" ]; then
+        kill -TERM "$WRAPPED_COMMAND_PID" || true
+    fi
     cleanup_dind
 }
 
@@ -80,6 +83,13 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     done
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
+
+    # Workaround for https://github.com/kubernetes/test-infra/issues/23741
+    # Instead of removing, disabled by default in case we need to address again
+    if [[ "${BOOTSTRAP_MTU_WORKAROUND:-"false"}" == "true" ]]; then
+        echo "configure iptables to set MTU"
+        iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    fi
 fi
 
 trap early_exit_handler INT TERM
@@ -101,7 +111,9 @@ export SOURCE_DATE_EPOCH
 
 # actually start bootstrap and the job
 set -o xtrace
-"$@"
+"$@" &
+WRAPPED_COMMAND_PID=$!
+wait $WRAPPED_COMMAND_PID
 EXIT_VALUE=$?
 set +o xtrace
 

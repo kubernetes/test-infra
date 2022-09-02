@@ -1,18 +1,19 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviewers:
-- flaper87
-- Lion-Wei
-- chaosaffe
-- m1093782566
-- dims
-- sbueringer
-- jichenjc
+# See sigs.k8s.io/cluster-api-provider-openstack/OWNERS_ALIASES
 approvers:
-- flaper87
-- Lion-Wei
-- chaosaffe
-- m1093782566
-- dims
-- sbueringer
-- jichenjc
+  - sig-cluster-lifecycle-leads
+  - hidekazuna
+  - jichenjc
+  - mdbooth
+  - seanschneeweiss
+  - tobiasgiese
+
+reviewers:
+  - hidekazuna
+  - jichenjc
+  - mdbooth
+  - prankul88
+  - seanschneeweiss
+  - tobiasgiese
+  # - macaptain (not yet member of k8s org)

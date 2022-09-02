@@ -5,6 +5,8 @@ reviewers:
 - ConnorDoyle
 - derekwaynecarr
 - dims
+- ehashman
+- endocrimes
 - karan
 - klueska
 - MHBauer
@@ -22,6 +24,10 @@ approvers:
 - dchen1107
 - dims
 - sjenning
+- mrunalp
+- ehashman
+- SergeyKanzhelev
+- endocrimes
 emeritus_approvers:
 - yguo0905
 - dashpole

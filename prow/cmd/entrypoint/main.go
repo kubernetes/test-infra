@@ -17,7 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
+	"path"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/entrypoint"
@@ -25,12 +28,46 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/options"
 )
 
+// copy copies entrypoint binary from source to destination. This is because
+// entrypoint image operates in two different modes:
+// 1) entrypoint container: copy the binary to shared mount drive `/tools`
+// 2) test container(s): use `/tools/entrypoint` as entrypoint, for collecting
+//    logs and artifacts.
+func copy(src, dst string) error {
+	logrus.Infof("src is %s", src)
+	// Get file info so that the mode can be used for copying
+	info, err := os.Stat(src)
+	if err != nil {
+		return fmt.Errorf("read info '%s': %w", src, err)
+	}
+	body, err := ioutil.ReadFile(src)
+	if err != nil {
+		return fmt.Errorf("read file '%s': %w", src, err)
+	}
+	// Create dir if not exist
+	dstDir := path.Dir(dst)
+	if err := os.MkdirAll(dstDir, 0755); err != nil {
+		return fmt.Errorf("create dir '%s': %w", dstDir, err)
+	}
+	if err := ioutil.WriteFile(dst, body, info.Mode()); err != nil {
+		return fmt.Errorf("write file '%s': %w", dst, err)
+	}
+	return nil
+}
+
 func main() {
 	logrusutil.ComponentInit()
 
 	o := entrypoint.NewOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
+	}
+
+	if o.CopyModeOnly {
+		if err := copy(os.Args[0], o.CopyDst); err != nil {
+			logrus.WithError(err).Fatal("Failed running in copy mode, this is a prow bug.")
+		}
+		os.Exit(0)
 	}
 
 	if err := o.Validate(); err != nil {

@@ -1,6 +1,6 @@
-# bigquery
+# bigquery image
 
-The `gcr.io/k8s-testimages/bigquery` image is used to run [`/metrics/bigquery.py`] and [`/kettle/monitor.py`]
+The `gcr.io/k8s-staging-test-infra/bigquery` image is used to run [`/metrics/bigquery.py`] and [`/kettle/monitor.py`]
 
 It is mostly present to ensure the following is available:
 - `python` - required by `gcloud` and `bq`

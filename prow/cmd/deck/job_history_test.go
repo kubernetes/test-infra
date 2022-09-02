@@ -38,7 +38,7 @@ func TestJobHistURL(t *testing.T) {
 		storageProvider string
 		bktName         string
 		root            string
-		id              int64
+		id              uint64
 		expErr          bool
 	}{
 		{
@@ -156,7 +156,7 @@ func TestJobHistURL(t *testing.T) {
 	}
 }
 
-func eq(a, b []int64) bool {
+func eq(a, b []uint64) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -170,37 +170,37 @@ func eq(a, b []int64) bool {
 
 func TestCropResults(t *testing.T) {
 	cases := []struct {
-		a   []int64
-		max int64
-		exp []int64
+		a   []uint64
+		max uint64
+		exp []uint64
 		p   int
 		q   int
 	}{
 		{
-			a:   []int64{},
+			a:   []uint64{},
 			max: 42,
-			exp: []int64{},
+			exp: []uint64{},
 			p:   -1,
 			q:   0,
 		},
 		{
-			a:   []int64{81, 27, 9, 3, 1},
+			a:   []uint64{81, 27, 9, 3, 1},
 			max: 100,
-			exp: []int64{81, 27, 9, 3, 1},
+			exp: []uint64{81, 27, 9, 3, 1},
 			p:   0,
 			q:   4,
 		},
 		{
-			a:   []int64{81, 27, 9, 3, 1},
+			a:   []uint64{81, 27, 9, 3, 1},
 			max: 50,
-			exp: []int64{27, 9, 3, 1},
+			exp: []uint64{27, 9, 3, 1},
 			p:   1,
 			q:   4,
 		},
 		{
-			a:   []int64{25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
+			a:   []uint64{25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
 			max: 23,
-			exp: []int64{23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4},
+			exp: []uint64{23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4},
 			p:   2,
 			q:   21,
 		},
@@ -217,12 +217,12 @@ func TestCropResults(t *testing.T) {
 func TestLinkID(t *testing.T) {
 	cases := []struct {
 		startAddr string
-		id        int64
+		id        uint64
 		expAddr   string
 	}{
 		{
 			startAddr: "http://www.example.com/job-history/foo-bucket/logs/bar-e2e",
-			id:        -1,
+			id:        emptyID,
 			expAddr:   "http://www.example.com/job-history/foo-bucket/logs/bar-e2e?buildId=",
 		},
 		{
@@ -407,7 +407,7 @@ func Test_getJobHistory(t *testing.T) {
 func TestListBuildIDsReturnsResultsOnError(t *testing.T) {
 	t.Run("logs-prefix", func(t *testing.T) {
 		bucket := blobStorageBucket{Opener: fakeOpener{iterator: fakeIterator{
-			result: io.ObjectAttributes{Name: "1327350934719696896", IsDir: true},
+			result: io.ObjectAttributes{Name: "13728953029057617923", IsDir: true},
 			err:    errors.New("some-err"),
 		}}}
 		ids, err := bucket.listBuildIDs(context.Background(), logsPrefix)
@@ -420,7 +420,7 @@ func TestListBuildIDsReturnsResultsOnError(t *testing.T) {
 	})
 	t.Run("no-prefix", func(t *testing.T) {
 		bucket := blobStorageBucket{Opener: fakeOpener{iterator: fakeIterator{
-			result: io.ObjectAttributes{Name: "/1327350934719696896.txt", IsDir: false},
+			result: io.ObjectAttributes{Name: "/13728953029057617923.txt", IsDir: false},
 			err:    errors.New("some-err"),
 		}}}
 		ids, err := bucket.listBuildIDs(context.Background(), "")

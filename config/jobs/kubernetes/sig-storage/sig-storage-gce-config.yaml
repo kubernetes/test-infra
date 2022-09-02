@@ -14,7 +14,9 @@ presubmits:
     # test/e2e/testing-manifests/storage-csi
     run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -28,7 +30,7 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=125
+        - --timeout=150
         - --scenario=kubernetes_e2e
         - --
         - --build=quick
@@ -39,11 +41,11 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-slow
-        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-        - --timeout=80m
+        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --timeout=120m
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         resources:
           requests:
             memory: "6Gi"
@@ -63,7 +65,9 @@ presubmits:
     # test/e2e/testing-manifests/storage-csi
     run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -91,7 +95,7 @@ presubmits:
         - --timeout=120m
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         resources:
           requests:
             memory: "6Gi"
@@ -111,7 +115,9 @@ presubmits:
     # test/e2e/testing-manifests/storage-csi
     run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -137,92 +143,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
         - --timeout=150m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-        resources:
-          requests:
-            memory: "6Gi"
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-create-test-group: 'true'
-  - name: pull-kubernetes-e2e-gce-iscsi
-    always_run: false
-    optional: true
-    run_if_changed: '(pkg\/volume\/iscsi)'
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=150
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=quick
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=ubuntu
-        - --image-family=ubuntu-2004-lts
-        - --image-project=ubuntu-os-cloud
-        - --env=KUBE_CONTAINER_RUNTIME=docker
-        - --gcp-zone=us-west1-b
-        - --provider=gce
-        - --ginkgo-parallel=30
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi
-        - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
-        - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-        resources:
-          requests:
-            memory: "6Gi"
-        securityContext:
-          privileged: true
-    annotations:
-      testgrid-create-test-group: 'true'
-  - name: pull-kubernetes-e2e-gce-iscsi-serial
-    always_run: false
-    optional: true
-    run_if_changed: '(pkg\/volume\/iscsi)'
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=150
-        - --scenario=kubernetes_e2e
-        - --
-        - --build=quick
-        - --cluster=
-        - --extract=local
-        - --gcp-node-image=ubuntu
-        - --image-family=ubuntu-2004-lts
-        - --image-project=ubuntu-os-cloud
-        - --env=KUBE_CONTAINER_RUNTIME=docker
-        - --gcp-zone=us-west1-b
-        - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-iscsi-serial
-        - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
-        - --timeout=120m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         resources:
           requests:
             memory: "6Gi"
@@ -234,7 +155,9 @@ presubmits:
     always_run: false
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -258,9 +181,9 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-disruptive
-        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\] --minStartupPods=8
         - --timeout=240m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         resources:
           requests:
             memory: "6Gi"
@@ -283,16 +206,18 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
-      - --env=KUBE_CONTAINER_RUNTIME=docker
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.4
+      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.0
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --ginkgo-parallel=30
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -309,15 +234,17 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
-      - --env=KUBE_CONTAINER_RUNTIME=docker
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.4
+      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.0
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
     testgrid-num-columns-recent: '20'
 - interval: 24h
@@ -339,7 +266,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
   annotations:
     testgrid-num-columns-recent: '20'
     testgrid-num-failures-to-alert: '6'

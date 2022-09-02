@@ -223,14 +223,15 @@ func TestSummarize(t *testing.T) {
 
 	// Call summarize()
 	summarize(summarizeFlags{
-		builds:       buildsPath,
-		tests:        []string{testsPath},
-		previous:     "",
-		owners:       ownersPath,
-		output:       "failure_data.json",
-		outputSlices: "failure_data_PREFIX.json",
-		numWorkers:   4, // Arbitrary number to keep tests more or less consistent across platforms
-		memoize:      false,
+		builds:               buildsPath,
+		tests:                []string{testsPath},
+		previous:             "",
+		owners:               ownersPath,
+		output:               "failure_data.json",
+		outputSlices:         "failure_data_PREFIX.json",
+		numWorkers:           4, // Arbitrary number to keep tests more or less consistent across platforms
+		memoize:              false,
+		maxClusterTextLength: 10000,
 	})
 
 	// Test the output

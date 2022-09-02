@@ -78,14 +78,6 @@ func Test_gatherOptions(t *testing.T) {
 				}
 			},
 		},
-		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
 	}
 
 	for _, tc := range cases {
@@ -97,12 +89,13 @@ func Test_gatherOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				dryRun:                 true,
 				syncThrottle:           800,
 				statusThrottle:         400,
 				maxRecordsPerPool:      1000,
-				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
@@ -113,7 +106,6 @@ func Test_gatherOptions(t *testing.T) {
 
 			argMap := map[string]string{
 				"--config-path": "yo",
-				"--deck-url":    "http://whatever",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v

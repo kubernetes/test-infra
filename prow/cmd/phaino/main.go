@@ -37,6 +37,12 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
+const (
+	defaultTimeout     = time.Hour
+	defaultGracePeriod = 10 * time.Second
+	minimumGracePeriod = time.Second
+)
+
 type options struct {
 	keepGoing     bool
 	printCmd      bool
@@ -64,9 +70,9 @@ func gatherOptions() options {
 	fs.BoolVar(&o.keepGoing, "keep-going", false, "Continue running jobs after one fails if set")
 	fs.BoolVar(&o.printCmd, "print", false, "Just print the command it would run")
 	fs.BoolVar(&o.priv, "privileged", false, "Allow privileged local runs")
-	fs.DurationVar(&o.timeout, "timeout", time.Hour, "Maximum duration for each job (0 for unlimited)")
+	fs.DurationVar(&o.timeout, "timeout", defaultTimeout, "Maximum duration for each job (0 for unlimited)")
 	fs.DurationVar(&o.totalTimeout, "total-timeout", 0, "Maximum duration for all jobs (0 for unlimited)")
-	fs.DurationVar(&o.grace, "grace", 10*time.Second, "Terminate timed out jobs after this grace period (1s minimum)")
+	fs.DurationVar(&o.grace, "grace", defaultGracePeriod, "Terminate timed out jobs after this grace period (1s minimum)")
 	fs.StringVar(&o.gopath, "gopath", "", "The path that is used in the container. "+
 		"Default is /home/prow/go/src, need to be changed if the repository depends on absolute code mount path it's is set to a different value in the container.")
 	fs.StringVar(&o.codeMountPath, "code-mount-path", "", "The GOPATH that is used in the container. "+
@@ -110,13 +116,13 @@ func readPJ(reader io.ReadCloser) (*prowapi.ProwJob, error) {
 	var pj prowapi.ProwJob
 	buf, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("read: %v", err)
+		return nil, fmt.Errorf("read: %w", err)
 	}
 	if err := yaml.Unmarshal(buf, &pj); err != nil {
-		return nil, fmt.Errorf("unmarshal: %v", err)
+		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 	if err := validate(pj); err != nil {
-		return nil, fmt.Errorf("validate: %v", err)
+		return nil, fmt.Errorf("validate: %w", err)
 	}
 	return &pj, nil
 }
@@ -124,7 +130,7 @@ func readPJ(reader io.ReadCloser) (*prowapi.ProwJob, error) {
 func readFile(path string) (*prowapi.ProwJob, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("open: %v", err)
+		return nil, fmt.Errorf("open: %w", err)
 	}
 	defer f.Close()
 	return readPJ(f)
@@ -133,7 +139,7 @@ func readFile(path string) (*prowapi.ProwJob, error) {
 func readHTTP(url string) (*prowapi.ProwJob, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("get: %v", err)
+		return nil, fmt.Errorf("get: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
@@ -170,7 +176,7 @@ func readPJs(jobs []string) (<-chan prowapi.ProwJob, <-chan error) {
 				pj, err = readFile(j)
 			}
 			if err != nil {
-				errch <- fmt.Errorf("%q: %v", j, err)
+				errch <- fmt.Errorf("%q: %w", j, err)
 				return
 			}
 			ch <- *pj
@@ -232,7 +238,7 @@ func processJobs(ctx context.Context, opt options, pjs <-chan prowapi.ProwJob, e
 		case err := <-errs:
 			return err
 		case <-ctx.Done():
-			return fmt.Errorf("cancel: %v", ctx.Err())
+			return fmt.Errorf("cancel: %w", ctx.Err())
 		}
 	}
 }

@@ -30,7 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/testutil"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/testutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -128,6 +128,7 @@ type testResourceGetter struct {
 	events    []v1.Event
 	patchData string
 	patchType types.PatchType
+	patchErr  error
 }
 
 func (rg testResourceGetter) GetPod(_ context.Context, cluster, namespace, name string) (*v1.Pod, error) {
@@ -163,6 +164,9 @@ func (rg testResourceGetter) GetEvents(cluster, namespace string, pod *v1.Pod) (
 }
 
 func (rg testResourceGetter) PatchPod(ctx context.Context, cluster, namespace, name string, pt types.PatchType, data []byte) error {
+	if rg.patchErr != nil {
+		return rg.patchErr
+	}
 	if _, err := rg.GetPod(ctx, cluster, namespace, name); err != nil {
 		return err
 	}
@@ -184,6 +188,7 @@ func TestReportPodInfo(t *testing.T) {
 		pjPending               bool
 		pjState                 prowv1.ProwJobState
 		pod                     *v1.Pod
+		patchErr                error
 		events                  []v1.Event
 		dryRun                  bool
 		expectReport            bool
@@ -280,6 +285,19 @@ func TestReportPodInfo(t *testing.T) {
 			expectedPatch: `{"metadata":{"finalizers":null}}`,
 		},
 		{
+			name:   "Pod gets deleted between check and finalizer add request, error is swallowed",
+			pjName: "ba123965-4fd4-421f-8509-7590c129ab69",
+			pod: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "ba123965-4fd4-421f-8509-7590c129ab69",
+					Namespace: "test-pods",
+					Labels:    map[string]string{"created-by-prow": "true"},
+				},
+			},
+			patchErr:     errors.New(`Pod "b2c94437-e0e2-11eb-a92c-0a580a801781" is invalid: metadata.finalizers: Forbidden: no new finalizers can be added if the object is being deleted, found new finalizers []string{"prow.x-k8s.io/gcsk8sreporter"}`),
+			expectReport: false,
+		},
+		{
 			name:       "Finalizer is removed from complete pod",
 			pjName:     "ba123965-4fd4-421f-8509-7590c129ab69",
 			pjPending:  false,
@@ -371,6 +389,7 @@ func TestReportPodInfo(t *testing.T) {
 				cluster:   "the-build-cluster",
 				pod:       tc.pod,
 				events:    tc.events,
+				patchErr:  tc.patchErr,
 				patchData: tc.expectedPatch,
 				patchType: types.MergePatchType,
 			}

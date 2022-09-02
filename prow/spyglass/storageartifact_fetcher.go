@@ -154,7 +154,7 @@ func (af *StorageArtifactFetcher) artifacts(ctx context.Context, key string) ([]
 			}
 			logrus.WithFields(fieldsForJob(src)).WithError(err).Error("Error accessing GCS artifact.")
 			if i >= len(wait) {
-				return artifacts, fmt.Errorf("timed out: error accessing GCS artifact: %v", err)
+				return artifacts, fmt.Errorf("timed out: error accessing GCS artifact: %w", err)
 			}
 			time.Sleep((wait[i] + time.Duration(rand.Intn(10))) * time.Millisecond)
 			i++
@@ -188,6 +188,10 @@ func (h *storageArtifactHandle) NewRangeReader(ctx context.Context, offset, leng
 
 func (h *storageArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, error) {
 	return h.Opener.Attributes(ctx, h.Name)
+}
+
+func (h *storageArtifactHandle) UpdateAttrs(ctx context.Context, attrs pkgio.ObjectAttrsToUpdate) (*pkgio.Attributes, error) {
+	return h.UpdateAtributes(ctx, h.Name, attrs)
 }
 
 // Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library

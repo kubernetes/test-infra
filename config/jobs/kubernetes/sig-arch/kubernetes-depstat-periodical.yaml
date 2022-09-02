@@ -1,6 +1,7 @@
 periodics:
   - interval: 6h
     name: check-dependency-stats-periodical
+    cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
       timeout: 5m
@@ -17,13 +18,24 @@ periodics:
         args:
         - -c
         - |
-          set -euo; \
-          export PATH=$PATH:$GOPATH/bin; \
-          mkdir -p "${ARTIFACTS}"; \
-          pushd "$ARTIFACTS"; \
-          go install github.com/kubernetes-sigs/depstat@latest; \
-          popd; \
-          depstat stats --json | tee "${ARTIFACTS}/stats-base.json";
+          set -euo pipefail
+
+          export WORKDIR=${ARTIFACTS:-$TMPDIR}
+          export PATH=$PATH:$GOPATH/bin
+
+          mkdir -p "${WORKDIR}"
+          pushd "$WORKDIR"
+          go install github.com/kubernetes-sigs/depstat@latest
+          popd
+
+          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json | tee "${WORKDIR}/stats-base.json";
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-testing-misc

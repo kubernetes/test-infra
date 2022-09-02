@@ -45,15 +45,27 @@ import (
 var (
 	diskFree = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_free",
-		Help: "Free gb on github-cache disk",
+		Help: "Free gb on github-cache disk.",
 	})
 	diskUsed = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_used",
-		Help: "Used gb on github-cache disk",
+		Help: "Used gb on github-cache disk.",
 	})
 	diskTotal = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_total",
-		Help: "Total gb on github-cache disk",
+		Help: "Total gb on github-cache disk.",
+	})
+	diskInodeFree = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ghcache_disk_inode_free",
+		Help: "Free inodes on github-cache disk.",
+	})
+	diskInodeUsed = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ghcache_disk_inode_used",
+		Help: "Used inodes on github-cache disk.",
+	})
+	diskInodeTotal = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ghcache_disk_inode_total",
+		Help: "Total inodes on github-cache disk.",
 	})
 )
 
@@ -61,6 +73,9 @@ func init() {
 	prometheus.MustRegister(diskFree)
 	prometheus.MustRegister(diskUsed)
 	prometheus.MustRegister(diskTotal)
+	prometheus.MustRegister(diskInodeFree)
+	prometheus.MustRegister(diskInodeUsed)
+	prometheus.MustRegister(diskInodeTotal)
 }
 
 // GitHub reverse proxy HTTP cache RoundTripper stack:
@@ -84,7 +99,12 @@ type options struct {
 	upstream       string
 	upstreamParsed *url.URL
 
-	maxConcurrency int
+	maxConcurrency                  int
+	requestThrottlingTime           uint
+	requestThrottlingTimeV4         uint
+	requestThrottlingTimeForGET     uint
+	requestThrottlingMaxDelayTime   uint
+	requestThrottlingMaxDelayTimeV4 uint
 
 	// pushGateway fields are used to configure pushing prometheus metrics.
 	pushGateway         string
@@ -95,12 +115,14 @@ type options struct {
 	serveMetrics bool
 
 	instrumentationOptions flagutil.InstrumentationOptions
+
+	timeout uint
 }
 
 func (o *options) validate() error {
 	level, err := logrus.ParseLevel(o.logLevel)
 	if err != nil {
-		return fmt.Errorf("invalid log level specified: %v", err)
+		return fmt.Errorf("invalid log level specified: %w", err)
 	}
 	logrus.SetLevel(level)
 
@@ -109,7 +131,7 @@ func (o *options) validate() error {
 	}
 	upstreamURL, err := url.Parse(o.upstream)
 	if err != nil {
-		return fmt.Errorf("failed to parse upstream URL: %v", err)
+		return fmt.Errorf("failed to parse upstream URL: %w", err)
 	}
 	o.upstreamParsed = upstreamURL
 	return nil
@@ -124,10 +146,16 @@ func flagOptions() *options {
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	flag.StringVar(&o.upstream, "upstream", "https://api.github.com", "Scheme, host, and base path of reverse proxy upstream.")
 	flag.IntVar(&o.maxConcurrency, "concurrency", 25, "Maximum number of concurrent in-flight requests to GitHub.")
+	flag.UintVar(&o.requestThrottlingTime, "throttling-time-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing requests. Counted per organization. Has to be set together with --get-throttling-time-ms.")
+	flag.UintVar(&o.requestThrottlingTimeV4, "throttling-time-v4-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing requests. Counted per organization. Overrides --throttling-time-ms setting for API v4.")
+	flag.UintVar(&o.requestThrottlingTimeForGET, "get-throttling-time-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing GET requests. Counted per organization. Has to be set together with --throttling-time-ms.")
+	flag.UintVar(&o.requestThrottlingMaxDelayTime, "throttling-max-delay-duration-seconds", 30, "Maximum delay for throttling in seconds. Requests will never be throttled for longer than this, used to avoid building a request backlog when the GitHub api has performance issues. Default is 30 seconds.")
+	flag.UintVar(&o.requestThrottlingMaxDelayTimeV4, "throttling-max-delay-duration-v4-seconds", 30, "Maximum delay for throttling in seconds for APIv4. Requests will never be throttled for longer than this, used to avoid building a request backlog when the GitHub api has performance issues. Default is 30 seconds.")
 	flag.StringVar(&o.pushGateway, "push-gateway", "", "If specified, push prometheus metrics to this endpoint.")
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 	flag.BoolVar(&o.serveMetrics, "serve-metrics", false, "If true, it serves prometheus metrics")
+	flag.UintVar(&o.timeout, "request-timeout", 30, "Request timeout which applies also to paged requests. Default is 30 seconds.")
 	o.instrumentationOptions.AddFlags(flag.CommandLine)
 	return o
 }
@@ -145,14 +173,10 @@ func main() {
 		logrus.Warningf("The deprecated `--legacy-disable-disk-cache-partitions-by-auth-header` flags value is `true`. If you are a bigger Prow setup, you should copy your existing cache directory to the directory mentioned in the `%s` messages to warm up the partitioned-by-auth-header cache, then set the flag to false. If you are a smaller Prow setup or just started using ghproxy you can just unconditionally set it to `false`.", ghcache.LogMessageWithDiskPartitionFields)
 	}
 
-	var cache http.RoundTripper
-	if o.redisAddress != "" {
-		cache = ghcache.NewRedisCache(apptokenequalizer.New(http.DefaultTransport), o.redisAddress, o.maxConcurrency)
-	} else if o.dir == "" {
-		cache = ghcache.NewMemCache(apptokenequalizer.New(http.DefaultTransport), o.maxConcurrency)
-	} else {
-		cache = ghcache.NewDiskCache(apptokenequalizer.New(http.DefaultTransport), o.dir, o.sizeGB, o.maxConcurrency, o.diskCacheDisableAuthHeaderPartitioning)
-		go diskMonitor(o.pushGatewayInterval, o.dir)
+	if (o.requestThrottlingTime > 0 && o.requestThrottlingTimeForGET == 0) ||
+		(o.requestThrottlingTime == 0 && o.requestThrottlingTimeForGET > 0) ||
+		((o.requestThrottlingTime == 0 || o.requestThrottlingTimeForGET == 0) && o.requestThrottlingTimeV4 > 0) {
+		logrus.Warningln("Flags `--throttling-time-ms` and `--get-throttling-time-ms` have to be set to non-zero value, otherwise throttling feature will be disabled.")
 	}
 
 	pprof.Instrument(o.instrumentationOptions)
@@ -165,13 +189,28 @@ func main() {
 		ServeMetrics: o.serveMetrics,
 	}, o.instrumentationOptions.MetricsPort)
 
-	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
+	proxy := proxy(o, http.DefaultTransport, time.Hour)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: proxy}
 
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
-	interrupts.ListenAndServe(server, 30*time.Second)
+	interrupts.ListenAndServe(server, time.Duration(o.timeout)*time.Second)
+}
+
+func proxy(o *options, upstreamTransport http.RoundTripper, diskCachePruneInterval time.Duration) http.Handler {
+	var cache http.RoundTripper
+	throttlingTimes := ghcache.NewRequestThrottlingTimes(o.requestThrottlingTime, o.requestThrottlingTimeV4, o.requestThrottlingTimeForGET, o.requestThrottlingMaxDelayTime, o.requestThrottlingMaxDelayTimeV4)
+	if o.redisAddress != "" {
+		cache = ghcache.NewRedisCache(apptokenequalizer.New(upstreamTransport), o.redisAddress, o.maxConcurrency, throttlingTimes)
+	} else if o.dir == "" {
+		cache = ghcache.NewMemCache(apptokenequalizer.New(upstreamTransport), o.maxConcurrency, throttlingTimes)
+	} else {
+		cache = ghcache.NewDiskCache(apptokenequalizer.New(upstreamTransport), o.dir, o.sizeGB, o.maxConcurrency, o.diskCacheDisableAuthHeaderPartitioning, diskCachePruneInterval, throttlingTimes)
+		go diskMonitor(o.pushGatewayInterval, o.dir)
+	}
+
+	return newReverseProxy(o.upstreamParsed, cache, time.Duration(o.timeout)*time.Second)
 }
 
 func newReverseProxy(upstreamURL *url.URL, transport http.RoundTripper, timeout time.Duration) http.Handler {
@@ -194,13 +233,16 @@ func diskMonitor(interval time.Duration, diskRoot string) {
 	ticker := time.NewTicker(interval)
 	for ; true; <-ticker.C {
 		logger.Info("tick")
-		_, bytesFree, bytesUsed, err := diskutil.GetDiskUsage(diskRoot)
+		_, bytesFree, bytesUsed, _, inodesFree, inodesUsed, err := diskutil.GetDiskUsage(diskRoot)
 		if err != nil {
 			logger.WithError(err).Error("Failed to get disk metrics")
 		} else {
 			diskFree.Set(float64(bytesFree) / 1e9)
 			diskUsed.Set(float64(bytesUsed) / 1e9)
 			diskTotal.Set(float64(bytesFree+bytesUsed) / 1e9)
+			diskInodeFree.Set(float64(inodesFree))
+			diskInodeUsed.Set(float64(inodesUsed))
+			diskInodeTotal.Set(float64(inodesFree + inodesUsed))
 		}
 	}
 }

@@ -8,7 +8,7 @@ postsubmits:
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
-        testgrid-dashboards: sig-cli-misc
+        testgrid-dashboards: sig-cli-misc, sig-k8s-infra-gcb
         testgrid-tab-name: kustomize-pushing-image
         testgrid-alert-email: donnyxia@google.com
       decorate: true
@@ -23,7 +23,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:

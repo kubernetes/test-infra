@@ -7,8 +7,14 @@ steps:
       - --build-arg=GO_VERSION=$_GO_VERSION
       - .
     dir: images/gcb-docker-gcloud/
+  - name: gcr.io/cloud-builders/docker
+    args:
+    - tag
+    - gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG
+    - gcr.io/$PROJECT_ID/gcb-docker-gcloud:latest
 substitutions:
   _GIT_TAG: '12345'
-  _GO_VERSION: 1.16.2
+  _GO_VERSION: 1.19.0
 images:
   - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:$_GIT_TAG'
+  - 'gcr.io/$PROJECT_ID/gcb-docker-gcloud:latest'

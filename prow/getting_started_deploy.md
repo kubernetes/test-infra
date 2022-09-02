@@ -6,52 +6,95 @@ Prow runs in any kubernetes cluster. Our `tackle` utility helps deploy it correc
 
 Both of these are focused on [Kubernetes Engine](https://cloud.google.com/kubernetes-engine/) but should work on any kubernetes distro with no/minimal changes.
 
-## GitHub bot account
+## GitHub App
 
-Before using `tackle` or deploying prow manually, ensure you have created a
-GitHub account for prow to use.  Prow will ignore most GitHub events generated
-by this account, so it is important this account be separate from any users or
-automation you wish to interact with prow. For example, you still need to do
-this even if you'd just setting up a prow instance to work against your own
-personal repos.
+First, you need to create a GitHub app. GitHub itself [documents this.](https://docs.github.com/en/developers/apps/building-github-apps/creating-a-github-app)
+Initially, it is sufficient to set a dummy url for the Webhook.
+The exact set of permissions needed varies based on what functionality you use. Below is a minimum
+set of permissions needed. Please keep in mind that any changes to the permissions your
+app requests (both added and removed) require everyone to re-install it.
 
-1. Ensure the bot user has the following permissions
-    - Write access to the repos you plan on handling
-    - Owner access (and org membership) for the orgs you plan on handling (note
-      it is possible to handle specific repos in an org without this)
-1. Create a [personal access token][1] for the GitHub bot account, adding the
-   following scopes (more details [here][8])
-    - Must have the `public_repo` and `repo:status` scopes
-    - Add the `repo` scope if you plan on handing private repos
-    - Add the `admin:org_hook` scope if you plan on handling a github org
-1. Set this token aside for later (we'll assume you wrote it to a file on your
-   workstation at `/path/to/github/token`)
+Repository permissions:
+
+* Actions: Read-Only (Only needed when using the merge automation `tide`)
+* Administration: Read-Only (Required to fetch teams and collaborateurs)
+* Checks: Read-Only (Only needed when using the merge automation `tide`)
+* Contents: Read (Read & write needed when using the merge automation `tide`)
+* Issues: Read & write
+* Metadata: Read-Only
+* Pull Requests: Read & write
+* Projects: Admin when using the `projects` plugin, none otherwise
+* Commit statuses: Read & write
+
+Organization permissions:
+
+* Members: Read-Only (Read & write when using `peribolos`)
+* Projects: Admin when using the `projects` plugin, none otherwise
+
+In `Subscribe to events` select all events.
+
+After you saved the app, click "Generate Private Key" on the bottom
+and save the private key together with the `App ID` in the top of the
+page.
 
 ## Tackle deployment
 
-Prow's `tackle` utility walks you through deploying a new instance of prow in a couple minutes, try it out!
+Prow's `tackle` utility walks you through deploying a new instance of prow 
+in a couple of minutes, try it out!
 
-You need a few things:
+### Installing tackle
 
-1. [`bazel`](https://bazel.build/) build tool installed and working
-1. The prow `tackle` utility. It is recommended to use it by running `bazel run //prow/cmd/tackle` from `test-infra` directory, alternatively you can install it by running `go get -u k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go installed and working).
-**Note**: Creating the `tackle` utility assumes you have the `gcloud` application in your `$PATH`,
-if you are doing this on another cloud skip to the **Manual deployment** below.
-1. Optionally, credentials to a Kubernetes cluster (otherwise, `tackle` will help you create on GCP)
+Tackle at this point in time needs to be built from source. The following 
+steps will walk you through the process:
 
-To install prow run the following from the `test-infra` directory and follow the on-screen instructions:
-
-```sh
-# Ideally use https://bazel.build, alternatively try:
-#   go get -u k8s.io/test-infra/prow/cmd/tackle && tackle
-$ bazel run //prow/cmd/tackle
+1. Clone the `test-infra` repository:
+```shell
+$ git clone git@github.com:kubernetes/test-infra.git
 ```
 
-This will help you through the following steps:
+2. Build `tackle` (This requires a working go installation on your system)
+```shell
+$ cd test-infra/prow/cmd/tackle && go build -o tackle
+```
 
-* Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
+3. Optionally move `tackle` to your `$PATH`
+```shell
+$ sudo mv tackle /usr/sbin/tackle
+```
+
+
+### Deploying prow
+
+**Note**: Creating a cluster using the `tackle` utility assumes you 
+have the `gcloud` application in your `$PATH` and are logged in. If you are 
+doing this on another cloud skip to the **Manual deployment** below.
+
+
+
+Installing Prow using `tackle` will help you through the following steps:
+
+* Choosing a kubectl context (or creating a cluster on GCP / getting its credentials if necessary)
 * Deploying prow into that cluster
 * Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/github/token`
+
+To install prow run the following and follow the on-screen instructions:
+
+1. Run `tackle`:
+```sh
+tackle
+```
+
+2. Once your cluster is created, you'll get a prompt to apply a `starter.yaml`. Before you do that open another terminal and apply the prow CRDs using:
+
+```
+kubectl apply --server-side=true -f https://raw.githubusercontent.com/kubernetes/test-infra/master/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
+```
+
+3. After that specify the `starter.yaml` you want to use (please make sure to replace the values mentioned [here](#update-the-sample-manifest)). Once that is done some pods still won't be in the `Running` state because we haven't created the secret containing the credentials needed for our GCS bucket. To do that follow the steps in [Configure a GCS bucket](#configure-a-gcs-bucket).
+
+4. Once that is done, `tackle` should show you the URL where you can access the prow dashboard. To use it with your repositories head over to the settings of the GitHub app you created and there under webhook secret, supply the HMAC token you specified in the [`starter.yaml`](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/starter/starter-gcs.yaml#L51).
+
+5. Once that is done, install the GitHub app on the repositories you want (this is only needed if you ran `tackle` with the `--skip-github` flag) and you should now be able to use Prow :)
 
 See the [Next Steps](#next-steps) section after running this utility.
 
@@ -106,7 +149,7 @@ in-cluster. If you see an error of the following form, this is likely the case.
 
 ```sh
 Error from server (Forbidden): error when creating
-"config/prow/cluster/starter-gcs.yaml": roles.rbac.authorization.k8s.io "<account>" is
+"config/prow/cluster/starter/starter-gcs.yaml": roles.rbac.authorization.k8s.io "<account>" is
 forbidden: attempt to grant extra privileges:
 [PolicyRule{Resources:["pods/log"], APIGroups:[""], Verbs:["get"]}
 PolicyRule{Resources:["prowjobs"], APIGroups:["prow.k8s.io"], Verbs:["get"]}
@@ -135,36 +178,46 @@ $ openssl rand -hex 20 > /path/to/hook/secret
 $ kubectl create secret -n prow generic hmac-token --from-file=hmac=/path/to/hook/secret
 ```
 
-The `github-token` is the *Personal access token* you created above for the [GitHub bot account].
-If you need to create one, go to <https://github.com/settings/tokens>.
+Afterwards, edit your GitHub app and set `Webhook secret` to the value of `/path/to/hook/secret`.
+
+The `github-token` is the RSA private key and app id you created above for the GitHub App.
 
 ```sh
-kubectl create secret -n prow generic github-token --from-file=token=/path/to/github/token
+kubectl create secret -n prow generic github-token --from-file=cert=/path/to/github/cert --from-literal=appid=<<The ID of your app>>
 ```
 
 ### Update the sample manifest
 
 There are two sample manifests to get you started:
-* [`starter-s3.yaml`](/config/prow/cluster/starter-s3.yaml) sets up a minio as blob storage for logs and is particularly well suited to quickly get something working
-* [`starter-gcs.yaml`](/config/prow/cluster/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](#Configure a GCS bucket) for details.
+* [`starter-s3.yaml`](/config/prow/cluster/starter/starter-s3.yaml) sets up a minio as blob storage for logs and is particularly well suited to quickly get something working. NOTE: this method requires 2 PVs of 100Gi each.
+* [`starter-gcs.yaml`](/config/prow/cluster/starter/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](#configure-a-gcs-bucket) for details.
+* [`starter-azure.yaml`](/config/prow/cluster/starter/starter-azure.yaml) uses Azure as blob storage and requires MinIO deployment. See [this](#configure-an-azure-blob-storage) for details.
 
 **Note**: It will deploy prow in the `prow` namespace of the cluster.
 
 Regardless of which object storage you choose, the below adjustments are always needed:
 
-* The github token by replacing the `<<insert-token-here>>` string
+* The GitHub app cert by replacing the `<<insert-downloaded-cert-here>>` string
+* The GitHub app id by replacing the `<<insert-the-app-id-here>>` string
 * The hmac token by replacing the `<< insert-hmac-token-here >>` string
 * The domain by replacing the `<< your-domain.com >>` string
 * Optionally, you can update the `cert-manager.io/cluster-issuer:` annotation if you use cert-manager
-* Your github organization(s) by replacing the `<< your_github_org >>` string
+* Your GitHub organization(s) by replacing the `<< your_github_org >>` string
 
 ### Add the prow components to the cluster
 
-Apply the manifest you edited above by executing one of the following two commands:
+First you need to create the ProwJob custom resource:
+
+```
+kubectl apply --server-side=true -f config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
+```
+
+Apply the manifest you edited above by executing one of the following three commands:
 
 
-* `kubectl apply -f config/prow/cluster/starter-s3.yaml`
-* `kubectl apply -f config/prow/cluster/starter-gcs.yaml`
+* `kubectl apply -f config/prow/cluster/starter/starter-s3.yaml`
+* `kubectl apply -f config/prow/cluster/starter/starter-gcs.yaml`
+* `kubectl apply -f config/prow/cluster/starter/starter-azure.yaml`
 
 After a moment, the cluster components will be running.
 
@@ -187,13 +240,13 @@ tide-65489c49b8-rpnn2                      1/1     Running   0          3m2s
 
 #### Get ingress IP address
 
-Find out your external address. It might take a couple minutes for the IP to
+Find out your external address. It might take a couple of minutes for the IP to
 show up.
 
 ```sh
 kubectl get ingress -n prow prow
 NAME   CLASS    HOSTS                     ADDRESS               	PORTS     AGE
-prow   <none>   prow.<<yourdomain.com>>   an.ip.addr.ess          80, 443   22d
+prow   <none>   prow.<<your-domain.com>>   an.ip.addr.ess          80, 443   22d
 ```
 
 Go to that address in a web browser and verify that the "echo-test" job has a
@@ -202,49 +255,20 @@ to start receiving GitHub events!
 
 ## Add the webhook to GitHub
 
-### Add your first webhook
+To set up the webhook, you have to go the GitHub UI and edit your app. Update
+the `Webhook URL` property to `https://prow.<<your-domain.com>>/hook`. Use the URL
+shown above when getting the `Ingress`.
 
-You have two options to do this:
+## Install Prow for a GitHub organization or repo
 
-1. You can do this with the `update-hook` utility:
-
-```sh
-# Note /path/to/hook/secret and /path/to/github/token from earlier secrets step
-# Note the an.ip.addr.ess from previous ingress step
-
-# Ideally use https://bazel.build, alternatively try:
-#   go get -u k8s.io/test-infra/experiment/update-hook && update-hook
-$ bazel run //experiment/update-hook -- \
-  --hmac-path=/path/to/hook/secret \
-  --github-token-path=/path/to/github/token \
-  --hook-url http://an.ip.addr.ess/hook \
-  --repo my-org/my-repo \
-  --repo my-whole-org \
-  --confirm=false  # Remove =false to actually add hook
-```
-
-Look for the `http://an.ip.addr.ess/hook` you added above.
-A green check mark (for a ping event, if you click edit and view the details of the event) suggests everything is working!
-
-2. If you do not want to use the `update-hook` utility, you can go the GitHub web page and add the hook manually:
-
-- Go to your org or repo and click `Settings -> Webhooks`, and click `Add webhook`.
-- Change the `Payload URL` to `http://an.ip.addr.ess/hook` you are planning to add.
-- Change the `Content type` to `application/json`, and change your `Secret` to the `hmac-path` secret you created above.
-- Change the trigger to `Send me **everything**`.
-- Click `Add webhook`.
-
-### Use `hmac` tool to manage webhooks and hmac tokens (recommended)
-
-If you need to configure webhooks for multiple orgs or repos, the manual process does not work that well as it
-can be error-prone, and it'll be painful when you want to replace the hmac token if it is accidentally leaked.
-
-In such case, it's recommended to use the [hmac](/prow/cmd/hmac/README.md) tool to automatically manage the webhooks
-and hmac tokens for you via declarative configuration.
+To install Prow for an org or repo, go to your GitHub app -> `Install app` and select the organizations to
+install the app in. If you want to install the app in other accounts than the one that created it, you need
+to make it public. To do so, go to `Advanced` -> `Make this GitHub app public`. After it is public, everyone
+can install it (Prow will not do anything for orgs or repos it doesn't have configuration for though).
 
 ## Deploying with GitHub Enterprise
 
-When using GitHub Enterpise (GHE), Prow must be configured slightly differently. It's possible to run GHE with or 
+When using GitHub Enterprise (GHE), Prow must be configured slightly differently. It's possible to run GHE with or
 without the `api` subdomain:
 * with the `api` subdomain the endpoints are:
    * v3: `https://api.<<github-hostname>>`
@@ -254,16 +278,16 @@ without the `api` subdomain:
   * graphql: `https://<<github-hostname>>/api/graphql`
 
 Prow component configuration:
-* `ghproxy`: 
+* `ghproxy`:
   * configure arg: `--upstream=<<v3-endpoint>>`
-  * the `ghproxy` will not be able to proxy graphql requests when GHE is not using the `api` subdomain 
+  * the `ghproxy` will not be able to proxy graphql requests when GHE is not using the `api` subdomain
     (because it tries to use the wrong context path for graphql)
 
 * `crier`, `deck`, `hook`, `status-reconciler`, `tide`, `prow-controller-manager`:
   * configure args:
     * `--github-endpoint=http://ghproxy`
     * `--github-endpoint=<<v3-endpoint>>`
-    * with `api` subdomain:    
+    * with `api` subdomain:
       * `--github-graphql-endpoint=http://ghproxy/graphql`
     * without `api` subdomain:
       * `--github-graphql-endpoint=<<graphql-endpoint>>`
@@ -278,12 +302,42 @@ ProwJob configuration:
 * ensure that `clone_uri` and `path_alias` are always set:
   * `clone_uri`: `https://<<github-hostname>>/<<org>>/<<repo>>.git`
   * `path_alias`: `<<github-hostname>>/<<org>>/<<repo>>`
-* it might be necessary to configure `plank.default_decoration_configs[].ssh_host_fingerprints`
+* it might be necessary to configure `plank.default_decoration_config_entries[].ssh_host_fingerprints`
 
 ## Next Steps
 
 You now have a working Prow cluster (Woohoo!), but it isn't doing anything interesting yet.
 This section will help you complete any additional setup that your instance may need.
+
+### Configure an Azure blob storage
+
+> If you want to persist logs and output in Azure, you need to follow the steps below.
+
+By default, Prow doesn't support Azure blob storage for storing job metadata, logs, and artifacts.
+However, with [MinIO](https://github.com/minio/minio) it is possible to keep artifacts in
+Azure blob storage as one would in GCS or S3. MinIO Gateway adds Amazon S3 compatibility
+to Azure Blob Storage. As such, we can mimic S3 storage for Prow, while actually pushing
+artifacts to the Azure storage. To run MinIO in gateway mode with Azure being the backend
+storage, we need to pass the following arguments to MinIO deployment:
+
+```yaml
+  args:
+  - gateway # mode of MinIO
+  - azure # storage provider
+  - --console-address=:"<<CHANGE_ME_MINIO_CONSOLE_PORT>>" # predictable port number of the web console. E.g. 33333
+```
+
+In order to configure the Azure storage, follow the following steps:
+
+1. [create](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) a storage account.
+1. update MinIO deployment and `s3-credential` Secret with your Azure BlobStorage account name and key.
+1. update MinIO deployment and `minio-console` with your desired port number for accessing its web-console. `minio-console` service is optional and only necessary if you plan to access MinIO web-console.
+1. [create](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal) the following containers in
+  your Azure BlobStorage account where Prow will push various artifacts:
+    - `prow-logs`
+    - `status-reconciler`
+    - `tide`
+1. apply [starter-azure.yaml](../config/prow/cluster/starter/starter-azure.yaml).
 
 ### Configure a GCS bucket
 
@@ -306,40 +360,43 @@ In order to configure the bucket, follow the following steps:
 - Either use a Kubernetes service account bound to the GCP service account (recommended on GKE):
     1. Create a Kubernetes service account in the namespace where jobs will run.
     1. [Bind](/workload-identity#overview) the Kubernetes service account to the GCP service account.
-    1. edit the `plank` configuration for `default_decoration_configs[].config.default_service_account_name` to point to the Kubernetes service account.
+    1. edit the `plank` configuration for `default_decoration_config_entries[].config.default_service_account_name` to point to the Kubernetes service account.
 - OR use a GCP service account key file:
     1. [serialize](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) a key for the service account
     1. upload the key to a `Secret` under the `service-account.json` key
-    1. edit the `plank` configuration for `default_decoration_configs[].config.gcs_credentials_secret` to point to the `Secret` above
+    1. edit the `plank` configuration for `default_decoration_config_entries[].config.gcs_credentials_secret` to point to the `Secret` above
 
 After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating,
 the following collection of commands will execute the above steps for you:
 
+> You will need to change the bucket name from `gs://your-bucket-name/` to a globally unique one and use that instead in [`starter-gcs.yaml`](/config/prow/cluster/starter/starter-gcs.yaml) too.
+
 ```sh
 $ gcloud iam service-accounts create prow-gcs-publisher
-identifier="$(  gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)' )"
-$ gsutil mb gs://prow-artifacts/ # step 2
-$ gsutil iam ch allUsers:objectViewer gs://prow-artifacts # step 3
-$ gsutil iam ch "serviceAccount:${identifier}:objectAdmin" gs://prow-artifacts # step 4
+$ identifier="$(gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)')"
+$ gsutil mb gs://your-bucket-name/ # step 2
+$ gsutil iam ch allUsers:objectViewer gs://your-bucket-name # step 3
+$ gsutil iam ch "serviceAccount:${identifier}:objectAdmin" gs://your-bucket-name # step 4
 $ gcloud iam service-accounts keys create --iam-account "${identifier}" service-account.json # step 5
 $ kubectl -n test-pods create secret generic gcs-credentials --from-file=service-account.json # step 6
+$ kubectl -n prow create secret generic gcs-credentials --from-file=service-account.json # this secret is also needed by deployments in the prow namespace 
 ```
 
 #### Configure the version of plank's utility images
 
-Before we can update plank's `default_decoration_configs[]` we'll need to retrieve the version of plank. Check the deployment file or use the following:
+Before we can update plank's `default_decoration_config_entries[]` we'll need to retrieve the version of plank. Check the deployment file or use the following:
 
 ```sh
 $ kubectl get pod -n prow -l app=plank -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d: -f2
 v20191108-08fbf64ac
 ```
-Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_configs[]` in `config.yaml`:
+Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_config_entries[]` in `config.yaml`:
 
-For more information on how the pod utility images for prow are versioned see [autobump](/prow/cmd/autobump/README.md)
+For more information on how the pod utility images for prow are versioned see [generic-autobumper](/prow/cmd/generic-autobumper/README.md) and the [autobump config used for prow.k8s.io](/config/prow/autobump-config/prow-component-autobump-config.yaml)
 
 ```yaml
 plank:
-  default_decoration_configs:
+  default_decoration_config_entries:
   - config:
       utility_images: # using the tag we identified above
         clonerefs: "gcr.io/k8s-prow/clonerefs:v20191108-08fbf64ac"
@@ -392,7 +449,7 @@ presubmits:
 Again, run the following to test the files, replacing the paths as necessary:
 
 ```sh
-$ bazel run //prow/cmd/checkconfig -- --plugin-config=path/to/plugins.yaml --config-path=path/to/config.yaml
+$ go run ./prow/cmd/checkconfig --plugin-config=path/to/plugins.yaml --config-path=path/to/config.yaml
 ```
 
 Now run the following to update the configmap.
@@ -428,6 +485,8 @@ For more information on the job environment, see [`jobs.md`](/prow/jobs.md)
 You may choose to run test pods in a separate cluster entirely. This is a good practice to keep testing isolated from Prow's service components and secrets. It can also be used to furcate job execution to different clusters.
 One can use a Kubernetes [`kubeconfig`](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) file (i.e. `Config` object) to instruct Prow components to use the *build* cluster(s).
 All contexts in `kubeconfig` are used as *build* clusters and the [`InClusterConfig`](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod) (or `current-context`) is the *default*.
+
+NOTE: See the [`create-build-cluster.sh` script](create-build-cluster.sh) to help you quickly create and register a GKE cluster as a build cluster for a Prow instance. Continue reading for information about registering a build cluster by hand.
 
 Create a secret containing a `kubeconfig` like this:
 
@@ -469,10 +528,10 @@ Use [gencred][5] to create the `kubeconfig` file (and credentials) for accessing
 
 Create a *default* cluster context (if one does not already exist):
 
-> **NOTE:** If executing `gencred` with `bazel` like below, ensure `--output` is an *absolute* path.
+> **NOTE:** If executing `gencred` like below, ensure `--output` is an *absolute* path.
 
 ```sh
-$ bazel run //gencred -- \
+$ go run ./gencred \
   --context=<kube-context> \
   --name=default \
   --output=/tmp/kubeconfig.yaml \
@@ -484,7 +543,7 @@ Create one or more *build* cluster contexts:
 > **NOTE:** the `current-context` of the *existing* `kubeconfig` will be preserved.
 
 ```sh
-$ bazel run //gencred -- \
+$ go run ./gencred \
   --context=<kube-context> \
   --name=other \
   --output=/tmp/kubeconfig.yaml \

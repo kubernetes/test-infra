@@ -42,7 +42,7 @@ func NewPodLogArtifactFetcher(ja jobAgent) *PodLogArtifactFetcher {
 func (af *PodLogArtifactFetcher) Artifact(_ context.Context, key, artifactName string, sizeLimit int64) (api.Artifact, error) {
 	jobName, buildID, err := common.KeyToJob(key)
 	if err != nil {
-		return nil, fmt.Errorf("could not derive job: %v", err)
+		return nil, fmt.Errorf("could not derive job: %w", err)
 	}
 	containerName := containerName(artifactName)
 	podLog, err := NewPodLogArtifact(jobName, buildID, artifactName, containerName, sizeLimit, af.jobAgent)

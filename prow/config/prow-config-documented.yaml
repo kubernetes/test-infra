@@ -17,8 +17,13 @@ branch-protection:
     enforce_admins: false
 
     # Exclude specifies a set of regular expressions which identify branches
-    # that should be excluded from the protection policy
+    # that should be excluded from the protection policy, mutually exclusive with Include
     exclude:
+      - ""
+
+    # Include specifies a set of regular expressions which identify branches
+    # that should be included from the protection policy, mutually exclusive with Exclude
+    include:
       - ""
 
     # Orgs holds branch protection options for orgs by name
@@ -34,8 +39,13 @@ branch-protection:
             enforce_admins: false
 
             # Exclude specifies a set of regular expressions which identify branches
-            # that should be excluded from the protection policy
+            # that should be excluded from the protection policy, mutually exclusive with Include
             exclude:
+              - ""
+
+            # Include specifies a set of regular expressions which identify branches
+            # that should be included from the protection policy, mutually exclusive with Exclude
+            include:
               - ""
 
             # Protect overrides whether branch protection is enabled if set.
@@ -59,8 +69,13 @@ branch-protection:
                             enforce_admins: false
 
                             # Exclude specifies a set of regular expressions which identify branches
-                            # that should be excluded from the protection policy
+                            # that should be excluded from the protection policy, mutually exclusive with Include
                             exclude:
+                              - ""
+
+                            # Include specifies a set of regular expressions which identify branches
+                            # that should be included from the protection policy, mutually exclusive with Exclude
+                            include:
                               - ""
 
                             # Protect overrides whether branch protection is enabled if set.
@@ -74,7 +89,7 @@ branch-protection:
                                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                                 dismiss_stale_reviews: false
 
-                                # Restrictions appends users/teams that are allowed to merge
+                                # DismissalRestrictions appends users/teams that are allowed to merge
                                 dismissal_restrictions:
                                     teams:
                                       - ""
@@ -98,22 +113,27 @@ branch-protection:
 
                             # Restrictions limits who can merge
                             restrictions:
+                                apps:
+                                  - ""
                                 teams:
                                   - ""
                                 users:
                                   - ""
 
                             # Unmanaged makes us not manage the branchprotection.
-                            # Careful: Contrary to all other settings, this can _not_ be overridden
-                            # on a lower level and is always inherited.
                             unmanaged: false
 
                     # Admins overrides whether protections apply to admins if set.
                     enforce_admins: false
 
                     # Exclude specifies a set of regular expressions which identify branches
-                    # that should be excluded from the protection policy
+                    # that should be excluded from the protection policy, mutually exclusive with Include
                     exclude:
+                      - ""
+
+                    # Include specifies a set of regular expressions which identify branches
+                    # that should be included from the protection policy, mutually exclusive with Exclude
+                    include:
                       - ""
 
                     # Protect overrides whether branch protection is enabled if set.
@@ -127,7 +147,7 @@ branch-protection:
                         # DismissStale overrides whether new commits automatically dismiss old reviews if set
                         dismiss_stale_reviews: false
 
-                        # Restrictions appends users/teams that are allowed to merge
+                        # DismissalRestrictions appends users/teams that are allowed to merge
                         dismissal_restrictions:
                             teams:
                               - ""
@@ -151,14 +171,14 @@ branch-protection:
 
                     # Restrictions limits who can merge
                     restrictions:
+                        apps:
+                          - ""
                         teams:
                           - ""
                         users:
                           - ""
 
                     # Unmanaged makes us not manage the branchprotection.
-                    # Careful: Contrary to all other settings, this can _not_ be overridden
-                    # on a lower level and is always inherited.
                     unmanaged: false
 
             # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
@@ -169,7 +189,7 @@ branch-protection:
                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                 dismiss_stale_reviews: false
 
-                # Restrictions appends users/teams that are allowed to merge
+                # DismissalRestrictions appends users/teams that are allowed to merge
                 dismissal_restrictions:
                     teams:
                       - ""
@@ -193,14 +213,14 @@ branch-protection:
 
             # Restrictions limits who can merge
             restrictions:
+                apps:
+                  - ""
                 teams:
                   - ""
                 users:
                   - ""
 
             # Unmanaged makes us not manage the branchprotection.
-            # Careful: Contrary to all other settings, this can _not_ be overridden
-            # on a lower level and is always inherited.
             unmanaged: false
 
     # Protect overrides whether branch protection is enabled if set.
@@ -211,6 +231,10 @@ branch-protection:
     # branch protection config.
     protect-tested-repos: false
 
+    # ProtectReposWithOptionalJobs will make the Branchprotector manage required status
+    # contexts on repositories that only have optional jobs (default: false)
+    protect_repos_with_optional_jobs: false
+
     # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
     required_linear_history: false
 
@@ -219,7 +243,7 @@ branch-protection:
         # DismissStale overrides whether new commits automatically dismiss old reviews if set
         dismiss_stale_reviews: false
 
-        # Restrictions appends users/teams that are allowed to merge
+        # DismissalRestrictions appends users/teams that are allowed to merge
         dismissal_restrictions:
             teams:
               - ""
@@ -243,18 +267,18 @@ branch-protection:
 
     # Restrictions limits who can merge
     restrictions:
+        apps:
+          - ""
         teams:
           - ""
         users:
           - ""
 
     # Unmanaged makes us not manage the branchprotection.
-    # Careful: Contrary to all other settings, this can _not_ be overridden
-    # on a lower level and is always inherited.
     unmanaged: false
 
 
-# The git sha from which this config was generated
+# The git sha from which this config was generated.
 config_version_sha: ' '
 deck:
     # AdditionalAllowedBuckets is a list of storage buckets to allow in artifact requests
@@ -277,6 +301,60 @@ deck:
         # Logo is the location of the logo that will be loaded in deck.
         logo: ' '
 
+    # DefaultRerunAuthConfigs is a list of DefaultRerunAuthConfigEntry structures that specify who can
+    # trigger job reruns. Reruns are based on whether the entry's org/repo or cluster matches with the
+    # expected fields in the given configuration.
+
+    # Each entry in the slice specifies Repo and Cluster regexp filter fields to
+    # match against jobs and a corresponding RerunAuthConfig. The entry matching the job with the
+    # most specification is for authentication purposes.
+
+    # This field is smarter than the RerunAuthConfigs, because each
+    # entry includes additional Cluster regexp information that the old format
+    # does not consider.
+
+    # This field is mutually exclusive with the RerunAuthConfigs field.
+    default_rerun_auth_configs:
+      - # Cluster matches against the cluster alias of the build cluster that the
+        # ProwJob is configured to run on. Recall that ProwJobs default to running on
+        # the "default" build cluster if they omit the "cluster" field in config.
+        cluster: ' '
+
+        # OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+        # is associated with. If the job is a periodic, extra_refs[0] is used. If the
+        # job is a periodic without extra_refs, the empty string will be used.
+        # If this field is omitted all jobs will match.
+        repo: ' '
+
+        # Config is the RerunAuthConfig to apply if the filter fields all match the
+        # ProwJob. Note that when multiple entries match a ProwJob the entry with the
+        # highest specification is used.
+        rerun_auth_configs:
+            # If AllowAnyone is set to true, any user can rerun the job
+            allow_anyone: true
+
+            # GitHubOrgs contains names of GitHub organizations whose members can rerun the job
+            github_orgs:
+              - ""
+
+            # GitHubTeams contains IDs of GitHub teams of users who can rerun the job
+            # If you know the name of a team and the org it belongs to,
+            # you can look up its ID using this command, where the team slug is the hyphenated name:
+            # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams/<team slug>"
+            # or, to list all teams in a given org, use
+            # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams"
+            github_team_ids:
+              - 0
+
+            # GitHubTeamSlugs contains slugs and orgs of teams of users who can rerun the job
+            github_team_slugs:
+              - org: ' '
+                slug: ' '
+
+            # GitHubUsers contains names of individual users who can rerun the job
+            github_users:
+              - ""
+
     # ExternalAgentLogs ensures external agents can expose
     # their logs in prow.
     external_agent_logs:
@@ -297,11 +375,14 @@ deck:
     hidden_repos:
       - ""
 
+    # RerunAuthConfigs is not deprecated but DefaultRerunAuthConfigs should be used in favor.
+    # It remains a part of Deck for the purposes of backwards compatibility.
     # RerunAuthConfigs is a map of configs that specify who is able to trigger job reruns. The field
     # accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
     # config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
     rerun_auth_configs:
         "":
+            allow_anyone: true
             github_orgs:
               - ""
             github_team_ids:
@@ -315,10 +396,10 @@ deck:
     # SkipStoragePathValidation skips validation that restricts artifact requests to specific buckets.
     # By default, buckets listed in the GCSConfiguration are automatically allowed.
     # Additional locations can be allowed via `AdditionalAllowedBuckets` fields.
-    # When unspecified (nil), it defaults to true (until ~Jan 2021).
+    # When unspecified (nil), it defaults to false
     skip_storage_path_validation: false
 
-    # Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck
+    # Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck.
     spyglass:
         # If set, Announcement is used as a Go HTML template string to be displayed at the top of
         # each spyglass page. Using HTML in the template is acceptable.
@@ -330,10 +411,22 @@ deck:
         # prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
         gcs_browser_prefix: ' '
 
-        # GCSBrowserPrefixes are used to generate a link to a human-usable GCS browser.
+        # GCSBrowserPrefixesByRepo are used to generate a link to a human-usable GCS browser.
         # They are mapped by org, org/repo or '*' which is the default value.
+        # These are the most specific and will override GCSBrowserPrefixesByBucket if both are resolved.
         gcs_browser_prefixes:
             "": ""
+
+        # GCSBrowserPrefixesByBucket are used to generate a link to a human-usable GCS browser.
+        # They are mapped by bucket name or '*' which is the default value.
+        # They will only be utilized if there is not a GCSBrowserPrefixesByRepo for the org/repo.
+        gcs_browser_prefixes_by_bucket:
+            "": ""
+
+        # HidePRHistLink allows prow hiding PR History link from deck, this is handy especially for
+        # prow instances that only serves gerrit.
+        # This might become obsolete once https://github.com/kubernetes/test-infra/issues/24130 is fixed.
+        hide_pr_history_link: true
 
         # Lenses is a list of lens configurations.
         lenses:
@@ -349,21 +442,21 @@ deck:
             optional_files:
               - ""
 
-            # RemoteConfig specifies how to access remote lenses
+            # RemoteConfig specifies how to access remote lenses.
             remote_config:
-                # The endpoint for the lense
+                # The endpoint for the lense.
                 endpoint: ' '
 
-                # HideTitle defines if we will keep showing the title after lens loads
+                # HideTitle defines if we will keep showing the title after lens loads.
                 hide_title: false
 
-                # Priority for lens ordering, lowest priority first
+                # Priority for lens ordering, lowest priority first.
                 priority: 0
 
-                # The endpoint for static resources
+                # The endpoint for static resources.
                 static_root: ' '
 
-                # The human-readable title for the lens
+                # The human-readable title for the lens.
                 title: ' '
 
             # RequiredFiles is a list of regexes of file paths that must all be present for a lens to appear.
@@ -371,6 +464,10 @@ deck:
             # by using a pipe in a regex.
             required_files:
               - ""
+
+        # PRHistLinkTemplate is the template for constructing href of `PR History` button,
+        # by default it's "/pr-history?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}"
+        pr_history_link_template: ' '
 
         # TestGridConfig is the path to the TestGrid config proto. If the path begins with
         # "gs://" it is assumed to be a GCS reference, otherwise it is read from the local filesystem.
@@ -398,8 +495,9 @@ gerrit:
     # DeckURL is the root URL of Deck. This is used to construct links to
     # job runs for a given CL.
     deck_url: ' '
+    org_repos_config: null
 
-    # TickInterval is how often we do a sync with binded gerrit instance
+    # TickInterval is how often we do a sync with binded gerrit instance.
     tick_interval: 0s
 
 
@@ -411,10 +509,21 @@ github:
     link_url: ' '
 github_reporter:
     # JobTypesToReport is used to determine which type of prowjob
-    # should be reported to github
+    # should be reported to github.
 
     # defaults to both presubmit and postsubmit jobs.
     job_types_to_report:
+      - ""
+
+    # NoCommentRepos is a list of orgs and org/repos for which failure report
+    # comments should not be maintained. Status contexts will still be written.
+    no_comment_repos:
+      - ""
+
+    # SummaryCommentRepos is a list of orgs and org/repos for which failure report
+    # comments is only sent when all jobs from current SHA are finished. Status
+    # contexts will still be written.
+    summary_comment_repos:
       - ""
 horologium:
     # TickInterval is the interval in which we check if new jobs need to be
@@ -479,19 +588,6 @@ managed_webhooks:
     respect_legacy_global_token: false
 
 
-# OwnersDirBlacklist is deprecated, use OwnersDirDenylist instead
-owners_dir_blacklist:
-    # Default configures a default denylist for all repos (or orgs).
-    # Some directories like ".git", "_output" and "vendor/.*/OWNERS"
-    # are already preconfigured to be denylisted, and need not be included here.
-    default:
-      - ""
-
-    # Repos configures a directory denylist per repo (or org)
-    repos:
-        "": null
-
-
 # OwnersDirDenylist is used to configure regular expressions matching directories
 # to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 owners_dir_denylist:
@@ -501,15 +597,32 @@ owners_dir_denylist:
     default:
       - ""
 
-    # Repos configures a directory denylist per repo (or org)
+    # By default, some directories like ".git", "_output" and "vendor/.*/OWNERS"
+    # are preconfigured to be denylisted.
+    # If set, IgnorePreconfiguredDefaults will not add these preconfigured directories
+    # to the denylist.
+    ignore_preconfigured_defaults: true
+
+    # Repos configures a directory denylist per repo (or org).
     repos:
         "": null
 plank:
-    # DefaultDecorationConfigEntries holds the default decoration config for specific values.
+    # BuildClusterStatusFile is an optional field used to specify the blob storage location
+    # to publish cluster status information.
+    # e.g. gs://my-bucket/cluster-status.json
+    build_cluster_status_file: ' '
+
+    # DefaultDecorationConfigEntries is used to populate DefaultDecorationConfigs.
+
     # Each entry in the slice specifies Repo and Cluster regexp filter fields to
     # match against jobs and a corresponding DecorationConfig. All entries that
     # match a job are used. Later matching entries override the fields of earlier
     # matching entries.
+
+    # This field is smarter than the DefaultDecorationConfigsMap, because each
+    # entry includes additional Cluster regexp information that the old format
+    # does not consider.
+
     # This field is mutually exclusive with the DefaultDecorationConfigsMap field.
     default_decoration_config_entries:
       - # Cluster matches against the cluster alias of the build cluster that the
@@ -557,7 +670,7 @@ plank:
 
             # CookieFileSecret is the name of a kubernetes secret that contains
             # a git http.cookiefile, which should be used during the cloning process.
-            cookiefile_secret: ' '
+            cookiefile_secret: ""
 
             # DefaultServiceAccountName is the name of the Kubernetes service account
             # that should be used by the pod if one is not specified in the podspec.
@@ -606,6 +719,24 @@ plank:
             # that holds GCS push credentials.
             gcs_credentials_secret: ""
 
+            # GitHubAPIEndpoints are the endpoints of GitHub APIs.
+            github_api_endpoints:
+              - ""
+
+            # GitHubAppID is the ID of GitHub App, which is going to be used for fetching a private
+            # repository.
+            github_app_id: ' '
+
+            # GitHubAppPrivateKeySecret is a Kubernetes secret that contains the GitHub App private key,
+            # which is going to be used for fetching a private repository.
+            github_app_private_key_secret:
+                # Key is the key of the corresponding kubernetes secret that
+                # holds the value of the GitHub App private key.
+                key: ' '
+
+                # Name is the name of a kubernetes secret.
+                name: ' '
+
             # GracePeriod is how long the pod utilities will wait
             # after sending SIGINT to send SIGKILL when aborting
             # a job. Only applicable if decorating the PodSpec.
@@ -614,7 +745,7 @@ plank:
             # OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
             # which is going to be used for fetching a private repository.
             oauth_token_secret:
-                # Key is the a key of the corresponding kubernetes secret that
+                # Key is the key of the corresponding kubernetes secret that
                 # holds the value of the OAuth token.
                 key: ' '
 
@@ -693,9 +824,11 @@ plank:
         # If this field is omitted all jobs will match.
         repo: ' '
 
-    # DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the literal string '*',
-    # to the default decoration config to use for that key. The '*' key matches all jobs.
-    # (Periodics use extra_refs[0] for matching if present.)
+    # DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the
+    # literal string '*', to the default decoration config to use for that key.
+    # The '*' key matches all jobs. (Periodics use extra_refs[0] for matching
+    # if present.)
+
     # This field is mutually exclusive with the DefaultDecorationConfigEntries field.
     default_decoration_configs:
         "":
@@ -734,7 +867,7 @@ plank:
 
             # CookieFileSecret is the name of a kubernetes secret that contains
             # a git http.cookiefile, which should be used during the cloning process.
-            cookiefile_secret: ' '
+            cookiefile_secret: ""
 
             # DefaultServiceAccountName is the name of the Kubernetes service account
             # that should be used by the pod if one is not specified in the podspec.
@@ -783,6 +916,24 @@ plank:
             # that holds GCS push credentials.
             gcs_credentials_secret: ""
 
+            # GitHubAPIEndpoints are the endpoints of GitHub APIs.
+            github_api_endpoints:
+              - ""
+
+            # GitHubAppID is the ID of GitHub App, which is going to be used for fetching a private
+            # repository.
+            github_app_id: ' '
+
+            # GitHubAppPrivateKeySecret is a Kubernetes secret that contains the GitHub App private key,
+            # which is going to be used for fetching a private repository.
+            github_app_private_key_secret:
+                # Key is the key of the corresponding kubernetes secret that
+                # holds the value of the GitHub App private key.
+                key: ' '
+
+                # Name is the name of a kubernetes secret.
+                name: ' '
+
             # GracePeriod is how long the pod utilities will wait
             # after sending SIGINT to send SIGKILL when aborting
             # a job. Only applicable if decorating the PodSpec.
@@ -791,7 +942,7 @@ plank:
             # OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
             # which is going to be used for fetching a private repository.
             oauth_token_secret:
-                # Key is the a key of the corresponding kubernetes secret that
+                # Key is the key of the corresponding kubernetes secret that
                 # holds the value of the OAuth token.
                 key: ' '
 
@@ -864,13 +1015,25 @@ plank:
                 # sidecar is the pull spec used for the sidecar utility
                 sidecar: ' '
 
+    # JobQueueConcurrencies is an optional field used to define job queue max concurrency.
+    # Each job can be assigned to a specific queue which has its own max concurrency,
+    # independent from the job's name. An example use case would be easier
+    # scheduling of jobs using boskos resources. This mechanism is separate from
+    # ProwJob's MaxConcurrency setting.
+    job_queue_capacities:
+        "": 0
+
     # JobURLPrefixConfig is the host and path prefix under which job details
-    # will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
+    # will be viewable. Use `org/repo`, `org` or `*`as key and an url as value.
     job_url_prefix_config:
         "": ""
 
     # JobURLTemplateString compiles into JobURLTemplate at load time.
     job_url_template: ' '
+
+    # JobURLPrefixDisableAppendStorageProvider disables that the storageProvider is
+    # automatically appended to the JobURLPrefix.
+    jobURLPrefixDisableAppendStorageProvider: true
 
     # PodPendingTimeout is after how long the controller will perform a garbage
     # collection on pending pods. Defaults to 10 minutes.
@@ -900,6 +1063,31 @@ plank:
 pod_namespace: ' '
 
 
+# ProwJobDefaultEntries holds a list of defaults for specific values
+# Each entry in the slice specifies Repo and CLuster regexp filter fields to
+# match against the jobs and a corresponding ProwJobDefault . All entries that
+# match a job are used. Later matching entries override the fields of earlier
+# matching entires.
+prowjob_default_entries:
+  - # Cluster matches against the cluster alias of the build cluster that the
+    # ProwJob is configured to run on. Recall that ProwJobs default to running on
+    # the "default" build cluster if they omit the "cluster" field in config.
+    cluster: ' '
+
+    # Config is the ProwJobDefault to apply if the filter fields all match the
+    # ProwJob. Note that when multiple entries match a ProwJob they are all used
+    # by sequentially merging with later entries overriding fields from earlier
+    # entries.
+    config:
+        tenant_id: ' '
+
+    # OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+    # is associated with. If the job is a periodic, extra_refs[0] is used. If the
+    # job is a periodic without extra_refs, the empty string will be used.
+    # If this field is omitted all jobs will match.
+    repo: ' '
+
+
 # ProwJobNamespace is the namespace in the cluster that prow
 # components will use for looking up ProwJobs. The namespace
 # needs to exist and will not be created by prow.
@@ -907,9 +1095,20 @@ pod_namespace: ' '
 prowjob_namespace: ' '
 
 
-# Pub/Sub Subscriptions that we want to listen to
+# Pub/Sub Subscriptions that we want to listen to.
 pubsub_subscriptions:
     "": null
+
+
+# PubSubTriggers defines Pub/Sub Subscriptions that we want to listen to,
+# can be used to restrict build cluster on a topic.
+pubsub_triggers:
+  - allowed_clusters:
+      - ""
+    max_outstanding_messages: 0
+    project: ' '
+    topics:
+      - ""
 
 
 # PushGateway is a prometheus push gateway.
@@ -922,10 +1121,10 @@ push_gateway:
     # to the pushgateway. Defaults to 1m.
     interval: 0s
 
-    # ServeMetrics tells if or not the components serve metrics
+    # ServeMetrics tells if or not the components serve metrics.
     serve_metrics: false
 sinker:
-    # ExcludeClusters are build clusters that don't want to be managed by sinker
+    # ExcludeClusters are build clusters that don't want to be managed by sinker.
     exclude_clusters:
       - ""
 
@@ -953,12 +1152,13 @@ slack_reporter_configs:
           - ""
         job_types_to_report:
           - ""
+        report: false
         report_template: ' '
 
 
 # StatusErrorLink is the url that will be used for jenkins prowJobs that can't be
 # found, or have another generic issue. The default that will be used if this is not set
-# is: https://github.com/kubernetes/test-infra/issues
+# is: https://github.com/kubernetes/test-infra/issues.
 status_error_link: ' '
 tide:
     # BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
@@ -1033,6 +1233,22 @@ tide:
         # whether to consider unknown contexts optional (skip) or required.
         skip-unknown-contexts: false
 
+    # DisplayAllQueriesInStatus controls if Tide should mention all queries in the status it
+    # creates. The default is to only mention the one to which we are closest (Calculated
+    # by total number of requirements - fulfilled number of requirements).
+    display_all_tide_queries_in_status: true
+    gerrit:
+        queries:
+          - filters:
+                branches:
+                  - ""
+                excluded_branches:
+                  - ""
+            opt_out_help: true
+            org: ' '
+            repos:
+              - ""
+
     # A key/value pair of an org/repo as the key and Go template to override
     # the default merge commit title and/or message. Template is passed the
     # PullRequest struct (prow/github/types.go#PullRequest)
@@ -1096,6 +1312,7 @@ tide:
           - ""
         repos:
           - ""
+        reviewApprovedRequired: true
 
     # RebaseLabel is an optional label that is used to identify PRs that should
     # always be rebased and merged.

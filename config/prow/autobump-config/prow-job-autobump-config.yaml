@@ -1,8 +1,8 @@
 ---
-gitHubLogin: "k8s-ci-robot"
-gitHubToken: "/etc/github-token/oauth"
+gitHubLogin: "k8s-infra-ci-robot"
+gitHubToken: "/etc/github-token/token"
 gitName: "Kubernetes Prow Robot"
-gitEmail: "k8s.ci.robot@gmail.com"
+gitEmail: "k8s-infra-ci-robot@kubernetes.io"
 onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
 skipPullRequest: false
 gitHubOrg: "kubernetes"
@@ -17,13 +17,25 @@ extraFiles:
   - "config/jobs/image-pushing/k8s-staging-sig-storage.sh"
   - "config/jobs/kubernetes/sig-cloud-provider/azure/generate.sh"
   - "config/jobs/kubernetes/kops/build_jobs.py"
-  - "config/jobs/kubernetes-sigs/sig-windows/generate-presubmits.sh"
+  - "config/jobs/kubernetes-csi/gen-jobs.sh"
+  - "config/jobs/README.md"
   - "releng/generate_tests.py"
+  - "releng/test_config.yaml"
   - "images/kubekins-e2e/Dockerfile"
 targetVersion: "latest"
 prefixes:
-  - name: "K8s-Test-Images"
+  - name: "k8s-testimages images"
     prefix: "gcr.io/k8s-testimages/"
+    repo: "https://github.com/kubernetes/test-infra"
+    summarise: false
+    consistentImages: false
+  - name: "k8s-staging-test-infra images"
+    prefix: "gcr.io/k8s-staging-test-infra"
+    repo: "https://github.com/kubernetes/test-infra"
+    summarise: false
+    consistentImages: false
+  - name: "test-infra images"
+    prefix: "k8s.gcr.io/test-infra"
     repo: "https://github.com/kubernetes/test-infra"
     summarise: false
     consistentImages: false

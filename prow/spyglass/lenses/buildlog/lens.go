@@ -20,16 +20,21 @@ package buildlog
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
+	"net/http"
+	"net/url"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 
 	prowconfig "k8s.io/test-infra/prow/config"
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -44,13 +49,26 @@ const (
 )
 
 type config struct {
-	HighlightRegexes []string `json:"highlight_regexes"`
-	HideRawLog       bool     `json:"hide_raw_log,omitempty"`
+	HighlightRegexes []string         `json:"highlight_regexes"`
+	HideRawLog       bool             `json:"hide_raw_log,omitempty"`
+	Highlighter      *highlightConfig `json:"highlighter,omitempty"`
+}
+
+type highlightConfig struct {
+	// Endpoint specifies the URL to send highlight requests
+	Endpoint string `json:"endpoint"`
+	// Pin should automatically save the highlight when set.
+	Pin bool `json:"pin"`
+	// Overwrite should replace any existing highlight when set.
+	Overwrite bool `json:"overwrite"`
+	// Auto should request highlights before loading the page, implies Pin.
+	Auto bool `json:"auto"`
 }
 
 type parsedConfig struct {
 	highlightRegex *regexp.Regexp
 	showRawLog     bool
+	highlighter    *highlightConfig
 }
 
 var _ api.Lens = Lens{}
@@ -69,7 +87,7 @@ func (lens Lens) Config() lenses.LensConfig {
 
 // Header executes the "header" section of the template.
 func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig prowconfig.Spyglass) string {
-	return executeTemplate(resourceDir, "header", BuildLogsView{})
+	return executeTemplate(resourceDir, "header", buildLogsView{})
 }
 
 // defaultErrRE matches keywords and glog error messages.
@@ -88,29 +106,42 @@ type SubLine struct {
 
 // LogLine represents a line displayed in the LogArtifactView.
 type LogLine struct {
-	ArtifactName string
+	ArtifactName *string
 	Number       int
 	Length       int
 	Highlighted  bool
 	Skip         bool
 	SubLines     []SubLine
+	Focused      bool
+	Clip         bool
 }
 
 // LineGroup holds multiple lines that can be collapsed/expanded as a block
 type LineGroup struct {
 	Skip                   bool
 	Start, End             int // closed, open
-	ByteOffset, ByteLength int
+	ByteOffset, ByteLength int64
 	LogLines               []LogLine
+	ArtifactName           *string
 }
 
-// LineRequest represents a request for output lines from an artifact. If Offset is 0 and Length
+const moreLines = 20
+
+func (g LineGroup) Expand() bool {
+	return len(g.LogLines) >= moreLines
+}
+
+// callbackRequest represents a request for output lines from an artifact. If Offset is 0 and Length
 // is -1, all lines will be fetched.
-type LineRequest struct {
+type callbackRequest struct {
 	Artifact  string `json:"artifact"`
 	Offset    int64  `json:"offset"`
 	Length    int64  `json:"length"`
 	StartLine int    `json:"startLine"`
+	Top       int    `json:"top"`
+	Bottom    int    `json:"bottom"`
+	SaveEnd   *int   `json:"saveEnd"`
+	Analyze   bool   `json:"analyze"`
 }
 
 // LinesSkipped returns the number of lines skipped in a line group.
@@ -125,10 +156,12 @@ type LogArtifactView struct {
 	LineGroups   []LineGroup
 	ViewAll      bool
 	ShowRawLog   bool
+	CanSave      bool
+	CanAnalyze   bool
 }
 
-// BuildLogsView holds each log file view
-type BuildLogsView struct {
+// buildLogsView holds each log file view
+type buildLogsView struct {
 	LogViews []LogArtifactView
 }
 
@@ -148,6 +181,10 @@ func getConfig(rawConfig json.RawMessage) parsedConfig {
 		logrus.WithError(err).Error("Failed to decode buildlog config")
 		return conf
 	}
+	conf.highlighter = c.Highlighter
+	if conf.highlighter != nil && conf.highlighter.Endpoint == "" {
+		conf.highlighter = nil
+	}
 	conf.showRawLog = !c.HideRawLog
 	if len(c.HighlightRegexes) == 0 {
 		return conf
@@ -164,7 +201,7 @@ func getConfig(rawConfig json.RawMessage) parsedConfig {
 
 // Body returns the <body> content for a build log (or multiple build logs)
 func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage, spyglassConfig prowconfig.Spyglass) string {
-	buildLogsView := BuildLogsView{
+	buildLogsView := buildLogsView{
 		LogViews: []LogArtifactView{},
 	}
 
@@ -181,26 +218,180 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			logrus.WithError(err).Info("Error reading log.")
 			continue
 		}
-		av.LineGroups = groupLines(highlightLines(lines, 0, av.ArtifactName, conf.highlightRegex))
+		artifact := av.ArtifactName
+		meta, _ := a.Metadata()
+		start, end := -1, -1
+
+		for key, val := range meta {
+			var targ *int
+			if key == focusStart {
+				targ = &start
+			} else if key == focusEnd {
+				targ = &end
+			} else {
+				continue
+			}
+
+			n, err := strconv.Atoi(val)
+			if err != nil {
+				continue
+			}
+			*targ = n
+		}
+		analyze := conf.highlighter != nil
+		if start == -1 && analyze && conf.highlighter.Auto {
+			resp, err := analyzeArtifact(a, &conf)
+			if err != nil {
+				logrus.WithError(err).Info("Failed to analyze artifact")
+			} else {
+				start, end = resp.Min, resp.Max
+			}
+		}
+		av.LineGroups = groupLines(&artifact, start, end, highlightLines(lines, 0, &artifact, conf.highlightRegex)...)
 		av.ViewAll = true
+		av.CanSave = canSave(a.CanonicalLink())
+		av.CanAnalyze = analyze
 		buildLogsView.LogViews = append(buildLogsView.LogViews, av)
 	}
 
 	return executeTemplate(resourceDir, "body", buildLogsView)
 }
 
+func canSave(link string) bool {
+	return strings.Contains(link, pkgio.GSAnonHost) || strings.Contains(link, pkgio.GSCookieHost)
+}
+
+const failedUnmarshal = "Failed to unmarshal request"
+const missingArtifact = "No artifact named %s"
+const focusStart = "focus-start"
+const focusEnd = "focus-end"
+
 // Callback is used to retrieve new log segments
 func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage, spyglassConfig prowconfig.Spyglass) string {
-	var request LineRequest
+	var request callbackRequest
 	err := json.Unmarshal([]byte(data), &request)
 	if err != nil {
-		return "failed to unmarshal request"
+		return failedUnmarshal
 	}
 	artifact, ok := artifactByName(artifacts, request.Artifact)
 	if !ok {
-		return "no artifact named " + request.Artifact
+		return fmt.Sprintf(missingArtifact, request.Artifact)
+	}
+	if request.Analyze {
+		conf := getConfig(rawConfig)
+		hr, err := analyzeArtifact(artifact, &conf)
+		if err != nil {
+			hr = &highlightResponse{Error: err.Error()}
+		}
+		buf, err := json.Marshal(hr)
+		if err != nil {
+			return err.Error()
+		}
+		return string(buf)
+	}
+	if request.SaveEnd != nil {
+		return storeHighlightedLines(&request, artifact)
+	}
+	return loadLines(&request, artifact, resourceDir, rawConfig)
+}
+
+type highlightRequest struct {
+	// URL to highlight
+	URL string `json:"url"`
+	// Pin if the highlight should be saved
+	Pin bool `json:"pin"`
+	// Overwrite if an existing highlight should be replaced
+	Overwrite bool `json:"overwrite"`
+}
+
+type highlightResponse struct {
+	// Min line number to highlight
+	Min int `json:"min"`
+	// Max line number to highlight (inclusive).
+	Max int `json:"max"`
+	// Link to the highlighted lines
+	Link string `json:"link,omitempty"`
+	// Pinned if the highlight changed
+	Pinned bool `json:"pinned,omitempty"`
+	// Error describing the problem.
+	Error string `json:"error,omitempty"`
+}
+
+var (
+	errNoHighlighter = errors.New("buildlog.highlighter unconfigured")
+)
+
+func analyzeArtifact(artifact api.Artifact, conf *parsedConfig) (*highlightResponse, error) {
+	if conf.highlighter == nil {
+		return nil, errNoHighlighter
+	}
+	link := artifact.CanonicalLink()
+	if !canSave(link) {
+		return nil, fmt.Errorf("Unsupported artifact: %q", link)
+	}
+	u, err := url.Parse(link)
+	if err != nil {
+		return nil, fmt.Errorf("parse artifact link %q: %v", link, err)
+	}
+	log := logrus.WithFields(logrus.Fields{
+		"artifact": link,
+	})
+
+	req := highlightRequest{
+		URL:       u.String(),
+		Pin:       conf.highlighter.Pin || conf.highlighter.Auto,
+		Overwrite: conf.highlighter.Overwrite,
 	}
 
+	buf, err := json.Marshal(req)
+	if err != nil {
+		log.WithError(err).Error("Failed to marshal highlight request")
+		return nil, fmt.Errorf("bad request for %s", link)
+	}
+
+	resp, err := http.Post(conf.highlighter.Endpoint, "text/plain", bytes.NewBuffer(buf))
+	if err != nil {
+		log.WithError(err).WithField("link", link).Error("POST to highlighter failed")
+		return nil, fmt.Errorf("POST %s failed", link)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		log.WithField("status", resp.StatusCode).Error("Response failed")
+		return nil, fmt.Errorf("%s returned status code %d", link, resp.StatusCode)
+	}
+
+	dec := json.NewDecoder(resp.Body)
+	var hr highlightResponse
+	if err := dec.Decode(&hr); err != nil {
+		log.WithError(err).Error("Failed to decode response")
+		return nil, fmt.Errorf("bad response for %s", link)
+	}
+	return &hr, nil
+}
+
+func focusLines(artifact api.Artifact, start, end int) error {
+	return artifact.UpdateMetadata(map[string]string{
+		focusStart: strconv.Itoa(start),
+		focusEnd:   strconv.Itoa(end),
+	})
+}
+
+func storeHighlightedLines(request *callbackRequest, artifact api.Artifact) string {
+	err := focusLines(artifact, request.StartLine, *request.SaveEnd)
+	if err != nil {
+		return err.Error()
+	}
+	logrus.WithFields(logrus.Fields{
+		"artifact": artifact.CanonicalLink(),
+		"start":    request.StartLine,
+		"end":      request.SaveEnd,
+	}).Info("Saved selected lines")
+	return ""
+}
+
+func loadLines(request *callbackRequest, artifact api.Artifact, resourceDir string, rawConfig json.RawMessage) string {
+
+	var err error
 	var lines []string
 	if request.Offset == 0 && request.Length == -1 {
 		lines, err = logLinesAll(artifact)
@@ -208,12 +399,60 @@ func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data str
 		lines, err = logLines(artifact, request.Offset, request.Length)
 	}
 	if err != nil {
-		return fmt.Sprintf("failed to retrieve log lines: %v", err)
+		return fmt.Sprintf("Failed to retrieve log lines: %v", err)
 	}
 
+	var skipFirst bool
+	var skipLines []string
+	skipRequest := *request
+	// Should we expand all the lines? Or just some from the top/bottom.
+	if t, n := request.Top, len(lines); t > 0 && t < n {
+		skipLines = lines[request.Top:]
+		lines = lines[:request.Top]
+		skipRequest.StartLine += t
+		for _, line := range lines {
+			b := int64(len(line) + 1)
+			skipRequest.Offset += b
+			skipRequest.Length -= b
+		}
+	} else if b := request.Bottom; b > 0 && b < n {
+		skipLines = lines[:n-b]
+		lines = lines[n-b:]
+		request.StartLine += (n - b)
+		for _, line := range lines {
+			skipRequest.Length -= int64(len(line) + 1)
+		}
+		skipFirst = true
+	}
+	var skipGroup *LineGroup
 	conf := getConfig(rawConfig)
-	logLines := highlightLines(lines, request.StartLine, request.Artifact, conf.highlightRegex)
-	return executeTemplate(resourceDir, "line group", logLines)
+	if len(skipLines) > 0 {
+		logLines := highlightLines(skipLines, skipRequest.StartLine, &request.Artifact, conf.highlightRegex)
+		skipGroup = &LineGroup{
+			Skip:         true,
+			Start:        skipRequest.StartLine,
+			End:          skipRequest.StartLine + len(logLines),
+			ByteOffset:   skipRequest.Offset,
+			ByteLength:   skipRequest.Length,
+			ArtifactName: &request.Artifact,
+			LogLines:     logLines,
+		}
+	}
+	groups := make([]*LineGroup, 0, 2)
+
+	if skipGroup != nil && skipFirst {
+		groups = append(groups, skipGroup)
+		skipGroup = nil
+	}
+	logLines := highlightLines(lines, request.StartLine, &request.Artifact, conf.highlightRegex)
+	groups = append(groups, &LineGroup{
+		LogLines:     logLines,
+		ArtifactName: &request.Artifact,
+	})
+	if skipGroup != nil {
+		groups = append(groups, skipGroup)
+	}
+	return executeTemplate(resourceDir, "line groups", groups)
 }
 
 func artifactByName(artifacts []api.Artifact, name string) (api.Artifact, bool) {
@@ -229,7 +468,7 @@ func artifactByName(artifacts []api.Artifact, name string) (api.Artifact, bool) 
 func logLinesAll(artifact api.Artifact) ([]string, error) {
 	read, err := artifact.ReadAll()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read log %q: %v", artifact.JobPath(), err)
+		return nil, fmt.Errorf("failed to read log %q: %w", artifact.JobPath(), err)
 	}
 	logLines := strings.Split(string(read), "\n")
 
@@ -241,18 +480,18 @@ func logLines(artifact api.Artifact, offset, length int64) ([]string, error) {
 	_, err := artifact.ReadAt(b, offset)
 	if err != nil && err != io.EOF {
 		if err != lenses.ErrGzipOffsetRead {
-			return nil, fmt.Errorf("couldn't read requested bytes: %v", err)
+			return nil, fmt.Errorf("couldn't read requested bytes: %w", err)
 		}
 		moreBytes, err := artifact.ReadAtMost(offset + length)
 		if err != nil && err != io.EOF {
-			return nil, fmt.Errorf("couldn't handle reading gzipped file: %v", err)
+			return nil, fmt.Errorf("couldn't handle reading gzipped file: %w", err)
 		}
 		b = moreBytes[offset:]
 	}
 	return strings.Split(string(b), "\n"), nil
 }
 
-func highlightLines(lines []string, startLine int, artifact string, highlightRegex *regexp.Regexp) []LogLine {
+func highlightLines(lines []string, startLine int, artifact *string, highlightRegex *regexp.Regexp) []LogLine {
 	// mark highlighted lines
 	logLines := make([]LogLine, 0, len(lines))
 	for i, text := range lines {
@@ -281,9 +520,22 @@ func highlightLines(lines []string, startLine int, artifact string, highlightReg
 }
 
 // breaks lines into important/unimportant groups
-func groupLines(logLines []LogLine) []LineGroup {
+func groupLines(artifact *string, start, end int, logLines ...LogLine) []LineGroup {
 	// show highlighted lines and their neighboring lines
 	for i, line := range logLines {
+		if start > 0 && end > 0 {
+			switch {
+			case line.Number >= start && line.Number <= end:
+				logLines[i].Skip = false
+				logLines[i].Focused = true
+				if line.Number == start {
+					logLines[i].Clip = true
+				}
+			case line.Number+neighborLines >= start && line.Number-neighborLines <= end:
+				logLines[i].Skip = false
+			}
+			continue
+		}
 		if line.Highlighted {
 			for d := -neighborLines; d <= neighborLines; d++ {
 				if i+d < 0 {
@@ -297,14 +549,14 @@ func groupLines(logLines []LogLine) []LineGroup {
 		}
 	}
 	// break into groups
-	currentOffset := 0
-	previousOffset := 0
+	var currentOffset int64
+	var previousOffset int64
 	var lineGroups []LineGroup
-	curGroup := LineGroup{}
+	var curGroup LineGroup
 	for i, line := range logLines {
 		if line.Skip == curGroup.Skip {
 			curGroup.LogLines = append(curGroup.LogLines, line)
-			currentOffset += line.Length
+			currentOffset += int64(line.Length)
 		} else {
 			curGroup.End = i
 			curGroup.ByteLength = currentOffset - previousOffset - 1 // -1 for trailing newline
@@ -318,12 +570,13 @@ func groupLines(logLines []LogLine) []LineGroup {
 				lineGroups = append(lineGroups, curGroup)
 			}
 			curGroup = LineGroup{
-				Skip:       line.Skip,
-				Start:      i,
-				LogLines:   []LogLine{line},
-				ByteOffset: currentOffset,
+				Skip:         line.Skip,
+				Start:        i,
+				LogLines:     []LogLine{line},
+				ByteOffset:   currentOffset,
+				ArtifactName: artifact,
 			}
-			currentOffset += line.Length
+			currentOffset += int64(line.Length)
 		}
 	}
 	curGroup.End = len(logLines)

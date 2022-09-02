@@ -17,10 +17,14 @@ limitations under the License.
 package secret
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -48,7 +52,7 @@ func TestCensoringFormatter(t *testing.T) {
 	defer secret2.Close()
 	defer os.Remove(secret2.Name())
 
-	agent := Agent{}
+	agent := agent{}
 	if err = agent.Start([]string{secret1.Name(), secret2.Name()}); err != nil {
 		t.Fatalf("failed to start a secret agent: %v", err)
 	}
@@ -61,22 +65,22 @@ func TestCensoringFormatter(t *testing.T) {
 		{
 			description: "all occurrences of a single secret in a message are censored",
 			entry:       &logrus.Entry{Message: "A SECRET is a SECRET if it is secret"},
-			expected:    "level=panic msg=\"A ****** is a ****** if it is secret\"\n",
+			expected:    "level=panic msg=\"A XXXXXX is a XXXXXX if it is secret\"\n",
 		},
 		{
 			description: "occurrences of a multiple secrets in a message are censored",
 			entry:       &logrus.Entry{Message: "A SECRET is a MYSTERY"},
-			expected:    "level=panic msg=\"A ****** is a *******\"\n",
+			expected:    "level=panic msg=\"A XXXXXX is a XXXXXXX\"\n",
 		},
 		{
 			description: "occurrences of multiple secrets in a field",
 			entry:       &logrus.Entry{Message: "message", Data: logrus.Fields{"key": "A SECRET is a MYSTERY"}},
-			expected:    "level=panic msg=message key=\"A ****** is a *******\"\n",
+			expected:    "level=panic msg=message key=\"A XXXXXX is a XXXXXXX\"\n",
 		},
 		{
 			description: "occurrences of a secret in a non-string field",
 			entry:       &logrus.Entry{Message: "message", Data: logrus.Fields{"key": fmt.Errorf("A SECRET is a MYSTERY")}},
-			expected:    "level=panic msg=message key=\"A ****** is a *******\"\n",
+			expected:    "level=panic msg=message key=\"A XXXXXX is a XXXXXXX\"\n",
 		},
 	}
 
@@ -97,4 +101,77 @@ func TestCensoringFormatter(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAddWithParser(t *testing.T) {
+	t.Parallel()
+	// Go never runs a test in parallel with itself, so run
+	// the test twice to make sure the race detector checks
+	// the thread safety.
+	for idx := range []int{0, 1} {
+		t.Run(strconv.Itoa(idx), testAddWithParser)
+	}
+}
+
+func testAddWithParser(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+
+	secretPath := filepath.Join(tmpDir, "secret")
+	if err := ioutil.WriteFile(secretPath, []byte("1"), 0644); err != nil {
+		t.Fatalf("failed to write initial content of secret: %v", err)
+	}
+
+	vals := make(chan int, 3)
+	errs := make(chan error, 3)
+	generator, err := AddWithParser(
+		secretPath,
+		func(raw []byte) (int, error) {
+			val, err := strconv.Atoi(string(raw))
+			if err != nil {
+				errs <- err
+				return val, err
+			}
+			vals <- val
+			return val, err
+		},
+	)
+	if err != nil {
+		t.Fatalf("AddWithParser failed: %v", err)
+	}
+
+	checkValueAndErr := func(expected int, e error) {
+		t.Helper()
+		select {
+		case v := <-vals:
+			if v != expected {
+				t.Errorf("expected value to get updated to %d but got updated to %d", expected, v)
+			}
+			break
+		case err := <-errs:
+			if e == nil || e.Error() != err.Error() {
+				t.Fatalf("expected error %v, got %v", e, err)
+			}
+		// the agent reloads every second, so ten seconds should be plenty
+		case <-time.After(10 * time.Second):
+			t.Fatalf("timed out waiting for value %d and error %d", expected, e)
+		}
+		if actual := generator(); actual != expected {
+			t.Errorf("expected value %d from generator, got %d", expected, actual)
+		}
+	}
+	checkValueAndErr(1, nil)
+
+	if err := ioutil.WriteFile(secretPath, []byte("2"), 0644); err != nil {
+		t.Fatalf("failed to update secret on disk: %v", err)
+	}
+	// expect secret to get updated
+	checkValueAndErr(2, nil)
+
+	if err := ioutil.WriteFile(secretPath, []byte("not-a-number"), 0644); err != nil {
+		t.Fatalf("failed to update secret on disk: %v", err)
+	}
+	// expect secret to remain unchanged and an error in the parsing func
+	checkValueAndErr(2, errors.New(`strconv.Atoi: parsing "not-a-number": invalid syntax`))
 }

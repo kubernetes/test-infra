@@ -24,6 +24,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -42,6 +43,7 @@ const (
 	fakeRepo    = "fake-repo"
 	fakePR      = 33
 	fakeSHA     = "deadbeef"
+	faseBaseRef = "fake-branch"
 	fakeBaseSHA = "fffffff"
 	adminUser   = "admin-user"
 )
@@ -56,6 +58,10 @@ func (froc *fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoow
 
 type fakeOwnersClient struct {
 	topLevelApprovers sets.String
+}
+
+func (foc *fakeOwnersClient) AllOwners() sets.String {
+	return sets.String{}
 }
 
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
@@ -115,32 +121,23 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 }
 
 type fakeClient struct {
-	comments []string
-	statuses map[string]github.Status
-	ps       map[string]config.Presubmit
-	jobs     sets.String
-	owners   ownersClient
+	comments         []string
+	statuses         []github.Status
+	branchProtection *github.BranchProtection
+	ps               []config.Presubmit
+	jobs             sets.String
+	owners           ownersClient
+	checkruns        *github.CheckRunList
+	usesAppsAuth     bool
 }
 
 func (c *fakeClient) presubmits(_, _ string, _ config.RefGetter, _ string) ([]config.Presubmit, error) {
 	var result []config.Presubmit
-	for _, p := range c.ps {
-		result = append(result, p)
-	}
+	result = append(result, c.ps...)
 	return result, nil
 }
 
 func (c *fakeClient) CreateComment(org, repo string, number int, comment string) error {
-	switch {
-	case org != fakeOrg:
-		return fmt.Errorf("bad org: %s", org)
-	case repo != fakeRepo:
-		return fmt.Errorf("bad repo: %s", repo)
-	case number != fakePR:
-		return fmt.Errorf("bad number: %d", number)
-	case strings.Contains(comment, "fail-comment"):
-		return errors.New("injected CreateComment failure")
-	}
 	c.comments = append(c.comments, comment)
 	return nil
 }
@@ -156,7 +153,16 @@ func (c *fakeClient) CreateStatus(org, repo, ref string, s github.Status) error 
 	case ref != fakeSHA:
 		return fmt.Errorf("bad ref: %s", ref)
 	}
-	c.statuses[s.Context] = s
+	for i, status := range c.statuses {
+		if status.State != github.StatusSuccess && status.Context == s.Context {
+			c.statuses[i] = s
+			return nil
+		}
+	}
+	//handle branch protection case
+	if len(c.statuses) == 0 {
+		c.statuses = append(c.statuses, s)
+	}
 	return nil
 }
 
@@ -173,6 +179,7 @@ func (c *fakeClient) GetPullRequest(org, repo string, number int) (*github.PullR
 	}
 	var pr github.PullRequest
 	pr.Head.SHA = fakeSHA
+	pr.Base.Ref = faseBaseRef
 	return &pr, nil
 }
 
@@ -193,6 +200,58 @@ func (c *fakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error
 		out = append(out, s)
 	}
 	return out, nil
+}
+
+func (c *fakeClient) ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error) {
+	if c.checkruns != nil {
+		return c.checkruns, nil
+	}
+	return &github.CheckRunList{}, nil
+}
+
+func (c *fakeClient) CreateCheckRun(org, repo string, checkRun github.CheckRun) error {
+	for _, checkrun := range c.checkruns.CheckRuns {
+		if checkrun.CompletedAt == "" {
+			continue
+		} else if strings.ToUpper(checkrun.Conclusion) == "NEUTRAL" {
+			continue
+		} else if strings.ToUpper(checkrun.Conclusion) == "SUCCESS" {
+			continue
+		} else if checkrun.Name == checkRun.Name {
+			prowOverrideCR := github.CheckRun{
+				Name:        checkrun.Name,
+				HeadSHA:     checkrun.HeadSHA,
+				CompletedAt: checkrun.CompletedAt,
+				Status:      "completed",
+				Conclusion:  "success",
+				Output: github.CheckRunOutput{
+					Title:   fmt.Sprintf("Prow override - %s", checkrun.Name),
+					Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", checkrun.Name),
+				},
+			}
+			c.checkruns.CheckRuns = append(c.checkruns.CheckRuns, prowOverrideCR)
+		}
+	}
+	return nil
+}
+
+func (c *fakeClient) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
+	switch {
+	case org != fakeOrg:
+		return nil, fmt.Errorf("bad org: %s", org)
+	case repo != fakeRepo:
+		return nil, fmt.Errorf("bad repo: %s", repo)
+	case branch != faseBaseRef:
+		return nil, fmt.Errorf("bad branch: %s", branch)
+	}
+
+	if c.branchProtection != nil && c.branchProtection.RequiredStatusChecks != nil &&
+		len(c.branchProtection.RequiredStatusChecks.Contexts) > 0 &&
+		c.branchProtection.RequiredStatusChecks.Contexts[0] == "fail-protection" {
+		return nil, errors.New("injected GetBranchProtection failure")
+	}
+
+	return c.branchProtection, nil
 }
 
 func (c *fakeClient) HasPermission(org, repo, user string, roles ...string) (bool, error) {
@@ -229,8 +288,8 @@ func (c *fakeClient) ListTeams(org string) ([]github.Team, error) {
 	return []github.Team{}, nil
 }
 
-func (c *fakeClient) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
-	if id == 1 {
+func (c *fakeClient) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
+	if teamSlug == "team-foo" {
 		return []github.TeamMember{
 			{Login: "user1"},
 			{Login: "user2"},
@@ -252,6 +311,10 @@ func (c *fakeClient) Create(_ context.Context, pj *prowapi.ProwJob, _ metav1.Cre
 
 func (c *fakeClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
 	return c.owners.LoadRepoOwners(org, repo, base)
+}
+
+func (c *fakeClient) UsesAppAuth() bool {
+	return c.usesAppsAuth
 }
 
 func TestAuthorizedUser(t *testing.T) {
@@ -287,33 +350,37 @@ func TestAuthorizedUser(t *testing.T) {
 
 func TestHandle(t *testing.T) {
 	cases := []struct {
-		name          string
-		action        github.GenericCommentEventAction
-		issue         bool
-		state         string
-		comment       string
-		contexts      map[string]github.Status
-		presubmits    map[string]config.Presubmit
-		user          string
-		number        int
-		expected      map[string]github.Status
-		jobs          sets.String
-		checkComments []string
-		options       plugins.Override
-		approvers     []string
-		err           bool
+		name              string
+		action            github.GenericCommentEventAction
+		issue             bool
+		state             string
+		comment           string
+		contexts          []github.Status
+		branchProtection  *github.BranchProtection
+		presubmits        []config.Presubmit
+		user              string
+		number            int
+		expected          []github.Status
+		expectedCheckRuns *github.CheckRunList
+		jobs              sets.String
+		checkComments     []string
+		options           plugins.Override
+		approvers         []string
+		err               bool
+		checkruns         *github.CheckRunList
+		usesAppsAuth      bool
 	}{
 		{
 			name:    "successfully override failure",
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"broken-test": {
+			expected: []github.Status{
+				{
 					Context:     "broken-test",
 					Description: description(adminUser),
 					State:       github.StatusSuccess,
@@ -322,55 +389,146 @@ func TestHandle(t *testing.T) {
 			checkComments: []string{"on behalf of " + adminUser},
 		},
 		{
+			name:    "successfully override unknown context derived from checkruns",
+			comment: "/override failure-checkrun",
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Status: "completed", Conclusion: "success", Output: github.CheckRunOutput{
+						Title:   fmt.Sprintf("Prow override - %s", "failure-checkrun"),
+						Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", "failure-checkrun"),
+					}},
+				},
+			},
+			usesAppsAuth: true,
+		},
+		{
+			name:    "override a successful unknown context derived from checkruns",
+			comment: "/override success-checkrun",
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "success-checkrun", CompletedAt: "1800 BC", Conclusion: "success"},
+				},
+			},
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "success-checkrun", CompletedAt: "1800 BC", Conclusion: "success"},
+				},
+			},
+			usesAppsAuth: true,
+			checkComments: []string{
+				"The following unknown contexts/checkruns were given:", "`success-checkrun`",
+			},
+		},
+		{
+			name:    "override failure-checkrun checkrun, usesAppsAuth is false",
+			comment: "/override failure-checkrun",
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			usesAppsAuth: false,
+		},
+		{
+			name:    "override nonexistant checkrun",
+			comment: "/override foobar",
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			usesAppsAuth: true,
+		},
+
+		{
 			name:    "successfully override pending",
 			comment: "/override hung-test",
-			contexts: map[string]github.Status{
-				"hung-test": {
+			contexts: []github.Status{
+				{
 					Context: "hung-test",
 					State:   github.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
-				"hung-test": {
+			expected: []github.Status{
+				{
 					Context:     "hung-test",
 					Description: description(adminUser),
 					State:       github.StatusSuccess,
 				},
 			},
+			usesAppsAuth: true,
 		},
 		{
 			name:    "comment for incorrect context",
 			comment: "/override whatever-you-want",
-			contexts: map[string]github.Status{
-				"hung-test": {
+			contexts: []github.Status{
+				{
 					Context: "hung-test",
 					State:   github.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
-				"hung-test": {
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "hung-prow-job",
+					},
+					Reporter: config.Reporter{
+						Context: "hung-test",
+					},
+				},
+			},
+			expected: []github.Status{
+				{
 					Context: "hung-test",
 					State:   github.StatusPending,
 				},
 			},
 			checkComments: []string{
-				"The following unknown contexts were given", "whatever-you-want",
-				"Only the following contexts were expected", "hung-context",
+				"The following unknown contexts/checkruns were given", "whatever-you-want",
+				"Only the following failed contexts/checkruns were expected", "hung-test", "hung-prow-job",
 			},
 		},
 		{
 			name:    "refuse override from non-admin",
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
 			},
 			user:          "rando",
 			checkComments: []string{"unauthorized"},
-			expected: map[string]github.Status{
-				"broken-test": {
+			expected: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
@@ -379,16 +537,16 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "comment for override with no target",
 			comment: "/override",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
 			},
 			user:          "rando",
 			checkComments: []string{"but none was given"},
-			expected: map[string]github.Status{
-				"broken-test": {
+			expected: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
@@ -397,24 +555,51 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "override multiple",
 			comment: "/override broken-test\n/override hung-test",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusFailure,
 				},
-				"hung-test": {
+				{
 					Context: "hung-test",
 					State:   github.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
-				"hung-test": {
+			expected: []github.Status{
+				{
+					Context:     "broken-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+				{
 					Context:     "hung-test",
 					Description: description(adminUser),
 					State:       github.StatusSuccess,
 				},
-				"broken-test": {
+			},
+			checkComments: []string{fmt.Sprintf("%s: broken-test, hung-test", adminUser)},
+		},
+		{
+			name:    "override multiple contexts inline",
+			comment: "/override broken-test hung-test",
+			contexts: []github.Status{
+				{
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+				{
+					Context: "hung-test",
+					State:   github.StatusPending,
+				},
+			},
+			expected: []github.Status{
+				{
 					Context:     "broken-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+				{
+					Context:     "hung-test",
 					Description: description(adminUser),
 					State:       github.StatusSuccess,
 				},
@@ -425,14 +610,14 @@ func TestHandle(t *testing.T) {
 			name: "override with extra whitespace",
 			// Note two spaces here to start, and trailing whitespace
 			comment: "/override  broken-test \n",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"broken-test": {
+			expected: []github.Status{
+				{
 					Context:     "broken-test",
 					Description: description(adminUser),
 					State:       github.StatusSuccess,
@@ -444,14 +629,14 @@ func TestHandle(t *testing.T) {
 			name:    "ignore non-PRs",
 			issue:   true,
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
-				"broken-test": {
+			expected: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
@@ -461,14 +646,14 @@ func TestHandle(t *testing.T) {
 			name:    "ignore closed issues",
 			state:   "closed",
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
-				"broken-test": {
+			expected: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
@@ -478,14 +663,14 @@ func TestHandle(t *testing.T) {
 			name:    "ignore edits",
 			action:  github.GenericCommentActionEdited,
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
-				"broken-test": {
+			expected: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
@@ -494,14 +679,14 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "ignore random text",
 			comment: "/test broken-test",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
 			},
-			expected: map[string]github.Status{
-				"broken-test": {
+			expected: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusPending,
 				},
@@ -511,17 +696,16 @@ func TestHandle(t *testing.T) {
 			name:    "comment on get pr failure",
 			number:  fakePR * 2,
 			comment: "/override broken-test",
-			contexts: map[string]github.Status{
-				"broken-test": {
+			contexts: []github.Status{
+				{
 					Context: "broken-test",
 					State:   github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"broken-test": {
-					Context:     "broken-test",
-					Description: description(adminUser),
-					State:       github.StatusSuccess,
+			expected: []github.Status{
+				{
+					Context: "broken-test",
+					State:   github.StatusFailure,
 				},
 			},
 			checkComments: []string{"Cannot get PR"},
@@ -529,14 +713,14 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "comment on list statuses failure",
 			comment: "/override fail-list",
-			contexts: map[string]github.Status{
-				"fail-list": {
+			contexts: []github.Status{
+				{
 					Context: "fail-list",
 					State:   github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"fail-list": {
+			expected: []github.Status{
+				{
 					Context: "fail-list",
 					State:   github.StatusFailure,
 				},
@@ -544,17 +728,37 @@ func TestHandle(t *testing.T) {
 			checkComments: []string{"Cannot get commit statuses"},
 		},
 		{
+			name:    "comment on get branch protection failure",
+			comment: "/override fail-list",
+			branchProtection: &github.BranchProtection{RequiredStatusChecks: &github.RequiredStatusChecks{
+				Contexts: []string{"fail-protection"},
+			}},
+			contexts: []github.Status{
+				{
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+			},
+			expected: []github.Status{
+				{
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+			},
+			checkComments: []string{"Cannot get branch protection"},
+		},
+		{
 			name:    "do not override passing contexts",
 			comment: "/override passing-test",
-			contexts: map[string]github.Status{
-				"passing-test": {
+			contexts: []github.Status{
+				{
 					Context:     "passing-test",
 					Description: "preserve description",
 					State:       github.StatusSuccess,
 				},
 			},
-			expected: map[string]github.Status{
-				"passing-test": {
+			expected: []github.Status{
+				{
 					Context:     "passing-test",
 					State:       github.StatusSuccess,
 					Description: "preserve description",
@@ -564,24 +768,124 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "create successful prow job",
 			comment: "/override prow-job",
-			contexts: map[string]github.Status{
-				"prow-job": {
+			contexts: []github.Status{
+				{
 					Context:     "prow-job",
 					Description: "failed",
 					State:       github.StatusFailure,
 				},
 			},
-			presubmits: map[string]config.Presubmit{
-				"prow-job": {
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "prow-job",
+					},
 					Reporter: config.Reporter{
 						Context: "prow-job",
 					},
 				},
 			},
 			jobs: sets.NewString("prow-job"),
-			expected: map[string]github.Status{
-				"prow-job": {
+			expected: []github.Status{
+				{
 					Context:     "prow-job",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+			},
+		},
+		{
+			name:    "successfully override prow job name",
+			comment: "/override prow-job",
+			contexts: []github.Status{
+				{
+					Context:     "ci/prow/prow-job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "prow-job",
+					},
+					Reporter: config.Reporter{
+						Context: "ci/prow/prow-job",
+					},
+				},
+			},
+			jobs: sets.NewString("ci/prow/prow-job"),
+			expected: []github.Status{
+				{
+					Context:     "ci/prow/prow-job",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+			},
+		},
+		{
+			name:    "override prow job and context",
+			comment: "/override prow-job\n/override ci/prow/context",
+			contexts: []github.Status{
+				{
+					Context:     "ci/prow/context",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+				{
+					Context:     "ci/prow/prow-job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "prow-job",
+					},
+					Reporter: config.Reporter{
+						Context: "ci/prow/prow-job",
+					},
+				},
+			},
+			jobs: sets.NewString("ci/prow/prow-job"),
+			expected: []github.Status{
+				{
+					Context:     "ci/prow/context",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+				{
+					Context:     "ci/prow/prow-job",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+			},
+		},
+		{
+			name:    "override same context and prow job",
+			comment: "/override ci/prow/prow-job\n/override prow-job",
+			contexts: []github.Status{
+				{
+					Context:     "ci/prow/prow-job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "prow-job",
+					},
+					Reporter: config.Reporter{
+						Context: "ci/prow/prow-job",
+					},
+				},
+			},
+			jobs: sets.NewString("ci/prow/prow-job"),
+			expected: []github.Status{
+				{
+					Context:     "ci/prow/prow-job",
 					State:       github.StatusSuccess,
 					Description: description(adminUser),
 				},
@@ -590,15 +894,15 @@ func TestHandle(t *testing.T) {
 		{
 			name:    "override with explanation works",
 			comment: "/override job\r\nobnoxious flake", // github ends lines with \r\n
-			contexts: map[string]github.Status{
-				"job": {
+			contexts: []github.Status{
+				{
 					Context:     "job",
 					Description: "failed",
 					State:       github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"job": {
+			expected: []github.Status{
+				{
 					Context:     "job",
 					Description: description(adminUser),
 					State:       github.StatusSuccess,
@@ -611,15 +915,15 @@ func TestHandle(t *testing.T) {
 			user:      "code_owner",
 			options:   plugins.Override{AllowTopLevelOwners: true},
 			approvers: []string{"code_owner"},
-			contexts: map[string]github.Status{
-				"job": {
+			contexts: []github.Status{
+				{
 					Context:     "job",
 					Description: "failed",
 					State:       github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"job": {
+			expected: []github.Status{
+				{
 					Context:     "job",
 					Description: description("code_owner"),
 					State:       github.StatusSuccess,
@@ -632,15 +936,15 @@ func TestHandle(t *testing.T) {
 			user:      "Code_owner",
 			options:   plugins.Override{AllowTopLevelOwners: true},
 			approvers: []string{"code_owner"},
-			contexts: map[string]github.Status{
-				"job": {
+			contexts: []github.Status{
+				{
 					Context:     "job",
 					Description: "failed",
 					State:       github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"job": {
+			expected: []github.Status{
+				{
 					Context:     "job",
 					Description: description("Code_owner"),
 					State:       github.StatusSuccess,
@@ -652,15 +956,15 @@ func TestHandle(t *testing.T) {
 			comment: "/override job",
 			user:    "non_code_owner",
 			options: plugins.Override{AllowTopLevelOwners: true},
-			contexts: map[string]github.Status{
-				"job": {
+			contexts: []github.Status{
+				{
 					Context:     "job",
 					Description: "failed",
 					State:       github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"job": {
+			expected: []github.Status{
+				{
 					Context:     "job",
 					Description: "failed",
 					State:       github.StatusFailure,
@@ -676,15 +980,15 @@ func TestHandle(t *testing.T) {
 					fmt.Sprintf("%s/%s", fakeOrg, fakeRepo): {"team-foo"},
 				},
 			},
-			contexts: map[string]github.Status{
-				"job": {
+			contexts: []github.Status{
+				{
 					Context:     "job",
 					Description: "failed",
 					State:       github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"job": {
+			expected: []github.Status{
+				{
 					Context:     "job",
 					Description: description("user1"),
 					State:       github.StatusSuccess,
@@ -700,18 +1004,112 @@ func TestHandle(t *testing.T) {
 					fmt.Sprintf("%s/%s", fakeOrg, fakeRepo): {"team-foo", "invalid-team-slug"},
 				},
 			},
-			contexts: map[string]github.Status{
-				"job": {
+			contexts: []github.Status{
+				{
 					Context:     "job",
 					Description: "failed",
 					State:       github.StatusFailure,
 				},
 			},
-			expected: map[string]github.Status{
-				"job": {
+			expected: []github.Status{
+				{
 					Context:     "job",
 					Description: description("user1"),
 					State:       github.StatusSuccess,
+				},
+			},
+		},
+		{
+			name:             "override with empty branch protection",
+			comment:          "/override job",
+			branchProtection: &github.BranchProtection{},
+			expected:         []github.Status{},
+			checkComments:    []string{},
+		},
+		{
+			name:             "override with branch protection empty status checks",
+			comment:          "/override job",
+			branchProtection: &github.BranchProtection{RequiredStatusChecks: &github.RequiredStatusChecks{}},
+			expected:         []github.Status{},
+			checkComments:    []string{},
+		},
+		{
+			name:    "override with branch protection status checks",
+			comment: "/override job",
+			branchProtection: &github.BranchProtection{RequiredStatusChecks: &github.RequiredStatusChecks{
+				Contexts: []string{"job"},
+			}},
+			expected: []github.Status{
+				{
+					Context:     "job",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			checkComments: []string{"on behalf of " + adminUser},
+		},
+		{
+			name:    "override with same branch protection status check and status",
+			comment: "/override job",
+			branchProtection: &github.BranchProtection{RequiredStatusChecks: &github.RequiredStatusChecks{
+				Contexts: []string{"job"},
+			}},
+			contexts: []github.Status{
+				{
+					Context: "job",
+					State:   github.StatusFailure,
+				},
+			},
+			expected: []github.Status{
+				{
+					Context:     "job",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			checkComments: []string{"on behalf of " + adminUser},
+		},
+		{
+			name:    "handle only one status when multiple statuses have the same context",
+			comment: "/override problematic-test",
+			contexts: []github.Status{
+				{
+					Context: "problematic-test",
+					State:   github.StatusPending,
+				},
+				{
+					Context: "problematic-test",
+					State:   github.StatusFailure,
+				},
+				{
+					Context: "problematic-test",
+					State:   github.StatusPending,
+				},
+			},
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "problematic-test",
+					},
+					Reporter: config.Reporter{
+						Context: "problematic-test",
+					},
+				},
+			},
+			jobs: sets.NewString("problematic-test"),
+			expected: []github.Status{
+				{
+					Context:     "problematic-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+				{
+					Context: "problematic-test",
+					State:   github.StatusFailure,
+				},
+				{
+					Context: "problematic-test",
+					State:   github.StatusPending,
 				},
 			},
 		},
@@ -720,37 +1118,52 @@ func TestHandle(t *testing.T) {
 	log := logrus.WithField("plugin", pluginName)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			var event github.GenericCommentEvent
-			event.Repo.Owner.Login = fakeOrg
-			event.Repo.Name = fakeRepo
-			event.Body = tc.comment
-			event.Number = fakePR
-			event.IsPR = !tc.issue
+			if tc.number == 0 {
+				tc.number = fakePR
+			}
 			if tc.user == "" {
 				tc.user = adminUser
 			}
-			event.User.Login = tc.user
 			if tc.state == "" {
 				tc.state = "open"
 			}
-			event.IssueState = tc.state
 			if tc.action == "" {
 				tc.action = github.GenericCommentActionCreated
 			}
-			event.Action = tc.action
 			if tc.contexts == nil {
-				tc.contexts = map[string]github.Status{}
+				tc.contexts = []github.Status{}
 			}
+
+			event := github.GenericCommentEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: fakeOrg,
+					},
+					Name: fakeRepo,
+				},
+				User: github.User{
+					Login: tc.user,
+				},
+				Body:       tc.comment,
+				Number:     tc.number,
+				IsPR:       !tc.issue,
+				IssueState: tc.state,
+				Action:     tc.action,
+			}
+
 			froc := &fakeRepoownersClient{
 				foc: &fakeOwnersClient{
 					topLevelApprovers: sets.NewString(tc.approvers...),
 				},
 			}
 			fc := fakeClient{
-				statuses: tc.contexts,
-				ps:       tc.presubmits,
-				jobs:     sets.String{},
-				owners:   froc,
+				statuses:         tc.contexts,
+				branchProtection: tc.branchProtection,
+				ps:               tc.presubmits,
+				jobs:             sets.String{},
+				owners:           froc,
+				checkruns:        tc.checkruns,
+				usesAppsAuth:     tc.usesAppsAuth,
 			}
 
 			if tc.jobs == nil {
@@ -769,6 +1182,14 @@ func TestHandle(t *testing.T) {
 				t.Errorf("bad statuses: actual %#v != expected %#v", fc.statuses, tc.expected)
 			case !reflect.DeepEqual(fc.jobs, tc.jobs):
 				t.Errorf("bad jobs: actual %#v != expected %#v", fc.jobs, tc.jobs)
+			case !reflect.DeepEqual(fc.checkruns, tc.expectedCheckRuns):
+				t.Errorf("expected checkruns differs from actual: %s", cmp.Diff(fc.checkruns, tc.expectedCheckRuns))
+
+			}
+			for _, expectedComment := range tc.checkComments {
+				if !strings.Contains(strings.Join(fc.comments, "\n"), expectedComment) {
+					t.Errorf("bad comments: expected %#v to be in %#v", expectedComment, fc.comments)
+				}
 			}
 		})
 	}
@@ -831,14 +1252,15 @@ func TestWhoCanUse(t *testing.T) {
 		AllowedGitHubTeams: map[string][]string{
 			"org1/repo1": {"team-foo", "team-bar"},
 			"org2/repo2": {"team-bar"},
+			"org1":       {"team-foo-bar"},
 		},
 	}
 	expectedWho := "Repo administrators, and the following github teams:" +
-		"org1/repo1: team-foo team-bar."
+		"org1/repo1: team-foo team-bar, org1: team-foo-bar."
 
 	who := whoCanUse(override, "org1", "repo1")
 	if who != expectedWho {
-		t.Errorf("expected %s, got %s", expectedWho, who)
+		t.Errorf("expected %q, got %q", expectedWho, who)
 	}
 }
 
@@ -874,6 +1296,14 @@ func TestAuthorizedGitHubTeamMember(t *testing.T) {
 			},
 			user: "member",
 		},
+		{
+			name: "members of specified teams are authorized to org",
+			slugs: map[string][]string{
+				fakeOrg: {"team-foo"},
+			},
+			user:     "user1",
+			expected: true,
+		},
 	}
 	log := logrus.WithField("plugin", pluginName)
 	for _, tc := range cases {
@@ -888,11 +1318,11 @@ func TestValidateGitHubTeamSlugs(t *testing.T) {
 	githubTeams := []github.Team{
 		{
 			ID:   2,
-			Slug: "team-foo",
+			Slug: "team-bar",
 		},
 		{
 			ID:   3,
-			Slug: "team-bar",
+			Slug: "team-baz",
 		},
 	}
 
@@ -912,7 +1342,7 @@ func TestValidateGitHubTeamSlugs(t *testing.T) {
 		{
 			name: "no errors for valid team slugs",
 			teamSlugs: map[string][]string{
-				repoRef: {"team-foo", "team-bar"},
+				repoRef: {"team-bar", "team-baz"},
 			},
 		},
 	}

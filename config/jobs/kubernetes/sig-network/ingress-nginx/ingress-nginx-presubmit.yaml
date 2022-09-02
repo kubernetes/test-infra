@@ -1,0 +1,150 @@
+presubmits:
+
+  kubernetes/ingress-nginx:
+  - name: pull-ingress-nginx-boilerplate
+    decorate: true
+    decoration_config:
+      timeout: 15m
+    path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$|\.sh$'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+        command:
+        - ./hack/verify-boilerplate.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: boilerplate
+
+  - name: pull-ingress-nginx-codegen
+    decorate: true
+    decoration_config:
+      timeout: 15m
+    path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+        command:
+        - ./hack/verify-codegen.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: codegen
+
+  - name: pull-ingress-nginx-gofmt
+    always_run: false
+    decorate: true
+    path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+        command:
+        - ./hack/verify-gofmt.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: gofmt
+
+  - name: pull-ingress-nginx-golint
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+        command:
+        - ./hack/verify-golint.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: golint
+
+  - name: pull-ingress-nginx-lualint
+    always_run: false
+    decorate: true
+    path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.lua$'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+        command:
+        - ./hack/verify-lualint.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: lualint
+
+  - name: pull-ingress-nginx-chart-lint
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 5m
+    path_alias: k8s.io/ingress-nginx
+    run_if_changed: "^charts/"
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+        command:
+        - ./hack/verify-chart-lint.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: chart-lint
+
+  - name: pull-ingress-nginx-test-lua
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.lua$'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+        command:
+        - make
+        - lua-test
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: test-lua
+
+  - name: pull-ingress-nginx-test
+    always_run: false
+    decorate: true
+    decoration_config:
+      timeout: 15m
+    path_alias: k8s.io/ingress-nginx
+    run_if_changed: '\.go$'
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+        command:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: sig-network-ingress-nginx
+      testgrid-tab-name: test

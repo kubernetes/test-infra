@@ -34,7 +34,7 @@ var ghTokenUntilResetGaugeVec = prometheus.NewGaugeVec(
 		Name: "github_token_reset",
 		Help: "Last reported GitHub token reset time.",
 	},
-	[]string{"token_hash", "api_version"},
+	[]string{"token_hash", "api_version", "ratelimit_resource"},
 )
 
 // ghTokenUsageGaugeVec provides the 'github_token_usage' gauge that
@@ -44,7 +44,7 @@ var ghTokenUsageGaugeVec = prometheus.NewGaugeVec(
 		Name: "github_token_usage",
 		Help: "How many GitHub token requets are remaining for the current hour.",
 	},
-	[]string{"token_hash", "api_version"},
+	[]string{"token_hash", "api_version", "ratelimit_resource"},
 )
 
 // ghRequestDurationHistVec provides the 'github_request_duration' histogram that keeps track
@@ -56,6 +56,17 @@ var ghRequestDurationHistVec = prometheus.NewHistogramVec(
 		Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
 	},
 	[]string{"token_hash", "path", "status", "user_agent"},
+)
+
+// ghRequestDurationHistVec provides the 'github_request_duration' histogram that keeps track
+// of the duration of GitHub requests by API path.
+var ghRequestWaitDurationHistVec = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name:    "github_request_wait_duration_seconds",
+		Help:    "GitHub request wait duration before sending to API in seconds",
+		Buckets: []float64{0.1, 0.25, 0.5, 1, 2.5, 5, 7.5, 10, 15, 20, 25, 30, 45, 60, 90, 120, 150, 180},
+	},
+	[]string{"token_hash", "request_type", "api"},
 )
 
 // cacheCounter provides the 'ghcache_responses' counter vec that is indexed
@@ -97,6 +108,7 @@ func init() {
 	prometheus.MustRegister(ghTokenUntilResetGaugeVec)
 	prometheus.MustRegister(ghTokenUsageGaugeVec)
 	prometheus.MustRegister(ghRequestDurationHistVec)
+	prometheus.MustRegister(ghRequestWaitDurationHistVec)
 	prometheus.MustRegister(cacheCounter)
 	prometheus.MustRegister(timeoutDuration)
 	prometheus.MustRegister(cacheEntryAge)
@@ -109,6 +121,7 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 	if remaining == "" {
 		return
 	}
+	resource := headers.Get("X-RateLimit-Resource")
 	timeUntilReset := timestampStringToTime(headers.Get("X-RateLimit-Reset"))
 	durationUntilReset := timeUntilReset.Sub(reqStartTime)
 
@@ -132,8 +145,8 @@ func CollectGitHubTokenMetrics(tokenHash, apiVersion string, headers http.Header
 	if isAfter {
 		logrus.WithField("last-github-response", lastGitHubResponse).WithField("response-time", responseTime).Debug("Previously pushed metrics of a newer response, skipping old metrics")
 	} else {
-		ghTokenUntilResetGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "api_version": apiVersion}).Set(float64(durationUntilReset.Nanoseconds()))
-		ghTokenUsageGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "api_version": apiVersion}).Set(remainingFloat)
+		ghTokenUntilResetGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "api_version": apiVersion, "ratelimit_resource": resource}).Set(float64(durationUntilReset.Nanoseconds()))
+		ghTokenUsageGaugeVec.With(prometheus.Labels{"token_hash": tokenHash, "api_version": apiVersion, "ratelimit_resource": resource}).Set(remainingFloat)
 	}
 }
 
@@ -174,4 +187,10 @@ func CollectCacheEntryAgeMetrics(age float64, path, userAgent, tokenHash string)
 // API path to 'github_request_timeouts' on prometheus.
 func CollectRequestTimeoutMetrics(tokenHash, path, userAgent string, reqStartTime, responseTime time.Time) {
 	timeoutDuration.With(prometheus.Labels{"token_hash": tokenHash, "path": simplifier.Simplify(path), "user_agent": userAgentWithoutVersion(userAgent)}).Observe(float64(responseTime.Sub(reqStartTime).Seconds()))
+}
+
+// CollectGitHubRequestWaitDurationMetrics publishes the wait duration of requests
+// before sending to respective GitHub API on prometheus.
+func CollectGitHubRequestWaitDurationMetrics(tokenHash, requestType, api string, duration time.Duration) {
+	ghRequestWaitDurationHistVec.With(prometheus.Labels{"token_hash": tokenHash, "request_type": requestType, "api": api}).Observe(duration.Seconds())
 }

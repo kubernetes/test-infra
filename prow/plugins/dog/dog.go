@@ -92,7 +92,7 @@ func FormatURL(dogURL string) (string, error) {
 	}
 	src, err := url.ParseRequestURI(dogURL)
 	if err != nil {
-		return "", fmt.Errorf("invalid url %s: %v", dogURL, err)
+		return "", fmt.Errorf("invalid url %s: %w", dogURL, err)
 	}
 	return fmt.Sprintf("[![dog image](%s)](%s)", src, src), nil
 }
@@ -102,12 +102,12 @@ func (u realPack) readDog(dogURL string) (string, error) {
 		uri := string(u)
 		req, err := http.NewRequest("GET", uri, nil)
 		if err != nil {
-			return "", fmt.Errorf("could not create request %s: %v", uri, err)
+			return "", fmt.Errorf("could not create request %s: %w", uri, err)
 		}
 		req.Header.Add("Accept", "application/json")
 		resp, err := client.Do(req)
 		if err != nil {
-			return "", fmt.Errorf("could not read dog from %s: %v", uri, err)
+			return "", fmt.Errorf("could not read dog from %s: %w", uri, err)
 		}
 		defer resp.Body.Close()
 		var a dogResult

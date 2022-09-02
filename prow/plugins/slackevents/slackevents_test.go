@@ -110,19 +110,19 @@ func TestPush(t *testing.T) {
 	noMessages := map[string][]string{}
 	stdWarningMessages := map[string][]string{
 		"sig-contribex":  {"*Warning:* tester (<@tester>) manually merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
-		"kubernetes-dev": {"*Warning:* tester (<@tester>) manually merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
+		"kubernetes-foo": {"*Warning:* tester (<@tester>) manually merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
 
 	createdWarningMessages := map[string][]string{
 		"sig-contribex":  {"*Warning:* tester (<@tester>) pushed a new branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/045a6dca0784"},
-		"kubernetes-dev": {"*Warning:* tester (<@tester>) pushed a new branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/045a6dca0784"}}
+		"kubernetes-foo": {"*Warning:* tester (<@tester>) pushed a new branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/045a6dca0784"}}
 
 	deletedWarningMessages := map[string][]string{
 		"sig-contribex":  {"*Warning:* tester (<@tester>) deleted a branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...000000000000"},
-		"kubernetes-dev": {"*Warning:* tester (<@tester>) deleted a branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...000000000000"}}
+		"kubernetes-foo": {"*Warning:* tester (<@tester>) deleted a branch (release-1.99): https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...000000000000"}}
 
 	forcedWarningMessages := map[string][]string{
 		"sig-contribex":  {"*Warning:* tester (<@tester>) *force* merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
-		"kubernetes-dev": {"*Warning:* tester (<@tester>) *force* merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
+		"kubernetes-foo": {"*Warning:* tester (<@tester>) *force* merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
 
 	type testCase struct {
 		name             string
@@ -132,37 +132,37 @@ func TestPush(t *testing.T) {
 
 	testcases := []testCase{
 		{
-			name:             "If PR merged manually by a user, we send message to sig-contribex and kubernetes-dev.",
+			name:             "If PR merged manually by a user, we send message to sig-contribex and kubernetes-foo.",
 			pushReq:          pushEvManual,
 			expectedMessages: stdWarningMessages,
 		},
 		{
-			name:             "If PR force merged by a user, we send message to sig-contribex and kubernetes-dev with force merge message.",
+			name:             "If PR force merged by a user, we send message to sig-contribex and kubernetes-foo with force merge message.",
 			pushReq:          pushEvManualForced,
 			expectedMessages: forcedWarningMessages,
 		},
 		{
-			name:             "If PR merged by k8s merge bot we should NOT send message to sig-contribex and kubernetes-dev.",
+			name:             "If PR merged by k8s merge bot we should NOT send message to sig-contribex and kubernetes-foo.",
 			pushReq:          pushEv,
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If PR merged by a user not in the exemption list but in THIS branch exemption list, we should NOT send a message to sig-contribex and kubernetes-dev.",
+			name:             "If PR merged by a user not in the exemption list but in THIS branch exemption list, we should NOT send a message to sig-contribex and kubernetes-foo.",
 			pushReq:          pushEvManualBranchExempted,
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If PR merged by a user not in the exemption list, in a branch exemption list, but not THIS branch exemption list, we should send a message to sig-contribex and kubernetes-dev.",
+			name:             "If PR merged by a user not in the exemption list, in a branch exemption list, but not THIS branch exemption list, we should send a message to sig-contribex and kubernetes-foo.",
 			pushReq:          pushEvManualBranchExempted,
 			expectedMessages: noMessages,
 		},
 		{
-			name:             "If a branch is created by a non-exempted user, we send message to sig-contribex and kubernetes-dev with branch created message.",
+			name:             "If a branch is created by a non-exempted user, we send message to sig-contribex and kubernetes-foo with branch created message.",
 			pushReq:          pushEvManualCreated,
 			expectedMessages: createdWarningMessages,
 		},
 		{
-			name:             "If a branch is deleted by a non-exempted user, we send message to sig-contribex and kubernetes-dev with branch deleted message.",
+			name:             "If a branch is deleted by a non-exempted user, we send message to sig-contribex and kubernetes-foo with branch deleted message.",
 			pushReq:          pushEvManualDeleted,
 			expectedMessages: deletedWarningMessages,
 		},
@@ -173,7 +173,7 @@ func TestPush(t *testing.T) {
 			MergeWarnings: []plugins.MergeWarning{
 				{
 					Repos:       []string{"kubernetes/kubernetes"},
-					Channels:    []string{"kubernetes-dev", "sig-contribex"},
+					Channels:    []string{"kubernetes-foo", "sig-contribex"},
 					ExemptUsers: []string{"k8s-merge-robot"},
 					ExemptBranches: map[string][]string{
 						"warrens-branch": {"wteened"},

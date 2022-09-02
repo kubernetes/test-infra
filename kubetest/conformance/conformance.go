@@ -62,7 +62,7 @@ func (d *Deployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 	t.Seed = 1436380640
 	t.GinkgoParallel = 10
 	t.Kubeconfig = d.kubecfg
-	t.FlakeAttempts = 2
+	t.FlakeAttempts = 1
 	t.NumNodes = 4
 	t.SystemdServices = []string{"docker", "kubelet"}
 	t.ReportDir = reportdir

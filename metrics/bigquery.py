@@ -30,6 +30,7 @@ import requests
 import ruamel.yaml as yaml
 
 BACKFILL_DAYS = 30
+DEFAULT_JQ_BIN = '/usr/bin/jq'
 
 def check(cmd, **kwargs):
     """Logs and runs the command, raising on errors."""
@@ -57,7 +58,7 @@ def validate_metric_name(name):
         raise ValueError(name)
 
 
-def do_jq(jq_filter, data_filename, out_filename, jq_bin='jq'):
+def do_jq(jq_filter, data_filename, out_filename, jq_bin=DEFAULT_JQ_BIN):
     """Executes jq on a file and outputs the results to a file."""
     with open(out_filename, 'w') as out_file:
         check([jq_bin, jq_filter, data_filename], stdout=out_file)
@@ -151,6 +152,11 @@ def main(configs, project, bucket_path):
     """Loads metric config files and runs each metric."""
     queryer = BigQuerier(project, bucket_path)
 
+    # authenticate as the given service account if our environment is providing one
+    if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
+        keyfile = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
+        check(['gcloud', 'auth', 'activate-service-account', f'--key-file={keyfile}'])
+
     # the 'bq show' command is called as a hack to dodge the config prompts that bq presents
     # the first time it is run. A newline is passed to stdin to skip the prompt for default project
     # when the service account in use has access to multiple projects.
@@ -191,6 +197,11 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--bucket',
         help='Upload results to the specified gcs bucket.')
+    PARSER.add_argument(
+        '--jq',
+        help='path to jq binary')
 
     ARGS = PARSER.parse_args()
+    if ARGS.jq:
+        DEFAULT_JQ_BIN = ARGS.jq
     main(ARGS.config, ARGS.project, ARGS.bucket)

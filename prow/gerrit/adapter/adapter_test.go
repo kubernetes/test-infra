@@ -18,12 +18,16 @@ package adapter
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -33,7 +37,10 @@ import (
 	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -42,8 +49,10 @@ func makeStamp(t time.Time) gerrit.Timestamp {
 }
 
 var (
-	timeNow  = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
-	stampNow = makeStamp(timeNow)
+	timeNow   = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
+	stampNow  = makeStamp(timeNow)
+	trueBool  = true
+	namespace = "default"
 )
 
 type fca struct {
@@ -62,7 +71,19 @@ type fgc struct {
 	instanceMap map[string]*gerrit.AccountInfo
 }
 
+func (f *fgc) ApplyGlobalConfig(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
+
+}
+
+func (f *fgc) Authenticate(cookiefilePath, tokenPath string) {
+
+}
+
 func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
+	return nil
+}
+
+func (f *fgc) QueryChangesForInstance(instance string, lastState client.LastSyncState, rateLimit int) []client.ChangeInfo {
 	return nil
 }
 
@@ -81,6 +102,134 @@ func (f *fgc) Account(instance string) (*gerrit.AccountInfo, error) {
 		return nil, errors.New("not exit")
 	}
 	return res, nil
+}
+
+func fakeProwYAMLGetter(
+	c *config.Config,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHA string,
+	headSHAs ...string) (*config.ProwYAML, error) {
+
+	presubmits := []config.Presubmit{
+		{
+			JobBase: config.JobBase{
+				Name:      "always-runs-inRepoConfig",
+				Spec:      &v1.PodSpec{Containers: []v1.Container{{Name: "always-runs-inRepoConfig", Env: []v1.EnvVar{}}}},
+				Namespace: &namespace,
+			},
+			Brancher: config.Brancher{
+				Branches: []string{"inRepoConfig"},
+			},
+			AlwaysRun: true,
+			Reporter: config.Reporter{
+				Context:    "always-runs-inRepoConfig",
+				SkipReport: true,
+			},
+		},
+	}
+	postsubmits := []config.Postsubmit{
+		{
+			JobBase: config.JobBase{
+				Name:      "always-runs-inRepoConfig-Post",
+				Spec:      &v1.PodSpec{Containers: []v1.Container{{Name: "always-runs-inRepoConfig-Post", Env: []v1.EnvVar{}}}},
+				Namespace: &namespace,
+			},
+			Brancher: config.Brancher{
+				Branches: []string{"inRepoConfig"},
+			},
+			AlwaysRun: &trueBool,
+			Reporter: config.Reporter{
+				Context:    "always-runs-inRepoConfig-Post",
+				SkipReport: true,
+			},
+		},
+	}
+	if err := config.SetPostsubmitRegexes(postsubmits); err != nil {
+		return nil, err
+	}
+	if err := config.SetPresubmitRegexes(presubmits); err != nil {
+		return nil, err
+	}
+	res := config.ProwYAML{
+		Presubmits:  presubmits,
+		Postsubmits: postsubmits,
+	}
+	return &res, nil
+}
+
+func TestHandleInRepoConfigError(t *testing.T) {
+	change := gerrit.ChangeInfo{ID: "1", CurrentRevision: "1"}
+	instanceName := "instance"
+	changeHash := fmt.Sprintf("%s%s%s", instanceName, change.ID, change.CurrentRevision)
+	cases := []struct {
+		name             string
+		err              error
+		startingFailures map[string]bool
+		expectedFailures map[string]bool
+		expectedReview   bool
+	}{
+		{
+			name:             "No error. Do not send message",
+			expectedReview:   false,
+			startingFailures: map[string]bool{},
+			expectedFailures: map[string]bool{},
+			err:              nil,
+		},
+		{
+			name:             "First time error send review",
+			err:              errors.New("InRepoConfigError"),
+			expectedReview:   true,
+			startingFailures: map[string]bool{},
+			expectedFailures: map[string]bool{changeHash: true},
+		},
+		{
+			name:             "second time error do not send review",
+			err:              errors.New("InRepoConfigError"),
+			expectedReview:   false,
+			startingFailures: map[string]bool{changeHash: true},
+			expectedFailures: map[string]bool{changeHash: true},
+		},
+		{
+			name:             "Resolved error sends error again, resend review",
+			err:              errors.New("InRepoConfigError"),
+			expectedReview:   true,
+			startingFailures: map[string]bool{changeHash: false},
+			expectedFailures: map[string]bool{changeHash: true},
+		},
+		{
+			name:             "Resolved error changes Failures map",
+			err:              nil,
+			expectedReview:   false,
+			startingFailures: map[string]bool{changeHash: true},
+			expectedFailures: map[string]bool{changeHash: false},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			gc := &fgc{reviews: 0}
+			controller := &Controller{
+				inRepoConfigFailures: tc.startingFailures,
+				gc:                   gc,
+			}
+
+			ret := controller.handleInRepoConfigError(tc.err, instanceName, change)
+			if ret != nil {
+				t.Errorf("handleInRepoConfigError returned with non nil error")
+			}
+			if tc.expectedReview && gc.reviews == 0 {
+				t.Errorf("expected a review and did not get one")
+			}
+			if !tc.expectedReview && gc.reviews != 0 {
+				t.Error("expected no reviews and got one")
+			}
+			if diff := cmp.Diff(tc.expectedFailures, controller.inRepoConfigFailures, cmpopts.SortSlices(func(a, b string) bool {
+				return a < b
+			})); diff != "" {
+				t.Fatalf("expected failures mismatch. got(+), want(-):\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestMakeCloneURI(t *testing.T) {
@@ -234,7 +383,7 @@ func TestFailedJobs(t *testing.T) {
 			pj.Status.URL = "whatever"
 			pjs = append(pjs, &pj)
 		}
-		return reporter.GenerateReport(pjs).String()
+		return reporter.GenerateReport(pjs, 0).String()
 	}
 
 	cases := []struct {
@@ -250,12 +399,13 @@ func TestFailedJobs(t *testing.T) {
 			messages: []gerrit.ChangeMessageInfo{
 				message("ignore this", nil),
 				message(report(map[string]prowapi.ProwJobState{
-					"foo":         prowapi.SuccessState,
-					"should-fail": prowapi.FailureState,
+					"foo":          prowapi.SuccessState,
+					"should-fail":  prowapi.FailureState,
+					"should-abort": prowapi.AbortedState,
 				}), nil),
 				message("also ignore this", nil),
 			},
-			expected: sets.NewString("should-fail"),
+			expected: sets.NewString("should-fail", "should-abort"),
 		},
 		{
 			name: "ignore report from someone else",
@@ -343,6 +493,37 @@ func TestFailedJobs(t *testing.T) {
 	}
 }
 
+func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCacheHandler, error) {
+	// processChange takes a ClientFactory. If provided a nil clientFactory it will skip inRepoConfig
+	// otherwise it will get the prow yaml using the client provided. We are mocking ProwYamlGetter
+	// so we are creating a localClientFactory but leaving it unpopulated.
+	var cf git.ClientFactory
+	var lg *localgit.LocalGit
+	lg, cf, err := localgit.NewV2()
+	if err != nil {
+		return nil, fmt.Errorf("error making local git repo: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Error cleaning LocalGit: %v", err)
+		}
+		if err := cf.Clean(); err != nil {
+			t.Errorf("Error cleaning Client: %v", err)
+		}
+	}()
+
+	// Initialize cache for fetching Presubmit and Postsubmit information. If
+	// the cache cannot be initialized, exit with an error.
+	cache, err := config.NewInRepoConfigCacheHandler(
+		10,
+		ca,
+		config.NewInRepoConfigGitCache(cf),
+		1)
+	if err != nil {
+		t.Errorf("error creating cache: %v", err)
+	}
+	return cache, nil
+}
 func TestProcessChange(t *testing.T) {
 	testInstance := "https://gerrit"
 	var testcases = []struct {
@@ -356,6 +537,25 @@ func TestProcessChange(t *testing.T) {
 		shouldSkipReport bool
 		expectedLabels   map[string]string
 	}{
+
+		{
+			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"1": {
+						Number: 1001,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			shouldError:  false,
+			numPJ:        0,
+		},
 		{
 			name: "no revisions errors out",
 			change: client.ChangeInfo{
@@ -436,17 +636,17 @@ func TestProcessChange(t *testing.T) {
 			numPJ:        2,
 			pjRef:        "refs/changes/00/1/1",
 			expectedLabels: map[string]string{
-				client.GerritRevision:    "rev42",
-				client.GerritPatchset:    "42",
-				client.GerritReportLabel: client.CodeReview,
-				kube.CreatedByProw:       "true",
-				kube.ProwJobTypeLabel:    "presubmit",
-				kube.ProwJobAnnotation:   "always-runs-all-branches",
-				kube.ContextAnnotation:   "always-runs-all-branches",
-				kube.OrgLabel:            "gerrit",
-				kube.RepoLabel:           "test-infra",
-				kube.BaseRefLabel:        "",
-				kube.PullLabel:           "0",
+				kube.GerritRevision:    "rev42",
+				kube.GerritPatchset:    "42",
+				kube.GerritReportLabel: client.CodeReview,
+				kube.CreatedByProw:     "true",
+				kube.ProwJobTypeLabel:  "presubmit",
+				kube.ProwJobAnnotation: "always-runs-all-branches",
+				kube.ContextAnnotation: "always-runs-all-branches",
+				kube.OrgLabel:          "gerrit",
+				kube.RepoLabel:         "test-infra",
+				kube.BaseRefLabel:      "",
+				kube.PullLabel:         "0",
 			},
 		},
 		{
@@ -543,6 +743,28 @@ func TestProcessChange(t *testing.T) {
 			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
 			instance:     testInstance,
 			numPJ:        3,
+		},
+		{
+			name: "presubmit does not run when a file matches run_if_changed but the change is WorkInProgress",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Files: map[string]client.FileInfo{
+							"bee-movie-script.txt": {},
+							"africa-lyrics.txt":    {},
+							"important-code.go":    {},
+						},
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        0,
 		},
 		{
 			name: "presubmit doesn't run when no files match run_if_changed",
@@ -660,6 +882,31 @@ func TestProcessChange(t *testing.T) {
 					"1": {
 						Number:  1,
 						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test all",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
+		},
+		{
+			name: "trigger always run job on test all even if the change is WorkInProgress",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number: 1,
 					},
 				},
 				Messages: []gerrit.ChangeMessageInfo{
@@ -881,6 +1128,87 @@ func TestProcessChange(t *testing.T) {
 			numPJ:        3,
 			pjRef:        "refs/changes/00/1/1",
 		},
+		{
+			name: "/test ? will leave a comment with the commands to trigger presubmit Prow jobs",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test ?",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow),
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        0,
+		},
+		{
+			name: "InRepoConfig Presubmits are retrieved",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Branch:          "inRepoConfig",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        3,
+			pjRef:        "refs/changes/00/1/1",
+		},
+		{
+			name: "InRepoConfig Postsubmits are retrieved",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "postsubmits-project",
+				Status:          "MERGED",
+				Branch:          "inRepoConfig",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/1/1",
+		},
+		{
+			name: "InRepoConfig Presubmits are retrieved when repo name format has slash",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "kubernetes/test-infra",
+				Status:          "NEW",
+				Branch:          "inRepoConfig",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/1/1",
+		},
 	}
 
 	testInfraPresubmits := []config.Presubmit{
@@ -977,10 +1305,20 @@ func TestProcessChange(t *testing.T) {
 		t.Fatalf("could not set regexes: %v", err)
 	}
 
-	config := &config.Config{
+	cfg := &config.Config{
 		JobConfig: config.JobConfig{
+			ProwYAMLGetterWithDefaults: fakeProwYAMLGetter,
+			ProwYAMLGetter:             fakeProwYAMLGetter,
 			PresubmitsStatic: map[string][]config.Presubmit{
 				"gerrit/test-infra": testInfraPresubmits,
+				"https://gerrit/kubernetes/test-infra": {
+					{
+						JobBase: config.JobBase{
+							Name: "other-test",
+						},
+						AlwaysRun: true,
+					},
+				},
 				"https://gerrit/other-repo": {
 					{
 						JobBase: config.JobBase{
@@ -996,14 +1334,24 @@ func TestProcessChange(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "test-bar",
 						},
+						Reporter: config.Reporter{
+							Context:    "test-bar",
+							SkipReport: true,
+						},
 					},
 				},
 			},
 		},
+		ProwConfig: config.ProwConfig{
+			PodNamespace: namespace,
+			InRepoConfig: config.InRepoConfig{
+				Enabled:         map[string]*bool{"*": &trueBool},
+				AllowedClusters: map[string][]string{"*": {kube.DefaultClusterAlias}},
+			},
+		},
 	}
-
 	fca := &fca{
-		c: config,
+		c: cfg,
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1016,14 +1364,28 @@ func TestProcessChange(t *testing.T) {
 
 			var gc fgc
 			gc.instanceMap = tc.instancesMap
+			inRepoConfigCacheGetter, err := config.NewInRepoConfigCacheGetter(nil, 1, 1, "", flagutil.GitHubOptions{}, "", false)
+			if err != nil {
+				t.Fatalf("Failed creating cache getter: %v", err)
+			}
 			c := &Controller{
-				config:        fca.Config,
-				prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-				gc:            &gc,
-				tracker:       &fakeSync{val: fakeLastSync},
+				config:                  fca.Config,
+				prowJobClient:           fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				gc:                      &gc,
+				tracker:                 &fakeSync{val: fakeLastSync},
+				inRepoConfigCacheGetter: inRepoConfigCacheGetter,
+			}
+			cloneURI, err := makeCloneURI(tc.instance, tc.change.Project)
+			if err != nil {
+				t.Errorf("error making CloneURI %v", err)
 			}
 
-			err := c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)
+			cache, err := createTestRepoCache(t, fca)
+			if err != nil {
+				t.Errorf("error making test repo cache %v", err)
+			}
+
+			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI, cache)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {
@@ -1068,6 +1430,60 @@ func TestProcessChange(t *testing.T) {
 				if gc.reviews > 0 {
 					t.Errorf("expected no comments, got: %d", gc.reviews)
 				}
+			}
+		})
+	}
+}
+
+func TestIsProjectExemptFromHelp(t *testing.T) {
+	var testcases = []struct {
+		name                   string
+		projectsExemptFromHelp map[string]sets.String
+		instance               string
+		project                string
+		expected               bool
+	}{
+		{
+			name:                   "no project is exempt",
+			projectsExemptFromHelp: map[string]sets.String{},
+			instance:               "foo",
+			project:                "bar",
+			expected:               false,
+		},
+		{
+			name: "the instance does not match",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("bar"),
+			},
+			instance: "fuz",
+			project:  "bar",
+			expected: false,
+		},
+		{
+			name: "the instance matches but the project does not",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("baz"),
+			},
+			instance: "fuz",
+			project:  "bar",
+			expected: false,
+		},
+		{
+			name: "the project is exempt",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("bar"),
+			},
+			instance: "foo",
+			project:  "bar",
+			expected: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := isProjectOptOutHelp(tc.projectsExemptFromHelp, tc.instance, tc.project)
+			if got != tc.expected {
+				t.Errorf("expected %t for IsProjectExemptFromHelp but got %t", tc.expected, got)
 			}
 		})
 	}
@@ -1138,7 +1554,7 @@ func TestDeckLinkForPR(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := deckLinkForPR(tc.deckURL, tc.refs, tc.changeStatus)
 			if err != nil {
-				t.Errorf("unexpected error generating Deck link: %w", err)
+				t.Errorf("unexpected error generating Deck link: %v", err)
 			}
 			if result != tc.expected {
 				t.Errorf("expected deck link %s, but got %s", tc.expected, result)

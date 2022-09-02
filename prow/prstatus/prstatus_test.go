@@ -57,7 +57,7 @@ type fgc struct {
 	botName        string
 }
 
-func (c fgc) Query(context.Context, interface{}, map[string]interface{}) error {
+func (c fgc) QueryWithGitHubAppsSupport(context.Context, interface{}, map[string]interface{}, string) error {
 	return nil
 }
 
@@ -80,12 +80,12 @@ func (c fgc) BotUser() (*github.UserData, error) {
 }
 
 func newGitHubClientCreator(tokenUsers map[string]fgc) githubClientCreator {
-	return func(accessToken string) GitHubClient {
+	return func(accessToken string) (GitHubClient, error) {
 		who, ok := tokenUsers[accessToken]
 		if !ok {
 			panic("unexpected access token: " + accessToken)
 		}
-		return who
+		return who, nil
 	}
 }
 

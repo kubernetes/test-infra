@@ -38,7 +38,7 @@ func kubectlGetNodes(cmd string) (*nodeList, error) {
 
 	nodes := &nodeList{}
 	if err := json.Unmarshal(o, nodes); err != nil {
-		return nil, fmt.Errorf("error parsing kubectl get nodes output: %v", err)
+		return nil, fmt.Errorf("error parsing kubectl get nodes output: %w", err)
 	}
 
 	return nodes, nil
@@ -120,7 +120,7 @@ func kubectlGetPods(ctx context.Context, namespace string, labelSelector []strin
 
 	pods := &podList{}
 	if err := json.Unmarshal(o, pods); err != nil {
-		return nil, fmt.Errorf("error parsing kubectl get pods output: %v", err)
+		return nil, fmt.Errorf("error parsing kubectl get pods output: %w", err)
 	}
 
 	return pods, nil

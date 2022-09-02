@@ -32,13 +32,15 @@ import (
 // and clicking "Copy user ID".
 var githubToSlack = map[string]string{
 	"amwat":          "U9B1P2UGP",
+	"benkazemi":      "U03B4SNKVRT",
 	"bentheelder":    "U1P7T516X",
 	"chaodaig":       "U010XUQ9VPE",
 	"chases2":        "UJ9R0FWD6",
 	"cjwagner":       "U4QFZFMCM",
-	"e-blackwelder":  "U011FF4QHAN",
 	"fejta":          "U0E2KHQ13",
+	"juanfescobar":   "U021LQ1C0PJ",
 	"katharine":      "UBTBNJ6GL",
+	"listx":          "UFCU8S8P3",
 	"michelle192837": "U3TRY5WV7",
 	"mpherman2":      "U01AJA1N8NL",
 	"mushuee":        "U013TPFJWC8",
@@ -59,13 +61,13 @@ var rotationToSlackGroup = map[string]string{
 func getJSON(url string, v interface{}) error {
 	resp, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("failed to fetch %q: %v", url, err)
+		return fmt.Errorf("failed to fetch %q: %w", url, err)
 	}
 	defer resp.Body.Close()
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(v)
 	if err != nil {
-		return fmt.Errorf("failed to decode json from %q: %v", url, err)
+		return fmt.Errorf("failed to decode json from %q: %w", url, err)
 	}
 	return nil
 }
@@ -91,7 +93,7 @@ func updateGroupMembership(token, groupID, userID string) error {
 
 	err := getJSON("https://slack.com/api/usergroups.users.update?token="+token+"&users="+userID+"&usergroup="+groupID, &result)
 	if err != nil {
-		return fmt.Errorf("couldn't make membership request: %v", err)
+		return fmt.Errorf("couldn't make membership request: %w", err)
 	}
 
 	if !result.Ok {
@@ -104,7 +106,7 @@ func updateGroupMembership(token, groupID, userID string) error {
 func getTokenFromPath(path string) (string, error) {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
-		return "", fmt.Errorf("couldn't open file: %v", err)
+		return "", fmt.Errorf("couldn't open file: %w", err)
 	}
 	return strings.TrimSpace(string(content)), nil
 }

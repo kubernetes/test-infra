@@ -8,7 +8,7 @@ postsubmits:
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
-        testgrid-dashboards: provider-azure-cloud-provider-azure
+        testgrid-dashboards: provider-azure-cloud-provider-azure, sig-k8s-infra-gcb
         testgrid-tab-name: post-cloud-provider-azure-push-images
       decorate: true
       # this causes the job to only run on the master branch. Remove it if your
@@ -21,7 +21,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:

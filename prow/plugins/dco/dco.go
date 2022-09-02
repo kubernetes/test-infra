@@ -81,6 +81,9 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 				SkipDCOCheckForMembers:       true,
 				TrustedOrg:                   "org",
 				SkipDCOCheckForCollaborators: true,
+				ContributingRepo:             "other-org/other-repo",
+				ContributingBranch:           "main",
+				ContributingPath:             "docs/CONTRIBUTING.md",
 			},
 		},
 	})
@@ -121,13 +124,13 @@ type commentPruner interface {
 }
 
 // filterTrustedUsers checks whether the commits are from a trusted user and returns those that are not
-func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollaborators bool, trustedOrg, org, repo string, allCommits []github.RepositoryCommit) ([]github.RepositoryCommit, error) {
+func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollaborators bool, trustedApps []string, trustedOrg, org, repo string, allCommits []github.RepositoryCommit) ([]github.RepositoryCommit, error) {
 	untrustedCommits := make([]github.RepositoryCommit, 0, len(allCommits))
 
 	for _, commit := range allCommits {
-		trustedResponse, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
+		trustedResponse, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedApps, trustedOrg, commit.Author.Login, org, repo)
 		if err != nil {
-			return nil, fmt.Errorf("Error checking is member trusted: %v", err)
+			return nil, fmt.Errorf("Error checking is member trusted: %w", err)
 		}
 		if !trustedResponse.IsTrusted {
 			l.Debugf("Member %s is not trusted", commit.Author.Login)
@@ -145,7 +148,7 @@ func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollabo
 func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) ([]github.RepositoryCommit, error) {
 	allCommits, err := gc.ListPRCommits(org, repo, number)
 	if err != nil {
-		return nil, fmt.Errorf("error listing commits for pull request: %v", err)
+		return nil, fmt.Errorf("error listing commits for pull request: %w", err)
 	}
 	l.Debugf("Found %d commits in PR", len(allCommits))
 
@@ -165,7 +168,7 @@ func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, num
 func checkExistingStatus(gc gitHubClient, l *logrus.Entry, org, repo, sha string) (string, error) {
 	combinedStatus, err := gc.GetCombinedStatus(org, repo, sha)
 	if err != nil {
-		return "", fmt.Errorf("error listing pull request combined statuses: %v", err)
+		return "", fmt.Errorf("error listing pull request combined statuses: %w", err)
 	}
 
 	existingStatus := ""
@@ -185,7 +188,7 @@ func checkExistingStatus(gc gitHubClient, l *logrus.Entry, org, repo, sha string
 func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, number int) (hasYesLabel, hasNoLabel bool, err error) {
 	labels, err := gc.GetIssueLabels(org, repo, number)
 	if err != nil {
-		return false, false, fmt.Errorf("error getting pull request labels: %v", err)
+		return false, false, fmt.Errorf("error getting pull request labels: %w", err)
 	}
 
 	for _, l := range labels {
@@ -202,9 +205,7 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 
 // takeAction will take appropriate action on the pull request according to its
 // current state.
-func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.RepositoryCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
-	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", org, repo)
-
+func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.RepositoryCommit, existingStatus, contributingUrl string, hasYesLabel, hasNoLabel, addComment bool) error {
 	signedOff := len(commitsMissingDCO) == 0
 
 	// handle the 'all commits signed off' case by adding appropriate labels
@@ -214,14 +215,14 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 			l.Debugf("Removing %q label", dcoNoLabel)
 			// remove 'dco-signoff: no' label
 			if err := gc.RemoveLabel(org, repo, pr.Number, dcoNoLabel); err != nil {
-				return fmt.Errorf("error removing label: %v", err)
+				return fmt.Errorf("error removing label: %w", err)
 			}
 		}
 		if !hasYesLabel {
 			l.Debugf("Adding %q label", dcoYesLabel)
 			// add 'dco-signoff: yes' label
 			if err := gc.AddLabel(org, repo, pr.Number, dcoYesLabel); err != nil {
-				return fmt.Errorf("error adding label: %v", err)
+				return fmt.Errorf("error adding label: %w", err)
 			}
 		}
 		if existingStatus != github.StatusSuccess {
@@ -229,10 +230,10 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 			if err := gc.CreateStatus(org, repo, pr.Head.SHA, github.Status{
 				Context:     dcoContextName,
 				State:       github.StatusSuccess,
-				TargetURL:   targetURL,
+				TargetURL:   contributingUrl,
 				Description: dcoContextMessageSuccess,
 			}); err != nil {
-				return fmt.Errorf("error setting pull request status: %v", err)
+				return fmt.Errorf("error setting pull request status: %w", err)
 			}
 		}
 
@@ -245,14 +246,14 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		l.Debugf("Adding %q label", dcoNoLabel)
 		// add 'dco-signoff: no' label
 		if err := gc.AddLabel(org, repo, pr.Number, dcoNoLabel); err != nil {
-			return fmt.Errorf("error adding label: %v", err)
+			return fmt.Errorf("error adding label: %w", err)
 		}
 	}
 	if hasYesLabel {
 		l.Debugf("Removing %q label", dcoYesLabel)
 		// remove 'dco-signoff: yes' label
 		if err := gc.RemoveLabel(org, repo, pr.Number, dcoYesLabel); err != nil {
-			return fmt.Errorf("error removing label: %v", err)
+			return fmt.Errorf("error removing label: %w", err)
 		}
 	}
 	if existingStatus != github.StatusFailure {
@@ -260,10 +261,10 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		if err := gc.CreateStatus(org, repo, pr.Head.SHA, github.Status{
 			Context:     dcoContextName,
 			State:       github.StatusFailure,
-			TargetURL:   targetURL,
+			TargetURL:   contributingUrl,
 			Description: dcoContextMessageFailed,
 		}); err != nil {
-			return fmt.Errorf("error setting pull request status: %v", err)
+			return fmt.Errorf("error setting pull request status: %w", err)
 		}
 	}
 
@@ -272,7 +273,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		// failing commits
 		cp.PruneComments(shouldPrune(l))
 		l.Debugf("Commenting on PR to advise users of DCO check")
-		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, MarkdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
+		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, contributingUrl, MarkdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
 			l.WithError(err).Warning("Could not create DCO not found comment.")
 		}
 	}
@@ -296,7 +297,7 @@ func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.E
 	}
 
 	if config.SkipDCOCheckForMembers || config.SkipDCOCheckForCollaborators {
-		commitsMissingDCO, err = filterTrustedUsers(gc, l, config.SkipDCOCheckForCollaborators, config.TrustedOrg, org, repo, commitsMissingDCO)
+		commitsMissingDCO, err = filterTrustedUsers(gc, l, config.SkipDCOCheckForCollaborators, config.TrustedApps, config.TrustedOrg, org, repo, commitsMissingDCO)
 		if err != nil {
 			l.WithError(err).Infof("Error running trusted org member check against commits in PR")
 			return err
@@ -315,7 +316,24 @@ func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.E
 		return err
 	}
 
-	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment)
+	contributingRepo := fmt.Sprintf("%s/%s", org, repo)
+	if config.ContributingRepo != "" {
+		contributingRepo = config.ContributingRepo
+	}
+
+	contributingBranch := "master"
+	if config.ContributingBranch != "" {
+		contributingBranch = config.ContributingBranch
+	}
+
+	contributingPath := "CONTRIBUTING.md"
+	if config.ContributingPath != "" {
+		contributingPath = config.ContributingPath
+	}
+
+	contributingUrl := fmt.Sprintf("https://github.com/%s/blob/%s/%s", contributingRepo, contributingBranch, contributingPath)
+
+	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, contributingUrl, hasYesLabel, hasNoLabel, addComment)
 }
 
 // MarkdownSHAList prints the list of commits in a markdown-friendly way.
@@ -405,7 +423,7 @@ func handleComment(config plugins.Dco, gc gitHubClient, cp commentPruner, log *l
 
 	pr, err := gc.GetPullRequest(org, repo, ce.Number)
 	if err != nil {
-		return fmt.Errorf("error getting pull request for comment: %v", err)
+		return fmt.Errorf("error getting pull request for comment: %w", err)
 	}
 
 	return handle(config, gc, cp, log, org, repo, *pr, true)

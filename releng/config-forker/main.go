@@ -64,7 +64,7 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 					var err error
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
-						return nil, fmt.Errorf("%s: %v", postsubmit.Name, err)
+						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
 					}
 				}
 			}
@@ -85,6 +85,7 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 			p := presubmit
 			p.SkipBranches = nil
 			p.Branches = []string{"release-" + version}
+			p.Context = generatePresubmitContextVariant(p.Name, p.Context, version)
 			if p.Spec != nil {
 				for i := range p.Spec.Containers {
 					c := &p.Spec.Containers[i]
@@ -93,7 +94,7 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 					var err error
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
-						return nil, fmt.Errorf("%s: %v", presubmit.Name, err)
+						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
 					}
 				}
 			}
@@ -131,7 +132,7 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 				var err error
 				c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 				if err != nil {
-					return nil, fmt.Errorf("%s: %v", periodic.Name, err)
+					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
 				}
 			}
 		}
@@ -160,7 +161,7 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 		var err error
 		p.Tags, err = performReplacement(p.Tags, version, p.Annotations[replacementAnnotation])
 		if err != nil {
-			return nil, fmt.Errorf("%s: %v", periodic.Name, err)
+			return nil, fmt.Errorf("%s: %w", periodic.Name, err)
 		}
 		p.Labels = performDeletion(p.Labels, p.Annotations[deletionAnnotation])
 		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
@@ -189,12 +190,12 @@ func cleanAnnotations(annotations map[string]string) map[string]string {
 func evaluateTemplate(s string, c interface{}) (string, error) {
 	t, err := template.New("t").Parse(s)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse template %q: %v", s, err)
+		return "", fmt.Errorf("failed to parse template %q: %w", s, err)
 	}
 	wr := bytes.Buffer{}
 	err = t.Execute(&wr, c)
 	if err != nil {
-		return "", fmt.Errorf("failed to execute template: %v", err)
+		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
 	return wr.String(), nil
 }
@@ -254,8 +255,14 @@ func performDeletion(args map[string]string, deletions string) map[string]string
 	return result
 }
 
+const masterSuffix = "-master"
+
+func replaceAllMaster(s, new string) string {
+	return strings.ReplaceAll(s, masterSuffix, new)
+}
+
 func fixImage(image, version string) string {
-	return strings.ReplaceAll(image, "-master", "-"+version)
+	return replaceAllMaster(image, "-"+version)
 }
 
 func fixBootstrapArgs(args []string, version string) []string {
@@ -281,6 +288,9 @@ func fixExtraRefs(refs []prowapi.Refs, version string) []prowapi.Refs {
 	newRefs := make([]prowapi.Refs, 0, len(refs))
 	for _, r := range refs {
 		if r.Org == "kubernetes" && r.Repo == "kubernetes" && r.BaseRef == "master" {
+			r.BaseRef = "release-" + version
+		}
+		if r.Org == "kubernetes" && r.Repo == "perf-tests" && r.BaseRef == "master" {
 			r.BaseRef = "release-" + version
 		}
 		newRefs = append(newRefs, r)
@@ -350,10 +360,19 @@ func generateNameVariant(name, version string, generic bool) string {
 	if !generic {
 		suffix = "-" + strings.ReplaceAll(version, ".", "-")
 	}
-	if !strings.HasSuffix(name, "-master") {
+	if !strings.HasSuffix(name, masterSuffix) {
 		return name + suffix
 	}
-	return strings.ReplaceAll(name, "-master", suffix)
+	return replaceAllMaster(name, suffix)
+}
+
+func generatePresubmitContextVariant(name, context, version string) string {
+	suffix := "-" + version
+
+	if context != "" {
+		return replaceAllMaster(context, suffix)
+	}
+	return replaceAllMaster(name, suffix)
 }
 
 type options struct {

@@ -31,8 +31,9 @@ import (
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
+	"k8s.io/utils/clock"
+	clocktesting "k8s.io/utils/clock/testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -155,39 +156,39 @@ func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.Pul
 	return f.changes, f.err
 }
 
-func (f *fghc) BotUserChecker() (func(string) bool, error) {
+func (f *fghc) BotUserCheckerWithContext(context.Context) (func(string) bool, error) {
 	return func(candidate string) bool {
 		return candidate == "bot"
 	}, nil
 }
-func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error {
+func (f *fghc) CreateStatusWithContext(_ context.Context, org, repo, ref string, s github.Status) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil
 }
-func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+func (f *fghc) ListIssueCommentsWithContext(_ context.Context, org, repo string, number int) ([]github.IssueComment, error) {
 	f.Lock()
 	defer f.Unlock()
 	return nil, nil
 }
-func (f *fghc) CreateComment(org, repo string, number int, comment string) error {
+func (f *fghc) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil
 }
-func (f *fghc) DeleteComment(org, repo string, ID int) error {
+func (f *fghc) DeleteCommentWithContext(_ context.Context, org, repo string, ID int) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil
 }
-func (f *fghc) EditComment(org, repo string, ID int, comment string) error {
+func (f *fghc) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil
 }
 
 func TestSyncTriggeredJobs(t *testing.T) {
-	fakeClock := clock.NewFakeClock(time.Now().Truncate(1 * time.Second))
+	fakeClock := clocktesting.NewFakeClock(time.Now().Truncate(1 * time.Second))
 	pendingTime := metav1.NewTime(fakeClock.Now())
 
 	var testcases = []struct {

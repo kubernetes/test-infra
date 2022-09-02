@@ -255,7 +255,7 @@ func isPodQOSGuaranteed(spec *corev1.PodSpec) bool {
 // - reports (aka does not skip reporting)
 // - always runs OR runs if some path changed
 func isMergeBlocking(job cfg.Presubmit) bool {
-	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "")
+	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "" || job.SkipIfOnlyChanged != "")
 }
 
 func guessPeriodicRepoAndBranch(job cfg.Periodic) (repo, branch string) {

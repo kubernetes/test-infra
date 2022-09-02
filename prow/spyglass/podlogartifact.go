@@ -100,7 +100,7 @@ func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 	}
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID, a.container)
 	if err != nil {
-		return 0, fmt.Errorf("error getting pod log: %v", err)
+		return 0, fmt.Errorf("error getting pod log: %w", err)
 	}
 	r := bytes.NewReader(logs)
 	readBytes, err := r.ReadAt(p, off)
@@ -108,7 +108,7 @@ func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 		return readBytes, io.EOF
 	}
 	if err != nil {
-		return 0, fmt.Errorf("error reading pod logs: %v", err)
+		return 0, fmt.Errorf("error reading pod logs: %w", err)
 	}
 	return readBytes, nil
 }
@@ -117,14 +117,14 @@ func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 	size, err := a.Size()
 	if err != nil {
-		return nil, fmt.Errorf("error getting pod log size: %v", err)
+		return nil, fmt.Errorf("error getting pod log size: %w", err)
 	}
 	if size > a.sizeLimit {
 		return nil, lenses.ErrFileTooLarge
 	}
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID, a.container)
 	if err != nil {
-		return nil, fmt.Errorf("error getting pod log: %v", err)
+		return nil, fmt.Errorf("error getting pod log: %w", err)
 	}
 	return logs, nil
 }
@@ -136,7 +136,7 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 	}
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID, a.container)
 	if err != nil {
-		return nil, fmt.Errorf("error getting pod log: %v", err)
+		return nil, fmt.Errorf("error getting pod log: %w", err)
 	}
 	reader := bytes.NewReader(logs)
 	var byteCount int64
@@ -147,7 +147,7 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 			return p, io.EOF
 		}
 		if err != nil {
-			return nil, fmt.Errorf("error reading pod log: %v", err)
+			return nil, fmt.Errorf("error reading pod log: %w", err)
 		}
 		p = append(p, b)
 		byteCount++
@@ -162,7 +162,7 @@ func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
 	}
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID, a.container)
 	if err != nil {
-		return nil, fmt.Errorf("error getting pod log tail: %v", err)
+		return nil, fmt.Errorf("error getting pod log tail: %w", err)
 	}
 	size := int64(len(logs))
 	var off int64
@@ -174,7 +174,7 @@ func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
 	p := make([]byte, n)
 	readBytes, err := bytes.NewReader(logs).ReadAt(p, off)
 	if err != nil && err != io.EOF {
-		return nil, fmt.Errorf("error reading pod log tail: %v", err)
+		return nil, fmt.Errorf("error reading pod log tail: %w", err)
 	}
 	return p[:readBytes], nil
 }
@@ -183,8 +183,16 @@ func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
 func (a *PodLogArtifact) Size() (int64, error) {
 	logs, err := a.jobAgent.GetJobLog(a.name, a.buildID, a.container)
 	if err != nil {
-		return 0, fmt.Errorf("error getting size of pod log: %v", err)
+		return 0, fmt.Errorf("error getting size of pod log: %w", err)
 	}
 	return int64(len(logs)), nil
 
+}
+
+func (a *PodLogArtifact) Metadata() (map[string]string, error) {
+	return nil, nil
+}
+
+func (a *PodLogArtifact) UpdateMetadata(meta map[string]string) error {
+	return errors.New("not implemented")
 }

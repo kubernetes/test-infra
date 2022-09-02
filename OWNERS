@@ -2,19 +2,20 @@
 
 reviewers:
 - BenTheElder # lead
-- spiffxp # lead
-- stevekuznetsov # lead
+- spiffxp # chair
+- stevekuznetsov # chair
 - chaodaiG # oncall
-- cjwagner # oncall
+- cjwagner # oncall, lead
 - mpherman2 # oncall
-- fejta # oncall
 approvers:
 - BenTheElder # lead
-- spiffxp # lead
-- stevekuznetsov # lead
+- spiffxp # chair
+- stevekuznetsov # chair
 - test-infra-oncall # oncall
+- sig-k8s-infra-oncall # oncall
 emeritus_approvers:
 - amwat
+- fejta
 - ixdy
 - krzyzacy
 

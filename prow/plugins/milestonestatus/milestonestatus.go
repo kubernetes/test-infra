@@ -36,7 +36,7 @@ const pluginName = "milestonestatus"
 var (
 	statusRegex      = regexp.MustCompile(`(?m)^/status\s+(.+)$`)
 	mustBeAuthorized = "You must be a member of the [%s/%s](https://github.com/orgs/%s/teams/%s/members) GitHub team to add status labels. If you believe you should be able to issue the /status command, please contact your %s and have them propose you as an additional delegate for this responsibility."
-	milestoneTeamMsg = "The milestone maintainers team is the GitHub team %q with ID: %d."
+	milestoneTeamMsg = "The milestone maintainers team is the GitHub team %q"
 	statusMap        = map[string]string{
 		"approved-for-milestone": "status/approved-for-milestone",
 		"in-progress":            "status/in-progress",
@@ -48,6 +48,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 }
 
 func init() {
@@ -56,7 +57,7 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	msgForTeam := func(team plugins.Milestone) string {
-		return fmt.Sprintf(milestoneTeamMsg, team.MaintainersTeam, team.MaintainersID)
+		return fmt.Sprintf(milestoneTeamMsg, team.MaintainersTeam)
 	}
 
 	pluginHelp := &pluginhelp.PluginHelp{
@@ -106,7 +107,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		milestone = repoMilestone[""]
 	}
 
-	milestoneMaintainers, err := gc.ListTeamMembers(org, milestone.MaintainersID, github.RoleAll)
+	milestoneMaintainers, err := determineMaintainers(gc, milestone, org)
 	if err != nil {
 		return err
 	}
@@ -134,4 +135,11 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		}
 	}
 	return nil
+}
+
+func determineMaintainers(gc githubClient, milestone plugins.Milestone, org string) ([]github.TeamMember, error) {
+	if milestone.MaintainersTeam != "" {
+		return gc.ListTeamMembersBySlug(org, milestone.MaintainersTeam, github.RoleAll)
+	}
+	return gc.ListTeamMembers(org, milestone.MaintainersID, github.RoleAll)
 }

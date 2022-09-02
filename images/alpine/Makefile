@@ -13,9 +13,9 @@
 # limitations under the License.
 
 push-prod:
-	bazel run //images/builder -- --project=k8s-prow --scratch-bucket=gs://k8s-testimages-scratch images/alpine
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-prow --scratch-bucket=gs://k8s-testimages-scratch images/alpine
 
 push:
-	bazel run //images/builder -- --allow-dirty images/alpine
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --allow-dirty images/alpine
 
 .PHONY: push push-prod

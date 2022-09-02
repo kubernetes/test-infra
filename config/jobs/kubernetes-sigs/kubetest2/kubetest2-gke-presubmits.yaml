@@ -1,0 +1,32 @@
+presubmits:
+  kubernetes-sigs/kubetest2:
+  - name: pull-kubetest2-gke-up-down-singlecluster
+    decorate: true
+    run_if_changed: "kubetest2-gke/.*"
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - "runner.sh"
+        args:
+        - "./kubetest2-gke/ci-tests/buildupdown.sh"
+        - "--cluster-topology"
+        - "singlecluster"
+  - name: pull-kubetest2-gke-up-down-multicluster
+    decorate: true
+    run_if_changed: "kubetest2-gke/.*"
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - "runner.sh"
+        args:
+        - "./kubetest2-gke/ci-tests/buildupdown.sh"
+        - "--cluster-topology"
+        - "multicluster"

@@ -82,7 +82,7 @@ func NewGroup(gc ghFileClient, owner, repo, sha string) (*Group, error) {
 		case *github.FileNotFound:
 			return g, nil
 		default:
-			return nil, fmt.Errorf("could not get .generated_files: %v", err)
+			return nil, fmt.Errorf("could not get .generated_files: %w", err)
 		}
 	}
 
@@ -163,7 +163,7 @@ func (g *Group) loadPaths(r io.Reader) error {
 	}
 
 	if err := s.Err(); err != nil {
-		return fmt.Errorf("scan error: %v", err)
+		return fmt.Errorf("scan error: %w", err)
 	}
 
 	return nil

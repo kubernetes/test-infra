@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         - runner.sh
         args:
@@ -22,7 +22,7 @@ presubmits:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         - runner.sh
         args:
@@ -55,7 +55,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         - runner.sh
         args:
@@ -64,29 +64,46 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-sig-storage-local-static-provisioner-e2e-gke
-    always_run: true
+  - name: pull-sig-storage-local-static-provisioner-e2e-windows-2019
+    always_run: false
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+      preset-e2e-gce-windows-containerd: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         - runner.sh
         args:
-        - make
-        - e2e
+        - hack/e2e.sh
+        - --
+        - --test-cmd-args=--allowed-not-ready-nodes=10
+        - --test-cmd-args=--node-os-distro=windows
         env:
-        - name: PROVIDER
-          value: gke
-        - name: GKE_ENVIRONMENT
-          value: prod
-        - name: EXTRACT_STRATEGY
-          value: gke-default
+        - name: NODE_SIZE
+          value: "n2-standard-2"
+        - name: NODE_LOCAL_SSDS
+          value: "2"
+        # added in https://github.com/kubernetes/kubernetes/pull/105999
+        - name: WINDOWS_ENABLE_HYPERV
+          value: "true"
+        # if the value is changed, also change the hack/e2e.sh Windows image to build!
+        # this is done so that the e2e test runs faster
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win2019"
+        # in the e2e tests the flag --working-dir set on CSI Proxy allows
+        # setting the locations where CSI Proxy is supposed to run
+        # the test location is defined in /test/e2e/e2e_test.go
+        - name: CSI_PROXY_FLAGS
+          value: "--working-dir C:\\tmp"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -106,7 +123,7 @@ periodics:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       command:
       - runner.sh
       args:
@@ -117,38 +134,6 @@ periodics:
         value: gce
       - name: EXTRACT_STRATEGY
         value: ci/latest
-      - NAME: PROVISIONER_E2E_IMAGE
-        value: quay.io/external_storage/local-volume-provisioner:canary
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-- name: ci-sig-storage-local-static-provisioner-master-gke-default
-  interval: 4h
-  decorate: true
-  labels:
-    preset-dind-enabled: "true"
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: sig-storage-local-static-provisioner
-    base_ref: master
-    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-      command:
-      - runner.sh
-      args:
-      - make
-      - e2e
-      env:
-      - name: PROVIDER
-        value: gke
-      - name: GKE_ENVIRONMENT
-        value: prod
-      - name: EXTRACT_STRATEGY
-        value: gke-default
       - NAME: PROVISIONER_E2E_IMAGE
         value: quay.io/external_storage/local-volume-provisioner:canary
       # docker-in-docker needs privileged mode

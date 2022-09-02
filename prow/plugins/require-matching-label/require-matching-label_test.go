@@ -66,6 +66,11 @@ func (f *fakeGitHub) GetIssueLabels(org, repo string, number int) ([]github.Labe
 	return res, nil
 }
 
+func (f *fakeGitHub) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+	res := &github.PullRequest{}
+	return res, nil
+}
+
 type fakePruner struct{}
 
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}

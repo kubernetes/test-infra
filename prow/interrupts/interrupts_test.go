@@ -229,7 +229,7 @@ func TestInterrupts(t *testing.T) {
 func generateCerts(url string) (string, string, error) {
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate private key: %v", err)
+		return "", "", fmt.Errorf("failed to generate private key: %w", err)
 	}
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
@@ -271,11 +271,11 @@ func generateCerts(url string) (string, string, error) {
 
 	keyOut, err := ioutil.TempFile("", "key.pem")
 	if err != nil {
-		return "", "", fmt.Errorf("failed to open key.pem for writing: %v", err)
+		return "", "", fmt.Errorf("failed to open key.pem for writing: %w", err)
 	}
 	privBytes, err := x509.MarshalPKCS8PrivateKey(priv)
 	if err != nil {
-		return "", "", fmt.Errorf("unable to marshal private key: %v", err)
+		return "", "", fmt.Errorf("unable to marshal private key: %w", err)
 	}
 	if err := pem.Encode(keyOut, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes}); err != nil {
 		return "", "", fmt.Errorf("failed to write data to key.pem: %s", err)
@@ -284,7 +284,7 @@ func generateCerts(url string) (string, string, error) {
 		return "", "", fmt.Errorf("error closing key.pem: %s", err)
 	}
 	if err := os.Chmod(keyOut.Name(), 0600); err != nil {
-		return "", "", fmt.Errorf("could not change permissions on key.pem: %v", err)
+		return "", "", fmt.Errorf("could not change permissions on key.pem: %w", err)
 	}
 	return certOut.Name(), keyOut.Name(), nil
 }

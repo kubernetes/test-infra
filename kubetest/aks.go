@@ -75,12 +75,12 @@ func newAksDeployer() (*aksDeployer, error) {
 
 	creds, err := getAzCredentials()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get azure credentials: %v", err)
+		return nil, fmt.Errorf("failed to get azure credentials: %w", err)
 	}
 
 	env, err := azure.EnvironmentFromName(*aksAzureEnv)
 	if err != nil {
-		return nil, fmt.Errorf("failed to determine azure environment: %v", err)
+		return nil, fmt.Errorf("failed to determine azure environment: %w", err)
 	}
 
 	var client *AzureClient
@@ -90,12 +90,12 @@ func newAksDeployer() (*aksDeployer, error) {
 		creds.TenantID,
 		creds.ClientSecret,
 	); err != nil {
-		return nil, fmt.Errorf("error trying to get Azure Client: %v", err)
+		return nil, fmt.Errorf("error trying to get Azure Client: %w", err)
 	}
 
 	outputDir, err := ioutil.TempDir(os.Getenv("HOME"), "aks")
 	if err != nil {
-		return nil, fmt.Errorf("error creating tempdir: %v", err)
+		return nil, fmt.Errorf("error creating tempdir: %w", err)
 	}
 
 	a := &aksDeployer{
@@ -139,22 +139,22 @@ func (a *aksDeployer) Up() error {
 	log.Printf("Creating AKS cluster %v in resource group %v", a.resourceName, a.resourceGroup)
 	templateFile, err := downloadFromURL(a.templateURL, path.Join(a.outputDir, "kubernetes.json"), 2)
 	if err != nil {
-		return fmt.Errorf("error downloading AKS cluster template: %v with error %v", a.templateURL, err)
+		return fmt.Errorf("error downloading AKS cluster template: %v with error %w", a.templateURL, err)
 	}
 
 	template, err := ioutil.ReadFile(templateFile)
 	if err != nil {
-		return fmt.Errorf("failed to read downloaded cluster template file: %v", err)
+		return fmt.Errorf("failed to read downloaded cluster template file: %w", err)
 	}
 
 	var model containerservice.ManagedCluster
 	if err := json.Unmarshal(template, &model); err != nil {
-		return fmt.Errorf("failed to unmarshal managedcluster model: %v", err)
+		return fmt.Errorf("failed to unmarshal managedcluster model: %w", err)
 	}
 
 	_, sshPublicKey, err := newSSHKeypair(4096)
 	if err != nil {
-		return fmt.Errorf("failed to generate ssh key for cluster creation: %v", err)
+		return fmt.Errorf("failed to generate ssh key for cluster creation: %w", err)
 	}
 
 	*(*model.LinuxProfile.SSH.PublicKeys)[0].KeyData = string(sshPublicKey)
@@ -167,12 +167,12 @@ func (a *aksDeployer) Up() error {
 	log.Printf("Creating Azure resource group: %v for cluster deployment.", a.resourceGroup)
 	_, err = a.azureClient.EnsureResourceGroup(context.Background(), a.resourceGroup, a.location, nil)
 	if err != nil {
-		return fmt.Errorf("could not ensure resource group: %v", err)
+		return fmt.Errorf("could not ensure resource group: %w", err)
 	}
 
 	req, err := a.azureClient.managedClustersClient.CreateOrUpdatePreparer(context.Background(), a.resourceGroup, a.resourceName, model)
 	if err != nil {
-		return fmt.Errorf("failed to prepare cluster creation: %v", err)
+		return fmt.Errorf("failed to prepare cluster creation: %w", err)
 	}
 
 	for key, val := range a.customHeaders {
@@ -181,18 +181,18 @@ func (a *aksDeployer) Up() error {
 
 	future, err := a.azureClient.managedClustersClient.CreateOrUpdateSender(req)
 	if err != nil {
-		return fmt.Errorf("failed to respond to cluster creation: %v", err)
+		return fmt.Errorf("failed to respond to cluster creation: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*25)
 	defer cancel()
 	if err := future.WaitForCompletionRef(ctx, a.azureClient.managedClustersClient.Client); err != nil {
-		return fmt.Errorf("failed long async cluster creation: %v", err)
+		return fmt.Errorf("failed long async cluster creation: %w", err)
 	}
 
 	credentialList, err := a.azureClient.managedClustersClient.ListClusterAdminCredentials(context.Background(), a.resourceGroup, a.resourceName)
 	if err != nil {
-		return fmt.Errorf("failed to list kubeconfigs: %v", err)
+		return fmt.Errorf("failed to list kubeconfigs: %w", err)
 	}
 	if credentialList.Kubeconfigs == nil || len(*credentialList.Kubeconfigs) < 1 {
 		return fmt.Errorf("no kubeconfigs available for the aks cluster")
@@ -205,11 +205,11 @@ func (a *aksDeployer) Up() error {
 
 	managedCluster, err := future.Result(a.azureClient.managedClustersClient)
 	if err != nil {
-		return fmt.Errorf("failed to extract resulting managed cluster: %v", err)
+		return fmt.Errorf("failed to extract resulting managed cluster: %w", err)
 	}
 	masterIP := *managedCluster.ManagedClusterProperties.Fqdn
 	if err != nil {
-		return fmt.Errorf("failed to get masterIP: %v", err)
+		return fmt.Errorf("failed to get masterIP: %w", err)
 	}
 	masterInternalIP := masterIP
 
@@ -258,17 +258,17 @@ func (a *aksDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 		const logDumpURLPrefix string = "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/hack/log-dump/"
 		logDumpScript, err := downloadFromURL(logDumpURLPrefix+"log-dump.sh", path.Join(a.outputDir, "log-dump.sh"), 2)
 		if err != nil {
-			return fmt.Errorf("error downloading log dump script: %v", err)
+			return fmt.Errorf("error downloading log dump script: %w", err)
 		}
 		if err := control.FinishRunning(exec.Command("chmod", "+x", logDumpScript)); err != nil {
-			return fmt.Errorf("error changing access permission for %s: %v", logDumpScript, err)
+			return fmt.Errorf("error changing access permission for %s: %w", logDumpScript, err)
 		}
 		if _, err := downloadFromURL(logDumpURLPrefix+"log-dump-daemonset.yaml", path.Join(a.outputDir, "log-dump-daemonset.yaml"), 2); err != nil {
-			return fmt.Errorf("error downloading log dump manifest: %v", err)
+			return fmt.Errorf("error downloading log dump manifest: %w", err)
 		}
 
 		if err := control.FinishRunning(exec.Command("bash", "-c", logDumpScript)); err != nil {
-			return fmt.Errorf("error running log collection script %s: %v", logDumpScript, err)
+			return fmt.Errorf("error running log collection script %s: %w", logDumpScript, err)
 		}
 		return nil
 	}
@@ -357,7 +357,7 @@ func (a *aksDeployer) dockerLogin() error {
 		passwordFile := os.Getenv("DOCKER_PASSWORD_FILE")
 		password, err := ioutil.ReadFile(passwordFile)
 		if err != nil {
-			return fmt.Errorf("error reading docker password file %v: %v", passwordFile, err)
+			return fmt.Errorf("error reading docker password file %v: %w", passwordFile, err)
 		}
 		pwd = strings.TrimSuffix(string(password), "\n")
 	} else {
@@ -369,7 +369,7 @@ func (a *aksDeployer) dockerLogin() error {
 	}
 	cmd := exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed Docker login with output %s\n error: %v", out, err)
+		return fmt.Errorf("failed Docker login with output %s\n error: %w", out, err)
 	}
 	log.Println("Docker login success.")
 	return nil

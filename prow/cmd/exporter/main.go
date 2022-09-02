@@ -92,7 +92,7 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	pjClientset, err := o.kubernetes.ProwJobClientset(cfg().ProwJobNamespace, false)
+	pjClientset, err := o.kubernetes.ProwJobClientset(false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create prowjob client set")
 	}

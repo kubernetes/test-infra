@@ -23,16 +23,17 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
 	"k8s.io/test-infra/prow/github/report"
+	"k8s.io/test-infra/prow/kube"
 )
 
 const (
@@ -45,71 +46,20 @@ type Client struct {
 	gc          report.GitHubClient
 	config      config.Getter
 	reportAgent v1.ProwJobAgent
-	prLocks     *shardedLock
-}
-
-type simplePull struct {
-	org, repo string
-	number    int
-}
-
-type shardedLock struct {
-	mapLock *sync.Mutex
-	locks   map[simplePull]*sync.Mutex
-}
-
-func (s *shardedLock) getLock(key simplePull) *sync.Mutex {
-	s.mapLock.Lock()
-	defer s.mapLock.Unlock()
-	if _, exists := s.locks[key]; !exists {
-		s.locks[key] = &sync.Mutex{}
-	}
-	return s.locks[key]
-}
-
-// cleanup deletes all locks by acquiring first
-// the mapLock and then each individual lock before
-// deleting it. The individual lock must be acquired
-// because otherwise it may be held, we delete it from
-// the map, it gets recreated and acquired and two
-// routines report in parallel for the same job.
-// Note that while this function is running, no new
-// presubmit reporting can happen, as we hold the mapLock.
-func (s *shardedLock) cleanup() {
-	s.mapLock.Lock()
-	defer s.mapLock.Unlock()
-
-	for key, lock := range s.locks {
-		lock.Lock()
-		delete(s.locks, key)
-		lock.Unlock()
-	}
-}
-
-// runCleanup asynchronously runs the cleanup once per hour.
-func (s *shardedLock) runCleanup() {
-	go func() {
-		for range time.Tick(time.Hour) {
-			logrus.Debug("Starting to clean up presubmit locks")
-			startTime := time.Now()
-			s.cleanup()
-			logrus.WithField("duration", time.Since(startTime).String()).Debug("Finished cleaning up presubmit locks")
-		}
-	}()
+	prLocks     *criercommonlib.ShardedLock
+	lister      ctrlruntimeclient.Reader
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent) *Client {
+func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent, lister ctrlruntimeclient.Reader) *Client {
 	c := &Client{
 		gc:          gc,
 		config:      cfg,
 		reportAgent: reportAgent,
-		prLocks: &shardedLock{
-			mapLock: &sync.Mutex{},
-			locks:   map[simplePull]*sync.Mutex{},
-		},
+		prLocks:     criercommonlib.NewShardedLock(),
+		lister:      lister,
 	}
-	c.prLocks.runCleanup()
+	c.prLocks.RunCleanup()
 	return c
 }
 
@@ -120,9 +70,12 @@ func (c *Client) GetName() string {
 
 // ShouldReport returns if this prowjob should be reported by the github reporter
 func (c *Client) ShouldReport(_ context.Context, _ *logrus.Entry, pj *v1.ProwJob) bool {
+	if !pj.Spec.Report {
+		return false
+	}
 
 	switch {
-	case pj.Labels[client.GerritReportLabel] != "":
+	case pj.Labels[kube.GerritReportLabel] != "":
 		return false // TODO(fejta): opt-in to github reporting
 	case pj.Spec.Type != v1.PresubmitJob && pj.Spec.Type != v1.PostsubmitJob:
 		return false // Report presubmit and postsubmit github jobs for github reporter
@@ -134,23 +87,12 @@ func (c *Client) ShouldReport(_ context.Context, _ *logrus.Entry, pj *v1.ProwJob
 }
 
 // Report will report via reportlib
-func (c *Client) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
-
-	// The github comment create/update/delete done for presubmits
-	// needs pr-level locking to avoid racing when reporting multiple
-	// jobs in parallel.
-	if pj.Spec.Type == v1.PresubmitJob {
-		key, err := lockKeyForPJ(pj)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to get lockkey for job: %v", err)
-		}
-		lock := c.prLocks.getLock(*key)
-		lock.Lock()
-		defer lock.Unlock()
-	}
+func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancel()
 
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	err := report.Report(c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), *pj, c.config().GitHubReporter.JobTypesToReport)
+	err := report.ReportStatusContext(ctx, c.gc, *pj, c.config().GitHubReporter)
 	if err != nil {
 		if strings.Contains(err.Error(), "This SHA and context has reached the maximum number of statuses") {
 			// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.
@@ -161,12 +103,95 @@ func (c *Client) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([
 			log.WithError(err).Debug("Could not find PR commit, skipping retries")
 			err = nil
 		}
+		// Always return when there is any error reporting status context.
+		return []*v1.ProwJob{pj}, nil, err
 	}
+
+	// The github comment create/update/delete done for presubmits
+	// needs pr-level locking to avoid racing when reporting multiple
+	// jobs in parallel.
+	if pj.Spec.Type == v1.PresubmitJob {
+		key, err := lockKeyForPJ(pj)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to get lockkey for job: %w", err)
+		}
+		lock, err := c.prLocks.GetLock(ctx, *key)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := lock.Acquire(ctx, 1); err != nil {
+			return nil, nil, err
+		}
+		defer lock.Release(1)
+	}
+
+	// Check if this org or repo has opted out of failure report comments.
+	// This check has to be here and not in ShouldReport as we always need to report
+	// the status context, just potentially not creating a comment.
+	refs := pj.Spec.Refs
+	fullRepo := fmt.Sprintf("%s/%s", refs.Org, refs.Repo)
+	for _, ident := range c.config().GitHubReporter.NoCommentRepos {
+		if refs.Org == ident || fullRepo == ident {
+			return []*v1.ProwJob{pj}, nil, nil
+		}
+	}
+	// Check if this org or repo has opted out of failure report comments
+	toReport := []v1.ProwJob{*pj}
+	var mustCreateComment bool
+	for _, ident := range c.config().GitHubReporter.SummaryCommentRepos {
+		if pj.Spec.Refs.Org == ident || fullRepo == ident {
+			mustCreateComment = true
+			toReport, err = pjsToReport(ctx, log, c.lister, pj)
+			if err != nil {
+				return []*v1.ProwJob{pj}, nil, err
+			}
+		}
+	}
+	err = report.ReportComment(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), toReport, c.config().GitHubReporter, mustCreateComment)
 
 	return []*v1.ProwJob{pj}, nil, err
 }
 
-func lockKeyForPJ(pj *v1.ProwJob) (*simplePull, error) {
+func pjsToReport(ctx context.Context, log *logrus.Entry, lister ctrlruntimeclient.Reader, pj *v1.ProwJob) ([]v1.ProwJob, error) {
+	if len(pj.Spec.Refs.Pulls) != 1 {
+		return nil, nil
+	}
+	// find all prowjobs from this PR
+	selector := map[string]string{}
+	for _, l := range []string{kube.OrgLabel, kube.RepoLabel, kube.PullLabel} {
+		selector[l] = pj.ObjectMeta.Labels[l]
+	}
+	var pjs v1.ProwJobList
+	if err := lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+		return nil, fmt.Errorf("Cannot list prowjob with selector %v", selector)
+	}
+
+	latestBatch := make(map[string]v1.ProwJob)
+	for _, pjob := range pjs.Items {
+		if !pjob.Complete() { // Any job still running should prevent from comments
+			return nil, nil
+		}
+		if !pjob.Spec.Report { // Filtering out non-reporting jobs
+			continue
+		}
+		// Now you have convinced me that you are the same job from my revision,
+		// continue convince me that you are the last one of your kind
+		if existing, ok := latestBatch[pjob.Spec.Job]; !ok {
+			latestBatch[pjob.Spec.Job] = pjob
+		} else if pjob.CreationTimestamp.After(existing.CreationTimestamp.Time) {
+			latestBatch[pjob.Spec.Job] = pjob
+		}
+	}
+
+	var toReport []v1.ProwJob
+	for _, pjob := range latestBatch {
+		toReport = append(toReport, pjob)
+	}
+
+	return toReport, nil
+}
+
+func lockKeyForPJ(pj *v1.ProwJob) (*criercommonlib.SimplePull, error) {
 	if pj.Spec.Type != v1.PresubmitJob {
 		return nil, fmt.Errorf("can only get lock key for presubmit jobs, was %q", pj.Spec.Type)
 	}
@@ -176,5 +201,5 @@ func lockKeyForPJ(pj *v1.ProwJob) (*simplePull, error) {
 	if n := len(pj.Spec.Refs.Pulls); n != 1 {
 		return nil, fmt.Errorf("prowjob doesn't have one but %d pulls", n)
 	}
-	return &simplePull{org: pj.Spec.Refs.Org, repo: pj.Spec.Refs.Repo, number: pj.Spec.Refs.Pulls[0].Number}, nil
+	return criercommonlib.NewSimplePull(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number), nil
 }

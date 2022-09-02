@@ -29,10 +29,12 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
+	"gopkg.in/ini.v1"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/secretutil"
@@ -42,6 +44,10 @@ import (
 const defaultBufferSize = 10 * 1024 * 1024
 
 func (o Options) censor() error {
+	logrus.Info("Starting to censor data")
+	startTime := time.Now()
+	defer func() { logrus.WithField("duration", time.Since(startTime).String()).Info("Finished censoring data") }()
+
 	var concurrency int64
 	if o.CensoringOptions.CensoringConcurrency == nil {
 		concurrency = int64(10)
@@ -62,8 +68,13 @@ func (o Options) censor() error {
 		errLock.Unlock()
 	}()
 
-	secrets, err := loadSecrets(o.CensoringOptions.SecretDirectories)
+	secrets, err := loadSecrets(o.CensoringOptions.SecretDirectories, o.CensoringOptions.IniFilenames)
 	if err != nil {
+		// TODO(petr-muller): This return makes the censoring mechanism fragile, single failure in `loadSecrets`
+		// will prevent us from censoring all other secrets that were successfully loaded. Alternatively,
+		// we could be more strict and just bail out at our callsite in run.go:preUpload() instead of just
+		// emitting a warning there. But failing fast combined with just warning about the failure is not
+		// a sound approach for a secret-censoring mechanism.
 		return fmt.Errorf("could not load secrets: %w", err)
 	}
 	logrus.WithField("secrets", len(secrets)).Debug("Loaded secrets to censor.")
@@ -90,8 +101,11 @@ func (o Options) censor() error {
 
 	for _, item := range o.GcsOptions.Items {
 		if err := filepath.Walk(item, func(absPath string, info os.FileInfo, err error) error {
+			// This method must never return an error, all files must be processed otherwise we may end up not censoring some
+			// files that are eventually uploaded
 			if err != nil {
-				return err
+				errors <- err
+				return nil
 			}
 			if info.IsDir() || info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				return nil
@@ -103,7 +117,8 @@ func (o Options) censor() error {
 			}
 			should, err := shouldCensor(*o.CensoringOptions, relpath)
 			if err != nil {
-				return fmt.Errorf("could not determine if we should censor path: %w", err)
+				errors <- fmt.Errorf("could not determine if we should censor path: %w", err)
+				return nil
 			}
 			if !should {
 				return nil
@@ -111,14 +126,16 @@ func (o Options) censor() error {
 
 			contentType, err := determineContentType(absPath)
 			if err != nil {
-				return fmt.Errorf("could not determine content type of %s: %w", absPath, err)
+				errors <- fmt.Errorf("could not determine content type of %s: %w", absPath, err)
+				return nil
 			}
 
 			switch contentType {
 			case "application/x-gzip", "application/zip":
 				logger.Debug("Censoring archive.")
 				if err := handleArchive(absPath, censorFile); err != nil {
-					return fmt.Errorf("could not censor archive %s: %w", absPath, err)
+					errors <- fmt.Errorf("could not censor archive %s: %w", absPath, err)
+					return nil
 				}
 			default:
 				logger.Debug("Censoring file.")
@@ -126,7 +143,10 @@ func (o Options) censor() error {
 			}
 			return nil
 		}); err != nil {
-			return fmt.Errorf("could not walk items to censor them: %w", err)
+			// This should never happen because the WalkFunc above is not supposed to return an error
+			// but if it somehow does, let's be defensive and log it
+			// DO NOT RETURN so that we continue to iterate o.GcsOptions
+			errors <- fmt.Errorf("could not walk items to censor them: %w", err)
 		}
 	}
 
@@ -178,7 +198,7 @@ func fileCensorer(sem *semaphore.Weighted, errors chan<- error, censorer secretu
 func determineContentType(path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return "", fmt.Errorf("could not open file to check content type: %v", err)
+		return "", fmt.Errorf("could not open file to check content type: %w", err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -187,8 +207,8 @@ func determineContentType(path string) (string, error) {
 	}()
 
 	header := make([]byte, 512)
-	if _, err := file.Read(header); err != nil {
-		return "", fmt.Errorf("could not read file to check content type: %v", err)
+	if _, err := file.Read(header); err != nil && err != io.EOF {
+		return "", fmt.Errorf("could not read file to check content type: %w", err)
 	}
 	return http.DetectContentType(header), nil
 }
@@ -276,10 +296,10 @@ func unarchive(archivePath, destPath string) error {
 			}
 			n, err := io.Copy(file, tarReader)
 			if closeErr := file.Close(); closeErr != nil && err == nil {
-				return fmt.Errorf("error closing %s: %v", abs, closeErr)
+				return fmt.Errorf("error closing %s: %w", abs, closeErr)
 			}
 			if err != nil {
-				return fmt.Errorf("error writing to %s: %v", abs, err)
+				return fmt.Errorf("error writing to %s: %w", abs, err)
 			}
 			if n != entry.Size {
 				return fmt.Errorf("only wrote %d bytes to %s; expected %d", n, abs, entry.Size)
@@ -323,7 +343,18 @@ func archive(srcDir, destArchive string) error {
 		if err != nil {
 			return err
 		}
-		header, err := tar.FileInfoHeader(info, info.Name())
+
+		// Handle symlinks. See https://stackoverflow.com/a/40003617.
+		var link string
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			if link, err = os.Readlink(absPath); err != nil {
+				return err
+			}
+		}
+
+		// "link" is only used by FileInfoHeader if "info" here is a symlink.
+		// See https://pkg.go.dev/archive/tar#FileInfoHeader.
+		header, err := tar.FileInfoHeader(info, link)
 		if err != nil {
 			return fmt.Errorf("could not create tar header: %w", err)
 		}
@@ -339,6 +370,12 @@ func archive(srcDir, destArchive string) error {
 		if info.IsDir() {
 			return nil
 		}
+
+		// Nothing more to do for non-regular files (symlinks).
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+
 		file, err := os.Open(absPath)
 		if err != nil {
 			return fmt.Errorf("could not open source file: %w", err)
@@ -442,7 +479,7 @@ func censor(input io.ReadCloser, output io.WriteCloser, censorer secretutil.Cens
 }
 
 // loadSecrets loads all files under the paths into memory
-func loadSecrets(paths []string) ([][]byte, error) {
+func loadSecrets(paths, iniFilenames []string) ([][]byte, error) {
 	var secrets [][]byte
 	for _, path := range paths {
 		if err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
@@ -483,9 +520,15 @@ func loadSecrets(paths []string) ([][]byte, error) {
 			if info.Name() == ".dockerconfigjson" {
 				parser = loadDockerconfigJsonAuths
 			}
+			for _, filename := range iniFilenames {
+				if info.Name() == filename {
+					parser = loadIniData
+					break
+				}
+			}
 			extra, parseErr := parser(raw)
 			if parseErr != nil {
-				return fmt.Errorf("could not read %s as a docker secret: %v", path, parseErr)
+				return fmt.Errorf("could not read %s as a docker secret: %w", path, parseErr)
 			}
 			// It is important that these are added to the list of secrets *after* their parent data
 			// as we will censor in order and this will give a reasonable guarantee that the parent
@@ -549,4 +592,28 @@ func collectSecretsFrom(entries []authEntry) []string {
 		}
 	}
 	return auths
+}
+
+func handleSection(section *ini.Section, extra []string) []string {
+	for _, subsection := range section.ChildSections() {
+		extra = handleSection(subsection, extra)
+	}
+	for _, key := range section.Keys() {
+		extra = append(extra, key.Value())
+	}
+	return extra
+}
+
+// loadIniData parses key-value data from an INI file
+func loadIniData(content []byte) ([]string, error) {
+	cfg, err := ini.Load(content)
+	if err != nil {
+		return nil, err
+	}
+
+	var extra []string
+	for _, section := range cfg.Sections() {
+		extra = handleSection(section, extra)
+	}
+	return extra, nil
 }

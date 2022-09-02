@@ -1,17 +1,18 @@
 periodics:
 - name: periodic-cluster-api-test-release-0-3
-  interval: 1h
+  interval: 48h
   decorate: true
-  labels:
-    preset-service-account: "true"
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
     base_ref: release-0.3
     path_alias: sigs.k8s.io/cluster-api
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.18
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
       command:
       - "./scripts/ci-test.sh"
       resources:
@@ -21,10 +22,12 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-test-release-0-3
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-release-0-3
-  interval: 1h
+  interval: 48h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -34,8 +37,9 @@ periodics:
     base_ref: release-0.3
     path_alias: sigs.k8s.io/cluster-api
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -49,18 +53,21 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-e2e-release-0-3
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-verify-book-links-release-0-3
-  interval: 6h
+  interval: 168h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
     base_ref: release-0.3
     path_alias: sigs.k8s.io/cluster-api
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.18
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
       command:
       - "runner.sh"
       - "make"

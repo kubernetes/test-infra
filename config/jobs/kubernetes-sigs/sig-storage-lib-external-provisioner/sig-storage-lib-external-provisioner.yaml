@@ -10,7 +10,7 @@ presubmits:
       description: Build test in sig-storage-lib-external-provisioner repo.
     spec:
       containers:
-      - image: golang:1.13.10
+      - image: golang:1.17.1
         command:
         # Plain make runs also verify
         - make
@@ -25,7 +25,7 @@ presubmits:
       description: Unit tests in sig-storage-lib-external-provisioner repo.
     spec:
       containers:
-      - image: golang:1.13.10
+      - image: golang:1.17.1
         command:
         - make
         args:

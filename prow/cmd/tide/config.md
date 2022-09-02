@@ -18,9 +18,9 @@ The following configuration fields are available:
    the default method of merge as value. Valid options are `squash`, `rebase`, and `merge`.
    Defaults to `merge`.
 * `merge_commit_template`: A mapping from `org/repo` or `org` to a set of Go templates to use when creating the title and body of merge commits. Go templates are evaluated with a `PullRequest`  (see [`PullRequest`](https://godoc.org/k8s.io/test-infra/prow/tide#PullRequest) type). This field and map keys are optional.
-* `target_url`: URL for tide status contexts.
-* `pr_status_base_url`: The base URL for the PR status page. If specified, this URL is used to construct
-   a link that will be used for the tide status context. It is mutually exclusive with the `target_url` field.
+* `target_urls`: A mapping from "*", <org>, or <org/repo> to the URL for the tide status contexts. The most specific key that matches will be used.
+* `pr_status_base_urls`: A mapping from "*", <org>, or <org/repo> to the base URL for the PR status page. If specified, this URL is used to construct
+   a link that will be used for the tide status context. It is mutually exclusive with the `target_urls` field.
 * `max_goroutines`: The maximum number of goroutines spawned inside the component to
    handle org/repo:branch pools. Defaults to 20. Needs to be a positive number.
 * `blocker_label`: The label used to identify issues which block merges to repository branches.
@@ -45,6 +45,7 @@ It can consist of the following dictionary of fields:
 
 * `orgs`: List of queried organizations.
 * `repos`: List of queried repositories.
+* `excludedRepos`: List of ignored repositories.
 * `labels`: List of labels any given PR must posses.
 * `missingLabels`: List of labels any given PR must not posses.
 * `excludedBranches`: List of branches that get excluded when querying the `repos`.
@@ -65,8 +66,8 @@ The field to search token correspondence is based on the following mapping:
 * `repos` -> `repo:kubernetes/test-infra`
 * `labels` -> `label:lgtm`
 * `missingLabels` -> `-label:do-not-merge`
-* `excludedBranches` -> `-branch:dev`
-* `includedBranches` -> `branch:master`
+* `excludedBranches` -> `-base:dev`
+* `includedBranches` -> `base:master`
 * `author` -> `author:batman`
 * `reviewApprovedRequired` -> `review:approved`
 
@@ -147,6 +148,8 @@ and do not have `do-not-merge`, `do-not-merge/hold`, `do-not-merge/work-in-progr
 All PRs that conform to the criteria are processed and merged.
 The processing itself can include running jobs (e.g. tests) to verify the PRs are good to go.
 All commits in PRs from `github.com/kubeflow/community` repository are squashed before merging.
+
+For a full list of properties of queries, please refer to [https://github.com/kubernetes/test-infra/blob/27c9a7f2784088c2db5ff133e8a7a1e2eab9ab3f/prow/config/prow-config-documented.yaml#:~:text=meet%20merge%20requirements.-,queries%3A,-%2D%20author%3A%20%27%20%27](/prow/config/prow-config-documented.yaml).
 
 ### Persistent Storage of Action History
 

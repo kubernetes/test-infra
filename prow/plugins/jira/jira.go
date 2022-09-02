@@ -40,7 +40,7 @@ const (
 )
 
 var (
-	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$)`)
+	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$|]|\))`)
 	projectCache   = &threadsafeSet{data: sets.String{}}
 )
 
@@ -186,6 +186,11 @@ func getLines(text string) []line {
 			prefixCount++
 		}
 		l := line{content: rawLine, replacing: true}
+
+		// Literal codeblocks
+		if strings.HasPrefix(rawLine, "    ") {
+			l.replacing = false
+		}
 		if prefixCount%2 == 1 {
 			l.replacing = false
 		}
@@ -210,17 +215,18 @@ func insertLinksIntoComment(body string, issueNames []string, jiraBaseURL string
 func insertLinksIntoLine(line string, issueNames []string, jiraBaseURL string) string {
 	for _, issue := range issueNames {
 		replacement := fmt.Sprintf("[%s](%s/browse/%s)", issue, jiraBaseURL, issue)
-		line = replaceStringIfHasntSquareBracketOrSlashPrefix(line, issue, replacement)
+		line = replaceStringIfNeeded(line, issue, replacement)
 	}
 	return line
 }
 
-// replaceStringIfHasntSquareBracketOrSlashPrefix replaces a string if it is not prefixed by
-// a `[` which we use as heuristic for "Already replaced" or a `/` which we use as heuristic
-// for "Part of a link in a previous replacement".
-// It golang would support backreferences in regex replacements, this would have been a lot
+// replaceStringIfNeeded replaces a string if it is not prefixed by:
+// * `[` which we use as heuristic for "Already replaced",
+// * `/` which we use as heuristic for "Part of a link in a previous replacement",
+// * ``` (backtick) which we use as heuristic for "Inline code".
+// If golang would support back-references in regex replacements, this would have been a lot
 // simpler.
-func replaceStringIfHasntSquareBracketOrSlashPrefix(text, old, new string) string {
+func replaceStringIfNeeded(text, old, new string) string {
 	if old == "" {
 		return text
 	}
@@ -247,7 +253,7 @@ func replaceStringIfHasntSquareBracketOrSlashPrefix(text, old, new string) strin
 	startingIdx = 0
 	for _, idx := range allOldIdx {
 		result += text[startingIdx:idx]
-		if idx == 0 || (text[idx-1] != '[' && text[idx-1] != '/') {
+		if idx == 0 || (text[idx-1] != '[' && text[idx-1] != '/') && text[idx-1] != '`' {
 			result += new
 		} else {
 			result += old
@@ -269,16 +275,28 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 	if idx := strings.Index(url, "#"); idx != -1 {
 		url = url[:idx]
 	}
+
+	title := fmt.Sprintf("%s#%d: %s", e.Repo.FullName, e.Number, e.IssueTitle)
+	var existingLink *jira.RemoteLink
+
+	// Check if the same link exists already. We consider two links to be the same if the have the same URL.
+	// Once it is found we have two possibilities: either it is really equal (just skip the upsert) or it
+	// has to be updated (perform an upsert)
 	for _, link := range links {
 		if link.Object.URL == url {
-			return nil
+			if title == link.Object.Title {
+				return nil
+			}
+			link := link
+			existingLink = &link
+			break
 		}
 	}
 
 	link := &jira.RemoteLink{
 		Object: &jira.RemoteLinkObject{
 			URL:   url,
-			Title: fmt.Sprintf("%s#%d: %s", e.Repo.FullName, e.Number, e.IssueTitle),
+			Title: title,
 			Icon: &jira.RemoteLinkIcon{
 				Url16x16: "https://github.com/favicon.ico",
 				Title:    "GitHub",
@@ -286,10 +304,18 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 		},
 	}
 
-	if err := jc.AddRemoteLink(issueID, link); err != nil {
-		return fmt.Errorf("failed to add remote link: %w", err)
+	if existingLink != nil {
+		existingLink.Object = link.Object
+		if err := jc.UpdateRemoteLink(issueID, existingLink); err != nil {
+			return fmt.Errorf("failed to update remote link: %w", err)
+		}
+		log.Info("Updated jira link")
+	} else {
+		if _, err := jc.AddRemoteLink(issueID, link); err != nil {
+			return fmt.Errorf("failed to add remote link: %w", err)
+		}
+		log.Info("Created jira link")
 	}
-	log.Info("Created jira link")
 
 	return nil
 }
@@ -299,17 +325,16 @@ func filterOutDisabledJiraProjects(candidateNames []string, cfg *plugins.Jira) [
 		return candidateNames
 	}
 
-	var result []string
+	candidateSet := sets.NewString(candidateNames...)
 	for _, excludedProject := range cfg.DisabledJiraProjects {
 		for _, candidate := range candidateNames {
 			if strings.HasPrefix(strings.ToLower(candidate), strings.ToLower(excludedProject)) {
-				continue
+				candidateSet.Delete(candidate)
 			}
-			result = append(result, candidate)
 		}
 	}
 
-	return result
+	return candidateSet.UnsortedList()
 }
 
 // projectCachingJiraClient caches 404 for projects and uses them to introduce

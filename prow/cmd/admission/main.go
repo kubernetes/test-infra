@@ -53,7 +53,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.privateKey, "tls-private-key-file", "", "Path to matching x509 private key.")
 	o.instrumentationOptions.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
-		return fmt.Errorf("parse flags: %v", err)
+		return fmt.Errorf("parse flags: %w", err)
 	}
 	if len(o.cert) == 0 || len(o.privateKey) == 0 {
 		return errors.New("Both --tls-cert-file and --tls-private-key-file are required for HTTPS")
@@ -71,12 +71,14 @@ func main() {
 	pprof.Instrument(o.instrumentationOptions)
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
-	http.HandleFunc("/validate", handle)
+	admissionMux := http.NewServeMux()
+	admissionMux.HandleFunc("/validate", handle)
 	s := http.Server{
 		Addr: ":8443",
 		TLSConfig: &tls.Config{
 			ClientAuth: tls.NoClientCert,
 		},
+		Handler: admissionMux,
 	}
 
 	health.ServeReady()

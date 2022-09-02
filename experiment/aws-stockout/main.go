@@ -72,7 +72,7 @@ func run() error {
 
 	o, err := json.MarshalIndent(avail, "", "  ")
 	if err != nil {
-		return fmt.Errorf("error marshaling json: %v", err)
+		return fmt.Errorf("error marshaling json: %w", err)
 	}
 
 	fmt.Printf("\n%s\n", string(o))
@@ -84,7 +84,7 @@ func findRegions() ([]string, error) {
 	config := &aws.Config{}
 	sess, err := session.NewSession(config)
 	if err != nil {
-		return nil, fmt.Errorf("error creating aws session: %v", err)
+		return nil, fmt.Errorf("error creating aws session: %w", err)
 	}
 
 	svc := ec2.New(sess)
@@ -93,7 +93,7 @@ func findRegions() ([]string, error) {
 	{
 		response, err := svc.DescribeRegions(&ec2.DescribeRegionsInput{})
 		if err != nil {
-			return nil, fmt.Errorf("error from DescribeRegions: %v", err)
+			return nil, fmt.Errorf("error from DescribeRegions: %w", err)
 		}
 		for _, r := range response.Regions {
 			regions = append(regions, aws.StringValue(r.RegionName))
@@ -139,7 +139,7 @@ func cleanupInstances(region string) error {
 	config := &aws.Config{Region: aws.String(region)}
 	sess, err := session.NewSession(config)
 	if err != nil {
-		return fmt.Errorf("error creating aws session: %v", err)
+		return fmt.Errorf("error creating aws session: %w", err)
 	}
 
 	svc := ec2.New(sess)
@@ -150,7 +150,7 @@ func cleanupInstances(region string) error {
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("error from DescribeInstances: %v", err)
+		return fmt.Errorf("error from DescribeInstances: %w", err)
 	}
 
 	for _, r := range instancesResponse.Reservations {
@@ -184,7 +184,7 @@ func launchInstance(region string, instanceType string) (string, error) {
 	config := &aws.Config{Region: aws.String(region)}
 	sess, err := session.NewSession(config)
 	if err != nil {
-		return "", fmt.Errorf("error creating aws session: %v", err)
+		return "", fmt.Errorf("error creating aws session: %w", err)
 	}
 
 	svc := ec2.New(sess)
@@ -196,7 +196,7 @@ func launchInstance(region string, instanceType string) (string, error) {
 		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("error describing images: %v", err)
+		return "", fmt.Errorf("error describing images: %w", err)
 	}
 
 	if len(images.Images) == 0 {
@@ -233,7 +233,7 @@ func launchInstance(region string, instanceType string) (string, error) {
 			return "", nil
 		}
 
-		return "", fmt.Errorf("error from RunInstances: %v", err)
+		return "", fmt.Errorf("error from RunInstances: %w", err)
 	}
 
 	zone := aws.StringValue(createResponse.Instances[0].Placement.AvailabilityZone)

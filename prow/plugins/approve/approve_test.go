@@ -104,18 +104,6 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	if hasLabel {
 		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
 	}
-	events := []github.ListedIssueEvent{}
-	if humanApproved {
-		events = append(
-			events,
-			github.ListedIssueEvent{
-				Event:     github.IssueActionLabeled,
-				Label:     github.Label{Name: "approved"},
-				Actor:     github.User{Login: "human"},
-				CreatedAt: time.Now(),
-			},
-		)
-	}
 	var changes []github.PullRequestChange
 	for _, file := range files {
 		changes = append(changes, github.PullRequestChange{Filename: file})
@@ -124,8 +112,8 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	fgc.IssueLabelsAdded = labels
 	fgc.PullRequestChanges = map[int][]github.PullRequestChange{prNumber: changes}
 	fgc.IssueComments = map[int][]github.IssueComment{prNumber: comments}
-	fgc.IssueEvents = map[int][]github.ListedIssueEvent{prNumber: events}
 	fgc.Reviews = map[int][]github.Review{prNumber: reviews}
+	fgc.WasLabelAddedByHumanVal = humanApproved
 	return fgc
 }
 
@@ -277,7 +265,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -442,8 +430,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -481,8 +468,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -703,8 +689,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
-You can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing `+"`/assign @alice`"+` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -781,7 +766,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -850,7 +835,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -887,7 +872,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -962,7 +947,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -999,7 +984,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -1033,8 +1018,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** and additionally assign **alice** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -1069,8 +1053,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** and additionally assign **alice** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -1235,7 +1218,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -1395,6 +1378,10 @@ func (foc fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.R
 
 type fakeRepoOwners struct {
 	fakeRepo
+}
+
+func (fro fakeRepoOwners) AllOwners() sets.String {
+	return sets.String{}
 }
 
 func (fro fakeRepoOwners) FindLabelsForFile(path string) sets.String {

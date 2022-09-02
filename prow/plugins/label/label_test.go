@@ -18,12 +18,14 @@ package label
 
 import (
 	"fmt"
-	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -36,7 +38,7 @@ const (
 	nonOrgMember = "Bob"
 )
 
-func formatLabels(labels ...string) []string {
+func formatWithPRInfo(labels ...string) []string {
 	r := []string{}
 	for _, l := range labels {
 		r = append(r, fmt.Sprintf("%s/%s#%d:%s", "org", "repo", 1, l))
@@ -47,12 +49,13 @@ func formatLabels(labels ...string) []string {
 	return r
 }
 
-func TestLabel(t *testing.T) {
+func TestHandleComment(t *testing.T) {
 	type testCase struct {
 		name                  string
 		body                  string
 		commenter             string
 		extraLabels           []string
+		restrictedLabels      map[string][]plugins.RestrictedLabel
 		expectedNewLabels     []string
 		expectedRemovedLabels []string
 		expectedBotComment    bool
@@ -60,6 +63,7 @@ func TestLabel(t *testing.T) {
 		issueLabels           []string
 		expectedCommentText   string
 		action                github.GenericCommentEventAction
+		teams                 map[string]map[string]fakegithub.TeamWithMembers
 	}
 	testcases := []testCase{
 		{
@@ -87,7 +91,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area infra",
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("area/infra"),
+			expectedNewLabels:     formatWithPRInfo("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -107,7 +111,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority critical",
 			repoLabels:            []string{"area/infra", "priority/critical"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("priority/critical"),
+			expectedNewLabels:     formatWithPRInfo("priority/critical"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -117,7 +121,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/kind bug",
 			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(labels.Bug),
+			expectedNewLabels:     formatWithPRInfo(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -127,7 +131,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/triage needs-information",
 			repoLabels:            []string{"area/infra", "triage/needs-information"},
 			issueLabels:           []string{"area/infra"},
-			expectedNewLabels:     formatLabels("triage/needs-information"),
+			expectedNewLabels:     formatWithPRInfo("triage/needs-information"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -137,7 +141,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/triage accepted",
 			repoLabels:            []string{"triage/accepted"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("triage/accepted"),
+			expectedNewLabels:     formatWithPRInfo("triage/accepted"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -147,7 +151,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/triage accepted",
 			repoLabels:            []string{"triage/accepted", "kind/bug"},
 			issueLabels:           []string{"kind/bug"},
-			expectedNewLabels:     formatLabels(),
+			expectedNewLabels:     formatWithPRInfo(),
 			expectedRemovedLabels: []string{},
 			commenter:             nonOrgMember,
 			expectedBotComment:    true,
@@ -159,7 +163,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/triage needs-information",
 			repoLabels:            []string{"area/infra", "triage/needs-information"},
 			issueLabels:           []string{"area/infra"},
-			expectedNewLabels:     formatLabels("triage/needs-information"),
+			expectedNewLabels:     formatWithPRInfo("triage/needs-information"),
 			expectedRemovedLabels: []string{},
 			commenter:             nonOrgMember,
 			action:                github.GenericCommentActionCreated,
@@ -169,7 +173,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/kind BuG",
 			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(labels.Bug),
+			expectedNewLabels:     formatWithPRInfo(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -179,7 +183,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/kind bug",
 			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(labels.Bug),
+			expectedNewLabels:     formatWithPRInfo(labels.Bug),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -189,7 +193,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority critical",
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(),
+			expectedNewLabels:     formatWithPRInfo(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
@@ -201,7 +205,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area infra",
 			repoLabels:            []string{"area/infra", "priority/critical", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("area/infra"),
+			expectedNewLabels:     formatWithPRInfo("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             nonOrgMember,
 			action:                github.GenericCommentActionCreated,
@@ -211,7 +215,7 @@ func TestLabel(t *testing.T) {
 			body:                  "  /area infra",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent", "priority/important", labels.Bug},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(),
+			expectedNewLabels:     formatWithPRInfo(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -221,7 +225,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area lgtm",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(),
+			expectedNewLabels:     formatWithPRInfo(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
@@ -233,7 +237,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area api infra",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("area/api", "area/infra"),
+			expectedNewLabels:     formatWithPRInfo("area/api", "area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -243,7 +247,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area api infra",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
 			issueLabels:           []string{"area/api"},
-			expectedNewLabels:     formatLabels("area/infra"),
+			expectedNewLabels:     formatWithPRInfo("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -253,7 +257,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority critical important",
 			repoLabels:            []string{"priority/critical", "priority/important"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("priority/critical", "priority/important"),
+			expectedNewLabels:     formatWithPRInfo("priority/critical", "priority/important"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -263,7 +267,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area api infra ",
 			repoLabels:            []string{"area/infra", "area/api"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("area/api", "area/infra"),
+			expectedNewLabels:     formatWithPRInfo("area/api", "area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -273,7 +277,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area urgent",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(),
+			expectedNewLabels:     formatWithPRInfo(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
@@ -285,7 +289,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority infra",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(),
+			expectedNewLabels:     formatWithPRInfo(),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
@@ -297,7 +301,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area lgtm infra",
 			repoLabels:            []string{"area/infra", "area/api"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("area/infra"),
+			expectedNewLabels:     formatWithPRInfo("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
@@ -309,7 +313,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/committee steering calamity",
 			repoLabels:            []string{"committee/conduct", "committee/steering"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("committee/steering"),
+			expectedNewLabels:     formatWithPRInfo("committee/steering"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			expectedBotComment:    true,
@@ -321,7 +325,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/triage needs-information accepted",
 			repoLabels:            []string{"triage/needs-information", "triage/accepted"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("triage/needs-information"),
+			expectedNewLabels:     formatWithPRInfo("triage/needs-information"),
 			expectedRemovedLabels: []string{},
 			commenter:             nonOrgMember,
 			expectedBotComment:    true,
@@ -333,7 +337,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority urgent\n/area infra",
 			repoLabels:            []string{"area/infra", "priority/urgent"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("priority/urgent", "area/infra"),
+			expectedNewLabels:     formatWithPRInfo("priority/urgent", "area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -366,7 +370,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("area/infra"),
+			expectedRemovedLabels: formatWithPRInfo("area/infra"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -376,7 +380,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra", "sig/testing", "committee/infinite-monkeys"},
 			issueLabels:           []string{"area/infra", "sig/testing", "committee/infinite-monkeys"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("committee/infinite-monkeys"),
+			expectedRemovedLabels: formatWithPRInfo("committee/infinite-monkeys"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -386,7 +390,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra", "priority/high", "kind/api-server"},
 			issueLabels:           []string{"area/infra", "priority/high", "kind/api-server"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("kind/api-server"),
+			expectedRemovedLabels: formatWithPRInfo("kind/api-server"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -396,7 +400,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra", "priority/high"},
 			issueLabels:           []string{"area/infra", "priority/high"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("priority/high"),
+			expectedRemovedLabels: formatWithPRInfo("priority/high"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -406,7 +410,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra", "sig/testing"},
 			issueLabels:           []string{"area/infra", "sig/testing"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("sig/testing"),
+			expectedRemovedLabels: formatWithPRInfo("sig/testing"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -416,7 +420,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra", "wg/policy"},
 			issueLabels:           []string{"area/infra", "wg/policy"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("wg/policy"),
+			expectedRemovedLabels: formatWithPRInfo("wg/policy"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -426,7 +430,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra", "triage/needs-information", "triage/accepted"},
 			issueLabels:           []string{"area/infra", "triage/needs-information", "triage/accepted"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("triage/needs-information", "triage/accepted"),
+			expectedRemovedLabels: formatWithPRInfo("triage/needs-information", "triage/accepted"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -436,7 +440,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra", "priority/high", "priority/low", "kind/api-server"},
 			issueLabels:           []string{"area/infra", "priority/high", "priority/low", "kind/api-server"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("priority/low", "priority/high", "kind/api-server", "area/infra"),
+			expectedRemovedLabels: formatWithPRInfo("priority/low", "priority/high", "kind/api-server", "area/infra"),
 			commenter:             orgMember,
 			expectedBotComment:    true,
 			action:                github.GenericCommentActionCreated,
@@ -446,8 +450,8 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-area infra\n/area test",
 			repoLabels:            []string{"area/infra", "area/test"},
 			issueLabels:           []string{"area/infra"},
-			expectedNewLabels:     formatLabels("area/test"),
-			expectedRemovedLabels: formatLabels("area/infra"),
+			expectedNewLabels:     formatWithPRInfo("area/test"),
+			expectedRemovedLabels: formatWithPRInfo("area/infra"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -457,7 +461,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("area/infra"),
+			expectedRemovedLabels: formatWithPRInfo("area/infra"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -466,8 +470,8 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-area ruby\n/remove-kind srv\n/remove-priority l m\n/area go\n/kind cli\n/priority h",
 			repoLabels:            []string{"area/go", "area/ruby", "kind/cli", "kind/srv", "priority/h", "priority/m", "priority/l"},
 			issueLabels:           []string{"area/ruby", "kind/srv", "priority/l", "priority/m"},
-			expectedNewLabels:     formatLabels("area/go", "kind/cli", "priority/h"),
-			expectedRemovedLabels: formatLabels("area/ruby", "kind/srv", "priority/l", "priority/m"),
+			expectedNewLabels:     formatWithPRInfo("area/go", "kind/cli", "priority/h"),
+			expectedRemovedLabels: formatWithPRInfo("area/ruby", "kind/srv", "priority/l", "priority/m"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -499,7 +503,7 @@ func TestLabel(t *testing.T) {
 			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedNewLabels:     formatWithPRInfo("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -510,7 +514,7 @@ func TestLabel(t *testing.T) {
 			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedNewLabels:     formatWithPRInfo("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -521,7 +525,7 @@ func TestLabel(t *testing.T) {
 			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedNewLabels:     formatWithPRInfo("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -532,7 +536,7 @@ func TestLabel(t *testing.T) {
 			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedNewLabels:     formatWithPRInfo("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -557,7 +561,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{"orchestrator/foo"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: formatWithPRInfo("orchestrator/foo"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -568,7 +572,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{"orchestrator/foo"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: formatWithPRInfo("orchestrator/foo"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -579,7 +583,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{"orchestrator/foo"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: formatWithPRInfo("orchestrator/foo"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -590,7 +594,7 @@ func TestLabel(t *testing.T) {
 			repoLabels:            []string{"orchestrator/foo"},
 			issueLabels:           []string{"orchestrator/foo"},
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: formatWithPRInfo("orchestrator/foo"),
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
@@ -651,7 +655,7 @@ func TestLabel(t *testing.T) {
 `,
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("area/infra"),
+			expectedNewLabels:     formatWithPRInfo("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
@@ -670,70 +674,178 @@ func TestLabel(t *testing.T) {
 `,
 			repoLabels:            []string{"kind/cleanup", "kind/regression"},
 			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("kind/cleanup", "kind/regression"),
+			expectedNewLabels:     formatWithPRInfo("kind/cleanup", "kind/regression"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
+		{
+			name:               "Restricted label addition, user is not in group",
+			body:               `/label restricted-label`,
+			repoLabels:         []string{"restricted-label"},
+			commenter:          orgMember,
+			restrictedLabels:   map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
+			action:             github.GenericCommentActionCreated,
+			expectedBotComment: true,
+		},
+		{
+			name:              "Restricted label addition, user is in group",
+			body:              `/label restricted-label`,
+			repoLabels:        []string{"restricted-label"},
+			commenter:         orgMember,
+			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
+			action:            github.GenericCommentActionCreated,
+			teams:             map[string]map[string]fakegithub.TeamWithMembers{"org": {"privileged-group": {Members: sets.NewString(orgMember)}}},
+			expectedNewLabels: formatWithPRInfo("restricted-label"),
+		},
+		{
+			name:              "Restricted label addition, user is in allowed_users",
+			body:              `/label restricted-label`,
+			repoLabels:        []string{"restricted-label"},
+			commenter:         orgMember,
+			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedUsers: []string{orgMember}}}},
+			action:            github.GenericCommentActionCreated,
+			expectedNewLabels: formatWithPRInfo("restricted-label"),
+		},
+		{
+			name:               "Restricted label removal, user is not in group",
+			body:               `/remove-label restricted-label`,
+			repoLabels:         []string{"restricted-label"},
+			issueLabels:        []string{"restricted-label"},
+			commenter:          orgMember,
+			restrictedLabels:   map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
+			action:             github.GenericCommentActionCreated,
+			expectedBotComment: true,
+		},
+		{
+			name:                  "Restricted label removal, user is in group",
+			body:                  `/remove-label restricted-label`,
+			repoLabels:            []string{"restricted-label"},
+			issueLabels:           []string{"restricted-label"},
+			commenter:             orgMember,
+			restrictedLabels:      map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
+			action:                github.GenericCommentActionCreated,
+			teams:                 map[string]map[string]fakegithub.TeamWithMembers{"org": {"privileged-group": {Members: sets.NewString(orgMember)}}},
+			expectedRemovedLabels: formatWithPRInfo("restricted-label"),
+		},
+		{
+			name:                  "Restricted label removal, user is in allowed_users",
+			body:                  `/remove-label restricted-label`,
+			repoLabels:            []string{"restricted-label"},
+			issueLabels:           []string{"restricted-label"},
+			commenter:             orgMember,
+			restrictedLabels:      map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedUsers: []string{orgMember}}}},
+			action:                github.GenericCommentActionCreated,
+			expectedRemovedLabels: formatWithPRInfo("restricted-label"),
+		},
 	}
 
 	for _, tc := range testcases {
-		t.Logf("Running scenario %q", tc.name)
-		sort.Strings(tc.expectedNewLabels)
-		fakeClient := fakegithub.NewFakeClient()
-		fakeClient.Issues = make(map[int]*github.Issue)
-		fakeClient.IssueComments = make(map[int][]github.IssueComment)
-		fakeClient.RepoLabelsExisting = tc.repoLabels
-		fakeClient.OrgMembers = map[string][]string{"org": {orgMember}}
-		fakeClient.IssueLabelsAdded = []string{}
-		fakeClient.IssueLabelsRemoved = []string{}
-		// Add initial labels
-		for _, label := range tc.issueLabels {
-			fakeClient.AddLabel("org", "repo", 1, label)
-		}
-		e := &github.GenericCommentEvent{
-			Action: tc.action,
-			Body:   tc.body,
-			Number: 1,
-			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			User:   github.User{Login: tc.commenter},
-		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, e)
-		if err != nil {
-			t.Errorf("didn't expect error from label test: %v", err)
-			continue
-		}
-
-		// Check that all the correct labels (and only the correct labels) were added.
-		expectLabels := append(formatLabels(tc.issueLabels...), tc.expectedNewLabels...)
-		if expectLabels == nil {
-			expectLabels = []string{}
-		}
-		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.IssueLabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
-			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fakeClient.IssueLabelsAdded)
-		}
-
-		sort.Strings(tc.expectedRemovedLabels)
-		sort.Strings(fakeClient.IssueLabelsRemoved)
-		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved) {
-			t.Errorf("expected the labels %q to be removed, but %q were removed.", tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved)
-		}
-		if len(fakeClient.IssueCommentsAdded) > 0 && !tc.expectedBotComment {
-			t.Errorf("unexpected bot comments: %#v", fakeClient.IssueCommentsAdded)
-		}
-		if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
-			t.Error("expected a bot comment but got none")
-		}
-		if tc.expectedBotComment && len(tc.expectedCommentText) > 0 {
-			if len(fakeClient.IssueComments) < 1 {
-				t.Errorf("expected actual: %v", fakeClient.IssueComments)
+		t.Run(tc.name, func(t *testing.T) {
+			sort.Strings(tc.expectedNewLabels)
+			fakeClient := fakegithub.NewFakeClient()
+			fakeClient.Issues = make(map[int]*github.Issue)
+			fakeClient.IssueComments = make(map[int][]github.IssueComment)
+			fakeClient.RepoLabelsExisting = tc.repoLabels
+			fakeClient.OrgMembers = map[string][]string{"org": {orgMember}}
+			fakeClient.IssueLabelsAdded = []string{}
+			fakeClient.IssueLabelsRemoved = []string{}
+			fakeClient.Teams = tc.teams
+			// Add initial labels
+			for _, label := range tc.issueLabels {
+				fakeClient.AddLabel("org", "repo", 1, label)
 			}
-			if len(fakeClient.IssueComments[1]) != 1 || !strings.Contains(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) {
-				t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
+			e := &github.GenericCommentEvent{
+				Action: tc.action,
+				Body:   tc.body,
+				Number: 1,
+				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+				User:   github.User{Login: tc.commenter},
 			}
-		}
+			err := handleComment(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
+			if err != nil {
+				t.Fatalf("didn't expect error from handle comment test: %v", err)
+			}
+
+			// Check that all the correct labels (and only the correct labels) were added.
+			expectLabels := append(formatWithPRInfo(tc.issueLabels...), tc.expectedNewLabels...)
+			if expectLabels == nil {
+				expectLabels = []string{}
+			}
+			sort.Strings(expectLabels)
+			sort.Strings(fakeClient.IssueLabelsAdded)
+			if diff := cmp.Diff(expectLabels, fakeClient.IssueLabelsAdded, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("labels expected to add do not match actual added labels: %s", diff)
+			}
+
+			sort.Strings(tc.expectedRemovedLabels)
+			sort.Strings(fakeClient.IssueLabelsRemoved)
+			if diff := cmp.Diff(tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected removed labels differ from actual removed labels: %s", diff)
+			}
+			if len(fakeClient.IssueCommentsAdded) > 0 && !tc.expectedBotComment {
+				t.Errorf("unexpected bot comments: %#v", fakeClient.IssueCommentsAdded)
+			}
+			if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
+				t.Error("expected a bot comment but got none")
+			}
+			if tc.expectedBotComment && len(tc.expectedCommentText) > 0 {
+				if len(fakeClient.IssueComments) < 1 {
+					t.Errorf("expected actual: %v", fakeClient.IssueComments)
+				}
+				if len(fakeClient.IssueComments[1]) != 1 || !strings.Contains(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) {
+					t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
+				}
+			}
+		})
+	}
+}
+
+func TestHandleLabelAdd(t *testing.T) {
+	type testCase struct {
+		name              string
+		restrictedLabels  map[string][]plugins.RestrictedLabel
+		expectedAssignees []string
+		labelAdded        string
+		action            github.PullRequestEventAction
+	}
+	testCases := []testCase{
+		{
+			name:       "label added with no auto-assign configured",
+			labelAdded: "some-label",
+			action:     github.PullRequestActionLabeled,
+		},
+		{
+			name:              "assign users for restricted label on label add",
+			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
+			labelAdded:        "initial-label",
+			action:            github.PullRequestActionLabeled,
+			expectedAssignees: formatWithPRInfo("bill", "sally"),
+		},
+		{
+			name:             "no assigned users on irrelevant label add",
+			restrictedLabels: map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
+			labelAdded:       "other-label",
+			action:           github.PullRequestActionLabeled,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fakeClient := fakegithub.NewFakeClient()
+			e := &github.PullRequestEvent{
+				Action:      tc.action,
+				Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+				PullRequest: github.PullRequest{Number: 1},
+				Label:       github.Label{Name: tc.labelAdded},
+			}
+			err := handleLabelAdd(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{RestrictedLabels: tc.restrictedLabels}, e)
+			if err != nil {
+				t.Fatalf("didn't expect error from handle label test: %v", err)
+			}
+			if diff := cmp.Diff(tc.expectedAssignees, fakeClient.AssigneesAdded, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected added assignees differ from actual: %s", diff)
+			}
+		})
 	}
 }
 

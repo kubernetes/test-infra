@@ -27,8 +27,8 @@ import (
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ktypes "k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/clock"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	"k8s.io/utils/clock"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -51,12 +51,7 @@ type jenkinsClient interface {
 }
 
 type githubClient interface {
-	BotUserChecker() (func(candidate string) bool, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	CreateComment(org, repo string, number int, comment string) error
-	DeleteComment(org, repo string, ID int) error
-	EditComment(org, repo string, ID int, comment string) error
+	reportlib.GitHubClient
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
@@ -84,7 +79,7 @@ type Controller struct {
 	pjLock sync.RWMutex
 	// shared across the controller and a goroutine that gathers metrics.
 	pjs   []prowapi.ProwJob
-	clock clock.Clock
+	clock clock.WithTickerAndDelayedExecution
 }
 
 // NewController creates a new Controller from the provided clients.
@@ -174,7 +169,7 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 func (c *Controller) Sync() error {
 	pjs, err := c.prowJobClient.List(context.TODO(), metav1.ListOptions{LabelSelector: c.selector})
 	if err != nil {
-		return fmt.Errorf("error listing prow jobs: %v", err)
+		return fmt.Errorf("error listing prow jobs: %w", err)
 	}
 	// Share what we have for gathering metrics.
 	c.pjLock.Lock()
@@ -191,7 +186,7 @@ func (c *Controller) Sync() error {
 	}
 	jbs, err := c.jc.ListBuilds(getJenkinsJobs(jenkinsJobs))
 	if err != nil {
-		return fmt.Errorf("error listing jenkins builds: %v", err)
+		return fmt.Errorf("error listing jenkins builds: %w", err)
 	}
 
 	var syncErrs []error
@@ -225,11 +220,11 @@ func (c *Controller) Sync() error {
 
 	var reportErrs []error
 	if !c.skipReport {
-		reportTypes := c.cfg().GitHubReporter.JobTypesToReport
+		reportConfig := c.cfg().GitHubReporter
 		jConfig := c.config()
 		for report := range reportCh {
 			reportTemplate := jConfig.ReportTemplateForRepo(report.Spec.Refs)
-			if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
+			if err := reportlib.Report(context.Background(), c.ghc, reportTemplate, report, reportConfig); err != nil {
 				reportErrs = append(reportErrs, err)
 				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 			}
@@ -419,7 +414,7 @@ func (c *Controller) syncAbortedJob(pj prowapi.ProwJob, _ chan<- prowapi.ProwJob
 
 	if build, exists := jbs[pj.Name]; exists {
 		if err := c.jc.Abort(getJobName(&pj.Spec), &build); err != nil {
-			return fmt.Errorf("failed to abort Jenkins build: %v", err)
+			return fmt.Errorf("failed to abort Jenkins build: %w", err)
 		}
 	}
 
@@ -440,7 +435,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 		}
 		buildID, err := c.getBuildID(pj.Spec.Job)
 		if err != nil {
-			return fmt.Errorf("error getting build ID: %v", err)
+			return fmt.Errorf("error getting build ID: %w", err)
 		}
 		// Start the Jenkins job.
 		if err := c.jc.Build(&pj, buildID); err != nil {

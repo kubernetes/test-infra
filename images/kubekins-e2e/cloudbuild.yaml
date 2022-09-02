@@ -1,10 +1,10 @@
 steps:
-  - name: golang:$_GO_VERSION
+  - name: golang:latest
     args:
     - go
     - build
     - -o=/workspace/images/kubekins-e2e/kubetest
-    - -ldflags="-X=main.gitTag=$_GIT_TAG"
+    - -ldflags=-X=main.gitTag=$_GIT_TAG
     - ./kubetest/
     env:
     - CGO_ENABLED=0
@@ -26,6 +26,7 @@ steps:
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
     - --build-arg=KIND_VERSION=$_KIND_VERSION
     - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
+    - --build-arg=YQ_VERSION=$_YQ_VERSION
     - -f
     - images/kubekins-e2e/Dockerfile
     - .
@@ -37,8 +38,8 @@ steps:
     - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
     dir: .
 substitutions:
-  _BAZEL_VERSION: 3.4.1
-  _OLD_BAZEL_VERSION: 2.2.0
+  _BAZEL_VERSION: 5.2.0
+  _OLD_BAZEL_VERSION: 3.4.1
   _CFSSL_VERSION: R1.2
   _CONFIG: master
   _GIT_TAG: '12345'
@@ -47,6 +48,7 @@ substitutions:
   _UPGRADE_DOCKER: 'false'
   _KIND_VERSION: ''
   _KUBETEST2_VERSION: ''
+  _YQ_VERSION: v4.23.1
 options:
   substitution_option: ALLOW_LOOSE
 images:

@@ -17,6 +17,7 @@ limitations under the License.
 package git
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -55,6 +56,8 @@ type ClientFactoryOpts struct {
 	Host string
 	// UseSSH, defaults to false
 	UseSSH *bool
+	// CloneURI will use CloneURI Remote resolver if set.
+	CloneURI string
 	// The directory in which the cache should be
 	// created. Defaults to the "/var/tmp" on
 	// Linux and os.TempDir otherwise
@@ -68,6 +71,8 @@ type ClientFactoryOpts struct {
 	// The censor to use. Not needed for anonymous
 	// actions.
 	Censor Censor
+	// Path to the httpCookieFile that will be used to authenticate client
+	CookieFilePath string
 }
 
 // Apply allows to use a ClientFactoryOpts as Opt
@@ -92,6 +97,12 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	}
 	if cfo.Username != nil {
 		target.Username = cfo.Username
+	}
+	if cfo.CloneURI != "" {
+		target.CloneURI = cfo.CloneURI
+	}
+	if cfo.CookieFilePath != "" {
+		target.CookieFilePath = cfo.CookieFilePath
 	}
 }
 
@@ -129,7 +140,11 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		return nil, err
 	}
 	var remotes RemoteResolverFactory
-	if o.UseSSH != nil && *o.UseSSH {
+	if len(o.CloneURI) != 0 {
+		remotes = &cloneURIResolverFactory{
+			cloneURI: o.CloneURI,
+		}
+	} else if o.UseSSH != nil && *o.UseSSH {
 		remotes = &sshRemoteResolverFactory{
 			host:     o.Host,
 			username: o.Username,
@@ -142,14 +157,15 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		}
 	}
 	return &clientFactory{
-		cacheDir:     cacheDir,
-		cacheDirBase: *o.CacheDirBase,
-		remotes:      remotes,
-		gitUser:      o.GitUser,
-		censor:       o.Censor,
-		masterLock:   &sync.Mutex{},
-		repoLocks:    map[string]*sync.Mutex{},
-		logger:       logrus.WithField("client", "git"),
+		cacheDir:       cacheDir,
+		cacheDirBase:   *o.CacheDirBase,
+		remotes:        remotes,
+		gitUser:        o.GitUser,
+		censor:         o.Censor,
+		masterLock:     &sync.Mutex{},
+		repoLocks:      map[string]*sync.Mutex{},
+		logger:         logrus.WithField("client", "git"),
+		cookieFilePath: o.CookieFilePath,
 	}, nil
 }
 
@@ -172,10 +188,11 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 }
 
 type clientFactory struct {
-	remotes RemoteResolverFactory
-	gitUser GitUserGetter
-	censor  Censor
-	logger  *logrus.Entry
+	remotes        RemoteResolverFactory
+	gitUser        GitUserGetter
+	censor         Censor
+	logger         *logrus.Entry
+	cookieFilePath string
 
 	// cacheDir is the root under which cached clones of repos are created
 	cacheDir string
@@ -261,6 +278,12 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		// we have not yet cloned this repo, we need to do a full clone
 		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
+		}
+		if len(c.cookieFilePath) > 0 {
+			err := repoClient.Config("--global", "http.cookiefile", c.cookieFilePath)
+			if err != nil {
+				return nil, fmt.Errorf("unable to configure http.cookiefile: %w", err)
+			}
 		}
 		if err := cacheClientCacher.MirrorClone(); err != nil {
 			return nil, err

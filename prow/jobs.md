@@ -31,7 +31,7 @@ that you can define pods in yaml.  Please see kubernetes documentation
 for help here, for example the [Pod overview] and [PodSpec api
 reference].
 
-Periodic config looks like so:
+Periodic config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Periodic) for complete config):
 
 ```yaml
 periodics:
@@ -40,14 +40,14 @@ periodics:
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
   # Alternatively use a cron instead of an interval, for example:
   # cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) every M-F
-  extra_ref:            # Periodic job doesn't clone any repo by default, needs to be added explicitly
+  extra_refs:            # Periodic job doesn't clone any repo by default, needs to be added explicitly
   - org: org
     repo: repo
     base_ref: main
   spec: {}              # Valid Kubernetes PodSpec.
 ```
 
-Postsubmit config looks like so:
+Postsubmit config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Postsubmit) for complete config):
 
 ```yaml
 postsubmits:
@@ -66,7 +66,7 @@ Postsubmits are run when a push event happens on a repo, hence they are
 configured per-repo. If no `branches` are specified, then they will run against
 every branch.
 
-Presubmit config looks like so:
+Presubmit config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Presubmit) for complete config):
 
 ```yaml
 presubmits:
@@ -85,24 +85,24 @@ presubmits:
     rerun_command: "qux test this please"  # String, see discussion.
 ```
 
-If you only want to run tests when specific files are touched, you can use
-`run_if_changed`. A useful pattern when adding new jobs is to start with
-`always_run` set to false and `skip_report` set to true. Test it out a few
-times by manually triggering, then switch `always_run` to true. Watch for a
-couple days, then switch `skip_report` to false.
-
 The `trigger` is a regexp that matches the `rerun_command`. Users will be told
 to input the `rerun_command` when they want to rerun the job. Actually, anything
 that matches `trigger` will suffice. This is useful if you want to make one
 command that reruns all jobs. If unspecified, the default configuration makes
 `/test <job-name>` trigger the job.
 
+See the [Triggering Jobs](#triggering-jobs) section below to learn how to
+control when jobs are automatically run. We also have sections about [posting](#posting-github-status-contexts)
+and [requiring](#requiring-job-statuses) GitHub status contexts. A useful
+pattern when adding new jobs is to start with `always_run` set to false and
+`skip_report` set to true. Test it out a few times by manually triggering,
+then switch `always_run` to true. Watch for a couple days, then switch
+`skip_report` to false.
+
 ## Presets
 
 [`Presets`] can be used to define commonly reused values for a subset of fields
-for PodSpecs and BuildSpecs. The subset of fields chosen was inspired by
-[PodPresets] which at time of writing are still in alpha. A preset config looks
-like:
+for PodSpecs and BuildSpecs. A preset config looks like:
 
 ```yaml
 presets:
@@ -161,18 +161,61 @@ rules for protecting those contexts on branches.
  1. jobs that run unconditionally and automatically. All jobs that set
      `always_run: true` fall into this set.
  2. jobs that run conditionally, but automatically. All jobs that set
-    `run_if_changed` to some value fall into this set.
+    `run_if_changed` or `skip_if_only_changed` to some value fall into this
+    set.
  3. jobs that run conditionally, but not automatically. All jobs that set
-    `always_run: false` and do not set `run_if_changed` to any value fall
-    into this set and require a human to trigger them with a command.
+    `always_run: false` and do not set `run_if_changed`/`skip_if_only_changed`
+    to any value fall into this set and require a human to trigger them with a
+    command.
 
-By default, jobs fall into the third category and must have their `always_run` or
-`run_if_changed` configured to operate differently.
+By default, jobs fall into the third category and must have their `always_run`,
+`run_if_changed`, or `skip_if_only_changed` configured to operate differently.
 
 In the rest of this document, "a job running unconditionally" indicates that the
 job will run even if it is normally conditional and the conditions are not met.
 Similarly, "a job running conditionally" indicates that the job runs if all of its
 conditions are met.
+
+#### Triggering Jobs Based On Changes
+
+Jobs that set `always_run: false` may be configured to run conditionally based
+on the contents of the pull request. `run_if_changed` and
+`skip_if_only_changed` accept a (Golang-style) [regular expression] which is
+run against the path of each changed file.
+
+`run_if_changed` triggers the job if _any_ path matches. For example, you may
+wish to trigger a compilation job if the pull request changes any `*.c` or
+`*.h` file, or the `Makefile`:
+
+```yaml
+presubmits:
+  org/repo:
+  - name: compile-job
+    always_run: false
+    run_if_changed: "(\\.[ch]|^Makefile)$"
+    ...
+```
+
+`skip_if_only_changed` _skips_ the job if _all_ paths match. For example, you
+may wish to skip a compilation job for pull requests that only change
+documentation files:
+
+```yaml
+presubmits:
+  org/repo:
+  - name: compile-job
+    always_run: false
+    skip_if_only_changed: "^docs/|\\.(md|adoc)$|^(README|LICENSE)$"
+```
+
+Both of the above examples would trigger on a pull request containing
+`foo/bar.c` and `SECURITY.md`, but not one containing only `SECURITY.md`.
+
+Note:
+- `run_if_changed` and `skip_if_only_changed` are mutually exclusive.
+- Jobs which would otherwise be skipped based on this configuration can still
+  be triggered explicitly with comments (see below).
+- Only presubmit and postsubmit jobs are inherently associated with git refs and can use these fields.
 
 #### Triggering Jobs With Comments
 
@@ -230,6 +273,29 @@ these options at the same time.
 The branch protection rules will only enforce the presence of jobs that run unconditionally
 and have required status contexts. As conditionally-run jobs may or may not post a status
 context to GitHub, they cannot be required through this mechanism.
+
+## Running a ProwJob in a Build Cluster
+
+ProwJobs that execute as Kubernetes resources (namely `agent: kubernetes` jobs that run as Pods, the default value) can specify a `cluster: build-cluster-name` field as part of the ProwJob config to specify that the job should be run in a build cluster other than the default build cluster.
+
+```yaml
+periodics:
+- name: periodic-cluster-a
+  cluster: cluster-a
+  ...
+presubmits:
+  org/repo:
+  - name: presubmit-cluster-b
+    cluster: cluster-b
+    ...
+postsubmits:
+  org/repo:
+  - name: postsubmit-default-cluster
+    # cluster field omitted or set to "default"
+    ...
+```
+
+You can learn more about creating and using build clusters in [`scaling.md`](scaling.md#separate-build-clusters) and [`getting_started_deploy.md`](getting_started_deploy.md#Run-test-pods-in-different-clusters).
 
 ## Pod Utilities
 
@@ -295,8 +361,8 @@ The format to send your `deck` URL is `/badge.svg?jobs=single-job-name` or `/bad
 <!-- links -->
 
 [Pod overview]: https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/#pod-templates
-[PodPresets]: https://kubernetes.io/docs/concepts/workloads/pods/podpreset/
 [PodSpec api reference]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.16/#podspec-v1-core
 [`Presets`]: https://github.com/kubernetes/test-infra/blob/3afb608d28630b99e49e09dd101a96c201268739/prow/config/jobs.go#L33-L40
 [`plugins.yaml`]: /config/prow/plugins.yaml
 [deployed]: https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md
+[regular expression]: https://golang.org/pkg/regexp/syntax/

@@ -25,7 +25,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/robots/pr-creator/updater"
 )
@@ -101,12 +100,7 @@ func main() {
 		logrus.WithError(err).Fatal("bad flags")
 	}
 
-	jamesBond := &secret.Agent{}
-	if err := jamesBond.Start([]string{o.github.TokenPath}); err != nil {
-		logrus.WithError(err).Fatal("Failed to start secrets agent")
-	}
-
-	gc, err := o.github.GitHubClient(jamesBond, !o.confirm)
+	gc, err := o.github.GitHubClient(!o.confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create github client")
 	}

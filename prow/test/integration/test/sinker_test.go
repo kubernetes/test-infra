@@ -68,7 +68,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -108,7 +108,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -149,7 +149,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -191,7 +191,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -214,7 +214,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",

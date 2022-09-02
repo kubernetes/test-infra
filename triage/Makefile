@@ -12,17 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+.PHONY: build
+build:
+	go build .
+
+.PHONY: test
+test:
+	go test ./...
+
 push:
-  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch triage
+  ../../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-scratch triage
 
 STATIC_FILES=index.html interactive.js model.js render.js style.css
 
+# these need to be run by k8s-infra-prow or community members with access to the kubernetes.io GCP org
 push-static:
-	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read $(STATIC_FILES) gs://k8s-gubernator/triage/
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp $(STATIC_FILES) gs://k8s-triage/
 
 push-staging:
-	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read $(STATIC_FILES) gs://k8s-gubernator/triage/staging/
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp $(STATIC_FILES) gs://k8s-triage/staging/
 
-.PHONY: all push push-static push-staging
+# these need to be run by k8s-prow or googlers with access to the google.com GCP org
+redirect-static:
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -a public-read redirect/index.html gs://k8s-gubernator/triage/
 
-all: build
+redirect-staging:
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -a public-read redirect/index.html gs://k8s-gubernator/triage/staging/
+
+.PHONY: push push-static push-staging redirect-static redirect-staging
+

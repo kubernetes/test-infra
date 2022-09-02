@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -77,6 +78,17 @@ func TestReleaseNoteComment(t *testing.T) {
 			isAuthor:      true,
 			commentBody:   "/release-note-none",
 			issueBody:     "bologna ```release-note \nnone \n ```",
+			currentLabels: []string{labels.ReleaseNoteLabelNeeded, "other"},
+
+			deletedLabels: []string{labels.ReleaseNoteLabelNeeded},
+			addedLabel:    labels.ReleaseNoteNone,
+		},
+		{
+			name:          "author release-note-none with \"no\" block",
+			action:        github.IssueCommentActionCreated,
+			isAuthor:      true,
+			commentBody:   "/release-note-none",
+			issueBody:     "bologna ```release-note \nno \n ```",
 			currentLabels: []string{labels.ReleaseNoteLabelNeeded, "other"},
 
 			deletedLabels: []string{labels.ReleaseNoteLabelNeeded},
@@ -269,6 +281,7 @@ func TestReleaseNotePR(t *testing.T) {
 		issueComments      []string
 		IssueLabelsAdded   []string
 		IssueLabelsRemoved []string
+		merged             bool
 	}{
 		{
 			name:          "LGTM with release-note",
@@ -455,12 +468,26 @@ func TestReleaseNotePR(t *testing.T) {
 			body:             "",
 			IssueLabelsAdded: []string{labels.ReleaseNoteLabelNeeded},
 		},
+		{
+			name:             "Add do-not-merge/release-note-label-needed",
+			body:             "```release-note\n```",
+			initialLabels:    []string{},
+			IssueLabelsAdded: []string{labels.ReleaseNoteLabelNeeded},
+		},
+		{
+			name:             "Release note edited after merge, do not add do-not-merge/release-note-label-needed",
+			body:             "```release-note\n```",
+			merged:           true,
+			initialLabels:    []string{},
+			IssueLabelsAdded: []string{},
+		},
 	}
 	for _, test := range tests {
 		if test.branch == "" {
 			test.branch = "master"
 		}
 		fc, pr := newFakeClient(test.body, test.branch, test.initialLabels, test.issueComments, test.parentPRs)
+		pr.PullRequest.Merged = test.merged
 
 		err := handlePR(fc, logrus.WithField("plugin", PluginName), pr)
 		if err != nil {
@@ -631,5 +658,130 @@ func TestShouldHandlePR(t *testing.T) {
 		if test.expectedResult != result {
 			t.Errorf("(%s): Expected value to be: %t, but got %t.", test.name, test.expectedResult, result)
 		}
+	}
+}
+
+func Test_editReleaseNote(t *testing.T) {
+	issueNum := 5
+	ts := []struct {
+		name         string
+		event        github.IssueCommentEvent
+		expectError  bool
+		errorMessage string
+		comment      string
+		fcFunc       func(client *fakegithub.FakeClient)
+		expectedNote string
+	}{
+		{
+			name: "is not an org member",
+			event: github.IssueCommentEvent{
+				Action: github.IssueCommentActionCreated,
+				Issue:  github.Issue{Number: issueNum, User: github.User{Login: "user"}},
+				Comment: github.IssueComment{
+					Body: "/release-note-edit\r\n```release-note\r\nThe new note\r\n```\r\n",
+					User: github.User{Login: "user"},
+				},
+				Repo: github.Repo{Owner: github.User{Login: "org"}},
+			},
+			comment: "org member",
+			fcFunc: func(fc *fakegithub.FakeClient) {
+				fc.OrgMembers["org"] = []string{}
+			},
+		},
+		{
+			name: "no release note block",
+			event: github.IssueCommentEvent{
+				Action: github.IssueCommentActionCreated,
+				Issue:  github.Issue{Number: issueNum, User: github.User{Login: "user"}},
+				Comment: github.IssueComment{
+					Body: "/release-note-edit\r\nNew note",
+					User: github.User{Login: "user"},
+				},
+				Repo: github.Repo{Owner: github.User{Login: "org"}},
+			},
+			comment: "release note block",
+			fcFunc: func(fc *fakegithub.FakeClient) {
+				fc.OrgMembers["org"] = []string{"user"}
+			},
+		},
+		{
+			name: "multiple release note blocks",
+			event: github.IssueCommentEvent{
+				Action: github.IssueCommentActionCreated,
+				Issue:  github.Issue{Number: issueNum, User: github.User{Login: "user"}},
+				Comment: github.IssueComment{
+					Body: "/release-note-edit\r\n```release-note\r\nThe new note\r\n```\r\n```release-note\r\nThe second note\r\n```\r\n",
+					User: github.User{Login: "user"},
+				},
+				Repo: github.Repo{Owner: github.User{Login: "org"}},
+			},
+			comment: "single release note block",
+			fcFunc: func(fc *fakegithub.FakeClient) {
+				fc.OrgMembers["org"] = []string{"user"}
+			},
+		},
+		{
+			name: "happy path",
+			event: github.IssueCommentEvent{
+				Action: github.IssueCommentActionCreated,
+				Issue:  github.Issue{Number: issueNum, User: github.User{Login: "user"}, Body: "Top\r\n```release-note\r\nNONE\r\n```\r\nBelow\r\n"},
+				Comment: github.IssueComment{
+					Body: "/release-note-edit\r\n```release-note\r\nThe new note\r\n```\r\n",
+					User: github.User{Login: "user"},
+				},
+				Repo: github.Repo{Owner: github.User{Login: "org"}},
+			},
+			fcFunc: func(fc *fakegithub.FakeClient) {
+				fc.OrgMembers["org"] = []string{"user"}
+				fc.Issues[issueNum] = &github.Issue{
+					Number: issueNum,
+					User:   github.User{Login: "user"},
+					Body:   "Top level\r\n```release-note\r\nNONE\r\n```\r\n",
+				}
+			},
+			expectedNote: "Top\r\n```release-note\r\nThe new note\r\n```\r\nBelow\r\n",
+		},
+	}
+	for _, tc := range ts {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := fakegithub.NewFakeClient()
+			if tc.fcFunc != nil {
+				tc.fcFunc(fc)
+			}
+			err := editReleaseNote(fc, logrus.WithField("plugin", PluginName), tc.event)
+			if err != nil {
+				if !tc.expectError {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if m := err.Error(); !strings.Contains(m, tc.errorMessage) {
+					t.Fatalf("expected error to contain: %s got: %v", tc.errorMessage, m)
+				}
+			}
+			if err == nil && tc.expectError {
+				t.Fatalf("expected error but did not produce")
+			}
+			if len(tc.comment) != 0 {
+				if cm, ok := fc.IssueComments[tc.event.Issue.Number]; ok {
+					if !strings.Contains(cm[0].Body, tc.comment) {
+						t.Fatalf("expected comment to contain: %s got: %s", tc.comment, cm[0].Body)
+					}
+				}
+			}
+			if len(tc.comment) == 0 && len(fc.IssueComments[issueNum]) != 0 {
+				t.Fatalf("unexpected comment: %v", fc.IssueComments[issueNum])
+			}
+			_, ok := fc.Issues[issueNum]
+			if ok && tc.expectedNote == "" {
+				t.Fatalf("unexpected issue exists: %v", fc.Issues[issueNum])
+			}
+			if tc.expectedNote != "" {
+				if !ok {
+					t.Fatalf("expected release note to be edited but issue does not exist")
+				}
+				if i := fc.Issues[issueNum]; i.Body != tc.expectedNote {
+					t.Fatalf("expected release note to be edited to: %v \n got: %v", tc.expectedNote, i.Body)
+				}
+			}
+		})
 	}
 }

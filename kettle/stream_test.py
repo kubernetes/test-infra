@@ -18,11 +18,11 @@
 
 import unittest
 
+from parameterized import parameterized
+
 import stream
 import make_db_test
 import model
-
-from parameterized import parameterized
 
 class FakePullResponse:
     def __init__(self, messages):

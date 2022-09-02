@@ -26,6 +26,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrlruntime "sigs.k8s.io/controller-runtime"
@@ -119,6 +120,24 @@ func TestReconcile(t *testing.T) {
 				},
 				Status: prowv1.ProwJobStatus{
 					State: prowv1.TriggeredState,
+				},
+			},
+			enablementChecker: func(org, repo string) bool { return org == "org" && repo == "repo" },
+			shouldReport:      true,
+			expectReport:      true,
+			expectPatch:       true,
+		},
+		{
+			name: "reports/patches job whose org/repo in extra refs enabled, completed",
+			job: &prowv1.ProwJob{
+				Spec: prowv1.ProwJobSpec{
+					Job:       "foo",
+					Report:    true,
+					ExtraRefs: []prowv1.Refs{{Org: "org", Repo: "repo"}},
+				},
+				Status: prowv1.ProwJobStatus{
+					State:          prowv1.SuccessState,
+					CompletionTime: &v1.Time{Time: time.Now()},
 				},
 			},
 			enablementChecker: func(org, repo string) bool { return org == "org" && repo == "repo" },

@@ -23,17 +23,17 @@ class TestGenerateTests(unittest.TestCase):
 
     def setUp(self):
         self.temp_directory = tempfile.mkdtemp()
-        self.job_name = "ci-kubernetes-e2e-gce-cos-k8sbeta-ingress"
+        self.job_name = "ci-kubernetes-e2e-cloud_a-image_b-k8sfoo-focus_c"
         self.job = {
             "interval": "1h"
         }
         self.config = {
-            "jobs": {"ci-kubernetes-e2e-gce-cos-k8sbeta-ingress": self.job},
+            "jobs": {"ci-kubernetes-e2e-cloud_a-image_b-k8sfoo-focus_c": self.job},
             "common": {"args": []},
-            "cloudProviders": {"gce": {"args": []}},
-            "images": {"cos": {}},
-            "k8sVersions": {"beta": {"version": "2.4"}},
-            "testSuites": {"ingress": {"args": ["--timeout=10"]}},
+            "cloudProviders": {"cloud_a": {"args": []}},
+            "images": {"image_b": {}},
+            "k8sVersions": {"foo": {"version": "2.4"}},
+            "testSuites": {"focus_c": {"args": ["--timeout=10"]}},
         }
 
     def tearDown(self):
@@ -44,7 +44,7 @@ class TestGenerateTests(unittest.TestCase):
         _, prow_config, _ = generator.generate()
         dashboards = prow_config["annotations"]["testgrid-dashboards"]
         self.assertFalse("sig-release-2.4-blocking" in dashboards)
-        self.assertTrue("sig-release-2.4-all" in dashboards)
+        self.assertTrue("sig-release-generated" in dashboards)
 
     def test_e2etests_testgrid_annotations_blocking_job(self):
         self.job = {
@@ -56,7 +56,7 @@ class TestGenerateTests(unittest.TestCase):
         _, prow_config, _ = generator.generate()
         dashboards = prow_config["annotations"]["testgrid-dashboards"]
         self.assertTrue("sig-release-2.4-blocking" in dashboards)
-        self.assertFalse("sig-release-2.4-all" in dashboards)
+        self.assertFalse("sig-release-generated" in dashboards)
 
 
 if __name__ == '__main__':

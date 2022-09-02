@@ -16,16 +16,9 @@ limitations under the License.
 
 package kube
 
-import (
-	"time"
-)
-
 const (
 	// TestContainerName specifies the primary container name.
 	TestContainerName = "test"
-
-	maxRetries = 8
-	retryDelay = 2 * time.Second
 
 	// EmptySelector selects everything
 	EmptySelector = ""

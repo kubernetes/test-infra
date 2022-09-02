@@ -11,11 +11,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-digitalocean
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -28,4 +28,37 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
     testgrid-tab-name: capdo-periodic-conformance
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+- name: periodic-cluster-api-provider-digitalocean-conformance-ci-artifacts
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  interval: 24h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-do-credential: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-digitalocean
+      base_ref: main
+      path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      command:
+        - "runner.sh"
+        - "./scripts/ci-conformance.sh"
+      env:
+        - name: E2E_ARGS
+          value: "-kubetest.use-ci-artifacts"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+    testgrid-tab-name: capdo-periodic-conformance-ci-artifacts
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io

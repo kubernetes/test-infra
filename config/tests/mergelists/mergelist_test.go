@@ -25,7 +25,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/pkg/merger"
 )
 
-var lists = flag.String("list", "", "Space-delimited list of mergelists to test")
+var lists = flag.String("list", "../../mergelists/prod.yaml ../../mergelists/canary.yaml", "Space-delimited list of mergelists to test")
 
 func TestMergelist(t *testing.T) {
 	files := strings.Split(*lists, " ")

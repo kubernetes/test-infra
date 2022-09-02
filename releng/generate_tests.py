@@ -20,17 +20,17 @@ Usage example:
 
   In $GOPATH/src/k8s.io/test-infra,
 
-  $ bazel run //releng:generate_tests -- \
+  $ make -C releng generate-tests \
       --yaml-config-path=releng/test_config.yaml \
 """
 
 import argparse
 import hashlib
 import os
-import ruamel.yaml as yaml
+import ruamel.yaml
 
-
-# TODO(yguo0905): Generate Prow and testgrid configurations.
+yaml = ruamel.yaml.YAML(typ='rt')
+yaml.width = float("inf")
 
 PROW_CONFIG_TEMPLATE = """
     tags:
@@ -45,7 +45,7 @@ PROW_CONFIG_TEMPLATE = """
       containers:
       - args:
         env:
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         resources:
           requests:
             cpu: 1000m
@@ -91,16 +91,16 @@ def get_args(job_name, field):
 
 def write_prow_configs_file(output_file, job_defs):
     """Writes the Prow configurations into output_file."""
+    print(f'writing prow configuration to: {output_file}')
     with open(output_file, 'w') as fp:
-        yaml.dump(
-            job_defs, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
+        yaml.dump(job_defs, fp)
 
 def write_testgrid_config_file(output_file, testgrid_config):
     """Writes the TestGrid test group configurations into output_file."""
+    print(f'writing testgrid configuration to: {output_file}')
     with open(output_file, 'w') as fp:
         fp.write('# ' + COMMENT + '\n\n')
-        yaml.dump(
-            testgrid_config, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
+        yaml.dump(testgrid_config, fp)
 
 def apply_job_overrides(envs_or_args, job_envs_or_args):
     '''Applies the envs or args overrides defined in the job level'''
@@ -138,7 +138,7 @@ class E2ENodeTest:
 
     def __get_prow_config(self, test_suite, k8s_version):
         """Returns the Prow config for the job from the given fields."""
-        prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
+        prow_config = yaml.load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
         # use cluster from test_suite, or job, or not at all
         if 'cluster' in test_suite:
@@ -183,6 +183,7 @@ class E2ENodeTest:
 
     def generate(self):
         '''Returns the job and the Prow configurations for this test.'''
+        print(f'generating e2enode job: {self.job_name}')
         fields = self.job_name.split('-')
         if len(fields) != 6:
             raise ValueError('Expected 6 fields in job name', self.job_name)
@@ -258,7 +259,7 @@ class E2ETest:
 
     def __get_prow_config(self, test_suite):
         """Returns the Prow config for the e2e job from the given fields."""
-        prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
+        prow_config = yaml.load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
         # use cluster from test_suite, or job, or not at all
         if 'cluster' in test_suite:
@@ -291,7 +292,7 @@ class E2ETest:
         return prow_config
 
     def __get_testgrid_config(self):
-        tg_config = yaml.round_trip_load(E2E_TESTGRID_CONFIG_TEMPLATE)
+        tg_config = yaml.load(E2E_TESTGRID_CONFIG_TEMPLATE)
         tg_config['name'] = self.job_name
         tg_config['gcs_prefix'] = GCS_LOG_PREFIX + self.job_name
         return tg_config
@@ -308,6 +309,7 @@ class E2ETest:
 
     def generate(self):
         '''Returns the job and the Prow configurations for this test.'''
+        print(f'generating e2e job: {self.job_name}')
         fields = self.job_name.split('-')
         if len(fields) != 7:
             raise ValueError('Expected 7 fields in job name', self.job_name)
@@ -360,7 +362,7 @@ def for_each_job(output_dir, job_name, job, yaml_config):
     elif job_type == 'e2enode':
         generator = E2ENodeTest(job_name, job, yaml_config)
     else:
-        raise ValueError('Unexpected job type ', job_type)
+        raise ValueError(f'Job {job_name} has unexpected job type ', job_type)
     job_config, prow_config, testgrid_config = generator.generate()
 
     # Applies job-level overrides.
@@ -384,12 +386,13 @@ def main(yaml_config_path, output_dir, testgrid_output_path):
     # TODO(yguo0905): Validate the configurations from yaml_config_path.
 
     with open(yaml_config_path) as fp:
-        yaml_config = yaml.safe_load(fp)
+        yaml_config = yaml.load(fp)
 
     output_config = {}
     output_config['periodics'] = []
     testgrid_config = {'test_groups': []}
-    for job_name, _ in yaml_config['jobs'].items():
+    job_names = sorted(yaml_config['jobs'].keys())
+    for job_name in job_names:
         # Get the envs and args for each job defined under "jobs".
         prow, testgrid = for_each_job(
             output_dir, job_name, yaml_config['jobs'][job_name], yaml_config)

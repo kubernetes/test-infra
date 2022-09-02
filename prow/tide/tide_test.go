@@ -35,6 +35,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -51,14 +52,21 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/tide/history"
 )
 
+func init() {
+	// Debugging tests without this isn't fun
+	logrus.SetLevel(logrus.DebugLevel)
+}
+
 var defaultBranch = localgit.DefaultBranch("")
 
-func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
+func testPullsMatchList(t *testing.T, test string, actual []CodeReviewCommon, expected []int) {
 	if len(actual) != len(expected) {
 		t.Errorf("Wrong size for case %s. Got PRs %+v, wanted numbers %v.", test, actual, expected)
 		return
@@ -236,13 +244,13 @@ func TestAccumulateBatch(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
-			var pulls []PullRequest
+			var pulls []CodeReviewCommon
 			for _, p := range test.pulls {
 				pr := PullRequest{
 					Number:     githubql.Int(p.number),
 					HeadRefOID: githubql.String(p.sha),
 				}
-				pulls = append(pulls, pr)
+				pulls = append(pulls, *CodeReviewCommonFromPullRequest(&pr))
 			}
 			var pjs []prowapi.ProwJob
 			for _, pj := range test.prowJobs {
@@ -271,14 +279,14 @@ func TestAccumulateBatch(t *testing.T) {
 			if test.prowYAMLGetter != nil {
 				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			}
-			c := &Controller{
+			c := &syncController{
 				config: func() *config.Config {
 					return &config.Config{
 						JobConfig: config.JobConfig{
 							PresubmitsStatic: map[string][]config.Presubmit{
 								"org/repo": test.presubmits,
 							},
-							ProwYAMLGetter: test.prowYAMLGetter,
+							ProwYAMLGetterWithDefaults: test.prowYAMLGetter,
 						},
 						ProwConfig: config.ProwConfig{
 							InRepoConfig: inrepoconfig,
@@ -651,13 +659,17 @@ func TestAccumulate(t *testing.T) {
 			test.name = strconv.Itoa(i)
 		}
 		t.Run(test.name, func(t *testing.T) {
-			var pulls []PullRequest
+			syncCtrl := &syncController{
+				provider: &GitHubProvider{ghc: &fgc{}, logger: logrus.NewEntry(logrus.New())},
+				logger:   logrus.NewEntry(logrus.New()),
+			}
+			var pulls []CodeReviewCommon
 			for num, sha := range test.pullRequests {
 				newPull := PullRequest{Number: githubql.Int(num), HeadRefOID: githubql.String(sha)}
 				if test.pullRequestModifier != nil {
 					test.pullRequestModifier(&newPull)
 				}
-				pulls = append(pulls, newPull)
+				pulls = append(pulls, *CodeReviewCommonFromPullRequest(&newPull))
 			}
 			var pjs []prowapi.ProwJob
 			for _, pj := range test.prowJobs {
@@ -672,7 +684,7 @@ func TestAccumulate(t *testing.T) {
 				})
 			}
 
-			successes, pendings, nones, _ := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()), baseSHA, &fgc{})
+			successes, pendings, nones, _ := syncCtrl.accumulate(test.presubmits, pulls, pjs, baseSHA)
 
 			t.Logf("test run %d", i)
 			testPullsMatchList(t, "successes", successes, test.successes)
@@ -748,6 +760,8 @@ func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) e
 }
 
 func (f *fgc) CreateStatus(org, repo, ref string, s github.Status) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	switch s.State {
 	case github.StatusSuccess, github.StatusError, github.StatusPending, github.StatusFailure:
 		if f.statuses == nil {
@@ -902,7 +916,19 @@ func TestDividePool(t *testing.T) {
 	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
 	c, err := newSyncController(
-		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc, false,
+		context.Background(),
+		log,
+		fc,
+		mgr,
+		configGetter,
+		nil,
+		nil,
+		mmc,
+		false,
+		&statusUpdate{
+			dontUpdateStatus: &threadSafePRSet{},
+			newPoolPending:   make(chan bool),
+		},
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
@@ -927,14 +953,15 @@ func TestDividePool(t *testing.T) {
 			t.Fatalf("failed to create prowjob: %v", err)
 		}
 	}
-	pulls := make(map[string]PullRequest)
+	pulls := make(map[string]CodeReviewCommon)
 	for _, p := range testPulls {
 		npr := PullRequest{Number: githubql.Int(p.number)}
 		npr.BaseRef.Name = githubql.String(p.branch)
 		npr.BaseRef.Prefix = "refs/heads/"
 		npr.Repository.Name = githubql.String(p.repo)
 		npr.Repository.Owner.Login = githubql.String(p.org)
-		pulls[prKey(&npr)] = npr
+		crc := CodeReviewCommonFromPullRequest(&npr)
+		pulls[prKey(crc)] = *crc
 	}
 	sps, err := c.dividePool(pulls)
 	if err != nil {
@@ -953,7 +980,7 @@ func TestDividePool(t *testing.T) {
 			t.Errorf("Subpool %s has no PRs.", name)
 		}
 		for _, pr := range sp.prs {
-			if string(pr.Repository.Owner.Login) != sp.org || string(pr.Repository.Name) != sp.repo || string(pr.BaseRef.Name) != sp.branch {
+			if pr.Org != sp.org || pr.Repo != sp.repo || pr.BaseRefName != sp.branch {
 				t.Errorf("PR in wrong subpool. Got PR %+v in subpool %s.", pr, name)
 			}
 		}
@@ -1085,7 +1112,7 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		if !testpr.success {
 			pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateFailure
 		}
-		sp.prs = append(sp.prs, pr)
+		sp.prs = append(sp.prs, *CodeReviewCommonFromPullRequest(&pr))
 	}
 	ca := &config.Agent{}
 	ca.Set(&config.Config{
@@ -1105,10 +1132,14 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 			},
 		},
 	})
-	c := &Controller{
-		logger: logrus.WithField("component", "tide"),
-		gc:     gc,
-		config: ca.Config,
+	logger := logrus.WithField("component", "tide")
+	ghProvider := &GitHubProvider{cfg: ca.Config, mergeChecker: newMergeChecker(ca.Config, &fgc{}), logger: logger}
+	c := &syncController{
+		logger:       logger,
+		gc:           gc,
+		provider:     ghProvider,
+		config:       ca.Config,
+		pickNewBatch: pickNewBatch(gc, ca.Config, ghProvider),
 	}
 	prs, presubmits, err := c.pickBatch(sp, map[int]contextChecker{
 		0: &config.TideContextPolicy{},
@@ -1150,14 +1181,16 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 	rebaseLabel := "tide/rebase"
 
 	tideConfig := config.Tide{
-		SquashLabel: squashLabel,
-		MergeLabel:  mergeLabel,
-		RebaseLabel: rebaseLabel,
+		TideGitHubConfig: config.TideGitHubConfig{
+			SquashLabel: squashLabel,
+			MergeLabel:  mergeLabel,
+			RebaseLabel: rebaseLabel,
 
-		MergeType: map[string]github.PullRequestMergeType{
-			"o/configured-rebase":              github.MergeRebase, // GH client allows merge, rebase
-			"o/configured-squash-allow-rebase": github.MergeSquash, // GH client allows merge, squash, rebase
-			"o/configure-re-base":              github.MergeRebase, // GH client allows merge
+			MergeType: map[string]types.PullRequestMergeType{
+				"o/configured-rebase":              types.MergeRebase, // GH client allows merge, rebase
+				"o/configured-squash-allow-rebase": types.MergeSquash, // GH client allows merge, squash, rebase
+				"o/configure-re-base":              types.MergeRebase, // GH client allows merge
+			},
 		},
 	}
 	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
@@ -1168,38 +1201,38 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 		repo              string
 		labels            []string
 		conflict          bool
-		expectedMethod    github.PullRequestMergeType
+		expectedMethod    types.PullRequestMergeType
 		expectErr         bool
 		expectConflictErr bool
 	}{
 		{
 			name:           "default method without PR label override",
 			repo:           "foo",
-			expectedMethod: github.MergeMerge,
+			expectedMethod: types.MergeMerge,
 		},
 		{
 			name:           "irrelevant PR labels ignored",
 			repo:           "foo",
 			labels:         []string{"unrelated"},
-			expectedMethod: github.MergeMerge,
+			expectedMethod: types.MergeMerge,
 		},
 		{
 			name:           "default method overridden by a PR label",
 			repo:           "allow-squash-nomerge",
 			labels:         []string{"tide/squash"},
-			expectedMethod: github.MergeSquash,
+			expectedMethod: types.MergeSquash,
 		},
 		{
 			name:           "use method configured for repo in tide config",
 			repo:           "configured-squash-allow-rebase",
 			labels:         []string{"unrelated"},
-			expectedMethod: github.MergeSquash,
+			expectedMethod: types.MergeSquash,
 		},
 		{
 			name:           "tide config method overridden by a PR label",
 			repo:           "configured-squash-allow-rebase",
 			labels:         []string{"unrelated", "tide/rebase"},
-			expectedMethod: github.MergeRebase,
+			expectedMethod: types.MergeRebase,
 		},
 		{
 			name:      "multiple merge method PR labels should not merge",
@@ -1212,7 +1245,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			repo:              "foo",
 			labels:            []string{"unrelated"},
 			conflict:          true,
-			expectedMethod:    github.MergeMerge,
+			expectedMethod:    types.MergeMerge,
 			expectErr:         false,
 			expectConflictErr: true,
 		},
@@ -1220,7 +1253,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			name:              "squash label conflicts with merge only GH settings",
 			repo:              "foo",
 			labels:            []string{"tide/squash"},
-			expectedMethod:    github.MergeSquash,
+			expectedMethod:    types.MergeSquash,
 			expectErr:         false,
 			expectConflictErr: true,
 		},
@@ -1228,7 +1261,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			name:              "rebase method tide config conflicts with merge only GH settings",
 			repo:              "configure-re-base",
 			labels:            []string{"unrelated"},
-			expectedMethod:    github.MergeRebase,
+			expectedMethod:    types.MergeRebase,
 			expectErr:         false,
 			expectConflictErr: true,
 		},
@@ -1236,7 +1269,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			name:              "default method conflicts with squash only GH settings",
 			repo:              "squash-nomerge",
 			labels:            []string{"unrelated"},
-			expectedMethod:    github.MergeMerge,
+			expectedMethod:    types.MergeMerge,
 			expectErr:         false,
 			expectConflictErr: true,
 		},
@@ -1264,6 +1297,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				}{
 					Nodes: []struct{ Name githubql.String }{},
 				},
+				CanBeRebased: true,
 			}
 			for _, label := range tc.labels {
 				labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
@@ -1273,7 +1307,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				pr.Mergeable = githubql.MergeableStateConflicting
 			}
 
-			actual, err := prMergeMethod(tideConfig, pr)
+			actual, err := mmc.prMergeMethod(tideConfig, CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				if !tc.expectErr {
 					t.Errorf("unexpected error: %v", err)
@@ -1286,7 +1320,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			if tc.expectedMethod != actual {
 				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, actual)
 			}
-			reason, err := mmc.isAllowed(pr)
+			reason, err := mmc.isAllowedToMerge(CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				t.Errorf("unexpected processing error: %v", err)
 			} else if reason != "" {
@@ -1297,6 +1331,78 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			} else if tc.expectConflictErr {
 				t.Errorf("missing expected merge method conflict error")
 				return
+			}
+		})
+	}
+}
+
+func TestRebaseMergeMethodIsAllowed(t *testing.T) {
+	orgName := "fake-org"
+	repoName := "fake-repo"
+	tideConfig := config.Tide{
+		TideGitHubConfig: config.TideGitHubConfig{
+			MergeType: map[string]types.PullRequestMergeType{
+				fmt.Sprintf("%s/%s", orgName, repoName): types.MergeRebase,
+			},
+		},
+	}
+	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
+	mmc := newMergeChecker(cfg, &fgc{})
+	mmc.cache = map[config.OrgRepo]map[types.PullRequestMergeType]bool{
+		{Org: orgName, Repo: repoName}: {
+			types.MergeRebase: true,
+		},
+	}
+
+	testCases := []struct {
+		name                string
+		expectedMergeOutput string
+		prCanBeRebased      bool
+	}{
+		{
+			name:                "Merging PR using rebase successfully",
+			expectedMergeOutput: "",
+			prCanBeRebased:      true,
+		},
+		{
+			name:                "Merging PR using rebase but it is not allowed",
+			expectedMergeOutput: "PR can't be rebased",
+			prCanBeRebased:      false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pr := &PullRequest{
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{
+					Name: githubql.String(repoName),
+					Owner: struct {
+						Login githubql.String
+					}{
+						Login: githubql.String(orgName),
+					},
+				},
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{
+					Nodes: []struct{ Name githubql.String }{},
+				},
+				CanBeRebased: githubql.Boolean(tc.prCanBeRebased),
+			}
+
+			mergeOutput, err := mmc.isAllowedToMerge(CodeReviewCommonFromPullRequest(pr))
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			} else {
+				if mergeOutput != tc.expectedMergeOutput {
+					t.Errorf("Expected merge output \"%s\" but got \"%s\"\n", tc.expectedMergeOutput, mergeOutput)
+				}
 			}
 		})
 	}
@@ -1755,6 +1861,14 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 								RunIfChanged: "CHANGED",
 							},
 						},
+						{
+							Reporter:     config.Reporter{Context: "if-changed"},
+							Trigger:      "/test if-changed",
+							RerunCommand: "/test if-changed",
+							RegexpChangeMatcher: config.RegexpChangeMatcher{
+								SkipIfOnlyChanged: "CHANGED1",
+							},
+						},
 					},
 				},
 			); err != nil {
@@ -1799,8 +1913,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				branch: defaultBranch,
 				sha:    defaultBranch,
 			}
-			genPulls := func(nums []int) []PullRequest {
-				var prs []PullRequest
+			genPulls := func(nums []int) []CodeReviewCommon {
+				var prs []CodeReviewCommon
 				for _, i := range nums {
 					if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
 						t.Fatalf("Error checking out new branch: %v", err)
@@ -1818,8 +1932,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					pr.Commits.Nodes = []struct {
 						Commit Commit
 					}{{Commit: Commit{OID: oid}}}
-					sp.prs = append(sp.prs, pr)
-					prs = append(prs, pr)
+					sp.prs = append(sp.prs, *CodeReviewCommonFromPullRequest(&pr))
+					prs = append(prs, *CodeReviewCommonFromPullRequest(&pr))
 				}
 				return prs
 			}
@@ -1831,10 +1945,13 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				newFakeManager(tc.preExistingJobs...),
 				ca.Config,
 				gc,
-				&statusController{},
 				nil,
 				nil,
 				false,
+				&statusUpdate{
+					dontUpdateStatus: &threadSafePRSet{},
+					newPoolPending:   make(chan bool),
+				},
 			)
 			if err != nil {
 				t.Fatalf("failed to construct sync controller: %v", err)
@@ -1843,9 +1960,9 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				ghc:             &fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			}
-			var batchPending []PullRequest
+			var batchPending []CodeReviewCommon
 			if tc.batchPending {
-				batchPending = []PullRequest{{}}
+				batchPending = []CodeReviewCommon{{}}
 			}
 			if act, _, _ := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); act != tc.action {
 				t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
@@ -1877,6 +1994,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					t.Errorf("prowjob %q didn't have expected namespace %q but %q", pj.Name, pjNamespace, pj.Namespace)
 				}
 				if pj.Spec.Type == prowapi.BatchJob {
+					pj := pj
 					batchJobs = append(batchJobs, &pj)
 				}
 			}
@@ -1887,7 +2005,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			if tc.merged != fgc.merged {
 				t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
 			}
-			if n := len(c.sc.dontUpdateStatus.data); n != tc.merged+len(tc.mergeErrs) {
+			if n := len(c.statusUpdate.dontUpdateStatus.data); n != tc.merged+len(tc.mergeErrs) {
 				t.Errorf("expected %d entries in the dontUpdateStatus map, got %d", tc.merged+len(tc.mergeErrs), n)
 			}
 			// Ensure that the correct number of batch jobs were triggered
@@ -1915,15 +2033,17 @@ func TestServeHTTP(t *testing.T) {
 		t.Fatalf("Failed to create history client: %v", err)
 	}
 	cfg := func() *config.Config { return &config.Config{} }
-	c := &Controller{
+	c := &syncController{
 		pools: []Pool{
 			{
-				MissingPRs: []PullRequest{pr1},
+				MissingPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&pr1)},
 				Action:     Merge,
 			},
 		},
-		mergeChecker: newMergeChecker(cfg, &fgc{}),
-		History:      hist,
+		provider: &GitHubProvider{
+			mergeChecker: newMergeChecker(cfg, &fgc{}),
+		},
+		History: hist,
 	}
 	s := httptest.NewServer(c)
 	defer s.Close()
@@ -1941,100 +2061,7 @@ func TestServeHTTP(t *testing.T) {
 	}
 }
 
-func TestHeadContexts(t *testing.T) {
-	type commitContext struct {
-		// one context per commit for testing
-		context string
-		sha     string
-	}
-
-	win := "win"
-	lose := "lose"
-	headSHA := "head"
-	testCases := []struct {
-		name                string
-		commitContexts      []commitContext
-		expectAPICall       bool
-		expectChecksAPICall bool
-	}{
-		{
-			name: "first commit is head",
-			commitContexts: []commitContext{
-				{context: win, sha: headSHA},
-				{context: lose, sha: "other"},
-				{context: lose, sha: "sha"},
-			},
-		},
-		{
-			name: "last commit is head",
-			commitContexts: []commitContext{
-				{context: lose, sha: "shaaa"},
-				{context: lose, sha: "other"},
-				{context: win, sha: headSHA},
-			},
-		},
-		{
-			name: "no commit is head, falling back to v3 api and getting context via status api",
-			commitContexts: []commitContext{
-				{context: lose, sha: "shaaa"},
-				{context: lose, sha: "other"},
-				{context: lose, sha: "sha"},
-			},
-			expectAPICall: true,
-		},
-		{
-			name: "no commit is head, falling back to v3 api and getting context via checks api",
-			commitContexts: []commitContext{
-				{context: lose, sha: "shaaa"},
-				{context: lose, sha: "other"},
-				{context: lose, sha: "sha"},
-			},
-			expectAPICall:       true,
-			expectChecksAPICall: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Logf("Running test case %q", tc.name)
-			fgc := &fgc{}
-			if !tc.expectChecksAPICall {
-				fgc.combinedStatus = map[string]string{win: string(githubql.StatusStateSuccess)}
-			} else {
-				fgc.checkRuns = &github.CheckRunList{CheckRuns: []github.CheckRun{
-					{Name: win, Status: "completed", Conclusion: "neutral"},
-				}}
-			}
-			if tc.expectAPICall {
-				fgc.expectedSHA = headSHA
-			}
-			pr := &PullRequest{HeadRefOID: githubql.String(headSHA)}
-			for _, ctx := range tc.commitContexts {
-				commit := Commit{
-					Status: struct{ Contexts []Context }{
-						Contexts: []Context{
-							{
-								Context: githubql.String(ctx.context),
-							},
-						},
-					},
-					OID: githubql.String(ctx.sha),
-				}
-				pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
-			}
-
-			contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)
-			if err != nil {
-				t.Fatalf("Unexpected error from headContexts: %v", err)
-			}
-			if len(contexts) != 1 || string(contexts[0].Context) != win {
-				t.Errorf("Expected exactly 1 %q context, but got: %#v", win, contexts)
-			}
-		})
-	}
-}
-
-func testPR(org, repo, branch string, number int, mergeable githubql.MergeableState) PullRequest {
+func testPR(org, repo, branch string, number int, mergeable githubql.MergeableState) *PullRequest {
 	pr := PullRequest{
 		Number:     githubql.Int(number),
 		Mergeable:  mergeable,
@@ -2058,10 +2085,10 @@ func testPR(org, repo, branch string, number int, mergeable githubql.MergeableSt
 			OID: githubql.String("SHA"),
 		},
 	})
-	return pr
+	return &pr
 }
 
-func testPRWithLabels(org, repo, branch string, number int, mergeable githubql.MergeableState, labels []string) PullRequest {
+func testPRWithLabels(org, repo, branch string, number int, mergeable githubql.MergeableState, labels []string) *PullRequest {
 	pr := testPR(org, repo, branch, number, mergeable)
 	for _, label := range labels {
 		labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
@@ -2074,10 +2101,10 @@ func TestSync(t *testing.T) {
 	sleep = func(time.Duration) {}
 	defer func() { sleep = time.Sleep }()
 
-	mergeableA := testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)
-	unmergeableA := testPR("org", "repo", "A", 6, githubql.MergeableStateConflicting)
-	unmergeableB := testPR("org", "repo", "B", 7, githubql.MergeableStateConflicting)
-	unknownA := testPR("org", "repo", "A", 8, githubql.MergeableStateUnknown)
+	mergeableA := *testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)
+	unmergeableA := *testPR("org", "repo", "A", 6, githubql.MergeableStateConflicting)
+	unmergeableB := *testPR("org", "repo", "B", 7, githubql.MergeableStateConflicting)
+	unknownA := *testPR("org", "repo", "A", 8, githubql.MergeableStateUnknown)
 
 	testcases := []struct {
 		name string
@@ -2097,9 +2124,10 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{mergeableA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				Action:     Merge,
-				Target:     []PullRequest{mergeableA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2114,9 +2142,10 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{unknownA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&unknownA)},
 				Action:     Merge,
-				Target:     []PullRequest{unknownA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&unknownA)},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2126,9 +2155,10 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{mergeableA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				Action:     Merge,
-				Target:     []PullRequest{mergeableA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2138,9 +2168,10 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{mergeableA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				Action:     Merge,
-				Target:     []PullRequest{mergeableA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2150,87 +2181,98 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{mergeableA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				Action:     Merge,
-				Target:     []PullRequest{mergeableA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
+				TenantIDs:  []string{},
 			}},
 		},
 	}
 
 	for _, tc := range testcases {
-		t.Logf("Starting case %q...", tc.name)
-		fgc := &fgc{
-			prs: map[string][]PullRequest{"": tc.prs},
-			refs: map[string]string{
-				"org/repo heads/A": "SHA",
-				"org/repo A":       "SHA",
-				"org/repo heads/B": "SHA",
-				"org/repo B":       "SHA",
-			},
-		}
-		ca := &config.Agent{}
-		ca.Set(&config.Config{
-			ProwConfig: config.ProwConfig{
-				Tide: config.Tide{
-					Queries:            []config.TideQuery{{}},
-					MaxGoroutines:      4,
-					StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+		t.Run(tc.name, func(t *testing.T) {
+			fgc := &fgc{
+				prs: map[string][]PullRequest{"": tc.prs},
+				refs: map[string]string{
+					"org/repo heads/A": "SHA",
+					"org/repo A":       "SHA",
+					"org/repo heads/B": "SHA",
+					"org/repo B":       "SHA",
 				},
-			},
-		})
-		hist, err := history.New(100, nil, "")
-		if err != nil {
-			t.Fatalf("Failed to create history client: %v", err)
-		}
-		mergeChecker := newMergeChecker(ca.Config, fgc)
-		sc := &statusController{
-			pjClient:       fakectrlruntimeclient.NewFakeClient(),
-			logger:         logrus.WithField("controller", "status-update"),
-			ghc:            fgc,
-			gc:             nil,
-			config:         ca.Config,
-			newPoolPending: make(chan bool, 1),
-			shutDown:       make(chan bool),
-			mergeChecker:   mergeChecker,
-		}
-		go sc.run()
-		defer sc.shutdown()
-		c := &Controller{
-			config:        ca.Config,
-			ghc:           fgc,
-			gc:            nil,
-			prowJobClient: fakectrlruntimeclient.NewFakeClient(),
-			logger:        logrus.WithField("controller", "sync"),
-			sc:            sc,
-			changedFiles: &changedFilesAgent{
-				ghc:             fgc,
-				nextChangeCache: make(map[changeCacheKey][]string),
-			},
-			mergeChecker: mergeChecker,
-			History:      hist,
-		}
+			}
+			ca := &config.Agent{}
+			ca.Set(&config.Config{
+				ProwConfig: config.ProwConfig{
+					Tide: config.Tide{
+						MaxGoroutines: 4,
+						TideGitHubConfig: config.TideGitHubConfig{
+							Queries:            []config.TideQuery{{}},
+							StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+						},
+					},
+				},
+			})
+			hist, err := history.New(100, nil, "")
+			if err != nil {
+				t.Fatalf("Failed to create history client: %v", err)
+			}
+			mergeChecker := newMergeChecker(ca.Config, fgc)
+			sc := &statusController{
+				pjClient: fakectrlruntimeclient.NewFakeClient(),
+				logger:   logrus.WithField("controller", "status-update"),
+				ghc:      fgc,
+				gc:       nil,
+				config:   ca.Config,
+				shutDown: make(chan bool),
+				statusUpdate: &statusUpdate{
+					dontUpdateStatus: &threadSafePRSet{},
+					newPoolPending:   make(chan bool),
+				},
+			}
+			go sc.run()
+			defer sc.shutdown()
+			c := &syncController{
+				config: ca.Config,
+				provider: &GitHubProvider{
+					cfg:          ca.Config,
+					ghc:          fgc,
+					mergeChecker: mergeChecker,
+					logger:       logrus.WithField("controller", "sync"),
+				},
+				gc:            nil,
+				prowJobClient: fakectrlruntimeclient.NewFakeClient(),
+				logger:        logrus.WithField("controller", "sync"),
+				changedFiles: &changedFilesAgent{
+					ghc:             fgc,
+					nextChangeCache: make(map[changeCacheKey][]string),
+				},
+				History: hist,
+				statusUpdate: &statusUpdate{
+					dontUpdateStatus: &threadSafePRSet{},
+					newPoolPending:   make(chan bool),
+				},
+			}
 
-		if err := c.Sync(); err != nil {
-			t.Errorf("Unexpected error from 'Sync()': %v.", err)
-			continue
-		}
-		if len(tc.expectedPools) != len(c.pools) {
-			t.Errorf("Tide pools did not match expected. Got %#v, expected %#v.", c.pools, tc.expectedPools)
-			continue
-		}
-		for _, expected := range tc.expectedPools {
-			var match *Pool
-			for i, actual := range c.pools {
-				if expected.Org == actual.Org && expected.Repo == actual.Repo && expected.Branch == actual.Branch {
-					match = &c.pools[i]
+			if err := c.Sync(); err != nil {
+				t.Fatalf("Unexpected error from 'Sync()': %v.", err)
+			}
+			if len(tc.expectedPools) != len(c.pools) {
+				t.Fatalf("Tide pools did not match expected. Got %#v, expected %#v.", c.pools, tc.expectedPools)
+			}
+			for _, expected := range tc.expectedPools {
+				var match *Pool
+				for i, actual := range c.pools {
+					if expected.Org == actual.Org && expected.Repo == actual.Repo && expected.Branch == actual.Branch {
+						match = &c.pools[i]
+					}
+				}
+				if match == nil {
+					t.Errorf("Failed to find expected pool %s/%s %s.", expected.Org, expected.Repo, expected.Branch)
+				} else if !reflect.DeepEqual(*match, expected) {
+					t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
 				}
 			}
-			if match == nil {
-				t.Errorf("Failed to find expected pool %s/%s %s.", expected.Org, expected.Repo, expected.Branch)
-			} else if !reflect.DeepEqual(*match, expected) {
-				t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
-			}
-		}
+		})
 	}
 }
 
@@ -2655,12 +2697,17 @@ func TestFilterSubpool(t *testing.T) {
 				if !pull.mergeable {
 					pr.Mergeable = githubql.MergeableStateConflicting
 				}
-				sp.prs = append(sp.prs, pr)
+				sp.prs = append(sp.prs, *CodeReviewCommonFromPullRequest(&pr))
 			}
 
 			configGetter := func() *config.Config { return &config.Config{} }
 			mmc := newMergeChecker(configGetter, &fgc{})
-			filtered := filterSubpool(nil, mmc.isAllowed, sp)
+			provider := &GitHubProvider{
+				cfg:          configGetter,
+				mergeChecker: mmc,
+				logger:       logrus.WithContext(context.Background()),
+			}
+			filtered := filterSubpool(provider, mmc.isAllowedToMerge, sp)
 			if len(tc.expectedPRs) == 0 {
 				if filtered != nil {
 					t.Fatalf("Expected subpool to be pruned, but got: %v", filtered)
@@ -2778,19 +2825,36 @@ func TestIsPassing(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		ghc := &fgc{
-			combinedStatus: tc.combinedContexts,
-			expectedSHA:    headSHA}
-		log := logrus.WithField("component", "tide")
-		_, err := log.String()
-		if err != nil {
-			t.Fatalf("Failed to get log output before testing: %v", err)
-		}
-		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
-		passing := isPassingTests(log, ghc, pr, &tc.config)
-		if passing != tc.passing {
-			t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+
+			ghc := &fgc{
+				combinedStatus: tc.combinedContexts,
+				expectedSHA:    headSHA}
+			log := logrus.WithField("component", "tide")
+			_, err := log.String()
+			if err != nil {
+				t.Fatalf("Failed to get log output before testing: %v", err)
+			}
+			syncCtl := &syncController{provider: &GitHubProvider{ghc: ghc, logger: log}}
+			pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
+			passing := syncCtl.isPassingTests(log, CodeReviewCommonFromPullRequest(&pr), &tc.config)
+			if passing != tc.passing {
+				t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
+			}
+
+			if tc.passing {
+				c := &syncController{
+					provider:      &GitHubProvider{ghc: ghc, logger: log},
+					prowJobClient: fakectrlruntimeclient.NewFakeClient(),
+					config:        func() *config.Config { return &config.Config{} },
+				}
+				// isRetestEligible is more lenient than isPassingTests, which means we expect it to allow
+				// everything that is allowed by isPassingTests. The reverse might not be true.
+				if !c.isRetestEligible(log, CodeReviewCommonFromPullRequest(&pr), &tc.config) {
+					t.Error("expected pr to be batch testing eligible, wasn't the case")
+				}
+			}
+		})
 	}
 }
 
@@ -2804,7 +2868,7 @@ func TestPresubmitsByPull(t *testing.T) {
 
 		initialChangeCache map[changeCacheKey][]string
 		presubmits         []config.Presubmit
-		prs                []PullRequest
+		prs                []CodeReviewCommon
 		prowYAMLGetter     config.ProwYAMLGetter
 
 		expectedPresubmits  map[int][]config.Presubmit
@@ -3011,8 +3075,8 @@ func TestPresubmitsByPull(t *testing.T) {
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "inrepoconfig"},
 			}}),
-			prs: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+			prs: []CodeReviewCommon{
+				{Number: 1, HeadRefOID: "1"},
 			},
 			expectedPresubmits: map[int][]config.Presubmit{
 				1: {
@@ -3036,8 +3100,8 @@ func TestPresubmitsByPull(t *testing.T) {
 				}
 				return &config.ProwYAML{}, nil
 			},
-			prs: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+			prs: []CodeReviewCommon{
+				{Number: 1, HeadRefOID: "1"},
 			},
 			expectedPresubmits: map[int][]config.Presubmit{
 				100: {
@@ -3064,26 +3128,28 @@ func TestPresubmitsByPull(t *testing.T) {
 		})
 		if tc.prowYAMLGetter != nil {
 			cfg.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
-			cfg.ProwYAMLGetter = tc.prowYAMLGetter
+			cfg.ProwYAMLGetterWithDefaults = tc.prowYAMLGetter
 		}
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
 		sp := &subpool{
 			branch: defaultBranch,
 			sha:    "master-sha",
-			prs:    append(tc.prs, samplePR),
+			prs:    append(tc.prs, *CodeReviewCommonFromPullRequest(&samplePR)),
 		}
-		c := &Controller{
+		c := &syncController{
 			config: cfgAgent.Config,
-			ghc:    &fgc{},
-			gc:     nil,
+			provider: &GitHubProvider{
+				ghc:          &fgc{},
+				mergeChecker: newMergeChecker(cfgAgent.Config, &fgc{}),
+			},
+			gc: nil,
 			changedFiles: &changedFilesAgent{
 				ghc:             &fgc{},
 				changeCache:     tc.initialChangeCache,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			mergeChecker: newMergeChecker(cfgAgent.Config, &fgc{}),
-			logger:       logrus.WithField("test", tc.name),
+			logger: logrus.WithField("test", tc.name),
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
@@ -3108,102 +3174,6 @@ func getTemplate(name, tplStr string) *template.Template {
 	return tpl
 }
 
-func TestPrepareMergeDetails(t *testing.T) {
-	pr := PullRequest{
-		Number:     githubql.Int(1),
-		Mergeable:  githubql.MergeableStateMergeable,
-		HeadRefOID: githubql.String("SHA"),
-		Title:      "my commit title",
-		Body:       "my commit body",
-	}
-
-	testCases := []struct {
-		name        string
-		tpl         config.TideMergeCommitTemplate
-		pr          PullRequest
-		mergeMethod github.PullRequestMergeType
-		expected    github.MergeDetails
-	}{{
-		name:        "No commit template",
-		tpl:         config.TideMergeCommitTemplate{},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:         "SHA",
-			MergeMethod: "merge",
-		},
-	}, {
-		name: "No commit template fields",
-		tpl: config.TideMergeCommitTemplate{
-			Title: nil,
-			Body:  nil,
-		},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:         "SHA",
-			MergeMethod: "merge",
-		},
-	}, {
-		name: "Static commit template",
-		tpl: config.TideMergeCommitTemplate{
-			Title: getTemplate("CommitTitle", "static title"),
-			Body:  getTemplate("CommitBody", "static body"),
-		},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:           "SHA",
-			MergeMethod:   "merge",
-			CommitTitle:   "static title",
-			CommitMessage: "static body",
-		},
-	}, {
-		name: "Commit template uses PullRequest fields",
-		tpl: config.TideMergeCommitTemplate{
-			Title: getTemplate("CommitTitle", "{{ .Number }}: {{ .Title }}"),
-			Body:  getTemplate("CommitBody", "{{ .HeadRefOID }} - {{ .Body }}"),
-		},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:           "SHA",
-			MergeMethod:   "merge",
-			CommitTitle:   "1: my commit title",
-			CommitMessage: "SHA - my commit body",
-		},
-	}, {
-		name: "Commit template uses nonexistent fields",
-		tpl: config.TideMergeCommitTemplate{
-			Title: getTemplate("CommitTitle", "{{ .Hello }}"),
-			Body:  getTemplate("CommitBody", "{{ .World }}"),
-		},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:         "SHA",
-			MergeMethod: "merge",
-		},
-	}}
-
-	for _, test := range testCases {
-		cfg := &config.Config{}
-		cfgAgent := &config.Agent{}
-		cfgAgent.Set(cfg)
-		c := &Controller{
-			config: cfgAgent.Config,
-			ghc:    &fgc{},
-			logger: logrus.WithField("component", "tide"),
-		}
-
-		actual := c.prepareMergeDetails(test.tpl, test.pr, test.mergeMethod)
-
-		if !reflect.DeepEqual(actual, test.expected) {
-			t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
-		}
-	}
-}
-
 func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 	const baseSHA = "8d287a3aeae90fd0aef4a70009c715712ff302cd"
 
@@ -3217,8 +3187,8 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name: "All presubmits missing, no changes",
 			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("sha"),
+				Number:     1,
+				HeadRefOID: "sha",
 			}},
 			presubmits: map[int][]config.Presubmit{1: {{
 				Reporter: config.Reporter{
@@ -3232,8 +3202,8 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name: "All presubmits successful, no retesting needed",
 			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("sha"),
+				Number:     1,
+				HeadRefOID: "sha",
 			}},
 			pjs: []prowapi.ProwJob{{
 				Spec: prowapi.ProwJobSpec{
@@ -3255,8 +3225,8 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name: "All presubmits pending, no retesting needed",
 			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("sha"),
+				Number:     1,
+				HeadRefOID: "sha",
 			}},
 			pjs: []prowapi.ProwJob{{
 				Spec: prowapi.ProwJobSpec{
@@ -3277,8 +3247,8 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name: "One successful, one pending, one missing, one failing, only missing and failing remain",
 			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("sha"),
+				Number:     1,
+				HeadRefOID: "sha",
 			}},
 			pjs: []prowapi.ProwJob{
 				{
@@ -3338,12 +3308,12 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 			name: "Two prs, each with one successful, one pending, one missing, one failing, only missing and failing remain",
 			prs: []PullRequest{
 				{
-					Number:     githubql.Int(1),
-					HeadRefOID: githubql.String("sha"),
+					Number:     1,
+					HeadRefOID: "sha",
 				},
 				{
-					Number:     githubql.Int(2),
-					HeadRefOID: githubql.String("sha"),
+					Number:     2,
+					HeadRefOID: "sha",
 				},
 			},
 			pjs: []prowapi.ProwJob{
@@ -3455,9 +3425,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 			name:       "Result from successful context gets respected",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
 			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("headsha"),
-				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+				Number:     1,
+				HeadRefOID: "headsha",
+				Commits: Commits{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
 						Context:     githubql.String("job-1"),
@@ -3470,9 +3440,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 			name:       "Result from successful context gets respected with deprecated baseha delimiter",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
 			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("headsha"),
-				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+				Number:     1,
+				HeadRefOID: "headsha",
+				Commits: Commits{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
 						Context:     githubql.String("job-1"),
@@ -3485,9 +3455,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 			name:       "Result from failed context gets ignored",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
 			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("headsha"),
-				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+				Number:     1,
+				HeadRefOID: "headsha",
+				Commits: Commits{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
 						Context:     githubql.String("job-1"),
@@ -3502,7 +3472,19 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 	log := logrus.NewEntry(logrus.New())
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, _, missingSerialTests := accumulate(tc.presubmits, tc.prs, tc.pjs, log, baseSHA, &fgc{})
+			var crcs []CodeReviewCommon
+			for _, pr := range tc.prs {
+				crc := CodeReviewCommonFromPullRequest(&pr)
+				crcs = append(crcs, *crc)
+			}
+			syncCtrl := &syncController{
+				provider: &GitHubProvider{
+					ghc:    &fgc{},
+					logger: log,
+				},
+				logger: log,
+			}
+			_, _, _, missingSerialTests := syncCtrl.accumulate(tc.presubmits, crcs, tc.pjs, baseSHA)
 			// Apiequality treats nil slices/maps equal to a zero length slice/map, keeping us from
 			// the burden of having to always initialize them
 			if !apiequality.Semantic.DeepEqual(tc.expectedPresubmits, missingSerialTests) {
@@ -3515,7 +3497,7 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 func TestPresubmitsForBatch(t *testing.T) {
 	testCases := []struct {
 		name           string
-		prs            []PullRequest
+		prs            []CodeReviewCommon
 		changedFiles   *changedFilesAgent
 		jobs           []config.Presubmit
 		prowYAMLGetter config.ProwYAMLGetter
@@ -3523,7 +3505,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 	}{
 		{
 			name: "All jobs get picked",
-			prs:  []PullRequest{getPR("org", "repo", 1)},
+			prs:  []CodeReviewCommon{*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1))},
 			jobs: []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "foo"},
@@ -3535,7 +3517,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Jobs with branchconfig get picked",
-			prs:  []PullRequest{getPR("org", "repo", 1)},
+			prs:  []CodeReviewCommon{*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1))},
 			jobs: []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "foo"},
@@ -3549,7 +3531,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Optional jobs are excluded",
-			prs:  []PullRequest{getPR("org", "repo", 1)},
+			prs:  []CodeReviewCommon{*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1))},
 			jobs: []config.Presubmit{
 				{
 					AlwaysRun: true,
@@ -3566,11 +3548,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Jobs that are required by any of the PRs get included",
-			prs: []PullRequest{
-				getPR("org", "repo", 2),
-				getPR("org", "repo", 1, func(pr *PullRequest) {
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1, func(pr *PullRequest) {
 					pr.HeadRefOID = githubql.String("sha")
-				}),
+				})),
 			},
 			jobs: []config.Presubmit{{
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
@@ -3594,11 +3576,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Inrepoconfig jobs get included if headref matches",
-			prs: []PullRequest{
-				getPR("org", "repo", 2),
-				getPR("org", "repo", 1, func(pr *PullRequest) {
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1, func(pr *PullRequest) {
 					pr.HeadRefOID = githubql.String("sha")
-				}),
+				})),
 			},
 			jobs: []config.Presubmit{
 				{
@@ -3623,11 +3605,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Inrepoconfig jobs do not get included if headref doesnt match",
-			prs: []PullRequest{
-				getPR("org", "repo", 2),
-				getPR("org", "repo", 1, func(pr *PullRequest) {
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1, func(pr *PullRequest) {
 					pr.HeadRefOID = githubql.String("sha")
-				}),
+				})),
 			},
 			jobs: []config.Presubmit{
 				{
@@ -3657,8 +3639,8 @@ func TestPresubmitsForBatch(t *testing.T) {
 				}
 				for _, pr := range tc.prs {
 					key := changeCacheKey{
-						org:    string(pr.Repository.Owner.Login),
-						repo:   string(pr.Repository.Name),
+						org:    pr.Org,
+						repo:   pr.Repo,
 						number: int(pr.Number),
 						sha:    string(pr.HeadRefOID),
 					}
@@ -3674,7 +3656,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 			if tc.prowYAMLGetter != nil {
 				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			}
-			c := &Controller{
+			c := &syncController{
 				changedFiles: tc.changedFiles,
 				config: func() *config.Config {
 					return &config.Config{
@@ -3682,7 +3664,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 							PresubmitsStatic: map[string][]config.Presubmit{
 								"org/repo": tc.jobs,
 							},
-							ProwYAMLGetter: tc.prowYAMLGetter,
+							ProwYAMLGetterWithDefaults: tc.prowYAMLGetter,
 						},
 						ProwConfig: config.ProwConfig{
 							InRepoConfig: inrepoconfig,
@@ -3708,14 +3690,14 @@ func TestPresubmitsForBatch(t *testing.T) {
 func TestChangedFilesAgentBatchChanges(t *testing.T) {
 	testCases := []struct {
 		name         string
-		prs          []PullRequest
+		prs          []CodeReviewCommon
 		changedFiles *changedFilesAgent
 		expected     []string
 	}{
 		{
 			name: "Single PR",
-			prs: []PullRequest{
-				getPR("org", "repo", 1),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1)),
 			},
 			changedFiles: &changedFilesAgent{
 				changeCache: map[changeCacheKey][]string{
@@ -3726,9 +3708,9 @@ func TestChangedFilesAgentBatchChanges(t *testing.T) {
 		},
 		{
 			name: "Multiple PRs, changes are de-duplicated",
-			prs: []PullRequest{
-				getPR("org", "repo", 1),
-				getPR("org", "repo", 2),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
 			},
 			changedFiles: &changedFilesAgent{
 				changeCache: map[changeCacheKey][]string{
@@ -3755,7 +3737,7 @@ func TestChangedFilesAgentBatchChanges(t *testing.T) {
 	}
 }
 
-func getPR(org, name string, number int, opts ...func(*PullRequest)) PullRequest {
+func getPR(org, name string, number int, opts ...func(*PullRequest)) *PullRequest {
 	pr := PullRequest{}
 	pr.Repository.Owner.Login = githubql.String(org)
 	pr.Repository.NameWithOwner = githubql.String(org + "/" + name)
@@ -3764,7 +3746,7 @@ func getPR(org, name string, number int, opts ...func(*PullRequest)) PullRequest
 	for _, opt := range opts {
 		opt(&pr)
 	}
-	return pr
+	return &pr
 }
 
 func TestCacheIndexFuncReturnsDifferentResultsForDifferentInputs(t *testing.T) {
@@ -4190,62 +4172,62 @@ func TestPickSmallestPassingNumber(t *testing.T) {
 	}
 	testCases := []struct {
 		name     string
-		prs      []PullRequest
+		prs      []CodeReviewCommon
 		expected int
 	}{
 		{
 			name: "no label",
-			prs: []PullRequest{
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
 			},
 			expected: 3,
 		},
 		{
 			name: "deflake PR",
-			prs: []PullRequest{
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
-				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"})),
 			},
 			expected: 7,
 		},
 		{
 			name: "same label",
-			prs: []PullRequest{
-				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
-				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"area/deflake"}),
-				testPRWithLabels("org", "repo", "A", 1, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"area/deflake"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 1, githubql.MergeableStateMergeable, []string{"area/deflake"})),
 			},
 			expected: 1,
 		},
 		{
 			name: "missing one label",
-			prs: []PullRequest{
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
-				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"})),
 			},
 			expected: 3,
 		},
 		{
 			name: "complete",
-			prs: []PullRequest{
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
-				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
-				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
-				testPRWithLabels("org", "repo", "A", 8, githubql.MergeableStateMergeable, []string{"kind/bug"}),
-				testPRWithLabels("org", "repo", "A", 9, githubql.MergeableStateMergeable, []string{"kind/failing-test"}),
-				testPRWithLabels("org", "repo", "A", 10, githubql.MergeableStateMergeable, []string{"kind/bug", "priority/critical-urgent"}),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 8, githubql.MergeableStateMergeable, []string{"kind/bug"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 9, githubql.MergeableStateMergeable, []string{"kind/failing-test"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 10, githubql.MergeableStateMergeable, []string{"kind/bug", "priority/critical-urgent"})),
 			},
 			expected: 9,
 		},
 	}
-	alwaysTrue := func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool { return true }
+	alwaysTrue := func(*logrus.Entry, *CodeReviewCommon, contextChecker) bool { return true }
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, got := pickHighestPriorityPR(nil, nil, tc.prs, nil, alwaysTrue, priorities)
+			_, got := pickHighestPriorityPR(nil, tc.prs, nil, alwaysTrue, priorities)
 			if int(got.Number) != tc.expected {
 				t.Errorf("got %d, expected %d", int(got.Number), tc.expected)
 			}
@@ -4266,8 +4248,8 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 			name:               "Apps auth is used, one call per org",
 			usesGitHubAppsAuth: true,
 			prs: map[string][]PullRequest{
-				"org":       {testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)},
-				"other-org": {testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+				"org":       {*testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+				"other-org": {*testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
 			},
 			expectedNumberOfApiCalls: 2,
 		},
@@ -4275,8 +4257,8 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 			name:               "Apps auth is unused, one call for all orgs",
 			usesGitHubAppsAuth: false,
 			prs: map[string][]PullRequest{"": {
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				*testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				*testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable),
 			}},
 			expectedNumberOfApiCalls: 1,
 		},
@@ -4284,23 +4266,24 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := &Controller{
-				logger: logrus.WithField("test", tc.name),
-				config: func() *config.Config {
-					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}
+			provider := &GitHubProvider{
+				cfg: func() *config.Config {
+					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{
+						TideGitHubConfig: config.TideGitHubConfig{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}}
 				},
 				ghc:                &fgc{prs: tc.prs},
 				usesGitHubAppsAuth: tc.usesGitHubAppsAuth,
+				logger:             logrus.WithField("test", tc.name),
 			}
 
-			prs, err := c.query()
+			prs, err := provider.Query()
 			if err != nil {
 				t.Fatalf("query() failed: %v", err)
 			}
 			if n := len(prs); n != 2 {
 				t.Errorf("expected to get two prs back, got %d", n)
 			}
-			if diff := cmp.Diff(tc.expectedNumberOfApiCalls, c.ghc.(*fgc).queryCalls); diff != "" {
+			if diff := cmp.Diff(tc.expectedNumberOfApiCalls, provider.ghc.(*fgc).queryCalls); diff != "" {
 				t.Errorf("expectedNumberOfApiCallsByOrg differs from actual: %s", diff)
 			}
 		})
@@ -4317,62 +4300,106 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 		maxBatchSize                 int
 		prioritizeExistingBatchesMap map[string]bool
 
-		expectedPullRequests []PullRequest
+		expectedPullRequests []CodeReviewCommon
 	}{
 		{
-			name:                 "No pre-existing jobs, new batch is picked",
-			subpool:              func(sp *subpool) { sp.pjs = nil },
-			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			name:    "No pre-existing jobs, new batch is picked",
+			subpool: func(sp *subpool) { sp.pjs = nil },
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name:    "Batch with pre-existing success jobs exists and is picked",
 			subpool: func(sp *subpool) {},
-			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
-				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
-				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(1),
+					HeadRefOID: githubql.String("1"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(2),
+					HeadRefOID: githubql.String("2"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(3),
+					HeadRefOID: githubql.String("3"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(4),
+					HeadRefOID: githubql.String("4"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
+					},
+				}),
 			},
 		},
 		{
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled globally, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{"*": false},
-			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled for org, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{org: false},
-			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled for repo, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{org + "/" + repo: false},
-			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name:                   "Batch with pre-existing success job exists but one fails context check, new batch is picked",
 			subpool:                func(sp *subpool) {},
 			prsFailingContextCheck: sets.NewInt(1),
-			expectedPullRequests:   []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
-			name:                 "Batch with pre-existing success job exists but is bigger than maxBatchSize, new batch is picked",
-			subpool:              func(sp *subpool) {},
-			maxBatchSize:         3,
-			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			name:         "Batch with pre-existing success job exists but is bigger than maxBatchSize, new batch is picked",
+			subpool:      func(sp *subpool) {},
+			maxBatchSize: 3,
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
-			name:                 "Batch with pre-existing success job exists but one PR is outdated, new batch is picked",
-			subpool:              func(sp *subpool) { sp.prs[0].HeadRefOID = githubql.String("new-sha") },
-			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			name:    "Batch with pre-existing success job exists but one PR is outdated, new batch is picked",
+			subpool: func(sp *subpool) { sp.prs[0].HeadRefOID = "new-sha" },
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
-			name:                 "Batchjobs exist but is failed, new batch is picked",
-			subpool:              func(sp *subpool) { sp.pjs[0].Status.State = prowapi.FailureState },
-			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			name:    "Batchjobs exist but is failed, new batch is picked",
+			subpool: func(sp *subpool) { sp.pjs[0].Status.State = prowapi.FailureState },
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name: "Batch with pre-existing success jobs and batch with pre-existing pending jobs exists, batch with success jobs is picked",
@@ -4383,19 +4410,61 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[1].Status.State = prowapi.PendingState
 				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
-			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
-				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(1),
+					HeadRefOID: githubql.String("1"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(2),
+					HeadRefOID: githubql.String("2"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
+					},
+				}),
 			},
 		},
 		{
 			name:    "Batch with pre-existing pending jobs exists and is picked",
 			subpool: func(sp *subpool) { sp.pjs[0].Status.State = prowapi.PendingState },
-			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
-				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
-				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(1),
+					HeadRefOID: githubql.String("1"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(2),
+					HeadRefOID: githubql.String("2"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(3),
+					HeadRefOID: githubql.String("3"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(4),
+					HeadRefOID: githubql.String("4"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
+					},
+				}),
 			},
 		},
 		{
@@ -4406,9 +4475,23 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 				sp.pjs[2].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
-			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(3),
+					HeadRefOID: githubql.String("3"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(4),
+					HeadRefOID: githubql.String("4"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
+					},
+				}),
 			},
 		},
 		{
@@ -4420,9 +4503,23 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 				sp.pjs[2].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
-			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(3),
+					HeadRefOID: githubql.String("3"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
+					},
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
+					Number:     githubql.Int(4),
+					HeadRefOID: githubql.String("4"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
+					},
+				}),
 			},
 		},
 	}
@@ -4433,12 +4530,12 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				org:  org,
 				repo: repo,
 				log:  logrus.WithField("test", tc.name),
-				prs: []PullRequest{
-					{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
-					{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
-					{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-					{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
-					{Number: githubql.Int(5), HeadRefOID: githubql.String("5")},
+				prs: []CodeReviewCommon{
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 1, HeadRefOID: "1"}),
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 2, HeadRefOID: "2"}),
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 3, HeadRefOID: "3"}),
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 4, HeadRefOID: "4"}),
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 5, HeadRefOID: "5"}),
 				},
 				pjs: []prowapi.ProwJob{{
 					Spec: prowapi.ProwJobSpec{
@@ -4466,21 +4563,30 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				contextCheckers[int(pr.Number)] = cc
 			}
 
-			newBatchFunc := func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
-				return []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}}, nil
+			newBatchFunc := func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
+				return []CodeReviewCommon{
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"})}, nil
 			}
 
-			c := &Controller{
+			cfg := func() *config.Config {
+				return &config.Config{ProwConfig: config.ProwConfig{
+					Tide: config.Tide{
+						BatchSizeLimitMap:            map[string]int{"*": tc.maxBatchSize},
+						PrioritizeExistingBatchesMap: tc.prioritizeExistingBatchesMap,
+					}},
+				}
+			}
+
+			logger := logrus.WithField("test", tc.name)
+			ghc := &fgc{skipExpectedShaCheck: true}
+			c := &syncController{
 				logger: logrus.WithField("test", tc.name),
-				config: func() *config.Config {
-					return &config.Config{ProwConfig: config.ProwConfig{
-						Tide: config.Tide{
-							BatchSizeLimitMap:            map[string]int{"*": tc.maxBatchSize},
-							PrioritizeExistingBatchesMap: tc.prioritizeExistingBatchesMap,
-						}},
-					}
+				config: cfg,
+				provider: &GitHubProvider{
+					cfg:    cfg,
+					logger: logger,
+					ghc:    ghc,
 				},
-				ghc: &fgc{skipExpectedShaCheck: true},
 			}
 			prs, _, err := c.pickBatch(sp, contextCheckers, newBatchFunc)
 			if err != nil {
@@ -4492,4 +4598,548 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 		})
 
 	}
+}
+
+func TestTenantIDs(t *testing.T) {
+	tests := []struct {
+		name     string
+		pjs      []prowapi.ProwJob
+		expected []string
+	}{
+		{
+			name:     "no PJs",
+			pjs:      []prowapi.ProwJob{},
+			expected: []string{},
+		},
+		{
+			name: "one PJ",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+			},
+			expected: []string{"test"},
+		},
+		{
+			name: "multiple PJs with same ID",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+			},
+			expected: []string{"test"},
+		},
+		{
+			name: "multiple PJs with different ID",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "other",
+						},
+					},
+				},
+			},
+			expected: []string{"test", "other"},
+		},
+		{
+			name: "no tenantID in prowJob",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{},
+					},
+				},
+			},
+			expected: []string{"test", ""},
+		},
+		{
+			name: "no pjDefault in prowJob",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{},
+				},
+			},
+			expected: []string{"test", ""},
+		},
+		{
+			name: "multiple no tenant PJs",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{},
+				},
+			},
+			expected: []string{""},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			sp := subpool{pjs: tc.pjs}
+			if diff := cmp.Diff(tc.expected, sp.TenantIDs(), cmpopts.SortSlices(func(x, y string) bool { return strings.Compare(x, y) > 0 })); diff != "" {
+				t.Errorf("expected tenantIDs differ from actual: %s", diff)
+			}
+		})
+	}
+}
+
+func TestSetTideStatusSuccess(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name string
+		pr   PullRequest
+
+		expectApiCall bool
+	}{
+		{
+			name:          "Status is set",
+			expectApiCall: true,
+		},
+		{
+			name: "PR already has tide status set to success, no api call is made",
+			pr:   PullRequest{Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{Status: CommitStatus{Contexts: []Context{{Context: "tide", State: githubql.StatusState("success")}}}}}}}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ghc := &fgc{}
+			crc := CodeReviewCommonFromPullRequest(&tc.pr)
+			err := setTideStatusSuccess(*crc, ghc, &config.Config{}, logrus.WithField("test", tc.name))
+			if err != nil {
+				t.Fatalf("failed to set status: %v", err)
+			}
+
+			if ghc.setStatus != tc.expectApiCall {
+				t.Errorf("expected CreateStatusApiCall: %t, got CreateStatusApiCall: %t", tc.expectApiCall, ghc.setStatus)
+			}
+		})
+	}
+}
+
+// TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested verifies the following sequence of events:
+// 1. Tide creates a serial retest run for a passing PR
+// 2. The status contexts on the PR get updated to pending
+// 3. A second PR becomes eligible
+// 4. Tide creates a batch of the first and the second PR
+func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.T) {
+	t.Parallel()
+	configGetter := func() *config.Config {
+		return &config.Config{
+			ProwConfig: config.ProwConfig{
+				Tide: config.Tide{
+					MaxGoroutines: 1,
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: config.TideQueries{{}},
+					},
+				},
+			},
+			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
+				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
+			}},
+		}
+	}
+	ghc := &fgc{}
+	mmc := newMergeChecker(configGetter, ghc)
+	mgr := newFakeManager()
+	log := logrus.WithField("test", t.Name())
+	history, err := history.New(1, nil, "")
+	if err != nil {
+		t.Fatalf("failed to construct history: %v", err)
+	}
+	c, err := newSyncController(
+		context.Background(),
+		log,
+		ghc,
+		mgr,
+		configGetter,
+		nil,
+		history,
+		mmc,
+		false,
+		&statusUpdate{
+			dontUpdateStatus: &threadSafePRSet{},
+			newPoolPending:   make(chan bool),
+		},
+	)
+	if err != nil {
+		t.Fatalf("failed to construct sync controller: %v", err)
+	}
+	c.pickNewBatch = func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
+		return candidates, nil
+	}
+
+	// Add a successful PR to github
+	initialPR := PullRequest{}
+	initialPR.Commits.Nodes = append(initialPR.Commits.Nodes, struct{ Commit Commit }{
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
+	})
+	ghc.prs = map[string][]PullRequest{"": {initialPR}}
+
+	// sync, this creates a new serial retest prowjob
+	if err := c.Sync(); err != nil {
+		t.Fatalf("sync failed: %v", err)
+	}
+	// Ensure there is actually the retest job
+	var pjs prowapi.ProwJobList
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	if n := len(pjs.Items); n != 1 {
+		t.Fatalf("expected a prowjob to be created, but client had %d items", n)
+	}
+
+	// Update the context on the PR to pending just like crier would
+	for idx, ctx := range initialPR.Commits.Nodes[0].Commit.Status.Contexts {
+		if pjs.Items[0].Spec.Context == string(ctx.Context) {
+			initialPR.Commits.Nodes[0].Commit.Status.Contexts[idx].State = githubql.StatusStatePending
+		}
+	}
+
+	// Add a second PR that also needs retesting to GitHub
+	secondPR := PullRequest{Number: githubql.Int(1)}
+	secondPR.Commits.Nodes = append(secondPR.Commits.Nodes, struct{ Commit Commit }{
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
+	})
+	ghc.prs[""] = append(ghc.prs[""], secondPR)
+
+	// sync again
+	if err := c.Sync(); err != nil {
+		t.Fatalf("failed to sync: %v", err)
+	}
+
+	// verify we have a batch prowjob
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	for _, pj := range pjs.Items {
+		if pj.Spec.Type == prowapi.BatchJob {
+			return
+		}
+	}
+
+	t.Errorf("expected to find a batch prwjob, but wasn't the case. ProwJobs: %+v", pjs.Items)
+}
+
+func TestIsBatchCandidateEligible(t *testing.T) {
+	t.Parallel()
+
+	const (
+		requiredContextName = "required-context"
+		optionalContextName = "optional-context"
+	)
+
+	tcs := []struct {
+		name          string
+		pjManipulator func(**prowapi.ProwJob)
+		prManipulator func(*PullRequest)
+
+		expected bool
+	}{
+		{
+			name:     "Is eligible",
+			expected: true,
+		},
+		{
+			name: "Successful context doesn't require prowjob",
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateSuccess
+			},
+			pjManipulator: func(pj **prowapi.ProwJob) { *pj = nil },
+			expected:      true,
+		},
+		{
+			name:     "Optional failed context is ignored",
+			expected: true,
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{
+					Context: githubql.String(optionalContextName),
+					State:   githubql.StatusStateFailure,
+				})
+			},
+		},
+		{
+			name:     "Tides own context is ignored",
+			expected: true,
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{
+					Context: githubql.String(statusContext),
+					State:   githubql.StatusStateFailure,
+				})
+			},
+		},
+		{
+			name:          "Has missing required context, not eligible",
+			prManipulator: func(pr *PullRequest) { pr.Commits.Nodes[0].Commit.Status.Contexts = nil },
+		},
+		{
+			name: "Has failed context, not eligible",
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateFailure
+			},
+		},
+		{
+			name: "Has error context, not eligible",
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateError
+			},
+		},
+		{
+			name:          "No prowjob, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { *pj = nil },
+		},
+		{
+			name:          "Pj doesn't have created by tide label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels["created-by-tide"] = "wrong" },
+		},
+		{
+			name:          "Pj doesn't have presubmit label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.ProwJobTypeLabel] = "wrong" },
+		},
+		{
+			name:          "PJ doesn't have org label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.OrgLabel] = "wrong" },
+		},
+		{
+			name:          "PJ doesn't have repo label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.RepoLabel] = "wrong" },
+		},
+		{
+			name:          "Pj doesn't have baseref label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.BaseRefLabel] = "wrong" },
+		},
+		{
+			name:          "Pj doesn't have pull label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.PullLabel] = "wrong" },
+		},
+		{
+			name:          "pj doesn't have context label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.ContextAnnotation] = "wrong" },
+		},
+		{
+			name:          "Pj is for wrong headref, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Spec.Refs.Pulls[0].SHA = "wrong" },
+		},
+	}
+
+	newPR := func() PullRequest {
+		pr := PullRequest{}
+		pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{Context: githubql.String(requiredContextName), State: githubql.StatusStatePending},
+		}}}})
+		return pr
+	}
+	newProwJob := func() *prowapi.ProwJob {
+		return &prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{
+				"created-by-tide":      "true",
+				kube.ProwJobTypeLabel:  "presubmit",
+				kube.OrgLabel:          "",
+				kube.RepoLabel:         "",
+				kube.BaseRefLabel:      "",
+				kube.PullLabel:         "0",
+				kube.ContextAnnotation: requiredContextName,
+			}},
+			Spec: prowapi.ProwJobSpec{Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}}},
+		}
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			pj := newProwJob()
+			pr := newPR()
+
+			if tc.prManipulator != nil {
+				tc.prManipulator(&pr)
+			}
+			if tc.pjManipulator != nil {
+				tc.pjManipulator(&pj)
+			}
+
+			var initObjects []runtime.Object
+			if pj != nil {
+				initObjects = append(initObjects, pj)
+			}
+
+			cfg := func() *config.Config { return &config.Config{} }
+			c := &syncController{
+				config:        cfg,
+				provider:      &GitHubProvider{cfg: cfg},
+				ctx:           context.Background(),
+				prowJobClient: fakectrlruntimeclient.NewFakeClient(initObjects...),
+			}
+
+			cc := &config.TideContextPolicy{
+				RequiredContexts: []string{requiredContextName},
+				OptionalContexts: []string{optionalContextName},
+			}
+
+			if actual := c.isRetestEligible(logrus.WithField("tc", tc.name), CodeReviewCommonFromPullRequest(&pr), cc); actual != tc.expected {
+				t.Errorf("expected result %t, got %t", tc.expected, actual)
+			}
+		})
+	}
+}
+
+// TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested verifies the following sequence of events:
+// 1. Tide creates a serial retest run for a passing PR
+// 2. The status context on the PR gets updated to pending
+// 3. Another PR gets merged and changed the baseSHA, for example because it already had up-to-date tests but was missing labels
+// 4. Tide will again trigger serial retests for the passing PR (The runs from step 1 will be deleted by Plank)
+func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
+	t.Parallel()
+	configGetter := func() *config.Config {
+		return &config.Config{
+			ProwConfig: config.ProwConfig{
+				Tide: config.Tide{
+					MaxGoroutines: 1,
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: config.TideQueries{{}},
+					},
+				},
+			},
+			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
+				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
+			}},
+		}
+	}
+	ghc := &fgc{}
+	mmc := newMergeChecker(configGetter, ghc)
+	mgr := newFakeManager()
+	log := logrus.WithField("test", t.Name())
+	history, err := history.New(1, nil, "")
+	if err != nil {
+		t.Fatalf("failed to construct history: %v", err)
+	}
+	c, err := newSyncController(
+		context.Background(),
+		log,
+		ghc,
+		mgr,
+		configGetter,
+		nil,
+		history,
+		mmc,
+		false,
+		&statusUpdate{
+			dontUpdateStatus: &threadSafePRSet{},
+			newPoolPending:   make(chan bool),
+		},
+	)
+	if err != nil {
+		t.Fatalf("failed to construct sync controller: %v", err)
+	}
+
+	// Add a successful PR to github
+	initialPR := PullRequest{}
+	initialPR.Commits.Nodes = append(initialPR.Commits.Nodes, struct{ Commit Commit }{
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
+	})
+	ghc.prs = map[string][]PullRequest{"": {initialPR}}
+
+	// sync, this creates a new serial retest prowjob
+	if err := c.Sync(); err != nil {
+		t.Fatalf("sync failed: %v", err)
+	}
+	// ensure there is actually the retest job
+	var pjs prowapi.ProwJobList
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	if n := len(pjs.Items); n != 1 {
+		t.Errorf("expected to find exactly one prowjob, got %d from list %+v", n, pjs)
+	}
+
+	// Update the context on the PR to pending just like crier would
+	for idx, ctx := range initialPR.Commits.Nodes[0].Commit.Status.Contexts {
+		if pjs.Items[0].Spec.Context == string(ctx.Context) {
+			initialPR.Commits.Nodes[0].Commit.Status.Contexts[idx].State = githubql.StatusStatePending
+		}
+	}
+
+	// Update the sha of the pool
+	ghc.refs = map[string]string{"/ ": "new-base-sha"}
+
+	// sync, this creates another serial retest prowjob
+	if err := c.Sync(); err != nil {
+		t.Fatalf("sync failed: %v", err)
+	}
+
+	// ensure we have the two retest prowjobs
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	if n := len(pjs.Items); n != 2 {
+		t.Errorf("expected to find exactly two prowjobs, got %d from list %+v", n, pjs)
+	}
+
 }

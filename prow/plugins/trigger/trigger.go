@@ -119,7 +119,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/test [<job name>|all]",
-		Description: "Manually starts a/all test job(s). Lists all possible job(s) when no jobs/an invalid job are specified.",
+		Description: "Manually starts a/all automatically triggered test job(s). Lists all possible job(s) when no jobs/an invalid job are specified.",
 		Featured:    true,
 		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
 		Examples:    []string{"/test all", "/test pull-bazel-test"},
@@ -147,6 +147,7 @@ type githubClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]github.WorkflowRun, error)
 	GetRef(org, repo, ref string) (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
@@ -154,6 +155,7 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
+	TriggerGitHubWorkflow(org, repo string, id int) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
@@ -220,7 +222,7 @@ type TrustedUserResponse struct {
 
 // TrustedUser returns true if user is trusted in repo.
 // Trusted users are either repo collaborators, org members or trusted org members.
-func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
+func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []string, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
 	errorResponse := TrustedUserResponse{IsTrusted: false}
 	okResponse := TrustedUserResponse{IsTrusted: true}
 
@@ -233,22 +235,31 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 		return okResponse, nil
 	}
 
-	// First check if user is a collaborator, assuming this is allowed
+	// TODO(fejta): consider dropping support for org checks in the future.
+
+	// First check if the user is an org member. This caches across all repos.
+	if member, err := ghc.IsMember(org, user); err != nil {
+		return errorResponse, fmt.Errorf("error in IsMember(%s): %w", org, err)
+	} else if member {
+		return okResponse, nil
+	}
+
+	// Next check if the user is a collaborator if that is allowed, this is more
+	// expensive as it only caches per repo.
 	if !onlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
-			return errorResponse, fmt.Errorf("error in IsCollaborator: %v", err)
+			return errorResponse, fmt.Errorf("error in IsCollaborator: %w", err)
 		} else if ok {
 			return okResponse, nil
 		}
 	}
 
-	// TODO(fejta): consider dropping support for org checks in the future.
-
-	// Next see if the user is an org member
-	if member, err := ghc.IsMember(org, user); err != nil {
-		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", org, err)
-	} else if member {
-		return okResponse, nil
+	// Determine if user is on trusted_apps list.
+	// This allows automatic tests execution for GitHub automations that cannot be added as collaborators.
+	for _, trustedApp := range trustedApps {
+		if tUser := strings.TrimSuffix(user, "[bot]"); tUser == trustedApp {
+			return okResponse, nil
+		}
 	}
 
 	// Determine if there is a second org to check. If there is no secondary org or they are the same, the result
@@ -264,7 +275,7 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 	// Check the second trusted org.
 	member, err := ghc.IsMember(trustedOrg, user)
 	if err != nil {
-		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", trustedOrg, err)
+		return errorResponse, fmt.Errorf("error in IsMember(%s): %w", trustedOrg, err)
 	} else if member {
 		return okResponse, nil
 	}
@@ -295,14 +306,19 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 
 // RunRequested executes the config.Presubmits that are requested
 func RunRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
-	return runRequested(c, pr, baseSHA, requestedJobs, eventGUID)
+	return runRequested(c, pr, baseSHA, requestedJobs, eventGUID, nil)
 }
 
-func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, millisecondOverride ...time.Duration) error {
+// RunRequestedWithLabels executes the config.Presubmits that are requested with the additional labels
+func RunRequestedWithLabels(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, labels map[string]string) error {
+	return runRequested(c, pr, baseSHA, requestedJobs, eventGUID, labels)
+}
+
+func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, labels map[string]string, millisecondOverride ...time.Duration) error {
 	var errors []error
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
-		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
+		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID, labels)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj, millisecondOverride...); err != nil {
 			c.Logger.WithError(err).Error("Failed to create prowjob.")

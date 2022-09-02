@@ -36,7 +36,7 @@ type OptionLoader interface {
 func Load(loader OptionLoader) error {
 	if jsonConfig, provided := os.LookupEnv(loader.ConfigVar()); provided {
 		if err := loader.LoadConfig(jsonConfig); err != nil {
-			return fmt.Errorf("could not load config from JSON var %s: %v", loader.ConfigVar(), err)
+			return fmt.Errorf("could not load config from JSON var %s: %w", loader.ConfigVar(), err)
 		}
 		return nil
 	}

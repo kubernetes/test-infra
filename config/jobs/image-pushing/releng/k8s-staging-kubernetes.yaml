@@ -3,16 +3,18 @@ postsubmits:
     - name: post-kubernetes-push-image-etcd
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^cluster\/images\/etcd\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -24,21 +26,24 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-kubernetes-push-image-pause
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^build\/pause\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -50,5 +55,6 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers

@@ -1,4 +1,4 @@
-# GCB Builder
+# image-builder
 
 This builder is sugar on top of `gcloud builds submit`. It offers the following features:
 
@@ -36,7 +36,7 @@ beyond `_GIT_TAG`.
 ## Usage
 
 ```shell
-bazel run //images/builder -- [options] path/to/build-directory/
+go run ./images/builder [options] path/to/build-directory/
 ```
 
 - `--allow-dirty`: If true, allow pushing dirty builds.
@@ -52,12 +52,17 @@ bazel run //images/builder -- [options] path/to/build-directory/
 
 ### A note about logging in Prow
 
-Prow job logs can be viewed at a URI constructed as follows: `https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/<job-name>/<job-number>` e.g., https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/ci-kubernetes-prototype-build/1187171788975509509
+Prow job logs can be viewed at a URI constructed as follows:
+`https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/<job-name>/<job-number>` e.g.,
+https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/ci-kubernetes-prototype-build/1187171788975509509
 
-When `--log-dir` is specified (which is the default case when running in Prow), the GCB build logs will be written to a set of log files, based on the variant(s).
+When `--log-dir` is specified (which is the default case when running in Prow),
+the GCB build logs will be written to a set of log files, based on the variant(s).
 
 For example:
 - No variant --> `build.log` (https://storage.googleapis.com/kubernetes-jenkins/logs/post-release-push-image-k8s-cloud-builder/1186437931728900096/artifacts/build.log)
 - Variant: `build-ci` --> `build-ci.log` (https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-prototype-build/1187156434249322500/artifacts/build-ci.log)
 
-For single-variant jobs where the preference is to log directly to stdout (so that the log is instead visible in `https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/<job-name>/<job-number>`), `LOG_TO_STDOUT="y"` can be specified.
+For single-variant jobs where the preference is to log directly to stdout (so
+that the log is instead visible in `https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/<job-name>/<job-number>`),
+`LOG_TO_STDOUT="y"` can be specified.

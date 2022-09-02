@@ -48,12 +48,11 @@ type options struct {
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	logLevel               string
 
-	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
-	hourlyTokens int
-
 	updatePeriod time.Duration
 
 	webhookSecretFile string
+
+	cacheValidTime int
 }
 
 const defaultHourlyTokens = 360
@@ -63,14 +62,6 @@ func (o *options) Validate() error {
 		if err := group.Validate(o.dryRun); err != nil {
 			return fmt.Errorf("%d: %w", idx, err)
 		}
-	}
-
-	if o.hourlyTokens != defaultHourlyTokens {
-		if o.github.ThrottleHourlyTokens != defaultHourlyTokens {
-			return fmt.Errorf("--hourlytokens cannot be specified with together with --github-hourly-tokens: use just the latter")
-		}
-		logrus.Warn("--hourly-tokens is deprecated: use --github-hourly-tokens instead")
-		o.github.ThrottleHourlyTokens = o.hourlyTokens
 	}
 
 	return nil
@@ -84,7 +75,7 @@ func gatherOptions() options {
 	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
-	fs.IntVar(&o.hourlyTokens, "hourly-tokens", defaultHourlyTokens, "The number of hourly tokens need-rebase may use. DEPRECATED: use --github-allowed-burst")
+	fs.IntVar(&o.cacheValidTime, "cache-valid-time", 0, "Do not re-check PR mergeability for comment events within this time (seconds)")
 
 	o.github.AddCustomizedFlags(fs, prowflagutil.ThrottlerDefaults(defaultHourlyTokens, defaultHourlyTokens))
 
@@ -110,12 +101,7 @@ func main() {
 	logrus.SetLevel(logLevel)
 	log := logrus.StandardLogger().WithField("plugin", labels.NeedsRebase)
 
-	secretAgent := &secret.Agent{}
-	secrets := []string{o.webhookSecretFile}
-	if o.github.TokenPath != "" {
-		secrets = append(secrets, o.github.TokenPath)
-	}
-	if err := secretAgent.Start(secrets); err != nil {
+	if err := secret.Add(o.webhookSecretFile); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
@@ -124,22 +110,25 @@ func main() {
 		log.WithError(err).Fatal("Error loading plugin config")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
+	issueCache := plugin.NewCache(o.cacheValidTime)
+
 	server := &Server{
-		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		tokenGenerator: secret.GetTokenGenerator(o.webhookSecretFile),
 		ghc:            githubClient,
 		log:            log,
+		issueCache:     issueCache,
 	}
 
 	defer interrupts.WaitForGracefulShutdown()
 
 	interrupts.TickLiteral(func() {
 		start := time.Now()
-		if err := plugin.HandleAll(log, githubClient, pa.Config(), o.github.AppID != ""); err != nil {
+		if err := plugin.HandleAll(log, githubClient, pa.Config(), o.github.AppID != "", issueCache); err != nil {
 			log.WithError(err).Error("Error during periodic update of all PRs.")
 		}
 		log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Periodic update complete.")
@@ -161,6 +150,7 @@ type Server struct {
 	tokenGenerator func() []byte
 	ghc            github.Client
 	log            *logrus.Entry
+	issueCache     *plugin.Cache
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
@@ -202,7 +192,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			return err
 		}
 		go func() {
-			if err := plugin.HandleIssueCommentEvent(l, s.ghc, &ice); err != nil {
+			if err := plugin.HandleIssueCommentEvent(l, s.ghc, &ice, s.issueCache); err != nil {
 				l.WithField("event-type", eventType).WithError(err).Info("Error handling event.")
 			}
 		}()

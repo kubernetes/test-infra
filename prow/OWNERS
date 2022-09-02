@@ -5,6 +5,7 @@ approvers:
   - cblecker
   - cjwagner
   - fejta
+  - petr-muller
   - stevekuznetsov
 emeritus_approvers:
   - spxtr # 2018-09-17
@@ -12,7 +13,6 @@ reviewers:
   - alvaroaleman
   - cblecker
   - cjwagner
-  - clarketm
   - fejta
   - matthyx
   - michelle192837

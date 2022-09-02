@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20210402-64f9afb
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220812-2d111f2c30
         command:
         - runner.sh
         args:
@@ -29,44 +29,6 @@ presubmits:
       testgrid-create-test-group: 'true'
 
 periodics:
-- interval: 1h
-  name: ci-kubernetes-build-deprecated
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20210402-64f9afb
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=240
-      - --scenario=kubernetes_build
-      - --
-      - --allow-dup
-      - --extra-version-markers=k8s-master
-      - --registry=gcr.io/kubernetes-ci-images
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 7300m
-          memory: "34Gi"
-        requests:
-          cpu: 7300m
-          memory: "34Gi"
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "k8s-master -> k8s-beta"
-    testgrid-dashboards: sig-release-master-informing
-    testgrid-tab-name: build-master-deprecated
-    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
-
 - name: ci-kubernetes-build
   interval: 1h
   cluster: k8s-infra-prow-build
@@ -102,8 +64,9 @@ periodics:
           cpu: "7"
           memory: "34Gi"
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "k8s-master -> k8s-beta, latest-default -> latest-{{.Version}}"
@@ -114,22 +77,26 @@ periodics:
 - interval: 5m
   name: ci-kubernetes-build-fast
   cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20210402-64f9afb
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=40
-      - --scenario=kubernetes_build
-      - --
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
+      command:
+      - wrapper.sh
+      - /krel
+      - ci-build
+      - --configure-docker
       - --allow-dup
       - --fast
-      - --release=k8s-release-dev
+      - --bucket=k8s-release-dev
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -141,12 +108,13 @@ periodics:
           cpu: 6
           memory: "12Gi"
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
   annotations:
-    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
     testgrid-tab-name: build-master-fast
-    testgrid-alert-email: release-team@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
     description: 'Ends up running: make quick-release'
 
 - interval: 4h
@@ -165,8 +133,9 @@ periodics:
           cpu: 4
           memory: "8Gi"
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
   annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing
@@ -188,8 +157,9 @@ periodics:
           cpu: 4
           memory: "8Gi"
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
   annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing

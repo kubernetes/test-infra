@@ -17,13 +17,9 @@ limitations under the License.
 package subscriber
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
@@ -39,8 +35,16 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
+	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/kube"
 
 	v1 "k8s.io/api/core/v1"
+)
+
+var (
+	trueBool  = true
+	namespace = "default"
 )
 
 type pubSubTestClient struct {
@@ -94,7 +98,7 @@ func (c *pubSubTestClient) new(ctx context.Context, project string) (pubsubClien
 	return c, nil
 }
 
-func (c *pubSubTestClient) subscription(id string) subscriptionInterface {
+func (c *pubSubTestClient) subscription(id string, maxOutstandingMessages int) subscriptionInterface {
 	return &fakeSubscription{name: id, messageChan: c.messageChan}
 }
 
@@ -111,8 +115,8 @@ func (r *fakeReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prow
 	return pj.Annotations[reporter.PubSubProjectLabel] != "" && pj.Annotations[reporter.PubSubTopicLabel] != ""
 }
 
-func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
-	pe := PeriodicProwJobEvent{
+func TestProwJobEvent_ToFromMessage(t *testing.T) {
+	pe := ProwJobEvent{
 		Annotations: map[string]string{
 			reporter.PubSubProjectLabel: "project",
 			reporter.PubSubTopicLabel:   "topic",
@@ -128,10 +132,10 @@ func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if m.Attributes[prowEventType] != periodicProwJobEvent {
-		t.Errorf("%s should be %s found %s instead", prowEventType, periodicProwJobEvent, m.Attributes[prowEventType])
+	if m.Attributes[ProwEventType] != PeriodicProwJobEvent {
+		t.Errorf("%s should be %s found %s instead", ProwEventType, PeriodicProwJobEvent, m.Attributes[ProwEventType])
 	}
-	var newPe PeriodicProwJobEvent
+	var newPe ProwJobEvent
 	if err = newPe.FromPayload(m.Data); err != nil {
 		t.Error(err)
 	}
@@ -142,17 +146,17 @@ func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
 
 func TestHandleMessage(t *testing.T) {
 	for _, tc := range []struct {
-		name   string
-		msg    *pubSubMessage
-		pe     *PeriodicProwJobEvent
-		s      string
-		config *config.Config
-		err    string
-		labels []string
+		name, eventType string
+		msg             *pubSubMessage
+		pe              *ProwJobEvent
+		config          *config.Config
+		err             string
+		labels          []string
 	}{
 		{
-			name: "PeriodicJobNoPubsub",
-			pe: &PeriodicProwJobEvent{
+			name:      "PeriodicJobNoPubsub",
+			eventType: PeriodicProwJobEvent,
+			pe: &ProwJobEvent{
 				Name: "test",
 			},
 			config: &config.Config{
@@ -168,20 +172,87 @@ func TestHandleMessage(t *testing.T) {
 			},
 		},
 		{
-			name: "UnknownEventType",
+			name:      "PresubmitForGitHub",
+			eventType: PresubmitProwJobEvent,
+			pe: &ProwJobEvent{
+				Name: "pull-github",
+				Refs: &prowapi.Refs{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "master",
+					BaseSHA: "SHA",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org/repo": {
+							{
+								JobBase: config.JobBase{
+									Name: "pull-github",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:      "PresubmitForGerrit",
+			eventType: PresubmitProwJobEvent,
+			pe: &ProwJobEvent{
+				Name: "pull-gerrit",
+				Refs: &prowapi.Refs{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "master",
+					BaseSHA: "SHA",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+				Labels: map[string]string{
+					kube.GerritRevision: "revision",
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"https://org/repo": {
+							{
+								JobBase: config.JobBase{
+									Name: "pull-gerrit",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:      "UnknownEventType",
+			eventType: PeriodicProwJobEvent,
 			msg: &pubSubMessage{
 				Message: pubsub.Message{
 					Attributes: map[string]string{
-						prowEventType: "unsupported",
+						ProwEventType: "unsupported",
 					},
 				},
 			},
 			config: &config.Config{},
-			err:    "unsupported event type",
+			err:    "unsupported event type: unsupported",
 			labels: []string{reporter.PubSubTopicLabel, reporter.PubSubRunIDLabel, reporter.PubSubProjectLabel},
 		},
 		{
-			name: "NoEventType",
+			name:      "NoEventType",
+			eventType: PeriodicProwJobEvent,
 			msg: &pubSubMessage{
 				Message: pubsub.Message{},
 			},
@@ -189,28 +260,71 @@ func TestHandleMessage(t *testing.T) {
 			err:    "unable to find \"prow.k8s.io/pubsub.EventType\" from the attributes",
 			labels: []string{reporter.PubSubTopicLabel, reporter.PubSubRunIDLabel, reporter.PubSubProjectLabel},
 		},
+		{
+			name:      "PresubmitForGerritWithInRepoConfig",
+			eventType: PresubmitProwJobEvent,
+			pe: &ProwJobEvent{
+				Name: "pull-gerrit",
+				Refs: &prowapi.Refs{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "master",
+					BaseSHA: "SHA",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+				Labels: map[string]string{
+					kube.GerritRevision: "revision",
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					ProwYAMLGetterWithDefaults: fakeProwYAMLGetter,
+					ProwYAMLGetter:             fakeProwYAMLGetter,
+				},
+				ProwConfig: config.ProwConfig{
+					PodNamespace: namespace,
+					InRepoConfig: config.InRepoConfig{
+						Enabled:         map[string]*bool{"*": &trueBool},
+						AllowedClusters: map[string][]string{"*": {"default"}},
+					},
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
 			fakeProwJobClient := fake.NewSimpleClientset()
 			ca := &config.Agent{}
 			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
+			fr := fakeReporter{}
 			s := Subscriber{
 				Metrics:       NewMetrics(),
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
 				ConfigAgent:   ca,
+				Reporter:      &fr,
+				InRepoConfigCacheGetter: &config.InRepoConfigCacheGetter{
+					CacheSize:     100,
+					CacheCopies:   1,
+					Agent:         ca,
+					GitHubOptions: flagutil.GitHubOptions{},
+					DryRun:        true,
+				},
 			}
 			if tc.pe != nil {
-				m, err := tc.pe.ToMessage()
+				m, err := tc.pe.ToMessageOfType(tc.eventType)
 				if err != nil {
 					t.Error(err)
 				}
 				m.ID = "id"
 				tc.msg = &pubSubMessage{*m}
 			}
-			if err := s.handleMessage(tc.msg, tc.s); err != nil {
+			if err := s.handleMessage(tc.msg, "", []string{"*"}); err != nil {
 				if err.Error() != tc.err {
-					t1.Errorf("Expected error %v got %v", tc.err, err.Error())
+					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
 				} else if tc.err == "" {
 					var created []*prowapi.ProwJob
 					for _, action := range fakeProwJobClient.Fake.Actions() {
@@ -235,7 +349,7 @@ func TestHandleMessage(t *testing.T) {
 	}
 }
 
-func CheckProwJob(pe *PeriodicProwJobEvent, pj *prowapi.ProwJob) error {
+func CheckProwJob(pe *ProwJobEvent, pj *prowapi.ProwJob) error {
 	// checking labels
 	for label, value := range pe.Labels {
 		if pj.Labels[label] != value {
@@ -268,17 +382,18 @@ func CheckProwJob(pe *PeriodicProwJobEvent, pj *prowapi.ProwJob) error {
 
 func TestHandlePeriodicJob(t *testing.T) {
 	for _, tc := range []struct {
-		name        string
-		pe          *PeriodicProwJobEvent
-		s           string
-		config      *config.Config
-		err         string
-		reported    bool
-		clientFails bool
+		name            string
+		pe              *ProwJobEvent
+		s               string
+		config          *config.Config
+		allowedClusters []string
+		err             string
+		reported        bool
+		clientFails     bool
 	}{
 		{
 			name: "PeriodicJobNoPubsub",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 			},
 			config: &config.Config{
@@ -292,10 +407,11 @@ func TestHandlePeriodicJob(t *testing.T) {
 					},
 				},
 			},
+			allowedClusters: []string{"*"},
 		},
 		{
 			name: "PeriodicJobPubsubSet",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 				Annotations: map[string]string{
 					reporter.PubSubProjectLabel: "project",
@@ -331,10 +447,51 @@ func TestHandlePeriodicJob(t *testing.T) {
 					},
 				},
 			},
+			allowedClusters: []string{"*"},
+			reported:        true,
+		},
+		{
+			name: "ClusterNotAllowed",
+			pe: &ProwJobEvent{
+				Name: "test",
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					Periodics: []config.Periodic{
+						{
+							JobBase: config.JobBase{
+								Name:    "test",
+								Cluster: "precious-cluster",
+							},
+						},
+					},
+				},
+			},
+			allowedClusters: []string{"normal-cluster"},
+			err:             "cluster precious-cluster is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters",
+		},
+		{
+			name: "DefaultClusterNotAllowed",
+			pe: &ProwJobEvent{
+				Name: "test",
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					Periodics: []config.Periodic{
+						{
+							JobBase: config.JobBase{
+								Name: "test",
+							},
+						},
+					},
+				},
+			},
+			allowedClusters: []string{"normal-cluster"},
+			err:             "cluster  is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters",
 		},
 		{
 			name: "PeriodicJobPubsubSetCreationError",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 				Annotations: map[string]string{
 					reporter.PubSubProjectLabel: "project",
@@ -353,21 +510,23 @@ func TestHandlePeriodicJob(t *testing.T) {
 					},
 				},
 			},
-			err:         "failed to create prowjob",
-			clientFails: true,
-			reported:    true,
+			allowedClusters: []string{"*"},
+			err:             "failed to create prowjob",
+			clientFails:     true,
+			reported:        true,
 		},
 		{
 			name: "JobNotFound",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 			},
-			config: &config.Config{},
-			err:    "failed to find associated periodic job \"test\"",
+			config:          &config.Config{},
+			allowedClusters: []string{"*"},
+			err:             "failed to find associated periodic job \"test\"",
 		},
 		{
 			name: "JobNotFoundReportNeeded",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 				Annotations: map[string]string{
 					reporter.PubSubProjectLabel: "project",
@@ -375,9 +534,10 @@ func TestHandlePeriodicJob(t *testing.T) {
 					reporter.PubSubTopicLabel:   "topic",
 				},
 			},
-			config:   &config.Config{},
-			err:      "failed to find associated periodic job \"test\"",
-			reported: true,
+			config:          &config.Config{},
+			allowedClusters: []string{"*"},
+			err:             "failed to find associated periodic job \"test\"",
+			reported:        true,
 		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
@@ -402,10 +562,10 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t.Error(err)
 			}
 			m.ID = "id"
-			err = s.handlePeriodicJob(logrus.NewEntry(logrus.New()), &pubSubMessage{*m}, tc.s)
+			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, "", PeriodicProwJobEvent, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
-					t1.Errorf("Expected error %v got %v", tc.err, err.Error())
+					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
 				}
 			} else if tc.err == "" {
 				var created []*prowapi.ProwJob
@@ -427,131 +587,6 @@ func TestHandlePeriodicJob(t *testing.T) {
 
 			if fr.reported != tc.reported {
 				t1.Errorf("Expected Reporting: %t, found: %t", tc.reported, fr.reported)
-			}
-		})
-	}
-}
-
-func TestPushServer_ServeHTTP(t *testing.T) {
-	for _, tc := range []struct {
-		name         string
-		url          string
-		secret       string
-		pushRequest  interface{}
-		pe           *PeriodicProwJobEvent
-		expectedCode int
-	}{
-		{
-			name:   "WrongToken",
-			secret: "wrongToken",
-			url:    "https://prow.k8s.io/push",
-			pushRequest: pushRequest{
-				Message: message{
-					ID: "runid",
-				},
-			},
-			expectedCode: http.StatusForbidden,
-		},
-		{
-			name: "NoToken",
-			url:  "https://prow.k8s.io/push",
-			pushRequest: pushRequest{
-				Message: message{
-					ID: "runid",
-				},
-			},
-			expectedCode: http.StatusNotModified,
-		},
-		{
-			name:   "RightToken",
-			secret: "secret",
-			url:    "https://prow.k8s.io/push?token=secret",
-			pushRequest: pushRequest{
-				Message: message{
-					ID: "runid",
-				},
-			},
-			expectedCode: http.StatusNotModified,
-		},
-		{
-			name:         "InvalidPushRequest",
-			secret:       "secret",
-			url:          "https://prow.k8s.io/push?token=secret",
-			pushRequest:  "invalid",
-			expectedCode: http.StatusBadRequest,
-		},
-		{
-			name:        "SuccessToken",
-			secret:      "secret",
-			url:         "https://prow.k8s.io/push?token=secret",
-			pushRequest: pushRequest{},
-			pe: &PeriodicProwJobEvent{
-				Name: "test",
-			},
-			expectedCode: http.StatusOK,
-		},
-		{
-			name:        "SuccessNoToken",
-			url:         "https://prow.k8s.io/push",
-			pushRequest: pushRequest{},
-			pe: &PeriodicProwJobEvent{
-				Name: "test",
-			},
-			expectedCode: http.StatusOK,
-		},
-	} {
-		t.Run(tc.name, func(t1 *testing.T) {
-			c := &config.Config{
-				ProwConfig: config.ProwConfig{
-					ProwJobNamespace: "prowjobs",
-				},
-				JobConfig: config.JobConfig{
-					Periodics: []config.Periodic{
-						{
-							JobBase: config.JobBase{
-								Name: "test",
-							},
-						},
-					},
-				},
-			}
-			fakeProwJobClient := fake.NewSimpleClientset()
-			pushServer := PushServer{
-				Subscriber: &Subscriber{
-					ConfigAgent:   &config.Agent{},
-					Metrics:       NewMetrics(),
-					ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(c.ProwJobNamespace),
-					Reporter:      &fakeReporter{},
-				},
-			}
-			pushServer.Subscriber.ConfigAgent.Set(c)
-			pushServer.TokenGenerator = func() []byte { return []byte(tc.secret) }
-
-			body := new(bytes.Buffer)
-
-			if tc.pe != nil {
-				msg, err := tc.pe.ToMessage()
-				if err != nil {
-					t.Error(err)
-				}
-				tc.pushRequest = pushRequest{
-					Message: message{
-						Attributes: msg.Attributes,
-						ID:         "id",
-						Data:       msg.Data,
-					},
-				}
-			}
-
-			if err := json.NewEncoder(body).Encode(tc.pushRequest); err != nil {
-				t1.Errorf(err.Error())
-			}
-			req := httptest.NewRequest(http.MethodPost, tc.url, body)
-			w := httptest.NewRecorder()
-			pushServer.ServeHTTP(w, req)
-			resp := w.Result()
-			if resp.StatusCode != tc.expectedCode {
-				t1.Errorf("exected code %d got %d", tc.expectedCode, resp.StatusCode)
 			}
 		})
 	}
@@ -592,8 +627,12 @@ func TestPullServer_RunHandlePullFail(t *testing.T) {
 	}
 	c := &config.Config{
 		ProwConfig: config.ProwConfig{
-			PubSubSubscriptions: map[string][]string{
-				"project": {"test"},
+			PubSubTriggers: []config.PubSubTrigger{
+				{
+					Project:         "project",
+					Topics:          []string{"test"},
+					AllowedClusters: []string{"*"},
+				},
 			},
 		},
 	}
@@ -645,8 +684,12 @@ func TestPullServer_RunConfigChange(t *testing.T) {
 	case <-time.After(10 * time.Millisecond):
 		newConfig := &config.Config{
 			ProwConfig: config.ProwConfig{
-				PubSubSubscriptions: map[string][]string{
-					"project": {"test"},
+				PubSubTriggers: []config.PubSubTrigger{
+					{
+						Project:         "project",
+						Topics:          []string{"test"},
+						AllowedClusters: []string{"*"},
+					},
 				},
 			},
 		}
@@ -660,4 +703,143 @@ func TestPullServer_RunConfigChange(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	}
+}
+
+func TestTryGetCloneURIAndHost(t *testing.T) {
+	tests := []struct {
+		name             string
+		pe               ProwJobEvent
+		expectedCloneURI string
+		expectedHost     string
+	}{
+		{
+			name: "regular",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "org",
+					Repo: "repo",
+				},
+			},
+			expectedCloneURI: "org/repo",
+			expectedHost:     "org",
+		},
+		{
+			name: "empty org",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "",
+					Repo: "repo",
+				},
+			},
+			expectedCloneURI: "",
+			expectedHost:     "",
+		},
+		{
+			name: "empty repo",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "org",
+					Repo: "",
+				},
+			},
+			expectedCloneURI: "",
+			expectedHost:     "",
+		},
+		{
+			name: "empty org and repo",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "",
+					Repo: "",
+				},
+			},
+			expectedCloneURI: "",
+			expectedHost:     "",
+		},
+		{
+			name: "gerrit",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "https://org",
+					Repo: "repo",
+				},
+				Labels: map[string]string{
+					kube.GerritRevision: "foo",
+				},
+			},
+			expectedCloneURI: "https://org/repo",
+			expectedHost:     "https://org",
+		},
+		{
+			name: "nil Refs",
+			pe: ProwJobEvent{
+				Refs: nil,
+			},
+			expectedCloneURI: "",
+			expectedHost:     "",
+		},
+		{
+			name: "use CloneURI",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:      "http://org",
+					Repo:     "repo",
+					CloneURI: "some-clone-uri",
+				},
+			},
+			expectedCloneURI: "some-clone-uri",
+			expectedHost:     "http://org",
+		},
+		{
+			name: "use ssh-style CloneURI",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:      "git@github.com:kubernetes/test-infra.git",
+					Repo:     "repo",
+					CloneURI: "some-clone-uri",
+				},
+			},
+			expectedCloneURI: "some-clone-uri",
+			expectedHost:     "",
+		},
+	}
+	for _, tc := range tests {
+		gotCloneURI, gotHost := tryGetCloneURIAndHost(tc.pe)
+		if gotCloneURI != tc.expectedCloneURI {
+			t.Errorf("%s: got %q, expected %q", tc.name, gotCloneURI, tc.expectedCloneURI)
+		}
+		if gotHost != tc.expectedHost {
+			t.Errorf("%s: got %q, expected %q", tc.name, gotHost, tc.expectedHost)
+		}
+	}
+}
+
+func fakeProwYAMLGetter(
+	c *config.Config,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHA string,
+	headSHAs ...string) (*config.ProwYAML, error) {
+
+	presubmits := []config.Presubmit{
+		{
+			JobBase: config.JobBase{
+				Name:      "pull-gerrit",
+				Spec:      &v1.PodSpec{Containers: []v1.Container{{Name: "always-runs-inRepoConfig", Env: []v1.EnvVar{}}}},
+				Namespace: &namespace,
+			},
+			AlwaysRun: true,
+			Reporter: config.Reporter{
+				Context:    "pull-gerrit",
+				SkipReport: true,
+			},
+		},
+	}
+	if err := config.SetPresubmitRegexes(presubmits); err != nil {
+		return nil, err
+	}
+	res := config.ProwYAML{
+		Presubmits: presubmits,
+	}
+	return &res, nil
 }

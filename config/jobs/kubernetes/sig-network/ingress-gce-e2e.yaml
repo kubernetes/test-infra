@@ -21,7 +21,7 @@ presets:
           hostNetwork: true
           containers:
             # HEAD is used unless otherwised specified by each individual job.
-          - image: k8s.gcr.io/ingress-gce-glbc-amd64:master
+          - image: gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
             livenessProbe:
               httpGet:
                 path: /healthz
@@ -92,7 +92,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -114,7 +114,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -135,14 +135,14 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 periodics:
 - name: ci-ingress-gce-e2e
-  interval: 60m
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
       - --timeout=340
       - --bare
@@ -167,14 +167,14 @@ periodics:
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - name: ci-ingress-gce-e2e-canary
   cluster: k8s-infra-prow-build
-  interval: 60m
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
       - --timeout=340
       - --bare
@@ -202,34 +202,7 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: ingress-gce-e2e-canary
     description: Duplicate of ci-ingress-gce-e2e pinned to a k8s-infra community-owned project
-- name: ci-ingress-gce-e2e-release-1-6
-  interval: 90m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-ingress-master-yaml: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-      args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:release-1.6
-      - --extract=ci/latest
-      - --gcp-project-type=ingress-project
-      - --ginkgo-parallel=1
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\]
-      - --timeout=320m
 
-  annotations:
-    testgrid-dashboards: sig-network-ingress-gce-e2e
-    testgrid-tab-name: ingress-gce-e2e-release-1.6
-    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - name: ci-ingress-gce-e2e-scale
   interval: 6h
   labels:
@@ -238,7 +211,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       args:
       - --timeout=340
       - --bare

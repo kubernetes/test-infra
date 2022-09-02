@@ -20,8 +20,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/mail"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -32,6 +34,11 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/config"
 	config_pb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prow_config "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/testgrid/pkg/configurator/configurator"
+	"k8s.io/test-infra/testgrid/pkg/configurator/options"
+
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 type SQConfig struct {
@@ -48,6 +55,7 @@ var (
 		"google",
 		"kopeio",
 		"redhat",
+		"ibm",
 		"vmware",
 		"gardener",
 		"jetstack",
@@ -62,6 +70,7 @@ var (
 		"wg",
 		"provider",
 		"kubernetes-clients",
+		"kcp",
 	}
 	dashboardPrefixes = [][]string{orgs, companies}
 
@@ -72,8 +81,11 @@ var (
 	}
 )
 
+var defaultInputs options.MultiString = []string{"../../testgrids"}
 var prowPath = flag.String("prow-config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobPath = flag.String("job-config", "../../jobs", "Path to prow job config")
+var defaultYAML = flag.String("default", "../../testgrids/default.yaml", "Default yaml for testgrid")
+var inputs options.MultiString
 var protoPath = flag.String("config", "", "Path to TestGrid config proto")
 
 // Shared testgrid config, loaded at TestMain.
@@ -83,14 +95,43 @@ var cfg *config_pb.Configuration
 var prowConfig *prow_config.Config
 
 func TestMain(m *testing.M) {
+	flag.Var(&inputs, "yaml", "comma-separated list of input YAML files or directories")
 	flag.Parse()
 	if *protoPath == "" {
-		fmt.Println("--config must be set")
-		os.Exit(1)
+		if len(inputs) == 0 {
+			inputs = defaultInputs
+		}
+		// Generate proto from testgrid config
+		tmpDir, err := ioutil.TempDir("", "testgrid-config-test")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		defer os.RemoveAll(tmpDir)
+		tmpFile := path.Join(tmpDir, "test-proto")
+
+		opt := options.Options{
+			Inputs: inputs,
+			ProwConfig: configflagutil.ConfigOptions{
+				ConfigPath:    *prowPath,
+				JobConfigPath: *jobPath,
+			},
+			DefaultYAML:     *defaultYAML,
+			Output:          flagutil.NewStringsBeenSet(tmpFile),
+			Oneshot:         true,
+			StrictUnmarshal: true,
+		}
+
+		if err := configurator.RealMain(&opt); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		protoPath = &tmpFile
 	}
 
 	var err error
-	cfg, err = config.Read(*protoPath, context.Background(), nil)
+	cfg, err = config.Read(context.Background(), *protoPath, nil)
 	if err != nil {
 		fmt.Printf("Could not load config: %v\n", err)
 		os.Exit(1)
@@ -126,10 +167,6 @@ func TestConfig(t *testing.T) {
 		t.Run("Testgroup "+testgroup.Name, func(t *testing.T) {
 			if !testgroup.IsExternal {
 				t.Error("IsExternal must be true")
-			}
-
-			if !testgroup.UseKubernetesClient {
-				t.Error("UseKubernetesClient must be true")
 			}
 
 			for hIdx, header := range testgroup.ColumnHeader {
@@ -250,27 +287,6 @@ func TestConfig(t *testing.T) {
 			} else {
 				testgroupMap[dashboardtab.TestGroupName]++
 			}
-
-			if dashboardtab.AlertOptions != nil && (dashboardtab.AlertOptions.AlertStaleResultsHours != 0 || dashboardtab.AlertOptions.NumFailuresToAlert != 0) {
-				for _, testgroup := range cfg.TestGroups {
-					// Disallow alert options in tab but not group.
-					// Disallow different alert options in tab vs. group.
-					if testgroup.Name == dashboardtab.TestGroupName {
-						if testgroup.AlertStaleResultsHours == 0 {
-							t.Errorf("Cannot define alert_stale_results_hours in DashboardTab %v and not TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
-						}
-						if testgroup.NumFailuresToAlert == 0 {
-							t.Errorf("Cannot define num_failures_to_alert in DashboardTab %v and not TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
-						}
-						if testgroup.AlertStaleResultsHours != dashboardtab.AlertOptions.AlertStaleResultsHours {
-							t.Errorf("alert_stale_results_hours for DashboardTab %v must match TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
-						}
-						if testgroup.NumFailuresToAlert != dashboardtab.AlertOptions.NumFailuresToAlert {
-							t.Errorf("num_failures_to_alert for DashboardTab %v must match TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -369,6 +385,7 @@ var noPresubmitsInTestgridPrefixes = []string{
 	"kubernetes-sigs/gcp-filestore-csi-driver",
 	"kubernetes-sigs/kind",
 	"kubernetes-sigs/kubetest2",
+	"kubernetes-sigs/oci-proxy",
 	"kubernetes-sigs/kubebuilder-declarative-pattern",
 	"kubernetes-sigs/scheduler-plugins",
 	"kubernetes-sigs/service-catalog",
@@ -400,7 +417,7 @@ func hasAnyPrefix(s string, prefixes []string) bool {
 // - reports (aka does not skip reporting)
 // - always runs OR runs if some path changed
 func isMergeBlocking(job prow_config.Presubmit) bool {
-	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "")
+	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "" || job.SkipIfOnlyChanged != "")
 }
 
 // All jobs in presubmits-kuberentes-blocking must be merge-blocking for kubernetes/kubernetes
@@ -547,6 +564,9 @@ func TestNoEmpyMailToAddresses(t *testing.T) {
 		for _, dashboardtab := range dashboard.DashboardTab {
 			intro := fmt.Sprintf("dashboard_tab %v/%v", dashboard.Name, dashboardtab.Name)
 			if dashboardtab.AlertOptions != nil {
+				if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
+					continue
+				}
 				mails := strings.Split(dashboardtab.AlertOptions.AlertMailToAddresses, ",")
 				for _, m := range mails {
 					_, err := mail.ParseAddress(m)

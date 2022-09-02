@@ -724,6 +724,7 @@ func TestHandle(t *testing.T) {
 	var testCases = []struct {
 		name                string
 		labels              []string
+		humanLabelled       bool
 		missing             bool
 		merged              bool
 		closed              bool
@@ -848,6 +849,30 @@ Instructions for interacting with me using PR comments are available [here](http
  - expected the bug to be open, but it isn't
 
 Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:           "invalid bug adds keeps human-added valid bug label",
+			bugs:           []bugzilla.Bug{{ID: 123, Severity: "high"}},
+			options:        plugins.BugzillaBranchOptions{IsOpen: &open},
+			humanLabelled:  true,
+			labels:         []string{"bugzilla/valid-bug", "bugzilla/severity-urgent"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/severity-high"},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is invalid:
+ - expected the bug to be open, but it isn't
+
+Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.
+
+Retaining the bugzilla/valid-bug label as it was manually added.
 
 <details>
 
@@ -1161,6 +1186,36 @@ The following pull requests linked via external trackers have not merged:
 These pull request must merge or be unlinked from the Bugzilla bug in order for it to move to the next state. Once unlinked, request a bug refresh with <code>/bugzilla refresh</code>.
 
 [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has not been moved to the MODIFIED state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:   "External bug on rep that is not in our config is ignored, bug gets set to MODIFIED",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: "unreferenced/repo/pull/22",
+				Org:           "unreferenced", Repo: "repo", Num: 22,
+			}},
+			prs:         []github.PullRequest{{Number: 22, Merged: false, State: "open"}},
+			options:     plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "MODIFIED"},
+			expectedExternalBugs: []bugzilla.ExternalBug{
+				{BugzillaBugID: 123, ExternalBugID: "unreferenced/repo/pull/22", Org: "unreferenced", Repo: "repo", Num: 22},
+			},
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged:
+
+
+[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
 
 <details>
 
@@ -1699,10 +1754,12 @@ Instructions for interacting with me using PR comments are available [here](http
 			gc.IssueLabelsExisting = []string{}
 			gc.IssueComments = map[int][]github.IssueComment{}
 			gc.PullRequests = map[int]*github.PullRequest{}
+			gc.WasLabelAddedByHumanVal = testCase.humanLabelled
 			for _, label := range testCase.labels {
 				gc.IssueLabelsExisting = append(gc.IssueLabelsExisting, fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
 			}
 			for _, pr := range testCase.prs {
+				pr := pr
 				gc.PullRequests[pr.Number] = &pr
 			}
 			bc := bugzilla.Fake{
@@ -1736,7 +1793,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.body != "" {
 				e.body = testCase.body
 			}
-			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
+			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name), sets.NewString("org/repo"))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
@@ -2268,6 +2325,14 @@ func TestIsBugAllowed(t *testing.T) {
 			},
 			groups:   []string{"other"},
 			expected: false,
+		},
+		{
+			name: "a subset of groups matching is allowed",
+			bug: &bugzilla.Bug{
+				Groups: []string{"whoa", "really"},
+			},
+			groups:   []string{"whoa", "really", "cool"},
+			expected: true,
 		},
 	}
 	for _, testCase := range testCases {

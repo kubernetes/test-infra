@@ -38,10 +38,10 @@ jqfilter: |
 * failures - find jobs that have been failing the longest
     - [Config](configs/failures-config.yaml)
     - [failures-latest.json](http://storage.googleapis.com/k8s-metrics/failures-latest.json)
-* flakes - find the flakiest jobs this week (and the flakiest tests in each job).
+* flakes - find the flakiest jobs this week (and the flakiest tests in each job)
     - [Config](configs/flakes-config.yaml)
     - [flakes-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-latest.json)
-* flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results.
+* flakes-daily - find the flakiest jobs in the last 24h (and the flakiest tests in each job)
     - [Config](configs/flakes-daily-config.yaml)
     - [flakes-daily-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-daily-latest.json)
 * job-health - compute daily health metrics for jobs (runs, tests, failure rate for each, duration percentiles)
@@ -103,7 +103,7 @@ At one point, these points were uploaded to a system called velodrome, which had
 
 ## Query structure
 
-The `query` is written in `Standard SQL` which is really [BigQuery Standard SQL](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax) that allows for working with arrays/repeated fields. Each sub-query, from the most indented out, will build a subtable that the outer query runs against. Any one of the sub query blocks can be run independently from the BigQuery console or opionally added to a test query config and run via the same `bigquery.py` line above.
+The `query` is written in `Standard SQL` which is really [BigQuery Standard SQL](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax) that allows for working with arrays/repeated fields. Each sub-query, from the most indented out, will build a subtable that the outer query runs against. Any one of the sub query blocks can be run independently from the BigQuery console or optionally added to a test query config and run via the same `bigquery.py` line above.
 
 ## Consistency
 

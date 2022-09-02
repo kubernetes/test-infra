@@ -95,16 +95,15 @@ func main() {
 	logrus.SetLevel(logLevel)
 	log := logrus.StandardLogger().WithField("plugin", pluginName)
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
+	if err := secret.Add(o.webhookSecretFile); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
+	gitClient, err := o.github.GitClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
@@ -129,7 +128,7 @@ func main() {
 	}
 
 	server := &Server{
-		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		tokenGenerator: secret.GetTokenGenerator(o.webhookSecretFile),
 		botUser:        botUser,
 		email:          email,
 

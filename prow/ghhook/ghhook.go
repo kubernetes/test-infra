@@ -26,8 +26,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config/secret"
-
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
@@ -86,13 +84,9 @@ func GetOptions(fs *flag.FlagSet, args []string) (*Options, error) {
 		return nil, err
 	}
 
-	agent := &secret.Agent{}
-	if err := agent.Start(nil); err != nil {
-		return nil, fmt.Errorf("error starting secret agent: %w", err)
-	}
-	o.GitHubHookClient, err = o.GitHubOptions.GitHubClient(agent, !o.Confirm)
+	o.GitHubHookClient, err = o.GitHubOptions.GitHubClient(!o.Confirm)
 	if err != nil {
-		return nil, fmt.Errorf("error creating github client: %v", err)
+		return nil, fmt.Errorf("error creating github client: %w", err)
 	}
 
 	return &o, nil
@@ -101,7 +95,7 @@ func GetOptions(fs *flag.FlagSet, args []string) (*Options, error) {
 func (o *Options) hmacValueFromFile() (string, error) {
 	b, err := ioutil.ReadFile(o.HMACPath)
 	if err != nil {
-		return "", fmt.Errorf("read %s: %v", o.HMACPath, err)
+		return "", fmt.Errorf("read %s: %w", o.HMACPath, err)
 	}
 	return string(bytes.TrimSpace(b)), nil
 }
@@ -113,7 +107,7 @@ func (o *Options) HandleWebhookConfigChange() error {
 	if !o.ShouldDelete {
 		hmac, err = o.hmacValue()
 		if err != nil {
-			return fmt.Errorf("could not load hmac secret: %v", err)
+			return fmt.Errorf("could not load hmac secret: %w", err)
 		}
 	}
 
@@ -141,7 +135,7 @@ func (o *Options) HandleWebhookConfigChange() error {
 
 		org := parts[0]
 		if err := reconcileHook(ch, org, req, o); err != nil {
-			return fmt.Errorf("could not apply hook to %s: %v", orgRepo, err)
+			return fmt.Errorf("could not apply hook to %s: %w", orgRepo, err)
 		}
 	}
 	return nil
@@ -150,7 +144,7 @@ func (o *Options) HandleWebhookConfigChange() error {
 func reconcileHook(ch changer, org string, req github.HookRequest, o *Options) error {
 	hooks, err := ch.lister(org)
 	if err != nil {
-		return fmt.Errorf("list: %v", err)
+		return fmt.Errorf("list: %w", err)
 	}
 	id := findHook(hooks, req.Config.URL)
 	if id == nil {

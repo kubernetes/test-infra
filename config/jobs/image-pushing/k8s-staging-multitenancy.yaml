@@ -3,14 +3,14 @@ postsubmits:
     - name: post-externalip-webhook-push-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: wg-multi-tenancy-externalip
+        testgrid-dashboards: wg-multi-tenancy-externalip, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:

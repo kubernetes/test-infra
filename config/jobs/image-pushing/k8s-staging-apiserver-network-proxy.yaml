@@ -5,14 +5,14 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+        testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:

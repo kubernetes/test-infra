@@ -47,6 +47,7 @@ const (
 	pullRequestEvent              = "pull_request"
 	issueCommentEvent             = "issue_comment"
 	issuesEvent                   = "issues"
+	workflowRunEvent              = "workflow_run"
 )
 
 // GitHubEventServer hold all the information needed for the
@@ -115,6 +116,9 @@ type IssueEventHandler func(*logrus.Entry, github.IssueEvent)
 // StatusEventHandler is a type of function that handles GitHub's status events.
 type StatusEventHandler func(*logrus.Entry, github.StatusEvent)
 
+// WorkflowRunEventHandler is a type of function that handles GitHub's workflow run events.
+type WorkflowRunEventHandler func(*logrus.Entry, github.WorkflowRunEvent)
+
 // RegisterReviewCommentEventHandler registers an ReviewCommentEventHandler function in GitHubEventServerOptions
 func (g *GitHubEventServer) RegisterReviewCommentEventHandler(fn ReviewCommentEventHandler) {
 	g.serveMuxHandler.reviewCommentEventHandlers = append(g.serveMuxHandler.reviewCommentEventHandlers, fn)
@@ -148,6 +152,11 @@ func (g *GitHubEventServer) RegisterIssueEventHandler(fn IssueEventHandler) {
 // RegisterStatusEventHandler registers an StatusEventHandler function in GitHubEventServerOptions
 func (g *GitHubEventServer) RegisterStatusEventHandler(fn StatusEventHandler) {
 	g.serveMuxHandler.statusEventHandlers = append(g.serveMuxHandler.statusEventHandlers, fn)
+}
+
+// RegisterWorkflowRunEventHandler registers an WorkflowRunEventHandler function in GitHubEventServerOptions
+func (g *GitHubEventServer) RegisterWorkflowRunEventHandler(fn WorkflowRunEventHandler) {
+	g.serveMuxHandler.workflowRunEventHandler = append(g.serveMuxHandler.workflowRunEventHandler, fn)
 }
 
 // RegisterExternalPlugins registers the external plugins in GitHubEventServerOptions
@@ -190,6 +199,7 @@ type serveMuxHandler struct {
 	issueCommentEventHandlers  []IssueCommentEventHandler
 	issueEventHandlers         []IssueEventHandler
 	statusEventHandlers        []StatusEventHandler
+	workflowRunEventHandler    []WorkflowRunEventHandler
 
 	externalPlugins map[string][]plugins.ExternalPlugin
 
@@ -380,6 +390,28 @@ func (s *serveMuxHandler) handleEvent(eventType, eventGUID string, payload []byt
 					"state":             se.State,
 					"id":                se.ID,
 				}), se)
+			}()
+		}
+
+	case workflowRunEvent:
+		var wre github.WorkflowRunEvent
+		if err := json.Unmarshal(payload, &wre); err != nil {
+			return err
+		}
+		wre.GUID = eventGUID
+		org = wre.Repo.Owner.Login
+		repo = wre.Repo.Name
+
+		for _, workflowRunEventHandler := range s.workflowRunEventHandler {
+			fn := workflowRunEventHandler
+			s.wg.Add(1)
+			go func() {
+				defer s.wg.Done()
+				fn(l.WithFields(logrus.Fields{
+					github.OrgLogField:  wre.Repo.Owner.Login,
+					github.RepoLogField: wre.Repo.Name,
+					"workflow_id":       wre.WorkflowRun.WorkflowID,
+				}), wre)
 			}()
 		}
 

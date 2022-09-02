@@ -27,15 +27,18 @@ import (
 )
 
 type JiraOptions struct {
-	endpoint     string
-	username     string
-	passwordFile string
+	endpoint        string
+	username        string
+	passwordFile    string
+	bearerTokenFile string
 }
 
 func (o *JiraOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.endpoint, "jira-endpoint", "", "The Jira endpoint to use")
 	fs.StringVar(&o.username, "jira-username", "", "The username to use for Jira basic auth")
 	fs.StringVar(&o.passwordFile, "jira-password-file", "", "Location to a file containing the Jira basic auth password")
+	fs.StringVar(&o.bearerTokenFile, "jira-bearer-token-file", "", "Location to a file containing the Jira bearer authorization token")
+
 }
 
 func (o *JiraOptions) Validate(_ bool) error {
@@ -51,21 +54,38 @@ func (o *JiraOptions) Validate(_ bool) error {
 		return errors.New("--jira-username and --jira-password-file must be specified together")
 	}
 
+	if o.bearerTokenFile != "" && o.username != "" {
+		return errors.New("--jira-bearer-token-file and --jira-username are mutually exclusive")
+	}
+
+	if o.bearerTokenFile != "" && o.passwordFile != "" {
+		return errors.New("--jira-bearer-token-file and --jira-password-file are mutually exclusive")
+	}
+
 	return nil
 }
 
-func (o *JiraOptions) Client(secretAgent *secret.Agent) (jira.Client, error) {
+func (o *JiraOptions) Client() (jira.Client, error) {
 	if o.endpoint == "" {
 		return nil, errors.New("empty --jira-endpoint, can not create a client")
 	}
 
 	var opts []jira.Option
 	if o.passwordFile != "" {
-		if err := secretAgent.Add(o.passwordFile); err != nil {
+		if err := secret.Add(o.passwordFile); err != nil {
 			return nil, fmt.Errorf("failed to get --jira-password-file: %w", err)
 		}
 		opts = append(opts, jira.WithBasicAuth(func() (string, string) {
-			return o.username, string(secretAgent.GetSecret(o.passwordFile))
+			return o.username, string(secret.GetSecret(o.passwordFile))
+		}))
+	}
+
+	if o.bearerTokenFile != "" {
+		if err := secret.Add(o.bearerTokenFile); err != nil {
+			return nil, fmt.Errorf("failed to get --jira-bearer-token-file: %w", err)
+		}
+		opts = append(opts, jira.WithBearerAuth(func() string {
+			return string(secret.GetSecret(o.bearerTokenFile))
 		}))
 	}
 

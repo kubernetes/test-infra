@@ -170,7 +170,16 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 		})
 
 		if p.Cron == "" {
-			shouldTrigger := j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()
+			shouldTrigger := false
+			if j.Complete() {
+				intervalRef := j.Status.StartTime.Time
+				intervalDuration := p.GetInterval()
+				if p.MinimumInterval != "" {
+					intervalRef = j.Status.CompletionTime.Time
+					intervalDuration = p.GetMinimumInterval()
+				}
+				shouldTrigger = now.Sub(intervalRef) > intervalDuration
+			}
 			logger = logger.WithField("should-trigger", shouldTrigger)
 			if !previousFound || shouldTrigger {
 				prowJob := pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels, p.Annotations)

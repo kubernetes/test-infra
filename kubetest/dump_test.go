@@ -373,10 +373,10 @@ func (m *mockSSHClient) ExecPiped(ctx context.Context, command string, stdout io
 		}
 		if c.command == command {
 			if _, err := stdout.Write(c.stdout); err != nil {
-				return fmt.Errorf("error writing to stdout: %v", err)
+				return fmt.Errorf("error writing to stdout: %w", err)
 			}
 			if _, err := stderr.Write(c.stderr); err != nil {
-				return fmt.Errorf("error writing to stderr: %v", err)
+				return fmt.Errorf("error writing to stderr: %w", err)
 			}
 			m.commands[i] = nil
 			return c.err

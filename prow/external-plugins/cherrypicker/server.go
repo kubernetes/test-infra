@@ -44,6 +44,7 @@ const defaultLabelPrefix = "cherrypick/"
 
 var cherryPickRe = regexp.MustCompile(`(?m)^(?:/cherrypick|/cherry-pick)\s+(.+)$`)
 var releaseNoteRe = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
+var titleTargetBranchIndicatorTemplate = `[%s] `
 
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
@@ -246,7 +247,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		"target_branch": targetBranch,
 	})
 	l.Debug("Cherrypick request.")
-	return s.handle(l, ic.Comment.User.Login, &ic.Comment, org, repo, targetBranch, title, body, num)
+	return s.handle(l, ic.Comment.User.Login, &ic.Comment, org, repo, targetBranch, baseBranch, title, body, num)
 }
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
@@ -368,7 +369,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 				"target_branch": targetBranch,
 			})
 			l.Debug("Cherrypick request.")
-			err := s.handle(l, requestor, ic, org, repo, targetBranch, title, body, num)
+			err := s.handle(l, requestor, ic, org, repo, targetBranch, baseBranch, title, body, num)
 			if err != nil {
 				errs = append(errs, fmt.Errorf("failed to create cherrypick: %w", err))
 			}
@@ -379,7 +380,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
-func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.IssueComment, org, repo, targetBranch, title, body string, num int) error {
+func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.IssueComment, org, repo, targetBranch, baseBranch, title, body string, num int) error {
 	var lock *sync.Mutex
 	func() {
 		s.mapLock.Lock()
@@ -462,7 +463,8 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 	}
 
 	// Title for GitHub issue/PR.
-	title = fmt.Sprintf("[%s] %s", targetBranch, title)
+	titleTargetBranchIndicator := fmt.Sprintf(titleTargetBranchIndicatorTemplate, targetBranch)
+	title = fmt.Sprintf("%s%s", titleTargetBranchIndicator, omitBaseBranchFromTitle(title, baseBranch))
 
 	// Apply the patch.
 	if err := r.Am(localPath); err != nil {
@@ -529,6 +531,28 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 		}
 	}
 	return nil
+}
+
+// omitBaseBranchFromTitle returns the title without the base branch's
+// indicator, if there is one. We do this to avoid long cherry-pick titles when
+// doing a backport of a backport.
+//
+// Example of long cherry-pick titles:
+// Original PR title: "Hello world"
+// Backport to release-9.9 title: "[release-9.9] Hello world"
+// Backport to release-9.8 title: "[release-9.8] [release-9.9] Hello world"
+//
+// This function helps by making the second backport title
+// be "[release-9.8] Hello world" instead, by deleting the first occurrence
+// of "[release-9.9]" from the first backport's title.
+//
+// When baseBranch is empty, this function simply returns the title as-is for convenience.
+func omitBaseBranchFromTitle(title, baseBranch string) string {
+	if baseBranch == "" {
+		return title
+	}
+
+	return strings.Replace(title, fmt.Sprintf(titleTargetBranchIndicatorTemplate, baseBranch), "", 1)
 }
 
 func (s *Server) createComment(l *logrus.Entry, org, repo string, num int, comment *github.IssueComment, resp string) error {

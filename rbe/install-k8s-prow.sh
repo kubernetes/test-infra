@@ -21,7 +21,7 @@ proj=k8s-prow
 pool=prow-pool
 workers=20
 disk=600
-machine=n1-standard-2
+machine=e2-standard-2
 bots=(
   deployer@k8s-prow.iam.gserviceaccount.com
   pusher@k8s-prow.iam.gserviceaccount.com

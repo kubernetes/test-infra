@@ -1,0 +1,185 @@
+# PROW_INSTANCE_SPECIFIC
+# Note that these PodMonitors are GKE Workload Metrics PodMonitors, not Prometheus PodMonitors.
+# The apiversion must be specified to properly interact with these resources in clusters that
+# have both CRDs installed.
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app: deck
+  name: deck
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      app: deck
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app: ghproxy
+  name: ghproxy
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      app: ghproxy
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app: hook
+  name: hook
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: hook
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app: plank
+  name: plank
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: prow-controller-manager
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app: sinker
+  name: sinker
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: sinker
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app: tide
+  name: tide
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: tide
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app: horologium
+  name: horologium
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: horologium
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app: crier
+  name: crier
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: metrics
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: crier
+---
+apiVersion: monitoring.gke.io/v1alpha1
+kind: PodMonitor
+metadata:
+  labels:
+    app.kubernetes.io/name: kubernetes-external-secrets
+    app: kubernetes-external-secrets
+  name: kubernetes-external-secrets
+  namespace: prow-monitoring
+spec:
+  podMetricsEndpoints:
+  - interval: 30s
+    scrapeTimeout: 30s
+    port: prometheus
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubernetes-external-secrets

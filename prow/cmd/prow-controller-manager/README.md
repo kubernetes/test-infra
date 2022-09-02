@@ -20,7 +20,7 @@ Only one of them may have more than zero replicas at the same time.
 
 ### Usage
 ```bash
-$ bazel run //prow/cmd/prow-controller-manager -- --help
+$ go run ./prow/cmd/prow-controller-manager --help
 ```
 
 ### Configuration

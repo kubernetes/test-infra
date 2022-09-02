@@ -1,89 +1,20 @@
-periodics:
-# TODO(justaugustus): Decrease interval to 1hr once we cut build over to k8s-infra.
-#                     ref: https://github.com/kubernetes/release/issues/911
-- interval: 10000h
-  name: ci-kubernetes-prototype-build
-  cluster: k8s-infra-prow-build-trusted
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: "k8s.io/release"
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-    - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-      command:
-        - /run.sh
-      args:
-        - --project=k8s-staging-releng
-        - --scratch-bucket=gs://k8s-staging-releng-gcb
-        - --variant=build-ci
-        - --no-source
-        - gcb/build
-      env:
-        - name: LOG_TO_STDOUT
-          value: "y"
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
-  annotations:
-    # TODO(justaugustus): Enable forking for prototype GCB-based build jobs.
-    testgrid-dashboards: sig-release-prototype-master-blocking
-    testgrid-tab-name: build-master
-    testgrid-alert-email: release-managers+alerts@kubernetes.io
-
-# TODO(justaugustus): Decrease interval to 5m once we cut build over to k8s-infra.
-#                     ref: https://github.com/kubernetes/release/issues/911
-- interval: 10000h
-  name: ci-kubernetes-prototype-build-fast
-  cluster: k8s-infra-prow-build-trusted
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: release
-    base_ref: master
-    path_alias: "k8s.io/release"
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-    - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-      command:
-        - /run.sh
-      args:
-        - --project=k8s-staging-releng
-        - --scratch-bucket=gs://k8s-staging-releng-gcb
-        - --variant=build-ci-fast
-        - --no-source
-        - gcb/build
-      env:
-        - name: LOG_TO_STDOUT
-          value: "y"
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
-  annotations:
-    testgrid-dashboards: sig-release-prototype-master-blocking
-    testgrid-tab-name: build-master-fast
-    testgrid-alert-email: release-managers+alerts@kubernetes.io
-    description: 'Ends up running: make quick-release'
-
 postsubmits:
   kubernetes/release:
     - name: post-release-push-image-k8s-ci-builder
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^(cmd\/|compile-release-tools|go.(mod|sum)|images\/releng\/k8s-ci-builder\/|pkg\/)'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -98,21 +29,24 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-releng"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-k8s-cloud-builder
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -126,21 +60,24 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-releng"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-releng-ci
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -155,20 +92,23 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-releng"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-kubepkg
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -182,6 +122,7 @@ postsubmits:
                 value: "y"
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-releng"
-        rerun_auth_config:
-          github_team_ids:
-            - 2241179 # release-managers
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers

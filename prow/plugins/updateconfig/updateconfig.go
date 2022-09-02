@@ -103,7 +103,12 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	cm, getErr := kc.Get(context.TODO(), name, metav1.GetOptions{})
 	isNotFound := errors.IsNotFound(getErr)
 	if getErr != nil && !isNotFound {
-		return fmt.Errorf("failed to fetch current state of configmap: %v", getErr)
+		return fmt.Errorf("failed to fetch current state of configmap: %w", getErr)
+	}
+
+	labels := map[string]string{
+		"app.kubernetes.io/name":      "prow",
+		"app.kubernetes.io/component": "updateconfig-plugin",
 	}
 
 	if cm == nil || isNotFound {
@@ -111,9 +116,15 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
+				Labels:    labels,
 			},
 		}
 	}
+
+	if cm.ObjectMeta.Labels == nil {
+		cm.ObjectMeta.Labels = labels
+	}
+
 	if cm.Data == nil || bootstrap {
 		cm.Data = map[string]string{}
 	}
@@ -134,7 +145,7 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 
 		content, err := fg.GetFile(upd.Filename)
 		if err != nil {
-			return fmt.Errorf("get file err: %v", err)
+			return fmt.Errorf("get file err: %w", err)
 		}
 		logger.WithFields(logrus.Fields{"key": upd.Key, "filename": upd.Filename}).Debug("Populating key.")
 		value := content
@@ -173,11 +184,14 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 		_, updateErr = kc.Update(context.TODO(), cm, metav1.UpdateOptions{})
 	}
 	if updateErr != nil {
-		return fmt.Errorf("%s config map err: %v", verb, updateErr)
+		return fmt.Errorf("%s config map err: %w", verb, updateErr)
 	}
 	if metrics != nil {
 		var size float64
 		for _, data := range cm.Data {
+			size += float64(len(data))
+		}
+		for _, data := range cm.BinaryData {
 			size += float64(len(data))
 		}
 		// in a strict sense this can race to update the value with other goroutines
@@ -369,7 +383,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	}
 
 	if err := gc.CreateComment(org, repo, pr.Number, plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, msg)); err != nil {
-		errs = append(errs, fmt.Errorf("comment err: %v", err))
+		errs = append(errs, fmt.Errorf("comment err: %w", err))
 	}
 	return utilerrors.NewAggregate(errs)
 }

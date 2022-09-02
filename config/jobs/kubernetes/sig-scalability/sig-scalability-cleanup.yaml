@@ -11,12 +11,57 @@ periodics:
     repo: perf-tests
     base_ref: master
     path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: snapshots-cleanup
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/execute.py
+      args:
+      - $(GOPATH)/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots-boskos.sh
+      # Command (list|delete)
+      - delete
+      # Comma-separated list of snapshot prefixes to delete
+      - ci-kubernetes-e2e-gci-gce-scalability
+      # Delete snapshots older than x days
+      - "30"
+      # Comma-separated list of boskos pools to process
+      - scalability-project
+      # File with boskos resource definitions
+      - $(GOPATH)/src/k8s.io/test-infra/config/prow/cluster/build/boskos-resources/boskos-resources.yaml
+
+- name: ci-kubernetes-scalability-cleanup-golang-builds-canary
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  annotations:
+    # TODO(ameukam): update with email alert
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: golang-build-5k-project-snapshots-cleanup-canary
+    testgrid-alert-email: ameukam@gmail.com
+    testgrid-num-failures-to-alert: '3'
+  spec:
+    # TODO (ameukam): review the need of the specific service account.
+    # https://github.com/kubernetes/k8s.io/issues/2854
+    serviceAccountName: boskos-janitor
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
@@ -26,8 +71,16 @@ periodics:
       - delete
       # Comma-separated list of projects to process
       # It should match projects list for type: scalability-project in prow/cluster/boskos-resources.yaml
-      - k8s-e2e-gce-scalability-1-1,k8s-e2e-gce-scalability-1-2,k8s-e2e-gci-gce-scale-1-4,k8s-e2e-gci-gce-scale-1-5,k8s-jenkins-gci-scalability,k8s-jenkins-gci-scalability-2,k8s-jenkins-kubemark,k8s-jenkins-scalability-2,k8s-jenkins-scalability-3,k8s-jenkins-scalability-4,k8s-jenkins-scalability-5
+      - k8s-infra-e2e-scale-5k-project
       # Comma-separated list of snapshot prefixes to delete
-      - ci-kubernetes-e2e-gci-gce-scalability
+      # TODO (ameukam): drop canary when migration is over: https://github.com/kubernetes/k8s.io/issues/2241
+      - ci-golang-tip-k8s-1-18-canary
       # Delete snapshots older than x days
       - "30"
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi

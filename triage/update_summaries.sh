@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2020 The Kubernetes Authors.
 #
@@ -15,20 +15,39 @@
 # limitations under the License.
 
 set -exu
-cd $(dirname $0)
+
+# dataset table to query for build info
+readonly BUILD_DATASET_TABLE="${BUILD_DATASET_TABLE:-"k8s-gubernator:build.all"}"
+
+# dataset to write temp results to for triage
+readonly TRIAGE_DATASET_TABLE="${TRIAGE_DATASET_TABLE:-"k8s-gubernator:temp.triage"}"
+
+# gcs bucket to write temporary results to
+readonly TRIAGE_TEMP_GCS_PATH="${TRIAGE_TEMP_GCS_PATH:-"gs://k8s-gubernator/triage_tests"}"
+
+# gcs uri to write final triage results to
+readonly TRIAGE_GCS_PATH="${TRIAGE_GCS_PATH:-"gs://k8s-gubernator/triage"}"
+
+# the gcp project against which to bill bq usage
+readonly TRIAGE_BQ_USAGE_PROJECT="${TRIAGE_BQ_USAGE_PROJECT:-"k8s-gubernator"}"
+
+cd "$(dirname "$0")"
 
 start=$(date +%s)
 
 if [[ -e ${GOOGLE_APPLICATION_CREDENTIALS-} ]]; then
+  echo "activating service account with credentials at: ${GOOGLE_APPLICATION_CREDENTIALS}"
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 fi
 
-gcloud config set project k8s-gubernator
+gcloud config set project "${TRIAGE_BQ_USAGE_PROJECT}"
+
 bq show <<< $'\n'
 
 date
 
-bq --headless --format=json query --max_rows 1000000 \
+# populate triage_builds.json with build metadata
+bq --project_id="${TRIAGE_BQ_USAGE_PROJECT}" --headless --format=json query --max_rows 1000000 \
   "select
     path,
     timestamp_to_sec(started) started,
@@ -40,32 +59,33 @@ bq --headless --format=json query --max_rows 1000000 \
     job,
     number
   from
-    [k8s-gubernator:build.all]
+    [${BUILD_DATASET_TABLE}]
   where
     timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))
     and job != 'ci-kubernetes-coverage-unit'" \
   > triage_builds.json
 
-bq query --allow_large_results --headless --max_rows 0 --replace --destination_table k8s-gubernator:temp.triage \
+# populate ${TRIAGE_DATASET_TABLE} with test failures
+bq --project_id="${TRIAGE_BQ_USAGE_PROJECT}" query --allow_large_results --headless --max_rows 0 --replace --destination_table "${TRIAGE_DATASET_TABLE}" \
   "select
     timestamp_to_sec(started) started,
     path build,
     test.name name,
     test.failure_text failure_text
   from
-    [k8s-gubernator:build.all]
+    [${BUILD_DATASET_TABLE}]
   where
     test.failed
     and timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))
     and job != 'ci-kubernetes-coverage-unit'"
 
-gsutil rm gs://k8s-gubernator/triage_tests/shard_*.json.gz || true
-bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON 'k8s-gubernator:temp.triage' gs://k8s-gubernator/triage_tests/shard_*.json.gz
+gsutil rm "${TRIAGE_TEMP_GCS_PATH}/shard_*.json.gz" || true
+bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON "${TRIAGE_DATASET_TABLE}" "${TRIAGE_TEMP_GCS_PATH}/shard_*.json.gz"
 mkdir -p triage_tests
-gsutil cp -r gs://k8s-gubernator/triage_tests/* triage_tests/
+gsutil cp -r "${TRIAGE_TEMP_GCS_PATH}/*" triage_tests/
 gzip -df triage_tests/*.gz
 
-# gsutil cp gs://k8s-gubernator/triage/failure_data.json failure_data_previous.json
+# gsutil cp "${TRIAGE_BUCKET}/failure_data.json failure_data_previous.json
 
 mkdir -p slices
 
@@ -77,13 +97,13 @@ mkdir -p slices
   triage_tests/*.json
 
 gsutil_cp() {
-  gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
+  gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z "$@"
 }
 
-gsutil_cp failure_data.json gs://k8s-gubernator/triage/
-gsutil_cp slices/*.json gs://k8s-gubernator/triage/slices/
-gsutil_cp failure_data.json "gs://k8s-gubernator/triage/history/$(date -u +%Y%m%d).json"
+gsutil_cp failure_data.json "${TRIAGE_GCS_PATH}/"
+gsutil_cp slices/*.json "${TRIAGE_GCS_PATH}/slices/"
+gsutil_cp failure_data.json "${TRIAGE_GCS_PATH}/history/$(date -u +%Y%m%d).json"
 
 stop=$(date +%s)
-elapsed=$(( ${stop} - ${start} ))
-echo "Finished in $(( ${elapsed} / 60))m$(( ${elapsed} % 60))s"
+elapsed=$(( stop - start ))
+echo "Finished in $(( elapsed / 60))m$(( elapsed % 60))s"

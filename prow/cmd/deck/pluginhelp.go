@@ -54,14 +54,14 @@ func (ha *helpAgent) getHelp() (*pluginhelp.Help, error) {
 	var help pluginhelp.Help
 	resp, err := http.Get(ha.path)
 	if err != nil {
-		return nil, fmt.Errorf("error Getting plugin help: %v", err)
+		return nil, fmt.Errorf("error Getting plugin help: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status code %d", resp.StatusCode)
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&help); err != nil {
-		return nil, fmt.Errorf("error decoding json plugin help: %v", err)
+		return nil, fmt.Errorf("error decoding json plugin help: %w", err)
 	}
 
 	ha.help = &help

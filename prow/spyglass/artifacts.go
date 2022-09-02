@@ -56,9 +56,9 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 	// context cancelled error due to user cancelled request.
 	if err != nil && err != context.Canceled {
 		if config.IsNotAllowedBucketError(err) {
-			logrus.WithError(err).Debug("error retrieving artifact names from gcs storage")
+			logrus.WithError(err).WithField("gcs-key", gcsKey).Debug("error retrieving artifact names from gcs storage")
 		} else {
-			logrus.WithError(err).Warn("error retrieving artifact names from gcs storage")
+			logrus.WithError(err).WithField("gcs-key", gcsKey).Warn("error retrieving artifact names from gcs storage")
 		}
 	}
 
@@ -77,14 +77,16 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 		return artifactNamesSet.List(), nil
 	}
 
-	jobContainers := job.Spec.PodSpec.Containers
+	if job.Spec.PodSpec != nil {
+		jobContainers := job.Spec.PodSpec.Containers
 
-	for _, container := range jobContainers {
-		logName := singleLogName
-		if len(jobContainers) > 1 {
-			logName = fmt.Sprintf("%s-%s", container.Name, singleLogName)
+		for _, container := range jobContainers {
+			logName := singleLogName
+			if len(jobContainers) > 1 {
+				logName = fmt.Sprintf("%s-%s", container.Name, singleLogName)
+			}
+			artifactNamesSet.Insert(logName)
 		}
-		artifactNamesSet.Insert(logName)
 	}
 
 	return artifactNamesSet.List(), nil

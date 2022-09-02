@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -36,9 +38,12 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/plank"
+
+	_ "k8s.io/test-infra/prow/version"
 )
 
 var allControllers = sets.NewString(plank.ControllerName)
@@ -56,6 +61,7 @@ type options struct {
 	kubernetes             prowflagutil.KubernetesOptions
 	github                 prowflagutil.GitHubOptions // TODO(fejta): remove
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	storage                prowflagutil.StorageClientOptions
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -67,7 +73,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.Var(&o.enabledControllers, "enable-controller", fmt.Sprintf("Controllers to enable. Can be passed multiple times. Defaults to all controllers (%v)", allControllers.List()))
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config, &o.storage} {
 		group.AddFlags(fs)
 	}
 
@@ -79,7 +85,7 @@ func (o *options) Validate() error {
 	o.github.AllowAnonymous = true
 
 	var errs []error
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config, &o.storage} {
 		if err := group.Validate(o.dryRun); err != nil {
 			errs = append(errs, err)
 		}
@@ -112,6 +118,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort) // Start liveness endpoint
 	pprof.Instrument(o.instrumentationOptions)
 
 	configAgent, err := o.config.ConfigAgent()
@@ -146,6 +153,12 @@ func main() {
 	}
 
 	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
+		// The watch apimachinery doesn't support restarts, so just exit the
+		// binary if a build cluster can be connected later .
+		func() {
+			logrus.Info("Build cluster that failed to connect initially now worked, exiting to trigger a restart.")
+			interrupts.Terminate()
+		},
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
 		},
@@ -160,6 +173,11 @@ func main() {
 		}
 	}
 
+	opener, err := io.NewOpener(context.Background(), o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating opener")
+	}
+
 	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
 	// to make the kubelet restart us.
 	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
@@ -170,15 +188,22 @@ func main() {
 	}
 
 	enabledControllersSet := sets.NewString(o.enabledControllers.Strings()...)
+	knownClusters, err := o.kubernetes.KnownClusters(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to resolve known clusters in kubeconfig.")
+	}
 
 	if enabledControllersSet.Has(plank.ControllerName) {
-		if err := plank.Add(mgr, buildManagers, cfg, o.totURL, o.selector); err != nil {
+		if err := plank.Add(mgr, buildManagers, knownClusters, cfg, opener, o.totURL, o.selector); err != nil {
 			logrus.WithError(err).Fatal("Failed to add plank to manager")
 		}
 	}
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("plank", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
+	// Serve readiness endpoint
+	health.ServeReady()
+
 	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}

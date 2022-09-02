@@ -19,7 +19,16 @@ set -o nounset
 set -o pipefail
 
 if [[ $# != 6 ]]; then
-  echo "Usage: $(basename "$0") <project> <zone> <cluster> <namespace> <name> <gcp-service-account>" >&2
+  echo "Usage: $(basename "$0") <project> <zone_or_region> <cluster> <namespace> <name> <gcp-service-account>" >&2
+  exit 1
+fi
+
+# Require bash version >= 4.4
+if ((${BASH_VERSINFO[0]}<4)) || ( ((${BASH_VERSINFO[0]}==4)) && ((${BASH_VERSINFO[1]}<4)) ); then
+  echo "ERROR: This script requires a minimum bash version of 4.4, but got version of ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"
+  if [ "$(uname)" = 'Darwin' ]; then
+    echo "On macOS with homebrew 'brew install bash' is sufficient."
+  fi
   exit 1
 fi
 
@@ -89,12 +98,14 @@ else
   sleep 2m
 fi
 
+
 pod-identity() {
   head -n 1 <(
     entropy=$(date +%S)
     set -o xtrace
     kubectl run --rm=true -i \
-      "--context=$context" "--namespace=$namespace" "--serviceaccount=$name" \
+      "--context=$context" "--namespace=$namespace" \
+      "--overrides={\"spec\": {\"serviceAccount\": \"$name\"}}" \
       --image=google/cloud-sdk:slim "workload-identity-test-$entropy" \
       <<< "gcloud config get-value core/account"
   )

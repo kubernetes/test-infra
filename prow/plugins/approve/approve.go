@@ -68,7 +68,7 @@ type githubClient interface {
 	BotUserChecker() (func(candidate string) bool, error)
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
-	ListIssueEvents(org, repo string, num int) ([]github.ListedIssueEvent, error)
+	WasLabelAddedByHuman(org, repo string, num int, label string) (bool, error)
 }
 
 type ownersClient interface {
@@ -378,7 +378,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handle")
 	}()
 	fetchErr := func(context string, err error) error {
-		return fmt.Errorf("failed to get %s for %s/%s#%d: %v", context, pr.org, pr.repo, pr.number, err)
+		return fmt.Errorf("failed to get %s for %s/%s#%d: %w", context, pr.org, pr.repo, pr.number, err)
 	}
 
 	start := time.Now()
@@ -394,7 +394,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	if err != nil {
 		return fetchErr("issue labels", err)
 	}
-	hasApprovedLabel := false
+	var hasApprovedLabel bool
 	for _, label := range issueLabels {
 		if label.Name == labels.Approved {
 			hasApprovedLabel = true
@@ -433,7 +433,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 		log.WithError(err).Errorf("Failed to find associated issue from PR body: %v", err)
 	}
 	approversHandler.RequireIssue = opts.IssueRequired
-	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, botUserChecker, hasApprovedLabel)
+	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, hasApprovedLabel)
 
 	// Author implicitly approves their own PR if config allows it
 	if opts.HasSelfApproval() {
@@ -493,29 +493,18 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	return nil
 }
 
-func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, number int, isBot func(string) bool, hasLabel bool) func() bool {
+func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, number int, hasLabel bool) func() bool {
 	findOut := func() bool {
 		if !hasLabel {
 			return false
 		}
-		events, err := ghc.ListIssueEvents(org, repo, number)
+		humanApproved, err := ghc.WasLabelAddedByHuman(org, repo, number, labels.Approved)
 		if err != nil {
-			log.WithError(err).Errorf("Failed to list issue events for %s/%s#%d.", org, repo, number)
+			log.WithError(err).Errorf("failed to check if %s label was added by bot", labels.Approved)
 			return false
-		}
-		var lastAdded github.ListedIssueEvent
-		for _, event := range events {
-			// Only consider "approved" label added events.
-			if event.Event != github.IssueActionLabeled || event.Label.Name != labels.Approved {
-				continue
-			}
-			lastAdded = event
 		}
 
-		if lastAdded.Actor.Login == "" || isBot(lastAdded.Actor.Login) {
-			return false
-		}
-		return true
+		return humanApproved
 	}
 
 	var cache *bool

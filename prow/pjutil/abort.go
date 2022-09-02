@@ -124,17 +124,17 @@ func TerminateOlderJobs(pjc patchClient, log *logrus.Entry, pjs []prowapi.ProwJo
 func PatchProwjob(ctx context.Context, pjc prowClient, log *logrus.Entry, srcPJ prowapi.ProwJob, destPJ prowapi.ProwJob) (*prowapi.ProwJob, error) {
 	srcPJData, err := json.Marshal(srcPJ)
 	if err != nil {
-		return nil, fmt.Errorf("marshal source prow job: %v", err)
+		return nil, fmt.Errorf("marshal source prow job: %w", err)
 	}
 
 	destPJData, err := json.Marshal(destPJ)
 	if err != nil {
-		return nil, fmt.Errorf("marshal dest prow job: %v", err)
+		return nil, fmt.Errorf("marshal dest prow job: %w", err)
 	}
 
 	patch, err := jsonpatch.CreateMergePatch(srcPJData, destPJData)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create JSON patch: %v", err)
+		return nil, fmt.Errorf("cannot create JSON patch: %w", err)
 	}
 
 	newPJ, err := pjc.Patch(ctx, srcPJ.Name, ktypes.MergePatchType, patch, metav1.PatchOptions{})

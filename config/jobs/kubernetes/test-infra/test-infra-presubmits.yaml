@@ -1,16 +1,19 @@
 presubmits:
   kubernetes/test-infra:
+  # pull-test-infra-bazel is deprecated, leave it here just in case. Will be
+  # completely removed once bazel footprint is removed from test-infra
   - name: pull-test-infra-bazel
     branches:
     - master
-    always_run: true
+    always_run: false
+    optional: true
     decorate: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20220314-46af1b01a6-test-infra
         command:
         - hack/bazel.sh
         args:
@@ -34,7 +37,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:v20200824-5d057db
+      - image: gcr.io/k8s-testimages/gubernator:v20220314-46af1b01a6
         command:
         - ./gubernator/test-gubernator.sh
         env:
@@ -44,47 +47,15 @@ presubmits:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: gubernator
 
-  - name: pull-test-infra-verify-file-perms
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-experimental
-        command:
-        - ./hack/verify-file-perms.sh
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: verify-file-perms
-
-  - name: pull-test-infra-yamllint
-    always_run: true
-    decorate: true
-    spec:
-      containers:
-      - image: quay.io/kubermatic/yamllint:0.1
-        command:
-        - yamllint
-        - -c
-        - config/jobs/.yamllint.conf
-        - config/jobs
-        - config/prow/cluster
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: verify-yaml
-
   # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
   - name: pull-test-infra-prow-checkconfig
     decorate: true
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20210608-953d79c16d
+      - image: gcr.io/k8s-prow/checkconfig:v20220901-5db9cf5fa2
         command:
-        - /checkconfig
+        - checkconfig
         args:
         - --config-path=config/prow/config.yaml
         - --job-config-path=config/jobs
@@ -103,31 +74,115 @@ presubmits:
   - name: pull-test-infra-integration
     branches:
     - master
-    always_run: true # TODO(fejta): merge into bazel test //...
+    skip_if_only_changed: '^config/jobs/'
     decorate: true
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-test-infra
         command:
         - runner.sh
         args:
         - ./prow/test/integration/integration-test.sh
-        - --config=ci
         env:
-        - name: BAZEL_FETCH_PLEASE
-          value: "true" # integration test fetches a very specific set of targets, define themin integration-test.sh instead of here
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
-            cpu: 1.9 # Peak usage around 1.5 cpu
-            memory: "8Gi" # Rough estimated usage of memory
+            # This job is very CPU intensive as building prow images in
+            # parallel
+            cpu: "14"
+      tolerations:
+      - key: "highcpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      nodeSelector:
+        highcpu: "true"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration
+  - name: pull-test-infra-unit-test
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    labels:
+      # Python unit tests run in docker.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: unit-test
+  - name: pull-test-infra-prow-image-build-test
+    branches:
+    - master
+    run_if_changed: '^(\.ko\.yaml|hack/(ts-rollup|make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+    decorate: true
+    labels:
+      # Building deck requires docker for typescript compilation.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - -C
+        - prow
+        - build-images
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # This job is very CPU intensive as building prow images in
+            # parallel
+            cpu: "14"
+      tolerations:
+      - key: "highcpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      nodeSelector:
+        highcpu: "true"
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: prow-image-build-test
+  - name: pull-test-infra-verify-lint
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    labels:
+      # Enable dind for linters that required docker to run, for example typescript.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: verify-test

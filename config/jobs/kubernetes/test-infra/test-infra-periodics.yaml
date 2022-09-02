@@ -1,5 +1,5 @@
 periodics:
-- name: ci-test-infra-bazel
+- name: ci-test-infra-continuous-test
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -7,128 +7,48 @@ periodics:
     base_ref: master
   interval: 1h
   labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
+    # Enable dind for linters that required docker to run, for example typescript.
+    preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-test-infra
       command:
-      - hack/bazel.sh
+      - runner.sh
       args:
+      - make
       - test
-      - --config=ci
-      - --nobuild_tests_only
-      - //...
-      env:
-      - name: BAZEL_FETCH_PLEASE
-        value: //...
+      - verify
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
   annotations:
     testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: ci-bazel
-    description: Runs bazel test //... on the test-infra repo every hour
-
-- name: ci-test-infra-triage
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  interval: 30m
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/triage:latest
-      imagePullPolicy: Always
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1)
-      # TODO: determine the optimal number of workers, 2*CPU-1 is an assumption
-      - name: NUM_WORKERS
-        value: "13"
-      command:
-      - "timeout"
-      args:
-      - "10800"
-      - "/update_summaries.sh"
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      # When changing CPUs, also change NUM_WORKERS above
-      resources:
-        requests:
-          cpu: 7
-          memory: 40Gi
-        limits:
-          cpu: 7
-          memory: 40Gi
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-  annotations:
-    testgrid-num-failures-to-alert: '18'
-    testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: triage
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
-
-- name: metrics-bigquery
-  interval: 24h
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20200824-5d057db
-      args:
-      - --scenario=execute
-      - --
-      - test-infra/metrics/bigquery.py
-      - --
-      - --bucket=gs://k8s-metrics
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-num-failures-to-alert: '2'
-    description: Runs BigQuery queries to generate data for metrics.
+    testgrid-tab-name: continuous
+    testgrid-broken-column-threshold: '0.5'
+    description: Runs `make test verify` on the test-infra repo every hour
 
 - name: metrics-kettle
   interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
   spec:
+    serviceAccountName: triage
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20200824-5d057db
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220427-c2db0f69b7
       args:
-      - --scenario=execute
-      - --
-      - test-infra/kettle/monitor.py
-      - --
+      - ./kettle/monitor.py
       - --stale=6
       - --table
       - k8s-gubernator:build.all
       - k8s-gubernator:build.week
       - k8s-gubernator:build.day
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'
     testgrid-dashboards: sig-testing-misc
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-broken-column-threshold: '0.5'
     description: Monitors Kettle's BigQuery database freshness.

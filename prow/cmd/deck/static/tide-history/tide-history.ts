@@ -86,7 +86,7 @@ function redrawOptions(opts: Options) {
 window.onload = (): void => {
   const topNavigator = document.getElementById("top-navigator")!;
   let navigatorTimeOut: any;
-  const main = document.querySelector("main")! as HTMLElement;
+  const main = document.querySelector("main")! ;
   main.onscroll = () => {
     topNavigator.classList.add("hidden");
     if (navigatorTimeOut) {
@@ -108,9 +108,9 @@ window.onload = (): void => {
   const filterBox = document.getElementById("filter-box")!;
   const options = filterBox.querySelectorAll("select")!;
   options.forEach((opt) => {
-      opt.onchange = () => {
-          redraw();
-      };
+    opt.onchange = () => {
+      redraw();
+    };
   });
 
   // set dropdown based on options from query string
@@ -121,7 +121,7 @@ window.onload = (): void => {
 function addOptions(options: string[], selectID: string): string | undefined {
   const sel = document.getElementById(selectID)! as HTMLSelectElement;
   while (sel.length > 1) {
-    sel.removeChild(sel.lastChild!);
+    sel.removeChild(sel.lastChild);
   }
   const param = getParameterByName(selectID);
   for (const option of options) {
@@ -145,7 +145,7 @@ function redraw(): void {
 
   function getSelection(name: string): string {
     const sel = (document.getElementById(name) as HTMLSelectElement).value;
-    if (sel && opts && !opts[name + 's' as keyof Options][sel]) {
+    if (sel && opts && !opts[`${name  }s` as keyof Options][sel]) {
       return "";
     }
     if (sel !== "") {
@@ -167,7 +167,7 @@ function redraw(): void {
 
   if (window.history && window.history.replaceState !== undefined) {
     if (args.length > 0) {
-      history.replaceState(null, "", "/tide-history?" + args.join('&'));
+      history.replaceState(null, "", `/tide-history?${  args.join('&')}`);
     } else {
       history.replaceState(null, "", "/tide-history");
     }
@@ -253,12 +253,12 @@ function redrawRecords(recs: FilteredRecord[]): void {
         `/github-link?dest=${rec.repo}/tree/${rec.branch}`,
       ));
       if (rec.baseSHA) {
-          r.appendChild(cell.link(
-            rec.baseSHA.slice(0, 7),
-            `/github-link?dest=${rec.repo}/commit/${rec.baseSHA}`,
-          ));
+        r.appendChild(cell.link(
+          rec.baseSHA.slice(0, 7),
+          `/github-link?dest=${rec.repo}/commit/${rec.baseSHA}`,
+        ));
       } else {
-          r.appendChild(cell.text(""));
+        r.appendChild(cell.text(""));
       }
     } else {
       // Don't render identical cells for the same pool+baseSHA
@@ -300,5 +300,5 @@ function targetCell(rec: FilteredRecord): HTMLTableDataCellElement {
 let idCounter = 0;
 function nextID(): string {
   idCounter++;
-  return "histID-" + String(idCounter);
+  return `histID-${  String(idCounter)}`;
 }

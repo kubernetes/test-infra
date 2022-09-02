@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,16 @@ set -o pipefail
 # Enables workload identity on a cluster
 
 if [[ $# != 3 ]]; then
-  echo "Usage: $(basename "$0") <project> <zone> <cluster>" >&2
+  echo "Usage: $(basename "$0") <project> <zone_or_region> <cluster>" >&2
+  exit 1
+fi
+
+# Require bash version >= 4.4
+if ((${BASH_VERSINFO[0]}<4)) || ( ((${BASH_VERSINFO[0]}==4)) && ((${BASH_VERSINFO[1]}<4)) ); then
+  echo "ERROR: This script requires a minimum bash version of 4.4, but got version of ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"
+  if [ "$(uname)" = 'Darwin' ]; then
+    echo "On macOS with homebrew 'brew install bash' is sufficient."
+  fi
   exit 1
 fi
 
@@ -37,6 +46,7 @@ pool_metadata=GKE_METADATA
 call-gcloud() {
   (
     set -o xtrace
+    # gcloud container accepts region or zone for either argument
     gcloud beta container "$@" "--project=$project" "--zone=$zone"
   )
 }

@@ -5,16 +5,13 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-org
+      - image: golang:1.18
         command:
-        - bazel
+        - make
         args:
         - test
-        - --config=ci
-        - //...
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
@@ -23,12 +20,13 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-org
+      - image: golang:1.18
         command:
-        - ./hack/verify-all.sh
+        - make
+        args:
+        - verify
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'

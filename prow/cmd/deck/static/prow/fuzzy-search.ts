@@ -33,8 +33,8 @@ export class FuzzySearch {
       return this.dict;
     }
     const dictScr = this.dict
-        .filter((x) => this.basicMatch(pattern, x))
-        .map((x) => ({score: this.getMaxScore(pattern, x), str: x}));
+      .filter((x) => this.basicMatch(pattern, x))
+      .map((x) => ({score: this.getMaxScore(pattern, x), str: x}));
     dictScr.sort((a, b) => {
       if (a.score === b.score) {
         return a.str < b.str ? -1 : (a.str > b.str ? 1 : 0);
@@ -69,11 +69,11 @@ export class FuzzySearch {
   /**
    * Calculates the score that a matching can get. The string is calculated based on 4
    * criteria:
-   *  1. +3 score for the matching that occurs near the beginning of the string.
-   *  2. +5 score for the matching that is not an alphabetical character.
-   *  3. +3 score for the matching that the string character is upper case.
-   *  4. +10 score for the matching that matches the uppercase which is just before a
-   *  separator.
+   * 1. +3 score for the matching that occurs near the beginning of the string.
+   * 2. +5 score for the matching that is not an alphabetical character.
+   * 3. +3 score for the matching that the string character is upper case.
+   * 4. +10 score for the matching that matches the uppercase which is just before a
+   * separator.
    */
   private calcScore(i: number, str: string): number {
     let score = 0;
@@ -129,7 +129,7 @@ export class FuzzySearch {
       const t = i % 2;
       for (let j = 0; j < str.length; j++) {
         let scoreVal = pttn[i].toLowerCase() === str[j].toLowerCase() ?
-            this.calcScore(j, str) : Number.MIN_SAFE_INTEGER;
+          this.calcScore(j, str) : Number.MIN_SAFE_INTEGER;
         if (streak > 4 && i === streak - 1 && j === streak - 1) {
           scoreVal += 10 * streak;
         }

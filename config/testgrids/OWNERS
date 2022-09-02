@@ -3,13 +3,13 @@ reviewers:
 - michelle192837
 - spiffxp
 - wojtek-t
-- shyamjvs
 - chases2
 approvers:
 - michelle192837
 - spiffxp
 - wojtek-t
-- shyamjvs
 - chases2
+emeritus_approvers:
+- shyamjvs
 labels:
 - area/testgrid

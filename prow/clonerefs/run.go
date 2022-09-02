@@ -18,6 +18,7 @@ package clonerefs
 
 import (
 	"crypto/md5"
+	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -27,25 +28,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/sirupsen/logrus"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
 var cloneFunc = clone.Run
-
-func readOauthToken(path string) (string, clone.Command, error) {
-	data, err := ioutil.ReadFile(path)
-	cmd := clone.Command{
-		Command: fmt.Sprintf("golang: read %q", path),
-		Output:  "redacted",
-	}
-	if err != nil {
-		cmd.Error = err.Error()
-		return "", cmd, err
-	}
-	return strings.TrimSpace(string(data)), cmd, nil
-}
 
 func (o *Options) createRecords() []clone.Record {
 	var rec clone.Record
@@ -72,16 +63,44 @@ func (o *Options) createRecords() []clone.Record {
 		env = append(env, envVar)
 	}
 
-	var oauthToken string
+	var userGenerator github.UserGenerator
+	var tokenGenerator github.TokenGenerator
 	if o.OauthTokenFile != "" {
-		token, cmd, err := readOauthToken(o.OauthTokenFile)
-		rec.Commands = append(rec.Commands, cmd)
-		if err != nil {
+		if err := secret.Add(o.OauthTokenFile); err != nil {
 			logrus.WithError(err).Error("Failed to read oauth key file.")
 			rec.Failed = true
 			return []clone.Record{rec}
 		}
-		oauthToken = token
+		tokenGenerator = func(_ string) (string, error) {
+			return string(secret.GetSecret(o.OauthTokenFile)), nil
+		}
+	}
+	if o.GitHubAppID != "" && o.GitHubAppPrivateKeyFile != "" {
+		if err := secret.Add(o.GitHubAppPrivateKeyFile); err != nil {
+			logrus.WithError(err).Error("Failed to read GitHub App private key file.")
+			rec.Failed = true
+			return []clone.Record{rec}
+		}
+		var err error
+		tokenGenerator, userGenerator, _, err = github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
+			Censor: secret.Censor,
+			AppID:  o.GitHubAppID,
+			AppPrivateKey: func() *rsa.PrivateKey {
+				raw := secret.GetSecret(o.GitHubAppPrivateKeyFile)
+				privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
+				if err != nil {
+					logrus.WithError(err).Error("Failed to parse GitHub App private key.")
+					return nil
+				}
+				return privateKey
+			},
+			Bases: o.GitHubAPIEndpoints,
+		})
+		if err != nil {
+			logrus.WithError(err).Error("Failed to construct github client")
+			rec.Failed = true
+			return []clone.Record{rec}
+		}
 	}
 
 	// Print md5 sum of cookiefile for debugging purpose
@@ -120,7 +139,7 @@ func (o *Options) createRecords() []clone.Record {
 		go func() {
 			defer wg.Done()
 			for ref := range input {
-				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, oauthToken)
+				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, userGenerator, tokenGenerator)
 			}
 		}()
 	}
@@ -145,11 +164,11 @@ func (o Options) Run() error {
 	results := o.createRecords()
 	logData, err := json.Marshal(results)
 	if err != nil {
-		return fmt.Errorf("marshal clone records: %v", err)
+		return fmt.Errorf("marshal clone records: %w", err)
 	}
 
 	if err := ioutil.WriteFile(o.Log, logData, 0755); err != nil {
-		return fmt.Errorf("write clone records: %v", err)
+		return fmt.Errorf("write clone records: %w", err)
 	}
 
 	var failed int
@@ -208,7 +227,7 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 		}
 		cmds = append(cmds, cmd)
 		if err != nil {
-			return "", cmds, fmt.Errorf("create sshDir %s: %v", sshDir, err)
+			return "", cmds, fmt.Errorf("create sshDir %s: %w", sshDir, err)
 		}
 	}
 
@@ -220,18 +239,18 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 	if err != nil {
 		cmd.Error = err.Error()
 		cmds = append(cmds, cmd)
-		return "", cmds, fmt.Errorf("append %s: %v", knownHostsFile, err)
+		return "", cmds, fmt.Errorf("append %s: %w", knownHostsFile, err)
 	}
 
 	if _, err := f.Write([]byte(strings.Join(fingerprints, "\n"))); err != nil {
 		cmd.Error = err.Error()
 		cmds = append(cmds, cmd)
-		return "", cmds, fmt.Errorf("write fingerprints to %s: %v", knownHostsFile, err)
+		return "", cmds, fmt.Errorf("write fingerprints to %s: %w", knownHostsFile, err)
 	}
 	if err := f.Close(); err != nil {
 		cmd.Error = err.Error()
 		cmds = append(cmds, cmd)
-		return "", cmds, fmt.Errorf("close %s: %v", knownHostsFile, err)
+		return "", cmds, fmt.Errorf("close %s: %w", knownHostsFile, err)
 	}
 	cmds = append(cmds, cmd)
 	logrus.Infof("Updated known_hosts in file: %s", knownHostsFile)
@@ -244,7 +263,7 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 	if err != nil {
 		cmd.Error = err.Error()
 		cmds = append(cmds, cmd)
-		return "", cmds, fmt.Errorf("lookup ssh path: %v", err)
+		return "", cmds, fmt.Errorf("lookup ssh path: %w", err)
 	}
 	cmds = append(cmds, cmd)
 	return fmt.Sprintf("GIT_SSH_COMMAND=%s -o UserKnownHostsFile=%s", ssh, knownHostsFile), cmds, nil
@@ -264,7 +283,7 @@ func addSSHKeys(paths []string) ([]string, []clone.Command, error) {
 	}
 	cmds = append(cmds, cmd)
 	if err != nil {
-		return []string{}, cmds, fmt.Errorf("start ssh-agent: %v", err)
+		return []string{}, cmds, fmt.Errorf("start ssh-agent: %w", err)
 	}
 	logrus.Info("Started SSH agent")
 	// ssh-agent will output three lines of text, in the form:
@@ -311,7 +330,7 @@ func addSSHKeys(paths []string) ([]string, []clone.Command, error) {
 			logrus.Infof("Added SSH key at %s", path)
 			return nil
 		}); err != nil {
-			return env, cmds, fmt.Errorf("walking path %q: %v", keyPath, err)
+			return env, cmds, fmt.Errorf("walking path %q: %w", keyPath, err)
 		}
 	}
 	return env, cmds, nil

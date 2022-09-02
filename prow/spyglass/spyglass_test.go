@@ -88,6 +88,9 @@ func TestMain(m *testing.M) {
 			BucketName: "test-bucket",
 			Name:       "logs/example-ci-run/403/build-log.txt",
 			Content:    []byte("Oh wow\nlogs\nthis is\ncrazy"),
+			Metadata: map[string]string{
+				"foo": "bar",
+			},
 		},
 		{
 			BucketName: "test-bucket",
@@ -215,7 +218,7 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	os.Exit(m.Run())
 }
@@ -416,7 +419,7 @@ func TestJobPath(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	testCases := []struct {
 		name       string
@@ -500,7 +503,7 @@ func TestJobPath(t *testing.T) {
 	}
 }
 
-func TestProwJobName(t *testing.T) {
+func TestProwJob(t *testing.T) {
 	kc := fkc{
 		prowapi.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{Name: "flying-whales-1"},
@@ -514,6 +517,7 @@ func TestProwJobName(t *testing.T) {
 				},
 			},
 			Status: prowapi.ProwJobStatus{
+				State:   prowapi.TriggeredState,
 				PodName: "flying-whales",
 				BuildID: "1111",
 			},
@@ -530,6 +534,7 @@ func TestProwJobName(t *testing.T) {
 				},
 			},
 			Status: prowapi.ProwJobStatus{
+				State:   prowapi.PendingState,
 				PodName: "flying-whales",
 				BuildID: "2222",
 			},
@@ -541,6 +546,7 @@ func TestProwJobName(t *testing.T) {
 				Job:  "undecorated-job",
 			},
 			Status: prowapi.ProwJobStatus{
+				State:   prowapi.SuccessState,
 				PodName: "flying-whales",
 				BuildID: "1",
 			},
@@ -557,48 +563,64 @@ func TestProwJobName(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	testCases := []struct {
-		name       string
-		src        string
-		expJobPath string
-		expError   bool
+		name        string
+		src         string
+		expJob      string
+		expJobPath  string
+		expJobState prowapi.ProwJobState
+		expError    bool
 	}{
 		{
-			name:       "non-presubmit job in GCS without trailing /",
-			src:        "gcs/kubernetes-jenkins/logs/example-periodic-job/1111/",
-			expJobPath: "flying-whales-1",
+			name:        "non-presubmit job in GCS without trailing /",
+			src:         "gcs/kubernetes-jenkins/logs/example-periodic-job/1111/",
+			expJob:      "example-periodic-job",
+			expJobPath:  "flying-whales-1",
+			expJobState: prowapi.TriggeredState,
 		},
 		{
-			name:       "presubmit job in GCS with trailing /",
-			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-presubmit-job/2222/",
-			expJobPath: "flying-whales-2",
+			name:        "presubmit job in GCS with trailing /",
+			src:         "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-presubmit-job/2222/",
+			expJob:      "example-presubmit-job",
+			expJobPath:  "flying-whales-2",
+			expJobState: prowapi.PendingState,
 		},
 		{
-			name:       "non-presubmit Prow job",
-			src:        "prowjob/example-periodic-job/1111",
-			expJobPath: "flying-whales-1",
+			name:        "non-presubmit Prow job",
+			src:         "prowjob/example-periodic-job/1111",
+			expJob:      "example-periodic-job",
+			expJobPath:  "flying-whales-1",
+			expJobState: prowapi.TriggeredState,
 		},
 		{
-			name:       "Prow presubmit job",
-			src:        "prowjob/example-presubmit-job/2222",
-			expJobPath: "flying-whales-2",
+			name:        "Prow presubmit job",
+			src:         "prowjob/example-presubmit-job/2222",
+			expJob:      "example-presubmit-job",
+			expJobPath:  "flying-whales-2",
+			expJobState: prowapi.PendingState,
 		},
 		{
-			name:       "nonexistent job",
-			src:        "prowjob/example-periodic-job/0000",
-			expJobPath: "",
+			name:        "nonexistent job",
+			src:         "prowjob/example-periodic-job/0000",
+			expJob:      "",
+			expJobPath:  "",
+			expJobState: "",
 		},
 		{
-			name:       "job missing name",
-			src:        "prowjob/missing-name-job/1",
-			expJobPath: "",
+			name:        "job missing name",
+			src:         "prowjob/missing-name-job/1",
+			expJob:      "missing-name-job",
+			expJobPath:  "",
+			expJobState: "",
 		},
 		{
-			name:       "previously invalid key type is now valid but nonexistent",
-			src:        "oh/my/glob/drama/bomb",
-			expJobPath: "",
+			name:        "previously invalid key type is now valid but nonexistent",
+			src:         "oh/my/glob/drama/bomb",
+			expJob:      "",
+			expJobPath:  "",
+			expJobState: "",
 		},
 		{
 			name:     "invalid GCS path",
@@ -611,7 +633,7 @@ func TestProwJobName(t *testing.T) {
 		fakeOpener := io.NewGCSOpener(fakeGCSClient)
 		fca := config.Agent{}
 		sg := New(context.Background(), fakeJa, fca.Config, fakeOpener, false)
-		jobPath, err := sg.ProwJobName(tc.src)
+		job, jobPath, jobState, err := sg.ProwJob(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
 			continue
@@ -620,8 +642,14 @@ func TestProwJobName(t *testing.T) {
 			t.Errorf("test %q: JobPath(%q) returned unexpected error %v", tc.name, tc.src, err)
 			continue
 		}
+		if job != tc.expJob {
+			t.Errorf("test %q: Job(%q) expected %q, got %q", tc.name, tc.src, tc.expJob, job)
+		}
 		if jobPath != tc.expJobPath {
 			t.Errorf("test %q: JobPath(%q) expected %q, got %q", tc.name, tc.src, tc.expJobPath, jobPath)
+		}
+		if jobState != tc.expJobState {
+			t.Errorf("test %q: JobState(%q) expected %q, got %q", tc.name, tc.src, tc.expJobState, jobState)
 		}
 	}
 }
@@ -670,7 +698,7 @@ func TestRunPath(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	testCases := []struct {
 		name       string
@@ -794,7 +822,7 @@ func TestRunToPR(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	testCases := []struct {
 		name      string
@@ -980,7 +1008,7 @@ func TestProwToGCS(t *testing.T) {
 				},
 			},
 		}
-		fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+		fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 		fakeJa.Start()
 		sg := New(context.Background(), fakeJa, fakeConfigAgent.Config, io.NewGCSOpener(fakeGCSClient), false)
 
@@ -1113,7 +1141,7 @@ func TestGCSPathRoundTrip(t *testing.T) {
 				},
 			},
 		}
-		fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+		fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 		fakeJa.Start()
 
 		fakeGCSClient := fakeGCSServer.Client()
@@ -1192,7 +1220,7 @@ func TestTestGridLink(t *testing.T) {
 	}
 
 	kc := fkc{}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 
 	tg := TestGrid{c: &tgconf.Configuration{
@@ -1285,7 +1313,7 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 	fakeJa.Start()
 
 	fakeGCSClient := fakeGCSServer.Client()
@@ -1469,7 +1497,7 @@ func TestResolveSymlink(t *testing.T) {
 
 	for _, tc := range testCases {
 		fakeConfigAgent := fca{}
-		fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+		fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 		fakeJa.Start()
 
 		fakeGCSClient := fakeGCSServer.Client()
@@ -1571,7 +1599,7 @@ func TestExtraLinks(t *testing.T) {
 					},
 				},
 			}
-			fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+			fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 			fakeJa.Start()
 			sg := New(context.Background(), fakeJa, fakeConfigAgent.Config, io.NewGCSOpener(gcsClient), false)
 

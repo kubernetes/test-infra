@@ -151,6 +151,7 @@ type KubernetesConfig struct {
 	AzureCNIURLWindows               string            `json:"azureCNIURLWindows,omitempty"`
 	Addons                           []KubernetesAddon `json:"addons,omitempty"`
 	NetworkPolicy                    string            `json:"networkPolicy,omitempty"`
+	NetworkMode                      string            `json:"networkMode,omitempty"`
 	CloudProviderRateLimitQPS        float64           `json:"cloudProviderRateLimitQPS,omitempty"`
 	CloudProviderRateLimitBucket     int               `json:"cloudProviderRateLimitBucket,omitempty"`
 	APIServerConfig                  map[string]string `json:"apiServerConfig,omitempty"`
@@ -197,20 +198,21 @@ type MasterProfile struct {
 }
 
 type AgentPoolProfile struct {
-	Name                   string              `json:"name"`
-	Count                  int                 `json:"count"`
-	Distro                 string              `json:"distro"`
-	VMSize                 string              `json:"vmSize"`
-	OSType                 string              `json:"osType,omitempty"`
-	AvailabilityProfile    string              `json:"availabilityProfile"`
-	AvailabilityZones      []string            `json:"availabilityZones,omitempty"`
-	IPAddressCount         int                 `json:"ipAddressCount,omitempty"`
-	PreProvisionExtension  map[string]string   `json:"preProvisionExtension,omitempty"`
-	Extensions             []map[string]string `json:"extensions,omitempty"`
-	OSDiskSizeGB           int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	EnableVMSSNodePublicIP bool                `json:"enableVMSSNodePublicIP,omitempty"`
-	StorageProfile         string              `json:"storageProfile,omitempty"`
-	UltraSSDEnabled        bool                `json:"ultraSSDEnabled,omitempty"`
+	Name                                string              `json:"name"`
+	Count                               int                 `json:"count"`
+	Distro                              string              `json:"distro"`
+	VMSize                              string              `json:"vmSize"`
+	OSType                              string              `json:"osType,omitempty"`
+	AvailabilityProfile                 string              `json:"availabilityProfile"`
+	AvailabilityZones                   []string            `json:"availabilityZones,omitempty"`
+	IPAddressCount                      int                 `json:"ipAddressCount,omitempty"`
+	PreProvisionExtension               map[string]string   `json:"preProvisionExtension,omitempty"`
+	Extensions                          []map[string]string `json:"extensions,omitempty"`
+	OSDiskSizeGB                        int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	EnableVMSSNodePublicIP              bool                `json:"enableVMSSNodePublicIP,omitempty"`
+	StorageProfile                      string              `json:"storageProfile,omitempty"`
+	UltraSSDEnabled                     bool                `json:"ultraSSDEnabled,omitempty"`
+	AcceleratedNetworkingEnabledWindows bool                `json:"acceleratedNetworkingEnabledWindows,omitempty"`
 }
 
 type AzureClient struct {
@@ -274,12 +276,12 @@ func (az *AzureClient) DeployTemplate(ctx context.Context, resourceGroupName, de
 			},
 		})
 	if err != nil {
-		return de, fmt.Errorf("cannot create deployment: %v", err)
+		return de, fmt.Errorf("cannot create deployment: %w", err)
 	}
 
 	err = future.WaitForCompletionRef(ctx, az.deploymentsClient.Client)
 	if err != nil {
-		return de, fmt.Errorf("cannot get the create deployment future response: %v", err)
+		return de, fmt.Errorf("cannot get the create deployment future response: %w", err)
 	}
 
 	return future.Result(az.deploymentsClient)
@@ -316,7 +318,7 @@ func (az *AzureClient) DeleteResourceGroup(ctx context.Context, groupName string
 	if err == nil {
 		future, err := az.groupsClient.Delete(ctx, groupName)
 		if err != nil {
-			return fmt.Errorf("cannot delete resource group %v: %v", groupName, err)
+			return fmt.Errorf("cannot delete resource group %v: %w", groupName, err)
 		}
 		err = future.WaitForCompletionRef(ctx, az.groupsClient.Client)
 		if err != nil {
@@ -331,7 +333,7 @@ func (az *AzureClient) DeleteResourceGroup(ctx context.Context, groupName string
 func (az *AzureClient) AssignOwnerRoleToIdentity(ctx context.Context, resourceGroupName, identityName string) error {
 	identity, err := az.msiClient.Get(ctx, resourceGroupName, identityName)
 	if err != nil {
-		return fmt.Errorf("failed to get identity's client ID: %v", err)
+		return fmt.Errorf("failed to get identity's client ID: %w", err)
 	}
 
 	identityPrincipalID := identity.PrincipalID.String()
@@ -347,7 +349,7 @@ func (az *AzureClient) AssignOwnerRoleToIdentity(ctx context.Context, resourceGr
 	}
 
 	if _, err := az.authorizationClient.Create(ctx, scope, uuid.NewV1().String(), roleAssignmentParameters); err != nil {
-		return fmt.Errorf("failed to assign 'Owner' role to user assigned identity: %v", err)
+		return fmt.Errorf("failed to assign 'Owner' role to user assigned identity: %w", err)
 	}
 
 	return nil
@@ -367,12 +369,12 @@ func getAzCredentials() (*Creds, error) {
 	content, err := ioutil.ReadFile(*aksCredentialsFile)
 	log.Printf("Reading credentials file %v", *aksCredentialsFile)
 	if err != nil {
-		return nil, fmt.Errorf("error reading credentials file %v %v", *aksCredentialsFile, err)
+		return nil, fmt.Errorf("error reading credentials file %v %w", *aksCredentialsFile, err)
 	}
 	config := Config{}
 	err = toml.Unmarshal(content, &config)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing credentials file %v %v", *aksCredentialsFile, err)
+		return nil, fmt.Errorf("error parsing credentials file %v %w", *aksCredentialsFile, err)
 	}
 	return &config.Creds, nil
 }
@@ -425,7 +427,7 @@ func downloadFromURL(url string, destination string, retry int) (string, error) 
 		if err := httpRead(url, f); err == nil {
 			break
 		}
-		err = fmt.Errorf("url=%s failed get %v: %v", url, destination, err)
+		err = fmt.Errorf("url=%s failed get %v: %w", url, destination, err)
 		if i == retry-1 {
 			return "", err
 		}
@@ -456,15 +458,15 @@ func populateAzureCloudConfig(isVMSS bool, credentials Creds, azureEnvironment, 
 
 	cloudConfig, err := json.MarshalIndent(cc, "", "    ")
 	if err != nil {
-		return fmt.Errorf("error creating Azure cloud config: %v", err)
+		return fmt.Errorf("error creating Azure cloud config: %w", err)
 	}
 
 	cloudConfigPath := path.Join(outputDir, "azure.json")
 	if err := ioutil.WriteFile(cloudConfigPath, cloudConfig, 0644); err != nil {
-		return fmt.Errorf("cannot write Azure cloud config to file: %v", err)
+		return fmt.Errorf("cannot write Azure cloud config to file: %w", err)
 	}
 	if err := os.Setenv("CLOUD_CONFIG", cloudConfigPath); err != nil {
-		return fmt.Errorf("error setting CLOUD_CONFIG=%s: %v", cloudConfigPath, err)
+		return fmt.Errorf("error setting CLOUD_CONFIG=%s: %w", cloudConfigPath, err)
 	}
 
 	return nil

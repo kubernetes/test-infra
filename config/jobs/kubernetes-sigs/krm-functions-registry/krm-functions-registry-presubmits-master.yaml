@@ -1,0 +1,30 @@
+presubmits:
+  kubernetes-sigs/krm-functions-registry:
+  - name: pull-krm-functions-registry-test-master
+    decorate: true
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: sigs.k8s.io/krm-functions-registry
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+        # we use this image because we need docker-in-docker and go.
+      - image: gcr.io/k8s-staging-test-infra/krte:v20220822-9f275332ba-1.23
+        command:
+        # docker-in-docker is set up in wrapper.sh
+        - wrapper.sh
+        - ./test.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4000m"
+    annotations:
+      testgrid-dashboards: sig-cli-misc
+      testgrid-tab-name: krm-functions-registry-presubmit-master
+      description: krm-functions-registry presubmit tests on master branch

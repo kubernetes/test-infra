@@ -40,7 +40,6 @@ import (
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	slackclient "k8s.io/test-infra/prow/slack"
@@ -59,7 +58,6 @@ type options struct {
 	pubsubWorkers         int
 	githubWorkers         int
 	slackWorkers          int
-	gcsWorkers            int
 	k8sGCSWorkers         int
 	blobStorageWorkers    int
 	k8sBlobStorageWorkers int
@@ -78,15 +76,7 @@ type options struct {
 }
 
 func (o *options) validate() error {
-
-	// TODO(krzyzacy): gerrit && github report are actually stateful..
-	// Need a better design to re-enable parallel reporting
-	if o.gerritWorkers > 1 {
-		logrus.Warn("gerrit reporter only supports one worker")
-		o.gerritWorkers = 1
-	}
-
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -96,7 +86,7 @@ func (o *options) validate() error {
 
 	if o.gerritWorkers > 0 {
 		if len(o.gerritProjects) == 0 {
-			return errors.New("--gerrit-projects must be set")
+			logrus.Info("--gerrit-projects is not set, using global config")
 		}
 
 		if o.cookiefilePath == "" {
@@ -111,28 +101,9 @@ func (o *options) validate() error {
 	}
 
 	if o.slackWorkers > 0 {
-		if o.slackTokenFile == "" {
-			return errors.New("--slack-token-file must be set")
+		if o.slackTokenFile == "" && len(o.additionalSlackTokenFiles) == 0 {
+			return errors.New("one of --slack-token-file or --additional-slack-token-files must be set")
 		}
-	}
-
-	if o.gcsWorkers > 0 {
-		logrus.Warn("--gcs-workers is deprecated and will be removed in August 2020. Use --blob-storage-workers instead.")
-		// return an error when the old and new flags are both set
-		if o.blobStorageWorkers != 0 {
-			return errors.New("only one of --gcs-workers or --blog-storage-workers can be set at the same time")
-		}
-		// use gcsWorkers if blobStorageWorkers is not set
-		o.blobStorageWorkers = o.gcsWorkers
-	}
-	if o.k8sGCSWorkers > 0 {
-		logrus.Warn("--kubernetes-gcs-workers is deprecated and will be removed in August 2020. Use --kubernetes-blob-storage-workers instead.")
-		// return an error when the old and new flags are both set
-		if o.k8sBlobStorageWorkers != 0 {
-			return errors.New("only one of --kubernetes-gcs-workers or --kubernetes-blog-storage-workers can be set at the same time")
-		}
-		// use k8sGCSWorkers if k8sBlobStorageWorkers is not set
-		o.k8sBlobStorageWorkers = o.k8sGCSWorkers
 	}
 
 	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement, &o.config} {
@@ -155,11 +126,9 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
 	fs.Var(&o.additionalSlackTokenFiles, "additional-slack-token-files", "Map of additional slack token files. example: --additional-slack-token-files=foo=/etc/foo-slack-tokens/token, repeat flag for each host")
-	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
-	fs.IntVar(&o.k8sGCSWorkers, "kubernetes-gcs-workers", 0, "Number of Kubernetes-specific GCS report workers (0 means disabled)")
 	fs.IntVar(&o.blobStorageWorkers, "blob-storage-workers", 0, "Number of blob storage report workers (0 means disabled)")
 	fs.IntVar(&o.k8sBlobStorageWorkers, "kubernetes-blob-storage-workers", 0, "Number of Kubernetes-specific blob storage report workers (0 means disabled)")
-	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-gcs-workers are enabled (0 - > none, 1.0 -> all)")
+	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-blob-storage-workers are enabled (0 - > none, 1.0 -> all)")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
@@ -203,11 +172,6 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(nil); err != nil {
-		logrus.WithError(err).Fatal("unable to start secret agent")
-	}
-
 	restCfg, err := o.client.InfrastructureClusterConfig(o.dryrun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get kubeconfig")
@@ -237,25 +201,31 @@ func main() {
 		slackConfig := func(refs *prowapi.Refs) config.SlackReporter {
 			return cfg().SlackReporterConfigs.GetSlackReporter(refs)
 		}
-		if err := secretAgent.Add(o.slackTokenFile); err != nil {
-			logrus.WithError(err).Fatal("could not read slack token")
-		}
-		hasReporter = true
-		var additionalSlackSecretsGetter map[string]func() []byte
-		for host, additionalTokenFile := range o.additionalSlackTokenFiles {
-			additionalSlackSecretsGetter[host] = secretAgent.GetTokenGenerator(additionalTokenFile)
-			if err := secretAgent.Add(additionalTokenFile); err != nil {
+		tokensMap := make(map[string]func() []byte)
+		if o.slackTokenFile != "" {
+			tokensMap[slackreporter.DefaultHostName] = secret.GetTokenGenerator(o.slackTokenFile)
+			if err := secret.Add(o.slackTokenFile); err != nil {
 				logrus.WithError(err).Fatal("could not read slack token")
 			}
 		}
-		slackReporter := slackreporter.New(slackConfig, o.dryrun, secretAgent.GetTokenGenerator(o.slackTokenFile), additionalSlackSecretsGetter)
+		hasReporter = true
+		for host, additionalTokenFile := range o.additionalSlackTokenFiles {
+			tokensMap[host] = secret.GetTokenGenerator(additionalTokenFile)
+			if err := secret.Add(additionalTokenFile); err != nil {
+				logrus.WithError(err).Fatal("could not read slack token")
+			}
+		}
+		slackReporter := slackreporter.New(slackConfig, o.dryrun, tokensMap)
 		if err := crier.New(mgr, slackReporter, o.slackWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct slack reporter controller")
 		}
 	}
 
 	if o.gerritWorkers > 0 {
-		gerritReporter, err := gerritreporter.NewReporter(o.cookiefilePath, o.gerritProjects, mgr.GetCache())
+		orgRepoConfigGetter := func() *config.GerritOrgRepoConfigs {
+			return cfg().Gerrit.OrgReposConfig
+		}
+		gerritReporter, err := gerritreporter.NewReporter(orgRepoConfigGetter, o.cookiefilePath, o.gerritProjects, mgr.GetClient())
 		if err != nil {
 			logrus.WithError(err).Fatal("Error starting gerrit reporter")
 		}
@@ -275,32 +245,34 @@ func main() {
 
 	if o.githubWorkers > 0 {
 		if o.github.TokenPath != "" {
-			if err := secretAgent.Add(o.github.TokenPath); err != nil {
+			if err := secret.Add(o.github.TokenPath); err != nil {
 				logrus.WithError(err).Fatal("Error reading GitHub credentials")
 			}
 		}
 
-		githubClient, err := o.github.GitHubClient(secretAgent, o.dryrun)
+		githubClient, err := o.github.GitHubClient(o.dryrun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
 
 		hasReporter = true
-		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent))
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent), mgr.GetCache())
 		if err := crier.New(mgr, githubReporter, o.githubWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct github reporter controller")
 		}
 	}
 
 	if o.blobStorageWorkers > 0 || o.k8sBlobStorageWorkers > 0 {
-		opener, err := io.NewOpener(context.Background(), o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
+		opener, err := o.storage.StorageClient(context.Background())
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating opener")
 		}
 
 		hasReporter = true
-		if err := crier.New(mgr, gcsreporter.New(cfg, opener, o.dryrun), o.blobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
-			logrus.WithError(err).Fatal("failed to construct gcsreporter controller")
+		if o.blobStorageWorkers > 0 {
+			if err := crier.New(mgr, gcsreporter.New(cfg, opener, o.dryrun), o.blobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
+				logrus.WithError(err).Fatal("failed to construct gcsreporter controller")
+			}
 		}
 
 		if o.k8sBlobStorageWorkers > 0 {
@@ -323,8 +295,11 @@ func main() {
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	metrics.ExposeMetrics("crier", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
-	if err := mgr.Start(interrupts.Context()); err != nil {
-		logrus.WithError(err).Fatal("controller manager failed")
-	}
+	interrupts.Run(func(ctx context.Context) {
+		if err := mgr.Start(ctx); err != nil {
+			logrus.WithError(err).Fatal("Controller manager exited with error.")
+		}
+	})
+	interrupts.WaitForGracefulShutdown()
 	logrus.Info("Ended gracefully")
 }

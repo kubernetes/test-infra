@@ -1,0 +1,275 @@
+postsubmits:
+  kubernetes/test-infra:
+    #
+    # job images, e.g. images/*
+    #
+    - name: post-test-infra-push-bazelbuild
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/bazelbuild/'
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: bazelbuild
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the image builder's own image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/bazelbuild/
+    - name: post-test-infra-push-benchmarkjunit
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^pkg/benchmarkjunit/'
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: benchmarkjunit
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the image builder's own image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - pkg/benchmarkjunit/
+    - name: post-test-infra-push-bigquery
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^(images/bigquery|scenarios)/'
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: bigquery
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the bigquery image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/bigquery/
+    - name: post-test-infra-push-bootstrap
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^(images/bootstrap|scenarios)/'
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: bootstrap
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the bootstrap image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/bootstrap/
+    - name: post-test-infra-push-gcb-docker-gcloud-canary
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/gcb-docker-gcloud/'
+      annotations:
+        testgrid-dashboards: sig-testing-canaries, sig-k8s-infra-canaries, sig-k8s-infra-gcb
+        testgrid-tab-name: gcb-docker-gcloud-canary
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the image builder's own image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/gcb-docker-gcloud/
+    - name: post-test-infra-push-gcloud-in-go
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/gcloud-in-go/'
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: gcloud-in-go
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the gcloud-in-go image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/gcloud-in-go/
+    - name: post-test-infra-push-image-builder
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/builder/'
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: image-builder
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the image builder's own image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/builder/
+    - name: post-test-infra-push-krte
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/(krte/|kubekins-e2e/variants.yaml)'
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: krte
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the krte image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/krte/
+    - name: post-test-infra-push-kubekins-e2e
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: kubekins-e2e
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the kubekins-e2e image
+      run_if_changed: '^(images/kubekins-e2e|kubetest|boskos|logexporter)/'
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/kubekins-e2e/
+    #
+    # components, e.g. kettle/, triage/
+    #
+    - name: post-test-infra-push-kettle-canary
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-canaries, sig-k8s-infra-canaries, sig-k8s-infra-gcb
+        testgrid-tab-name: kettle-canary
+        testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the kettle image
+      run_if_changed: '^kettle/'
+      decorate: true
+      decoration_config:
+        timeout: 50m
+        grace_period: 10m
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - kettle/
+    - name: post-test-infra-push-triage
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^triage/'
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: "triage"
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the triage image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --env-passthrough=PULL_BASE_REF
+          - triage/

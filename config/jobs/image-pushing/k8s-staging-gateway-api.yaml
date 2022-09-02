@@ -3,16 +3,16 @@ postsubmits:
     - name: post-gateway-api-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-gateway-api
+        testgrid-dashboards: sig-network-gateway-api, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^main$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -21,5 +21,5 @@ postsubmits:
               - --project=k8s-staging-gateway-api
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-gateway-api-gcb
-              - --env-passthrough=PULL_BASE_REF
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - .

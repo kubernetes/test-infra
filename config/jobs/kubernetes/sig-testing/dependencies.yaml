@@ -21,7 +21,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         args:
         - make
         - verify
@@ -46,13 +46,12 @@ presubmits:
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
-      fork-per-release: "true"
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
     always_run: false
-    skip_report: true
+    skip_report: false
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -61,7 +60,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-go-canary
         args:
         - make
         - verify

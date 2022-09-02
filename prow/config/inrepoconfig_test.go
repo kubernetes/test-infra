@@ -19,9 +19,13 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
 	"testing"
 
 	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -36,7 +40,7 @@ func TestDefaultProwYAMLGetterV2(t *testing.T) {
 }
 
 func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
-	org, repo := "org", "repo"
+	org, defaultRepo := "org", "repo"
 	testCases := []struct {
 		name              string
 		baseContent       map[string][]byte
@@ -44,6 +48,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 		config            *Config
 		dontPassGitClient bool
 		validate          func(*ProwYAML, error) error
+		repo              string
 	}{
 		// presubmits
 		{
@@ -53,7 +58,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
@@ -68,7 +73,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
@@ -83,7 +88,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
@@ -117,7 +122,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			config: &Config{JobConfig: JobConfig{
 				PresubmitsStatic: map[string][]Presubmit{
-					org + "/" + repo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
+					org + "/" + defaultRepo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
 				},
 			}},
 			validate: func(_ *ProwYAML, err error) error {
@@ -138,7 +143,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Presubmits)
@@ -173,7 +178,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
@@ -188,7 +193,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
@@ -222,7 +227,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			config: &Config{JobConfig: JobConfig{
 				PostsubmitsStatic: map[string][]Postsubmit{
-					org + "/" + repo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
+					org + "/" + defaultRepo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
 				},
 			}},
 			validate: func(_ *ProwYAML, err error) error {
@@ -243,7 +248,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
@@ -275,7 +280,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			name: "No prow.yaml, no error, no nullpointer",
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if p == nil {
 					return errors.New("prowYAML is nil")
@@ -293,7 +298,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
@@ -320,7 +325,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
@@ -336,7 +341,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "kurt" {
 					return fmt.Errorf(`expected exactly one presubmit with name "kurt", got %v`, p.Presubmits)
@@ -352,7 +357,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -370,7 +375,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -388,7 +393,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 2 ||
 					p.Postsubmits[0].Name != "hans" ||
@@ -406,7 +411,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 2 ||
 					p.Postsubmits[0].Name != "hans" ||
@@ -424,7 +429,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presets); n != 2 ||
 					p.Presets[0].Labels["hans"] != "hansValue" ||
@@ -442,7 +447,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presets); n != 2 ||
 					p.Presets[0].Labels["hans"] != "hansValue" ||
@@ -465,7 +470,7 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -495,7 +500,7 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -513,7 +518,7 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -523,12 +528,33 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 				return nil
 			},
 		},
+		{
+			name: "Basic happy path (presubmits, gerrit repo)",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %w", err)
+				}
+				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+			repo: "repo/name",
+		},
 	}
 
 	for idx := range testCases {
 		tc := testCases[idx]
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
+			repo := defaultRepo
+			if len(tc.repo) > 0 {
+				repo = tc.repo
+			}
 
 			lg, gc, err := clients()
 			if err != nil {
@@ -585,30 +611,37 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			if tc.dontPassGitClient {
 				testGC = nil
 			}
+			testGCCached := NewInRepoConfigGitCache(testGC)
 
-			var p *ProwYAML
+			var p, pCached *ProwYAML
+			var errCached error
 			if headSHA == baseSHA {
-				p, err = defaultProwYAMLGetter(tc.config, testGC, org+"/"+repo, baseSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA)
+				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, baseSHA)
 			} else {
-				p, err = defaultProwYAMLGetter(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
+				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, baseSHA, headSHA)
 			}
 
 			if err := tc.validate(p, err); err != nil {
 				t.Fatal(err)
 			}
+			if errCached := tc.validate(pCached, errCached); errCached != nil {
+				t.Fatal(errCached)
+			}
 		})
 	}
 }
 
-func TestDefaultProwYAMLGetter_RejectsNonGitHubRepo(t *testing.T) {
-	testDefaultProwYAMLGetter_RejectsNonGitHubRepo(localgit.New, t)
+func TestDefaultProwYAMLGetter_RejectsJustOrg(t *testing.T) {
+	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.New, t)
 }
 
-func TestDefaultProwYAMLGetter_RejectsNonGitHubRepoV2(t *testing.T) {
-	testDefaultProwYAMLGetter_RejectsNonGitHubRepo(localgit.NewV2, t)
+func TestDefaultProwYAMLGetter_RejectsJustOrgV2(t *testing.T) {
+	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.NewV2, t)
 }
 
-func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t *testing.T) {
+func testDefaultProwYAMLGetter_RejectsJustOrg(clients localgit.Clients, t *testing.T) {
 	lg, gc, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
@@ -627,7 +660,159 @@ func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t 
 		t.Fatalf("Making fake repo: %v", err)
 	}
 	expectedErrMsg := `didn't get two results when splitting repo identifier "my-repo"`
-	if _, err := defaultProwYAMLGetter(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
+	if _, err := prowYAMLGetterWithDefaults(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
 		t.Errorf("Error %v does not have expected message %s", err, expectedErrMsg)
+	}
+}
+
+type testClientFactory struct {
+	git.ClientFactory // This will be nil during testing, we override the functions that are used.
+	rcMap             map[string]git.RepoClient
+	clientsCreated    int
+}
+
+func (cf *testClientFactory) ClientFor(org, repo string) (git.RepoClient, error) {
+	cf.clientsCreated++
+	// Returning this RepoClient ensures that only Fetch() is called and that Close() is not.
+
+	return &fetchOnlyNoCleanRepoClient{cf.rcMap[repo]}, nil
+}
+
+type fetchOnlyNoCleanRepoClient struct {
+	git.RepoClient // This will be nil during testing, we override the functions that are allowed to be used.
+}
+
+func (rc *fetchOnlyNoCleanRepoClient) Fetch(arg ...string) error {
+	return nil
+}
+
+// Override Close to make sure when Close is called it would error out
+func (rc *fetchOnlyNoCleanRepoClient) Close() error {
+	panic("This is not supposed to be called")
+}
+
+// TestInRepoConfigGitCacheConcurrency validates the following properties of InRepoConfigGitCache
+// - RepoClients are protected from concurrent use.
+// - Use of a RepoClient for one repo does not prevent concurrent use of a RepoClient for another repo.
+// - RepoClients are reused, only 1 client is created per repo.
+func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
+	t.Parallel()
+
+	lg, c, _ := localgit.NewV2()
+	rcMap := make(map[string]git.RepoClient)
+	for _, repo := range []string{"repo1", "repo2"} {
+		if err := lg.MakeFakeRepo("org", repo); err != nil {
+			t.Fatal(err)
+		}
+		rc, err := c.ClientFor("org", repo)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rcMap[repo] = rc
+	}
+	cf := &testClientFactory{
+		rcMap: rcMap,
+	}
+	cache := NewInRepoConfigGitCache(cf)
+	org, repo1, repo2 := "org", "repo1", "repo2"
+	// block channels are populated from the main thread, signal channels are read from the main thread.
+	signal := make(chan bool)
+	// We make Threads 1 and 2 both write to sharedRepo1State, so that the race
+	// detector can catch a case where both threads could attempt to write to it
+	// at the same time. As long as ClientFor() hands out locked clients (that
+	// are only unlocked with Clean()), Threads 1 and 2 will not write to
+	// sharedRepo1State at the same time.
+	sharedRepo1State := 0
+
+	// Thread 1: gets a client for repo1, signals on signal1, then blocks on block1 before Clean()ing the repo1 client.
+	go func() {
+		client, err := cache.ClientFor(org, repo1)
+		if err != nil {
+			t.Errorf("Unexpected error getting repo client for thread 1: %v.", err)
+			return
+		}
+		sharedRepo1State++
+		client.Clean()
+		signal <- true
+	}()
+
+	// Thread 2: gets a client for repo1, signals success on signal2, then Clean()s the repo1 client.
+	go func() {
+		client, err := cache.ClientFor(org, repo1)
+		if err != nil {
+			t.Errorf("Unexpected error getting repo client for thread 2: %v.", err)
+			return
+		}
+		sharedRepo1State++
+		client.Clean()
+		signal <- true
+	}()
+
+	// Thread 3: gets a client for repo2, signals success on signal3, then Clean()s the repo2 client.
+	go func() {
+		client, err := cache.ClientFor(org, repo2)
+		if err != nil {
+			t.Errorf("Unexpected error getting repo client for thread 3: %v.", err)
+			return
+		}
+		client.Clean()
+		signal <- true
+	}()
+
+	for i := 0; i < 3; i++ {
+		<-signal
+	}
+
+	if cf.clientsCreated != 2 {
+		t.Errorf("Expected 2 clients to be created, but got %d.", cf.clientsCreated)
+	}
+}
+
+func TestInRepoConfigClean(t *testing.T) {
+	t.Parallel()
+	org, repo := "org", "repo"
+
+	lg, c, _ := localgit.NewV2()
+	rcMap := make(map[string]git.RepoClient)
+	if err := lg.MakeFakeRepo(org, repo); err != nil {
+		t.Fatal(err)
+	}
+	rc, err := c.ClientFor(org, repo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rcMap[repo] = rc
+
+	cf := &testClientFactory{
+		rcMap: rcMap,
+	}
+	cache := NewInRepoConfigGitCache(cf)
+
+	// First time clone should work
+	repoClient, err := cache.ClientFor(org, repo)
+	if err != nil {
+		t.Fatalf("Unexpected error getting repo client for thread 1: %v.", err)
+	}
+	repoClient.Clean()
+
+	// Now dirty the repo
+	casted := cache.(*InRepoConfigGitCache)
+	clonedRepo := casted.cache["org/repo"]
+	dir := clonedRepo.RepoClient.Directory()
+	f := path.Join(dir, "new-file")
+	if err := ioutil.WriteFile(f, []byte("something"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Second time should be none dirty
+	repoClient, err = cache.ClientFor(org, repo)
+	if err != nil {
+		t.Fatalf("Unexpected error getting repo client for thread 1: %v.", err)
+	}
+	repoClient.Clean()
+
+	_, err = os.Stat(f)
+	if err == nil || !os.IsNotExist(err) {
+		t.Fatalf("%s should have been deleted", f)
 	}
 }

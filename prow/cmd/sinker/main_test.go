@@ -877,33 +877,20 @@ func TestFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
-		{
 			name: "explicitly set --dry-run=true",
 			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "http://whatever",
+				"--dry-run": "true",
 			},
 			expected: func(o *options) {
 				o.dryRun = true
-				o.kubernetes.DeckURI = "http://whatever"
 			},
 		},
 		{
 			name: "dry run defaults to true",
-			args: map[string]string{
-				"--deck-url": "http://whatever",
-			},
-			del: sets.NewString("--dry-run"),
+			args: map[string]string{},
+			del:  sets.NewString("--dry-run"),
 			expected: func(o *options) {
 				o.dryRun = true
-				o.kubernetes.DeckURI = "http://whatever"
 			},
 		},
 	}
@@ -916,6 +903,8 @@ func TestFlags(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				dryRun:                 false,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),

@@ -10,6 +10,14 @@ approve:
     # * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
     ignore_review_state: false
 
+    # IssueRequired indicates if an associated issue is required for approval in
+    # the specified repos.
+    issue_required: true
+
+    # LgtmActsAsApprove indicates that the lgtm command should be used to
+    # indicate approval
+    lgtm_acts_as_approve: true
+
     # PrProcessLink is the link to the help page which explains the code review process.
     # The default value is "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process".
     pr_process_link: ' '
@@ -43,9 +51,43 @@ blockades:
     repos:
       - ""
 blunderbuss:
+    # ExcludeApprovers controls whether approvers are considered to be
+    # reviewers. By default, approvers are considered as reviewers if
+    # insufficient reviewers are available. If ExcludeApprovers is true,
+    # approvers will never be considered as reviewers.
+    exclude_approvers: true
+
+    # IgnoreAuthors skips requesting reviewers for specified users.
+    # This is useful when a bot user or admin opens a PR that will be
+    # merged regardless of approvals.
+    ignore_authors:
+      - ""
+
+    # IgnoreDrafts instructs the plugin to ignore assigning reviewers
+    # to the PR that is in Draft state. Default it's false.
+    ignore_drafts: true
+
     # ReviewerCount is the minimum number of reviewers to request
     # reviews from. Defaults to requesting reviews from 2 reviewers
     request_count: 0
+
+    # UseStatusAvailability controls whether blunderbuss will consider GitHub's
+    # status availability when requesting reviews for users. This will use at one
+    # additional token per successful reviewer (and potentially more depending on
+    # how many busy reviewers it had to pass over).
+    use_status_availability: true
+branch_cleaner:
+    # PreservedBranches is a map of org/repo branches
+    # format:
+    # ```
+    # preserved_branches:
+    # <org>: ["master", "release"]
+    # <org/repo>: ["master", "release"]
+    # ```
+    # branches in this allow map would be exempt from branch gc
+    # even if the branches are already merged into the target branch
+    preserved_branches:
+        "": null
 bugzilla:
     # Default settings mapped by branch in any repo in any org.
     # The `*` wildcard will apply to all branches.
@@ -358,8 +400,34 @@ config_updater:
 
             # Name of ConfigMap
             name: ' '
+
+            # UseFullPathAsKey controls if the full path of the original file relative to the
+            # repository root should be used as the configmap key. Slashes will be replaced by
+            # dashes. Using this avoids the need for unique file names in the original repo.
+            use_full_path_as_key: true
 dco:
     "":
+        # ContributingBranch allows setting a custom branch where to find CONTRIBUTING.md
+        contributing_branch: ' '
+
+        # ContributingPath is used to override the default path to CONTRIBUTING.md
+        contributing_path: ' '
+
+        # ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
+        contributing_repo: ' '
+
+        # SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
+        skip_dco_check_for_collaborators: true
+
+        # SkipDCOCheckForMembers is used to skip DCO check for trusted org members
+        skip_dco_check_for_members: true
+
+        # TrustedApps defines list of apps which commits will not be checked for DCO singoff.
+        # The list should contain usernames of each GitHub App without [bot] suffix.
+        # By default, this option is ignored.
+        trusted_apps:
+          - ""
+
         # TrustedOrg is the org whose members' commits will not be checked for DCO signoff
         # if the skip DCO option is enabled. The default is the PR's org.
         trusted_org: ' '
@@ -390,6 +458,14 @@ heart:
     # Compiles into CommentRe during config load.
     commentregexp: ' '
 help:
+    # Guidelines summary is the message displayed when an issue is labeled with help-wanted and/or good-first-issue reflecting
+    # a summary of the guidelines that an issue should follow to qualify as help-wanted or good-first-issue. The main purpose
+    # of a summary is to try and increase visibility of these guidelines to the author of the issue alongisde providing the
+    # HelpGuidelinesURL which will provide a more detailed version of the guidelines.
+
+    # HelpGuidelinesSummary is the summary of the guide lines for a help-wanted issue.
+    help_guidelines_summary: ' '
+
     # HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
     # The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
     help_guidelines_url: ' '
@@ -404,10 +480,25 @@ label:
     # on top of the existing "kind/*", "priority/*", and "area/*" labels.
     additional_labels:
       - ""
+
+    # RestrictedLabels allows to configure labels that can only be modified
+    # by users that belong to at least one of the configured teams. The key
+    # defines to which repos this applies and can be `*` for global, an org
+    # or a repo in org/repo notation.
+    restricted_labels:
+        "": null
 lgtm:
   - # Repos is either of the form org/repos or just org.
     repos:
       - ""
+
+    # ReviewActsAsLgtm indicates that a GitHub review of "approve" or "request changes"
+    # acts as adding or removing the lgtm label
+    review_acts_as_lgtm: true
+
+    # StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
+    # squashed commits before removing lgtm labels
+    store_tree_hash: true
 
     # WARNING: This disables the security mechanism that prevents a malicious member (or
     # compromised GitHub account) from merging arbitrary code. Use with caution.
@@ -418,7 +509,9 @@ lgtm:
 milestone_applier:
     "": null
 override:
-    # AllowedGitHubTeams is a map of repositories (eg "k/k") to list of GitHub team slugs,
+    allow_top_level_owners: true
+
+    # AllowedGitHubTeams is a map of orgs and/or repositories (eg "org" or "org/repo") to list of GitHub team slugs,
     # members of which are allowed to override contexts
     allowed_github_teams:
         "": null
@@ -432,11 +525,6 @@ owners:
         "":
             owners: ' '
             owners_aliases: ' '
-
-    # LabelsBlackList will be removed after October 2021, use
-    # labels_denylist instead
-    labels_blacklist:
-      - ""
 
     # LabelsDenyList holds a list of labels that should not be present in any
     # OWNERS file, preventing their automatic addition by the owners-label plugin.
@@ -521,6 +609,9 @@ require_matching_label:
     # Defaults to '5s'.
     grace_period: ' '
 
+    # Issues is a bool indicating if this config applies to issues.
+    issues: true
+
     # MissingComment is the comment to post when we add the MissingLabel to an
     # issue. This is typically used to explain why MissingLabel was added and
     # how to move forward.
@@ -534,6 +625,9 @@ require_matching_label:
     # Org is the GitHub organization that this config applies to.
     org: ' '
 
+    # PRs is a bool indicating if this config applies to PRs.
+    prs: true
+
     # Regexp is the string specifying the regular expression used to look for
     # matching labels.
     regexp: ' '
@@ -541,6 +635,9 @@ require_matching_label:
     # Repo is the GitHub repository within Org that this config applies to.
     # This fields may be omitted to apply this config across all repos in Org.
     repo: ' '
+retitle:
+    # AllowClosedIssues allows retitling closed/merged issues and PRs.
+    allow_closed_issues: true
 sigmention:
     # Regexp parses comments and should return matches to team mentions.
     # These mentions enable labeling issues or PRs with sig/team labels.
@@ -578,13 +675,30 @@ slack:
         repos:
           - ""
 triggers:
-  - # JoinOrgURL is a link that redirects users to a location where they
+  - # IgnoreOkToTest makes trigger ignore /ok-to-test comments.
+    # This is a security mitigation to only allow testing from trusted users.
+    ignore_ok_to_test: true
+
+    # JoinOrgURL is a link that redirects users to a location where they
     # should be able to read more about joining the organization in order
     # to become trusted members. Defaults to the GitHub link of TrustedOrg.
     join_org_url: ' '
 
+    # OnlyOrgMembers requires PRs and/or /ok-to-test comments to come from org members.
+    # By default, trigger also include repo collaborators.
+    only_org_members: true
+
     # Repos is either of the form org/repos or just org.
     repos:
+      - ""
+
+    # TriggerGitHubWorkflows enables workflows run by github to be triggered by prow.
+    trigger_github_workflows: true
+
+    # TrustedApps is the explicit list of GitHub apps whose PRs will be automatically
+    # considered as trusted. The list should contain usernames of each GitHub App without [bot] suffix.
+    # By default, trigger will ignore this list.
+    trusted_apps:
       - ""
 
     # TrustedOrg is the org whose members' PRs will be automatically built for
@@ -594,7 +708,11 @@ triggers:
     # January 2020.
     trusted_org: ' '
 welcome:
-  - # MessageTemplate is the welcome message template to post on new-contributor PRs
+  - # Post welcome message in all cases, even if PR author is not an existing
+    # contributor or part of the organization
+    always_post: true
+
+    # MessageTemplate is the welcome message template to post on new-contributor PRs
     # For the info struct see prow/plugins/welcome/welcome.go's PRInfo
     message_template: ' '
 

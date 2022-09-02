@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strconv"
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -39,6 +40,8 @@ import (
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
 func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[string]string) prowapi.ProwJob {
 	labels, annotations := decorate.LabelsAndAnnotationsForSpec(spec, extraLabels, extraAnnotations)
+	specCopy := spec.DeepCopy()
+	setReportDefault(specCopy)
 
 	return prowapi.ProwJob{
 		TypeMeta: metav1.TypeMeta{
@@ -50,11 +53,39 @@ func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Spec: *spec.DeepCopy(),
+		Spec: *specCopy,
 		Status: prowapi.ProwJobStatus{
 			StartTime: metav1.Now(),
 			State:     prowapi.TriggeredState,
 		},
+	}
+}
+
+// setReportDefault sets Slack to false when states to report is an empty slice.
+//
+// `omitempty` is required for fields that are optional, otherwise strict prowjob CRD
+// validation will reject prowjob without the field.
+// For `ReporterConfig.Slack.JobStatesToReport`, it's certainly not a required field
+// for all prowjobs.
+// However, when omitempty is presented, `JobStatesToReport: []` roundtrip into
+// `JobStatesToReport: nil`, which prevents a prowjob from overriding global Slack
+// report configuration(ref: https://github.com/kubernetes/test-infra/issues/22888#issuecomment-881513368).
+// Use a boolean instead so that we can use `omitempty`.
+// `report: false` has highest priority when it comes to decide whether
+// this job should report or not. `false` strictly means not, which could be
+// resulted from either of the following config:
+// - `job_state_to_report: []`
+// - `report: false`
+// `report: true` also depends on other conditions, such as channel name etc.
+func setReportDefault(spec *prowapi.ProwJobSpec) {
+	if spec.ReporterConfig == nil || spec.ReporterConfig.Slack == nil {
+		return
+	}
+	// `job_states_to_report: []` means false
+	if spec.ReporterConfig.Slack.JobStatesToReport != nil && len(spec.ReporterConfig.Slack.JobStatesToReport) == 0 {
+		spec.ReporterConfig.Slack.Report = boolPtr(false)
+	} else {
+		spec.ReporterConfig.Slack.Report = boolPtr(true)
 	}
 }
 
@@ -87,17 +118,21 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 // NewPresubmit converts a config.Presubmit into a prowapi.ProwJob.
 // The prowapi.Refs are configured correctly per the pr, baseSHA.
 // The eventGUID becomes a github.EventGUID label.
-func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) prowapi.ProwJob {
+func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string, additionalLabels map[string]string) prowapi.ProwJob {
 	refs := createRefs(pr, baseSHA)
 	labels := make(map[string]string)
 	for k, v := range job.Labels {
 		labels[k] = v
 	}
+	for k, v := range additionalLabels {
+		labels[k] = v
+	}
+	labels[github.EventGUID] = eventGUID
+	labels[kube.IsOptionalLabel] = strconv.FormatBool(job.Optional)
 	annotations := make(map[string]string)
 	for k, v := range job.Annotations {
 		annotations[k] = v
 	}
-	labels[github.EventGUID] = eventGUID
 	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
 }
 
@@ -176,6 +211,8 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		ReporterConfig:  jb.ReporterConfig,
 		RerunAuthConfig: jb.RerunAuthConfig,
 		Hidden:          jb.Hidden,
+		ProwJobDefault:  jb.ProwJobDefault,
+		JobQueueName:    jb.JobQueueName,
 	}
 }
 
@@ -261,6 +298,7 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 	fields["name"] = pj.ObjectMeta.Name
 	fields["job"] = pj.Spec.Job
 	fields["type"] = pj.Spec.Type
+	fields["state"] = pj.Status.State
 	if len(pj.ObjectMeta.Labels[github.EventGUID]) > 0 {
 		fields[github.EventGUID] = pj.ObjectMeta.Labels[github.EventGUID]
 	}
@@ -317,4 +355,8 @@ func ClusterToCtx(cluster string) string {
 		return kube.DefaultClusterAlias
 	}
 	return cluster
+}
+
+func boolPtr(b bool) *bool {
+	return &b
 }

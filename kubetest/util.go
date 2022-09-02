@@ -25,6 +25,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -91,7 +94,7 @@ type instanceGroup struct {
 func getLatestClusterUpTime(gcloudJSON string) (time.Time, error) {
 	igs := []instanceGroup{}
 	if err := json.Unmarshal([]byte(gcloudJSON), &igs); err != nil {
-		return time.Time{}, fmt.Errorf("error when unmarshal json: %v", err)
+		return time.Time{}, fmt.Errorf("error when unmarshal json: %w", err)
 	}
 
 	latest := time.Time{}
@@ -99,7 +102,7 @@ func getLatestClusterUpTime(gcloudJSON string) (time.Time, error) {
 	for _, ig := range igs {
 		created, err := time.Parse(time.RFC3339, ig.CreationTimestamp)
 		if err != nil {
-			return time.Time{}, fmt.Errorf("error when parse time from %s: %v", ig.CreationTimestamp, err)
+			return time.Time{}, fmt.Errorf("error when parse time from %s: %w", ig.CreationTimestamp, err)
 		}
 
 		if created.After(latest) {
@@ -153,9 +156,76 @@ func getLatestGKEVersion(project, zone, region, releasePrefix string) (string, e
 	return "v" + latestValid, nil
 }
 
+type gkeVersion struct {
+	major    int
+	minor    int
+	patch    int
+	gkePatch int
+}
+
+func parseGkeVersion(s string) (*gkeVersion, error) {
+	regex := "([0-9]+).([0-9]+).([0-9]+)-gke.([0-9]+)"
+	re := regexp.MustCompile(regex)
+	mat := re.FindStringSubmatch(s)
+	if len(mat) < 4 {
+		return nil, fmt.Errorf("Could not parse gke version with regex: %s", regex)
+	}
+	major, err := strconv.Atoi(mat[1])
+	if err != nil {
+		return nil, err
+	}
+	minor, err := strconv.Atoi(mat[2])
+	if err != nil {
+		return nil, err
+	}
+	patch, err := strconv.Atoi(mat[3])
+	if err != nil {
+		return nil, err
+	}
+	gkePatch, err := strconv.Atoi(mat[4])
+	if err != nil {
+		return nil, err
+	}
+
+	return &gkeVersion{major, minor, patch, gkePatch}, nil
+}
+
+func (g gkeVersion) greater(o gkeVersion) bool {
+	if g.major != o.major {
+		return g.major > o.major
+	}
+	if g.minor != o.minor {
+		return g.minor > o.minor
+	}
+	if g.patch != o.patch {
+		return g.patch > o.patch
+	}
+	return g.gkePatch > o.gkePatch
+}
+
+func (g gkeVersion) String() string {
+	return fmt.Sprintf("%d.%d.%d-gke.%d", g.major, g.minor, g.patch, g.gkePatch)
+}
+
+func getGKELatestChannelVersion(raw []string) (string, error) {
+	if len(raw) == 0 {
+		return "", fmt.Errorf("channel doest not have valid versions")
+	}
+	v := make([]gkeVersion, 0, len(raw))
+	for _, s := range raw {
+		version, err := parseGkeVersion(s)
+		if err != nil {
+			return "", err
+		}
+		v = append(v, *version)
+	}
+	sort.Slice(v, func(i, j int) bool { return v[i].greater(v[j]) })
+	return v[0].String(), nil
+}
+
 // (only works on gke)
 // getChannelGKEVersion will return master version from a GKE release channel.
-func getChannelGKEVersion(project, zone, region, gkeChannel string) (string, error) {
+func getChannelGKEVersion(project, zone, region, gkeChannel, extractionMethod string) (string, error) {
 	cmd := []string{
 		"container",
 		"get-server-config",
@@ -184,8 +254,9 @@ func getChannelGKEVersion(project, zone, region, gkeChannel string) (string, err
 	*/
 
 	type channel struct {
-		Channel        string `json:"channel"`
-		DefaultVersion string `json:"defaultVersion"`
+		Channel        string   `json:"channel"`
+		DefaultVersion string   `json:"defaultVersion"`
+		ValidVersions  []string `json:"validVersions"`
 	}
 
 	type channels struct {
@@ -216,7 +287,15 @@ func getChannelGKEVersion(project, zone, region, gkeChannel string) (string, err
 
 	for _, channel := range c.Channels {
 		if strings.EqualFold(channel.Channel, gkeChannel) {
-			return "v" + channel.DefaultVersion, nil
+			if strings.EqualFold(extractionMethod, "latest") {
+				latestVersion, err := getGKELatestChannelVersion(channel.ValidVersions)
+				if err != nil {
+					return "", err
+				}
+				return "v" + latestVersion, nil
+			} else {
+				return "v" + channel.DefaultVersion, nil
+			}
 		}
 	}
 
@@ -228,7 +307,7 @@ func getChannelGKEVersion(project, zone, region, gkeChannel string) (string, err
 func gcsWrite(dest string, contents []byte) error {
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
-		return fmt.Errorf("error creating temp file: %v", err)
+		return fmt.Errorf("error creating temp file: %w", err)
 	}
 
 	defer func() {
@@ -238,11 +317,11 @@ func gcsWrite(dest string, contents []byte) error {
 	}()
 
 	if _, err := f.Write(contents); err != nil {
-		return fmt.Errorf("error writing temp file: %v", err)
+		return fmt.Errorf("error writing temp file: %w", err)
 	}
 
 	if err := f.Close(); err != nil {
-		return fmt.Errorf("error closing temp file: %v", err)
+		return fmt.Errorf("error closing temp file: %w", err)
 	}
 
 	return control.FinishRunning(exec.Command("gsutil", "cp", f.Name(), dest))
@@ -256,7 +335,7 @@ func setKubeShhBastionEnv(gcpProject, gcpZone, sshProxyInstanceName string) erro
 		"--zone="+gcpZone,
 		"--format=get(networkInterfaces[0].accessConfigs[0].natIP)"))
 	if err != nil {
-		return fmt.Errorf("failed to get the external IP address of the '%s' instance: %v",
+		return fmt.Errorf("failed to get the external IP address of the '%s' instance: %w",
 			sshProxyInstanceName, err)
 	}
 	address := strings.TrimSpace(string(value))

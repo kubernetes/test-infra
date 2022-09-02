@@ -17,6 +17,7 @@ limitations under the License.
 package links
 
 import (
+	"reflect"
 	"testing"
 
 	"k8s.io/test-infra/prow/config"
@@ -92,6 +93,83 @@ func TestToLink(t *testing.T) {
 		t.Run(tc.jobPath, func(t *testing.T) {
 			if got := toLink(tc.jobPath, tc.content, spyglassConfig); got != tc.want {
 				t.Errorf("toLink(%q, %q, %+v)=%q, want: %+v", tc.jobPath, tc.content, spyglassConfig, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestParseLinkFile(t *testing.T) {
+	spyglassConfig := config.Spyglass{
+		GCSBrowserPrefix: "http://gcsbrowser/",
+	}
+	tests := []struct {
+		jobPath  string
+		content  []byte
+		hasError bool
+		want     linkGroup
+	}{
+		{
+			jobPath: "artifacts/dashboard.link.txt",
+			content: []byte("http://website.com/asdasds?adssasds\n"),
+			want: linkGroup{
+				Title: "Dashboard",
+				Links: []link{
+					{
+						Name: "Dashboard",
+						URL:  "http://website.com/asdasds?adssasds",
+						Link: "https://google.com/url?q=http%3A%2F%2Fwebsite.com%2Fasdasds%3Fadssasds",
+					},
+				},
+			},
+		},
+		{
+			jobPath: "artifacts/debugging-links.link.json",
+			content: []byte(`{
+					"title": "Debugging links group",
+					"links": [
+						{
+							"name": "Some random website",
+							"url": "https://example.com"
+						},
+						{
+							"name": "Link from GCS",
+							"url": "gs://some-bucket/some-file"
+						}
+					]
+				}`),
+			want: linkGroup{
+				Title: "Debugging links group",
+				Links: []link{
+					{
+						Name: "Some random website",
+						URL:  "https://example.com",
+						Link: "https://google.com/url?q=https%3A%2F%2Fexample.com",
+					},
+					{
+						Name: "Link from GCS",
+						URL:  "gs://some-bucket/some-file",
+						Link: "http://gcsbrowser/some-bucket/some-file",
+					},
+				},
+			},
+		},
+		{
+			jobPath:  "artifacts/debugging-links.link.json",
+			content:  []byte(`some unparseable json file contents`),
+			hasError: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.jobPath, func(t *testing.T) {
+			got, err := parseLinkFile(tc.jobPath, tc.content, spyglassConfig)
+			if err != nil && !tc.hasError {
+				t.Fatalf("unexpected error for parseLinkFile(%q, %q, %+v): %v", tc.jobPath, tc.content, spyglassConfig, err)
+			}
+			if err == nil && tc.hasError {
+				t.Fatalf("expected error for parseLinkFile(%q, %q, %+v), got none", tc.jobPath, tc.content, spyglassConfig)
+			}
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("parseLinkFile(%q, %q, %+v)=%q, want: %v", tc.jobPath, tc.content, spyglassConfig, got, tc.want)
 			}
 		})
 	}

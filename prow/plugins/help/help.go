@@ -17,6 +17,7 @@ limitations under the License.
 package help
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -39,26 +40,65 @@ var (
 	goodFirstIssueMsgPruneMatch = "This request has been marked as suitable for new contributors."
 )
 
-func helpMsg(helpGuidelinesURL string) string {
+type issueGuidelines struct {
+	issueGuidelinesURL     string
+	issueGuidelinesSummary string
+}
+
+func (ig issueGuidelines) helpMsg() string {
+	if len(ig.issueGuidelinesSummary) != 0 {
+		return ig.helpMsgWithGuidelineSummary()
+	}
 	return `
 	This request has been marked as needing help from a contributor.
 
-Please ensure the request meets the requirements listed [here](` + helpGuidelinesURL + `).
+Please ensure the request meets the requirements listed [here](` + ig.issueGuidelinesURL + `).
 
 If this request no longer meets these requirements, the label can be removed
 by commenting with the ` + "`/remove-help`" + ` command.
 `
 }
 
-func goodFirstIssueMsg(helpGuidelinesURL string) string {
+func (ig issueGuidelines) helpMsgWithGuidelineSummary() string {
+	return fmt.Sprintf(`
+	This request has been marked as needing help from a contributor.
+
+### Guidelines
+%s
+
+For more details on the requirements of such an issue, please see [here](%s) and ensure that they are met.
+
+If this request no longer meets these requirements, the label can be removed
+by commenting with the `+"`/remove-help`"+` command.
+`, ig.issueGuidelinesSummary, ig.issueGuidelinesURL)
+}
+
+func (ig issueGuidelines) goodFirstIssueMsg() string {
+	if len(ig.issueGuidelinesSummary) != 0 {
+		return ig.goodFirstIssueMsgWithGuidelinesSummary()
+	}
 	return `
 	This request has been marked as suitable for new contributors.
 
-Please ensure the request meets the requirements listed [here](` + helpGuidelinesURL + "#good-first-issue" + `).
+Please ensure the request meets the requirements listed [here](` + ig.issueGuidelinesURL + "#good-first-issue" + `).
 
 If this request no longer meets these requirements, the label can be removed
 by commenting with the ` + "`/remove-good-first-issue`" + ` command.
 `
+}
+
+func (ig issueGuidelines) goodFirstIssueMsgWithGuidelinesSummary() string {
+	return fmt.Sprintf(`
+	This request has been marked as suitable for new contributors.
+
+### Guidelines
+%s
+
+For more details on the requirements of such an issue, please see [here](%s#good-first-issue) and ensure that they are met.
+
+If this request no longer meets these requirements, the label can be removed
+by commenting with the `+"`/remove-good-first-issue`"+` command.
+`, ig.issueGuidelinesSummary, ig.issueGuidelinesURL)
 }
 
 func init() {
@@ -98,10 +138,14 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	if err != nil {
 		return err
 	}
-	return handle(pc.GitHubClient, pc.Logger, cp, &e, cfg.Help.HelpGuidelinesURL)
+	ig := issueGuidelines{
+		issueGuidelinesURL:     cfg.Help.HelpGuidelinesURL,
+		issueGuidelinesSummary: cfg.Help.HelpGuidelinesSummary,
+	}
+	return handle(pc.GitHubClient, pc.Logger, cp, &e, ig)
 }
 
-func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent, helpGuidelinesURL string) error {
+func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent, ig issueGuidelines) error {
 	// Only consider open issues and new comments.
 	if e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -145,8 +189,8 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 	// If PR does not have the good-first-issue label and we are asking for it to be added,
 	// add both the good-first-issue and help labels
 	if !hasGoodFirstIssue && helpGoodFirstIssueRe.MatchString(e.Body) {
-		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, goodFirstIssueMsg(helpGuidelinesURL))); err != nil {
-			log.WithError(err).Errorf("Failed to create comment \"%s\".", goodFirstIssueMsg(helpGuidelinesURL))
+		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, ig.goodFirstIssueMsg())); err != nil {
+			log.WithError(err).Errorf("Failed to create comment \"%s\".", ig.goodFirstIssueMsg())
 		}
 
 		if err := gc.AddLabel(org, repo, e.Number, labels.GoodFirstIssue); err != nil {
@@ -165,8 +209,8 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 	// If PR does not have the help label and we're asking it to be added,
 	// add the label
 	if !hasHelp && helpRe.MatchString(e.Body) {
-		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, helpMsg(helpGuidelinesURL))); err != nil {
-			log.WithError(err).Errorf("Failed to create comment \"%s\".", helpMsg(helpGuidelinesURL))
+		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, ig.helpMsg())); err != nil {
+			log.WithError(err).Errorf("Failed to create comment \"%s\".", ig.helpMsg())
 		}
 		if err := gc.AddLabel(org, repo, e.Number, labels.Help); err != nil {
 			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labels.Help)

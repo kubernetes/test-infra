@@ -21,11 +21,12 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
-type roundTripperCreator func(partitionKey string) http.RoundTripper
+type roundTripperCreator func(partitionKey string, expiresAt *time.Time) http.RoundTripper
 
 // partitioningRoundTripper is a http.RoundTripper
 var _ http.RoundTripper = &partitioningRoundTripper{}
@@ -49,15 +50,33 @@ func getCachePartition(r *http.Request) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(r.Header.Get("Authorization"))))
 }
 
+func getExpiry(r *http.Request) *time.Time {
+	raw := r.Header.Get(TokenExpiryAtHeader)
+	if raw == "" {
+		return nil
+	}
+	parsed, err := time.Parse(time.RFC3339, raw)
+	if err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"path":       r.URL.Path,
+			"raw_value":  raw,
+			"user-agent": r.Header.Get("User-Agent"),
+		}).Errorf("failed to parse value of %s header as RFC3339 time", TokenExpiryAtHeader)
+		return nil
+	}
+	return &parsed
+}
+
 func (prt *partitioningRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	cachePartition := getCachePartition(r)
+	expiresAt := getExpiry(r)
 
 	prt.lock.Lock()
 	roundTripper, found := prt.roundTrippers[cachePartition]
 	if !found {
 		logrus.WithField("cache-parition-key", cachePartition).Info("Creating a new cache for partition")
 		cachePartitionsCounter.WithLabelValues(cachePartition).Add(1)
-		prt.roundTrippers[cachePartition] = prt.roundTripperCreator(cachePartition)
+		prt.roundTrippers[cachePartition] = prt.roundTripperCreator(cachePartition, expiresAt)
 		roundTripper = prt.roundTrippers[cachePartition]
 	}
 	prt.lock.Unlock()

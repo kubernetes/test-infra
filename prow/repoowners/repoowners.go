@@ -144,9 +144,12 @@ func (entry cacheEntry) fullyLoaded() bool {
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
 	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
+	LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwner, error)
 
 	WithFields(fields logrus.Fields) Interface
 	WithGitHubClient(client github.Client) Interface
+	ForPlugin(plugin string) Interface
+	Used() bool
 }
 
 // Client is an implementation of the Interface.
@@ -156,6 +159,7 @@ var _ Interface = &Client{}
 type Client struct {
 	logger *logrus.Entry
 	ghc    githubClient
+	used   bool
 	*delegate
 }
 
@@ -187,6 +191,25 @@ func (c *Client) WithGitHubClient(client github.Client) Interface {
 		ghc:      client,
 		delegate: c.delegate,
 	}
+}
+
+// ForPlugin clones the client, keeping the underlying delegate the same but adding
+// a log field
+func (c *Client) ForPlugin(plugin string) Interface {
+	return c.forKeyValue("plugin", plugin)
+}
+
+func (c *Client) forKeyValue(key, value string) Interface {
+	return &Client{
+		logger:   c.logger.WithField(key, value),
+		ghc:      c.ghc,
+		delegate: c.delegate,
+	}
+}
+
+// Used determines whether the client has been used
+func (c *Client) Used() bool {
+	return c.used
 }
 
 // NewClient is the constructor for Client
@@ -232,6 +255,7 @@ type RepoOwner interface {
 	ParseFullConfig(path string) (FullConfig, error)
 	TopLevelApprovers() sets.String
 	Filenames() ownersconfig.Filenames
+	AllOwners() sets.String
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -268,19 +292,28 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	start := time.Now()
 	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
+		return nil, fmt.Errorf("failed to get current SHA for %s: %w", fullName, err)
 	}
 	if sha == "" {
 		return nil, fmt.Errorf("got an empty SHA for %s@heads/%s", fullName, base)
 	}
 	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.GetRef(%s, %s, %s)", org, repo, fmt.Sprintf("heads/%s", base))
 
-	entry, err := c.cacheEntryFor(org, repo, base, cloneRef, fullName, sha, log)
+	return c.LoadRepoOwnersSha(org, repo, base, sha, true)
+}
+
+func (c *Client) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwner, error) {
+	c.used = true
+	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base, "sha": sha})
+	cloneRef := fmt.Sprintf("%s/%s", org, repo)
+	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
+
+	entry, err := c.cacheEntryFor(org, repo, base, cloneRef, fullName, sha, updateCache, log)
 	if err != nil {
 		return nil, err
 	}
 
-	start = time.Now()
+	start := time.Now()
 	if c.skipCollaborators(org, repo) {
 		log.WithField("duration", time.Since(start).String()).Debugf("Completed c.skipCollaborators(%s, %s)", org, repo)
 		log.Debugf("Skipping collaborator checks for %s/%s", org, repo)
@@ -305,7 +338,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	return owners, nil
 }
 
-func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, log *logrus.Entry) (cacheEntry, error) {
+func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, setEntry bool, log *logrus.Entry) (cacheEntry, error) {
 	mdYaml := c.mdYAMLEnabled(org, repo)
 	lockStart := time.Now()
 	defer func() {
@@ -318,7 +351,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 		start := time.Now()
 		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
-			return cacheEntry{}, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
+			return cacheEntry{}, fmt.Errorf("failed to clone %s: %w", cloneRef, err)
 		}
 		log.WithField("duration", time.Since(start).String()).Debugf("Completed git.ClientFor(%s, %s)", org, repo)
 		defer gitRepo.Clean()
@@ -377,11 +410,13 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			start = time.Now()
 			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirIgnorelist, filenames, log)
 			if err != nil {
-				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
+				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %w", fullName, err)
 			}
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirIgnorelist, log)", gitRepo.Directory(), mdYaml)
 			entry.sha = sha
-			c.cache.setEntry(fullName, entry)
+			if setEntry {
+				c.cache.setEntry(fullName, entry)
+			}
 		}
 	}
 	return entry, nil
@@ -853,4 +888,19 @@ func (o *RepoOwners) RequiredReviewers(path string) sets.String {
 
 func (o *RepoOwners) TopLevelApprovers() sets.String {
 	return o.entriesForFile(".", o.approvers, true).Set()
+}
+
+func (o *RepoOwners) AllOwners() sets.String {
+	allOwners := sets.NewString()
+	for _, pv := range o.approvers {
+		for _, rv := range pv {
+			allOwners = allOwners.Union(rv)
+		}
+	}
+	for _, pv := range o.reviewers {
+		for _, rv := range pv {
+			allOwners = allOwners.Union(rv)
+		}
+	}
+	return allOwners
 }

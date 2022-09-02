@@ -51,6 +51,7 @@ readonly IMAGES=(
     volume/rbd
     volume/nfs
     volume/gluster
+    windows-servercore-cache
 )
 
 cat >"${OUTPUT}" <<EOF
@@ -73,18 +74,21 @@ for image in "${IMAGES[@]}"; do
           - aojea
           - chewong
           - claudiubelu
+          - mkumatag
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/${image//\//\\/}\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
@@ -93,69 +97,70 @@ for image in "${IMAGES[@]}"; do
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the ${image} image.
-            - name: WHAT
-              value: "${image}"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the ${image} image.
+              - name: WHAT
+                value: "${image}"
 EOF
 done
 
 cat >>"${OUTPUT}" <<EOF
 
 periodics:
-# NOTE(claudiub): The base image for the Windows E2E test images is nanoserver.
-# In most cases, that is sufficient. But in some cases, we are missing some DLLs.
-# We can fetch those DLLs from Windows servercore images, but they are very large
-# (2GB compressed), while the DLLs are only a few megabytes in size. We can build
-# a monthly DLL cache image and use the cache instead.
-# For more info: https://github.com/kubernetes/kubernetes/pull/93889
-- name: kubernetes-e2e-windows-servercore-cache
-  rerun_auth_config:
-    github_team_slugs:
+  # NOTE(claudiub): The base image for the Windows E2E test images is nanoserver.
+  # In most cases, that is sufficient. But in some cases, we are missing some DLLs.
+  # We can fetch those DLLs from Windows servercore images, but they are very large
+  # (2GB compressed), while the DLLs are only a few megabytes in size. We can build
+  # a monthly DLL cache image and use the cache instead.
+  # For more info: https://github.com/kubernetes/kubernetes/pull/93889
+  - name: kubernetes-e2e-windows-servercore-cache
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: test-infra-admins
+        - org: kubernetes
+          slug: release-managers
+      github_users:
+        - aojea
+        - chewong
+        - claudiubelu
+        - mkumatag
+    # Since the servercore image is updated once per month, we only need to build this
+    # cache once per month.
+    interval: 744h
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+    decorate: true
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
       - org: kubernetes
-        slug: test-infra-admins
-      - org: kubernetes
-        slug: release-engineering
-    github_users:
-      - aojea
-      - chewong
-      - claudiubelu
-  # Since the servercore image is updated once per month, we only need to build this
-  # cache once per month.
-  interval: 744h
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-testing-images
-  decorate: true
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210607-0d70d1d
-        command:
-          - /run.sh
-        args:
-          - --project=k8s-staging-e2e-test-images
-          - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-          - --env-passthrough=PULL_BASE_REF,WHAT
-          - --build-dir=.
-          - test/images
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        # By default, the E2E test image's WHAT is all-conformance. We override that with
-        # the windows-servercore-cache image.
-        - name: WHAT
-          value: "windows-servercore-cache"
+        repo: kubernetes
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-e2e-test-images
+            - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+            - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
+            - --build-dir=.
+            - test/images
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+            # By default, the E2E test image's WHAT is all-conformance. We override that with
+            # the windows-servercore-cache image.
+            - name: WHAT
+              value: "windows-servercore-cache"
 EOF

@@ -18,6 +18,7 @@ package bumper
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha1"
 	"errors"
 	"flag"
@@ -113,7 +114,7 @@ type Gerrit struct {
 type PRHandler interface {
 	// Changes returns a slice of functions, each one does some stuff, and
 	// returns commit message for the changes
-	Changes() []func() (string, error)
+	Changes() []func(context.Context) (string, error)
 	// PRTitleBody returns the body of the PR, this function runs after all
 	// changes have been executed
 	PRTitleBody() (string, string, error)
@@ -206,7 +207,7 @@ func validateOptions(o *Options) error {
 // provided options.
 //
 // updateFunc: a function that returns commit message and error
-func Run(o *Options, prh PRHandler) error {
+func Run(ctx context.Context, o *Options, prh PRHandler) error {
 	if err := validateOptions(o); err != nil {
 		return fmt.Errorf("validating options: %w", err)
 	}
@@ -215,21 +216,22 @@ func Run(o *Options, prh PRHandler) error {
 		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
 	}
 	if o.Gerrit == nil {
-		return processGitHub(o, prh)
+		return processGitHub(ctx, o, prh)
 	}
-	return processGerrit(o, prh)
+	return processGerrit(ctx, o, prh)
 }
 
-func processGitHub(o *Options, prh PRHandler) error {
-	var sa secret.Agent
-
-	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
-	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
-	if err := sa.Start([]string{o.GitHubToken}); err != nil {
+func processGitHub(ctx context.Context, o *Options, prh PRHandler) error {
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: secret.Censor}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: secret.Censor}
+	if err := secret.Add(o.GitHubToken); err != nil {
 		return fmt.Errorf("start secrets agent: %w", err)
 	}
 
-	gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+	gc, err := github.NewClient(secret.GetTokenGenerator(o.GitHubToken), secret.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+	if err != nil {
+		return fmt.Errorf("failed to construct GitHub client: %v", err)
+	}
 
 	if o.GitHubLogin == "" || o.GitName == "" || o.GitEmail == "" {
 		user, err := gc.BotUser()
@@ -250,7 +252,7 @@ func processGitHub(o *Options, prh PRHandler) error {
 	// Make change, commit and push
 	var anyChange bool
 	for i, changeFunc := range prh.Changes() {
-		msg, err := changeFunc()
+		msg, err := changeFunc(ctx)
 		if err != nil {
 			return fmt.Errorf("process function %d: %w", i, err)
 		}
@@ -275,7 +277,7 @@ func processGitHub(o *Options, prh PRHandler) error {
 		return nil
 	}
 
-	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
+	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(secret.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
 		return fmt.Errorf("push changes to the remote branch: %w", err)
 	}
 
@@ -296,22 +298,21 @@ func processGitHub(o *Options, prh PRHandler) error {
 	return nil
 }
 
-func processGerrit(o *Options, prh PRHandler) error {
-	var sa secret.Agent
-	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
-	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
+func processGerrit(ctx context.Context, o *Options, prh PRHandler) error {
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: secret.Censor}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: secret.Censor}
 
 	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", o.Gerrit.CookieFile); err != nil {
-		return fmt.Errorf("unable to load cookiefile: %v", err)
+		return fmt.Errorf("unable to load cookiefile: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "config", "user.name", o.Gerrit.Author); err != nil {
-		return fmt.Errorf("unable to set username: %v", err)
+		return fmt.Errorf("unable to set username: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "config", "user.email", o.Gerrit.Email); err != nil {
-		return fmt.Errorf("unable to set password: %v", err)
+		return fmt.Errorf("unable to set password: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", o.Gerrit.HostRepo); err != nil {
-		return fmt.Errorf("unable to add upstream remote: %v", err)
+		return fmt.Errorf("unable to add upstream remote: %w", err)
 	}
 	changeId, err := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, "")
 	if err != nil {
@@ -320,7 +321,7 @@ func processGerrit(o *Options, prh PRHandler) error {
 
 	// Make change, commit and push
 	for i, changeFunc := range prh.Changes() {
-		msg, err := changeFunc()
+		msg, err := changeFunc(ctx)
 		if err != nil {
 			return fmt.Errorf("process function %d: %w", i, err)
 		}
@@ -347,7 +348,7 @@ func processGerrit(o *Options, prh PRHandler) error {
 				return err
 			}
 			if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
-				return fmt.Errorf("unable to call git reset: %v", err)
+				return fmt.Errorf("unable to call git reset: %w", err)
 			}
 			return gerritCommitandPush(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
 		}
@@ -399,17 +400,13 @@ func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
 	return c.Run()
 }
 
-type Censor interface {
-	Censor(content []byte) []byte
-}
-
 type HideSecretsWriter struct {
 	Delegate io.Writer
-	Censor   Censor
+	Censor   func(content []byte) []byte
 }
 
 func (w HideSecretsWriter) Write(content []byte) (int, error) {
-	_, err := w.Delegate.Write(w.Censor.Censor(content))
+	_, err := w.Delegate.Write(w.Censor(content))
 	if err != nil {
 		return 0, err
 	}
@@ -473,7 +470,8 @@ func MakeGitCommit(remote, remoteBranch, name, email string, stdout, stderr io.W
 }
 
 func makeGerritCommit(summary, commitTag, changeId string) string {
-	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", summary, commitTag, changeId)
+	//Gerrit commits do not recognize "&#x2011;" as NON-BREAKING HYPHEN, so just replace with a regular hyphen.
+	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", strings.ReplaceAll(summary, "&#x2011;", "-"), commitTag, changeId)
 }
 
 // GitCommitAndPush runs a sequence of git commands to commit.
@@ -617,7 +615,7 @@ func gerritNoOpChange(changeID string) (bool, error) {
 	}
 	// Get PR with same ChangeID for this bump
 	if err := Call(&outBuf, &garbageBuf, gitCmd, "log", "--all", fmt.Sprintf("--grep=Change-Id: %s", changeID), "-1", "--format=%H"); err != nil {
-		return false, fmt.Errorf("getting previous bump: %v", err)
+		return false, fmt.Errorf("getting previous bump: %w", err)
 	}
 	prevCommit := strings.TrimSpace(outBuf.String())
 	// No current CRs with cur ChangeID means this is not a noOp change
@@ -638,7 +636,7 @@ func gerritNoOpChange(changeID string) (bool, error) {
 func createCR(msg, branch, changeID string, reviewers, cc []string, stdout, stderr io.Writer) error {
 	noOp, err := gerritNoOpChange(changeID)
 	if err != nil {
-		return fmt.Errorf("diffing previous bump: %v", err)
+		return fmt.Errorf("diffing previous bump: %w", err)
 	}
 	if noOp {
 		logrus.Info("CR is a no-op change. Returning without pushing update")
@@ -647,10 +645,10 @@ func createCR(msg, branch, changeID string, reviewers, cc []string, stdout, stde
 
 	pushRef := buildPushRef(branch, reviewers, cc)
 	if err := Call(stdout, stderr, gitCmd, "commit", "-a", "-v", "-m", msg); err != nil {
-		return fmt.Errorf("unable to commit: %v", err)
+		return fmt.Errorf("unable to commit: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "push", "upstream", pushRef); err != nil {
-		return fmt.Errorf("unable to push: %v", err)
+		return fmt.Errorf("unable to push: %w", err)
 	}
 	return nil
 }

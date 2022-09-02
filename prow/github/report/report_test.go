@@ -17,58 +17,44 @@ limitations under the License.
 package report
 
 import (
+	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
+	"text/template"
 
+	"github.com/google/go-cmp/cmp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestParseIssueComment(t *testing.T) {
 	var testcases = []struct {
-		name             string
-		context          string
-		state            string
-		ics              []github.IssueComment
-		expectedDeletes  []int
-		expectedContexts []string
-		expectedUpdate   int
+		name            string
+		context         string
+		state           string
+		ics             []github.IssueComment
+		expectedDeletes []int
+		expectedEntries []string
+		expectedUpdate  int
+		isOptional      bool
 	}{
 		{
-			name:    "should delete old style comments",
-			context: "Jenkins foo test",
-			state:   github.StatusSuccess,
-			ics: []github.IssueComment{
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins foo test **failed** for such-and-such.",
-					ID:   12345,
-				},
-				{
-					User: github.User{Login: "someone-else"},
-					Body: "Jenkins foo test **failed**!? Why?",
-					ID:   12356,
-				},
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins foo test **failed** for so-and-so.",
-					ID:   12367,
-				},
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins bar test **failed** for something-or-other.",
-					ID:   12378,
-				},
-			},
-			expectedDeletes: []int{12345, 12367},
+			name:            "should create a new comment",
+			context:         "bla test",
+			state:           github.StatusFailure,
+			expectedEntries: []string{createReportEntry("bla test", true)},
 		},
 		{
-			name:             "should create a new comment",
-			context:          "bla test",
-			state:            github.StatusFailure,
-			expectedContexts: []string{"bla test"},
+			name:            "should create a new optional comment",
+			context:         "bla test",
+			state:           github.StatusFailure,
+			isOptional:      true,
+			expectedEntries: []string{createReportEntry("bla test", false)},
 		},
 		{
 			name:    "should not delete an up-to-date comment",
@@ -92,8 +78,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
-			expectedContexts: []string{},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{},
 		},
 		{
 			name:    "should delete a passing test with \\r",
@@ -106,8 +92,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
-			expectedContexts: []string{},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{},
 		},
 
 		{
@@ -121,8 +107,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
-			expectedContexts: []string{"bla test"},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{"bla test"},
 		},
 		{
 			name:    "should preserve old results when updating",
@@ -135,8 +121,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
-			expectedContexts: []string{"bla test", "foo test"},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{"bla test", "foo test"},
 		},
 		{
 			name:    "should merge duplicates",
@@ -154,8 +140,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   124,
 				},
 			},
-			expectedDeletes:  []int{123, 124},
-			expectedContexts: []string{"bla test", "foo test"},
+			expectedDeletes: []int{123, 124},
+			expectedEntries: []string{"bla test", "foo test"},
 		},
 		{
 			name:    "should update an old comment when a test passes",
@@ -168,68 +154,81 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{},
-			expectedContexts: []string{"foo test"},
-			expectedUpdate:   123,
+			expectedDeletes: []int{},
+			expectedEntries: []string{"foo test"},
+			expectedUpdate:  123,
 		},
 	}
 	for _, tc := range testcases {
-		pj := prowapi.ProwJob{
-			Spec: prowapi.ProwJobSpec{
-				Context: tc.context,
-				Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-			},
-			Status: prowapi.ProwJobStatus{
-				State: prowapi.ProwJobState(tc.state),
-			},
-		}
-		isBot := func(candidate string) bool {
-			return candidate == "k8s-ci-robot"
-		}
-		deletes, entries, update := parseIssueComments(pj, isBot, tc.ics)
-		if len(deletes) != len(tc.expectedDeletes) {
-			t.Errorf("It %s: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
-		} else {
-			for _, edel := range tc.expectedDeletes {
-				found := false
-				for _, del := range deletes {
-					if del == edel {
-						found = true
-						break
+		t.Run(tc.name, func(t *testing.T) {
+			pj := prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						kube.IsOptionalLabel: strconv.FormatBool(tc.isOptional),
+					},
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type:    prowapi.PresubmitJob,
+					Context: tc.context,
+					Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.ProwJobState(tc.state),
+				},
+			}
+			isBot := func(candidate string) bool {
+				return candidate == "k8s-ci-robot"
+			}
+			deletes, entries, update := parseIssueComments([]prowapi.ProwJob{pj}, isBot, tc.ics)
+			if len(deletes) != len(tc.expectedDeletes) {
+				t.Errorf("It %q: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
+			} else {
+				for _, edel := range tc.expectedDeletes {
+					found := false
+					for _, del := range deletes {
+						if del == edel {
+							found = true
+							break
+						}
+					}
+					if !found {
+						t.Errorf("It %q: expected to find %d in %v", tc.name, edel, deletes)
 					}
 				}
-				if !found {
-					t.Errorf("It %s: expected to find %d in %v", tc.name, edel, deletes)
-				}
 			}
-		}
-		if len(entries) != len(tc.expectedContexts) {
-			t.Errorf("It %s: wrong number of entries. Got %v, expected %v", tc.name, entries, tc.expectedContexts)
-		} else {
-			for _, econt := range tc.expectedContexts {
+			if len(entries) != len(tc.expectedEntries) {
+				t.Errorf("It %q: wrong number of entries. Got %v, expected %v", tc.name, entries, tc.expectedEntries)
+			}
+			if tc.expectedUpdate != update {
+				t.Errorf("It %q: expected update %d, got %d", tc.name, tc.expectedUpdate, update)
+			}
+
+			for _, expectedEntry := range tc.expectedEntries {
 				found := false
 				for _, ent := range entries {
-					if strings.Contains(ent, econt) {
+					if strings.Contains(ent, expectedEntry) {
 						found = true
 						break
 					}
 				}
 				if !found {
-					t.Errorf("It %s: expected to find %s in %v", tc.name, econt, entries)
+					t.Errorf("It %q: expected to find %q in %v", tc.name, expectedEntry, entries)
 				}
 			}
-		}
-		if tc.expectedUpdate != update {
-			t.Errorf("It %s: expected update %d, got %d", tc.name, tc.expectedUpdate, update)
-		}
+		})
 	}
 }
 
-type fakeGhClient struct {
-	status []github.Status
+func createReportEntry(context string, isRequired bool) string {
+	return fmt.Sprintf("%s |  | [link]() | %s | ", context, strconv.FormatBool(isRequired))
 }
 
-func (gh fakeGhClient) BotUserChecker() (func(string) bool, error) {
+type fakeGhClient struct {
+	status   []github.Status
+	comments []string
+}
+
+func (gh fakeGhClient) BotUserCheckerWithContext(_ context.Context) (func(string) bool, error) {
 	return func(candidate string) bool {
 		return candidate == "BotName"
 	}, nil
@@ -237,7 +236,7 @@ func (gh fakeGhClient) BotUserChecker() (func(string) bool, error) {
 
 const maxLen = 140
 
-func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) error {
+func (gh *fakeGhClient) CreateStatusWithContext(_ context.Context, org, repo, ref string, s github.Status) error {
 	if d := s.Description; len(d) > maxLen {
 		return fmt.Errorf("%s is len %d, more than max of %d chars", d, len(d), maxLen)
 	}
@@ -245,16 +244,17 @@ func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) err
 	return nil
 
 }
-func (gh fakeGhClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+func (gh fakeGhClient) ListIssueCommentsWithContext(_ context.Context, org, repo string, number int) ([]github.IssueComment, error) {
 	return nil, nil
 }
-func (gh fakeGhClient) CreateComment(org, repo string, number int, comment string) error {
+func (gh *fakeGhClient) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
+	gh.comments = append(gh.comments, comment)
 	return nil
 }
-func (gh fakeGhClient) DeleteComment(org, repo string, ID int) error {
+func (gh fakeGhClient) DeleteCommentWithContext(_ context.Context, org, repo string, ID int) error {
 	return nil
 }
-func (gh fakeGhClient) EditComment(org, repo string, ID int, comment string) error {
+func (gh fakeGhClient) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
 	return nil
 }
 
@@ -373,7 +373,7 @@ func TestReportStatus(t *testing.T) {
 				},
 			}
 			// Run
-			if err := reportStatus(ghc, pj); err != nil {
+			if err := reportStatus(context.Background(), ghc, pj); err != nil {
 				t.Error(err)
 			}
 			// Check
@@ -451,5 +451,275 @@ func TestShouldReport(t *testing.T) {
 			t.Errorf("Unexpected result from test: %s.\nExpected: %v\nGot: %v",
 				tc.name, tc.report, r)
 		}
+	}
+}
+
+func TestCreateComment(t *testing.T) {
+	tests := []struct {
+		name     string
+		template *template.Template
+		pjs      []prowapi.ProwJob
+		entries  []string
+		want     string
+		wantErr  bool
+	}{
+		{
+			name:     "single-job-single-failure",
+			template: mustParseTemplate(t, ""),
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{
+				"aaa | bbb | ccc | ddd | eee",
+			},
+			want: `@chaodaig: The following test **failed**, say ` + "`/retest`" + ` to rerun all failed tests or ` + "`/retest-required`" + ` to rerun all mandatory failed tests:
+
+Test name | Commit | Details | Required | Rerun command
+--- | --- | --- | --- | ---
+aaa | bbb | ccc | ddd | eee
+
+
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
+		{
+			name:     "single-job-multi;e-failure",
+			template: mustParseTemplate(t, ""),
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{
+				"aaa | bbb | ccc | ddd | eee",
+				"fff | ggg | hhh | iii | jjj",
+			},
+			want: `@chaodaig: The following tests **failed**, say ` + "`/retest`" + ` to rerun all failed tests or ` + "`/retest-required`" + ` to rerun all mandatory failed tests:
+
+Test name | Commit | Details | Required | Rerun command
+--- | --- | --- | --- | ---
+aaa | bbb | ccc | ddd | eee
+fff | ggg | hhh | iii | jjj
+
+
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
+		{
+			name:     "multiple-job-only-use-first-one",
+			template: mustParseTemplate(t, "{{.Spec.Job}}"),
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job-a",
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job-b",
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{
+				"aaa | bbb | ccc | ddd | eee",
+			},
+			want: `@chaodaig: The following test **failed**, say ` + "`/retest`" + ` to rerun all failed tests or ` + "`/retest-required`" + ` to rerun all mandatory failed tests:
+
+Test name | Commit | Details | Required | Rerun command
+--- | --- | --- | --- | ---
+aaa | bbb | ccc | ddd | eee
+
+job-a
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
+		{
+			name: "multiple-job-all-passed",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job-a",
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job-b",
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{},
+			want: `@chaodaig: all tests **passed!**
+
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotComment, gotErr := createComment(tc.template, tc.pjs, tc.entries)
+			if diff := cmp.Diff(gotComment, tc.want); diff != "" {
+				t.Fatalf("comment mismatch:\n%s", diff)
+			}
+			if (gotErr != nil && !tc.wantErr) || (gotErr == nil && tc.wantErr) {
+				t.Fatalf("error mismatch. got: %v, want: %v", gotErr, tc.wantErr)
+			}
+		})
+	}
+}
+
+func mustParseTemplate(t *testing.T, s string) *template.Template {
+	tmpl, err := template.New("test").Parse(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return tmpl
+}
+
+func TestReportComment(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name            string
+		pjs             []prowapi.ProwJob
+		reporterConfig  config.GitHubReporter
+		mustCreate      bool
+		expectedComment bool
+	}{
+		{
+			name: "failed pj",
+			pjs: []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type:   prowapi.PresubmitJob,
+					Report: true,
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{}},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:          prowapi.FailureState,
+					CompletionTime: &metav1.Time{},
+				}},
+			},
+			reporterConfig: config.GitHubReporter{
+				JobTypesToReport: []prowapi.ProwJobType{prowapi.PresubmitJob},
+			},
+			expectedComment: true,
+		},
+		{
+			name: "succeeded pj when mustCreate is true",
+			pjs: []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type:   prowapi.PresubmitJob,
+					Report: true,
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{}},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:          prowapi.SuccessState,
+					CompletionTime: &metav1.Time{},
+				}},
+			},
+			reporterConfig: config.GitHubReporter{
+				JobTypesToReport: []prowapi.ProwJobType{prowapi.PresubmitJob},
+			},
+			mustCreate:      true,
+			expectedComment: true,
+		},
+		{
+			name: "aborted pj when mustCreate is true",
+			pjs: []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type:   prowapi.PresubmitJob,
+					Report: true,
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{}},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:          prowapi.AbortedState,
+					CompletionTime: &metav1.Time{},
+				}},
+			},
+			reporterConfig: config.GitHubReporter{
+				JobTypesToReport: []prowapi.ProwJobType{prowapi.PresubmitJob},
+			},
+			mustCreate: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fghc := &fakeGhClient{}
+			err := ReportComment(context.Background(), fghc, nil, tc.pjs, tc.reporterConfig, tc.mustCreate)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if diff := cmp.Diff(tc.expectedComment, len(fghc.comments) == 1); diff != "" {
+				t.Fatalf("expectedComment didn't match result, diff: %s", diff)
+			}
+		})
 	}
 }

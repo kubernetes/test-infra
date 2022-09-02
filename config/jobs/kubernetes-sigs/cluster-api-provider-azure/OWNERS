@@ -1,20 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-- andyzhangx
-- brendandburns
-- CecileRobertMichon
-- feiskyer
-- devigned
-- justaugustus
-- karataliu
-- khenidak
-- nader-ziada
-reviewers:
 - alexeldeib
-- cpanato
-- juan-lee
+- CecileRobertMichon
+- devigned
+- jackfrancis
+- mboersma
 - shysank
+reviewers:
+- Jont828
+- jsturtevant
 
 labels:
 - sig/cluster-lifecycle

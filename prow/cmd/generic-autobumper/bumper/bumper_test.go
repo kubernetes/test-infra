@@ -185,16 +185,15 @@ func TestCallWithWriter(t *testing.T) {
 	writeToFile(t, file1, "abc")
 	writeToFile(t, file2, "xyz")
 
-	var sa secret.Agent
-	if err := sa.Start([]string{file1, file2}); err != nil {
+	if err := secret.Add(file1, file2); err != nil {
 		t.Errorf("failed to start secrets agent; %v", err)
 	}
 
 	var fakeOut fakeWriter
 	var fakeErr fakeWriter
 
-	stdout := HideSecretsWriter{Delegate: &fakeOut, Censor: &sa}
-	stderr := HideSecretsWriter{Delegate: &fakeErr, Censor: &sa}
+	stdout := HideSecretsWriter{Delegate: &fakeOut, Censor: secret.Censor}
+	stderr := HideSecretsWriter{Delegate: &fakeErr, Censor: secret.Censor}
 
 	testCases := []struct {
 		description string
@@ -213,13 +212,13 @@ func TestCallWithWriter(t *testing.T) {
 			description: "secret in stdout are censored",
 			command:     "echo",
 			args:        []string{"-n", "abc: 123"},
-			expectedOut: "***: 123",
+			expectedOut: "XXX: 123",
 		},
 		{
 			description: "secret in stderr are censored",
 			command:     "ls",
 			args:        []string{"/tmp/file-not-exist/abc/xyz/file-not-exist"},
-			expectedErr: "/tmp/file-not-exist/***/***/file-not-exist",
+			expectedErr: "/tmp/file-not-exist/XXX/XXX/file-not-exist",
 		},
 		{
 			description: "no secret in stderr are working well",

@@ -44,13 +44,17 @@ const (
 type Client struct {
 	// Keys are <imageHost>/<imageName>:<currentTag>. Values are corresponding tags.
 	tagCache   map[string]string
-	httpClient http.Client
+	httpClient *http.Client
 }
 
-func NewClient() *Client {
+func NewClient(httpClient *http.Client) *Client {
+	// Shallow copy to adjust Timeout
+	httpClientCopy := *httpClient
+	httpClientCopy.Timeout = 1 * time.Minute
+
 	return &Client{
 		tagCache:   map[string]string{},
-		httpClient: http.Client{Timeout: 1 * time.Minute},
+		httpClient: &httpClientCopy,
 	}
 }
 
@@ -106,7 +110,7 @@ func DeconstructTag(tag string) (date, commit, variant string) {
 func (cli *Client) getManifest(imageHost, imageName string) (manifest, error) {
 	resp, err := cli.httpClient.Get("https://" + imageHost + "/v2/" + imageName + "/tags/list")
 	if err != nil {
-		return nil, fmt.Errorf("couldn't fetch tag list: %v", err)
+		return nil, fmt.Errorf("couldn't fetch tag list: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -115,7 +119,7 @@ func (cli *Client) getManifest(imageHost, imageName string) (manifest, error) {
 	}{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("couldn't parse tag information from registry: %v", err)
+		return nil, fmt.Errorf("couldn't parse tag information from registry: %w", err)
 	}
 
 	return result.Manifest, nil
@@ -198,7 +202,7 @@ func pickBestTag(currentTagParts []string, manifest manifest) (string, error) {
 		}
 		t, err := strconv.ParseInt(v.TimeCreatedMs, 10, 64)
 		if err != nil {
-			return "", fmt.Errorf("couldn't parse timestamp %q: %v", v.TimeCreatedMs, err)
+			return "", fmt.Errorf("couldn't parse timestamp %q: %w", v.TimeCreatedMs, err)
 		}
 		if override || t > latestTime {
 			latestTime = t
@@ -260,13 +264,13 @@ func (cli *Client) UpdateFile(tagPicker func(imageHost, imageName, currentTag st
 	path string, imageFilter *regexp.Regexp) error {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("failed to read %s: %v", path, err)
+		return fmt.Errorf("failed to read %s: %w", path, err)
 	}
 
 	newContent := updateAllTags(tagPicker, content, imageFilter)
 
 	if err := ioutil.WriteFile(path, newContent, 0644); err != nil {
-		return fmt.Errorf("failed to write %s: %v", path, err)
+		return fmt.Errorf("failed to write %s: %w", path, err)
 	}
 	return nil
 }

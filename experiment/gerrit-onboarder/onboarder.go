@@ -193,7 +193,7 @@ func configToMap(configFile string) (map[string][]string, []string) {
 		if strings.HasPrefix(line, "[") {
 			curKey = line
 			orderedKeys = append(orderedKeys, line)
-		} else {
+		} else if line != "" {
 			if curList, ok := configMap[curKey]; ok {
 				configMap[curKey] = append(curList, line)
 			} else {
@@ -290,7 +290,12 @@ func verifyInTree(workDir, host, cur_branch string, configMap map[string][]strin
 	} else if inheritance := getInheritedRepo(configMap); inheritance != "" {
 		parent_branch := cur_branch + "_parent"
 		if err := fetchMetaConfig(host, inheritance, parent_branch, workDir); err != nil {
-			return false, fmt.Errorf("unable to fetch refs/meta/config for %s: %w", inheritance, err)
+			// This likely won't happen, but if the fail is due to switching branches, we want to fail
+			if strings.Contains(err.Error(), "failed to switch") {
+				return false, fmt.Errorf("unable to fetch refs/meta/config for %s: %w", inheritance, err)
+			}
+			// If it failed to fetch refs/meta/config for parent, or checkout the FETCH_HEAD, just catch the error and return False
+			return false, nil
 		}
 		data, err := ioutil.ReadFile(path.Join(workDir, projectConfigFile))
 		if err != nil {
@@ -430,6 +435,11 @@ func getDiff(workDir string) (string, error) {
 	return diffBuf.String(), nil
 }
 
+func getRepoClonedName(repo string) string {
+	lst := strings.Split(repo, "/")
+	return lst[len(lst)-1]
+}
+
 func main() {
 	o, err := parseAndValidateOptions()
 	if err != nil {
@@ -453,7 +463,7 @@ func main() {
 			logrus.Fatal(fmt.Errorf("failed to clone sso://%s/%s %w", o.host, o.repo, err))
 		}
 
-		workDir = path.Join(workDir, o.repo)
+		workDir = path.Join(workDir, getRepoClonedName(o.repo))
 	}
 
 	// Using math/rand instead of crypto/rand so we don't need to handle errors

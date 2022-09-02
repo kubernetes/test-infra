@@ -34,7 +34,7 @@ func TestNormalize(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := normalize(tc.argument)
+			got := normalize(tc.argument, defaultMaxClusterTextLength)
 
 			if got != tc.want {
 				t.Errorf("normalize(%s) = %s, wanted %s", tc.argument, got, tc.want)
@@ -56,7 +56,7 @@ func TestNormalize(t *testing.T) {
 		// 10*500 = (number of characters in "foobarbaz ")*(500 repetitions)
 		wantString := generatedString[:10*500] + "\n...[truncated]...\n" + generatedString[:10*500]
 
-		got := normalize(generatedString)
+		got := normalize(generatedString, defaultMaxClusterTextLength)
 
 		if got != wantString {
 			t.Errorf("normalize(%s) = %s, wanted %s", generatedString, wantString, got)

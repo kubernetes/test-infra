@@ -1,3 +1,44 @@
+presubmits:
+  kubernetes/kubernetes:
+  # The presubmit version of the ci-kubernetes-coverage-unit job.
+  - name: pull-kubernetes-coverage-unit
+    always_run: false
+    skip_report: false
+    max_concurrency: 12
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+      description: unit test coverage presubmit
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        command:
+        - runner.sh
+        - bash
+        args:
+        - -c
+        - |
+          result=0
+          ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
+          make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
+          cd ../test-infra/gopherage
+          GO111MODULE=on go build .
+          find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
+          ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          # For now let's swallow the error - we can reenable returning $result once we're in better shape.
+          exit 0
+        securityContext:
+          privileged: true
+
 periodics:
 - interval: 1h
   name: ci-kubernetes-coverage-conformance
@@ -23,7 +64,7 @@ periodics:
     timeout: 6h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       command:
       - runner.sh
       - bash
@@ -36,7 +77,7 @@ periodics:
           --build=quick \
           --dump-before-and-after \
           --extract=local \
-          --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-conformance-coverage \
+          --stage=gs://k8s-release-dev/ci/ci-kubernetes-conformance-coverage \
           --gcp-zone=us-west1-b \
           --provider=gce \
           --timeout=300m \
@@ -84,7 +125,7 @@ periodics:
     timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       command:
       - runner.sh
       - bash
@@ -94,11 +135,10 @@ periodics:
       - |
         shopt -s globstar
         ../test-infra/scenarios/kubernetes_e2e.py \
-          --env=ENABLE_POD_SECURITY_POLICY=true \
           --build=quick \
           --dump-before-and-after \
           --extract=local \
-          --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-coverage-e2e-gci-gce \
+          --stage=gs://k8s-release-dev/ci/ci-kubernetes-coverage-e2e-gci-gce \
           --gcp-master-image=gci \
           --gcp-node-image=gci \
           --gcp-nodes=4 \
@@ -125,8 +165,10 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
+
 - interval: 1h
   name: ci-kubernetes-coverage-unit
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -139,7 +181,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       command:
       - runner.sh
       - bash
@@ -155,5 +197,12 @@ periodics:
         ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
         ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
         exit $result
+      resources:
+        limits:
+          cpu: 4
+          memory: 16Gi
+        requests:
+          cpu: 4
+          memory: 16Gi
       securityContext:
         privileged: true

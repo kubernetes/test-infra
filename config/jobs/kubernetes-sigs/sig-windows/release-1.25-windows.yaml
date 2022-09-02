@@ -1,0 +1,129 @@
+presets:
+- labels:
+    preset-capz-windows-common-125: "true"
+  env:
+  - name: "KUBERNETES_VERSION"
+    value: "latest-1.25"
+  - name: E2E_ARGS
+    value: "-kubetest.use-ci-artifacts"
+  - name: WINDOWS
+    value: "true"
+  - name: AZURE_NODE_MACHINE_TYPE
+    value: "Standard_D4s_v3"
+periodics:
+- name: ci-kubernetes-e2e-capz-containerd-windows-1-25
+  interval: 3h
+  decorate: true
+  decoration_config:
+    timeout: 4h0m0s
+  labels:
+    preset-azure-cred-only: "true"
+    preset-capz-containerd-latest: "true"
+    preset-capz-windows-2019: "true"
+    preset-capz-windows-common-125: "true"
+    preset-capz-windows-parallel: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - base_ref: main
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    repo: cluster-api-provider-azure
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - ./scripts/ci-conformance.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.25
+      name: ""
+      resources:
+        requests:
+          cpu: "2"
+          memory: 9Gi
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-release-1.25-informing, sig-windows-1.25-release, sig-windows-signal
+    testgrid-tab-name: capz-e2e-windows-containerd-1.25
+- name: ci-kubernetes-e2e-capz-containerd-windows-serial-slow-1-25
+  interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-capz-windows-common-125: "true"
+    preset-capz-windows-2019: "true"
+    preset-capz-containerd-latest: "true"
+    preset-capz-serial-slow: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.25
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-windows-1.25-release
+    testgrid-tab-name: capz-windows-containerd-serial-slow-1.25
+- name: ci-kubernetes-e2e-azure-disk-windows-containerd-1-25
+  interval: 48h
+  decorate: true
+  decoration_config:
+    timeout: 2h
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.25
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.25
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
+      - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Specific test args
+      - --test-azure-disk-csi-driver
+      securityContext:
+        privileged: true
+      env:
+      - name: AZURE_STORAGE_DRIVER
+        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+      - name: TEST_WINDOWS
+        value: "true"
+  annotations:
+    testgrid-dashboards: sig-windows-1.25-release
+    testgrid-tab-name: windows-containerd-azure-disk-1.25
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    description: Run Azure Disk e2e test with Azure Disk in a Windows cluster configured with CSI proxy and containerd.

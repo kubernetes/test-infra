@@ -135,7 +135,7 @@ func TestRecordError(t *testing.T) {
 			name:          "Simple Error String",
 			namespace:     "testnamespace",
 			expectedError: "sample error message to ensure proper working",
-			expectedOut: `# HELP testnamespace_error_rate number of errors, sorted by label/type
+			expectedOut: `# HELP testnamespace_error_rate number of errors, sorted by label/type.
 					   # TYPE testnamespace_error_rate counter
 					   testnamespace_error_rate{error="sample error message to ensure proper working"} 1
 					   `,
@@ -231,7 +231,7 @@ func TestHandleWithMetricsCustomTimer(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, err := http.NewRequest("GET", "http://example.com", nil)
 			if err != nil {
-				t.Errorf("error while creating dummy request: %w", err)
+				t.Errorf("error while creating dummy request: %v", err)
 			}
 			handler.ServeHTTP(rr, req)
 			if err := testutil.CollectAndCompare(httpResponseSize, strings.NewReader(tc.expectedResponseSizeOut)); err != nil {

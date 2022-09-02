@@ -127,7 +127,7 @@ func (cr catResult) Format() (string, error) {
 	}
 	img, err := url.Parse(cr.Image)
 	if err != nil {
-		return "", fmt.Errorf("invalid image url %s: %v", cr.Image, err)
+		return "", fmt.Errorf("invalid image url %s: %w", cr.Image, err)
 	}
 
 	return fmt.Sprintf("![cat image](%s)", img), nil
@@ -157,7 +157,7 @@ func (c *realClowder) readCat(category string, movieCat bool, grumpyRoot string)
 	} else {
 		resp, err := http.Get(uri)
 		if err != nil {
-			return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
+			return "", fmt.Errorf("could not read cat from %s: %w", uri, err)
 		}
 		defer resp.Body.Close()
 		if sc := resp.StatusCode; sc > 299 || sc < 200 {
@@ -177,7 +177,7 @@ func (c *realClowder) readCat(category string, movieCat bool, grumpyRoot string)
 	// checking size, GitHub doesn't support big images
 	toobig, err := github.ImageTooBig(a.Image)
 	if err != nil {
-		return "", fmt.Errorf("could not validate image size %s: %v", a.Image, err)
+		return "", fmt.Errorf("could not validate image size %s: %w", a.Image, err)
 	} else if toobig {
 		return "", fmt.Errorf("longcat is too long: %s", a.Image)
 	}

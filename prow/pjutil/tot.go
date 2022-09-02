@@ -84,7 +84,7 @@ func GetBuildID(name, totURL string) (string, error) {
 	var err error
 	url, err := url.Parse(totURL)
 	if err != nil {
-		return "", fmt.Errorf("invalid tot url: %v", err)
+		return "", fmt.Errorf("invalid tot url: %w", err)
 	}
 	url.Path = path.Join(url.Path, "vend", name)
 	sleepDuration := 100 * time.Millisecond
@@ -100,7 +100,7 @@ func GetBuildID(name, totURL string) (string, error) {
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode != 200 {
-			err = fmt.Errorf("got unexpected response from tot: %v", resp.Status)
+			err = fmt.Errorf("got unexpected response from tot: %s", resp.Status)
 			continue
 		}
 		var buf []byte

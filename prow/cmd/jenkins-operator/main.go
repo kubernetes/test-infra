@@ -164,19 +164,18 @@ func main() {
 	}
 
 	// Start the secret agent.
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(tokens); err != nil {
+	if err := secret.Add(tokens...); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
 	if o.jenkinsTokenFile != "" {
 		ac.Basic = &jenkins.BasicAuthConfig{
 			User:     o.jenkinsUserName,
-			GetToken: secretAgent.GetTokenGenerator(o.jenkinsTokenFile),
+			GetToken: secret.GetTokenGenerator(o.jenkinsTokenFile),
 		}
 	} else if o.jenkinsBearerTokenFile != "" {
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
-			GetToken: secretAgent.GetTokenGenerator(o.jenkinsBearerTokenFile),
+			GetToken: secret.GetTokenGenerator(o.jenkinsBearerTokenFile),
 		}
 	}
 	var tlsConfig *tls.Config
@@ -193,7 +192,7 @@ func main() {
 		logrus.WithError(err).Fatalf("Could not setup Jenkins client.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}

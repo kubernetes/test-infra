@@ -48,10 +48,17 @@ import (
 	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
+
+	_ "k8s.io/test-infra/prow/version"
+)
+
+const (
+	defaultWebhookPath = "/hook"
 )
 
 type options struct {
-	port int
+	webhookPath string
+	port        int
 
 	config        configflagutil.ConfigOptions
 	pluginsConfig pluginsflagutil.PluginOptions
@@ -81,6 +88,7 @@ func (o *options) Validate() error {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
+	fs.StringVar(&o.webhookPath, "webhook-path", defaultWebhookPath, "The path of webhook events, default is '/hook'.")
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
@@ -129,8 +137,7 @@ func main() {
 		tokens = append(tokens, o.bugzilla.ApiKeyPath)
 	}
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(tokens); err != nil {
+	if err := secret.Add(tokens...); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
@@ -139,18 +146,18 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
+	gitClient, err := o.github.GitClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
 
 	var bugzillaClient bugzilla.Client
 	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
-		client, err := o.bugzilla.BugzillaClient(secretAgent)
+		client, err := o.bugzilla.BugzillaClient()
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
 		}
@@ -163,7 +170,7 @@ func main() {
 
 	var jiraClient jiraclient.Client
 	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
-		client, err := o.jira.Client(secretAgent)
+		client, err := o.jira.Client()
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to construct Jira Client")
 		}
@@ -186,9 +193,9 @@ func main() {
 	}
 
 	var slackClient *slack.Client
-	if !o.dryRun && string(secretAgent.GetSecret(o.slackTokenFile)) != "" {
+	if !o.dryRun && string(secret.GetSecret(o.slackTokenFile)) != "" {
 		logrus.Info("Using real slack client.")
-		slackClient = slack.NewClient(secretAgent.GetTokenGenerator(o.slackTokenFile))
+		slackClient = slack.NewClient(secret.GetTokenGenerator(o.slackTokenFile))
 	}
 	if slackClient == nil {
 		logrus.Info("Using fake slack client.")
@@ -205,17 +212,8 @@ func main() {
 		// OwnersDirDenylist struct contains some defaults that's required by all
 		// repos, so this function cannot return nil
 		res := &config.OwnersDirDenylist{}
-		deprecated := configAgent.Config().OwnersDirBlacklist
 		if l := configAgent.Config().OwnersDirDenylist; l != nil {
 			res = l
-		}
-		if deprecated != nil {
-			logrus.Warn("owners_dir_blacklist will be deprecated after October 2021, use owners_dir_denylist instead")
-			if res != nil {
-				logrus.Warn("Both owners_dir_blacklist and owners_dir_denylist are provided, owners_dir_blacklist is discarded")
-			} else {
-				res = deprecated
-			}
 		}
 		return res
 	}
@@ -250,7 +248,7 @@ func main() {
 		Plugins:        pluginAgent,
 		Metrics:        promMetrics,
 		RepoEnabled:    o.githubEnablement.EnablementChecker(),
-		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		TokenGenerator: secret.GetTokenGenerator(o.webhookSecretFile),
 	}
 	interrupts.OnInterrupt(func() {
 		server.GracefulShutdown()
@@ -261,16 +259,17 @@ func main() {
 
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
+	hookMux := http.NewServeMux()
 	// TODO remove this health endpoint when the migration to health endpoint is done
 	// Return 200 on / for health checks.
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+	hookMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 
 	// For /hook, handle a webhook normally.
-	http.Handle("/hook", server)
+	hookMux.Handle(o.webhookPath, server)
 	// Serve plugin help information from /plugin-help.
-	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
+	hookMux.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: hookMux}
 
 	health.ServeReady()
 

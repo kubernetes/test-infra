@@ -9,13 +9,13 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-digitalocean
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-1.18
+    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      imagePullPolicy: Always
       command:
-        - "runner.sh"
         - "./scripts/ci-janitor.sh"
       resources:
         requests:

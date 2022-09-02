@@ -3,6 +3,57 @@
 ## New features
 
 New features added to each component:
+  - *August 4, 2022* override plugin will now override checkruns set by GitHub Actions and other CI
+    systems on a PR.
+  - *June 8, 2022* `deck.rerun_auth_configs` can optionally be replaced with
+    `deck.default_rerun_auth_configs` which supports a new format
+    that is a slice of filters with associated rerun auth configs rather than a
+    map. Currently entries can filter by repo and/or cluster. The old field is still
+    supported and will not be deprecated.
+  - *April 6, 2022* Highlight and pin interesting lines. To do this,
+    shift-click on log lines in the buildlog lens. The URL fragment
+    causes the same lines to be highlighted next page load. Additionally,
+    when viewing a GCS log pressing the pin button saves the highlight.
+    The saved highlight automatically displays next page load.
+  - *January 24, 2022* It is possible now to define GitHub Apps bots as trusted 
+    users to allow automatic tests trigger without relying on `/ok-to-test` 
+    from organization member. Trigger and DCO plugins configuration now support 
+    additional field `trusted_apps`, which contains list of GitHub Apps bot
+    usernames without `[bot]` suffix.
+  - *January 11, 2022* Trigger plugin can now trigger failed github jobs.
+    The feature needs to be enabled in the `triggers` section of the `plugin.yaml` config and can be specified per trigger as follows:
+    ```yaml
+    triggers:
+    - repos:
+      - org/repo
+      - org2
+      trigger_github_workflows: true
+    ```
+  - *August 24, 2021* Postsubmit Prow jobs now support the `always_run` field.
+    This field interacts with the `run_if_changed` and `skip_if_only_changed`
+    fields as follows:
+    1. (NEW) If the field is explicitly set to `always_run: false`, then the
+       Postsubmit will not run automatically. The intention is to allow other
+       triggers outside of a GitHub change, such as a Pub/Sub event, to trigger
+       the job. See [this
+       issue](https://github.com/kubernetes/test-infra/issues/23234) for the
+       motivation. However if `run_if_changed` or `skip_if_only_changed` is also
+       set, then those triggers are determined first; if for whatever reason
+       they cannot be determined, then the job will *not* run automatically (and
+       wait for another trigger such as a Pub/Sub event as mentioned above).
+    2. If the field is explicitly set to `always_run: true`, then the Postsubmit
+       job will always run. Also trying to set `run_if_changed` or
+       `skip_if_only_changed` in the same Postsubmit job will result in a config
+       error. This mutual exclusivity matches the configuration behavior of
+       Presubmit jobs, which also disallow combining `always_run: true` together
+       with `run_if_changed` or `skip_if_only_changed`.
+    3. If `always_run` is not set (missing from the job config):
+       1. If both `run_if_changed` and `skip_if_only_changed` are not set: same
+          as old behavior (Postsubmit job will run automatically upon a GitHub
+          change).
+       2. If one of `run_if_changed` or `skip_if_only_changed` is set: same as
+          old behavior (running will depend on `run_if_changed` or
+          `skip_if_only_changed`).
   - *May 14th, 2021*: All components that interact with GitHub newly allow client-side throttling customization
     via `--github-hourly-tokens` and `--github-allowed-burst` parameters. A notable exception to this is Tide which
     has custom throttling logic and does not expose these two new options. Other existing custom options in branchprotector,
@@ -144,7 +195,42 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
-
+ - *August 24th, 2022* Deck by default validating storage buckets, can still opt
+   out by setting `deck.skip_storage_path_validation: true` in your Prow config.
+   Buckets specified in job configs (`<job>.gcs_configuration.bucket`) and plank
+   configs (`plank.default_decoration_configs[*].gcs_configuration.bucket`) are
+   automatically allowed access. Additional buckets can be allowed by adding
+   them to the `deck.additional_allowed_buckets` list.
+ - *May 27th, 2022* Crier flags `--gcs-workers` and `--kubernetes-gcs-workers` are
+   removed in favor of `--blob-storage-workers` and `--kubernetes-blob-storage-workers`.
+ - *May 27th, 2022* The `owners_dir_blacklist` field in prow config is removed
+   in favor of `owners_dir_denylist`.
+ - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, the
+   entrypoint container in a prow job will run as `--copy-mode-only`, instead of
+   `/bin/cp /entrypoint /tools/entrypoint`. Entrypoint images before the mentioned version
+  will not work with `--copy-mode-only`, and entrypoint image since the
+  mentioned version will not work with `/bin/cp /entrypoint /tools/entrypoint`.
+  In another word, prow versions newer than or equal to `v20220222-acb5731b85`
+  will stop working with pod utilities versions older than
+  `v20220222-acb5731b85`. If your prow instance is bumped by
+  `prow/cmd/generic-autobumper` then you should not be affected. 
+ - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, prow images
+   pushed to gcr.io/k8s-prow will be built with ko, and the binaries will be
+   placed under `/ko-app/`, for example [/robots/commenter](/robots/commenter)
+   is pushed to gcr.io/k8s-prow/commenter, the commenter binary is located at
+   `/ko-app/commenter` in the image, prow jobs that use this image will update
+   to `command: - /ko-app/commenter` to make it work, alternatively, the command
+   could also be `command: - commenter` as `/ko-app` is added to `$PATH` env var
+   in the image.
+ - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, static files
+   in `deck` image will be stored under `/var/run/ko/` directory.
+ - *October 27th, 2021* The checkconfig flag `--prow-yaml-repo-path` no longer defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml` when `--prow-yaml-repo-name` is set. The defaulting has instead been replaced with the assumption that the Prow YAML file/directory can be found in the current working directory if `--prow-yaml-repo-path` is not specified. If you are running checkconfig from a decorated ProwJobs as is typical, then this is already the case.
+ - *September 16th, 2021* The ProwJob [CRD manifest](/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml)
+                           has been extended to specify a schema. Unfortunately, this results in a huge manifest which
+                           in turn makes the standard `kubectl apply` fail, as the last-applied annotation it generates
+                           exceeds the maximum annotation size. If you are using Kubernetes 1.18 or newer, you can add
+                           the `--server-side=true` argument to work around this. If not, you can use a [schemaless manifest](/config/prow/cluster/prowjob-crd/legacy/prowjob-schemaless_customresourcedefinition.yaml)
+ - *September 15th, 2021* `autobump` removed, please use `generic-autobumper` instead, see [example config](/config/prow/autobump-config/prow-component-autobump-config.yaml)
  - *April 16th, 2021* Flagutil remove default value for `--github-token-path`.
  - *April 15th, 2021* Sinker requires --dry-run=false (default is true) to function correctly in production.
  - *April 14th, 2021* Deck remove default value for `--cookie-secret-file`.

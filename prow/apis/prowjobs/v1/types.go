@@ -66,6 +66,17 @@ const (
 	ErrorState ProwJobState = "error"
 )
 
+// GetAllProwJobStates returns all possible job states.
+func GetAllProwJobStates() []ProwJobState {
+	return []ProwJobState{
+		TriggeredState,
+		PendingState,
+		SuccessState,
+		FailureState,
+		AbortedState,
+		ErrorState}
+}
+
 // ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
 type ProwJobAgent string
 
@@ -100,6 +111,15 @@ const (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ProwJob contains the spec as well as runtime metadata.
+// +kubebuilder:printcolumn:name="Job",type=string,JSONPath=`.spec.job`,description="The name of the job being run"
+// +kubebuilder:printcolumn:name="BuildId",type=string,JSONPath=`.status.build_id`,description="The ID of the job being run."
+// +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.type`,description="The type of job being run."
+// +kubebuilder:printcolumn:name="Org",type=string,JSONPath=`.spec.refs.org`,description="The org for which the job is running."
+// +kubebuilder:printcolumn:name="Repo",type=string,JSONPath=`.spec.refs.repo`,description="The repo for which the job is running."
+// +kubebuilder:printcolumn:name="Pulls",type=string,JSONPath=`.spec.refs.pulls[*].number`,description="The pulls for which the job is running."
+// +kubebuilder:printcolumn:name="StartTime",type=date,JSONPath=`.status.startTime`,description="When the job started running."
+// +kubebuilder:printcolumn:name="CompletionTime",type=date,JSONPath=`.status.completionTime`,description="When the job finished running."
+// +kubebuilder:printcolumn:name="State",type=string,JSONPath=`.status.state`,description="The state of the job."
 type ProwJob struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -115,6 +135,8 @@ type ProwJob struct {
 type ProwJobSpec struct {
 	// Type is the type of job and informs how
 	// the jobs is triggered
+	// +kubebuilder:validation:Enum=presubmit;postsubmit;periodic;batch
+	// +kubebuilder:validation:Required
 	Type ProwJobType `json:"type,omitempty"`
 	// Agent determines which controller fulfills
 	// this specific ProwJobSpec and runs the job
@@ -126,6 +148,7 @@ type ProwJobSpec struct {
 	// Namespace defines where to create pods/resources.
 	Namespace string `json:"namespace,omitempty"`
 	// Job is the name of the job
+	// +kubebuilder:validation:Required
 	Job string `json:"job,omitempty"`
 	// Refs is the code under test, determined at
 	// runtime by Prow itself
@@ -143,7 +166,10 @@ type ProwJobSpec struct {
 	// trigger this job on their pull request
 	RerunCommand string `json:"rerun_command,omitempty"`
 	// MaxConcurrency restricts the total number of instances
-	// of this job that can run in parallel at once
+	// of this job that can run in parallel at once. This is
+	// a separate mechanism to JobQueueName and the lowest max
+	// concurrency is selected from these two.
+	// +kubebuilder:validation:Minimum=0
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
 	// ErrorOnEviction indicates that the ProwJob should be completed and given
 	// the ErrorState status if the pod that is executing the job is evicted.
@@ -179,6 +205,19 @@ type ProwJobSpec struct {
 	// Presubmits and Postsubmits can also be set to hidden by
 	// adding their repository in Decks `hidden_repo` setting.
 	Hidden bool `json:"hidden,omitempty"`
+
+	// ProwJobDefault holds configuration options provided as defaults
+	// in the Prow config
+	ProwJobDefault *ProwJobDefault `json:"prowjob_defaults,omitempty"`
+
+	// JobQueueName is an optional field with name of a queue defining
+	// max concurrency. When several jobs from the same queue try to run
+	// at the same time, the number of them that is actually started is
+	// limited by JobQueueConcurrencies (part of Plank's config). If
+	// this field is left undefined inifinite concurrency is assumed.
+	// This behaviour may be superseded by MaxConcurrency field, if it
+	// is set to a constraining value.
+	JobQueueName string `json:"job_queue_name,omitempty"`
 }
 
 type GitHubTeamSlug struct {
@@ -225,7 +264,7 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 	for _, gho := range rac.GitHubOrgs {
 		isOrgMember, err := cli.IsMember(gho, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of org %v: %v", gho, err)
+			return false, fmt.Errorf("GitHub failed to fetch members of org %v: %w", gho, err)
 		}
 		if isOrgMember {
 			return true, nil
@@ -234,20 +273,16 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 	for _, ght := range rac.GitHubTeamIDs {
 		member, err := cli.TeamHasMember(org, ght, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v, verify that you have the correct team number and access token: %v", ght, err)
+			return false, fmt.Errorf("GitHub failed to fetch members of team %v, verify that you have the correct team number and access token: %w", ght, err)
 		}
 		if member {
 			return true, nil
 		}
 	}
 	for _, ghts := range rac.GitHubTeamSlugs {
-		team, err := cli.GetTeamBySlug(ghts.Slug, ghts.Org)
+		member, err := cli.TeamBySlugHasMember(ghts.Org, ghts.Slug, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch team with slug %s and org %s: %v", ghts.Slug, ghts.Org, err)
-		}
-		member, err := cli.TeamHasMember(org, team.ID, user)
-		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v: %v", team, err)
+			return false, fmt.Errorf("GitHub failed to check if team with slug %s has member %s: %w", ghts.Slug, user, err)
 		}
 		if member {
 			return true, nil
@@ -290,11 +325,56 @@ type SlackReporterConfig struct {
 	Channel           string         `json:"channel,omitempty"`
 	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
 	ReportTemplate    string         `json:"report_template,omitempty"`
+	// Report is derived from JobStatesToReport, it's used for differentiating
+	// nil from empty slice, as yaml roundtrip by design can't tell the
+	// difference when omitempty is supplied.
+	// See https://github.com/kubernetes/test-infra/pull/24168 for details
+	// Priority-wise, it goes by following order:
+	// - `report: true/false`` in job config
+	// - `JobStatesToReport: <anything including empty slice>` in job config
+	// - `report: true/false`` in global config
+	// - `JobStatesToReport:` in global config
+	Report *bool `json:"report,omitempty"`
+}
+
+// ApplyDefault is called by jobConfig.ApplyDefault(globalConfig)
+func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackReporterConfig {
+	if src == nil && def == nil {
+		return nil
+	}
+	var merged SlackReporterConfig
+	if src != nil {
+		merged = *src.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if src == nil || def == nil {
+		return &merged
+	}
+
+	if merged.Channel == "" {
+		merged.Channel = def.Channel
+	}
+	if merged.Host == "" {
+		merged.Host = def.Host
+	}
+	// Note: `job_states_to_report: []` also results in JobStatesToReport == nil
+	if merged.JobStatesToReport == nil {
+		merged.JobStatesToReport = def.JobStatesToReport
+	}
+	if merged.ReportTemplate == "" {
+		merged.ReportTemplate = def.ReportTemplate
+	}
+	if merged.Report == nil {
+		merged.Report = def.Report
+	}
+	return &merged
 }
 
 // Duration is a wrapper around time.Duration that parses times in either
 // 'integer number of nanoseconds' or 'duration string' formats and serializes
 // to 'duration string' format.
+// +kubebuilder:validation:Type=string
 type Duration struct {
 	time.Duration
 }
@@ -322,6 +402,12 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 
 func (d *Duration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(d.Duration.String())
+}
+
+// ProwJobDefault is used for Prowjob fields we want to set as defaults
+// in Prow config
+type ProwJobDefault struct {
+	TenantID string `json:"tenant_id,omitempty"`
 }
 
 // DecorationConfig specifies how to augment pods.
@@ -367,10 +453,18 @@ type DecorationConfig struct {
 	SkipCloning *bool `json:"skip_cloning,omitempty"`
 	// CookieFileSecret is the name of a kubernetes secret that contains
 	// a git http.cookiefile, which should be used during the cloning process.
-	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
+	CookiefileSecret *string `json:"cookiefile_secret,omitempty"`
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+	// GitHubAPIEndpoints are the endpoints of GitHub APIs.
+	GitHubAPIEndpoints []string `json:"github_api_endpoints,omitempty"`
+	// GitHubAppID is the ID of GitHub App, which is going to be used for fetching a private
+	// repository.
+	GitHubAppID string `json:"github_app_id,omitempty"`
+	// GitHubAppPrivateKeySecret is a Kubernetes secret that contains the GitHub App private key,
+	// which is going to be used for fetching a private repository.
+	GitHubAppPrivateKeySecret *GitHubAppPrivateKeySecret `json:"github_app_private_key_secret,omitempty"`
 
 	// CensorSecrets enables censoring output logs and artifacts.
 	CensorSecrets *bool `json:"censor_secrets,omitempty"`
@@ -442,7 +536,6 @@ func (g *CensoringOptions) ApplyDefault(def *CensoringOptions) *CensoringOptions
 		merged.ExcludeDirectories = def.ExcludeDirectories
 	}
 	return &merged
-
 }
 
 // Resources holds resource requests and limits for
@@ -483,9 +576,38 @@ func (u *Resources) ApplyDefault(def *Resources) *Resources {
 type OauthTokenSecret struct {
 	// Name is the name of a kubernetes secret.
 	Name string `json:"name,omitempty"`
-	// Key is the a key of the corresponding kubernetes secret that
+	// Key is the key of the corresponding kubernetes secret that
 	// holds the value of the OAuth token.
 	Key string `json:"key,omitempty"`
+}
+
+// GitHubAppPrivateKeySecret holds the information of the GitHub App private key's secret name and key.
+type GitHubAppPrivateKeySecret struct {
+	// Name is the name of a kubernetes secret.
+	Name string `json:"name,omitempty"`
+	// Key is the key of the corresponding kubernetes secret that
+	// holds the value of the GitHub App private key.
+	Key string `json:"key,omitempty"`
+}
+
+func (d *ProwJobDefault) ApplyDefault(def *ProwJobDefault) *ProwJobDefault {
+	if d == nil && def == nil {
+		return nil
+	}
+	var merged ProwJobDefault
+	if d != nil {
+		merged = *d.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if d == nil || def == nil {
+		return &merged
+	}
+	if merged.TenantID == "" {
+		merged.TenantID = def.TenantID
+	}
+
+	return &merged
 }
 
 // ApplyDefault applies the defaults for the ProwJob decoration. If a field has a zero value, it
@@ -532,11 +654,20 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	if merged.SkipCloning == nil {
 		merged.SkipCloning = def.SkipCloning
 	}
-	if merged.CookiefileSecret == "" {
+	if merged.CookiefileSecret == nil {
 		merged.CookiefileSecret = def.CookiefileSecret
 	}
 	if merged.OauthTokenSecret == nil {
 		merged.OauthTokenSecret = def.OauthTokenSecret
+	}
+	if len(merged.GitHubAPIEndpoints) == 0 {
+		merged.GitHubAPIEndpoints = def.GitHubAPIEndpoints
+	}
+	if merged.GitHubAppID == "" {
+		merged.GitHubAppID = def.GitHubAppID
+	}
+	if merged.GitHubAppPrivateKeySecret == nil {
+		merged.GitHubAppPrivateKeySecret = def.GitHubAppPrivateKeySecret
 	}
 	if merged.CensorSecrets == nil {
 		merged.CensorSecrets = def.CensorSecrets
@@ -579,7 +710,7 @@ func (d *DecorationConfig) Validate() error {
 	// Workload Identity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
 
 	if err := d.GCSConfiguration.Validate(); err != nil {
-		return fmt.Errorf("GCS configuration is invalid: %v", err)
+		return fmt.Errorf("GCS configuration is invalid: %w", err)
 	}
 	if d.OauthTokenSecret != nil && len(d.SSHKeySecrets) > 0 {
 		return errors.New("both OAuth token and SSH key secrets are specified")
@@ -730,7 +861,7 @@ func (g *GCSConfiguration) Validate() error {
 	}
 	for _, mediaType := range g.MediaTypes {
 		if _, _, err := mime.ParseMediaType(mediaType); err != nil {
-			return fmt.Errorf("invalid extension media type %q: %v", mediaType, err)
+			return fmt.Errorf("invalid extension media type %q: %w", mediaType, err)
 		}
 	}
 	if g.PathStrategy != PathStrategyLegacy && g.PathStrategy != PathStrategyExplicit && g.PathStrategy != PathStrategySingle {
@@ -780,9 +911,11 @@ type ProwJobStatus struct {
 	PendingTime *metav1.Time `json:"pendingTime,omitempty"`
 	// CompletionTime is the timestamp for when the job goes to a final state
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
-	State          ProwJobState `json:"state,omitempty"`
-	Description    string       `json:"description,omitempty"`
-	URL            string       `json:"url,omitempty"`
+	// +kubebuilder:validation:Enum=triggered;pending;success;failure;aborted;error
+	// +kubebuilder:validation:Required
+	State       ProwJobState `json:"state,omitempty"`
+	Description string       `json:"description,omitempty"`
+	URL         string       `json:"url,omitempty"`
 
 	// PodName applies only to ProwJobs fulfilled by
 	// plank. This field should always be the same as
@@ -911,6 +1044,13 @@ func (r Refs) String() string {
 		rs = append(rs, ref)
 	}
 	return strings.Join(rs, ",")
+}
+
+func (r Refs) OrgRepoString() string {
+	if r.Repo != "" {
+		return r.Org + "/" + r.Repo
+	}
+	return r.Org
 }
 
 // JenkinsSpec is optional parameters for Jenkins jobs.

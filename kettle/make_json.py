@@ -32,6 +32,7 @@ except ImportError:
 
 import model
 
+MAX_ROW_SIZE = 104857600 # 100MB
 SECONDS_PER_DAY = 86400
 
 def buckets_yaml():
@@ -58,6 +59,16 @@ else:
     # This is safe because the only way we get here is by faling all attempts
     raise
 
+# https://stackoverflow.com/questions/39047624/is-there-an-easy-way-to-estimate-size-of-a-json-object
+class MeterFile:
+    """
+    File-like object, throws away everything you write to it but keeps track of the size.
+    """
+    def __init__(self, size=0):
+        self.size = size
+
+    def write(self, string):
+        self.size += len(string)
 
 class Build:
     """
@@ -284,6 +295,10 @@ def make_rows(db, builds):
         except:  # pylint: disable=bare-except
             logging.exception('error on %s', path)
 
+def json_size(row):
+    meterfile = MeterFile()
+    json.dump(row, meterfile)
+    return meterfile.size
 
 def main(db, opts, outfile):
     min_started = 0
@@ -312,6 +327,11 @@ def main(db, opts, outfile):
 
     rows_emitted = set()
     for rowid, row in make_rows(db, builds):
+        size = json_size(row)
+        if size > MAX_ROW_SIZE:
+            print('row for %s exceeds maximum for bigquery %d > %d' %
+                  (row['path'], size, MAX_ROW_SIZE))
+            continue
         json.dump(row, outfile, sort_keys=True)
         outfile.write('\n')
         rows_emitted.add(rowid)

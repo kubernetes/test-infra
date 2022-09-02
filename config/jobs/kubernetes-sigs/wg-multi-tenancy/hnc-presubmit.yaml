@@ -9,6 +9,6 @@ presubmits:
     run_if_changed: ".*"
     spec:
       containers:
-      - image: golang:1.14
+      - image: golang:1.17
         command:
         - ./hack/ci-test.sh

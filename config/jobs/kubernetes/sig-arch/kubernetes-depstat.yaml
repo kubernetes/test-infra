@@ -16,16 +16,21 @@ presubmits:
         args:
         - -c
         - |
-          set -euo; \
-          export PATH=$PATH:$GOPATH/bin; \
-          mkdir -p "${ARTIFACTS}"; \
-          pushd "$ARTIFACTS"; \
-          go install github.com/kubernetes-sigs/depstat@latest; \
-          popd; \
-          depstat stats --json > "${ARTIFACTS}/stats.json"; \
-          git checkout -b base "${PULL_BASE_SHA}"; \
-          depstat stats --json > "${ARTIFACTS}/stats-base.json"; \
-          diff -s --ignore-all-space "${ARTIFACTS}"/stats-base.json "${ARTIFACTS}"/stats.json || true;
+          set -euo pipefail
+
+          export WORKDIR=${ARTIFACTS:-$TMPDIR}
+          export PATH=$PATH:$GOPATH/bin
+
+          mkdir -p "${WORKDIR}"
+          pushd "$WORKDIR"
+          go install github.com/kubernetes-sigs/depstat@latest
+          popd
+
+          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json > "${WORKDIR}/stats.json"
+          git reset --hard HEAD
+          git checkout -b base "${PULL_BASE_SHA}"
+          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json > "${WORKDIR}/stats-base.json"
+          diff -s -u --ignore-all-space "${WORKDIR}"/stats-base.json "${WORKDIR}"/stats.json || true
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-testing-misc

@@ -202,12 +202,12 @@ func externalHelpProvider(endpoint string) externalplugins.ExternalPluginHelpPro
 	return func(enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
 		u, err := url.Parse(endpoint)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing url: %s err: %v", endpoint, err)
+			return nil, fmt.Errorf("error parsing url: %s err: %w", endpoint, err)
 		}
 		u.Path = path.Join(u.Path, "/help")
 		b, err := json.Marshal(enabledRepos)
 		if err != nil {
-			return nil, fmt.Errorf("error marshalling enabled repos: %q, err: %v", enabledRepos, err)
+			return nil, fmt.Errorf("error marshalling enabled repos: %q, err: %w", enabledRepos, err)
 		}
 
 		// Don't retry because user is waiting for response to their browser.
@@ -215,7 +215,7 @@ func externalHelpProvider(endpoint string) externalplugins.ExternalPluginHelpPro
 		urlString := u.String()
 		resp, err := http.Post(urlString, "application/json", bytes.NewReader(b))
 		if err != nil {
-			return nil, fmt.Errorf("error posting to %s err: %v", urlString, err)
+			return nil, fmt.Errorf("error posting to %s err: %w", urlString, err)
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode < 200 || resp.StatusCode > 299 {
@@ -223,7 +223,7 @@ func externalHelpProvider(endpoint string) externalplugins.ExternalPluginHelpPro
 		}
 		var help pluginhelp.PluginHelp
 		if err := json.NewDecoder(resp.Body).Decode(&help); err != nil {
-			return nil, fmt.Errorf("failed to decode json response from %s err: %v", urlString, err)
+			return nil, fmt.Errorf("failed to decode json response from %s err: %w", urlString, err)
 		}
 		return &help, nil
 	}
@@ -329,19 +329,32 @@ func (oa *orgAgent) sync(config *plugins.Configuration) {
 
 	orgs := orgsInConfig(config)
 	orgToRepos := map[string]sets.String{}
+
+	orgToReposLock := sync.Mutex{}
+	wg := sync.WaitGroup{}
 	for _, org := range orgs.List() {
-		repos, err := reposForOrgOrUser(oa.ghc, org)
-		if err != nil {
-			oa.log.WithError(err).Errorf("Getting repos for org or user: %s.", org)
-			// Remove 'org' from 'orgs' here to force future resync?
-			continue
-		}
-		repoSet := sets.NewString()
-		for _, repo := range repos {
-			repoSet.Insert(repo.FullName)
-		}
-		orgToRepos[org] = repoSet
+		org := org
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			repos, err := reposForOrgOrUser(oa.ghc, org)
+			if err != nil {
+				oa.log.WithError(err).Errorf("Getting repos for org or user: %s.", org)
+				// Remove 'org' from 'orgs' here to force future resync?
+				return
+			}
+			repoSet := sets.NewString()
+			for _, repo := range repos {
+				repoSet.Insert(repo.FullName)
+			}
+			orgToReposLock.Lock()
+			orgToRepos[org] = repoSet
+			orgToReposLock.Unlock()
+		}()
 	}
+	wg.Wait()
 
 	oa.orgs = orgs
 	oa.orgToRepos = orgToRepos

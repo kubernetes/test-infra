@@ -76,11 +76,15 @@ func NewAuthenticatedUserIdentifier(options *flagutil.GitHubOptions) Authenticat
 }
 
 type authenticatedUserIdentifier struct {
-	clientFactory func(accessToken string) github.Client
+	clientFactory func(accessToken string) (github.Client, error)
 }
 
 func (a *authenticatedUserIdentifier) LoginForRequester(requester, token string) (string, error) {
-	user, err := a.clientFactory(token).ForSubcomponent(requester).BotUser()
+	client, err := a.clientFactory(token)
+	if err != nil {
+		return "", err
+	}
+	user, err := client.ForSubcomponent(requester).BotUser()
 	if err != nil {
 		return "", err
 	}

@@ -159,7 +159,7 @@ func (c *IssueCreator) initialize() error {
 	}
 	b, err := ioutil.ReadFile(c.tokenFile)
 	if err != nil {
-		return fmt.Errorf("failed to read token file '%s': %v", c.tokenFile, err)
+		return fmt.Errorf("failed to read token file '%s': %w", c.tokenFile, err)
 	}
 	token := strings.TrimSpace(string(b))
 
@@ -218,7 +218,7 @@ func (c *IssueCreator) CreateAndSync() {
 func (c *IssueCreator) loadCache() error {
 	user, err := c.client.GetUser("")
 	if err != nil {
-		return fmt.Errorf("failed to fetch the User struct for the current authenticated user. errmsg: %v", err)
+		return fmt.Errorf("failed to fetch the User struct for the current authenticated user. errmsg: %w", err)
 	}
 	if user == nil {
 		return fmt.Errorf("received a nil User struct pointer when trying to look up the currently authenticated user")
@@ -263,7 +263,7 @@ func (c *IssueCreator) loadCache() error {
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("failed to refresh the list of all issues created by %s in repo '%s/%s'. errmsg: %v", c.authorName, c.org, c.project, err)
+		return fmt.Errorf("failed to refresh the list of all issues created by %s in repo '%s/%s'. errmsg: %w", c.authorName, c.org, c.project, err)
 	}
 	if len(issues) == 0 {
 		glog.Warningf("IssueCreator found no issues in the repo '%s/%s' authored by '%s'.\n", c.org, c.project, c.authorName)

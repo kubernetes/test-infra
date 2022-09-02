@@ -92,7 +92,7 @@ func create(project, prefix string) error {
 	create := exec.Command("gcloud", "iam", "service-accounts", "create", "-f", "--project="+project, prefix)
 	create.Stderr = os.Stderr
 	if err := create.Start(); err != nil {
-		return fmt.Errorf("start: %v", err)
+		return fmt.Errorf("start: %w", err)
 	}
 	return create.Wait()
 }
@@ -102,7 +102,7 @@ func describe(user string) error {
 	desc := exec.Command("gcloud", "iam", "service-accounts", "describe", user)
 	desc.Stderr = os.Stderr
 	if err := desc.Start(); err != nil {
-		return fmt.Errorf("start: %v", err)
+		return fmt.Errorf("start: %w", err)
 	}
 	return desc.Wait()
 }
@@ -112,7 +112,7 @@ func addPolicy(project, member, role string) error {
 	add := exec.Command("gcloud", "projects", project, "add-iam-policy-binding", "--member="+member, "--role="+role)
 	add.Stderr = os.Stderr
 	if err := add.Start(); err != nil {
-		return fmt.Errorf("start: %v", err)
+		return fmt.Errorf("start: %w", err)
 	}
 	return add.Wait()
 }
@@ -122,7 +122,7 @@ func removePolicy(project, member, role string) error {
 	remove := exec.Command("gcloud", "projects", project, "remove-iam-policy-binding", "--member="+member, "--role="+role)
 	remove.Stderr = os.Stderr
 	if err := remove.Start(); err != nil {
-		return fmt.Errorf("start: %v", err)
+		return fmt.Errorf("start: %w", err)
 	}
 	return remove.Wait()
 }
@@ -150,14 +150,14 @@ func run(o options) error {
 	if err := describe(user); err != nil {
 		if o.serviceAccountProject == "" {
 			logrus.WithField("serviceAccount", user).Warn("Cannot parse prefix and project from service account")
-			return fmt.Errorf("validate account pre-existence: %v", err)
+			return fmt.Errorf("validate account pre-existence: %w", err)
 		}
 		if cerr := create(o.serviceAccountProject, o.serviceAccountPrefix); err != nil {
-			return fmt.Errorf("create account: %v", cerr)
+			return fmt.Errorf("create account: %w", cerr)
 		}
 	}
 	if err := describe(user); err != nil {
-		return fmt.Errorf("validate account: %v", err)
+		return fmt.Errorf("validate account: %w", err)
 	}
 
 	member := "serviceAccount:" + user

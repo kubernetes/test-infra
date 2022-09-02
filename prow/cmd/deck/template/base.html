@@ -43,7 +43,7 @@
 <div id="alert-container"></div>
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
   <header class="mdl-layout__header"{{if branding.HeaderColor}} style="background-color: {{branding.HeaderColor}};"{{end}}>
-    <div class="mdl-layout__header-row">
+    <div id="header-title" class="mdl-layout__header-row">
       <a href="/"
          class="logo"><img src="{{or branding.Logo $defaultLogo}}" alt="kubernetes logo" class="logo"/></a>
       <span class="mdl-layout-title header-title">{{block "pageTitle" .Arguments}}{{template "title" .}}{{end}}</span>
@@ -75,6 +75,10 @@
 </div>
 {{block "extra content" .Arguments}}{{end}}
 <div id="toast" class="mdl-js-snackbar mdl-snackbar">
+  <div class="mdl-snackbar__text"></div>
+  <button class="mdl-snackbar__action" type="button"></button>
+</div>
+<div id="toastAlert" class="mdl-js-snackbar mdl-snackbar">
   <div class="mdl-snackbar__text"></div>
   <button class="mdl-snackbar__action" type="button"></button>
 </div>

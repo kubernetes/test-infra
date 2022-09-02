@@ -36,6 +36,8 @@ const (
 	schemeHTTPS = "https"
 )
 
+// +k8s:deepcopy-gen=true
+
 // Presets can be used to re-use settings across multiple jobs.
 type Preset struct {
 	Labels       map[string]string `json:"labels"`
@@ -81,6 +83,8 @@ func mergePreset(preset Preset, labels map[string]string, containers []v1.Contai
 	return nil
 }
 
+// +k8s:deepcopy-gen=true
+
 // JobBase contains attributes common to all job types
 type JobBase struct {
 	// The name of the job. Must match regex [A-Za-z0-9-._]+
@@ -121,9 +125,30 @@ type JobBase struct {
 	// Presubmits and Postsubmits can also be set to hidden by
 	// adding their repository in Decks `hidden_repo` setting.
 	Hidden bool `json:"hidden,omitempty"`
+	// ProwJobDefault holds configuration options provided as defaults
+	// in the Prow config
+	ProwJobDefault *prowapi.ProwJobDefault `json:"prowjob_defaults,omitempty"`
+	// Name of the job queue specifying maximum concurrency, omission implies no limit.
+	// Works in parallel with MaxConcurrency and the limit is selected from the
+	// minimal setting of those two fields.
+	JobQueueName string `json:"job_queue_name,omitempty"`
 
 	UtilityConfig
 }
+
+func (jb JobBase) GetName() string {
+	return jb.Name
+}
+
+func (jb JobBase) GetLabels() map[string]string {
+	return jb.Labels
+}
+
+func (jb JobBase) GetAnnotations() map[string]string {
+	return jb.Annotations
+}
+
+// +k8s:deepcopy-gen=true
 
 // Presubmit runs on PRs.
 type Presubmit struct {
@@ -155,12 +180,48 @@ type Presubmit struct {
 	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
 
 	// We'll set these when we load it.
-	re *regexp.Regexp // from Trigger.
+	re *CopyableRegexp // from Trigger.
 }
+
+// +k8s:deepcopy-gen=true
+
+// CopyableRegexp wraps around regexp.Regexp. It's sole purpose is to allow us to
+// create a manual DeepCopyInto() method for it, because the standard library's
+// regexp package does not define one for us (making it impossible to generate
+// DeepCopy() methods for any type that uses the regexp.Regexp type directly).
+type CopyableRegexp struct {
+	*regexp.Regexp
+}
+
+func (in *CopyableRegexp) DeepCopyInto(out *CopyableRegexp) {
+	// We use the deprecated Regexp.Copy() function here, because it's better to
+	// defer to the package's own Copy() method instead of creating our own.
+	//
+	// Unfortunately there is no way to tell golangci-lint (our linter) to only
+	// ignore the check SA1019 (Using a deprecated function, variable, constant
+	// or field), and we have to disable the entire staticcheck linter for this
+	// one line of code.
+	//
+	// nolint:staticcheck
+	*out = CopyableRegexp{in.Copy()}
+}
+
+// +k8s:deepcopy-gen=true
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
 	JobBase
+
+	// AlwaysRun determines whether we should try to run this job it (or not run
+	// it). The key difference with the AlwaysRun field for Presubmits is that
+	// here, we essentially treat "true" as the default value as Postsubmits by
+	// default run unless there is some falsifying condition.
+	//
+	// The use of a pointer allows us to check if the field was or was not
+	// provided by the user. This is required because otherwise when we
+	// Unmarshal() the bytes into this struct, we'll get a default "false" value
+	// if this field is not provided, which is the opposite of what we want.
+	AlwaysRun *bool `json:"always_run,omitempty"`
 
 	RegexpChangeMatcher
 
@@ -177,13 +238,19 @@ type Periodic struct {
 	JobBase
 
 	// (deprecated)Interval to wait between two runs of the job.
+	// Consecutive jobs are run at `interval` duration apart, provided the
+	// previous job has completed.
 	Interval string `json:"interval,omitempty"`
+	// MinimumInterval to wait between two runs of the job.
+	// Consecutive jobs are run at `interval` + `duration of previous job` apart.
+	MinimumInterval string `json:"minimum_interval,omitempty"`
 	// Cron representation of job trigger time
 	Cron string `json:"cron,omitempty"`
 	// Tags for config entries
 	Tags []string `json:"tags,omitempty"`
 
-	interval time.Duration
+	interval         time.Duration
+	minimum_interval time.Duration
 }
 
 // JenkinsSpec holds optional Jenkins job config
@@ -203,6 +270,18 @@ func (p *Periodic) GetInterval() time.Duration {
 	return p.interval
 }
 
+// SetMinimumInterval updates minimum_interval, the minimum frequency duration it runs.
+func (p *Periodic) SetMinimumInterval(d time.Duration) {
+	p.minimum_interval = d
+}
+
+// GetMinimumInterval returns minimum_interval, the minimum frequency duration it runs.
+func (p *Periodic) GetMinimumInterval() time.Duration {
+	return p.minimum_interval
+}
+
+// +k8s:deepcopy-gen=true
+
 // Brancher is for shared code between jobs that only run against certain
 // branches. An empty brancher runs against all branches.
 type Brancher struct {
@@ -212,16 +291,22 @@ type Brancher struct {
 	Branches []string `json:"branches,omitempty"`
 
 	// We'll set these when we load it.
-	re     *regexp.Regexp
-	reSkip *regexp.Regexp
+	re     *CopyableRegexp
+	reSkip *CopyableRegexp
 }
+
+// +k8s:deepcopy-gen=true
 
 // RegexpChangeMatcher is for code shared between jobs that run only when certain files are changed.
 type RegexpChangeMatcher struct {
 	// RunIfChanged defines a regex used to select which subset of file changes should trigger this job.
 	// If any file in the changeset matches this regex, the job will be triggered
-	RunIfChanged string         `json:"run_if_changed,omitempty"`
-	reChanges    *regexp.Regexp // from RunIfChanged
+	RunIfChanged string `json:"run_if_changed,omitempty"`
+	// SkipIfOnlyChanged defines a regex used to select which subset of file changes should trigger this job.
+	// If all files in the changeset match this regex, the job will be skipped.
+	// In other words, this is the negation of RunIfChanged.
+	SkipIfOnlyChanged string          `json:"skip_if_only_changed,omitempty"`
+	reChanges         *CopyableRegexp // from RunIfChanged xor SkipIfOnlyChanged
 }
 
 type Reporter struct {
@@ -283,7 +368,7 @@ func (br Brancher) Intersects(other Brancher) bool {
 
 // CouldRun determines if its possible for a set of changes to trigger this condition
 func (cm RegexpChangeMatcher) CouldRun() bool {
-	return cm.RunIfChanged != ""
+	return cm.RunIfChanged != "" || cm.SkipIfOnlyChanged != ""
 }
 
 // ShouldRun determines if we can know for certain that the job should run. We can either
@@ -300,10 +385,15 @@ func (cm RegexpChangeMatcher) ShouldRun(changes ChangedFilesProvider) (determine
 	return false, false, nil
 }
 
-// RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.
+// RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex;
+// OR if any of the changed input paths *don't* match the skip_if_only_changed regex.
 func (cm RegexpChangeMatcher) RunsAgainstChanges(changes []string) bool {
 	for _, change := range changes {
-		if cm.reChanges.MatchString(change) {
+		// RunIfChanged triggers the run if *any* change matches the supplied regex.
+		if cm.RunIfChanged != "" && cm.reChanges.MatchString(change) {
+			return true
+			// SkipIfOnlyChanged triggers the run if any change *doesn't* match the supplied regex.
+		} else if cm.SkipIfOnlyChanged != "" && !cm.reChanges.MatchString(change) {
 			return true
 		}
 	}
@@ -322,12 +412,26 @@ func (ps Postsubmit) ShouldRun(baseRef string, changes ChangedFilesProvider) (bo
 	if !ps.CouldRun(baseRef) {
 		return false, nil
 	}
+
+	// Consider `run_if_changed` or `skip_if_only_changed` rules.
 	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
 		return false, err
 	} else if determined {
 		return shouldRun, nil
 	}
-	// Postsubmits default to always run
+
+	// At this point neither `run_if_changed` nor `skip_if_only_changed` were
+	// set. We're left with 2 cases: (1) `always_run: ...` was provided
+	// explicitly, or (2) this field was not defined in the job at all. In the
+	// second case, we default to "true".
+
+	// If the `always_run` field was explicitly set, return it.
+	if ps.AlwaysRun != nil {
+		return *ps.AlwaysRun, nil
+	}
+
+	// Postsubmits default to always run. This is the case if `always_run` was
+	// not explicitly set.
 	return true, nil
 }
 
@@ -384,8 +488,8 @@ type githubClient interface {
 }
 
 // NewGitHubDeferredChangedFilesProvider uses a closure to lazily retrieve the file changes only if they are needed.
-// We only have to fetch the changes if there is at least one RunIfChanged job that is not being force run (due to
-// a `/retest` after a failure or because it is explicitly triggered with `/test foo`).
+// We only have to fetch the changes if there is at least one RunIfChanged/SkipIfOnlyChanged job that is not being
+// force run (due to a `/retest` after a failure or because it is explicitly triggered with `/test foo`).
 func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string, num int) ChangedFilesProvider {
 	var changedFiles []string
 	return func() ([]string, error) {
@@ -393,7 +497,7 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 		if changedFiles == nil {
 			changes, err := client.GetPullRequestChanges(org, repo, num)
 			if err != nil {
-				return nil, fmt.Errorf("error getting pull request changes: %v", err)
+				return nil, fmt.Errorf("error getting pull request changes: %w", err)
 			}
 			for _, change := range changes {
 				changedFiles = append(changedFiles, change.Filename)
@@ -402,6 +506,8 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 		return changedFiles, nil
 	}
 }
+
+// +k8s:deepcopy-gen=true
 
 // UtilityConfig holds decoration metadata, such as how to clone and additional containers/etc
 type UtilityConfig struct {
@@ -445,7 +551,7 @@ func (u *UtilityConfig) Validate() error {
 		if len(u.CloneURI) != 0 {
 			uri, err := url.Parse(cloneURI)
 			if err != nil {
-				return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
+				return fmt.Errorf("couldn't parse uri from clone_uri: %w", err)
 			}
 
 			if u.DecorationConfig != nil && u.DecorationConfig.OauthTokenSecret != nil {
@@ -464,7 +570,7 @@ func (u *UtilityConfig) Validate() error {
 
 	for i, ref := range u.ExtraRefs {
 		if err := cloneURIValidate(ref.CloneURI); err != nil {
-			return fmt.Errorf("extra_ref[%d]: %v", i, err)
+			return fmt.Errorf("extra_ref[%d]: %w", i, err)
 		}
 	}
 

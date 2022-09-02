@@ -16,7 +16,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20220822-9f275332ba-master
         command:
         - wrapper.sh
         - bash
@@ -63,7 +63,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:latest-master
+      - image: gcr.io/k8s-staging-test-infra/krte:latest-master
         imagePullPolicy: Always # pull latest image for canary testing
         command:
         - wrapper.sh
@@ -110,7 +110,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20220822-9f275332ba-master
         command:
         - wrapper.sh
         - bash
@@ -162,7 +162,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:latest-master
+      - image: gcr.io/k8s-staging-test-infra/krte:latest-master
         imagePullPolicy: Always # pull latest image for canary testing
         command:
         - wrapper.sh
@@ -199,6 +199,7 @@ presubmits:
       testgrid-create-test-group: 'true'
 
   - name: pull-kubernetes-conformance-kind-ga-only
+    cluster: k8s-infra-prow-build
     optional: true
     always_run: false
     decorate: true
@@ -213,7 +214,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20220822-9f275332ba-master
         command:
         - wrapper.sh
         - bash
@@ -239,6 +240,7 @@ presubmits:
       testgrid-dashboards: sig-testing-kind
 
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_branches:
@@ -252,7 +254,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210512-b8d1b30-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20220822-9f275332ba-master
         command:
         - wrapper.sh
         - bash
@@ -279,4 +281,3 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-kind
-    cluster: k8s-infra-prow-build

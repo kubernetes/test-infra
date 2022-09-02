@@ -92,21 +92,11 @@ PR_PROJECTS = {
     # k8s-jkns-pr-cnry-e2e-gce-fdrtn
     # cleans up resources older than 3h
     # which is more than enough for presubmit jobs to finish.
-    'k8s-jkns-pr-gce': 3,
-    'k8s-jkns-pr-gce-bazel': 3,
-    'k8s-jkns-pr-gce-etcd3': 3,
-    'k8s-jkns-pr-gci-gce': 3,
     'k8s-jkns-pr-gci-gke': 3,
-    'k8s-jkns-pr-gci-kubemark': 3,
     'k8s-jkns-pr-gke': 3,
     'k8s-jkns-pr-kubeadm': 3,
-    'k8s-jkns-pr-kubemark': 3,
     'k8s-jkns-pr-node-e2e': 3,
     'k8s-jkns-pr-gce-gpus': 3,
-}
-
-SCALE_PROJECT = {
-    'k8s-presubmit-scale': 3,
 }
 
 def check_predefine_jobs(jobs, ratelimit):
@@ -135,8 +125,6 @@ def check_ci_jobs():
             if any(b in project for b in EXEMPT_PROJECTS):
                 print >>sys.stderr, 'Project %r is exempted in ci-janitor' % project
                 continue
-            if project in PR_PROJECTS or project in SCALE_PROJECT:
-                continue # CI janitor skips all PR jobs
             found = project
         if found:
             clean_project(found, clean_hours)
@@ -146,8 +134,6 @@ def main(mode, ratelimit, projects, age, artifacts, filt):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS, ratelimit)
-    elif mode == 'scale':
-        check_predefine_jobs(SCALE_PROJECT, ratelimit)
     elif mode == 'custom':
         projs = str.split(projects, ',')
         for proj in projs:
@@ -187,7 +173,7 @@ if __name__ == '__main__':
     VERBOSE = False
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--mode', default='ci', choices=['ci', 'pr', 'scale', 'custom'],
+        '--mode', default='ci', choices=['ci', 'pr', 'custom'],
         help='Which type of projects to clear')
     PARSER.add_argument(
         '--ratelimit', type=int,

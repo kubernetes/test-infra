@@ -54,10 +54,11 @@ const (
 )
 
 type extractStrategy struct {
-	mode      extractMode
-	option    string
-	ciVersion string
-	value     string
+	mode           extractMode
+	option         string
+	ciVersion      string
+	additionalInfo string
+	value          string
 }
 
 type extractStrategies []extractStrategy
@@ -70,14 +71,16 @@ func (l *extractStrategies) String() string {
 	return strings.Join(s, ",")
 }
 
+//^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$
+
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
-		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                     gci,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                gciCi,
+		`^gke-?(default|channel-(rapid|regular|stable)(?:-(latest))?|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                                   gci,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                              gciCi,
 		`^ci/(.+)$`:                   ci,
 		`^ci/(.+)-fast$`:              ciFast,
 		`^release/(latest.*)$`:        rc,
@@ -88,7 +91,7 @@ func (l *extractStrategies) Set(value string) error {
 	}
 
 	if len(*l) == 2 {
-		return fmt.Errorf("May only define at most 2 --extract strategies: %v %v", *l, value)
+		return fmt.Errorf("May only define at most 2 --extract strategies: %v %s", *l, value)
 	}
 	for search, mode := range strategies {
 		re := regexp.MustCompile(search)
@@ -108,11 +111,14 @@ func (l *extractStrategies) Set(value string) error {
 		if len(mat) > 2 {
 			e.ciVersion = mat[2]
 		}
+		if len(mat) > 3 {
+			e.additionalInfo = mat[3]
+		}
 		*l = append(*l, e)
 		log.Printf("Matched extraction strategy: %s", search)
 		return nil
 	}
-	return fmt.Errorf("Unknown extraction strategy: %v", value)
+	return fmt.Errorf("Unknown extraction strategy: %s", value)
 
 }
 
@@ -208,7 +214,7 @@ func getNamedBinaries(url, version, tarball string, retry int) error {
 		if err := httpRead(full, f); err == nil {
 			break
 		}
-		err = fmt.Errorf("url=%s version=%s failed get %v: %v", url, version, tarball, err)
+		err = fmt.Errorf("url=%s version=%s failed get %v: %w", url, version, tarball, err)
 		if i == retry-1 {
 			return err
 		}
@@ -225,7 +231,7 @@ func getNamedBinaries(url, version, tarball string, retry int) error {
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("unable to get current directory: %v", err)
+		return fmt.Errorf("unable to get current directory: %w", err)
 	}
 	log.Printf("Extracting tar file %v into directory %v", f.Name(), cwd)
 
@@ -298,7 +304,7 @@ var getKube = func(url, version string, getSrc bool) error {
 		if err == nil {
 			break
 		}
-		err = fmt.Errorf("U=%s R=%s get-kube.sh failed: %v", url, version, err)
+		err = fmt.Errorf("U=%s R=%s get-kube.sh failed: %w", url, version, err)
 		log.Println(err)
 		sleep(time.Duration(i) * time.Second)
 	}
@@ -458,7 +464,7 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 			}
 		}
 		if len(release) == 0 {
-			return fmt.Errorf("No releases found in %v", url)
+			return fmt.Errorf("No releases found in %s", url)
 		}
 		return getKube(fmt.Sprintf("file://%s", url), release, extractSrc)
 	case gci, gciCi:
@@ -494,8 +500,9 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 		}
 
 		if strings.HasPrefix(e.option, "channel") {
-			// get latest supported master version
-			version, err := getChannelGKEVersion(project, zone, region, e.ciVersion)
+			// get version from selected channel. If -latest is specified after channel we try to
+			// download latest valid version. Otherwise we download default version for this channel
+			version, err := getChannelGKEVersion(project, zone, region, e.ciVersion, e.additionalInfo)
 			if err != nil {
 				return fmt.Errorf("failed to get gke version from channel %s: %s", e.ciVersion, err)
 			}
@@ -583,7 +590,7 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 func loadKubeconfig(save string) error {
 	cURL, err := util.JoinURL(save, "kube-config")
 	if err != nil {
-		return fmt.Errorf("bad load url %s: %v", save, err)
+		return fmt.Errorf("bad load url %s: %w", save, err)
 	}
 	if err := os.MkdirAll(util.Home(".kube"), 0775); err != nil {
 		return err
@@ -596,15 +603,15 @@ func loadState(save string, getSrc bool) error {
 
 	uURL, err := util.JoinURL(save, "release-url.txt")
 	if err != nil {
-		return fmt.Errorf("bad load url %s: %v", save, err)
+		return fmt.Errorf("bad load url %s: %w", save, err)
 	}
 	rURL, err := util.JoinURL(save, "release.txt")
 	if err != nil {
-		return fmt.Errorf("bad load url %s: %v", save, err)
+		return fmt.Errorf("bad load url %s: %w", save, err)
 	}
 
 	if err := loadKubeconfig(save); err != nil {
-		return fmt.Errorf("failed loading kubeconfig: %v", err)
+		return fmt.Errorf("failed loading kubeconfig: %w", err)
 	}
 
 	url, err := gsutilCat(uURL)
@@ -624,30 +631,30 @@ func saveState(save string) error {
 	log.Printf("Save U=%s R=%s to %s", url, version, save)
 	cURL, err := util.JoinURL(save, "kube-config")
 	if err != nil {
-		return fmt.Errorf("bad save url %s: %v", save, err)
+		return fmt.Errorf("bad save url %s: %w", save, err)
 	}
 	uURL, err := util.JoinURL(save, "release-url.txt")
 	if err != nil {
-		return fmt.Errorf("bad save url %s: %v", save, err)
+		return fmt.Errorf("bad save url %s: %w", save, err)
 	}
 	rURL, err := util.JoinURL(save, "release.txt")
 	if err != nil {
-		return fmt.Errorf("bad save url %s: %v", save, err)
+		return fmt.Errorf("bad save url %s: %w", save, err)
 	}
 
 	if err := control.FinishRunning(exec.Command("gsutil", "cp", util.Home(".kube", "config"), cURL)); err != nil {
-		return fmt.Errorf("failed to save .kube/config to %s: %v", cURL, err)
+		return fmt.Errorf("failed to save .kube/config to %s: %w", cURL, err)
 	}
 	if cmd, err := control.InputCommand(url, "gsutil", "cp", "-", uURL); err != nil {
-		return fmt.Errorf("failed to write url %s to %s: %v", url, uURL, err)
+		return fmt.Errorf("failed to write url %s to %s: %w", url, uURL, err)
 	} else if err = control.FinishRunning(cmd); err != nil {
-		return fmt.Errorf("failed to upload url %s to %s: %v", url, uURL, err)
+		return fmt.Errorf("failed to upload url %s to %s: %w", url, uURL, err)
 	}
 
 	if cmd, err := control.InputCommand(version, "gsutil", "cp", "-", rURL); err != nil {
-		return fmt.Errorf("failed to write release %s to %s: %v", version, rURL, err)
+		return fmt.Errorf("failed to write release %s to %s: %w", version, rURL, err)
 	} else if err = control.FinishRunning(cmd); err != nil {
-		return fmt.Errorf("failed to upload release %s to %s: %v", version, rURL, err)
+		return fmt.Errorf("failed to upload release %s to %s: %w", version, rURL, err)
 	}
 	return nil
 }

@@ -18,6 +18,7 @@ package git
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"reflect"
 	"testing"
@@ -196,7 +197,7 @@ func TestHTTPResolverFactory(t *testing.T) {
 	central := factory.CentralRemote("org", "repo")
 	for i, expected := range []stringWithError{
 		{str: "https://first:one@host.com/org/repo", err: nil},
-		{str: "", err: errors.New("could not resolve username: oops")},
+		{str: "", err: fmt.Errorf("could not resolve username: %w", errors.New("oops"))},
 		{str: "https://third:three@host.com/org/repo", err: nil},
 	} {
 		actualRemote, actualErr := central()
@@ -211,9 +212,9 @@ func TestHTTPResolverFactory(t *testing.T) {
 	publish := factory.PublishRemote("org", "repo")
 	for i, expected := range []stringWithError{
 		{str: "https://first:one@host.com/first/repo", err: nil},
-		{str: "", err: errors.New("could not resolve remote: oops")},
+		{str: "", err: fmt.Errorf("could not resolve remote: %w", errors.New("oops"))},
 		{str: "https://third:three@host.com/third/repo", err: nil},
-		{str: "", err: errors.New("could not resolve username: oops")},
+		{str: "", err: fmt.Errorf("could not resolve username: %w", errors.New("oops"))},
 	} {
 		actualRemote, actualErr := publish()
 		if actualRemote != expected.str {

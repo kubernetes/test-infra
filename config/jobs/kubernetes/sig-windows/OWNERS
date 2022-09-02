@@ -1,19 +1,19 @@
 reviewers:
-- chewong
 - ddebroy
+- ibabou
 - jayunit100
-- jeremyje
 - jsturtevant
 - marosset
 - pjh
 approvers:
-- chewong
 - ddebroy
+- ibabou
 - jayunit100
-- jeremyje
 - jsturtevant
 - marosset
 - pjh
+emeritus_approvers:
+- chewong
 
 labels:
 - sig/windows

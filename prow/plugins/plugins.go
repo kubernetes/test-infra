@@ -18,6 +18,7 @@ package plugins
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -61,7 +62,12 @@ var (
 	reviewEventHandlers        = map[string]ReviewEventHandler{}
 	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
 	statusEventHandlers        = map[string]StatusEventHandler{}
-	CommentMap, _              = genyaml.NewCommentMap()
+	// CommentMap is used by many plugins for printing help messages defined in
+	// config.go.
+	CommentMap, _ = genyaml.NewCommentMap(nil)
+
+	//go:embed config.go
+	embededConfigGoFileContent []byte
 )
 
 func init() {
@@ -72,7 +78,8 @@ func init() {
 	if version.Name != "hook" {
 		return
 	}
-	if cm, err := genyaml.NewCommentMap("prow/plugins/config.go"); err == nil {
+
+	if cm, err := genyaml.NewCommentMap(map[string][]byte{"prow/plugins/config.go": embededConfigGoFileContent}); err == nil {
 		CommentMap = cm
 	} else {
 		logrus.WithError(err).Error("Failed to initialize commentMap")
@@ -160,9 +167,14 @@ func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help H
 	genericCommentHandlers[name] = fn
 }
 
+type PluginGitHubClient interface {
+	github.Client
+	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
+}
+
 // Agent may be used concurrently, so each entry must be thread-safe.
 type Agent struct {
-	GitHubClient              github.Client
+	GitHubClient              PluginGitHubClient
 	ProwJobClient             prowv1.ProwJobInterface
 	KubernetesClient          kubernetes.Interface
 	BuildClusterCoreV1Clients map[string]corev1.CoreV1Interface
@@ -194,6 +206,10 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
 	gitHubClient := &githubV4OrgAddingWrapper{org: githubOrg, Client: clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)}
+	jiraClient := clientAgent.JiraClient
+	if jiraClient != nil {
+		jiraClient = clientAgent.JiraClient.WithFields(logger.Data).ForPlugin(plugin)
+	}
 	return Agent{
 		GitHubClient:              gitHubClient,
 		KubernetesClient:          clientAgent.KubernetesClient,
@@ -201,9 +217,9 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 		ProwJobClient:             clientAgent.ProwJobClient,
 		GitClient:                 clientAgent.GitClient,
 		SlackClient:               clientAgent.SlackClient,
-		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data).WithGitHubClient(gitHubClient),
+		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data).WithGitHubClient(gitHubClient).ForPlugin(plugin),
 		BugzillaClient:            clientAgent.BugzillaClient.WithFields(logger.Data).ForPlugin(plugin),
-		JiraClient:                clientAgent.JiraClient,
+		JiraClient:                jiraClient,
 		Metrics:                   metrics,
 		Config:                    prowConfig,
 		PluginConfig:              pluginConfig,
@@ -218,6 +234,15 @@ func (a *Agent) InitializeCommentPruner(org, repo string, pr int) {
 		a.GitHubClient, a.Logger.WithField("client", "commentpruner"),
 		org, repo, pr,
 	)
+}
+
+// TookAction indicates whether any client with implemented Used() function was used
+func (a *Agent) TookAction() bool {
+	jiraClientTookAction := false
+	if a.JiraClient != nil {
+		jiraClientTookAction = a.JiraClient.Used()
+	}
+	return a.GitHubClient.Used() || a.OwnersClient.Used() || a.BugzillaClient.Used() || jiraClientTookAction
 }
 
 // CommentPruner will return the commentpruner.EventClient attached to the agent or an error
@@ -256,7 +281,8 @@ func NewFakeConfigAgent() ConfigAgent {
 // the file can't be read or the configuration is invalid.
 // If checkUnknownPlugins is true, unrecognized plugin names will make config
 // loading fail.
-func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins bool) error {
+// If skipResolveConfigUpdater is true, the ConfigUpdater of the config will not be resolved.
+func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins, skipResolveConfigUpdater bool) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -325,6 +351,11 @@ func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, 
 			return err
 		}
 	}
+	if !skipResolveConfigUpdater {
+		if err := np.ConfigUpdater.resolve(); err != nil {
+			return err
+		}
+	}
 
 	pa.Set(np)
 	return nil
@@ -351,14 +382,14 @@ func (pa *ConfigAgent) Set(pc *Configuration) {
 // then start returns the error. Future errors will halt updates but not stop.
 // If checkUnknownPlugins is true, unrecognized plugin names will make config
 // loading fail.
-func (pa *ConfigAgent) Start(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins bool) error {
-	if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins); err != nil {
+func (pa *ConfigAgent) Start(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins, skipResolveConfigUpdater bool) error {
+	if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins, skipResolveConfigUpdater); err != nil {
 		return err
 	}
 	ticker := time.NewTicker(time.Minute)
 	go func() {
 		for range ticker.C {
-			if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins); err != nil {
+			if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins, skipResolveConfigUpdater); err != nil {
 				logrus.WithField("path", path).WithError(err).Error("Error loading plugin config.")
 			}
 		}

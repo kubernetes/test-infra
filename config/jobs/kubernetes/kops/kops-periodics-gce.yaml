@@ -1,6 +1,6 @@
 periodics:
 # Runs e2e on the cluster built with latest released kops and latest released k/k
-- cron: '3 * * * *'
+- cron: '3 1-23/3 * * *'
   labels:
     preset-k8s-ssh: "true"
   name: e2e-kops-gce-stable
@@ -27,8 +27,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha" \
-          --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
+          --create-args="--channel=alpha --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -36,14 +35,13 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
-          --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints|should.be.mountable.when.non-attachable"
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -60,12 +58,12 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
+    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-stable
 
 # Runs e2e on the cluster built with latest released kops and k/k master branch
-- cron: '48 * * * *'
+- cron: '48 1-23/3 * * *'
   labels:
     preset-k8s-ssh: "true"
   name: e2e-kops-gce-latest
@@ -92,25 +90,23 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha" \
-          --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
+          --create-args="--channel=alpha --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
+          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
-          --test-package-bucket=kubernetes-release-dev \
+          --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
-          --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints|should.be.mountable.when.non-attachable"
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -127,6 +123,59 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
+    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-latest
+
+# Runs an upgrade/rollback test with Leader Migration from 1.23 to 1.24
+- cron: '48 1-23/3 * * *'
+  labels:
+    preset-k8s-ssh: "true"
+  name: e2e-kops-gce-leader-migration
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: k8s-kops-test
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - bash
+      - ./tests/e2e/scenarios/upgrade-ha-leader-migration/run-test.sh
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private
+      - name: KUBE_SSH_USER
+        value: prow
+      - name: CLOUD_PROVIDER
+        value: "gce"
+      - name: CLUSTER_NAME
+        value: "ha-migration.k8s.local"
+      - name: GCE_EXTRA_CREATE_ARGS
+        value: --gce-service-account=default
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          memory: 3Gi
+        requests:
+          cpu: "2"
+          memory: 3Gi
+  annotations:
+    test.kops.k8s.io/cloud: gce
+    test.kops.k8s.io/container_runtime: containerd
+    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/k8s_version: latest
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: ''
+    testgrid-dashboards: google-kops-gce, kops-gce, kops-k8s-latest, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '40'
+    testgrid-tab-name: kops-leader-migration

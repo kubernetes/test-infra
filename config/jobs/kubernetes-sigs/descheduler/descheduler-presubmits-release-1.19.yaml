@@ -44,7 +44,8 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.19$
-    always_run: true
+    always_run: false
+    run_if_changed: '\.go$'
     spec:
       containers:
       - image: golang:1.15.0
@@ -67,7 +68,7 @@ presubmits:
     - ^release-1.19$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -97,7 +98,7 @@ presubmits:
     - ^release-1.19$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -127,7 +128,7 @@ presubmits:
     - ^release-1.19$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh

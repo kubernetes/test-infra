@@ -26,9 +26,9 @@ import sh
 import ruamel.yaml as yaml
 
 
-TEST_CONFIG_YAML = "releng/test_config.yaml"
-JOB_CONFIG = "config/jobs"
-BRANCH_JOB_DIR = "config/jobs/kubernetes/sig-release/release-branch-jobs"
+TEST_CONFIG_YAML = "test_config.yaml"
+JOB_CONFIG = "../config/jobs"
+BRANCH_JOB_DIR = "../config/jobs/kubernetes/sig-release/release-branch-jobs"
 
 max_config_count = 4
 min_config_count = 3
@@ -139,35 +139,35 @@ def regenerate_files(generate_tests_bin, test_config):
 
 
 def main():
-    if not os.environ.get('BUILD_WORKSPACE_DIRECTORY'):
-        print("Please run me via bazel!")
-        print("bazel run //releng:prepare_release_branch")
+    if os.environ.get('BUILD_WORKSPACE_DIRECTORY'):
+        print("Please run me via make rule!")
+        print("make -C releng prepare-release-branch")
         sys.exit(1)
     rotator_bin = sys.argv[1]
     forker_bin = sys.argv[2]
     generate_tests_bin = sys.argv[3]
-    d = os.environ.get('BUILD_WORKSPACE_DIRECTORY')
 
-    branch_path = os.path.join(d, BRANCH_JOB_DIR)
+    cur_file_dir = os.path.dirname(__file__)
+    branch_job_dir_abs = os.path.join(cur_file_dir, BRANCH_JOB_DIR)
 
-    version = check_version(branch_path)
+    version = check_version(branch_job_dir_abs)
     print("Current version: %d.%d" % (version[0], version[1]))
 
-    files = get_config_files(branch_path)
+    files = get_config_files(branch_job_dir_abs)
     if len(files) == 4:
         print("There should be a maximum of %s release branch configs." % max_config_count)
         print("Deleting the oldest config before rotation...")
 
-        delete_stale_branch(branch_path, version)
+        delete_stale_branch(branch_job_dir_abs, version)
 
-    rotate_files(rotator_bin, branch_path, version)
+    rotate_files(rotator_bin, branch_job_dir_abs, version)
 
-    fork_new_file(forker_bin, branch_path,
-                  os.path.join(d, JOB_CONFIG), version)
+    fork_new_file(forker_bin, branch_job_dir_abs,
+                  os.path.join(cur_file_dir, JOB_CONFIG), version)
 
-    update_generated_config(os.path.join(d, TEST_CONFIG_YAML), version)
+    update_generated_config(os.path.join(cur_file_dir, TEST_CONFIG_YAML), version)
 
-    regenerate_files(generate_tests_bin, os.path.join(d, TEST_CONFIG_YAML))
+    regenerate_files(generate_tests_bin, os.path.join(cur_file_dir, TEST_CONFIG_YAML))
 
 
 if __name__ == "__main__":

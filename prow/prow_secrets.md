@@ -47,7 +47,7 @@ where the prow service/build clusters are located.
    [`kubernetes_external_secrets.yaml`](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/kubernetes_external_secrets.yaml).
    The service account used for `k8s-prow-builds` cluster(aka the default build
    cluster) is defined in
-   [`build_serviceaccounts.yaml`](https://github.com/kubernetes/test-infra/blob/1b2153ebe2809727a45c5b930647b2a3609dd7e7/config/prow/cluster/build_serviceaccounts.yaml#L43),
+   [`build_serviceaccounts.yaml`](https://github.com/kubernetes/test-infra/blob/422fd7239bd65aba020adca54948df292c60c10a/config/prow/cluster/build_serviceaccounts.yaml#L43),
    and the secrets are defined in
    [`build_kubernetes-external-secrets_customresource.yaml`](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/build_kubernetes-external-secrets_customresource.yaml).
 

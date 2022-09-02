@@ -8,6 +8,8 @@ test_groups:
   gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gotest
 - name: gcp-guest-osconfig-presubmit-gocheck
   gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gocheck
+- name: gcp-guest-cloud-image-tests
+  gcs_prefix: gcp-guest-testgrid/logs/cit-periodic
 
 #
 # Define dashboards
@@ -21,3 +23,5 @@ dashboards:
     test_group_name: gcp-guest-osconfig-presubmit-gotest
   - name: OSConfig presubmits - gocheck
     test_group_name: gcp-guest-osconfig-presubmit-gocheck
+  - name: CIT periodics
+    test_group_name: gcp-guest-cloud-image-tests

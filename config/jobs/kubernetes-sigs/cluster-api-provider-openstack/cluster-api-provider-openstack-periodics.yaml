@@ -2,8 +2,6 @@ periodics:
 - name: periodic-cluster-api-provider-openstack-e2e-test-main
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -13,7 +11,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
   - org: kubernetes-sigs
     repo: image-builder
@@ -22,7 +20,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
@@ -48,8 +46,6 @@ periodics:
 - name: periodic-cluster-api-provider-openstack-conformance-test-main-with-k8s-ci-artifacts
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -59,7 +55,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
   - org: kubernetes-sigs
     repo: image-builder
@@ -72,7 +68,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"

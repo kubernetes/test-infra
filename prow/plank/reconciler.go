@@ -18,7 +18,10 @@ package plank
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -29,9 +32,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/clock"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/utils/clock"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -44,6 +47,8 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -60,17 +65,21 @@ const (
 func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
+	knownClusters sets.String,
 	cfg config.Getter,
+	opener io.Opener,
 	totURL string,
 	additionalSelector string,
 ) error {
-	return add(mgr, buildMgrs, cfg, totURL, additionalSelector, nil, nil, 10)
+	return add(mgr, buildMgrs, knownClusters, cfg, opener, totURL, additionalSelector, nil, nil, 10)
 }
 
 func add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
+	knownClusters sets.String,
 	cfg config.Getter,
+	opener io.Opener,
 	totURL string,
 	additionalSelector string,
 	overwriteReconcile reconcile.Func,
@@ -93,8 +102,12 @@ func add(
 		WithEventFilter(predicate).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers})
 
-	r := newReconciler(ctx, mgr.GetClient(), overwriteReconcile, cfg, totURL)
+	r := newReconciler(ctx, mgr.GetClient(), overwriteReconcile, cfg, opener, totURL)
 	for buildCluster, buildClusterMgr := range buildMgrs {
+		r.log.WithFields(logrus.Fields{
+			"buildCluster": buildCluster,
+			"host":         buildClusterMgr.GetConfig().Host,
+		}).Debug("creating client")
 		blder = blder.Watches(
 			source.NewKindWithCache(&corev1.Pod{}, buildClusterMgr.GetCache()),
 			podEventRequestMapper(cfg().ProwJobNamespace))
@@ -109,16 +122,21 @@ func add(
 		return fmt.Errorf("failed to add metrics runnable to manager: %w", err)
 	}
 
+	if err := mgr.Add(manager.RunnableFunc(r.syncClusterStatus(time.Minute, knownClusters))); err != nil {
+		return fmt.Errorf("failed to add cluster status runnable to manager: %w", err)
+	}
+
 	return nil
 }
 
-func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overwriteReconcile reconcile.Func, cfg config.Getter, totURL string) *reconciler {
+func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overwriteReconcile reconcile.Func, cfg config.Getter, opener io.Opener, totURL string) *reconciler {
 	return &reconciler{
 		pjClient:           pjClient,
 		buildClients:       map[string]ctrlruntimeclient.Client{},
 		overwriteReconcile: overwriteReconcile,
 		log:                logrus.NewEntry(logrus.StandardLogger()).WithField("controller", ControllerName),
 		config:             cfg,
+		opener:             opener,
 		totURL:             totURL,
 		clock:              clock.RealClock{},
 		serializationLocks: &shardedLock{
@@ -134,8 +152,9 @@ type reconciler struct {
 	overwriteReconcile reconcile.Func
 	log                *logrus.Entry
 	config             config.Getter
+	opener             io.Opener
 	totURL             string
-	clock              clock.Clock
+	clock              clock.WithTickerAndDelayedExecution
 	serializationLocks *shardedLock
 }
 
@@ -167,7 +186,65 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 				continue
 			}
 			kube.GatherProwJobMetrics(r.log, pjs.Items)
-			version.GatherProwVersion(r.log)
+		}
+	}
+}
+
+type ClusterStatus string
+
+const (
+	ClusterStatusUnreachable ClusterStatus = "Unreachable"
+	ClusterStatusReachable   ClusterStatus = "Reachable"
+	ClusterStatusNoManager   ClusterStatus = "No-Manager"
+)
+
+func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters sets.String) func(context.Context) error {
+	return func(ctx context.Context) error {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-ticker.C:
+				location := r.config().Plank.BuildClusterStatusFile
+				if location == "" {
+					continue
+				}
+				parsedPath, err := prowv1.ParsePath(location)
+				if err != nil {
+					r.log.WithError(err).Errorf("Failed to parse cluster status file location: %q.", location)
+					continue
+				}
+				// prowv1.ParsePath prepends `Path` with `/`, trim it
+				bucket, subPath := parsedPath.Bucket(), strings.TrimPrefix(parsedPath.Path, "/")
+
+				clusters := map[string]ClusterStatus{}
+				for cluster := range knownClusters {
+					status := ClusterStatusReachable
+					client, ok := r.buildClients[cluster]
+					if !ok {
+						status = ClusterStatusNoManager
+					} else {
+						var pods corev1.PodList
+						if err := client.List(ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(r.config().PodNamespace), ctrlruntimeclient.Limit(1)); err != nil {
+							r.log.WithField("cluster", cluster).WithError(err).Warn("Error listing pod to check for build cluster reachability.")
+							status = ClusterStatusUnreachable
+						}
+					}
+					clusters[cluster] = status
+				}
+				payload, err := json.Marshal(clusters)
+				if err != nil {
+					r.log.WithError(err).Error("Error marshaling cluster status info.")
+					continue
+				}
+				noCache := "no-cache"
+				author := util.StorageAuthor{Opener: r.opener, Opts: &io.WriterOptions{CacheControl: &noCache}}
+				if err := util.WriteContent(ctx, r.log, author, bucket, subPath, true, payload); err != nil {
+					r.log.WithError(err).Error("Error writing cluster status info.")
+				}
+			}
 		}
 	}
 }
@@ -183,7 +260,7 @@ func (r *reconciler) defaultReconcile(ctx context.Context, request reconcile.Req
 	pj := &prowv1.ProwJob{}
 	if err := r.pjClient.Get(ctx, request.NamespacedName, pj); err != nil {
 		if !kerrors.IsNotFound(err) {
-			return reconcile.Result{}, fmt.Errorf("failed to get prowjob %s: %v", request.Name, err)
+			return reconcile.Result{}, fmt.Errorf("failed to get prowjob %s: %w", request.Name, err)
 		}
 
 		// Objects can be deleted from the API while being in our workqueue
@@ -193,6 +270,8 @@ func (r *reconciler) defaultReconcile(ctx context.Context, request reconcile.Req
 	res, err := r.serializeIfNeeded(ctx, pj)
 	if IsTerminalError(err) {
 		// Unfixable cases like missing build clusters, do not return an error to prevent requeuing
+		r.log.WithError(err).WithFields(pjutil.ProwJobFields(pj)).
+			Error("Reconciliation failed with terminal error and will not be requeued")
 		return reconcile.Result{}, nil
 	}
 	if res == nil {
@@ -242,7 +321,7 @@ func (r *reconciler) reconcile(ctx context.Context, pj *prowv1.ProwJob) (*reconc
 func (r *reconciler) terminateDupes(ctx context.Context, pj *prowv1.ProwJob) error {
 	pjs := &prowv1.ProwJobList{}
 	if err := r.pjClient.List(ctx, pjs, optPendingTriggeredJobsNamed(pj.Spec.Job)); err != nil {
-		return fmt.Errorf("failed to list prowjobs: %v", err)
+		return fmt.Errorf("failed to list prowjobs: %w", err)
 	}
 
 	return pjutil.TerminateOlderJobs(r.pjClient, r.log, pjs.Items)
@@ -263,7 +342,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		id, pn, err := r.startPod(ctx, pj)
 		if err != nil {
 			if !isRequestError(err) {
-				return nil, fmt.Errorf("error starting pod %s: %v", pod.Name, err)
+				return nil, fmt.Errorf("error starting pod for PJ %s: %w", pj.Name, err)
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
@@ -457,6 +536,23 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		return nil, fmt.Errorf("patching prowjob: %w", err)
 	}
 
+	// If the ProwJob state has changed, we must ensure that the update reaches the cache before
+	// processing the key again. Without this we might accidentally replace intentionally deleted pods
+	// or otherwise incorrectly react to stale ProwJob state.
+	state := pj.Status.State
+	if prevPJ.Status.State == state {
+		return nil, nil
+	}
+	nn := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
+	if err := wait.Poll(100*time.Millisecond, 2*time.Second, func() (bool, error) {
+		if err := r.pjClient.Get(ctx, nn, pj); err != nil {
+			return false, fmt.Errorf("failed to get prowjob: %w", err)
+		}
+		return pj.Status.State == state, nil
+	}); err != nil {
+		return nil, fmt.Errorf("failed to wait for cached prowjob %s to get into state %s: %w", nn.String(), state, err)
+	}
+
 	return nil, nil
 }
 
@@ -481,7 +577,7 @@ func (r *reconciler) syncTriggeredJob(ctx context.Context, pj *prowv1.ProwJob) (
 		// Do not start more jobs than specified and check again later.
 		canExecuteConcurrently, err := r.canExecuteConcurrently(ctx, pj)
 		if err != nil {
-			return nil, fmt.Errorf("canExecuteConcurrently: %v", err)
+			return nil, fmt.Errorf("canExecuteConcurrently: %w", err)
 		}
 		if !canExecuteConcurrently {
 			return &reconcile.Result{RequeueAfter: 10 * time.Second}, nil
@@ -490,7 +586,7 @@ func (r *reconciler) syncTriggeredJob(ctx context.Context, pj *prowv1.ProwJob) (
 		id, pn, err = r.startPod(ctx, pj)
 		if err != nil {
 			if !isRequestError(err) {
-				return nil, fmt.Errorf("error starting pod: %v", err)
+				return nil, fmt.Errorf("error starting pod: %w", err)
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
@@ -582,7 +678,7 @@ func (r *reconciler) pod(ctx context.Context, pj *prowv1.ProwJob) (*corev1.Pod, 
 		if kerrors.IsNotFound(err) {
 			return nil, false, nil
 		}
-		return nil, false, fmt.Errorf("failed to get pod: %v", err)
+		return nil, false, fmt.Errorf("failed to get pod: %w", err)
 	}
 
 	return pod, true, nil
@@ -612,7 +708,7 @@ func (r *reconciler) deletePod(ctx context.Context, pj *prowv1.ProwJob) error {
 func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, string, error) {
 	buildID, err := r.getBuildID(pj.Spec.Job)
 	if err != nil {
-		return "", "", fmt.Errorf("error getting build ID: %v", err)
+		return "", "", fmt.Errorf("error getting build ID: %w", err)
 	}
 
 	pj.Status.BuildID = buildID
@@ -623,6 +719,7 @@ func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, 
 	pod.Namespace = r.config().PodNamespace
 	// Add prow version as a label for better debugging prowjobs.
 	pod.ObjectMeta.Labels[kube.PlankVersionLabel] = version.Version
+	podName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
 
 	client, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
@@ -631,12 +728,11 @@ func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, 
 	err = client.Create(ctx, pod)
 	r.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("create pod %s in cluster %s: %w", podName.String(), pj.ClusterAlias(), err)
 	}
 
 	// We must block until we see the pod, otherwise a new reconciliation may be triggered that tries to create
 	// the pod because its not in the cache yet, errors with IsAlreadyExists and sets the prowjob to failed
-	podName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
 	if err := wait.Poll(100*time.Millisecond, 10*time.Second, func() (bool, error) {
 		if err := client.Get(ctx, podName, pod); err != nil {
 			if kerrors.IsNotFound(err) {
@@ -675,6 +771,14 @@ func (r *reconciler) canExecuteConcurrently(ctx context.Context, pj *prowv1.Prow
 		}
 	}
 
+	if canExecute, err := r.canExecuteConcurrentlyPerJob(ctx, pj); err != nil || !canExecute {
+		return canExecute, err
+	}
+
+	return r.canExecuteConcurrentlyPerQueue(ctx, pj)
+}
+
+func (r *reconciler) canExecuteConcurrentlyPerJob(ctx context.Context, pj *prowv1.ProwJob) (bool, error) {
 	if pj.Spec.MaxConcurrency == 0 {
 		return true, nil
 	}
@@ -685,29 +789,42 @@ func (r *reconciler) canExecuteConcurrently(ctx context.Context, pj *prowv1.Prow
 	}
 	r.log.Infof("got %d not completed with same name", len(pjs.Items))
 
-	var pendingOrOlderMatchingPJs int
-	for _, foundPJ := range pjs.Items {
-		// Ignore self here.
-		if foundPJ.UID == pj.UID {
-			continue
-		}
-		if foundPJ.Status.State == prowv1.PendingState {
-			pendingOrOlderMatchingPJs++
-			continue
-		}
-
-		// At this point we know that foundPJ is in Triggered state, if its older than our prowJobs it gets
-		// priorized to make sure we execute jobs in creation order.
-		if foundPJ.CreationTimestamp.Before(&pj.CreationTimestamp) {
-			pendingOrOlderMatchingPJs++
-		}
-
-	}
-
+	pendingOrOlderMatchingPJs := countPendingOrOlderTriggeredMatchingPJs(*pj, pjs.Items)
 	if pendingOrOlderMatchingPJs >= pj.Spec.MaxConcurrency {
 		r.log.WithFields(pjutil.ProwJobFields(pj)).
 			Debugf("Not starting another instance of %s, have %d instances that are pending or older, %d is the limit",
 				pj.Spec.Job, pendingOrOlderMatchingPJs, pj.Spec.MaxConcurrency)
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (r *reconciler) canExecuteConcurrentlyPerQueue(ctx context.Context, pj *prowv1.ProwJob) (bool, error) {
+	queueName := pj.Spec.JobQueueName
+	if queueName == "" {
+		return true, nil
+	}
+
+	queueConcurrency, queueDefined := r.config().Plank.JobQueueConcurrencies[queueName]
+	if !queueDefined {
+		return false, fmt.Errorf("failed to match queue name '%s' with Plank configuration", queueName)
+	}
+	if queueConcurrency == 0 {
+		return true, nil
+	}
+
+	pjs := &prowv1.ProwJobList{}
+	if err := r.pjClient.List(ctx, pjs, optPendingTriggeredJobsInQueue(queueName)); err != nil {
+		return false, fmt.Errorf("failed listing prowjobs in queue %s: %w", queueName, err)
+	}
+	r.log.Infof("got %d not completed within queue %s", len(pjs.Items), queueName)
+
+	pendingOrOlderMatchingPJs := countPendingOrOlderTriggeredMatchingPJs(*pj, pjs.Items)
+	if pendingOrOlderMatchingPJs >= queueConcurrency {
+		r.log.WithFields(pjutil.ProwJobFields(pj)).
+			Debugf("Not starting another instance of %s, have %d instances in queue %s that are pending or older, %d is the limit",
+				pj.Spec.Job, pendingOrOlderMatchingPJs, queueName, queueConcurrency)
 		return false, nil
 	}
 
@@ -772,6 +889,10 @@ func pendingTriggeredIndexKeyByName(jobName string) string {
 	return fmt.Sprintf("pending-triggered-named-%s", jobName)
 }
 
+func pendingTriggeredIndexKeyByJobQueueName(jobQueueName string) string {
+	return fmt.Sprintf("pending-triggered-with-job-queue-name-%s", jobQueueName)
+}
+
 func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
 	return func(o ctrlruntimeclient.Object) []string {
 		pj := o.(*prowv1.ProwJob)
@@ -779,22 +900,21 @@ func prowJobIndexer(prowJobNamespace string) ctrlruntimeclient.IndexerFunc {
 			return nil
 		}
 
+		indexes := []string{prowJobIndexKeyAll}
+
 		if pj.Status.State == prowv1.PendingState {
-			return []string{
-				prowJobIndexKeyAll,
-				prowJobIndexKeyPending,
-				pendingTriggeredIndexKeyByName(pj.Spec.Job),
+			indexes = append(indexes, prowJobIndexKeyPending)
+		}
+
+		if pj.Status.State == prowv1.PendingState || pj.Status.State == prowv1.TriggeredState {
+			indexes = append(indexes, pendingTriggeredIndexKeyByName(pj.Spec.Job))
+
+			if pj.Spec.JobQueueName != "" {
+				indexes = append(indexes, pendingTriggeredIndexKeyByJobQueueName(pj.Spec.JobQueueName))
 			}
 		}
 
-		if pj.Status.State == prowv1.TriggeredState {
-			return []string{
-				prowJobIndexKeyAll,
-				pendingTriggeredIndexKeyByName(pj.Spec.Job),
-			}
-		}
-
-		return []string{prowJobIndexKeyAll}
+		return indexes
 	}
 }
 
@@ -808,6 +928,10 @@ func optPendingProwJobs() ctrlruntimeclient.ListOption {
 
 func optPendingTriggeredJobsNamed(name string) ctrlruntimeclient.ListOption {
 	return ctrlruntimeclient.MatchingFields{prowJobIndexName: pendingTriggeredIndexKeyByName(name)}
+}
+
+func optPendingTriggeredJobsInQueue(queueName string) ctrlruntimeclient.ListOption {
+	return ctrlruntimeclient.MatchingFields{prowJobIndexName: pendingTriggeredIndexKeyByJobQueueName(queueName)}
 }
 
 func didPodSucceed(p *corev1.Pod) bool {
@@ -842,9 +966,33 @@ func getPodBuildID(pod *corev1.Pod) string {
 // isRequestError extracts an HTTP status code from a kerrors.APIStatus and
 // returns true if it is a 4xx error.
 func isRequestError(err error) bool {
-	code := 500 // This is what kerrors.ReasonForError() defaults to.
-	if statusErr, ok := err.(kerrors.APIStatus); ok {
-		code = int(statusErr.Status().Code)
+	var code int32 = 500 // This is what kerrors.ReasonForError() defaults to.
+	if status := kerrors.APIStatus(nil); errors.As(err, &status) {
+		code = status.Status().Code
 	}
 	return 400 <= code && code < 500
+}
+
+func countPendingOrOlderTriggeredMatchingPJs(pj prowv1.ProwJob, pjs []prowv1.ProwJob) int {
+	var pendingOrOlderTriggeredMatchingPJs int
+
+	for _, foundPJ := range pjs {
+		// Ignore self here.
+		if foundPJ.UID == pj.UID {
+			continue
+		}
+		if foundPJ.Status.State == prowv1.PendingState {
+			pendingOrOlderTriggeredMatchingPJs++
+			continue
+		}
+
+		// At this point if foundPJ is older than our prowJobs it gets
+		// priorized to make sure we execute jobs in creation order.
+		if foundPJ.Status.State == prowv1.TriggeredState &&
+			foundPJ.CreationTimestamp.Before(&pj.CreationTimestamp) {
+			pendingOrOlderTriggeredMatchingPJs++
+		}
+	}
+
+	return pendingOrOlderTriggeredMatchingPJs
 }

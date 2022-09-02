@@ -82,7 +82,8 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 	sem := semaphore.NewWeighted(4)
 	group.Add(len(uploadTargets))
 	for dest, upload := range uploadTargets {
-		log := logrus.WithField("dest", dest)
+		writer := dtw(dest)
+		log := logrus.WithField("dest", writer.fullUploadPath())
 		log.Info("Queued for upload")
 		go func(f UploadFunc, writer dataWriter, log *logrus.Entry) {
 			defer group.Done()
@@ -113,7 +114,7 @@ func upload(dtw destToWriter, uploadTargets map[string]UploadFunc) error {
 			} else {
 				log.Info("Finished upload")
 			}
-		}(upload, dtw(dest), log)
+		}(upload, writer, log)
 	}
 	group.Wait()
 	close(errCh)
@@ -151,11 +152,11 @@ func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 
 		uploadErr := DataUploadWithOptions(reader, opts)(writer)
 		if uploadErr != nil {
-			uploadErr = fmt.Errorf("upload error: %v", uploadErr)
+			uploadErr = fmt.Errorf("upload error: %w", uploadErr)
 		}
 		closeErr := reader.Close()
 		if closeErr != nil {
-			closeErr = fmt.Errorf("reader close error: %v", closeErr)
+			closeErr = fmt.Errorf("reader close error: %w", closeErr)
 		}
 
 		return utilerrors.NewAggregate([]error{uploadErr, closeErr})
@@ -183,11 +184,11 @@ func DataUploadWithOptions(src io.Reader, attrs pkgio.WriterOptions) UploadFunc 
 		writer.ApplyWriterOptions(attrs)
 		_, copyErr := io.Copy(writer, src)
 		if copyErr != nil {
-			copyErr = fmt.Errorf("copy error: %v", copyErr)
+			copyErr = fmt.Errorf("copy error: %w", copyErr)
 		}
 		closeErr := writer.Close()
 		if closeErr != nil {
-			closeErr = fmt.Errorf("writer close error: %v", closeErr)
+			closeErr = fmt.Errorf("writer close error: %w", closeErr)
 		}
 		return utilerrors.NewAggregate([]error{copyErr, closeErr})
 	}
@@ -195,6 +196,7 @@ func DataUploadWithOptions(src io.Reader, attrs pkgio.WriterOptions) UploadFunc 
 
 type dataWriter interface {
 	io.WriteCloser
+	fullUploadPath() string
 	ApplyWriterOptions(opts pkgio.WriterOptions)
 }
 
@@ -209,7 +211,7 @@ type openerObjectWriter struct {
 
 func (w *openerObjectWriter) Write(p []byte) (n int, err error) {
 	if w.writeCloser == nil {
-		w.writeCloser, err = w.Opener.Writer(w.Context, fmt.Sprintf("%s/%s", w.Bucket, w.Dest), w.opts...)
+		w.writeCloser, err = w.Opener.Writer(w.Context, w.fullUploadPath(), w.opts...)
 		if err != nil {
 			return 0, err
 		}
@@ -234,4 +236,8 @@ func (w *openerObjectWriter) Close() error {
 
 func (w *openerObjectWriter) ApplyWriterOptions(opts pkgio.WriterOptions) {
 	w.opts = append(w.opts, opts)
+}
+
+func (w *openerObjectWriter) fullUploadPath() string {
+	return fmt.Sprintf("%s/%s", w.Bucket, w.Dest)
 }

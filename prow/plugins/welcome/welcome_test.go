@@ -17,6 +17,7 @@ limitations under the License.
 package welcome
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -126,9 +127,12 @@ func (fc *fakeClient) ClearPRs() {
 	fc.prs = make(map[string]sets.Int)
 }
 
-// FindIssues fails if the query does not match the expected query regex and
+// FindIssuesWithOrg fails if the query does not match the expected query regex and
 // looks up issues based on parsing the expected query format
-func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (fc *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
+	if org == "" {
+		return nil, errors.New("passing an empty organization is highly discouraged, as it's incompatible with GitHub Apps")
+	}
 	fields := expectedQueryRegex.FindStringSubmatch(query)
 	if fields == nil || len(fields) != 4 {
 		return nil, fmt.Errorf("invalid query: `%s` does not match expected regex `%s`", query, expectedQueryRegex.String())
@@ -208,95 +212,147 @@ func TestHandlePR(t *testing.T) {
 	fc.addCollaborator(collaborator.Login)
 
 	testCases := []struct {
-		name          string
-		repoOwner     string
-		repoName      string
-		author        github.User
-		prNumber      int
-		prAction      github.PullRequestEventAction
-		addPR         bool
-		expectComment bool
+		name           string
+		repoOwner      string
+		repoName       string
+		author         github.User
+		prNumber       int
+		prAction       github.PullRequestEventAction
+		addPR          bool
+		alwaysPost     bool
+		onlyOrgMembers bool
+		expectComment  bool
 	}{
 		{
-			name:          "existing contributorA",
-			repoOwner:     "kubernetes",
-			repoName:      "test-infra",
-			author:        contributorA,
-			prNumber:      20,
-			prAction:      github.PullRequestActionOpened,
-			expectComment: false,
+			name:           "existing contributorA",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         contributorA,
+			prNumber:       20,
+			prAction:       github.PullRequestActionOpened,
+			alwaysPost:     false,
+			onlyOrgMembers: false,
+			expectComment:  false,
 		},
 		{
-			name:          "existing contributorB",
-			repoOwner:     "kubernetes",
-			repoName:      "test-infra",
-			author:        contributorB,
-			prNumber:      40,
-			prAction:      github.PullRequestActionOpened,
-			expectComment: false,
+			name:           "existing contributorB",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         contributorB,
+			prNumber:       40,
+			prAction:       github.PullRequestActionOpened,
+			alwaysPost:     false,
+			onlyOrgMembers: false,
+			expectComment:  false,
 		},
 		{
-			name:          "new contributor",
-			repoOwner:     "kubernetes",
-			repoName:      "test-infra",
-			author:        newContributor,
-			prAction:      github.PullRequestActionOpened,
-			prNumber:      50,
-			expectComment: true,
+			name:           "existing contributor when it should greet everyone",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         contributorB,
+			prNumber:       40,
+			prAction:       github.PullRequestActionOpened,
+			alwaysPost:     true,
+			onlyOrgMembers: false,
+			expectComment:  true,
 		},
 		{
-			name:          "new contributor and API recorded PR already",
-			repoOwner:     "kubernetes",
-			repoName:      "test-infra",
-			author:        newContributor,
-			prAction:      github.PullRequestActionOpened,
-			prNumber:      50,
-			expectComment: true,
-			addPR:         true,
+			name:           "new contributor",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         newContributor,
+			prAction:       github.PullRequestActionOpened,
+			prNumber:       50,
+			alwaysPost:     false,
+			onlyOrgMembers: false,
+			expectComment:  true,
 		},
 		{
-			name:          "new contributor, not PR open event",
-			repoOwner:     "kubernetes",
-			repoName:      "test-infra",
-			author:        newContributor,
-			prAction:      github.PullRequestActionEdited,
-			prNumber:      50,
-			expectComment: false,
+			name:           "new contributor when it should greet everyone",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         newContributor,
+			prAction:       github.PullRequestActionOpened,
+			prNumber:       50,
+			alwaysPost:     true,
+			onlyOrgMembers: false,
+			expectComment:  true,
 		},
 		{
-			name:          "new contributor, but is a bot",
-			repoOwner:     "kubernetes",
-			repoName:      "test-infra",
-			author:        robot,
-			prAction:      github.PullRequestActionOpened,
-			prNumber:      500,
-			expectComment: false,
+			name:           "new contributor and API recorded PR already",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         newContributor,
+			prAction:       github.PullRequestActionOpened,
+			prNumber:       50,
+			expectComment:  true,
+			alwaysPost:     false,
+			onlyOrgMembers: false,
+			addPR:          true,
 		},
 		{
-			name:          "new contribution from the org member",
-			repoOwner:     "kubernetes",
-			repoName:      "test-infra",
-			author:        member,
-			prNumber:      101,
-			prAction:      github.PullRequestActionOpened,
-			expectComment: false,
+			name:           "new contributor, not PR open event",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         newContributor,
+			prAction:       github.PullRequestActionEdited,
+			prNumber:       50,
+			alwaysPost:     false,
+			onlyOrgMembers: false,
+			expectComment:  false,
 		},
 		{
-			name:          "new contribution from collaborator",
-			repoOwner:     "kubernetes",
-			repoName:      "test-infra",
-			author:        collaborator,
-			prNumber:      102,
-			prAction:      github.PullRequestActionOpened,
-			expectComment: false,
+			name:           "new contributor, but is a bot",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         robot,
+			prAction:       github.PullRequestActionOpened,
+			prNumber:       500,
+			alwaysPost:     false,
+			onlyOrgMembers: false,
+			expectComment:  false,
+		},
+		{
+			name:           "new contribution from the org member",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         member,
+			prNumber:       101,
+			prAction:       github.PullRequestActionOpened,
+			alwaysPost:     false,
+			onlyOrgMembers: false,
+			expectComment:  false,
+		},
+		{
+			name:           "new contribution from collaborator",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         collaborator,
+			prNumber:       102,
+			prAction:       github.PullRequestActionOpened,
+			alwaysPost:     false,
+			onlyOrgMembers: false,
+			expectComment:  false,
+		},
+		{
+			name:           "contribution from org member when it should greet everyone",
+			repoOwner:      "kubernetes",
+			repoName:       "test-infra",
+			author:         member,
+			prNumber:       40,
+			prAction:       github.PullRequestActionOpened,
+			alwaysPost:     true,
+			onlyOrgMembers: true,
+			expectComment:  true,
 		},
 	}
 
-	c := client{
-		GitHubClient: fc,
-		Logger:       &logrus.Entry{},
-	}
 	for _, tc := range testCases {
+		c := client{
+			GitHubClient: fc,
+			Logger:       logrus.WithField("testcase", tc.name),
+		}
+
 		// clear out comments from the last test case
 		fc.ClearComments()
 
@@ -308,11 +364,11 @@ func TestHandlePR(t *testing.T) {
 
 		tr := plugins.Trigger{
 			TrustedOrg:     "kubernetes",
-			OnlyOrgMembers: false,
+			OnlyOrgMembers: tc.onlyOrgMembers,
 		}
 
 		// try handling it
-		if err := handlePR(c, tr, event, testWelcomeTemplate); err != nil {
+		if err := handlePR(c, tr, event, testWelcomeTemplate, tc.alwaysPost); err != nil {
 			t.Fatalf("did not expect error handling PR for case '%s': %v", tc.name, err)
 		}
 
@@ -385,7 +441,7 @@ func TestWelcomeConfig(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		receivedMessage := welcomeMessageForRepo(config, tc.org, tc.repo)
+		receivedMessage := welcomeMessageForRepo(optionsForRepo(config, tc.org, tc.repo))
 		if receivedMessage != tc.expectedMessage {
 			t.Fatalf("%s: expected to get '%s' and received '%s'", tc.name, tc.expectedMessage, receivedMessage)
 		}

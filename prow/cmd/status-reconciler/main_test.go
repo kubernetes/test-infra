@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"flag"
 	"reflect"
 	"testing"
@@ -79,29 +78,6 @@ func TestGatherOptions(t *testing.T) {
 				o.addedPresubmitDenylist = newSetStringsFlagForTest("a", "b")
 			},
 		},
-		{
-			name: "support blacklist",
-			args: []string{
-				"-blacklist=a",
-				"-blacklist=b",
-			},
-			expected: func(o *options) {
-				o.addedPresubmitBlacklist = newSetStringsFlagForTest("a", "b")
-			},
-		},
-		{
-			name: "denylist and blacklist mutual exclusive",
-			args: []string{
-				"-denylist=a",
-				"-denylist=b",
-				"-blacklist=c",
-			},
-			expected: func(o *options) {
-				o.addedPresubmitDenylist = newSetStringsFlagForTest("a", "b")
-				o.addedPresubmitBlacklist = newSetStringsFlagForTest("c")
-			},
-			expectedErr: errors.New("--denylist and --blacklist are mutual exclusive"),
-		},
 	}
 
 	for _, tc := range cases {
@@ -113,15 +89,14 @@ func TestGatherOptions(t *testing.T) {
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					PluginConfigPath:                         "/etc/plugins/plugins.yaml",
 					PluginConfigPathDefault:                  "/etc/plugins/plugins.yaml",
 					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
 				},
-				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
-				tokenBurst:             100,
-				tokensPerHour:          300,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
@@ -131,8 +106,7 @@ func TestGatherOptions(t *testing.T) {
 			}
 
 			args := append(tc.args,
-				"--config-path=yo",
-				"--deck-url=http://whatever")
+				"--config-path=yo")
 			fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			actual := gatherOptions(fs, args...)
 			switch err := actual.Validate(); {

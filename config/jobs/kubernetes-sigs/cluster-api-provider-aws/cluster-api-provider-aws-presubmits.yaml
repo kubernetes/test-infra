@@ -4,19 +4,37 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^release-0.7
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
         command:
         - "./scripts/ci-test.sh"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-test
+  - name: pull-cluster-api-provider-aws-apidiff-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-aws
+    always_run: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-apidiff.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: pr-apidiff-main
   - name: pull-cluster-api-provider-aws-build
     always_run: true
     optional: false
@@ -24,7 +42,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -35,39 +53,41 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^release-0.7
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
         command:
+        - "runner.sh"
         - "make"
         - "verify"
+        # docker-in-docker needs privileged mode
+        securityContext:
+            privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: verify
+      testgrid-tab-name: pr-verify
+    labels:
+      preset-dind-enabled: "true"
   # conformance test
   - name: pull-cluster-api-provider-aws-e2e-conformance
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^release-0.7
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 5h
     max_concurrency: 1
     extra_refs:
     - org: kubernetes-sigs
@@ -80,7 +100,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -107,13 +127,12 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^release-0.7
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
@@ -123,7 +142,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -142,13 +161,56 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-conformance-k8s-master
+      testgrid-tab-name: pr-conformance-main-k8s-main
+      testgrid-num-columns-recent: '20'
+  - name: pull-cluster-api-provider-aws-e2e-blocking
+    branches:
+      # The script this job runs is not in all branches.
+      - ^main$
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+    #run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 5h
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
+          command:
+            - "runner.sh"
+            - "./scripts/ci-e2e.sh"
+          env:
+            - name: E2E_FOCUS
+              value: "\\[PR-Blocking\\]"
+            - name: BOSKOS_HOST
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: AWS_REGION
+              value: "us-west-2"
+            # Parallelize tests
+            - name: GINKGO_ARGS
+              value: "-nodes 20"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+      testgrid-tab-name: pr-quick-e2e-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^release-0.7
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -164,7 +226,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -173,8 +235,6 @@ presubmits:
               value: "boskos.test-pods.svc.cluster.local"
             - name: AWS_REGION
               value: "us-west-2"
-            - name: NEW_E2E_FLOW
-              value: "1"
           securityContext:
             privileged: true
           resources:
@@ -183,13 +243,12 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-e2e
+      testgrid-tab-name: pr-e2e-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-eks
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^release-0.7
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -205,7 +264,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-1.24
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks.sh"
@@ -214,8 +273,6 @@ presubmits:
               value: "boskos.test-pods.svc.cluster.local"
             - name: AWS_REGION
               value: "us-west-2"
-            - name: NEW_E2E_FLOW
-              value: "1"
           securityContext:
             privileged: true
           resources:
@@ -224,5 +281,5 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-e2e-eks
+      testgrid-tab-name: pr-e2e-eks-main
       testgrid-num-columns-recent: '20'

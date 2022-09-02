@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
@@ -215,7 +216,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 	// Get changes.
 	changes, err := ghc.GetPullRequestChanges(org, repo, number)
 	if err != nil {
-		return fmt.Errorf("error getting PR changes: %v", err)
+		return fmt.Errorf("error getting PR changes: %w", err)
 	}
 
 	// List modified OWNERS files.
@@ -266,7 +267,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 	if err := r.Config("commit.gpgsign", "false"); err != nil {
 		log.WithError(err).Errorf("Cannot set gpgsign=false in gitconfig: %v", err)
 	}
-	if err := r.MergeAndCheckout(pr.Base.Ref, string(github.MergeMerge), pr.Head.SHA); err != nil {
+	if err := r.MergeAndCheckout(pr.Base.Ref, string(types.MergeMerge), pr.Head.SHA); err != nil {
 		return err
 	}
 	// If OWNERS_ALIASES file exists, get all aliases.
@@ -280,7 +281,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 	// check if all newly added owners are trusted users.
 	oc, err := roc.LoadRepoOwners(org, repo, pr.Base.Ref)
 	if err != nil {
-		return fmt.Errorf("error loading RepoOwners: %v", err)
+		return fmt.Errorf("error loading RepoOwners: %w", err)
 	}
 
 	for _, c := range modifiedOwnersFiles {
@@ -330,8 +331,15 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 		}
 		err := ghc.CreateReview(org, repo, number, draftReview)
 		if err != nil {
-			return fmt.Errorf("error creating a review for invalid %s file%s: %v", filenames.Owners, s, err)
+			return fmt.Errorf("error creating a review for invalid %s file%s: %w", filenames.Owners, s, err)
 		}
+	}
+
+	var joinOrgURL string
+	if triggerConfig.JoinOrgURL != "" {
+		joinOrgURL = triggerConfig.JoinOrgURL
+	} else {
+		joinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", org)
 	}
 
 	if len(nonTrustedUsers) > 0 {
@@ -343,9 +351,9 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 
 		// prune old comments before adding a new one
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, triggerConfig.JoinOrgURL, org))
+			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, joinOrgURL, org))
 		})
-		if err := ghc.CreateComment(org, repo, number, markdownFriendlyComment(org, triggerConfig.JoinOrgURL, nonTrustedUsers, filenames)); err != nil {
+		if err := ghc.CreateComment(org, repo, number, markdownFriendlyComment(org, joinOrgURL, nonTrustedUsers, filenames)); err != nil {
 			log.WithError(err).Errorf("Could not create comment for listing non-collaborators in %s files", filenames.Owners)
 		}
 	}
@@ -354,10 +362,10 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 		// Don't bother checking if it has the label...it's a race, and we'll have
 		// to handle failure due to not being labeled anyway.
 		if err := ghc.RemoveLabel(org, repo, number, labels.InvalidOwners); err != nil {
-			return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
+			return fmt.Errorf("failed removing %s label: %w", labels.InvalidOwners, err)
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, triggerConfig.JoinOrgURL, org))
+			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, joinOrgURL, org))
 		})
 	}
 
@@ -456,11 +464,11 @@ func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, trigger
 	if _, err := os.Stat(path); err == nil {
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
-			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("Failed to read %s: %v", path, err)
+			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("Failed to read %s: %w", path, err)
 		}
 		repoAliases, err = repoowners.ParseAliasesConfig(b)
 		if err != nil {
-			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("error parsing aliases config for %s file: %v", filenames.OwnersAliases, err)
+			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("error parsing aliases config for %s file: %w", filenames.OwnersAliases, err)
 		}
 	}
 
@@ -525,7 +533,7 @@ func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugi
 	var err error
 	var triggerTrustedResponse trigger.TrustedUserResponse
 	if !isAlreadyTrusted {
-		triggerTrustedResponse, err = trigger.TrustedUser(ghc, triggerConfig.OnlyOrgMembers, triggerConfig.TrustedOrg, owner, org, repo)
+		triggerTrustedResponse, err = trigger.TrustedUser(ghc, triggerConfig.OnlyOrgMembers, triggerConfig.TrustedApps, triggerConfig.TrustedOrg, owner, org, repo)
 		if err != nil {
 			return nonTrustedUsers, err
 		}

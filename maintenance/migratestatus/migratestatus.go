@@ -17,17 +17,16 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"net/url"
 	"os"
 	"regexp"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -79,7 +78,7 @@ func (o *options) Validate() error {
 	if o.descriptionURL != "" {
 		_, err := url.ParseRequestURI(o.descriptionURL)
 		if err != nil {
-			return fmt.Errorf("'--description' URL '%s' is not valid: %v", o.descriptionURL, err)
+			return fmt.Errorf("'--description' URL '%s' is not valid: %w", o.descriptionURL, err)
 		}
 	}
 
@@ -107,7 +106,7 @@ func (o *options) Validate() error {
 
 	expr, err := regexp.Compile(o.branchFilterRaw)
 	if err != nil {
-		return fmt.Errorf("invalid --branch-filter regular expression: %v", err)
+		return fmt.Errorf("invalid --branch-filter regular expression: %w", err)
 	}
 	o.branchFilter = expr
 
@@ -122,14 +121,7 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	secretAgent := &secret.Agent{}
-	if o.github.TokenPath != "" {
-		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.WithError(err).Fatal("Error starting secrets agent.")
-		}
-	}
-
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}

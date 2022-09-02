@@ -17,6 +17,7 @@ limitations under the License.
 package adapter
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gerrit/client"
 )
 
 func TestPresubmitContexts(t *testing.T) {
@@ -87,11 +89,33 @@ func TestCurrentMessages(t *testing.T) {
 	before := now.Add(-time.Minute)
 	after := now.Add(time.Hour)
 	later := after.Add(time.Hour)
+
+	now3 := gerrit.ChangeMessageInfo{
+		RevisionNumber: 3,
+		Date:           stamp(now),
+		Message:        "now",
+	}
+	after3 := gerrit.ChangeMessageInfo{
+		RevisionNumber: 3,
+		Date:           stamp(after),
+		Message:        "after",
+	}
+	later3 := gerrit.ChangeMessageInfo{
+		RevisionNumber: 3,
+		Date:           stamp(later),
+		Message:        "later",
+	}
+	after4 := gerrit.ChangeMessageInfo{
+		RevisionNumber: 4,
+		Date:           stamp(after),
+		Message:        "4-after",
+	}
+
 	cases := []struct {
 		name   string
 		change gerrit.ChangeInfo
 		since  time.Time
-		want   []string
+		want   []gerrit.ChangeMessageInfo
 	}{
 		{
 			name: "basically works",
@@ -106,25 +130,9 @@ func TestCurrentMessages(t *testing.T) {
 					},
 				},
 				CurrentRevision: "3",
-				Messages: []gerrit.ChangeMessageInfo{
-					{
-						RevisionNumber: 3,
-						Date:           stamp(now),
-						Message:        "now",
-					},
-					{
-						RevisionNumber: 3,
-						Date:           stamp(after),
-						Message:        "after",
-					},
-					{
-						RevisionNumber: 3,
-						Date:           stamp(later),
-						Message:        "later",
-					},
-				},
+				Messages:        []gerrit.ChangeMessageInfo{now3, after3, later3},
 			},
-			want: []string{"now", "after", "later"},
+			want: []gerrit.ChangeMessageInfo{now3, after3, later3},
 		},
 		{
 			name:  "reject old messages",
@@ -136,25 +144,9 @@ func TestCurrentMessages(t *testing.T) {
 					},
 				},
 				CurrentRevision: "3",
-				Messages: []gerrit.ChangeMessageInfo{
-					{
-						RevisionNumber: 3,
-						Date:           stamp(now),
-						Message:        "now",
-					},
-					{
-						RevisionNumber: 3,
-						Date:           stamp(after),
-						Message:        "after",
-					},
-					{
-						RevisionNumber: 3,
-						Date:           stamp(later),
-						Message:        "later",
-					},
-				},
+				Messages:        []gerrit.ChangeMessageInfo{now3, after3, later3},
 			},
-			want: []string{"after", "later"},
+			want: []gerrit.ChangeMessageInfo{after3, later3},
 		},
 		{
 			name:  "reject message from other revisions",
@@ -166,32 +158,16 @@ func TestCurrentMessages(t *testing.T) {
 					},
 				},
 				CurrentRevision: "3",
-				Messages: []gerrit.ChangeMessageInfo{
-					{
-						RevisionNumber: 3,
-						Date:           stamp(now),
-						Message:        "3-now",
-					},
-					{
-						RevisionNumber: 4,
-						Date:           stamp(after),
-						Message:        "4-after",
-					},
-					{
-						RevisionNumber: 3,
-						Date:           stamp(later),
-						Message:        "3-later",
-					},
-				},
+				Messages:        []gerrit.ChangeMessageInfo{now3, after4, later3},
 			},
-			want: []string{"3-now", "3-later"},
+			want: []gerrit.ChangeMessageInfo{now3, later3},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := currentMessages(tc.change, tc.since)
-			if !equality.Semantic.DeepEqual(got, tc.want) {
+			if !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("wrong messages:%s", diff.ObjectReflectDiff(got, tc.want))
 			}
 		})
@@ -199,6 +175,8 @@ func TestCurrentMessages(t *testing.T) {
 }
 
 func TestMessageFilter(t *testing.T) {
+	old := time.Now().Add(-1 * time.Hour)
+	older := old.Add(-1 * time.Hour)
 	job := func(name string, patch func(j *config.Presubmit)) config.Presubmit {
 		var presubmit config.Presubmit
 		presubmit.Name = name
@@ -211,15 +189,19 @@ func TestMessageFilter(t *testing.T) {
 		}
 		return presubmit
 	}
+	msg := func(content string, t time.Time) gerrit.ChangeMessageInfo {
+		return gerrit.ChangeMessageInfo{Message: content, Date: gerrit.Timestamp{Time: t}}
+	}
 	type check struct {
 		job             config.Presubmit
 		shouldRun       bool
 		forcedToRun     bool
 		defaultBehavior bool
+		triggered       time.Time
 	}
 	cases := []struct {
 		name     string
-		messages []string
+		messages []gerrit.ChangeMessageInfo
 		failed   sets.String
 		all      sets.String
 		checks   []check
@@ -229,7 +211,7 @@ func TestMessageFilter(t *testing.T) {
 		},
 		{
 			name:     "/test foo works",
-			messages: []string{"/test foo", "/test bar"},
+			messages: []gerrit.ChangeMessageInfo{msg("/test foo", older), msg("/test bar", old)},
 			all:      sets.NewString("foo", "bar", "ignored"),
 			checks: []check{
 				{
@@ -237,12 +219,14 @@ func TestMessageFilter(t *testing.T) {
 					shouldRun:       true,
 					forcedToRun:     true,
 					defaultBehavior: true,
+					triggered:       older,
 				},
 				{
 					job:             job("bar", nil),
 					shouldRun:       true,
 					forcedToRun:     true,
 					defaultBehavior: true,
+					triggered:       old,
 				},
 				{
 					job:             job("ignored", nil),
@@ -254,7 +238,7 @@ func TestMessageFilter(t *testing.T) {
 		},
 		{
 			name:     "/test all triggers multiple",
-			messages: []string{"/test all"},
+			messages: []gerrit.ChangeMessageInfo{msg("/test all", old)},
 			all:      sets.NewString("foo", "bar"),
 			checks: []check{
 				{
@@ -262,18 +246,20 @@ func TestMessageFilter(t *testing.T) {
 					shouldRun:       true,
 					forcedToRun:     false,
 					defaultBehavior: false,
+					triggered:       old,
 				},
 				{
 					job:             job("bar", nil),
 					shouldRun:       true,
 					forcedToRun:     false,
 					defaultBehavior: false,
+					triggered:       old,
 				},
 			},
 		},
 		{
 			name:     "/retest triggers failures",
-			messages: []string{"/retest"},
+			messages: []gerrit.ChangeMessageInfo{msg("/retest", old)},
 			failed:   sets.NewString("failed"),
 			all:      sets.NewString("foo", "bar", "failed"),
 			checks: []check{
@@ -288,6 +274,7 @@ func TestMessageFilter(t *testing.T) {
 					shouldRun:       true,
 					forcedToRun:     false,
 					defaultBehavior: true,
+					triggered:       old,
 				},
 				{
 					job:             job("bar", nil),
@@ -297,18 +284,65 @@ func TestMessageFilter(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:     "draft->active by clicking `MARK AS ACTIVE` triggers multiple",
+			messages: []gerrit.ChangeMessageInfo{msg(client.ReadyForReviewMessageFixed, old)},
+			all:      sets.NewString("foo", "bar"),
+			checks: []check{
+				{
+					job:             job("foo", nil),
+					shouldRun:       true,
+					forcedToRun:     false,
+					defaultBehavior: false,
+					triggered:       old,
+				},
+				{
+					job:             job("bar", nil),
+					shouldRun:       true,
+					forcedToRun:     false,
+					defaultBehavior: false,
+					triggered:       old,
+				},
+			},
+		},
+		{
+			name: "draft->active by clicking `SEND AND START REVIEW` triggers multiple",
+			messages: []gerrit.ChangeMessageInfo{msg(`Patch Set 1:
+
+			(1 comment)
+			
+			`+client.ReadyForReviewMessageCustomizable, old)},
+			all: sets.NewString("foo", "bar"),
+			checks: []check{
+				{
+					job:             job("foo", nil),
+					shouldRun:       true,
+					forcedToRun:     false,
+					defaultBehavior: false,
+					triggered:       old,
+				},
+				{
+					job:             job("bar", nil),
+					shouldRun:       true,
+					forcedToRun:     false,
+					defaultBehavior: false,
+					triggered:       old,
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			logger := logrus.WithField("case", tc.name)
+			triggerTimes := map[string]time.Time{}
+			filt := messageFilter(tc.messages, tc.failed, tc.all, triggerTimes, logger)
 			for _, check := range tc.checks {
 				t.Run(check.job.Name, func(t *testing.T) {
 					fixed := []config.Presubmit{check.job}
 					config.SetPresubmitRegexes(fixed)
 					check.job = fixed[0]
-					logger := logrus.WithField("case", tc.name).WithField("job", check.job.Name)
-					filt := messageFilter(tc.messages, tc.failed, tc.all, logger)
-					shouldRun, forcedToRun, defaultBehavior := filt(check.job)
+					shouldRun, forcedToRun, defaultBehavior := filt.ShouldRun(check.job)
 					if got, want := shouldRun, check.shouldRun; got != want {
 						t.Errorf("shouldRun: got %t, want %t", got, want)
 					}
@@ -319,6 +353,12 @@ func TestMessageFilter(t *testing.T) {
 						t.Errorf("defaultBehavior: got %t, want %t", got, want)
 					}
 				})
+			}
+			// Validate that triggerTimes was populated correctly after ShouldRun is called on every job.
+			for _, check := range tc.checks {
+				if !triggerTimes[check.job.Name].Equal(check.triggered) {
+					t.Errorf("expected job %q to have trigger time %v, but got %v", check.job.Name, check.triggered, triggerTimes[check.job.Name])
+				}
 			}
 		})
 	}

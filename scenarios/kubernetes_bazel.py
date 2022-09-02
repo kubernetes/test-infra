@@ -272,7 +272,7 @@ def create_parser():
         '--test-args', action="append", help='Bazel test args')
     parser.add_argument(
         '--gcs',
-        default='gs://kubernetes-release-dev/bazel',
+        default='gs://k8s-release-dev/bazel',
         help='GCS path for where to push build')
     parser.add_argument(
         '--version-suffix',

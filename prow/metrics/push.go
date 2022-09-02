@@ -42,9 +42,7 @@ func push(job string, grouping map[string]string, pushURL string, g prometheus.G
 	if !strings.Contains(pushURL, "://") {
 		pushURL = "http://" + pushURL
 	}
-	if strings.HasSuffix(pushURL, "/") {
-		pushURL = pushURL[:len(pushURL)-1]
-	}
+	pushURL = strings.TrimSuffix(pushURL, "/")
 
 	if strings.Contains(job, "/") {
 		return fmt.Errorf("job contains '/': %s", job)
@@ -94,7 +92,7 @@ func push(job string, grouping map[string]string, pushURL string, g prometheus.G
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 202 {
+	if !(resp.StatusCode == 200 || resp.StatusCode == 202) {
 		body, _ := ioutil.ReadAll(resp.Body) // Ignore any further error as this is for an error message only.
 		return fmt.Errorf("unexpected status code %d while pushing to %s: %s", resp.StatusCode, pushURL, body)
 	}

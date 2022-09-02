@@ -15,45 +15,19 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/cloud-builders/bazel
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
         command:
-        - ../test-infra/hack/bazel.sh
+        - /bin/bash
         args:
-        - test
-        - --test_output=errors
-        - --
-        - //...
-        - -//vendor/...
-  - name: cloud-provider-gcp-e2e-create
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/cloud-provider-gcp
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: provider-gcp-presubmits
-      description: End to end cluster creation test using kubetest2 based on kubernetes/cloud-provider-gcp.
-      testgrid-num-columns-recent: '30'
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
-        command:
-        - runner.sh
-        args:
-        - "/bin/bash"
-        - "-c"
-        - set -o errexit;
-          set -o nounset;
-          set -o pipefail;
-          set -o xtrace;
-          REPO_ROOT=$(git rev-parse --show-toplevel);
-          cd;
-          export GO111MODULE=on;
-          go get sigs.k8s.io/kubetest2@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-tester-exec@latest;
-          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down;
+        - -c
+        - |
+          if [ -f Makefile ]; then
+            make test
+          else
+            export BAZEL_VERSION=5.3.0;
+            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
+            bazel test --test_output=errors -- //... -//vendor/...
+          fi
   - name: cloud-provider-gcp-verify-all
     always_run: true
     decorate: true
@@ -67,27 +41,35 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
           command:
             - runner.sh
-            - ./tools/verify-all.sh
+          args:
+          - "/bin/bash"
+          - "-c"
+          - export BAZEL_VERSION=5.3.0;
+            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
+            ./tools/verify-all.sh
   - name: cloud-provider-gcp-e2e-full
-    always_run: false
-    optional: true
+    always_run: true
     decorate: true
     decoration_config:
       timeout: 80m
     path_alias: k8s.io/cloud-provider-gcp
     labels:
-      preset-service-account: "true"
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
+      preset-service-account: "true"
     annotations:
       testgrid-dashboards: provider-gcp-presubmits
-      description: End to end test of kubernetes/cloud-provider-gcp.
+      description: End to end test of kubernetes/cloud-provider-gcp for bumping to next version
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210601-ea6aa4e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220831-bcf0c264ed-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
         command:
         - runner.sh
         args:
@@ -100,7 +82,9 @@ presubmits:
           REPO_ROOT=$(git rev-parse --show-toplevel);
           cd;
           export GO111MODULE=on;
-          go get sigs.k8s.io/kubetest2@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --parallel=30 --test-args='--minStartupPods=8' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+          export BAZEL_VERSION=5.3.0;
+          /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
+          go install sigs.k8s.io/kubetest2@latest;
+          go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+          go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --node-size n1-standard-4 --master-size n1-standard-8 -- --test-package-version=v1.25.0 --parallel=30 --test-args='--minStartupPods=8 --ginkgo.flakeAttempts=3' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'

@@ -21,6 +21,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
 	utilpointer "k8s.io/utils/pointer"
 )
@@ -289,6 +290,18 @@ func TestApply(test *testing.T) {
 				Exclude: []string{"bar*", "foo*"},
 			},
 		},
+		{
+			name: "merge inclusion strings",
+			child: Policy{
+				Include: []string{"foo*"},
+			},
+			parent: Policy{
+				Include: []string{"bar*"},
+			},
+			expected: Policy{
+				Include: []string{"bar*", "foo*"},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -337,6 +350,16 @@ func TestBranchRequirements(t *testing.T) {
 					},
 				},
 				{
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						SkipIfOnlyChanged: "foo",
+					},
+					AlwaysRun: false,
+					Reporter: Reporter{
+						Context:    "skip-if-only-changed",
+						SkipReport: false,
+					},
+				},
+				{
 					AlwaysRun: false,
 					Reporter: Reporter{
 						Context:    "not-always",
@@ -363,10 +386,10 @@ func TestBranchRequirements(t *testing.T) {
 				},
 			},
 			masterExpected:  []string{"always-run"},
-			masterIfPresent: []string{"run-if-changed", "not-always"},
+			masterIfPresent: []string{"run-if-changed", "skip-if-only-changed", "not-always"},
 			masterOptional:  []string{"optional"},
 			otherExpected:   []string{"always-run"},
-			otherIfPresent:  []string{"run-if-changed", "not-always"},
+			otherIfPresent:  []string{"run-if-changed", "skip-if-only-changed", "not-always"},
 			otherOptional:   []string{"skip-report", "optional"},
 		},
 	}
@@ -746,6 +769,40 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			},
 		},
 		{
+			name: "Optional presubmits force protection if ProtectReposWithOptionalJobs is true",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						ProtectTested:                utilpointer.BoolPtr(true),
+						ProtectReposWithOptionalJobs: utilpointer.BoolPtr(true),
+						Orgs: map[string]Org{
+							"org": {},
+						},
+					},
+				},
+				JobConfig: JobConfig{
+					PresubmitsStatic: map[string][]Presubmit{
+						"org/repo": {
+							{
+								JobBase: JobBase{
+									Name: "optional presubmit",
+								},
+								Reporter: Reporter{
+									Context: "optional presubmit",
+								},
+								AlwaysRun: true,
+								Optional:  true,
+							},
+						},
+					},
+				},
+			},
+			expected: &Policy{
+				Protect:              yes,
+				RequiredStatusChecks: &ContextPolicy{},
+			},
+		},
+		{
 			name: "Explicit configuration takes precedence over ProtectTested",
 			config: Config{
 				ProwConfig: ProwConfig{
@@ -832,8 +889,8 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			default:
 				normalize(actual)
 				normalize(tc.expected)
-				if !reflect.DeepEqual(actual, tc.expected) {
-					t.Errorf("actual %+v != expected %+v", actual, tc.expected)
+				if diff := cmp.Diff(actual, tc.expected); diff != "" {
+					t.Errorf("actual differs from expected: %s", diff)
 				}
 			}
 		})
