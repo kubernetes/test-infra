@@ -47,10 +47,14 @@ import (
 )
 
 const (
+	// tideEnablementLabel is the Gerrit label that has to be voted for enabling
+	// tide. By default a PR is not considered by tide unless the author of the
+	// PR toggled this label.
+	tideEnablementLabel = "Prow-Auto-Submit"
 	// ref:
 	// https://gerrit-review.googlesource.com/Documentation/user-search.html#_search_operators.
 	// Also good to know: `(repo:repo-A OR repo:repo-B)`
-	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable+is:mergeable"
+	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable+is:mergeable+label:" + tideEnablementLabel
 )
 
 type gerritClient interface {
