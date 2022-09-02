@@ -54,7 +54,7 @@ const (
 	// ref:
 	// https://gerrit-review.googlesource.com/Documentation/user-search.html#_search_operators.
 	// Also good to know: `(repo:repo-A OR repo:repo-B)`
-	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable+is:mergeable+label:" + tideEnablementLabel
+	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable+label:" + tideEnablementLabel
 )
 
 type gerritClient interface {

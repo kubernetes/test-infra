@@ -600,14 +600,14 @@ func queryStringsFromQueryFilter(filters *config.GerritQueryFilter) []string {
 
 	var branchFilter []string
 	for _, br := range filters.Branches {
-		branchFilter = append(branchFilter, fmt.Sprintf("branch:'%s'", br))
+		branchFilter = append(branchFilter, fmt.Sprintf("branch:%s", br))
 	}
 	if len(branchFilter) > 0 {
 		res = append(res, fmt.Sprintf("(%s)", strings.Join(branchFilter, "+OR+")))
 	}
 	var excludedBranchFilter []string
 	for _, br := range filters.ExcludedBranches {
-		excludedBranchFilter = append(excludedBranchFilter, fmt.Sprintf("-branch:'%s'", br))
+		excludedBranchFilter = append(excludedBranchFilter, fmt.Sprintf("-branch:%s", br))
 	}
 	if len(excludedBranchFilter) > 0 {
 		res = append(res, fmt.Sprintf("(%s)", strings.Join(excludedBranchFilter, "+AND+")))
