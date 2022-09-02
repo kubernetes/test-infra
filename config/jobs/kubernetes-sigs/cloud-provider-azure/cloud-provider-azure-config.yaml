@@ -680,7 +680,7 @@ periodics:
       - name: KUBERNETES_VERSION
         value: "latest"
       - name: GINKGO_ARGS
-        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_PROVISIONING_TOOL
@@ -990,7 +990,7 @@ periodics:
       - name: KUBERNETES_VERSION
         value: "latest"
       - name: GINKGO_ARGS
-        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_TEMPLATE
