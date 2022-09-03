@@ -279,20 +279,22 @@ func TestAccumulateBatch(t *testing.T) {
 			if test.prowYAMLGetter != nil {
 				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			}
+			cfg := func() *config.Config {
+				return &config.Config{
+					JobConfig: config.JobConfig{
+						PresubmitsStatic: map[string][]config.Presubmit{
+							"org/repo": test.presubmits,
+						},
+						ProwYAMLGetterWithDefaults: test.prowYAMLGetter,
+					},
+					ProwConfig: config.ProwConfig{
+						InRepoConfig: inrepoconfig,
+					},
+				}
+			}
 			c := &syncController{
-				config: func() *config.Config {
-					return &config.Config{
-						JobConfig: config.JobConfig{
-							PresubmitsStatic: map[string][]config.Presubmit{
-								"org/repo": test.presubmits,
-							},
-							ProwYAMLGetterWithDefaults: test.prowYAMLGetter,
-						},
-						ProwConfig: config.ProwConfig{
-							InRepoConfig: inrepoconfig,
-						},
-					}
-				},
+				config:       cfg,
+				provider:     newGitHubProvider(logrus.WithContext(context.Background()), nil, nil, cfg, nil, false),
 				changedFiles: &changedFilesAgent{},
 				logger:       logrus.WithField("test", test.name),
 			}
@@ -915,7 +917,7 @@ func TestDividePool(t *testing.T) {
 
 	mmc := newMergeChecker(configGetter, fc)
 	log := logrus.NewEntry(logrus.StandardLogger())
-	ghProvider := newGitHubProvider(log, fc, configGetter, mmc, false)
+	ghProvider := newGitHubProvider(log, fc, nil, configGetter, mmc, false)
 	mgr := newFakeManager()
 	c, err := newSyncController(
 		context.Background(),
@@ -1134,10 +1136,9 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		},
 	})
 	logger := logrus.WithField("component", "tide")
-	ghProvider := &GitHubProvider{cfg: ca.Config, mergeChecker: newMergeChecker(ca.Config, &fgc{}), logger: logger}
+	ghProvider := &GitHubProvider{cfg: ca.Config, gc: gc, mergeChecker: newMergeChecker(ca.Config, &fgc{}), logger: logger}
 	c := &syncController{
 		logger:       logger,
-		gc:           gc,
 		provider:     ghProvider,
 		config:       ca.Config,
 		pickNewBatch: pickNewBatch(gc, ca.Config, ghProvider),
@@ -1940,7 +1941,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			}
 			fgc := fgc{mergeErrs: tc.mergeErrs}
 			log := logrus.WithField("controller", "tide")
-			ghProvider := newGitHubProvider(log, &fgc, ca.Config, nil, false)
+			ghProvider := newGitHubProvider(log, &fgc, gc, ca.Config, nil, false)
 			c, err := newSyncController(
 				context.Background(),
 				log,
@@ -2234,11 +2235,10 @@ func TestSync(t *testing.T) {
 			go sc.run()
 			defer sc.shutdown()
 			log := logrus.WithField("controller", "sync")
-			ghProvider := newGitHubProvider(log, fgc, ca.Config, mergeChecker, false)
+			ghProvider := newGitHubProvider(log, fgc, nil, ca.Config, mergeChecker, false)
 			c := &syncController{
 				config:        ca.Config,
 				provider:      ghProvider,
-				gc:            nil,
 				prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 				logger:        log,
 				changedFiles: &changedFilesAgent{
@@ -3137,11 +3137,10 @@ func TestPresubmitsByPull(t *testing.T) {
 				prs:    append(tc.prs, *CodeReviewCommonFromPullRequest(&samplePR)),
 			}
 			log := logrus.WithField("test", tc.name)
-			ghProvider := newGitHubProvider(log, &fgc{}, cfgAgent.Config, newMergeChecker(cfgAgent.Config, &fgc{}), false)
+			ghProvider := newGitHubProvider(log, &fgc{}, nil, cfgAgent.Config, newMergeChecker(cfgAgent.Config, &fgc{}), false)
 			c := &syncController{
 				config:   cfgAgent.Config,
 				provider: ghProvider,
-				gc:       nil,
 				changedFiles: &changedFilesAgent{
 					provider:        ghProvider,
 					changeCache:     tc.initialChangeCache,
@@ -3655,22 +3654,24 @@ func TestPresubmitsForBatch(t *testing.T) {
 			if tc.prowYAMLGetter != nil {
 				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			}
+			cfg := func() *config.Config {
+				return &config.Config{
+					JobConfig: config.JobConfig{
+						PresubmitsStatic: map[string][]config.Presubmit{
+							"org/repo": tc.jobs,
+						},
+						ProwYAMLGetterWithDefaults: tc.prowYAMLGetter,
+					},
+					ProwConfig: config.ProwConfig{
+						InRepoConfig: inrepoconfig,
+					},
+				}
+			}
 			c := &syncController{
+				provider:     newGitHubProvider(logrus.WithField("test", tc.name), nil, nil, cfg, nil, false),
 				changedFiles: tc.changedFiles,
-				config: func() *config.Config {
-					return &config.Config{
-						JobConfig: config.JobConfig{
-							PresubmitsStatic: map[string][]config.Presubmit{
-								"org/repo": tc.jobs,
-							},
-							ProwYAMLGetterWithDefaults: tc.prowYAMLGetter,
-						},
-						ProwConfig: config.ProwConfig{
-							InRepoConfig: inrepoconfig,
-						},
-					}
-				},
-				logger: logrus.WithField("test", tc.name),
+				config:       cfg,
+				logger:       logrus.WithField("test", tc.name),
 			}
 
 			presubmits, err := c.presubmitsForBatch(tc.prs, "org", "repo", "", "baseSHA", defaultBranch)
@@ -4788,7 +4789,7 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	if err != nil {
 		t.Fatalf("failed to construct history: %v", err)
 	}
-	ghProvider := newGitHubProvider(log, ghc, configGetter, mmc, false)
+	ghProvider := newGitHubProvider(log, ghc, nil, configGetter, mmc, false)
 	c, err := newSyncController(
 		context.Background(),
 		log,
@@ -5070,7 +5071,7 @@ func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to construct history: %v", err)
 	}
-	ghProvider := newGitHubProvider(log, ghc, configGetter, mmc, false)
+	ghProvider := newGitHubProvider(log, ghc, nil, configGetter, mmc, false)
 	c, err := newSyncController(
 		context.Background(),
 		log,

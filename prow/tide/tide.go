@@ -76,7 +76,6 @@ type syncController struct {
 	config        config.Getter
 	prowJobClient ctrlruntimeclient.Client
 	provider      provider
-	gc            git.ClientFactory
 	pickNewBatch  func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error)
 
 	m     sync.Mutex
@@ -356,7 +355,7 @@ func NewController(
 	}
 	go sc.run()
 
-	provider := newGitHubProvider(logger, ghcSync, cfg, mergeChecker, usesGitHubAppsAuth)
+	provider := newGitHubProvider(logger, ghcSync, gc, cfg, mergeChecker, usesGitHubAppsAuth)
 	syncCtrl, err := newSyncController(ctx, logger, mgr, provider, cfg, gc, hist, usesGitHubAppsAuth, statusUpdate)
 	if err != nil {
 		return nil, err
@@ -383,7 +382,7 @@ func newStatusController(
 	return &statusController{
 		pjClient:           mgr.GetClient(),
 		logger:             logger.WithField("controller", "status-update"),
-		ghProvider:         newGitHubProvider(logger, ghc, cfg, mergeChecker, usesGitHubAppsAuth),
+		ghProvider:         newGitHubProvider(logger, ghc, gc, cfg, mergeChecker, usesGitHubAppsAuth),
 		ghc:                ghc,
 		gc:                 gc,
 		usesGitHubAppsAuth: usesGitHubAppsAuth,
@@ -428,7 +427,6 @@ func newSyncController(
 		logger:        logger.WithField("controller", "sync"),
 		prowJobClient: mgr.GetClient(),
 		config:        cfg,
-		gc:            gc,
 		provider:      provider,
 		pickNewBatch:  pickNewBatch(gc, cfg, provider),
 		changedFiles: &changedFilesAgent{
@@ -631,10 +629,11 @@ func (c *syncController) initSubpoolData(sp *subpool) error {
 			}
 		}
 	}
+	sp.cloneURI = cloneURI
 
 	sp.cc = make(map[int]contextChecker, len(sp.prs))
 	for _, pr := range sp.prs {
-		sp.cc[pr.Number], err = c.provider.GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, cloneURI, refGetterFactory(string(sp.sha)), &pr)
+		sp.cc[pr.Number], err = c.provider.GetTideContextPolicy(sp.org, sp.repo, sp.branch, cloneURI, refGetterFactory(string(sp.sha)), &pr)
 		if err != nil {
 			return fmt.Errorf("error setting up context checker for pr %d: %w", pr.Number, err)
 		}
@@ -1516,7 +1515,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 
 	for _, pr := range sp.prs {
 		log := c.logger.WithField("base-sha", sp.sha).WithFields(pr.logFields())
-		presubmitsForPull, err := c.config().GetPresubmits(c.gc, sp.org+"/"+sp.repo, sp.cloneURI, refGetterFactory(sp.sha), refGetterFactory(pr.HeadRefOID))
+		presubmitsForPull, err := c.provider.GetPresubmits(sp.org+"/"+sp.repo, sp.cloneURI, refGetterFactory(sp.sha), refGetterFactory(pr.HeadRefOID))
 		if err != nil {
 			c.logger.WithError(err).Debug("Failed to get presubmits for PR, excluding from subpool")
 			continue
@@ -1551,13 +1550,12 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, cloneURI, baseSHA, baseBranch string) ([]config.Presubmit, error) {
 	log := c.logger.WithFields(logrus.Fields{"repo": repo, "org": org, "base-sha": baseSHA, "base-branch": baseBranch})
 
-	// TODO(chaodaiG): make sure inrepoconfig works for Gerrit.
 	var headRefGetters []config.RefGetter
 	for _, pr := range prs {
 		headRefGetters = append(headRefGetters, refGetterFactory(pr.HeadRefOID))
 	}
 
-	presubmits, err := c.config().GetPresubmits(c.gc, org+"/"+repo, cloneURI, refGetterFactory(baseSHA), headRefGetters...)
+	presubmits, err := c.provider.GetPresubmits(org+"/"+repo, cloneURI, refGetterFactory(baseSHA), headRefGetters...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get presubmits for batch: %w", err)
 	}

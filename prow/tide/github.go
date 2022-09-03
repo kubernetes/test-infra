@@ -53,6 +53,7 @@ var _ provider = (*GitHubProvider)(nil)
 type GitHubProvider struct {
 	cfg                config.Getter
 	ghc                githubClient
+	gc                 git.ClientFactory
 	usesGitHubAppsAuth bool
 
 	*mergeChecker
@@ -62,6 +63,7 @@ type GitHubProvider struct {
 func newGitHubProvider(
 	logger *logrus.Entry,
 	ghc githubClient,
+	gc git.ClientFactory,
 	cfg config.Getter,
 	mergeChecker *mergeChecker,
 	usesGitHubAppsAuth bool,
@@ -69,6 +71,7 @@ func newGitHubProvider(
 	return &GitHubProvider{
 		logger:             logger,
 		ghc:                ghc,
+		gc:                 gc,
 		cfg:                cfg,
 		usesGitHubAppsAuth: usesGitHubAppsAuth,
 		mergeChecker:       mergeChecker,
@@ -147,8 +150,8 @@ func (gi *GitHubProvider) GetRef(org, repo, ref string) (string, error) {
 	return gi.ghc.GetRef(org, repo, ref)
 }
 
-func (gi *GitHubProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error) {
-	return gi.cfg().GetTideContextPolicy(gitClient, org, repo, branch, baseSHAGetter, pr.HeadRefOID)
+func (gi *GitHubProvider) GetTideContextPolicy(org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error) {
+	return gi.cfg().GetTideContextPolicy(gi.gc, org, repo, branch, baseSHAGetter, pr.HeadRefOID)
 }
 
 func (gi *GitHubProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
@@ -374,6 +377,10 @@ func (gi *GitHubProvider) headContexts(pr *CodeReviewCommon) ([]Context, error) 
 		)
 	}
 	return contexts, nil
+}
+
+func (gi *GitHubProvider) GetPresubmits(identifier, _ string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+	return gi.cfg().GetPresubmits(gi.gc, identifier, "", baseSHAGetter, headSHAGetters...)
 }
 
 func (gi *GitHubProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {
