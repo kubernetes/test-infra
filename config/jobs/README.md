@@ -136,7 +136,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220902-cdfab4f336-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
       command:
       - "./scripts/ci-aws-cred-test.sh"
 ```
