@@ -140,7 +140,7 @@ function main() {
     delete_components "${components[@]}"
   fi
 
-  deploy_prow "${fakepubsub_node_port}"
+  deploy_prow "${fakepubsub_node_port:-30303}"
 
   wait_for_nginx
 }
@@ -273,7 +273,7 @@ function delete_components() {
 function deploy_prow() {
   local component
   local fakepubsub_node_port
-  fakepubsub_node_port="${1:-30303}"
+  fakepubsub_node_port="${1}"
   log "Deploying Prow components"
 
   # Even though we apply the entire Prow configuration, Kubernetes is smart
