@@ -142,7 +142,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 	// goodValConstructor mocks config.getProwYAML.
 	// This map pretends to be an expensive computation in order to generate a
 	// *ProwYAML value.
-	goodValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	goodValConstructor := func(gc git.ClientFactory, identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 
 		baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
 		if err != nil {
@@ -202,7 +202,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 		}
 	}
 
-	badValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	badValConstructor := func(gc git.ClientFactory, identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 		return nil, fmt.Errorf("unable to construct *ProwYAML value")
 	}
 
@@ -214,7 +214,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 
 	for _, tc := range []struct {
 		name           string
-		valConstructor func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error)
+		valConstructor func(git.ClientFactory, string, string, RefGetter, ...RefGetter) (*ProwYAML, error)
 		// We use a slice of CacheKeysParts for simplicity.
 		cacheInitialState   []CacheKeyParts
 		cacheCorrupted      bool
@@ -441,7 +441,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 				}
 			}
 
-			prowYAML, err := cache.getProwYAML(tc.valConstructor, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
+			prowYAML, err := cache.getProwYAML(tc.valConstructor, tc.identifier, "", tc.baseSHAGetter, tc.headSHAGetters...)
 
 			if tc.expected.err == "" {
 				if err != nil {
@@ -838,7 +838,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			var errGroup errgroup.Group
 			for i := 0; i < 1000; i++ {
 				errGroup.Go(func() error {
-					presubmits, err := cache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
+					presubmits, err := cache.GetPresubmits(identifier, "", baseSHAGetter, headSHAGetters...)
 					if err != nil {
 						return fmt.Errorf("Expected error 'nil' got '%v'", err.Error())
 					}
@@ -849,7 +849,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 				})
 
 				errGroup.Go(func() error {
-					postsubmits, err := cache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
+					postsubmits, err := cache.GetPostsubmits(identifier, "", baseSHAGetter, headSHAGetters...)
 					if err != nil {
 						return fmt.Errorf("Expected error 'nil' got '%v'", err.Error())
 					}
@@ -868,11 +868,11 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			// Reload Config.
 			fca.c = tc.configAfter
 
-			presubmits, err := cache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
+			presubmits, err := cache.GetPresubmits(identifier, "", baseSHAGetter, headSHAGetters...)
 			if err != nil {
 				t1.Fatalf("Expected error 'nil' got '%v'", err.Error())
 			}
-			postsubmits, err := cache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
+			postsubmits, err := cache.GetPostsubmits(identifier, "", baseSHAGetter, headSHAGetters...)
 			if err != nil {
 				t1.Fatalf("Expected error 'nil' got '%v'", err.Error())
 			}

@@ -205,7 +205,7 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 			log.WithError(err).Error("makeCloneURI.")
 		}
 
-		cache, err := c.inRepoConfigCacheGetter.GetCache(cloneURI.String(), instance)
+		cache, err := c.inRepoConfigCacheGetter.GetCache()
 		if err != nil {
 			wg.Done()
 			log.WithError(err).Error("create repo cache.")
@@ -441,7 +441,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.Merged:
 		var postsubmits []config.Postsubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			postsubmits, err = cache.GetPostsubmits(trimmedHostPath, cloneURI.String(), func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
@@ -467,7 +467,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.New:
 		var presubmits []config.Presubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = cache.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			presubmits, err = cache.GetPresubmits(trimmedHostPath, cloneURI.String(), func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			if err == nil {
 				break
 			}

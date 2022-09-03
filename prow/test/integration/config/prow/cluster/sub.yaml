@@ -125,13 +125,3 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: sub
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: http-cookiefile
-  namespace: default
-type: Opaque
-data:
-  # This is just "helloworld" in base64.
-  cookies: aGVsbG93b3JsZA==

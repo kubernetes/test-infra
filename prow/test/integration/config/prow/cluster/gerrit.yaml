@@ -1,3 +1,5 @@
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,7 +27,7 @@ spec:
         - --job-config-path=/etc/job-config
         - --last-sync-fallback=/etc/last-sync-fallback/last-sync-fallback
         - --cache-dir-base=/etc/cache
-        # --gerrit-projects defined as args are deprecated in favor of global prow config. Add/change/delete them at https://gke-internal.googlesource.com/test-infra/+/ea514f5acad2a0e4c0b985f34795dc27904d6a94/prow/gob/config.yaml#135 instead.
+        - --cookiefile=/etc/cookies/cookies
         ports:
         - name: metrics
           containerPort: 9090
@@ -36,11 +38,13 @@ spec:
         - name: config
           mountPath: /etc/config
           readOnly: true
-          readOnly: true
         - name: last-sync-fallback
           mountPath: /etc/last-sync-fallback
         - name: cache
           mountPath: /etc/cache
+        - name: cookies
+          mountPath: /etc/cookies
+          readOnly: true
         resources:
           requests:
             cpu: "1"
@@ -60,7 +64,10 @@ spec:
         emptyDir: {}
       - name: cache
         emptyDir: {}
-
+      - name: cookies
+        secret:
+          defaultMode: 420
+          secretName: http-cookiefile
 ---
 apiVersion: v1
 kind: ServiceAccount

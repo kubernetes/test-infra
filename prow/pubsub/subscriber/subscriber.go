@@ -231,7 +231,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 		logger.Debug("Getting prow jobs.")
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
-		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
+		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, refs.CloneURI, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logger.WithError(err).Info("Failed to get presubmits")
 		} else {
@@ -307,7 +307,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 		logger.Debug("Getting prow jobs.")
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
-		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
+		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, refs.CloneURI, baseSHAGetter)
 		if err != nil {
 			logger.WithError(err).Info("Failed to get postsubmits from inrepoconfig")
 		} else {
@@ -459,8 +459,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	var cache *config.InRepoConfigCacheHandler
 	var err error
 	if eType != PeriodicProwJobEvent {
-		cloneURI, host := tryGetCloneURIAndHost(pe)
-		cache, err = s.InRepoConfigCacheGetter.GetCache(cloneURI, host)
+		cache, err = s.InRepoConfigCacheGetter.GetCache()
 		if err != nil {
 			return err
 		}

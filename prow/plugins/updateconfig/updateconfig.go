@@ -340,7 +340,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 		indent = "   " // three spaces for sub bullets
 	}
 
-	gitRepo, err := gitClient.ClientFor(org, repo)
+	gitRepo, err := gitClient.ClientFor(org, repo, "")
 	if err != nil {
 		return err
 	}

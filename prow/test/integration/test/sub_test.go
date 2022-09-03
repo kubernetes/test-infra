@@ -246,6 +246,7 @@ this-is-from-repo2
 						RepoLink: "https://fakegitserver.default/repo/repo3",
 						BaseSHA:  Repo3HEADsha,
 						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/repo3",
 						Pulls: []prowjobv1.Pull{
 							{
 								Number: 1,
@@ -291,6 +292,7 @@ this-is-from-repo3
 						RepoLink: "https://fakegitserver.default/repo/org1/repo4",
 						BaseSHA:  Repo4HEADsha,
 						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/org1/repo4",
 						Pulls: []prowjobv1.Pull{
 							{
 								Number: 1,
@@ -335,10 +337,11 @@ this-is-from-repo4
 						// clone_uri is set on the job definition itself (see
 						// ProwJobDecoratedCloneURI). However sub needs Org and
 						// Repo to retrieve (clone) this inrepo job config.
-						Org:     "https://fakegitserver.default/repo/org1",
-						Repo:    "repo5",
-						BaseSHA: Repo5HEADsha,
-						BaseRef: "master",
+						Org:      "https://fakegitserver.default/repo/org1",
+						Repo:     "repo5",
+						BaseSHA:  Repo5HEADsha,
+						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/org1/repo5",
 						Pulls: []prowjobv1.Pull{
 							{
 								Number: 1,

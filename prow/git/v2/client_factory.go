@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"runtime"
 	"sync"
@@ -32,9 +33,9 @@ import (
 type ClientFactory interface {
 	// ClientFromDir creates a client that operates on a repo that has already
 	// been cloned to the given directory.
-	ClientFromDir(org, repo, dir string) (RepoClient, error)
+	ClientFromDir(org, repo, cloneURI, dir string) (RepoClient, error)
 	// ClientFor creates a client that operates on a new clone of the repo.
-	ClientFor(org, repo string) (RepoClient, error)
+	ClientFor(org, repo, cloneURI string) (RepoClient, error)
 
 	// Clean removes the caches used to generate clients
 	Clean() error
@@ -56,8 +57,6 @@ type ClientFactoryOpts struct {
 	Host string
 	// UseSSH, defaults to false
 	UseSSH *bool
-	// CloneURI will use CloneURI Remote resolver if set.
-	CloneURI string
 	// The directory in which the cache should be
 	// created. Defaults to the "/var/tmp" on
 	// Linux and os.TempDir otherwise
@@ -98,9 +97,6 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	if cfo.Username != nil {
 		target.Username = cfo.Username
 	}
-	if cfo.CloneURI != "" {
-		target.CloneURI = cfo.CloneURI
-	}
 	if cfo.CookieFilePath != "" {
 		target.CookieFilePath = cfo.CookieFilePath
 	}
@@ -135,22 +131,24 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		opt(&o)
 	}
 
+	if o.CookieFilePath != "" {
+		if output, err := exec.Command("git", "config", "--global", "http.cookiefile", o.CookieFilePath).CombinedOutput(); err != nil {
+			return nil, fmt.Errorf("unable to configure http.cookiefile.\nOutput: %s\nError: %w", string(output), err)
+		}
+	}
+
 	cacheDir, err := ioutil.TempDir(*o.CacheDirBase, "gitcache")
 	if err != nil {
 		return nil, err
 	}
-	var remotes RemoteResolverFactory
-	if len(o.CloneURI) != 0 {
-		remotes = &cloneURIResolverFactory{
-			cloneURI: o.CloneURI,
-		}
-	} else if o.UseSSH != nil && *o.UseSSH {
-		remotes = &sshRemoteResolverFactory{
+	var remote RemoteResolverFactory
+	if o.UseSSH != nil && *o.UseSSH {
+		remote = &sshRemoteResolverFactory{
 			host:     o.Host,
 			username: o.Username,
 		}
 	} else {
-		remotes = &httpResolverFactory{
+		remote = &httpResolverFactory{
 			host:     o.Host,
 			username: o.Username,
 			token:    o.Token,
@@ -159,7 +157,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	return &clientFactory{
 		cacheDir:       cacheDir,
 		cacheDirBase:   *o.CacheDirBase,
-		remotes:        remotes,
+		remote:         remote,
 		gitUser:        o.GitUser,
 		censor:         o.Censor,
 		masterLock:     &sync.Mutex{},
@@ -178,7 +176,7 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 	}
 	return &clientFactory{
 		cacheDir:   cacheDir,
-		remotes:    &pathResolverFactory{baseDir: baseDir},
+		remote:     &pathResolverFactory{baseDir: baseDir},
 		gitUser:    gitUser,
 		censor:     censor,
 		masterLock: &sync.Mutex{},
@@ -188,7 +186,7 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 }
 
 type clientFactory struct {
-	remotes        RemoteResolverFactory
+	remote         RemoteResolverFactory
 	gitUser        GitUserGetter
 	censor         Censor
 	logger         *logrus.Entry
@@ -205,7 +203,7 @@ type clientFactory struct {
 }
 
 // bootstrapClients returns a repository client and cloner for a dir.
-func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner, RepoClient, error) {
+func (c *clientFactory) bootstrapClients(org, repo, cloneURI, dir string) (cacher, cloner, RepoClient, error) {
 	if dir == "" {
 		workdir, err := os.Getwd()
 		if err != nil {
@@ -219,11 +217,18 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	var remote RemoteResolverFactory
+	remote = c.remote
+	if cloneURI != "" {
+		remote = &cloneURIResolverFactory{
+			cloneURI: cloneURI,
+		}
+	}
 	client := &repoClient{
 		publisher: publisher{
 			remotes: remotes{
-				publishRemote: c.remotes.PublishRemote(org, repo),
-				centralRemote: c.remotes.CentralRemote(org, repo),
+				publishRemote: remote.PublishRemote(org, repo),
+				centralRemote: remote.CentralRemote(org, repo),
 			},
 			executor: executor,
 			info:     c.gitUser,
@@ -231,7 +236,7 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 		},
 		interactor: interactor{
 			dir:      dir,
-			remote:   c.remotes.CentralRemote(org, repo),
+			remote:   remote.CentralRemote(org, repo),
 			executor: executor,
 			logger:   logger,
 		},
@@ -241,8 +246,8 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 
 // ClientFromDir returns a repository client for a directory that's already initialized with content.
 // If the directory isn't specified, the current working directory is used.
-func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error) {
-	_, _, client, err := c.bootstrapClients(org, repo, dir)
+func (c *clientFactory) ClientFromDir(org, repo, cloneURI, dir string) (RepoClient, error) {
+	_, _, client, err := c.bootstrapClients(org, repo, cloneURI, dir)
 	return client, err
 }
 
@@ -251,10 +256,13 @@ func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error)
 // In that case, it must do a full git mirror clone. For large repos, this can
 // take a while. Once that is done, it will do a git fetch instead of a clone,
 // which will usually take at most a few seconds.
-func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
+//
+// org and repo are used for determining where the repo is cloned, cloneURI
+// overrides org/repo for cloning.
+func (c *clientFactory) ClientFor(org, repo, cloneURI string) (RepoClient, error) {
 	cacheDir := path.Join(c.cacheDir, org, repo)
 	c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "dir": cacheDir}).Debug("Creating a client from the cache.")
-	cacheClientCacher, _, _, err := c.bootstrapClients(org, repo, cacheDir)
+	cacheClientCacher, _, _, err := c.bootstrapClients(org, repo, cloneURI, cacheDir)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +271,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, repoClientCloner, repoClient, err := c.bootstrapClients(org, repo, repoDir)
+	_, repoClientCloner, repoClient, err := c.bootstrapClients(org, repo, cloneURI, repoDir)
 	if err != nil {
 		return nil, err
 	}
@@ -278,12 +286,6 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		// we have not yet cloned this repo, we need to do a full clone
 		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
-		}
-		if len(c.cookieFilePath) > 0 {
-			err := repoClient.Config("--global", "http.cookiefile", c.cookieFilePath)
-			if err != nil {
-				return nil, fmt.Errorf("unable to configure http.cookiefile: %w", err)
-			}
 		}
 		if err := cacheClientCacher.MirrorClone(); err != nil {
 			return nil, err

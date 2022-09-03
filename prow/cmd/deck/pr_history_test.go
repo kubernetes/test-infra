@@ -483,7 +483,7 @@ func TestGetGCSDirsForPR(t *testing.T) {
 		gitHubClient.PullRequests = map[int]*github.PullRequest{
 			123: {Number: 123},
 		}
-		toSearch, err := getStorageDirsForPR(tc.config, gitHubClient, nil, tc.org, tc.repo, tc.pr)
+		toSearch, err := getStorageDirsForPR(tc.config, gitHubClient, nil, tc.org, tc.repo, "", tc.pr)
 		if (err != nil) != tc.expErr {
 			t.Errorf("%s: unexpected error %v", tc.name, err)
 		}

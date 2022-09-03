@@ -44,12 +44,17 @@ type clientFactoryAdapter struct {
 
 // ClientFromDir creates a client that operates on a repo that has already
 // been cloned to the given directory.
-func (a *clientFactoryAdapter) ClientFromDir(org, repo, dir string) (RepoClient, error) {
+//
+// CloneURI is the third arg that's ignored here, it's currently only used for
+// cloning Gerrit repos. This client is not used for cloning Gerrit repos yet,
+// so leave it unimplemented.
+// (TODO: chaodaiG) Either implement or remove this struct.
+func (a *clientFactoryAdapter) ClientFromDir(org, repo, _, dir string) (RepoClient, error) {
 	return nil, errors.New("no ClientFromDir implementation exists in the v1 git client")
 }
 
 // Repo creates a client that operates on a new clone of the repo.
-func (a *clientFactoryAdapter) ClientFor(org, repo string) (RepoClient, error) {
+func (a *clientFactoryAdapter) ClientFor(org, repo, _ string) (RepoClient, error) {
 	r, err := a.Client.Clone(org, repo)
 	return &repoClientAdapter{Repo: r}, err
 }
