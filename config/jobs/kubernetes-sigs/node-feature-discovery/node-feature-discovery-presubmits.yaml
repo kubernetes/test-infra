@@ -76,7 +76,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220902-cdfab4f336-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
         securityContext:
           privileged: true
         command:
@@ -100,7 +100,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220902-cdfab4f336-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
         securityContext:
           privileged: true
         command:
@@ -120,7 +120,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220902-cdfab4f336-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
         securityContext:
           privileged: true
         command:
