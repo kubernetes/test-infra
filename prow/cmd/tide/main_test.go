@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
@@ -129,6 +130,109 @@ func Test_gatherOptions(t *testing.T) {
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
 				t.Errorf("%#v != expected %#v", actual, *expected)
+			}
+		})
+	}
+}
+
+func TestProvider(t *testing.T) {
+	tests := []struct {
+		name       string
+		provider   string
+		tideConfig config.Tide
+		expect     string
+	}{
+		{
+			name:       "default",
+			provider:   "",
+			tideConfig: config.Tide{},
+			expect:     "github",
+		},
+		{
+			name:     "only-gerrit-config",
+			provider: "",
+			tideConfig: config.Tide{Gerrit: &config.TideGerritConfig{
+				Queries: config.GerritOrgRepoConfigs{
+					config.GerritOrgRepoConfig{},
+				},
+			}},
+			expect: "gerrit",
+		},
+		{
+			name:     "only-github-config",
+			provider: "",
+			tideConfig: config.Tide{TideGitHubConfig: config.TideGitHubConfig{
+				Queries: config.TideQueries{
+					{},
+				},
+			}},
+			expect: "github",
+		},
+		{
+			name:     "both-config",
+			provider: "",
+			tideConfig: config.Tide{
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: config.TideQueries{
+						{},
+					},
+				},
+				Gerrit: &config.TideGerritConfig{
+					Queries: config.GerritOrgRepoConfigs{
+						config.GerritOrgRepoConfig{},
+					},
+				},
+			},
+			expect: "github",
+		},
+		{
+			name:     "explicit-github",
+			provider: "github",
+			tideConfig: config.Tide{
+				Gerrit: &config.TideGerritConfig{
+					Queries: config.GerritOrgRepoConfigs{
+						config.GerritOrgRepoConfig{},
+					},
+				},
+			},
+			expect: "github",
+		},
+		{
+			name:     "explicit-gerrit",
+			provider: "gerrit",
+			tideConfig: config.Tide{
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: config.TideQueries{
+						{},
+					},
+				},
+			},
+			expect: "gerrit",
+		},
+		{
+			name:     "explicit-unsupported-provider",
+			provider: "foobar",
+			tideConfig: config.Tide{
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: config.TideQueries{
+						{},
+					},
+				},
+				Gerrit: &config.TideGerritConfig{
+					Queries: config.GerritOrgRepoConfigs{
+						config.GerritOrgRepoConfig{},
+					},
+				},
+			},
+			expect: "",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if want, got := tc.expect, provider(tc.provider, tc.tideConfig); want != got {
+				t.Errorf("Wrong provider. Want: %s, got: %s", want, got)
 			}
 		})
 	}

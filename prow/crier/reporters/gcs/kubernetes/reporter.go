@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes/scheme"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	utilpointer "k8s.io/utils/pointer"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -42,12 +43,13 @@ import (
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 )
 
 type gcsK8sReporter struct {
 	cfg            config.Getter
 	dryRun         bool
-	author         util.Author
+	opener         io.Opener
 	rg             resourceGetter
 	reportFraction float32
 }
@@ -65,6 +67,10 @@ type resourceGetter interface {
 
 type k8sResourceGetter struct {
 	podClientSets map[string]corev1.CoreV1Interface
+}
+
+func NewK8sResourceGetter(podClientSets map[string]corev1.CoreV1Interface) *k8sResourceGetter {
+	return &k8sResourceGetter{podClientSets: podClientSets}
 }
 
 func (rg k8sResourceGetter) GetPod(ctx context.Context, cluster, namespace, name string) (*v1.Pod, error) {
@@ -210,7 +216,8 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, log *logrus.Entry, 
 		return nil
 	}
 
-	if err := util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, "podinfo.json"), true, output); err != nil {
+	overWriteOpts := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(false)}
+	if err := io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, "podinfo.json")), output, overWriteOpts); err != nil {
 		return fmt.Errorf("failed to upload pod manifest to object storage: %w", err)
 	}
 
@@ -271,15 +278,11 @@ func (gr *gcsK8sReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *p
 	return true
 }
 
-func New(cfg config.Getter, opener io.Opener, podClientSets map[string]corev1.CoreV1Interface, reportFraction float32, dryRun bool) *gcsK8sReporter {
-	return internalNew(cfg, util.StorageAuthor{Opener: opener}, k8sResourceGetter{podClientSets: podClientSets}, reportFraction, dryRun)
-}
-
-func internalNew(cfg config.Getter, author util.Author, rg resourceGetter, reportFraction float32, dryRun bool) *gcsK8sReporter {
+func New(cfg config.Getter, opener io.Opener, rg resourceGetter, reportFraction float32, dryRun bool) *gcsK8sReporter {
 	return &gcsK8sReporter{
 		cfg:            cfg,
 		dryRun:         dryRun,
-		author:         author,
+		opener:         opener,
 		rg:             rg,
 		reportFraction: reportFraction,
 	}

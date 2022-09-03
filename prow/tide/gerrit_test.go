@@ -51,12 +51,24 @@ func newFakeGerritClient() *fakeGerritClient {
 	}
 }
 
-func (f *fakeGerritClient) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters []string) ([]gerrit.ChangeInfo, error) {
+func (f *fakeGerritClient) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error) {
 	if f.changes == nil || f.changes[instance] == nil || f.changes[instance][project] == nil {
 		return nil, errors.New("queries project doesn't exist")
 	}
 
 	return f.changes[instance][project], nil
+}
+
+func (f *fakeGerritClient) GetChange(instance, id string) (*gerrit.ChangeInfo, error) {
+	if f.changes == nil || f.changes[instance] == nil {
+		return nil, errors.New("instance not exist")
+	}
+	for _, c := range f.changes[instance][id] {
+		if c.ID == id {
+			return &c, nil
+		}
+	}
+	return nil, errors.New("instance not exist")
 }
 
 func (f *fakeGerritClient) GetBranchRevision(instance, project, branch string) (string, error) {
@@ -226,7 +238,7 @@ func TestQuery(t *testing.T) {
 				},
 			}
 
-			fc := newGerritProvider(logrus.WithContext(context.Background()), func() *config.Config { return &cfg }, nil, nil, nil, "", "")
+			fc := newGerritProvider(logrus.WithContext(context.Background()), func() *config.Config { return &cfg }, nil, nil, "", "")
 			fgc := newFakeGerritClient()
 
 			for instance, projs := range tc.prs {

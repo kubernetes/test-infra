@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
@@ -32,6 +33,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/testutil"
+	"k8s.io/test-infra/prow/io/fakeopener"
 )
 
 func TestReportJobFinished(t *testing.T) {
@@ -87,8 +89,8 @@ func TestReportJobFinished(t *testing.T) {
 					},
 				},
 			}}.Config
-			ta := &testutil.TestAuthor{}
-			reporter := newWithAuthor(cfg, ta, false)
+			fakeOpener := &fakeopener.FakeOpener{}
+			reporter := New(cfg, fakeOpener, false)
 
 			pj := &prowv1.ProwJob{
 				Spec: prowv1.ProwJobSpec{
@@ -120,15 +122,18 @@ func TestReportJobFinished(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.Path, prowv1.FinishedStatusFile) {
-				t.Errorf("Expected file to be written to finished.json, but got %q", ta.Path)
+			var content []byte
+			for path, buf := range fakeOpener.Buffer {
+				if strings.HasSuffix(path, prowv1.FinishedStatusFile) {
+					content, err = ioutil.ReadAll(buf)
+					if err != nil {
+						t.Fatalf("Failed reading content: %v", err)
+					}
+					break
+				}
 			}
-			if ta.Overwrite {
-				t.Errorf("Expected file to be written without overwriting, but overwrite was enabled")
-			}
-
 			var result metadata.Finished
-			if err := json.Unmarshal(ta.Content, &result); err != nil {
+			if err := json.Unmarshal(content, &result); err != nil {
 				t.Errorf("Couldn't decode result as metadata.Finished: %v", err)
 			}
 			if result.Timestamp == nil {
@@ -166,8 +171,8 @@ func TestReportJobStarted(t *testing.T) {
 					},
 				},
 			}}.Config
-			ta := &testutil.TestAuthor{}
-			reporter := newWithAuthor(cfg, ta, false)
+			fakeOpener := &fakeopener.FakeOpener{}
+			reporter := New(cfg, fakeOpener, false)
 
 			pj := &prowv1.ProwJob{
 				Spec: prowv1.ProwJobSpec{
@@ -193,15 +198,19 @@ func TestReportJobStarted(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.Path, prowv1.StartedStatusFile) {
-				t.Errorf("Expected file to be written to started.json, but got %q", ta.Path)
-			}
-			if ta.Overwrite {
-				t.Errorf("Expected file to be written without overwriting, but overwrite was enabled")
+			var content []byte
+			for p, b := range fakeOpener.Buffer {
+				if strings.HasSuffix(p, prowv1.StartedStatusFile) {
+					content, err = ioutil.ReadAll(b)
+					if err != nil {
+						t.Fatalf("Failed reading content: %v", err)
+					}
+					break
+				}
 			}
 
 			var result metadata.Started
-			if err := json.Unmarshal(ta.Content, &result); err != nil {
+			if err := json.Unmarshal(content, &result); err != nil {
 				t.Errorf("Couldn't decode result as metadata.Started: %v", err)
 			}
 			if result.Timestamp != pj.Status.StartTime.Unix() {
@@ -229,8 +238,8 @@ func TestReportProwJob(t *testing.T) {
 			},
 		},
 	}}.Config
-	ta := &testutil.TestAuthor{}
-	reporter := newWithAuthor(cfg, ta, false)
+	fakeOpener := &fakeopener.FakeOpener{}
+	reporter := New(cfg, fakeOpener, false)
 
 	pj := &prowv1.ProwJob{
 		Spec: prowv1.ProwJobSpec{
@@ -256,16 +265,20 @@ func TestReportProwJob(t *testing.T) {
 		t.Fatalf("Unexpected error calling reportProwjob: %v", err)
 	}
 
-	if !strings.HasSuffix(ta.Path, fmt.Sprintf("/%s", prowv1.ProwJobFile)) {
-		t.Errorf("Expected prowjob to be written to %s, got %q", prowv1.ProwJobFile, ta.Path)
-	}
-
-	if !ta.Overwrite {
-		t.Errorf("Expected %s to be written with overwrite enabled, but it was not.", prowv1.ProwJobFile)
+	var content []byte
+	var err error
+	for p, b := range fakeOpener.Buffer {
+		if strings.HasSuffix(p, prowv1.ProwJobFile) {
+			content, err = ioutil.ReadAll(b)
+			if err != nil {
+				t.Fatalf("Failed reading content: %v", err)
+			}
+			break
+		}
 	}
 
 	var result prowv1.ProwJob
-	if err := json.Unmarshal(ta.Content, &result); err != nil {
+	if err := json.Unmarshal(content, &result); err != nil {
 		t.Fatalf("Couldn't unmarshal %s: %v", prowv1.ProwJobFile, err)
 	}
 	if !cmp.Equal(*pj, result) {
@@ -304,7 +317,7 @@ func TestShouldReport(t *testing.T) {
 					BuildID:   tc.buildID,
 				},
 			}
-			gr := newWithAuthor(testutil.Fca{}.Config, nil, false)
+			gr := New(testutil.Fca{}.Config, nil, false)
 			result := gr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 			if result != tc.shouldReport {
 				t.Errorf("Got ShouldReport() returned %v, but expected %v", result, tc.shouldReport)

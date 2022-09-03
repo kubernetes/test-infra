@@ -47,8 +47,8 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -240,8 +240,7 @@ func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters set
 					continue
 				}
 				noCache := "no-cache"
-				author := util.StorageAuthor{Opener: r.opener, Opts: &io.WriterOptions{CacheControl: &noCache}}
-				if err := util.WriteContent(ctx, r.log, author, bucket, subPath, true, payload); err != nil {
+				if err := io.WriteContent(ctx, r.log, r.opener, providers.GCSStoragePath(bucket, subPath), payload, io.WriterOptions{CacheControl: &noCache}); err != nil {
 					r.log.WithError(err).Error("Error writing cluster status info.")
 				}
 			}
