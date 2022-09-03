@@ -140,7 +140,7 @@ function main() {
     delete_components "${components[@]}"
   fi
 
-  deploy_prow "${fakepubsub_node_port}"
+  deploy_prow "${fakepubsub_node_port:-30303}"
 
   wait_for_nginx
 }
@@ -190,6 +190,7 @@ function build_extra_images() {
   log "Building extra images"
 
   build_clonerefs_ssl_disabled
+  build_initupload_fakegcsserver
 }
 
 function build_clonerefs_ssl_disabled() {
@@ -203,6 +204,25 @@ function build_clonerefs_ssl_disabled() {
 FROM ${src}
 # Allow Git to accept traffic from HTTPS servers with self-signed certs.
 ENV GIT_SSL_NO_VERIFY 1
+EOF
+
+  docker push "${dest}"
+
+}
+
+function build_initupload_fakegcsserver() {
+  echo >&2 "Building initupload-fakegcsserver"
+  local src
+  local dest
+  src="localhost:${LOCAL_DOCKER_REGISTRY_PORT}/initupload:latest"
+  dest="localhost:${LOCAL_DOCKER_REGISTRY_PORT}/initupload-fakegcsserver:latest"
+
+  docker build --tag "${dest}" - <<EOF
+FROM ${src}
+# Create directory to hold all buckets.
+RUN mkdir /gcs
+# Force GCS client running in this image to always talk to fakegcsserver.
+ENV STORAGE_EMULATOR_HOST http://fakegcsserver.default:80
 EOF
 
   docker push "${dest}"
@@ -253,7 +273,7 @@ function delete_components() {
 function deploy_prow() {
   local component
   local fakepubsub_node_port
-  fakepubsub_node_port="${1:-30303}"
+  fakepubsub_node_port="${1}"
   log "Deploying Prow components"
 
   # Even though we apply the entire Prow configuration, Kubernetes is smart

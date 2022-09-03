@@ -37,6 +37,7 @@ declare -ra PROW_COMPONENTS=(
   crier
   deck
   deck-tenanted
+  fakegcsserver
   fakegerritserver
   fakegitserver
   fakeghserver
@@ -66,6 +67,7 @@ declare -rA PROW_IMAGES=(
   [sub]=prow/cmd/sub
   [tide]=prow/cmd/tide
   # Fakes.
+  [fakegcsserver]=prow/test/integration/cmd/fakegcsserver
   [fakegerritserver]=prow/test/integration/cmd/fakegerritserver
   [fakegitserver]=prow/test/integration/cmd/fakegitserver
   [fakeghserver]=prow/test/integration/cmd/fakeghserver
@@ -92,6 +94,7 @@ declare -rA PROW_IMAGES_TO_COMPONENTS=(
   [sinker]=sinker
   [sub]=sub
   [tide]=tide
+  [fakegcsserver]=fakegcsserver
   [fakegerritserver]=fakegerritserver
   [fakegitserver]=fakegitserver
   [fakeghserver]=fakeghserver
@@ -120,6 +123,7 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   # tests on a cold machine), it takes a long time for the deployment to pull it
   # from the local registry.
   fakepubsub.yaml
+  fakegcsserver.yaml
   fakegerritserver.yaml
   fakegitserver.yaml
   gerrit.yaml
@@ -169,6 +173,7 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   WAIT_fakepubsub
   sub.yaml
   WAIT_sub
+  WAIT_fakegcsserver
 )
 
 function do_kubectl() {

@@ -468,14 +468,13 @@ ls-tree (submodule):
 				UtilityImages: &prowjobv1.UtilityImages{
 					// These images get created by the integration test.
 					CloneRefs:  "localhost:5001/clonerefs:latest",
-					InitUpload: "localhost:5001/initupload:latest",
+					InitUpload: "localhost:5001/initupload-fakegcsserver:latest",
 					Entrypoint: "localhost:5001/entrypoint:latest",
 					Sidecar:    "localhost:5001/sidecar:latest",
 				},
 				GCSConfiguration: &prowjobv1.GCSConfiguration{
 					PathStrategy: prowjobv1.PathStrategyExplicit,
-					// This field makes initupload skip the upload to GCS.
-					LocalOutputDir: "/output",
+					Bucket:       "bucket-foo",
 				},
 			}
 
