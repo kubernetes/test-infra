@@ -154,6 +154,7 @@ type Client struct {
 	accounts map[string]*gerrit.AccountInfo
 
 	authentication func() (string, error)
+	previousToken  string
 	lock           sync.RWMutex
 }
 
@@ -256,7 +257,7 @@ func (c *Client) applyGlobalConfigOnce(orgRepoConfigGetter func() *config.Gerrit
 	c.Authenticate(cookiefilePath, tokenPathOverride)
 }
 
-func (c *Client) authenticateOnce(previousToken string) string {
+func (c *Client) authenticateOnce() {
 	c.lock.RLock()
 	auth := c.authentication
 	c.lock.RUnlock()
@@ -266,19 +267,19 @@ func (c *Client) authenticateOnce(previousToken string) string {
 		logrus.WithError(err).Error("Failed to read gerrit auth token")
 	}
 
-	if current == previousToken {
-		return current
+	if current == c.previousToken {
+		return
 	}
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	logrus.Info("New gerrit token, updating handler authentication...")
+	c.previousToken = current
 
 	// update auth token for each instance
 	for _, handler := range c.handlers {
 		handler.authService.SetCookieAuth("o", current)
 	}
-	return current
 }
 
 // Authenticate client calls using the specified file.
@@ -319,12 +320,11 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 	c.lock.Lock()
 	was, c.authentication = c.authentication, auth
 	c.lock.Unlock()
-	logrus.Info("Authenticating gerrit requests...")
-	previousToken := c.authenticateOnce("") // Ensure requests immediately authenticated
+	c.authenticateOnce() // Ensure requests immediately authenticated
 	if was == nil {
 		go func() {
 			for {
-				previousToken = c.authenticateOnce(previousToken)
+				c.authenticateOnce()
 				time.Sleep(time.Minute)
 			}
 		}()
