@@ -26,6 +26,32 @@ presubmits:
         items:
         - key: cluster-lifecycle-github-token
           path: cluster-lifecycle-github-token
+  - name: pull-kernel-module-management-check-commit-content
+    always_run: true
+    decorate: true
+    optional: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: check-commit-content
+      description: "make sure the PR title and body are synced with the commit subject and body."
+    spec:
+      containers:
+      - image: ghcr.io/supportpal/github-gh-cli
+        command:
+        - ci/prow/check-commit-content
+      env:
+      - name: GH_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: cluster-lifecycle-github-token
+            key: cluster-lifecycle-github-token
+    volumes:
+    - name: cluster-lifecycle-github-token
+      secret:
+        secretName: cluster-lifecycle-github-token
+        items:
+        - key: cluster-lifecycle-github-token
+          path: cluster-lifecycle-github-token
   - name: pull-kernel-module-management-lint
     always_run: true
     decorate: true
