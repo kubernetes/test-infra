@@ -916,6 +916,11 @@ func handlePRHistory(o options, cfg config.Getter, opener io.Opener, gitHubClien
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
+		for idx := range tmpl.Jobs {
+			for jdx, build := range tmpl.Jobs[idx].Builds {
+				tmpl.Jobs[idx].Builds[jdx].Result = strings.ToUpper(build.Result)
+			}
+		}
 		handleSimpleTemplate(o, cfg, "pr-history.html", tmpl)(w, r)
 	}
 }
