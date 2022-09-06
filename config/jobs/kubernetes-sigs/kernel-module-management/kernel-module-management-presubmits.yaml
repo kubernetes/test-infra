@@ -13,12 +13,12 @@ presubmits:
       - image: ghcr.io/supportpal/github-gh-cli
         command:
         - ci/prow/check-commits-count
-      env:
-      - name: GH_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: cluster-lifecycle-github-token
-            key: cluster-lifecycle-github-token
+        env:
+        - name: GH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: cluster-lifecycle-github-token
+              key: cluster-lifecycle-github-token
     volumes:
     - name: cluster-lifecycle-github-token
       secret:
