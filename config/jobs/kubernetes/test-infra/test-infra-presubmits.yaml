@@ -95,8 +95,6 @@ presubmits:
         - --warnings=unknown-fields
         - --warnings=duplicate-job-refs
         - --warnings=unknown-fields-all
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-integration
     branches:
     - master
