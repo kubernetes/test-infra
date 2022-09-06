@@ -72,21 +72,19 @@ periodics:
       - "runner.sh"
       - "make"
       - "verify-book-links"
-      volumeMounts:
-      - name: cluster-lifecycle-github-token
       env:
       - name: GITHUB_TOKEN
         valueFrom:
           secretKeyRef:
             name: cluster-lifecycle-github-token
             key: cluster-lifecycle-github-token
-    volumes:
-    - name: cluster-lifecycle-github-token
-      secret:
-        secretName: cluster-lifecycle-github-token
-        items:
-        - key: cluster-lifecycle-github-token
-          path: cluster-lifecycle-github-token
+  volumes:
+  - name: cluster-lifecycle-github-token
+    secret:
+      secretName: cluster-lifecycle-github-token
+      items:
+      - key: cluster-lifecycle-github-token
+        path: cluster-lifecycle-github-token
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
     testgrid-tab-name: capi-verify-book-links-release-0-3

@@ -50,6 +50,30 @@ presubmits:
   # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
   - name: pull-test-infra-prow-checkconfig
     decorate: true
+    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/checkconfig:v20220905-8bcebc6376
+        command:
+        - checkconfig
+        args:
+        - --config-path=config/prow/config.yaml
+        - --job-config-path=config/jobs
+        - --plugin-config=config/prow/plugins.yaml
+        - --strict
+        - --warnings=mismatched-tide-lenient
+        - --warnings=tide-strict-branch
+        - --warnings=needs-ok-to-test
+        - --warnings=validate-owners
+        - --warnings=missing-trigger
+        - --warnings=validate-urls
+        - --warnings=unknown-fields
+        - --warnings=duplicate-job-refs
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+
+  - name: pull-test-infra-prow-checkconfig-beta
+    decorate: true
     optional: true
     always_run: false
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
@@ -74,6 +98,7 @@ presubmits:
         - --warnings=unknown-fields-all
     annotations:
       testgrid-dashboards: presubmits-test-infra
+
   - name: pull-test-infra-integration
     branches:
     - master

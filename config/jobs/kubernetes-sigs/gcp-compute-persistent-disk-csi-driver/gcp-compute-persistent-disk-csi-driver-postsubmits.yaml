@@ -24,13 +24,12 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest Release
@@ -61,13 +60,12 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest Release Candidate
@@ -98,13 +96,12 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest
@@ -135,13 +132,12 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest Canary Sidecars
@@ -172,13 +168,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+    resources:
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Stable
@@ -209,13 +205,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+    resources:
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Latest

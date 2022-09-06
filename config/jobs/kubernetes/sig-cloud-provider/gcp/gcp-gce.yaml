@@ -13,7 +13,7 @@ presets:
     preset-use-new-registry: "true"
   env:
   - name: KUBE_TEST_REPO_LIST
-    value: https://raw.githubusercontent.com/kubernetes/test-infra/master/config/jobs/kubernetes/sig-cloud-provider/gcp/registry/default.txt
+    value: https://raw.githubusercontent.com/kubernetes/test-infra/master/config/jobs/kubernetes/sig-cloud-provider/gcp/registry/default.yaml
   - name: KUBE_DOCKER_REGISTRY
     value: registry.k8s.io
   - name: KUBE_ADDON_REGISTRY

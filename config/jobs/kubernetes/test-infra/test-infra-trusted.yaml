@@ -209,9 +209,6 @@ postsubmits:
         - -C
         - prow
         - push-images
-        resources:
-          requests:
-            cpu: "15"
         env:
         # TODO(chaodaiG): remove once this becomes the default in `prow/Makefile`
         - name: REGISTRY
@@ -226,6 +223,9 @@ postsubmits:
         effect: "NoSchedule"
       nodeSelector:
         highcpu: "true"
+      resources:
+        requests:
+          cpu: "15"
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
@@ -486,6 +486,7 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '2'
       description: Uses the Container Image Promoter to promote images from gcr.io/k8s-prow-edge to gcr.io/k8s-prow.
+
   kubernetes/community:
   - name: post-community-tempelis-apply
     cluster: test-infra-trusted

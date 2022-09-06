@@ -43,8 +43,7 @@ periodics:
     testgrid-alert-email: kubernetes-hnc-dev+alerts@googlegroups.com
     testgrid-num-failures-to-alert: "1"
   interval: 24h
-  # periodics does not have an "always_run field"
-  # always_run: true # Different from the postsubmit; copied from kind periodics (fixed in kind as well)
+  always_run: true # Different from the postsubmit; copied from kind periodics
   decorate: true
   decoration_config:
     timeout: 1h
