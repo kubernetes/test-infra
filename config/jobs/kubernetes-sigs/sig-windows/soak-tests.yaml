@@ -88,7 +88,8 @@ periodics:
     decorate: true
     # periodics does not have an "always_run field"
     # always_run: false
-    optional: true
+    # periodics does not have an "optional" field
+    # optional: true
     decoration_config:
       timeout: 8h
     path_alias: k8s.io/perf-tests
