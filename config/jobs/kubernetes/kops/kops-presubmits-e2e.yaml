@@ -1576,7 +1576,7 @@ presubmits:
         - name: KOPS_VERSION_A
           value: "1.23"
         - name: K8S_VERSION_A
-          value: "v1.23.0"
+          value: "v1.25.0"
         - name: KOPS_VERSION_B
           value: "latest"
         - name: K8S_VERSION_B
