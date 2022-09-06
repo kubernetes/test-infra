@@ -209,6 +209,9 @@ postsubmits:
         - -C
         - prow
         - push-images
+        resources:
+          requests:
+            cpu: "15"
         env:
         # TODO(chaodaiG): remove once this becomes the default in `prow/Makefile`
         - name: REGISTRY
@@ -223,9 +226,7 @@ postsubmits:
         effect: "NoSchedule"
       nodeSelector:
         highcpu: "true"
-      resources:
-        requests:
-          cpu: "15"
+      
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow

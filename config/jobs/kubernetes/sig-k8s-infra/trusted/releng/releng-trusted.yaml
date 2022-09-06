@@ -47,13 +47,13 @@ postsubmits:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - --confirm
-      resources:
-        requests:
-          cpu: 2
-          memory: "4Gi"
-        limits:
-          cpu: 2
-          memory: "4Gi"
+        resources:
+          requests:
+            cpu: 2
+            memory: "4Gi"
+          limits:
+            cpu: 2
+            memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
