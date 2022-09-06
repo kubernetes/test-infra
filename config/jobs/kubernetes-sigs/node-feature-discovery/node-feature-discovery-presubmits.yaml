@@ -46,7 +46,7 @@ presubmits:
       description: "Verify documentation sources"
     spec:
       containers:
-      - image: ruby:2.7
+      - image: ruby:slim
         command:
         - scripts/test-infra/mdlint.sh
   - name: pull-node-feature-discovery-build
