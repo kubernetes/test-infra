@@ -86,7 +86,8 @@ periodics:
   - interval: 24h
     name: periodic-soak-tests-capz-windows-2019
     decorate: true
-    always_run: false
+    # periodics does not have an "always_run field"
+    # always_run: false
     optional: true
     decoration_config:
       timeout: 8h
