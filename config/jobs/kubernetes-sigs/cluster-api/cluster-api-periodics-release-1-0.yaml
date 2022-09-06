@@ -166,6 +166,8 @@ periodics:
       - "runner.sh"
       - "make"
       - "verify-book-links"
+      volumeMounts:
+      - name: cluster-lifecycle-github-token
       env:
       - name: GITHUB_TOKEN
         valueFrom:
