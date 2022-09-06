@@ -184,12 +184,12 @@ func getRevisionFromRef(refs *prowapi.Refs) string {
 	return refs.BaseRef
 }
 
+// GetRevisionFromSpec returns a main ref or sha from a spec object
 func GetRevisionFromSpec(jobSpec *JobSpec) string {
-	return getRevisionFromRefs(jobSpec.Refs, jobSpec.ExtraRefs)
+	return GetRevisionFromRefs(jobSpec.Refs, jobSpec.ExtraRefs)
 }
 
-// GetRevisionFromSpec returns a main ref or sha from a spec object
-func getRevisionFromRefs(refs *prowapi.Refs, extra []prowapi.Refs) string {
+func GetRevisionFromRefs(refs *prowapi.Refs, extra []prowapi.Refs) string {
 	return getRevisionFromRef(mainRefs(refs, extra))
 }
 
@@ -211,7 +211,7 @@ func SpecToStarted(spec *JobSpec, cloneRecords []clone.Record) metadata.Started 
 	return refsToStarted(spec.Refs, spec.ExtraRefs, cloneRecords, time.Now().Unix())
 }
 
-// refsToStarted translate a jobspec into a started struct
+// refsToStarted translate refs into a Started struct
 // optionally overwrite RepoVersion with provided cloneRecords
 func refsToStarted(refs *prowapi.Refs, extraRefs []prowapi.Refs, cloneRecords []clone.Record, startTime int64) metadata.Started {
 	var version string
@@ -225,7 +225,7 @@ func refsToStarted(refs *prowapi.Refs, extraRefs []prowapi.Refs, cloneRecords []
 	}
 
 	if version == "" {
-		version = getRevisionFromRefs(refs, extraRefs)
+		version = GetRevisionFromRefs(refs, extraRefs)
 	}
 
 	started.DeprecatedRepoVersion = version

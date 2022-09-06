@@ -49,7 +49,12 @@ func (fo *FakeOpener) Reader(ctx context.Context, path string) (pkgio.ReadCloser
 	if _, ok := fo.Buffer[path]; !ok {
 		return nil, os.ErrNotExist
 	}
-	return &nopReadWriteCloser{Buffer: fo.Buffer[path]}, nil
+	// The underlying Buffer contains a private `off(set)` field, which will
+	// move to the end of the buffer after one read, and there is no way to
+	// reset the `off(set)`. So create a new Buffer from the content, to make
+	// this Buffer readable repeatedly.
+	newBuf := bytes.NewBuffer(fo.Buffer[path].Bytes())
+	return &nopReadWriteCloser{Buffer: newBuf}, nil
 }
 
 func (fo *FakeOpener) Writer(ctx context.Context, path string, opts ...pkgio.WriterOptions) (pkgio.WriteCloser, error) {
