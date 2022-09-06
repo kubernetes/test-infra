@@ -64,15 +64,15 @@ presubmits:
     - org: kubernetes
       repo: test-infra
       base_ref: master
-     spec:
-       containers:
-       - image: gcr.io/k8s-prow/checkconfig:v20191205-050b151d0
-         command:
-         - /app/prow/cmd/checkconfig/app.binary
-         args:
-         - --plugin-config=../test-infra/path/to/plugins.yaml
-         - --config-path=../test-infra/path/to/config.yaml
-         - --prow-yaml-repo-name=$(REPO_OWNER)/$(REPO_NAME)
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/checkconfig:v20191205-050b151d0
+        command:
+        - /app/prow/cmd/checkconfig/app.binary
+        args:
+        - --plugin-config=../test-infra/path/to/plugins.yaml
+        - --config-path=../test-infra/path/to/config.yaml
+        - --prow-yaml-repo-name=$(REPO_OWNER)/$(REPO_NAME)
 ```
 
 After deploying the new config, the only step left is to create jobs. This is done by adding a file
