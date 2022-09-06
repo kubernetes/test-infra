@@ -50,6 +50,8 @@ presubmits:
   # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
   - name: pull-test-infra-prow-checkconfig
     decorate: true
+    optional: true
+    always_run: false
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
@@ -69,6 +71,7 @@ presubmits:
         - --warnings=validate-urls
         - --warnings=unknown-fields
         - --warnings=duplicate-job-refs
+        - --warnings=unknown-fields-all
     annotations:
       testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-integration
