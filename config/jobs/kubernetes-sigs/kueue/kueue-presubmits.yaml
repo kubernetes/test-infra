@@ -60,7 +60,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
+      - image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20220830-45cbff55bc
         securityContext:
           privileged: true
         command:
