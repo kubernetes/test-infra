@@ -226,7 +226,6 @@ postsubmits:
         effect: "NoSchedule"
       nodeSelector:
         highcpu: "true"
-      
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
