@@ -92,6 +92,7 @@ periodics:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
           - --root=/go/src
+          - "--service-account=/etc/service-account/service-account.json"
           - --scenario=kubernetes_e2e
           - --
           - --deployment=node
@@ -101,7 +102,7 @@ periodics:
           - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
           - --timeout=180m
         env:
           - name: GOPATH
@@ -176,6 +177,7 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
       - --root=/go/src
+      - "--service-account=/etc/service-account/service-account.json"
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
