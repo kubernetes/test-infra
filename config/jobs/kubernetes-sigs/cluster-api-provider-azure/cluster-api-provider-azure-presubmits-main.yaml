@@ -467,6 +467,7 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     decorate: true
+    run_if_changed: '^test\/e2e\/(config\/azure-dev\.yaml)|(data\/shared\/v1beta1_provider\/metadata\.yaml)$'
     optional: true
     always_run: false
     branches:

@@ -26,6 +26,7 @@ postsubmits:
     annotations:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
+
   kubernetes/test-infra:
   - name: post-test-infra-push-alpine
     cluster: test-infra-trusted
@@ -47,6 +48,7 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/alpine/
+
   - name: post-test-infra-push-clusterfuzzlite
     cluster: test-infra-trusted
     run_if_changed: '^(experiment/clusterfuzzlite)'
@@ -69,6 +71,7 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - experiment/clusterfuzzlite/
+
   - name: post-test-infra-push-gcloud-terraform
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud-terraform/'
@@ -90,6 +93,7 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/gcloud-terraform/
+
   - name: post-test-infra-push-git
     cluster: test-infra-trusted
     run_if_changed: '^images/git/'
@@ -110,6 +114,7 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/git/
+
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
@@ -142,6 +147,7 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: deploys the configured version of prow by running prow/deploy.sh
+
   - name: post-test-infra-reconcile-hmacs
     cluster: test-infra-trusted
     run_if_changed: 'config/prow/config.yaml'
@@ -151,7 +157,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20220905-8bcebc6376
+      - image: gcr.io/k8s-prow/hmac:v20220906-65e79f1345
         command:
         - hmac
         args:
@@ -187,6 +193,7 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: reconcile the hmac tokens and webhooks based on the managed_webhooks configuration in prow core config file
+
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
@@ -226,7 +233,6 @@ postsubmits:
         effect: "NoSchedule"
       nodeSelector:
         highcpu: "true"
-      
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
@@ -236,6 +242,7 @@ postsubmits:
     rerun_auth_config:
       github_users:
       - alvaroaleman
+
   - name: post-test-infra-push-kettle
     cluster: test-infra-trusted
     annotations:
@@ -263,6 +270,7 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - kettle/
+
   - name: post-test-infra-push-bazel
     cluster: test-infra-trusted
     run_if_changed: '^images/bazel/'
@@ -286,6 +294,7 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
         - images/bazel/
+
   - name: post-test-infra-push-gcb-docker-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcb-docker-gcloud/'
@@ -310,6 +319,7 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/gcb-docker-gcloud/
+
   - name: post-test-infra-push-test-gubernator
     cluster: test-infra-trusted
     run_if_changed: '^images/pull-test-infra-gubernator/'
@@ -334,6 +344,7 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/pull-test-infra-gubernator/
+
   - name: post-test-infra-push-gencred
     cluster: test-infra-trusted
     run_if_changed: '^gencred/'
@@ -358,6 +369,7 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - gencred/
+
   - name: post-test-infra-gencred-refresh-kubeconfig
     cluster: test-infra-trusted
     run_if_changed: '^config/prow/gencred-config/'
@@ -368,7 +380,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20220905-8bcebc6376
+        image: gcr.io/k8s-prow/gencred:v20220906-65e79f1345
         command:
         - gencred
         args:
@@ -379,6 +391,7 @@ postsubmits:
       testgrid-tab-name: postsubmit-gencred-refresh-kubeconfig
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       description: Runs gencred to refresh generated kubeconfigs.
+
   - name: post-test-infra-upload-oncall
     cluster: test-infra-trusted
     branches:
@@ -405,6 +418,7 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Updates the html contents for go.k8s.io/oncall.
+
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:
@@ -415,7 +429,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20220905-8bcebc6376
+      - image: gcr.io/k8s-prow/configurator:v20220906-65e79f1345
         command:
         - configurator
         args:
@@ -438,6 +452,7 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Compiles and uploads testgrid config on test-infra pushes
+
   - name: post-test-infra-upload-boskos-config
     cluster: test-infra-trusted
     branches:
@@ -461,6 +476,7 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Update boskos configmap on test-infra pushes
+
   - name: post-test-infra-cip-prow
     cluster: test-infra-trusted
     decorate: true
@@ -551,6 +567,7 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
+
 - cron: "30 18-23/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (18:05 UTC, fall) Mon-Fri
   # Save for daylight saving:
   # cron: "30 17-22/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (17:05 UTC, spring) Mon-Fri
@@ -563,7 +580,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220905-8bcebc6376
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220906-65e79f1345
       command:
       - generic-autobumper
       args:
@@ -590,6 +607,7 @@ periodics:
     testgrid-alert-email: k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '2' # This could fail when it runs right in the middle of prow push, tolerate it once
     description: runs autobumper to create/update a PR that bumps prow to the latest RC with label 'skip-review'
+
 - cron: "15 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
@@ -600,7 +618,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220905-8bcebc6376
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220906-65e79f1345
       command:
       - generic-autobumper
       args:
@@ -625,6 +643,7 @@ periodics:
     description: runs autobumper to create/update a PR that bumps prow to the latest RC without label 'skip-review'
     testgrid-alert-email: k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '3'
+
 - cron: "30 * * * *"  # Run at half past the hour, every hour, every day
   name: ci-test-infra-update-slack-oncall
   cluster: test-infra-trusted
@@ -655,6 +674,7 @@ periodics:
     testgrid-tab-name: slack-oncall-updater
     testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com
     description: runs experiment/slack-oncall-updater to update the membership of the test-infra-oncall slack usergroup
+
 - cron: "54 * * * *"  # Every hour at 54 minutes past the hour
   name: ci-test-infra-branchprotector
   cluster: test-infra-trusted
@@ -670,7 +690,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20220905-8bcebc6376
+      image: gcr.io/k8s-prow/branchprotector:v20220906-65e79f1345
       command:
       - branchprotector
       args:
@@ -695,6 +715,7 @@ periodics:
     testgrid-tab-name: branchprotector
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs Prow's branchprotector to apply configured GitHub status context requirements and merge policies.
+
 - cron: "17 * * * *"  # Every hour at 17 minutes past the hour
   name: ci-test-infra-label-sync
   cluster: test-infra-trusted
@@ -704,7 +725,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20220905-8bcebc6376
+      image: gcr.io/k8s-prow/label_sync:v20220906-65e79f1345
       command:
       - label_sync
       args:
@@ -736,6 +757,7 @@ periodics:
     testgrid-tab-name: label_sync
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
+
 - cron: "17 */6 * * *"  # Every 6 hours at 17 minutes past the hour
   name: ci-test-infra-gencred-refresh-kubeconfig
   cluster: test-infra-trusted
@@ -748,7 +770,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20220905-8bcebc6376
+      image: gcr.io/k8s-prow/gencred:v20220906-65e79f1345
       command:
       - gencred
       args:
@@ -774,7 +796,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20220905-8bcebc6376
+    - image: gcr.io/k8s-prow/checkconfig:v20220906-65e79f1345
       command:
       - checkconfig
       args:

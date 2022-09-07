@@ -25,7 +25,7 @@ presubmits:
       description: "Verify documentation sources of the operator project"
     spec:
       containers:
-      - image: ruby:2.7
+      - image: ruby:slim
         command:
         - scripts/test-infra/mdlint.sh
   - name: pull-node-feature-discovery-operator-build-image

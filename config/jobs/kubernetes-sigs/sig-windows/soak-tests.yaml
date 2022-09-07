@@ -86,8 +86,6 @@ periodics:
   - interval: 24h
     name: periodic-soak-tests-capz-windows-2019
     decorate: true
-    always_run: false
-    optional: true
     decoration_config:
       timeout: 8h
     path_alias: k8s.io/perf-tests
