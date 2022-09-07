@@ -12,7 +12,7 @@ postsubmits:
       description: "Run end-to-end tests for node-feature-discovery after merging a pull request"
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.19
         command:
         - bash
         args:
