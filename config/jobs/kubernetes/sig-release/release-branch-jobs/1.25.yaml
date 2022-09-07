@@ -570,36 +570,6 @@ periodics:
           memory: 9Gi
       securityContext:
         privileged: true
-- annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-windows-signal, sig-release-job-config-errors
-    testgrid-tab-name: windows-unit-1.25
-  decorate: true
-  decoration_config:
-    timeout: 4h0m0s
-  extra_refs:
-  - base_ref: master
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/windows-testing
-    repo: windows-testing
-  interval: 12h
-  labels:
-    preset-azure-cred-only: "true"
-    preset-dind-enabled: "true"
-  name: ci-kubernetes-unit-windows-1-25
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - ./scripts/ci-k8s-unit-test.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-1.25
-      name: ""
-      resources:
-        requests:
-          cpu: "2"
-          memory: 4Gi
-      securityContext:
-        privileged: true
 postsubmits: {}
 presubmits:
   kubernetes/kubernetes:
