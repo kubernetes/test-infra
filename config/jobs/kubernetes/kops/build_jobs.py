@@ -372,8 +372,7 @@ distro_options = [
 k8s_versions = [
     "1.22",
     "1.23",
-    "1.24",
-    "1.25"
+    "1.24"
 ]
 
 kops_versions = [
@@ -663,7 +662,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.25', '1.24', '1.23']:
+    for version in ['1.24', '1.23']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -789,9 +788,8 @@ def generate_network_plugins():
 ################################
 def generate_upgrades():
 
-    kops23 = 'v1.23.4'
-    kops24 = 'v1.24.2'
-    kops25 = 'v1.25.0-beta.1'
+    kops23 = 'v1.23.2'
+    kops24 = 'v1.24.0'
 
     versions_list = [
         #  kops    k8s          kops      k8s
@@ -803,26 +801,14 @@ def generate_upgrades():
         ((kops23, 'v1.23.1'), ('1.24', 'v1.24.0')),
         ((kops24, 'v1.19.16'), ('1.24', 'v1.20.6')),
         ((kops24, 'v1.23.1'), ('1.24', 'v1.23.1')),
-        # 1.25 release branch
-        ((kops23, 'v1.22.1'), ('1.25', 'v1.23.1')),
-        ((kops23, 'v1.23.1'), ('1.25', 'v1.24.0')),
-        ((kops24, 'v1.19.16'), ('1.25', 'v1.20.6')),
-        ((kops24, 'v1.23.1'), ('1.25', 'v1.23.1')),
-        ((kops25, 'v1.21.14'), ('1.25', 'v1.22.13')),
-        ((kops25, 'v1.25.0'), ('1.25', 'v1.25.0')),
-        # 1.23 upgrade to latest
+        # 1,23 upgrade to latest
         (('1.23', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('1.23', 'v1.23.0'), ('latest', 'v1.24.0')),
-        # 1.24 upgrade to latest
+        # 1,24 upgrade to latest
         ((kops24, 'v1.23.1'), ('latest', 'v1.24.0')),
         ((kops24, 'v1.24.0'), ('latest', 'v1.24.0')),
-        # 1.25 upgrade to latest
-        ((kops25, 'v1.23.1'), ('latest', 'v1.24.0')),
-        ((kops25, 'v1.24.0'), ('latest', 'v1.24.0')),
-        ((kops25, 'v1.24.0'), ('latest', 'v1.25.0')),
         # we should have an upgrade test for every supported K8s version
-        (('latest', 'v1.25.0'), ('latest', 'latest')),
-        (('latest', 'v1.24.0'), ('latest', 'v1.25.0')),
+        (('latest', 'v1.24.0'), ('latest', 'latest')),
         (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
@@ -924,7 +910,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.25', '1.24', '1.23', '1.22']:
+    for version in ['master', '1.24', '1.23', '1.22']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
@@ -1246,7 +1232,7 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "1.23",
-                'K8S_VERSION_A': "v1.25.0",
+                'K8S_VERSION_A': "v1.23.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
             }
