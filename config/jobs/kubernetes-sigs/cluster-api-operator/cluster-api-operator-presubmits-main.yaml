@@ -118,8 +118,6 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cluster-lifecycle-github-token
         env:
         - name: GITHUB_TOKEN
           valueFrom:

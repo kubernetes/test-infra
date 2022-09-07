@@ -152,7 +152,7 @@ presubmits:
           value: "true"
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-containerd-1.24
+      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-containerd-1-24
       description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster with containerd runtime.
   - name: pull-kubernetes-e2e-aks-engine-azure-file-windows-containerd-1-24
     decorate: true
