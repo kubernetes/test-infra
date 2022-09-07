@@ -898,6 +898,10 @@ func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logru
 			http.Error(w, msg, httpStatusForError(err))
 			return
 		}
+		for idx, build := range tmpl.Builds {
+			tmpl.Builds[idx].Result = strings.ToUpper(build.Result)
+
+		}
 		handleSimpleTemplate(o, cfg, "job-history.html", tmpl)(w, r)
 	}
 }

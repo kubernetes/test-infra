@@ -96,7 +96,7 @@ const (
 
 const (
 	// StartedStatusFile is the JSON file that stores information about the build
-	// at the start ob the build. See testgrid/metadata/job.go for more details.
+	// at the start of the build. See testgrid/metadata/job.go for more details.
 	StartedStatusFile = "started.json"
 
 	// FinishedStatusFile is the JSON file that stores information about the build
@@ -105,6 +105,9 @@ const (
 
 	// ProwJobFile is the JSON file that stores the prowjob information.
 	ProwJobFile = "prowjob.json"
+
+	// CloneRecordFile is the JSON file that stores clone records of a prowjob.
+	CloneRecordFile = "clone-records.json"
 )
 
 // +genclient

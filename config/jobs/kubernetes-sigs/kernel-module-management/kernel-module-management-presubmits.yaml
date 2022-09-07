@@ -15,12 +15,6 @@ presubmits:
         - ci/prow/check-commits-count
         volumeMounts:
         - name: cluster-lifecycle-github-token
-        env:
-        - name: GH_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: cluster-lifecycle-github-token
-              key: cluster-lifecycle-github-token
       volumes:
       - name: cluster-lifecycle-github-token
         secret:
@@ -28,6 +22,7 @@ presubmits:
           items:
           - key: cluster-lifecycle-github-token
             path: cluster-lifecycle-github-token
+
   - name: pull-kernel-module-management-lint
     always_run: true
     decorate: true
