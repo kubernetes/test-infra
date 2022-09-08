@@ -78,6 +78,31 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
+  kubernetes-sigs/cluster-api-provider-cloudstack:
+    - name: post-cluster-api-provider-cloudstack-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^main$
+        - ^release-.+$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-capi-cloudstack
+              - --scratch-bucket=gs://k8s-staging-capi-cloudstack-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .
   kubernetes-sigs/cluster-api-provider-digitalocean:
     - name: post-cluster-api-provider-digitalocean-push-images
       cluster: k8s-infra-prow-build-trusted
