@@ -1,5 +1,18 @@
 presubmits:
   kubernetes-sigs/kernel-module-management:
+  - name: pull-kernel-module-management-build
+    always_run: true
+    decorate: true
+    optional: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: build
+      description: build the kernel-module-management controller binary
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - ci/prow/build
   - name: pull-kernel-module-management-check-commits-count
     always_run: true
     decorate: true
