@@ -22,7 +22,7 @@ presubmits:
       preset-azure-anonymous-pull: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
