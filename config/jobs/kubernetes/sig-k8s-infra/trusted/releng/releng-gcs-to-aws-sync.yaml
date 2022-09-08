@@ -22,14 +22,11 @@ periodics:
       serviceAccountName: s3-sync
       containers:
         - name: s3-sync
-          image: python:3.11.0rc1-slim-bullseye
+          image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
           command:
             - /bin/bash
             - -c
             - |
-              pip install awscli
-              apt update
-              apt install -y rclone git
               aws sts get-caller-identity
               git clone https://github.com/kubernetes/k8s.io /tmp/workspace/kubernetes/k8s.io
               cd /tmp/workspace/kubernetes/k8s.io/registry.k8s.io
