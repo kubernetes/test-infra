@@ -58,9 +58,38 @@ presubmits:
       description: "Build container image of kueue"
     labels:
       preset-dind-enabled: "true"
+    skip_branches:
+    - ^release-0.1$
+    - ^release-0.2$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20220830-45cbff55bc
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - make
+        - image-build
+        env:
+          name: IMAGE_BUILD_CMD
+          value: "/buildx-entrypoint build"
+  - name: pull-kueue-build-image-release-0-1-and-release-0-2
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-build-image-release-0-1-and-release-0-2
+      description: "Build container image of kueue for release-0.1 and release-0.2 branches"
+    labels:
+      preset-dind-enabled: "true"
+    branches:
+    - ^release-0.1$
+    - ^release-0.2$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
         securityContext:
           privileged: true
         command:
