@@ -55,6 +55,7 @@ func init() {
 type KubernetesOptions struct {
 	kubeconfig               string
 	kubeconfigDir            string
+	kubeconfigSuffix         string
 	projectedTokenFile       string
 	noInClusterConfig        bool
 	NOInClusterConfigDefault bool
@@ -175,6 +176,7 @@ func (o *KubernetesOptions) LoadClusterConfigs(callBacks ...func()) (map[string]
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.kubeconfigDir, "kubeconfig-dir", "", "Path to the directory containing kubeconfig files. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
+	fs.StringVar(&o.kubeconfigSuffix, "kubeconfig-suffix", "", "The files without the suffix will be ignored when loading kubeconfig files from --kubeconfig-dir. It must be used together with --kubeconfig-dir.")
 	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
 	fs.BoolVar(&o.noInClusterConfig, "no-in-cluster-config", o.NOInClusterConfigDefault, "Not resolving InCluster Config if set.")
 }
@@ -195,6 +197,10 @@ func (o *KubernetesOptions) Validate(_ bool) error {
 		}
 	}
 
+	if o.kubeconfigSuffix != "" && o.kubeconfigDir == "" {
+		return fmt.Errorf("--kubeconfig-dir must be set if --kubeconfig-suffix is set")
+	}
+
 	return nil
 }
 
@@ -208,7 +214,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 
 	clusterConfigs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig),
 		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile),
-		kube.NoInClusterConfig(o.noInClusterConfig)))
+		kube.NoInClusterConfig(o.noInClusterConfig), kube.ConfigSuffix(o.kubeconfigSuffix)))
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q configs: %w", o.kubeconfig, err)
 	}

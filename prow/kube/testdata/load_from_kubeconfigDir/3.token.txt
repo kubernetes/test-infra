@@ -1,0 +1,2 @@
+not a valid kubeconfig
+it would cause errors without being ignored
