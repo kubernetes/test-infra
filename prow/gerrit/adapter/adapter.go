@@ -75,6 +75,7 @@ var gerritMetrics = struct {
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{
 		"org",
+		"repo",
 	}),
 }
 
@@ -92,7 +93,7 @@ type gerritClient interface {
 	ApplyGlobalConfig(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func())
 	Authenticate(cookiefilePath, tokenPath string)
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
-	QueryChangesForInstance(instance string, lastState client.LastSyncState, rateLimit int) []client.ChangeInfo
+	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error)
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 	Account(instance string) (*gerrit.AccountInfo, error)
@@ -110,7 +111,7 @@ type Controller struct {
 	configAgent             *config.Agent
 	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter
 	inRepoConfigFailures    map[string]bool
-	instancesWithWorker     map[string]bool
+	projectWithWorker       map[string]map[string]bool
 	repoCacheMapMux         sync.Mutex
 	latestMux               sync.Mutex
 	workerPoolSize          int
@@ -152,7 +153,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		configAgent:             ca,
 		inRepoConfigCacheGetter: inRepoConfigCacheGetter,
 		inRepoConfigFailures:    map[string]bool{},
-		instancesWithWorker:     make(map[string]bool),
+		projectWithWorker:       make(map[string]map[string]bool),
 		workerPoolSize:          workerPoolSize,
 	}
 
@@ -233,21 +234,32 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
 func (c *Controller) Sync() {
-	processSingleInstance := func(instance string) {
-		log := logrus.WithField("host", instance)
+	processSingleProject := func(instance, project string) {
+		log := logrus.WithFields(logrus.Fields{"host": instance, "project": project})
 		syncTime := c.tracker.Current()
 		latest := syncTime.DeepCopy()
 
 		now := time.Now()
 		defer func() {
-			gerritMetrics.changeProcessDuration.WithLabelValues(instance).Observe(float64(time.Since(now).Seconds()))
+			gerritMetrics.changeProcessDuration.WithLabelValues(instance, project).Observe(float64(time.Since(now).Seconds()))
 		}()
 
-		changes := c.gc.QueryChangesForInstance(instance, syncTime, c.config().Gerrit.RateLimit)
-		if len(changes) == 0 {
+		lastUpdate := now
+		if ins, ok := latest[instance]; ok {
+			if proj, ok := ins[project]; ok {
+				lastUpdate = proj
+			}
+		}
+		changes, err := c.gc.QueryChangesForProject(instance, project, lastUpdate, c.config().Gerrit.RateLimit)
+		if err != nil {
+			log.WithError(err).Warn("Failed query for new changes.")
 			return
 		}
-		log.WithFields(logrus.Fields{"instance": instance, "changes": len(changes)}).Info("Finished querying instance for changes")
+		if len(changes) == 0 {
+			log.Debug("No more new chnages. Skip.")
+			return
+		}
+		log.WithFields(logrus.Fields{"instance": instance, "changes": len(changes)}).Debug("Finished querying instance for changes.")
 
 		var wg sync.WaitGroup
 		wg.Add(len(changes))
@@ -264,27 +276,33 @@ func (c *Controller) Sync() {
 		c.tracker.Update(latest)
 	}
 
-	for instance := range c.config().Gerrit.OrgReposConfig.AllRepos() {
-		if _, ok := c.instancesWithWorker[instance]; ok {
-			// The work thread of already up for this instance, nothing needs
-			// to be done.
-			continue
-		}
-		c.instancesWithWorker[instance] = true
-
-		// First time see this instance, spin up a worker thread for it
-		logrus.WithField("instance", instance).Info("Start worker for instance.")
-		go func(instance string) {
-			previousRun := time.Now()
-			for {
-				timeDiff := time.Until(previousRun.Add(c.config().Gerrit.TickInterval.Duration))
-				if timeDiff > 0 {
-					time.Sleep(timeDiff)
+	for instance, projectsConfig := range c.config().Gerrit.OrgReposConfig.AllRepos() {
+		for project := range projectsConfig {
+			if instanceWithWorker, ok := c.projectWithWorker[instance]; ok {
+				if _, ok := instanceWithWorker[project]; ok {
+					// The work thread of already up for this instance, nothing needs
+					// to be done.
+					continue
+				} else {
+					c.projectWithWorker[instance] = make(map[string]bool)
 				}
-				previousRun = time.Now()
-				processSingleInstance(instance)
+				c.projectWithWorker[instance][project] = true
+
+				// First time see this instance, spin up a worker thread for it
+				logrus.WithFields(logrus.Fields{"host": instance, "project": project}).Info("Start worker for project.")
+				go func(instance, project string) {
+					previousRun := time.Now()
+					for {
+						timeDiff := time.Until(previousRun.Add(c.config().Gerrit.TickInterval.Duration))
+						if timeDiff > 0 {
+							time.Sleep(timeDiff)
+						}
+						previousRun = time.Now()
+						processSingleProject(instance, project)
+					}
+				}(instance, project)
 			}
-		}(instance)
+		}
 	}
 }
 
