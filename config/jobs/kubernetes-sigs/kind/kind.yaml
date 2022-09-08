@@ -1,5 +1,5 @@
 periodics:
-- name: ci-kind-test
+- name: ci-kind-unit-test
   interval: 6h
   decorate: true
   extra_refs:
