@@ -72,7 +72,7 @@ presubmits:
         - make
         - image-build
         env:
-          name: IMAGE_BUILD_CMD
+        - name: IMAGE_BUILD_CMD
           value: "/buildx-entrypoint build"
   - name: pull-kueue-build-image-release-0-1-and-release-0-2
     always_run: true
