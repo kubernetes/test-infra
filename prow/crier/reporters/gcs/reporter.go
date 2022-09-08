@@ -138,12 +138,12 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 		return fmt.Errorf("failed to marshal started metadata: %w", err)
 	}
 
-	// Overwrite if it was uploaded by crier and there might be something new
-	var opts []io.WriterOptions
-	if existing {
-		opts = append(opts, io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(false)})
-	}
-	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)), output, opts...)
+	// Overwrite if it was uploaded by crier(existing) and there might be
+	// something new.
+	// Add a new var for better readability.
+	overwrite := existing
+	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)}
+	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)), output, overwriteOpt)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
@@ -173,7 +173,9 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload finished.json")
 		return nil
 	}
-	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile)), output)
+	//PreconditionDoesNotExist:true means create only when file not exist.
+	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(true)}
+	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile)), output, overwriteOpt)
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {

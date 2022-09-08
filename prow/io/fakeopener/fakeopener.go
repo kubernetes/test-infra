@@ -65,10 +65,10 @@ func (fo *FakeOpener) Writer(ctx context.Context, path string, opts ...pkgio.Wri
 		fo.Buffer = make(map[string]*bytes.Buffer)
 	}
 
-	var overWrite bool
+	overWrite := true
 	for _, o := range opts {
-		if o.PreconditionDoesNotExist != nil && !*o.PreconditionDoesNotExist {
-			overWrite = true
+		if o.PreconditionDoesNotExist != nil && *o.PreconditionDoesNotExist {
+			overWrite = false
 			break
 		}
 	}
