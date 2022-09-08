@@ -254,7 +254,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-full-main
-  - name: pull-cluster-api-e2e-workload-upgrade-1-24-latest-main
+  - name: pull-cluster-api-e2e-workload-upgrade-1-25-latest-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -281,11 +281,11 @@ presubmits:
           - "./scripts/ci-e2e.sh"
         env:
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.24"
+            value: "stable-1.25"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.25"
+            value: "ci/latest-1.26"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.5.3-0"
+            value: "3.5.4-0"
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "v1.9.3"
           - name: GINKGO_FOCUS
@@ -298,49 +298,4 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-1-24-latest
-  - name: pull-cluster-api-e2e-workload-upgrade-1-21-1-22-main
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
-    optional: true
-    always_run: false
-    branches:
-    # The script this job runs is not in all branches.
-    - ^main$
-    path_alias: sigs.k8s.io/cluster-api
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    spec:
-      serviceAccountName: prowjob-default-sa
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-1.25
-        args:
-          - runner.sh
-          - "./scripts/ci-e2e.sh"
-        env:
-          - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.21"
-          - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "stable-1.22"
-          - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.5.3-0"
-          - name: COREDNS_VERSION_UPGRADE_TO
-            value: "v1.8.4"
-          - name: GINKGO_FOCUS
-            value: "\\[K8s-Upgrade\\]"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 7300m
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-1-21-1-22
+      testgrid-tab-name: capi-pr-e2e-main-1-25-latest
