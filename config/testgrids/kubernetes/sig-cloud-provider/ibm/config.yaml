@@ -7,12 +7,12 @@ dashboard_groups:
 dashboards:
 - name: ibm-conformance-ppc64le
   dashboard_tab:
-    - name: 'Periodic Conformance on ppc64le with containerd as runtime'
+    - name: Periodic Conformance on ppc64le with containerd as runtime
       description: Runs conformance tests using kubetest2 against latest kubernetes nightly release on ibm ppc64le architecture with containerd as runtime
       test_group_name: ppc64le-conformance-containerd
 - name: ibm-unit-tests-ppc64le
   dashboard_tab:
-    - name: 'Periodic unit test suite on ppc64le'
+    - name: Periodic unit test suite on ppc64le
       description: Runs unit tests on ibm ppc64le architecture
       test_group_name: ppc64le-unit
 

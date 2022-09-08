@@ -17,11 +17,11 @@ test_groups:
 dashboards:
 - name: google-gcp-guest
   dashboard_tab:
-  - name: OSConfig presubmits-gobuild
+  - name: OSConfig presubmits - gobuild
     test_group_name: gcp-guest-osconfig-presubmit-gobuild
-  - name: OSConfig presubmits-gotest
+  - name: OSConfig presubmits - gotest
     test_group_name: gcp-guest-osconfig-presubmit-gotest
-  - name: OSConfig presubmits-gocheck
+  - name: OSConfig presubmits - gocheck
     test_group_name: gcp-guest-osconfig-presubmit-gocheck
   - name: CIT periodics
     test_group_name: gcp-guest-cloud-image-tests
