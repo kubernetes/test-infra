@@ -130,11 +130,11 @@ periodics:
       - name: GINKGO_FOCUS
         value: "\\[clusterctl-Upgrade\\]"
       - name: INIT_WITH_BINARY
-        value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.1.0/clusterctl-{OS}-{ARCH}
+        value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.1.5/clusterctl-{OS}-{ARCH}
       - name: INIT_WITH_PROVIDERS_CONTRACT
         value: v1beta1
       - name: INIT_WITH_KUBERNETES_VERSION
-        value: v1.24.0
+        value: v1.25.0
 
       # we need privileged mode in order to do docker in docker
       securityContext:
