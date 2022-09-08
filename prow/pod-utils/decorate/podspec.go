@@ -508,44 +508,34 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	return &container, refs, cloneVolumes, nil
 }
 
-func processLog(log coreapi.VolumeMount, prefix string) string {
-	if prefix == "" {
-		return filepath.Join(log.MountPath, "process-log.txt")
-	}
-	return filepath.Join(log.MountPath, fmt.Sprintf("%s-log.txt", prefix))
+func processLogFilePath(log coreapi.VolumeMount, containerName string, singleContainer bool) string {
+	return filepath.Join(log.MountPath, downwardapi.LogFileRelPath(containerName, singleContainer))
 }
 
-func markerFile(log coreapi.VolumeMount, prefix string) string {
-	if prefix == "" {
-		return filepath.Join(log.MountPath, "marker-file.txt")
-	}
-	return filepath.Join(log.MountPath, fmt.Sprintf("%s-marker.txt", prefix))
+func markerFilePath(log coreapi.VolumeMount, containerName string, singleContainer bool) string {
+	return filepath.Join(log.MountPath, downwardapi.MarkerFileRelPath(containerName, singleContainer))
 }
 
-func metadataFile(log coreapi.VolumeMount, prefix string) string {
-	ad := artifactsDir(log)
-	if prefix == "" {
-		return filepath.Join(ad, "metadata.json")
-	}
-	return filepath.Join(ad, fmt.Sprintf("%s-metadata.json", prefix))
+func metadataFilePath(log coreapi.VolumeMount, containerName string, singleContainer bool) string {
+	return filepath.Join(log.MountPath, downwardapi.MetadataFileRelPath(containerName, singleContainer))
 }
 
 func artifactsDir(log coreapi.VolumeMount) string {
-	return filepath.Join(log.MountPath, "artifacts")
+	return filepath.Join(log.MountPath, downwardapi.ArtifactsDir())
 }
 
-func entrypointLocation(tools coreapi.VolumeMount) string {
-	return filepath.Join(tools.MountPath, "entrypoint")
+func entrypointLocation(log coreapi.VolumeMount) string {
+	return filepath.Join(log.MountPath, downwardapi.EntrypointLocation())
 }
 
 // InjectEntrypoint will make the entrypoint binary in the tools volume the container's entrypoint, which will output to the log volume.
-func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, prefix, previousMarker string, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
+func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, previousMarker string, singleContainer, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
 	wrapperOptions := &wrapper.Options{
 		Args:          append(c.Command, c.Args...),
 		ContainerName: c.Name,
-		ProcessLog:    processLog(log, prefix),
-		MarkerFile:    markerFile(log, prefix),
-		MetadataFile:  metadataFile(log, prefix),
+		ProcessLog:    processLogFilePath(log, c.Name, singleContainer),
+		MarkerFile:    markerFilePath(log, c.Name, singleContainer),
+		MetadataFile:  metadataFilePath(log, c.Name, singleContainer),
 	}
 	// TODO(fejta): use flags
 	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{
@@ -777,12 +767,9 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	var secretVolumeMounts []coreapi.VolumeMount
 	var wrappers []wrapper.Options
 
-	for i, container := range spec.Containers {
-		prefix := container.Name
-		if len(spec.Containers) == 1 {
-			prefix = ""
-		}
-		wrapperOptions, err := InjectEntrypoint(&spec.Containers[i], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
+	for i := range spec.Containers {
+		singleContainer := (len(spec.Containers) == 1)
+		wrapperOptions, err := InjectEntrypoint(&spec.Containers[i], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), previous, singleContainer, exitZero, logMount, toolsMount)
 		if err != nil {
 			return fmt.Errorf("wrap container: %w", err)
 		}

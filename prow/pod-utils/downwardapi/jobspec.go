@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"reflect"
 	"strconv"
 	"time"
@@ -255,4 +256,33 @@ func shaForRefs(refs prowv1.Refs, cloneRecords []clone.Record) string {
 		}
 	}
 	return ""
+}
+
+func LogFileRelPath(containerName string, singleContainer bool) string {
+	if singleContainer {
+		return "process-log.txt"
+	}
+	return fmt.Sprintf("%s-log.txt", containerName)
+}
+
+func MarkerFileRelPath(containerName string, singleContainer bool) string {
+	if singleContainer {
+		return "marker-file.txt"
+	}
+	return fmt.Sprintf("%s-marker.txt", containerName)
+}
+
+func MetadataFileRelPath(containerName string, singleContainer bool) string {
+	if singleContainer {
+		return path.Join(ArtifactsDir(), "metadata.json")
+	}
+	return path.Join(ArtifactsDir(), fmt.Sprintf("%s-metadata.json", containerName))
+}
+
+func ArtifactsDir() string {
+	return "artifacts"
+}
+
+func EntrypointLocation() string {
+	return "entrypoint"
 }

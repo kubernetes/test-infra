@@ -151,18 +151,6 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 	if !pj.Complete() {
 		return errors.New("cannot report finished.json for incomplete job")
 	}
-	completion := pj.Status.CompletionTime.Unix()
-	passed := pj.Status.State == prowv1.SuccessState
-	f := metadata.Finished{
-		Timestamp: &completion,
-		Passed:    &passed,
-		Metadata:  metadata.Metadata{"uploader": "crier"},
-		Result:    string(pj.Status.State),
-	}
-	output, err := json.MarshalIndent(f, "", "\t")
-	if err != nil {
-		return fmt.Errorf("failed to marshal finished metadata: %w", err)
-	}
 
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
@@ -173,6 +161,63 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload finished.json")
 		return nil
 	}
+
+	// Try to read existing finished.json, and no matter what has been uploaded
+	// before, there won't be anything better to be uploaded now, so skip if
+	// finished.json was already there.
+	var existingFinished metadata.Finished
+	content, err := io.ReadContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile)))
+	if err != nil {
+		if !io.IsNotExist(err) {
+			log.WithError(err).Warn("Failed to read finished.json.")
+		}
+	} else {
+		err = json.Unmarshal(content, &existingFinished)
+		if err != nil {
+			log.WithError(err).Warn("Failed to unmarshal finished.json.")
+		} else {
+			log.Debug("Already exist finished.json. Skip uploading")
+			return nil
+		}
+	}
+
+	finalMetaData := map[string]interface{}{}
+	if pj.Spec.PodSpec != nil { // This should not happened, but just in case.
+		for _, c := range pj.Spec.PodSpec.Containers {
+			metadataFileRelPath := downwardapi.MetadataFileRelPath(c.Name, len(pj.Spec.PodSpec.Containers) == 1)
+			content, err := io.ReadContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, metadataFileRelPath)))
+			if err != nil {
+				if !io.IsNotExist(err) {
+					log.WithError(err).WithField("name", metadataFileRelPath).Warn("Failed to read metadata file.")
+				}
+			} else {
+				tmp := map[string]interface{}{}
+				err = json.Unmarshal(content, &tmp)
+				if err != nil {
+					log.WithError(err).WithField("name", metadataFileRelPath).Warn("Failed to unmarshal metadata file.")
+				} else {
+					for key, val := range tmp {
+						finalMetaData[key] = val
+					}
+				}
+			}
+		}
+	}
+	finalMetaData["uploader"] = "crier"
+
+	completion := pj.Status.CompletionTime.Unix()
+	passed := pj.Status.State == prowv1.SuccessState
+	f := metadata.Finished{
+		Timestamp: &completion,
+		Passed:    &passed,
+		Metadata:  finalMetaData,
+		Result:    string(pj.Status.State),
+	}
+	output, err := json.MarshalIndent(f, "", "\t")
+	if err != nil {
+		return fmt.Errorf("failed to marshal finished metadata: %w", err)
+	}
+
 	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile)), output)
 }
 

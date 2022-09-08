@@ -19,7 +19,6 @@ package gcs
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -29,6 +28,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -47,42 +47,122 @@ func (ca fca) Config() *config.Config {
 	return &ca.c
 }
 
+func int64Ptr(val int64) *int64 {
+	return &val
+}
+
+func boolPtr(val bool) *bool {
+	return &val
+}
+
 func TestReportJobFinished(t *testing.T) {
 	completionTime := &metav1.Time{Time: time.Date(2010, 10, 10, 19, 00, 0, 0, time.UTC)}
 	tests := []struct {
+		name           string
 		jobState       prowv1.ProwJobState
 		completionTime *metav1.Time
-		passed         bool
+		metadataFiles  map[string]map[string]interface{}
+		exist          *metadata.Finished
+		expect         metadata.Finished
 		expectErr      bool
 	}{
 		{
+			name:      "trigger",
 			jobState:  prowv1.TriggeredState,
 			expectErr: true,
 		},
 		{
+			name:      "pending",
 			jobState:  prowv1.PendingState,
 			expectErr: true,
 		},
 		{
+			name:           "success",
 			jobState:       prowv1.SuccessState,
 			completionTime: completionTime,
-			passed:         true,
+			expect: metadata.Finished{
+				Timestamp: int64Ptr(completionTime.Unix()),
+				Passed:    boolPtr(true),
+				Result:    "success",
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
 		},
 		{
+			name:           "abort",
 			jobState:       prowv1.AbortedState,
 			completionTime: completionTime,
+			expect: metadata.Finished{
+				Timestamp: int64Ptr(completionTime.Unix()),
+				Passed:    boolPtr(false),
+				Result:    "aborted",
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
 		},
 		{
+			name:           "error",
 			jobState:       prowv1.ErrorState,
 			completionTime: completionTime,
+			expect: metadata.Finished{
+				Timestamp: int64Ptr(completionTime.Unix()),
+				Passed:    boolPtr(false),
+				Result:    "error",
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
 		},
 		{
+			name:           "failure",
 			jobState:       prowv1.FailureState,
 			completionTime: completionTime,
+			expect: metadata.Finished{
+				Timestamp: int64Ptr(completionTime.Unix()),
+				Passed:    boolPtr(false),
+				Result:    "failure",
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:           "already-exist",
+			jobState:       prowv1.FailureState,
+			completionTime: completionTime,
+			exist: &metadata.Finished{
+				Timestamp: int64Ptr(completionTime.Add(time.Hour).Unix()),
+				Passed:    boolPtr(false),
+				Result:    "failure",
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+			expect: metadata.Finished{
+				Timestamp: int64Ptr(completionTime.Add(time.Hour).Unix()),
+				Passed:    boolPtr(false),
+				Result:    "failure",
+				Metadata:  metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:           "metadata",
+			jobState:       prowv1.SuccessState,
+			completionTime: completionTime,
+			metadataFiles: map[string]map[string]interface{}{
+				"test1-metadata.json": {
+					"foo1": string("bar1"),
+				},
+				"test2-metadata.json": {
+					"foo2": string("bar2"),
+				},
+			},
+			expect: metadata.Finished{
+				Timestamp: int64Ptr(completionTime.Unix()),
+				Passed:    boolPtr(true),
+				Result:    "success",
+				Metadata: metadata.Metadata{
+					"uploader": string("crier"),
+					"foo1":     string("bar1"),
+					"foo2":     string("bar2"),
+				},
+			},
 		},
 	}
 	for _, tc := range tests {
-		t.Run(fmt.Sprintf("report %s job", tc.jobState), func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 			cfg := fca{c: config.Config{
 				ProwConfig: config.ProwConfig{
@@ -100,6 +180,7 @@ func TestReportJobFinished(t *testing.T) {
 					},
 				},
 			}}.Config
+
 			fakeOpener := &fakeopener.FakeOpener{}
 			reporter := New(cfg, fakeOpener, false)
 
@@ -113,6 +194,16 @@ func TestReportJobFinished(t *testing.T) {
 					},
 					Agent: prowv1.KubernetesAgent,
 					Job:   "my-little-job",
+					PodSpec: &v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name: "test1",
+							},
+							{
+								Name: "test2",
+							},
+						},
+					},
 				},
 				Status: prowv1.ProwJobStatus{
 					State:          tc.jobState,
@@ -121,6 +212,28 @@ func TestReportJobFinished(t *testing.T) {
 					PodName:        "some-pod",
 					BuildID:        "123",
 				},
+			}
+
+			// Storage path decided by Prow
+			const subDir = "some-prefix/pr-logs/pull/test-infra/12345/my-little-job/123"
+
+			if tc.exist != nil {
+				content, err := json.Marshal(*tc.exist)
+				if err != nil {
+					t.Fatalf("Failed to marshal finished.json: %v", err)
+				}
+				if err := io.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), fakeOpener, providers.GCSStoragePath("kubernetes-jenkins", path.Join(subDir, "finished.json")), content); err != nil {
+					t.Fatalf("Failed creating started.json: %v", err)
+				}
+			}
+			for fp, val := range tc.metadataFiles {
+				content, err := json.Marshal(val)
+				if err != nil {
+					t.Fatalf("Failed to marshal %s: %v", fp, err)
+				}
+				if err := io.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), fakeOpener, providers.GCSStoragePath("kubernetes-jenkins", path.Join(subDir, "artifacts", fp)), content); err != nil {
+					t.Fatalf("Failed creating %s: %v", fp, err)
+				}
 			}
 
 			err := reporter.reportFinishedJob(ctx, logrus.NewEntry(logrus.StandardLogger()), pj)
@@ -133,29 +246,17 @@ func TestReportJobFinished(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			var content []byte
-			for path, buf := range fakeOpener.Buffer {
-				if strings.HasSuffix(path, prowv1.FinishedStatusFile) {
-					content, err = ioutil.ReadAll(buf)
-					if err != nil {
-						t.Fatalf("Failed reading content: %v", err)
-					}
-					break
-				}
+			content, err := io.ReadContent(ctx, logrus.WithContext(ctx), fakeOpener, providers.GCSStoragePath("kubernetes-jenkins", path.Join(subDir, "finished.json")))
+			if err != nil {
+				t.Fatalf("Failed reading started.json: %v", err)
 			}
+
 			var result metadata.Finished
 			if err := json.Unmarshal(content, &result); err != nil {
-				t.Errorf("Couldn't decode result as metadata.Finished: %v", err)
+				t.Fatalf("Couldn't decode result as metadata.Started: %v", err)
 			}
-			if result.Timestamp == nil {
-				t.Errorf("Expected finished.json timestamp to be %d, but it was nil", pj.Status.CompletionTime.Unix())
-			} else if *result.Timestamp != pj.Status.CompletionTime.Unix() {
-				t.Errorf("Expected finished.json timestamp to be %d, but got %d", pj.Status.CompletionTime.Unix(), *result.Timestamp)
-			}
-			if result.Passed == nil {
-				t.Errorf("Expected finished.json passed to be %v, but it was nil", tc.passed)
-			} else if *result.Passed != tc.passed {
-				t.Errorf("Expected finished.json passed to be %v, but got %v", tc.passed, *result.Passed)
+			if diff := cmp.Diff(tc.expect, result); diff != "" {
+				t.Fatalf("Started.json mismatch. Want(-), got(+):\n%s", diff)
 			}
 		})
 	}
