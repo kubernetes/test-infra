@@ -67,9 +67,8 @@ presubmits:
         securityContext:
           privileged: true
         command:
-        - runner.sh
-        args:
         - make
+        args:
         - image-build
         env:
         - name: IMAGE_BUILD_CMD
