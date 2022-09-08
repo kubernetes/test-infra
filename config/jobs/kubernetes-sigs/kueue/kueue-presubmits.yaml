@@ -63,16 +63,14 @@ presubmits:
     - ^release-0.2$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcb-docker-gcloud:v20220830-45cbff55bc
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
         securityContext:
           privileged: true
         command:
-        - make
+        - runner.sh
         args:
-        - image-build
-        env:
-        - name: IMAGE_BUILD_CMD
-          value: "/buildx-entrypoint build"
+        - make
+        - image-local-build
   - name: pull-kueue-build-image-release-0-1-and-release-0-2
     always_run: true
     decorate: true
