@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
       resources:
         limits:
           cpu: 4
@@ -71,7 +71,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220903-da891f21aa-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
       resources:
         limits:
           cpu: 4
