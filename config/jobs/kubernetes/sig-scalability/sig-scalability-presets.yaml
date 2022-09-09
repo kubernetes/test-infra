@@ -334,7 +334,3 @@ presets:
 - labels:
     preset-e2e-scalability-periodics-master: "true"
   env:
-  - name: CL2_WAIT_FOR_CONTROLLED_PODS_USE_EXACT_OPERATION_TIMEOUT
-    value: true
-  - name: CL2_RATE_LIMIT_POD_CREATION
-    value: false
