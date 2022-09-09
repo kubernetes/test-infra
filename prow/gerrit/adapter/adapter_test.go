@@ -294,7 +294,7 @@ func (s *fakeSync) Current() client.LastSyncState {
 	return s.val
 }
 
-func (s *fakeSync) Update(t client.LastSyncState) error {
+func (s *fakeSync) Update(t client.LastSyncState, force bool) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.val = t

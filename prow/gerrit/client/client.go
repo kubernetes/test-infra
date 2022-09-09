@@ -243,7 +243,7 @@ func (c *Client) applyGlobalConfigOnce(orgRepoConfigGetter func() *config.Gerrit
 		logrus.WithError(err).Error("Updating clients.")
 	}
 	if lastSyncTracker != nil {
-		if err := lastSyncTracker.update(orgReposConfig.AllRepos()); err != nil {
+		if err := lastSyncTracker.loadFromConfig(orgReposConfig.AllRepos()); err != nil {
 			logrus.WithError(err).Error("Syncing states.")
 		}
 	}

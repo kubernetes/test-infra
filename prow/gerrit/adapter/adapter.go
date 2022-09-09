@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -118,7 +119,7 @@ type Controller struct {
 
 type LastSyncTracker interface {
 	Current() client.LastSyncState
-	Update(client.LastSyncState) error
+	Update(state client.LastSyncState, force bool) error
 }
 
 // NewController returns a new gerrit controller client
@@ -135,9 +136,14 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		}
 	}
 	lastSyncTracker := client.NewSyncTime(lastSyncFallback, op, ctx)
+	// lastSyncTracker.Init(projects) loads previous stored states from GCS
 	if err := lastSyncTracker.Init(projects); err != nil {
 		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
 	}
+	// If we're interrupted, update the LastSyncState so that we do not
+	// re-process already-processed Gerrit events the next time we run.
+	interrupts.OnInterrupt(func() { lastSyncTracker.Update(client.LastSyncState{}, true) })
+
 	gerritClient, err := client.NewClient(client.ProjectsFlagToConfig(projects))
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
@@ -261,7 +267,7 @@ func (c *Controller) Sync() {
 		}
 		wg.Wait()
 		close(changeChan)
-		c.tracker.Update(latest)
+		c.tracker.Update(latest, false)
 	}
 
 	for instance := range c.config().Gerrit.OrgReposConfig.AllRepos() {

@@ -45,12 +45,15 @@ func (o fakeOpener) Writer(ctx context.Context, path string, _ ...io.WriterOptio
 }
 
 func TestSyncTime(t *testing.T) {
-
-	dir, err := ioutil.TempDir("", "fake-gerrit-value")
+	dir, err := ioutil.TempDir("", "test-sync-time")
 	if err != nil {
-		t.Fatalf("Could not create temp file: %v", err)
+		t.Fatalf("Failed creating temp dir: %v", err)
 	}
-	defer os.RemoveAll(dir)
+	t.Cleanup(func() {
+		if err := os.RemoveAll(dir); err != nil {
+			t.Logf("Failed removing temp dir '%s': %v. This is best effort so it should be fine.", dir, err)
+		}
+	})
 	path := filepath.Join(dir, "value.txt")
 	var noCreds string
 	ctx := context.Background()
@@ -59,11 +62,8 @@ func TestSyncTime(t *testing.T) {
 		t.Fatalf("Failed to create opener: %v", err)
 	}
 
-	st := SyncTime{
-		path:   path,
-		opener: open,
-		ctx:    ctx,
-	}
+	st := NewSyncTime(path, open, ctx)
+	st.uploadInterval = time.Microsecond * 10
 	testProjectsFlag := ProjectsFlag{"foo": []string{"bar"}}
 	now := time.Now()
 	if err := st.Init(testProjectsFlag); err != nil {
@@ -77,14 +77,14 @@ func TestSyncTime(t *testing.T) {
 	earlier := now.Add(-time.Hour)
 	later := now.Add(time.Hour)
 
-	if err := st.Update(LastSyncState{"foo": {"bar": earlier}}); err != nil {
+	if err := st.Update(LastSyncState{"foo": {"bar": earlier}}, true); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
 	if actual := st.Current()["foo"]["bar"]; !actual.Equal(cur) {
 		t.Errorf("Update(%v) should not have reduced value from %v, got %v", earlier, cur, actual)
 	}
 
-	if err := st.Update(LastSyncState{"foo": {"bar": later}}); err != nil {
+	if err := st.Update(LastSyncState{"foo": {"bar": later}}, true); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
 	if actual := st.Current()["foo"]["bar"]; !actual.After(cur) {
@@ -92,11 +92,9 @@ func TestSyncTime(t *testing.T) {
 	}
 
 	expected := later
-	st = SyncTime{
-		path:   path,
-		opener: open,
-		ctx:    ctx,
-	}
+	st = NewSyncTime(path, open, ctx)
+	st.uploadInterval = time.Microsecond * 10
+
 	if err := st.Init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
@@ -104,7 +102,7 @@ func TestSyncTime(t *testing.T) {
 		t.Errorf("init() failed to reload %v, got %v", expected, actual)
 	}
 	// Make sure update can work
-	if err := st.update(map[string]map[string]*config.GerritQueryFilter{"foo-updated": {"bar-updated": nil}}); err != nil {
+	if err := st.loadFromConfig(map[string]map[string]*config.GerritQueryFilter{"foo-updated": {"bar-updated": nil}}); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
 	{
@@ -116,11 +114,7 @@ func TestSyncTime(t *testing.T) {
 		}
 	}
 
-	st = SyncTime{
-		path:   path,
-		opener: fakeOpener{}, // return storage.ErrObjectNotExist on open
-		ctx:    ctx,
-	}
+	st = NewSyncTime(path, fakeOpener{}, ctx)
 	if err := st.Init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
@@ -132,7 +126,15 @@ func TestSyncTime(t *testing.T) {
 // TestSyncTimeThreadSafe ensures that the sync time can be updated threadsafe
 // without lock.
 func TestSyncTimeThreadSafe(t *testing.T) {
-	dir := t.TempDir()
+	dir, err := ioutil.TempDir("", "test-sync-time-thread-safe")
+	if err != nil {
+		t.Fatalf("Failed creating temp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.RemoveAll(dir); err != nil {
+			t.Logf("Failed removing temp dir '%s': %v. This is best effort so it should be fine.", dir, err)
+		}
+	})
 	path := filepath.Join(dir, "value.txt")
 	var noCreds string
 	ctx := context.Background()
@@ -141,11 +143,7 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 		t.Fatalf("Failed to create opener: %v", err)
 	}
 
-	st := SyncTime{
-		path:   path,
-		opener: open,
-		ctx:    ctx,
-	}
+	st := NewSyncTime(path, open, ctx)
 	testProjectsFlag := ProjectsFlag{
 		"foo1": []string{"bar1"},
 		"foo2": []string{"bar2"},
@@ -167,7 +165,7 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 			syncTime := st.Current()
 			latest := syncTime.DeepCopy()
 			latest["foo1"]["bar1"] = later
-			if err := st.Update(latest); err != nil {
+			if err := st.Update(latest, true); err != nil {
 				threadErr = fmt.Errorf("failed update: %v", err)
 			}
 		}()
@@ -177,7 +175,7 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 			syncTime := st.Current()
 			latest := syncTime.DeepCopy()
 			latest["foo2"]["bar2"] = later
-			if err := st.Update(latest); err != nil {
+			if err := st.Update(latest, true); err != nil {
 				threadErr = fmt.Errorf("failed update: %v", err)
 			}
 		}()
@@ -219,11 +217,7 @@ func TestNewProjectAddition(t *testing.T) {
 	}
 	testProjectsFlag := ProjectsFlag{"foo": []string{"bar"}, "qwe": []string{"qux"}}
 
-	st := SyncTime{
-		path:   path,
-		opener: open,
-		ctx:    ctx,
-	}
+	st := NewSyncTime(path, open, ctx)
 
 	if err := st.Init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
