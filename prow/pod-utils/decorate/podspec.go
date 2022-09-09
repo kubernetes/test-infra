@@ -27,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -813,6 +814,20 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 			spec.Containers[i].VolumeMounts = append(container.VolumeMounts, codeMount)
 		}
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
+	}
+
+	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest != nil && *pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest {
+		for i, container := range spec.Containers {
+			if container.Resources.Requests == nil {
+				continue
+			}
+			if val, ok := container.Resources.Requests[v1.ResourceMemory]; ok {
+				if spec.Containers[i].Resources.Limits == nil {
+					spec.Containers[i].Resources.Limits = make(v1.ResourceList)
+				}
+				spec.Containers[i].Resources.Limits[v1.ResourceMemory] = val
+			}
+		}
 	}
 
 	spec.Containers = append(spec.Containers, *sidecar)

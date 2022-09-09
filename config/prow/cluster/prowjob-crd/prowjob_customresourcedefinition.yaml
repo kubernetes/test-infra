@@ -360,6 +360,10 @@ spec:
                     description: S3CredentialsSecret is the name of the Kubernetes
                       secret that holds blob storage push credentials.
                     type: string
+                  set_limit_equals_memory_request:
+                    description: SetLimitEqualsMemoryRequest sets memory limit equal
+                      to request.
+                    type: boolean
                   skip_cloning:
                     description: SkipCloning determines if we should clone source
                       code in the initcontainers for jobs that specify refs
