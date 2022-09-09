@@ -106,6 +106,7 @@ periodics:
       - --metadata-sources=cl2-metadata.json
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=CL2_DELETE_TEST_THROUGHPUT=50
+      - --env=CL2_RATE_LIMIT_POD_CREATION=false
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
