@@ -78,6 +78,20 @@ func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 				kubeconfigDir: configDir,
 			},
 		},
+		{
+			name: "kubeconfigSuffix can be set",
+			kubernetes: &KubernetesOptions{
+				kubeconfigDir:    configDir,
+				kubeconfigSuffix: "suffix",
+			},
+		},
+		{
+			name: "kubeconfigSuffix must be used with kubeconfigDir",
+			kubernetes: &KubernetesOptions{
+				kubeconfigSuffix: "suffix",
+			},
+			expectedErr: true,
+		},
 	}
 
 	for _, testCase := range testCases {
