@@ -19,8 +19,12 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # Install utilities and dependencies
+#
+# Terraform requires `git` to be on the PATH for downloading modules from
+# GitHub.
 RUN apk update && apk add --no-cache \
     bash \
+    git \
     python3 \
     make \
     rsync \
