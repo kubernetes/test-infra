@@ -46,8 +46,8 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            cpu: 2000m
+         requests:
+          cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-1-22-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
@@ -86,8 +86,8 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
+        resources:
+         requests:
           # these are both a bit below peak usage during build
           # this is mostly for building kubernetes
           memory: "9000Mi"
@@ -137,8 +137,8 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            cpu: 2000m
+         requests:
+          cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-1-23-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
@@ -177,8 +177,8 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
+        resources:
+         requests:
           # these are both a bit below peak usage during build
           # this is mostly for building kubernetes
           memory: "9000Mi"
@@ -227,8 +227,8 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
+        resources:
+         requests:
           # these are both a bit below peak usage during build
           # this is mostly for building kubernetes
           memory: "9000Mi"
@@ -272,8 +272,8 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
+        resources:
+         requests:
           # these are both a bit below peak usage during build
           # this is mostly for building kubernetes
           memory: "9000Mi"
@@ -323,8 +323,8 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            cpu: 2000m
+         requests:
+          cpu: 2000m
   - name: pull-kubernetes-csi-node-driver-registrar-unit
     always_run: true
     decorate: true
@@ -352,8 +352,8 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
+        resources:
+         requests:
           # these are both a bit below peak usage during build
           # this is mostly for building kubernetes
           memory: "9000Mi"

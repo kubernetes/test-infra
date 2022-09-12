@@ -27,8 +27,8 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            cpu: 2000m
+         requests:
+          cpu: 2000m
   - name: pull-kubernetes-csi-release-tools-csi-test
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -47,7 +47,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-csi-test
-      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-test, using deployment 1.22 on Kubernetes 1.22
+      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-test, using deployment 1.23 on Kubernetes 1.23
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -60,8 +60,8 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            cpu: 2000m
+         requests:
+          cpu: 2000m
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
@@ -83,7 +83,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-external-provisioner
-      description: Kubernetes-CSI pull job in repo csi-release-tools for external-provisioner, using deployment 1.22 on Kubernetes 1.22
+      description: Kubernetes-CSI pull job in repo csi-release-tools for external-provisioner, using deployment 1.23 on Kubernetes 1.23
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -96,15 +96,15 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            cpu: 2000m
+         requests:
+          cpu: 2000m
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
+          value: "1.23.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
+          value: "1.23"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.8.0"
         - name: CSI_PROW_TESTS
@@ -129,7 +129,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-external-snapshotter
-      description: Kubernetes-CSI pull job in repo csi-release-tools for external-snapshotter, using deployment 1.22 on Kubernetes 1.22
+      description: Kubernetes-CSI pull job in repo csi-release-tools for external-snapshotter, using deployment 1.23 on Kubernetes 1.23
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -142,15 +142,15 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            cpu: 2000m
+         requests:
+          cpu: 2000m
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
+          value: "1.23.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
+          value: "1.23"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.8.0"
         - name: CSI_PROW_TESTS
@@ -175,7 +175,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-csi-driver-host-path
-      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-driver-host-path, using deployment 1.22 on Kubernetes 1.22
+      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-driver-host-path, using deployment 1.23 on Kubernetes 1.23
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
@@ -188,15 +188,15 @@ presubmits:
         securityContext:
           privileged: true
         resources:
-          requests:
-            cpu: 2000m
+         requests:
+          cpu: 2000m
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
+          value: "1.23.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
+          value: "1.23"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.8.0"
         - name: CSI_PROW_TESTS
