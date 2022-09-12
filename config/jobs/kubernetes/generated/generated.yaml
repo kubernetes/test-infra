@@ -67,21 +67,14 @@ periodics:
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
-      resources:
+      resources: &id001
         requests:
-          cpu: 1000m
-          memory: 3Gi
+          cpu: 2000m
+          memory: 6Gi
         limits:
-          cpu: 1000m
-          memory: 3Gi
+          cpu: 2000m
+          memory: 6Gi
   cluster: k8s-infra-prow-build
-  resources: &id001
-    requests:
-      cpu: 2000m
-      memory: 6Gi
-    limits:
-      cpu: 2000m
-      memory: 6Gi
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-default
     testgrid-dashboards: sig-release-1.25-blocking
@@ -221,21 +214,14 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
-      resources:
+      resources: &id002
         requests:
           cpu: 1000m
-          memory: 3Gi
+          memory: 6Gi
         limits:
           cpu: 1000m
-          memory: 3Gi
+          memory: 6Gi
   cluster: k8s-infra-prow-build
-  resources: &id002
-    requests:
-      cpu: 1000m
-      memory: 6Gi
-    limits:
-      cpu: 1000m
-      memory: 6Gi
   annotations:
     testgrid-tab-name: gce-cos-k8sbeta-slow
     testgrid-dashboards: sig-release-1.25-informing
@@ -308,15 +294,8 @@ periodics:
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
-      resources:
-        requests:
-          cpu: 1000m
-          memory: 3Gi
-        limits:
-          cpu: 1000m
-          memory: 3Gi
+      resources: *id001
   cluster: k8s-infra-prow-build
-  resources: *id001
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-default
     testgrid-dashboards: sig-release-1.24-blocking
@@ -457,15 +436,8 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
-      resources:
-        requests:
-          cpu: 1000m
-          memory: 3Gi
-        limits:
-          cpu: 1000m
-          memory: 3Gi
+      resources: *id002
   cluster: k8s-infra-prow-build
-  resources: *id002
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-slow
     testgrid-dashboards: sig-release-1.24-informing
@@ -537,15 +509,8 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
-      resources:
-        requests:
-          cpu: 1000m
-          memory: 3Gi
-        limits:
-          cpu: 1000m
-          memory: 3Gi
+      resources: *id001
   cluster: k8s-infra-prow-build
-  resources: *id001
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-default
     testgrid-dashboards: sig-release-1.23-blocking
@@ -686,15 +651,8 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
-      resources:
-        requests:
-          cpu: 1000m
-          memory: 3Gi
-        limits:
-          cpu: 1000m
-          memory: 3Gi
+      resources: *id002
   cluster: k8s-infra-prow-build
-  resources: *id002
   annotations:
     testgrid-tab-name: gce-cos-k8sstable2-slow
     testgrid-dashboards: sig-release-1.23-informing
@@ -772,19 +730,12 @@ periodics:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
       resources:
         requests:
-          cpu: 1000m
-          memory: 3Gi
+          cpu: 2000m
+          memory: 6Gi
         limits:
-          cpu: 1000m
-          memory: 3Gi
+          cpu: 2000m
+          memory: 6Gi
   cluster: k8s-infra-prow-build
-  resources:
-    requests:
-      cpu: 2000m
-      memory: 6Gi
-    limits:
-      cpu: 2000m
-      memory: 6Gi
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-betaapis
     testgrid-dashboards: sig-release-1.22-blocking
@@ -814,15 +765,8 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
-      resources:
-        requests:
-          cpu: 1000m
-          memory: 3Gi
-        limits:
-          cpu: 1000m
-          memory: 3Gi
+      resources: *id001
   cluster: k8s-infra-prow-build
-  resources: *id001
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-default
     testgrid-dashboards: sig-release-1.22-blocking
@@ -963,15 +907,8 @@ periodics:
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
-      resources:
-        requests:
-          cpu: 1000m
-          memory: 3Gi
-        limits:
-          cpu: 1000m
-          memory: 3Gi
+      resources: *id002
   cluster: k8s-infra-prow-build
-  resources: *id002
   annotations:
     testgrid-tab-name: gce-cos-k8sstable3-slow
     testgrid-dashboards: sig-release-1.22-informing
