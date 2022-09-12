@@ -484,67 +484,51 @@ repo_milestone:
     # You can curl the following endpoint in order to determine the github ID of your team
     # responsible for maintaining the milestones. You may need to specify the page number.
     # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams?page=N"
-    maintainers_id: 2460384
     maintainers_team: milestone-maintainers
     maintainers_friendly_name: Milestone Maintainers Team
   kubernetes-sigs/controller-runtime:
-    maintainers_id: 2785806
     maintainers_team: controller-runtime-maintainers
     maintainers_friendly_name: Controller Runtime Maintainers
   kubernetes-sigs/cluster-api:
-    maintainers_id: 3058957
     maintainers_team: cluster-api-maintainers
     maintainers_friendly_name: Cluster API Maintainers
   kubernetes-sigs/cluster-api-provider-aws:
-    maintainers_id: 2830895
     maintainers_team: cluster-api-provider-aws-maintainers
     maintainers_friendly_name: Cluster API Provider AWS Maintainers
   kubernetes-sigs/cluster-api-provider-azure:
-    maintainers_id: 3063852
     maintainers_team: cluster-api-provider-azure-maintainers
     maintainers_friendly_name: Cluster API Provider Azure Maintainers
   kubernetes-sigs/cluster-api-provider-digitalocean:
-    maintainers_id: 2978501
     maintainers_team: cluster-api-provider-digitalocean-maintainers
     maintainers_friendly_name: Cluster API Provider DigitalOcean Maintainers
   kubernetes-sigs/cluster-api-provider-gcp:
-    maintainers_id: 2829767
     maintainers_team: cluster-api-provider-gcp-maintainers
     maintainers_friendly_name: Cluster API Provider GCP Maintainers
   kubernetes-sigs/cluster-api-provider-nested:
-    maintainers_id: 4158805
     maintainers_team: cluster-api-provider-nested-maintainers
     maintainers_friendly_name: Cluster API Provider Nested Maintainers
   kubernetes-sigs/cluster-api-provider-vsphere:
-    maintainers_id: 2850058
     maintainers_team: cluster-api-provider-vsphere-maintainers
     maintainers_friendly_name: Cluster API Provider vSphere Maintainers
   kubernetes/community:
-    maintainers_id: 3169231
     maintainers_team: community-milestone-maintainers
     maintainers_friendly_name: Community Milestone Maintainers
   kubernetes/kops:
-    maintainers_id: 2060651
     maintainers_team: kops-maintainers
     maintainers_friendly_name: Kops Maintainers
   kubernetes/ingress-nginx:
-    maintainers_id: 2179129
     maintainers_team: ingress-nginx-maintainers
     maintainers_friendly_name: Ingress Nginx Maintainers
   kubernetes/org:
-    maintainers_id: 2842373
     maintainers_team: owners
     maintainers_friendly_name: GitHub Admin Team
   kubernetes/website:
-    maintainers_id: 3175912
     maintainers_team: website-milestone-maintainers
     maintainers_friendly_name: Website milestone maintainers
   kubernetes/kubeadm:
-    maintainers_id: 2195382
     maintainers_team: kubeadm-maintainers
     maintainers_friendly_name: Kubeadm maintainers
   kubernetes-sigs/kubebuilder:
-    maintainers_id: 2688053
     maintainers_team: kubebuilder-maintainers
     maintainers_friendly_name: Kubebuilder Maintainers
 
