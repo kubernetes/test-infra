@@ -23,7 +23,7 @@ presubmits:
       description: "make sure each PR to kernel-module-management has a single commit."
     spec:
       containers:
-      - image: gcr.io/k8s-prow/git:latest
+      - image: docker.io/bitnami/git
         command:
         - ci/prow/check-commits-count
   - name: pull-kernel-module-management-lint
