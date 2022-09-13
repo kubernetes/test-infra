@@ -7,7 +7,7 @@ periodics:
     annotations:
       testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
-      testgrid-num-failures-to-alert: '1'
+      testgrid-num-failures-to-alert: "1"
     extra_refs:
       - org: kubernetes
         repo: k8s.io
@@ -21,12 +21,17 @@ periodics:
     spec:
       serviceAccountName: s3-sync
       containers:
-        - name: aws-cli
-          image: amazon/aws-cli:latest
+        - name: s3-sync
+          image: gcr.io/k8s-staging-infra-tools/k8s-infra@sha256:48fb967be4c36da551584c3004330c7ce37568e4226ea7233eeb08c979374bc6
           command:
             - /bin/bash
             - -c
-            - "aws sts get-caller-identity"
+            - |
+              aws sts get-caller-identity
+              git clone https://github.com/kubernetes/k8s.io /tmp/workspace/kubernetes/k8s.io
+              cd /tmp/workspace/kubernetes/k8s.io/registry.k8s.io
+              echo "initiating a sync between GCS and S3..."
+              ./hack/initial-copy-to-s3.sh
           env:
             - name: AWS_ROLE_ARN
               value: arn:aws:iam::513428760722:role/registry.k8s.io_s3writer
@@ -43,7 +48,7 @@ periodics:
           projected:
             defaultMode: 420
             sources:
-            - serviceAccountToken:
-                audience: sts.amazonaws.com
-                expirationSeconds: 86400
-                path: token
+              - serviceAccountToken:
+                  audience: sts.amazonaws.com
+                  expirationSeconds: 86400
+                  path: token
