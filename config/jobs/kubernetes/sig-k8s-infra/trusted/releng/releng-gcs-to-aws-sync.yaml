@@ -22,7 +22,7 @@ periodics:
       serviceAccountName: s3-sync
       containers:
         - name: s3-sync
-          image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+          image: gcr.io/k8s-staging-infra-tools/k8s-infra@sha256:48fb967be4c36da551584c3004330c7ce37568e4226ea7233eeb08c979374bc6
           command:
             - /bin/bash
             - -c
