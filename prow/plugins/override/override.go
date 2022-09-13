@@ -304,6 +304,21 @@ type descriptionAndState struct {
 	state       string
 }
 
+// Parses /override foo something
+func parseOverrideInput(in string) []string {
+	// This func does the following:
+	// return ["tide"] when tide is passed
+	// return ["foo","bar"] when foo bar is passed
+	// return ["style / Lint"] "style / Lint" is passed
+	if regexp.MustCompile(`^\"(.+)\"$`).MatchString(in) {
+		// we need to strip the quotes
+		s := in[1 : len(in)-1]
+		return []string{s}
+	} else {
+		return strings.Fields(in)
+	}
+}
+
 func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent, options plugins.Override) error {
 
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
@@ -326,13 +341,8 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 			resp := "/override requires failed status contexts to operate on, but none was given"
 			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
-		} else if regexp.MustCompile(`^\"(.+)\"$`).MatchString(m[2]) {
-			// We are looking for a single quoted context/checkrun. GHA checkruns have spaces and / and are quoted.
-			s := m[2][1 : len(m[2])-1]
-			overrides.Insert(s)
-			break
 		}
-		overrides.Insert(strings.Fields(m[2])...)
+		overrides.Insert(parseOverrideInput(m[2])...)
 	}
 
 	authorized := authorizedUser(oc, log, org, repo, user)
