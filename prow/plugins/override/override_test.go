@@ -412,7 +412,7 @@ func TestHandle(t *testing.T) {
 		},
 		{
 			name:    "successfully override unknown context with special characters derived from checkruns",
-			comment: `/override "test / Unit Tests"`,
+			comment: `/override potato "test / Unit Tests"`,
 			checkruns: &github.CheckRunList{
 				CheckRuns: []github.CheckRun{
 					{Name: "incomplete-checkrun"},
@@ -1138,6 +1138,7 @@ func TestHandle(t *testing.T) {
 	}
 
 	log := logrus.WithField("plugin", pluginName)
+	log.Logger.SetLevel(logrus.DebugLevel)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.number == 0 {
@@ -1328,6 +1329,7 @@ func TestAuthorizedGitHubTeamMember(t *testing.T) {
 		},
 	}
 	log := logrus.WithField("plugin", pluginName)
+	log.Logger.SetLevel(logrus.DebugLevel)
 	for _, tc := range cases {
 		authorized := authorizedGitHubTeamMember(&fakeClient{}, log, tc.slugs, fakeOrg, fakeRepo, tc.user)
 		if authorized != tc.expected {
