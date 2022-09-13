@@ -183,10 +183,10 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/override [context1] [context2]",
-		Description: "Forces github status contexts to green (multiple can be given).",
+		Description: "Forces github status contexts to green (multiple can be given). If the desired context has spaces, it must be quoted.",
 		Featured:    false,
 		WhoCanUse:   whoCanUse(overrideConfig, "", ""),
-		Examples:    []string{"/override pull-repo-whatever", "/override ci/circleci", "/override deleted-job other-job"},
+		Examples:    []string{"/override pull-repo-whatever", "/override \"test / Unit Tests\"", "/override ci/circleci", "/override deleted-job other-job"},
 	})
 	return pluginHelp, nil
 }
@@ -326,6 +326,11 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 			resp := "/override requires failed status contexts to operate on, but none was given"
 			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		} else if regexp.MustCompile(`^\"(.+)\"$`).MatchString(m[2]) {
+			// We are looking for a single quoted context/checkrun. GHA checkruns have spaces and / and are quoted.
+			s := m[2][1 : len(m[2])-1]
+			overrides.Insert(s)
+			break
 		}
 		overrides.Insert(strings.Fields(m[2])...)
 	}
@@ -447,7 +452,10 @@ The following unknown contexts/checkruns were given:
 %s
 
 Only the following failed contexts/checkruns were expected:
-%s`, formatList(unknown.List()), formatList(contexts.List()))
+%s
+
+If you are trying to override a checkrun that has a space in it, you must put a double quote on the context.
+`, formatList(unknown.List()), formatList(contexts.List()))
 		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
