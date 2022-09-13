@@ -246,3 +246,33 @@ periodics:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-blocking
     testgrid-tab-name: git-repo-kubernetes-fast-forward
+
+- interval: 12h
+  name: ci-patch-release-notify
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+  spec:
+    serviceAccountName: gcb-builder
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+      command:
+        - /run.sh
+      args:
+        - --project=k8s-releng-prod
+        - --scratch-bucket=gs://k8s-releng-prod-gcb
+        - --env-passthrough=PULL_BASE_REF
+        - --gcb-config=/home/prow/go/src/github.com/release/gcb/patch-notify/cloudbuild.yaml
+        - --with-git-dir
+        - .
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: git-repo-kubernetes-patch-release-notify
