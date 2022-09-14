@@ -183,10 +183,10 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/override [context1] [context2]",
-		Description: "Forces github status contexts to green (multiple can be given).",
+		Description: "Forces github status contexts to green (multiple can be given). If the desired context has spaces, it must be quoted.",
 		Featured:    false,
 		WhoCanUse:   whoCanUse(overrideConfig, "", ""),
-		Examples:    []string{"/override pull-repo-whatever", "/override ci/circleci", "/override deleted-job other-job"},
+		Examples:    []string{"/override pull-repo-whatever", "/override \"test / Unit Tests\"", "/override ci/circleci", "/override deleted-job other-job"},
 	})
 	return pluginHelp, nil
 }
@@ -304,6 +304,23 @@ type descriptionAndState struct {
 	state       string
 }
 
+// Parses /override foo something
+func parseOverrideInput(in string) []string {
+	quoted := false
+	f := strings.FieldsFunc(in, func(r rune) bool {
+		if r == '"' {
+			quoted = !quoted
+		}
+		return !quoted && r == ' '
+	})
+	var retval []string
+	for _, val := range f {
+		retval = append(retval, strings.Trim(strings.TrimSpace(val), `"`))
+	}
+
+	return retval
+}
+
 func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent, options plugins.Override) error {
 
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
@@ -327,7 +344,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
-		overrides.Insert(strings.Fields(m[2])...)
+		overrides.Insert(parseOverrideInput(m[2])...)
 	}
 
 	authorized := authorizedUser(oc, log, org, repo, user)
@@ -447,7 +464,10 @@ The following unknown contexts/checkruns were given:
 %s
 
 Only the following failed contexts/checkruns were expected:
-%s`, formatList(unknown.List()), formatList(contexts.List()))
+%s
+
+If you are trying to override a checkrun that has a space in it, you must put a double quote on the context.
+`, formatList(unknown.List()), formatList(contexts.List()))
 		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}

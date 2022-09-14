@@ -411,6 +411,71 @@ func TestHandle(t *testing.T) {
 			usesAppsAuth: true,
 		},
 		{
+			name:    "successfully override unknown context with special characters derived from checkruns",
+			comment: `/override "test / Unit Tests"`,
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Conclusion: "failure"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Status: "completed", Conclusion: "success", Output: github.CheckRunOutput{
+						Title:   fmt.Sprintf("Prow override - %s", "test / Unit Tests"),
+						Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", "test / Unit Tests"),
+					}},
+				},
+			},
+			usesAppsAuth: true,
+		},
+		{
+			name:    "successfully override a mix of checkruns and prowjobs",
+			comment: `/override broken-test "test / Unit Tests" hung-test`,
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			contexts: []github.Status{
+				{
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+				{
+					Context: "hung-test",
+					State:   github.StatusPending,
+				},
+			},
+			expected: []github.Status{
+				{
+					Context:     "broken-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+				{
+					Context:     "hung-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Conclusion: "failure"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Status: "completed", Conclusion: "success", Output: github.CheckRunOutput{
+						Title:   fmt.Sprintf("Prow override - %s", "test / Unit Tests"),
+						Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", "test / Unit Tests"),
+					}},
+				},
+			},
+			usesAppsAuth: true,
+		},
+		{
 			name:    "override a successful unknown context derived from checkruns",
 			comment: "/override success-checkrun",
 			checkruns: &github.CheckRunList{
@@ -1116,6 +1181,7 @@ func TestHandle(t *testing.T) {
 	}
 
 	log := logrus.WithField("plugin", pluginName)
+	log.Logger.SetLevel(logrus.DebugLevel)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.number == 0 {
@@ -1306,6 +1372,7 @@ func TestAuthorizedGitHubTeamMember(t *testing.T) {
 		},
 	}
 	log := logrus.WithField("plugin", pluginName)
+	log.Logger.SetLevel(logrus.DebugLevel)
 	for _, tc := range cases {
 		authorized := authorizedGitHubTeamMember(&fakeClient{}, log, tc.slugs, fakeOrg, fakeRepo, tc.user)
 		if authorized != tc.expected {
