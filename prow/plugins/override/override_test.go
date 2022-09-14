@@ -412,7 +412,7 @@ func TestHandle(t *testing.T) {
 		},
 		{
 			name:    "successfully override unknown context with special characters derived from checkruns",
-			comment: `/override potato "test / Unit Tests"`,
+			comment: `/override "test / Unit Tests"`,
 			checkruns: &github.CheckRunList{
 				CheckRuns: []github.CheckRun{
 					{Name: "incomplete-checkrun"},
@@ -420,6 +420,49 @@ func TestHandle(t *testing.T) {
 				},
 			},
 			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Conclusion: "failure"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Status: "completed", Conclusion: "success", Output: github.CheckRunOutput{
+						Title:   fmt.Sprintf("Prow override - %s", "test / Unit Tests"),
+						Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", "test / Unit Tests"),
+					}},
+				},
+			},
+			usesAppsAuth: true,
+		},
+		{
+			name:    "successfully override a mix of checkruns and prowjobs",
+			comment: `/override broken-test "test / Unit Tests" hung-test`,
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "test / Unit Tests", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			contexts: []github.Status{
+				{
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+				{
+					Context: "hung-test",
+					State:   github.StatusPending,
+				},
+			},
+			expected: []github.Status{
+				{
+					Context:     "broken-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+				{
+					Context:     "hung-test",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
 			expectedCheckRuns: &github.CheckRunList{
 				CheckRuns: []github.CheckRun{
 					{Name: "incomplete-checkrun"},

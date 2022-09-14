@@ -305,23 +305,25 @@ type descriptionAndState struct {
 }
 
 // Parses /override foo something
-func parseOverrideInput(in string) string {
+func parseOverrideInput(in string) []string {
+	quoted := false
 	f := strings.FieldsFunc(in, func(r rune) bool {
-		quoted := false
 		if r == '"' {
 			quoted = !quoted
 		}
 		return !quoted && r == ' '
 	})
-	return strings.Join(f, " ")
+	retval := []string{}
+	for _, val := range f {
+		if val[0:1] == `"` {
+			retval = append(retval, val[1:len(val)-1])
+			fmt.Println(val[1 : len(val)-1])
+		} else {
+			retval = append(retval, strings.TrimRight(val, "\r"))
+		}
+	}
 
-	// if regexp.MustCompile(`^\"(.+)\"$`).MatchString(in) {
-	// 	// we need to strip the quotes
-	// 	s := in[1 : len(in)-1]
-	// 	return []string{s}
-	// } else {
-	// 	return strings.Fields(in)
-	// }
+	return retval
 }
 
 func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent, options plugins.Override) error {
@@ -347,7 +349,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
-		overrides.Insert(parseOverrideInput(m[2]))
+		overrides.Insert(parseOverrideInput(m[2])...)
 		log.Infof("PARSING: %v", parseOverrideInput(m[2]))
 	}
 
