@@ -101,6 +101,9 @@ presubmits:
       description: Checks for API changes in the PR
 
   - name: pull-cluster-api-provider-vsphere-verify-lint
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
     always_run: false
     run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/check-lint\.sh)'
     decorate: true
@@ -172,6 +175,9 @@ presubmits:
       description: Verifies the CRDs have been updated
 
   - name: pull-cluster-api-provider-vsphere-test
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
     always_run: false
     run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum)'
     decorate: true
@@ -229,7 +235,6 @@ presubmits:
   - name: pull-cluster-api-provider-vsphere-e2e
     branches:
       - ^main$
-      - ^release-1.*
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
