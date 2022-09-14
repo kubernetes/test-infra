@@ -19,11 +19,12 @@ package integration
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	coreapi "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -145,7 +146,7 @@ presubmits:
 		name       string
 		repoSetups []fakegitserver.RepoSetup
 		msg        fakepubsub.PubSubMessageForSub
-		expected   string
+		expected   []string
 	}{
 		{
 			name: "staticconfig-postsubmit",
@@ -171,9 +172,7 @@ presubmits:
 					},
 				},
 			},
-			expected: `hello from trigger-postsubmit-via-pubsub1
-this-is-from-repo1
-`,
+			expected: []string{Repo1HEADsha},
 		},
 		{
 			name: "inrepoconfig-presubmit2-explicit-cloneuri",
@@ -216,9 +215,7 @@ this-is-from-repo1
 					},
 				},
 			},
-			expected: `hello from trigger-inrepoconfig-presubmit-via-pubsub-repo2
-this-is-from-repo2
-`,
+			expected: []string{Repo2HEADsha, Repo2PR1sha, Repo2PR2sha, Repo2PR3sha},
 		},
 		{
 			name: "inrepoconfig-presubmit3",
@@ -266,9 +263,7 @@ this-is-from-repo2
 					},
 				},
 			},
-			expected: `hello from trigger-inrepoconfig-presubmit-via-pubsub-repo3
-this-is-from-repo3
-`,
+			expected: []string{Repo3HEADsha, Repo3PR1sha, Repo3PR2sha, Repo3PR3sha},
 		},
 		{
 			name: "inrepoconfig-presubmit4-with-nested-directory",
@@ -311,9 +306,7 @@ this-is-from-repo3
 					},
 				},
 			},
-			expected: `hello from trigger-inrepoconfig-presubmit-via-pubsub-repo4
-this-is-from-repo4
-`,
+			expected: []string{Repo4HEADsha, Repo4PR1sha, Repo4PR2sha, Repo4PR3sha},
 		},
 		{
 			name: "inrepoconfig-presubmit5-with-clone-uri-in-job-definition",
@@ -351,9 +344,7 @@ this-is-from-repo4
 					},
 				},
 			},
-			expected: `hello from trigger-inrepoconfig-presubmit-via-pubsub-repo5
-this-is-from-repo5
-`,
+			expected: []string{Repo5HEADsha, Repo5PR1sha},
 		},
 	}
 
@@ -363,7 +354,6 @@ this-is-from-repo5
 	allRepoDirs := []string{}
 	for _, tt := range tests {
 		for _, repoSetup := range tt.repoSetups {
-
 			allRepoDirs = append(allRepoDirs, repoSetup.Name)
 		}
 	}
@@ -377,10 +367,7 @@ this-is-from-repo5
 			t.Parallel()
 
 			ctx := context.Background()
-
-			var prowjob prowjobv1.ProwJob
-			var prowjobList prowjobv1.ProwJobList
-			var podName *string
+			var pod *v1.Pod
 
 			clusterContext := getClusterContext()
 			t.Logf("Creating client for cluster: %s", clusterContext)
@@ -436,92 +423,77 @@ this-is-from-repo5
 			// tests more components (clonerefs, initupload, etc). In this
 			// sense, the tests here can be thought of as a superset of the
 			// TestClonerefs test in pod-utils_test.go.
-			expectJobSuccess := func() (bool, error) {
-				err = kubeClient.List(ctx, &prowjobList, ctrlruntimeclient.MatchingLabels{"integration-test/uid": uid})
+			//
+			// Kind is not super efficient in terms of pod scheduling, and it
+			// takes some time for a very basic prowjob to finish(It could take
+			// up to 60 seconds). So waiting for clonerefs to success instead of
+			// the entire job to save some time on integration test.
+			expectCloneSuccess := func() (bool, error) {
+				var podsList v1.PodList
+				err := kubeClient.List(ctx,
+					&podsList,
+					&ctrlruntimeclient.ListOptions{Namespace: "test-pods"},
+					ctrlruntimeclient.MatchingLabels{"integration-test/uid": uid},
+				)
 				if err != nil {
-					t.Logf("failed getting prow job with label: %s", uid)
+					t.Logf("failed listing pods with label: %s", uid)
 					return false, nil
 				}
-				if len(prowjobList.Items) != 1 {
-					t.Logf("unexpected number of matching prow jobs: %d", len(prowjobList.Items))
+				if len(podsList.Items) == 0 {
 					return false, nil
 				}
-				prowjob = prowjobList.Items[0]
-				// The pod name should match the job name (this is another UID,
-				// distinct from the uid we generated above).
-				podName = &prowjob.Name
-				switch prowjob.Status.State {
-				case prowjobv1.SuccessState:
-					got, err := getPodLogs(clientset, "test-pods", *podName, &coreapi.PodLogOptions{Container: "test"})
-					if err != nil {
-						t.Errorf("failed getting logs for clonerefs")
-						return false, nil
+				if len(podsList.Items) != 1 {
+					return false, fmt.Errorf("unexpected number of matching pods: %d", len(podsList.Items))
+				}
+				pod = &podsList.Items[0]
+				var finishedCloning bool
+				for _, container := range pod.Status.InitContainerStatuses {
+					if container.Name != "clonerefs" {
+						continue
 					}
-					if diff := cmp.Diff(got, tt.expected); diff != "" {
-						return false, fmt.Errorf("actual logs differ from expected: %s", diff)
+					if container.State.Terminated == nil {
+						continue
 					}
-					return true, nil
-				case prowjobv1.FailureState:
-					return false, fmt.Errorf("possible programmer error: prow job %s failed", *podName)
-				default:
-					return false, nil
+					finishedCloning = true
+					if exitCode := container.State.Terminated.ExitCode; exitCode != 0 {
+						return false, fmt.Errorf("clonerefs failed with code %d", exitCode)
+					}
 				}
+				return finishedCloning, nil
 			}
 
-			// This is also mostly copy/pasted from pod-utils_test.go. The logic
-			// here deals with the case where the test fails (where we want to
-			// log as much as possible to make it easier to see why a test
-			// failed), or when the test succeeds (where we clean up the ProwJob
-			// that was created by sub).
 			timeout := 90 * time.Second
 			pollInterval := 500 * time.Millisecond
-			if waitErr := wait.Poll(pollInterval, timeout, expectJobSuccess); waitErr != nil {
-				if podName == nil {
-					t.Fatal("could not find test pod")
-				}
-				// Retrieve logs from clonerefs.
-				podLogs, err := getPodLogs(clientset, "test-pods", *podName, &coreapi.PodLogOptions{Container: "clonerefs"})
-				if err != nil {
-					t.Errorf("failed getting logs for clonerefs")
-				}
-				t.Logf("logs for clonerefs:\n\n%s\n\n", podLogs)
-
-				// If we got an error, show the failing prow job's test
-				// container (our test case's "got" and "expected" shell code).
-				pjPod := &coreapi.Pod{}
-				err = kubeClient.Get(ctx, ctrlruntimeclient.ObjectKey{
-					Namespace: "test-pods",
-					Name:      *podName,
-				}, pjPod)
-				if err != nil {
-					t.Errorf("failed getting prow job's pod %v; unable to determine why the test failed", *podName)
-					t.Error(err)
-					t.Fatal(waitErr)
-				}
-				// Error messages from clonerefs, initupload, entrypoint, or sidecar.
-				for _, containerStatus := range pjPod.Status.InitContainerStatuses {
-					terminated := containerStatus.State.Terminated
-					if terminated != nil && len(terminated.Message) > 0 {
-						t.Errorf("InitContainer %q: %s", containerStatus.Name, terminated.Message)
-					}
-				}
-				// Error messages from the test case's shell script (showing the
-				// git SHAs that we expected vs what we got).
-				for _, containerStatus := range pjPod.Status.ContainerStatuses {
-					terminated := containerStatus.State.Terminated
-					if terminated != nil && len(terminated.Message) > 0 {
-						t.Errorf("Container %s: %s", containerStatus.Name, terminated.Message)
-					}
-				}
-
-				t.Fatal(waitErr)
-			} else {
+			waitErr := wait.Poll(pollInterval, timeout, expectCloneSuccess)
+			if waitErr == nil {
 				// Only clean up the ProwJob if it succeeded (save the ProwJob for debugging if it failed).
 				t.Cleanup(func() {
-					if err := kubeClient.Delete(ctx, &prowjob); err != nil {
-						t.Logf("Failed cleanup resource %q: %v", prowjob.Name, err)
+					if pod != nil {
+						if err := kubeClient.Delete(ctx, pod); err != nil {
+							t.Logf("Failed cleanup resource %q: %v", pod.Name, err)
+						}
 					}
 				})
+			}
+
+			if pod == nil {
+				t.Fatalf("Could not find test pod. Wait error: %v", waitErr)
+			}
+			// Retrieve logs from clonerefs.
+			podLogs, err := getPodLogs(clientset, "test-pods", pod.Name, &coreapi.PodLogOptions{Container: "clonerefs"})
+			if err != nil {
+				t.Fatalf("failed getting logs for clonerefs")
+			}
+			if waitErr != nil {
+				// Print for debugging purpose
+				t.Logf("logs for clonerefs:\n\n%s\n\n", podLogs)
+				t.Fatalf("Failed waiting for cloneref to succeed: %v", waitErr)
+			}
+
+			for _, want := range tt.expected {
+				if got := podLogs; !strings.Contains(got, want) {
+					t.Fatalf("Clone log mismatch. Want contains '%s', got:\n%s", want, got)
+				}
 			}
 		})
 	}
