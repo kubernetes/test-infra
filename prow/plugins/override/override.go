@@ -350,10 +350,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
 		overrides.Insert(parseOverrideInput(m[2])...)
-		log.Infof("PARSING: %v", parseOverrideInput(m[2]))
 	}
-
-	log.Info(overrides)
 
 	authorized := authorizedUser(oc, log, org, repo, user)
 	if !authorized && len(options.AllowedGitHubTeams) > 0 {
