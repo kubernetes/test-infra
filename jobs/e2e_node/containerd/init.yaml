@@ -14,7 +14,7 @@ runcmd:
   - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -H "X-Google-Metadata-Request: True" -o /home/containerd/cni.template http://metadata.google.internal/computeMetadata/v1/instance/attributes/cni-template'
 
   - echo "Download and install CNI to /home/containerd"
-  - 'curl -sSL --fail --retry 5 --retry-delay 3 --silent --show-error -o /home/containerd/cni.tgz https://github.com/containernetworking/plugins/releases/download/v1.0.1/cni-plugins-linux-amd64-v1.0.1.tgz'
+  - 'curl -sSL --fail --retry 5 --retry-delay 3 --silent --show-error -o /home/containerd/cni.tgz https://storage.googleapis.com/k8s-artifacts-cni/release/v1.0.1/cni-plugins-linux-amd64-v1.0.1.tgz'
   - tar xzf /home/containerd/cni.tgz -C /home/containerd --overwrite
 
   - echo "Set containerd configuration"
