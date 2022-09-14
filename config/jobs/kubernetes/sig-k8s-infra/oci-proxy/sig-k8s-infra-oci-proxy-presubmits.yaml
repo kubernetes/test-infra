@@ -1,5 +1,5 @@
 presubmits:
-  kubernetes-sigs/oci-proxy:
+  kubernetes/registry.k8s.io:
   - name: pull-oci-proxy-verify
     cluster: k8s-infra-prow-build
     decorate: true

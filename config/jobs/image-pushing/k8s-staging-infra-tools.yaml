@@ -1,5 +1,5 @@
 postsubmits:
-  kubernetes-sigs/oci-proxy:
+  kubernetes/registry.k8s.io:
   # TODO(bentheelder): rerun_auth_config (let a github team re-run these, I probably need to join a team...)
   - name: post-oci-proxy-push-images
     cluster: k8s-infra-prow-build-trusted
