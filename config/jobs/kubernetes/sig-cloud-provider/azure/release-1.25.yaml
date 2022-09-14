@@ -8,7 +8,7 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-      - release-1.21
+      - release-1.25
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -17,7 +17,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.4
+        base_ref: release-1.5
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -34,7 +34,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -53,7 +53,7 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-      - release-1.21
+      - release-1.25
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -62,7 +62,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.4
+        base_ref: release-1.5
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -79,7 +79,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -100,7 +100,7 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-      - release-1.21
+      - release-1.25
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -109,7 +109,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.4
+        base_ref: release-1.5
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -127,7 +127,7 @@ presubmits:
             - -c
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -146,7 +146,7 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-      - release-1.21
+      - release-1.25
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -155,7 +155,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.4
+        base_ref: release-1.5
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -173,7 +173,7 @@ presubmits:
             - -c
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -194,7 +194,7 @@ presubmits:
     run_if_changed: 'azure.*\.go'
     path_alias: k8s.io/kubernetes
     branches:
-      - release-1.21
+      - release-1.25
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -203,7 +203,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.4
+      base_ref: release-1.5
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -232,7 +232,7 @@ presubmits:
     optional: true
     path_alias: k8s.io/kubernetes
     branches:
-      - release-1.21
+      - release-1.25
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -266,7 +266,7 @@ presubmits:
 
 periodics:
 - interval: 3h
-  name: capz-conformance-1-21
+  name: capz-conformance-1-25
   decorate: true
   decoration_config:
     timeout: 3h
@@ -277,7 +277,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.4
+    base_ref: release-1.5
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
@@ -289,7 +289,7 @@ periodics:
       - name: E2E_ARGS
         value: "-kubetest.use-ci-artifacts"
       - name: KUBERNETES_VERSION
-        value: "latest-1.21"
+        value: "latest-1.25"
       - name: CONFORMANCE_WORKER_MACHINE_COUNT
         value: "2"
       securityContext:
@@ -299,13 +299,13 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.21-signal
+    testgrid-dashboards: provider-azure-1.25-signal
     testgrid-tab-name: capz-conformance
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-azure-file-1-21
+  name: capz-azure-file-1-25
   decorate: true
   decoration_config:
     timeout: 3h
@@ -316,7 +316,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.4
+    base_ref: release-1.5
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -324,7 +324,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: release-1.25
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -337,11 +337,11 @@ periodics:
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-1.21"
+        value: "latest-1.25"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
@@ -351,13 +351,13 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.21-signal
+    testgrid-dashboards: provider-azure-1.25-signal
     testgrid-tab-name: capz-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-azure-file-vmss-1-21
+  name: capz-azure-file-vmss-1-25
   decorate: true
   decoration_config:
     timeout: 3h
@@ -368,7 +368,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.4
+    base_ref: release-1.5
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -376,7 +376,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: release-1.25
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -389,11 +389,11 @@ periodics:
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-1.21"
+        value: "latest-1.25"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -405,13 +405,13 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.21-signal
+    testgrid-dashboards: provider-azure-1.25-signal
     testgrid-tab-name: capz-azure-file-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-azure-disk-1-21
+  name: capz-azure-disk-1-25
   decorate: true
   decoration_config:
     timeout: 3h
@@ -422,7 +422,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.4
+    base_ref: release-1.5
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -430,7 +430,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: release-1.25
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -442,11 +442,11 @@ periodics:
       - bash
       - -c
       - >-
-        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-1.21"
+        value: "latest-1.25"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
@@ -456,13 +456,13 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.21-signal
+    testgrid-dashboards: provider-azure-1.25-signal
     testgrid-tab-name: capz-azure-disk
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-azure-disk-vmss-1-21
+  name: capz-azure-disk-vmss-1-25
   decorate: true
   decoration_config:
     timeout: 3h
@@ -473,7 +473,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.4
+    base_ref: release-1.5
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -481,7 +481,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: release-1.25
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -493,11 +493,11 @@ periodics:
       - bash
       - -c
       - >-
-        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-1.21"
+        value: "latest-1.25"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -509,7 +509,7 @@ periodics:
           cpu: 1
           memory: "4Gi"
   annotations:
-    testgrid-dashboards: provider-azure-1.21-signal
+    testgrid-dashboards: provider-azure-1.25-signal
     testgrid-tab-name: capz-azure-disk-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
