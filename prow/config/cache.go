@@ -58,6 +58,7 @@ type InRepoConfigCache struct {
 
 type InrepoconfigPresubmitRequest struct {
 	Identifier     string
+	CloneURI       string
 	BaseSHAGetter  RefGetter
 	HeadSHAGetters []RefGetter
 	resChan        chan []Presubmit
@@ -66,6 +67,7 @@ type InrepoconfigPresubmitRequest struct {
 
 type InrepoconfigPostsubmitRequest struct {
 	Identifier     string
+	CloneURI       string
 	BaseSHAGetter  RefGetter
 	HeadSHAGetters []RefGetter
 	resChan        chan []Postsubmit
@@ -82,7 +84,7 @@ type InRepoConfigCacheGetter struct {
 	CookieFilePath string
 	DryRun         bool
 
-	CacheMap map[string]*InRepoConfigCacheHandler
+	Cache *InRepoConfigCacheHandler
 }
 
 // NewInRepoConfigCacheGetter initialize InRepoConfigCacheGetter.
@@ -114,44 +116,26 @@ func NewInRepoConfigCacheGetter(
 		GitHubOptions:  gitHubOptions,
 		CookieFilePath: cookieFilePath,
 		DryRun:         dryRun,
-		CacheMap:       make(map[string]*InRepoConfigCacheHandler),
 	}, nil
 }
 
-func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*InRepoConfigCacheHandler, error) {
+// GetCache returns InRepoConfigCacheHandler based on authentication methods. If
+// GitHub bot token or GitHub app private key is provided then returns handler
+// that works best with GitHub, if http.cookiefile is provided then returns
+// handler that authenticate with cookiefile.
+func (irc *InRepoConfigCacheGetter) GetCache() (*InRepoConfigCacheHandler, error) {
 	// No repo is cloned in getCache, Since this function should happen fast it is safe to lock the whole function.
 	irc.mu.Lock()
 	defer irc.mu.Unlock()
-	if irc.CacheMap == nil {
-		irc.CacheMap = map[string]*InRepoConfigCacheHandler{}
-	}
-
-	var key string
-	// We are using github with IRC
-	if irc.GitHubOptions.Host != "" && (irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "") {
-		key = irc.GitHubOptions.Host
-		// We are using Gerrit with IRC
-	} else {
-		key = cloneURI
-	}
-
-	if cache, ok := irc.CacheMap[key]; ok {
-		return cache, nil
+	if irc.Cache != nil {
+		return irc.Cache, nil
 	}
 
 	var gitClientFactory git.ClientFactory
 	var cache *InRepoConfigCacheHandler
 	var err error
-	if irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "" {
-		gitClient, err := irc.GitHubOptions.GitClient(irc.DryRun)
-		if err != nil {
-			return nil, fmt.Errorf("Error getting git client: %w", err)
-		}
-		gitClientFactory = git.ClientFactoryFrom(gitClient)
-	} else {
+	if irc.CookieFilePath != "" && irc.GitHubOptions.TokenPath == "" && irc.GitHubOptions.AppPrivateKeyPath == "" {
 		opts := git.ClientFactoryOpts{
-			CloneURI:       cloneURI,
-			Host:           host,
 			CookieFilePath: irc.CookieFilePath,
 			CacheDirBase:   &irc.CacheDir,
 		}
@@ -159,6 +143,12 @@ func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*InRepoConf
 		if err != nil {
 			return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
 		}
+	} else {
+		gitClient, err := irc.GitHubOptions.GitClient(irc.DryRun)
+		if err != nil {
+			return nil, fmt.Errorf("Error getting git client: %w", err)
+		}
+		gitClientFactory = git.ClientFactoryFrom(gitClient)
 	}
 
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
@@ -173,9 +163,8 @@ func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*InRepoConf
 		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
 	}
 
-	irc.CacheMap[key] = cache
+	irc.Cache = cache
 	return cache, nil
-
 }
 
 type InRepoConfigCacheHandler struct {
@@ -264,7 +253,7 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 
 func (cache *InRepoConfigCache) handlePresubmit(requestChan chan InrepoconfigPresubmitRequest) {
 	for r := range requestChan {
-		res, err := cache.GetPresubmits(r.Identifier, r.BaseSHAGetter, r.HeadSHAGetters...)
+		res, err := cache.GetPresubmits(r.Identifier, r.CloneURI, r.BaseSHAGetter, r.HeadSHAGetters...)
 		if err != nil {
 			r.errChan <- err
 			continue
@@ -275,7 +264,7 @@ func (cache *InRepoConfigCache) handlePresubmit(requestChan chan InrepoconfigPre
 
 func (cache *InRepoConfigCache) handlePostsubmit(requestChan chan InrepoconfigPostsubmitRequest) {
 	for r := range requestChan {
-		res, err := cache.GetPostsubmits(r.Identifier, r.BaseSHAGetter, r.HeadSHAGetters...)
+		res, err := cache.GetPostsubmits(r.Identifier, r.CloneURI, r.BaseSHAGetter, r.HeadSHAGetters...)
 		if err != nil {
 			r.errChan <- err
 			continue
@@ -284,11 +273,12 @@ func (cache *InRepoConfigCache) handlePostsubmit(requestChan chan InrepoconfigPo
 	}
 }
 
-func (ih *InRepoConfigCacheHandler) GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+func (ih *InRepoConfigCacheHandler) GetPresubmits(identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 	resChan := make(chan []Presubmit)
 	errChan := make(chan error)
 	ih.presubmitChan <- InrepoconfigPresubmitRequest{
 		Identifier:     identifier,
+		CloneURI:       cloneURI,
 		BaseSHAGetter:  baseSHAGetter,
 		HeadSHAGetters: headSHAGetters,
 		resChan:        resChan,
@@ -305,11 +295,12 @@ func (ih *InRepoConfigCacheHandler) GetPresubmits(identifier string, baseSHAGett
 	}
 }
 
-func (ih *InRepoConfigCacheHandler) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+func (ih *InRepoConfigCacheHandler) GetPostsubmits(identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 	resChan := make(chan []Postsubmit)
 	errChan := make(chan error)
 	ih.postsubmitChan <- InrepoconfigPostsubmitRequest{
 		Identifier:     identifier,
+		CloneURI:       cloneURI,
 		BaseSHAGetter:  baseSHAGetter,
 		HeadSHAGetters: headSHAGetters,
 		resChan:        resChan,
@@ -329,11 +320,11 @@ func (ih *InRepoConfigCacheHandler) GetPostsubmits(identifier string, baseSHAGet
 // GetPresubmits uses a cache lookup to get the *ProwYAML value (cache hit),
 // instead of computing it from scratch (cache miss). It also stores the
 // *ProwYAML into the cache if there is a cache miss.
-func (cache *InRepoConfigCache) GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+func (cache *InRepoConfigCache) GetPresubmits(identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
 	c := cache.configAgent.Config()
 
-	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, cloneURI, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -356,11 +347,11 @@ func (cache *InRepoConfigCache) GetPresubmits(identifier string, baseSHAGetter R
 // lookup to get the *ProwYAML value (cache hit), instead of computing it from
 // scratch (cache miss). It also stores the *ProwYAML into the cache if there is
 // a cache miss.
-func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+func (cache *InRepoConfigCache) GetPostsubmits(identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
 	c := cache.configAgent.Config()
 
-	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, cloneURI, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -381,8 +372,9 @@ func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter 
 // because unit tests can just provide its own function for constructing a
 // *ProwYAML object (instead of needing to create an actual Git repo, etc.).
 func (cache *InRepoConfigCache) getProwYAML(
-	valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error),
+	valConstructorHelper func(git.ClientFactory, string, string, RefGetter, ...RefGetter) (*ProwYAML, error),
 	identifier string,
+	cloneURI string,
 	baseSHAGetter RefGetter,
 	headSHAGetters ...RefGetter) (*ProwYAML, error) {
 
@@ -408,10 +400,14 @@ func (cache *InRepoConfigCache) getProwYAML(
 	}
 
 	valConstructor := func() (interface{}, error) {
-		return valConstructorHelper(cache.gitClient, identifier, baseSHAGetter, headSHAGetters...)
+		return valConstructorHelper(cache.gitClient, identifier, cloneURI, baseSHAGetter, headSHAGetters...)
 	}
 
-	got, err := cache.get(CacheKeyParts{Identifier: identifier, BaseSHA: baseSHA, HeadSHAs: headSHAs}, valConstructor)
+	cacheKeyIdentifier := identifier
+	if cloneURI != "" {
+		cacheKeyIdentifier = cloneURI
+	}
+	got, err := cache.get(CacheKeyParts{Identifier: cacheKeyIdentifier, BaseSHA: baseSHA, HeadSHAs: headSHAs}, valConstructor)
 	if err != nil {
 		return nil, err
 	}

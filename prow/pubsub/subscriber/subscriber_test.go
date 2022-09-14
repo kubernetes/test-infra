@@ -307,11 +307,12 @@ func TestHandleMessage(t *testing.T) {
 				ConfigAgent:   ca,
 				Reporter:      &fr,
 				InRepoConfigCacheGetter: &config.InRepoConfigCacheGetter{
-					CacheSize:     100,
-					CacheCopies:   1,
-					Agent:         ca,
-					GitHubOptions: flagutil.GitHubOptions{},
-					DryRun:        true,
+					CacheSize:      100,
+					CacheCopies:    1,
+					Agent:          ca,
+					GitHubOptions:  flagutil.GitHubOptions{},
+					CookieFilePath: "abc",
+					DryRun:         true,
 				},
 			}
 			if tc.pe != nil {
@@ -818,6 +819,7 @@ func fakeProwYAMLGetter(
 	c *config.Config,
 	gc git.ClientFactory,
 	identifier string,
+	cloneURI string,
 	baseSHA string,
 	headSHAs ...string) (*config.ProwYAML, error) {
 

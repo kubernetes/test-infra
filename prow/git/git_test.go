@@ -64,7 +64,7 @@ func testClone(clients localgit.Clients, t *testing.T) {
 	}
 
 	// Fresh clone, will be a cache miss.
-	r1, err := c.ClientFor("foo", "bar")
+	r1, err := c.ClientFor("foo", "bar", "")
 	if err != nil {
 		t.Fatalf("Cloning the first time: %v", err)
 	}
@@ -75,7 +75,7 @@ func testClone(clients localgit.Clients, t *testing.T) {
 	}()
 
 	// Clone from the same org.
-	r2, err := c.ClientFor("foo", "baz")
+	r2, err := c.ClientFor("foo", "baz", "")
 	if err != nil {
 		t.Fatalf("Cloning another repo in the same org: %v", err)
 	}
@@ -89,7 +89,7 @@ func testClone(clients localgit.Clients, t *testing.T) {
 	if err := lg.AddCommit("foo", "bar", map[string][]byte{"second": {}}); err != nil {
 		t.Fatalf("Adding second commit: %v", err)
 	}
-	r3, err := c.ClientFor("foo", "bar")
+	r3, err := c.ClientFor("foo", "bar", "")
 	if err != nil {
 		t.Fatalf("Cloning a second time: %v", err)
 	}
@@ -134,7 +134,7 @@ func testCheckoutPR(clients localgit.Clients, t *testing.T) {
 	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	r, err := c.ClientFor("foo", "bar")
+	r, err := c.ClientFor("foo", "bar", "")
 	if err != nil {
 		t.Fatalf("Cloning: %v", err)
 	}
@@ -183,7 +183,7 @@ func testMergeCommitsExistBetween(clients localgit.Clients, t *testing.T) {
 	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	r, err := c.ClientFor("foo", "bar")
+	r, err := c.ClientFor("foo", "bar", "")
 	if err != nil {
 		t.Fatalf("Cloning: %v", err)
 	}
@@ -403,7 +403,7 @@ func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 				}
 			}
 
-			clonedRepo, err := c.ClientFor(org, repo)
+			clonedRepo, err := c.ClientFor(org, repo, "")
 			if err != nil {
 				t.Fatalf("Cloning failed: %v", err)
 			}
@@ -517,7 +517,7 @@ func testMerging(clients localgit.Clients, t *testing.T) {
 				t.Fatalf("checkout baseSHA: %v", err)
 			}
 
-			r, err := c.ClientFor(org, repo)
+			r, err := c.ClientFor(org, repo, "")
 			if err != nil {
 				t.Fatalf("clone: %v", err)
 			}
@@ -570,7 +570,7 @@ func testShowRef(clients localgit.Clients, t *testing.T) {
 		t.Fatalf("lg.RevParse: %v", err)
 	}
 
-	client, err := c.ClientFor(org, repo)
+	client, err := c.ClientFor(org, repo, "")
 	if err != nil {
 		t.Fatalf("clientFor: %v", err)
 	}

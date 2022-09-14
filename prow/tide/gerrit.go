@@ -296,11 +296,11 @@ func (p *GerritProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, 
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
 	if p.inRepoConfigCacheGetter != nil {
-		handler, err := p.inRepoConfigCacheGetter.GetCache(cloneURI, org)
+		handler, err := p.inRepoConfigCacheGetter.GetCache()
 		if err != nil {
 			return nil, fmt.Errorf("faled to get inrepoconfig cache: %v", err)
 		}
-		presubmitsFromCache, err := handler.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetter)
+		presubmitsFromCache, err := handler.GetPresubmits(orgRepo, cloneURI, baseSHAGetter, headSHAGetter)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
 		}

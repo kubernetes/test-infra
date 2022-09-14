@@ -349,7 +349,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 	filenames := c.filenames(org, repo)
 	if !ok || entry.sha != sha || entry.owners == nil || !entry.matchesMDYAML(mdYaml) {
 		start := time.Now()
-		gitRepo, err := c.git.ClientFor(org, repo)
+		gitRepo, err := c.git.ClientFor(org, repo, "")
 		if err != nil {
 			return cacheEntry{}, fmt.Errorf("failed to clone %s: %w", cloneRef, err)
 		}

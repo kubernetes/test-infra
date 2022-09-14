@@ -60,33 +60,39 @@ func main() {
 	}
 	defer interrupts.WaitForGracefulShutdown()
 
-	r := mux.NewRouter()
+	rMain := mux.NewRouter()
+	// When authenticated the request URL has a prefix of `/a`, also handle this case.
+	rAuthed := rMain.PathPrefix("/a").Subrouter()
 	fakeClient := fakegerrit.NewFakeGerritClient()
 
-	r.Path("/").Handler(response(defaultHandler()))
-	//GetChange GET
-	r.Path("/changes/{change-id}").Handler(response(changesHandler(fakeClient)))
-	// SetReview POST
-	r.Path("/changes/{change-id}/revisions/{revision-id}/review").Handler(response(changesHandler(fakeClient)))
-	// QueryChanges GET
-	r.Path("/changes/").Handler(response(handleQueryChanges(fakeClient)))
-	// ListChangeComments GET
-	r.Path("/changes/{change-id}/comments").Handler(response(handleGetComments(fakeClient)))
+	rMain.Path("/").Handler(response(defaultHandler()))
 
-	// GetAccount GET
-	r.Path("/accounts/{account-id}").Handler(response(accountHandler(fakeClient)))
-	// SetUsername PUT
-	r.Path("/accounts/{account-id}/username").Handler(response(accountHandler(fakeClient)))
+	// Handle authenticated and non-authenticated requests the same way for now.
+	for _, r := range []*mux.Router{rMain, rAuthed} {
+		//GetChange GET
+		r.Path("/changes/{change-id}").Handler(response(changesHandler(fakeClient)))
+		// SetReview POST
+		r.Path("/changes/{change-id}/revisions/{revision-id}/review").Handler(response(changesHandler(fakeClient)))
+		// QueryChanges GET
+		r.Path("/changes/").Handler(response(handleQueryChanges(fakeClient)))
+		// ListChangeComments GET
+		r.Path("/changes/{change-id}/comments").Handler(response(handleGetComments(fakeClient)))
 
-	// GetBranch GET
-	r.Path("/projects/{project-name}/branches/{branch-id}").Handler(response(projectHandler(fakeClient)))
+		// GetAccount GET
+		r.Path("/accounts/{account-id}").Handler(response(accountHandler(fakeClient)))
+		// SetUsername PUT
+		r.Path("/accounts/{account-id}/username").Handler(response(accountHandler(fakeClient)))
 
-	// Use to populate the server for testing
-	r.Path("/admin/add/change/{project}").Handler(response(addChangeHandler(fakeClient)))
-	r.Path("/admin/add/branch/{project}/{branch-name}").Handler(response(addBranchHandler(fakeClient)))
-	r.Path("/admin/add/account").Handler(response(addAccountHandler(fakeClient)))
-	r.Path("/admin/login/{id}").Handler(response(loginHandler(fakeClient)))
-	r.Path("/admin/reset").Handler(response(resetHandler(fakeClient)))
+		// GetBranch GET
+		r.Path("/projects/{project-name}/branches/{branch-id}").Handler(response(projectHandler(fakeClient)))
+
+		// Use to populate the server for testing
+		r.Path("/admin/add/change/{project}").Handler(response(addChangeHandler(fakeClient)))
+		r.Path("/admin/add/branch/{project}/{branch-name}").Handler(response(addBranchHandler(fakeClient)))
+		r.Path("/admin/add/account").Handler(response(addAccountHandler(fakeClient)))
+		r.Path("/admin/login/{id}").Handler(response(loginHandler(fakeClient)))
+		r.Path("/admin/reset").Handler(response(resetHandler(fakeClient)))
+	}
 
 	health := pjutil.NewHealth()
 	health.ServeReady()
@@ -94,7 +100,7 @@ func main() {
 	logrus.Info("Start server")
 
 	// setup done, actually start the server
-	server := &http.Server{Addr: fmt.Sprintf(":%d", o.port), Handler: r}
+	server := &http.Server{Addr: fmt.Sprintf(":%d", o.port), Handler: rMain}
 	interrupts.ListenAndServe(server, 5*time.Second)
 }
 
@@ -137,7 +143,7 @@ func projectHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}
 			}
 			return string(content), http.StatusOK, nil
 		}
-		return "", http.StatusNotFound, nil
+		return "branch does not exist", http.StatusNotFound, nil
 	}
 }
 
@@ -214,7 +220,7 @@ func handleGetComments(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interfac
 		id := vars["change-id"]
 		comments := fgc.GetComments(id)
 		if comments == nil {
-			return "", http.StatusNotFound, nil
+			return "change-id must be provided", http.StatusNotFound, nil
 		}
 		content, err := json.Marshal(comments)
 		if err != nil {
@@ -245,7 +251,7 @@ func handleQueryChanges(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interfa
 
 		logrus.Infof("Query: %s, Project: %s", query, project)
 		if project == "" {
-			return "", http.StatusNotFound, nil
+			return "project must be provided as query string: 'q=project:<PROJECT>'", http.StatusNotFound, nil
 		}
 
 		res := fgc.GetChangesForProject(project, startint, 100)
@@ -265,7 +271,7 @@ func accountHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}
 		id := vars["account-id"]
 		account := fgc.GetAccount(id)
 		if account == nil {
-			return "", http.StatusNotFound, nil
+			return "account cannot be empty", http.StatusNotFound, nil
 		}
 		// SetUsername
 		if r.Method == http.MethodPut {

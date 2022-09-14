@@ -405,7 +405,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
-	r, err := s.gc.ClientFor(org, repo)
+	r, err := s.gc.ClientFor(org, repo, "")
 	if err != nil {
 		return fmt.Errorf("failed to get git client for %s/%s: %w", org, forkName, err)
 	}
