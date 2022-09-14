@@ -313,14 +313,9 @@ func parseOverrideInput(in string) []string {
 		}
 		return !quoted && r == ' '
 	})
-	retval := []string{}
+	var retval []string
 	for _, val := range f {
-		if val[0:1] == `"` {
-			retval = append(retval, val[1:len(val)-1])
-			fmt.Println(val[1 : len(val)-1])
-		} else {
-			retval = append(retval, strings.TrimRight(val, "\r"))
-		}
+		retval = append(retval, strings.Trim(strings.TrimSpace(val), `"`))
 	}
 
 	return retval
