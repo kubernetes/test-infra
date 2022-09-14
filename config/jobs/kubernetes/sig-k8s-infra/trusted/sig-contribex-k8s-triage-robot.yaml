@@ -130,6 +130,131 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
+- name: ci-k8s-triage-robot-merged-pr
+  interval: 10m
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: A job to remove needs-triage from closed issues/PRs that are marked as requiring triage.
+    testgrid-tab-name: triage-merged-pr
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20220907-aef2c49444
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        is:pr
+        is:closed
+        is:merged
+        label:needs-triage
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This PR was merged without triage. Marking triage as accepted.
+
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /triage accepted
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+- name: ci-k8s-triage-robot-closed-pr
+  interval: 10m
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: A job to remove needs-triage from closed issues/PRs that are marked as requiring triage.
+    testgrid-tab-name: triage-closed-pr
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20220907-aef2c49444
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        is:pr
+        is:closed
+        is:unmerged
+        label:needs-triage
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This PR was closed without triage. Marking triage as unresolved.
+
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /triage unresolved
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+- name: ci-k8s-triage-robot-closed-issue
+  interval: 10m
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: A job to remove needs-triage from closed issues/PRs that are marked as requiring triage.
+    testgrid-tab-name: triage-closed-issue
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20220907-aef2c49444
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        is:issue
+        is:closed
+        label:needs-triage
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This issue was closed without triage. Marking triage as unresolved.
+
+        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /triage unresolved
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
 - name: ci-k8s-triage-robot-close
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
