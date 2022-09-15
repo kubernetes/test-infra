@@ -1365,7 +1365,7 @@ func TestProcessChange(t *testing.T) {
 
 			var gc fgc
 			gc.instanceMap = tc.instancesMap
-			inRepoConfigCacheGetter, err := config.NewInRepoConfigCacheGetter(nil, 1, 1, "", flagutil.GitHubOptions{}, "", false)
+			inRepoConfigCacheGetter, err := config.NewInRepoConfigCacheGetter(nil, 1, 1, nil, flagutil.GitHubOptions{}, "", false)
 			if err != nil {
 				t.Fatalf("Failed creating cache getter: %v", err)
 			}
