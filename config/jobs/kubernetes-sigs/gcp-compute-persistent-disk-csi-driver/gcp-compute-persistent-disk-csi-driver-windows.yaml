@@ -34,13 +34,13 @@ periodics:
         value: "prepull-head.yaml"
       securityContext:
         privileged: true
-    resources:
-      requests:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        memory: "9000Mi"
-        # during the tests more like 3-20m is used
-        cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: ci-windows-20h2-provider-gcp-compute-persistent-disk-csi-driver
@@ -80,13 +80,13 @@ periodics:
         value: "prepull-head.yaml"
       securityContext:
         privileged: true
-    resources:
-      requests:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        memory: "9000Mi"
-        # during the tests more like 3-20m is used
-        cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: ci-windows-2019-provider-gcp-compute-persistent-disk-csi-driver
@@ -124,13 +124,13 @@ presubmits:
           value: "prepull-head.yaml"
         securityContext:
           privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: windows-2019-presubmit-gcp-compute-persistent-disk-csi-driver
@@ -167,13 +167,13 @@ presubmits:
           value: "prepull-head.yaml"
         securityContext:
           privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: windows-20h2-presubmit-gcp-compute-persistent-disk-csi-driver
