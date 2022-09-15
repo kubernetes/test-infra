@@ -114,6 +114,7 @@ type IssueClient interface {
 	AssignIssue(org, repo string, number int, logins []string) error
 	UnassignIssue(org, repo string, number int, logins []string) error
 	CloseIssue(org, repo string, number int) error
+	CloseIssueAsNotPlanned(org, repo string, number int) error
 	ReopenIssue(org, repo string, number int) error
 	FindIssues(query, sort string, asc bool) ([]Issue, error)
 	FindIssuesWithOrg(org, query, sort string, asc bool) ([]Issue, error)
@@ -3241,19 +3242,38 @@ func (c *client) UnrequestReview(org, repo string, number int, logins []string) 
 }
 
 // CloseIssue closes the existing, open issue provided
+// CloseIssue also closes the issue with the reason being
+// "completed" - default value for the state_reason attribute.
 //
 // See https://developer.github.com/v3/issues/#edit-an-issue
 func (c *client) CloseIssue(org, repo string, number int) error {
 	durationLogger := c.log("CloseIssue", org, repo, number)
 	defer durationLogger()
 
+	return c.closeIssue(org, repo, number, "completed")
+}
+
+// CloseIssueAsNotPlanned closes the existing, open issue provided
+// CloseIssueAsNotPlanned also closes the issue with the reason being
+// "not_planned" - value passed for the state_reason attribute.
+//
+// See https://developer.github.com/v3/issues/#edit-an-issue
+func (c *client) CloseIssueAsNotPlanned(org, repo string, number int) error {
+	durationLogger := c.log("CloseIssueAsNotPlanned", org, repo, number)
+	defer durationLogger()
+
+	return c.closeIssue(org, repo, number, "not_planned")
+}
+
+func (c *client) closeIssue(org, repo string, number int, reason string) error {
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d", org, repo, number),
 		org:         org,
-		requestBody: map[string]string{"state": "closed"},
+		requestBody: map[string]string{"state": "closed", "state_reason": reason},
 		exitCodes:   []int{200},
 	}, nil)
+
 	return err
 }
 

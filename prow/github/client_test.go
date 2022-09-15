@@ -1497,15 +1497,47 @@ func TestCloseIssue(t *testing.T) {
 		var ps map[string]string
 		if err := json.Unmarshal(b, &ps); err != nil {
 			t.Errorf("Could not unmarshal request: %v", err)
-		} else if len(ps) != 1 {
+		} else if len(ps) != 2 {
 			t.Errorf("Wrong length patch: %v", ps)
 		} else if ps["state"] != "closed" {
 			t.Errorf("Wrong state: %s", ps["state"])
+		} else if ps["state_reason"] != "completed" {
+			t.Errorf("Wrong state_reason: %s", ps["state_reason"])
 		}
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if err := c.CloseIssue("k8s", "kuber", 5); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestCloseIssueAsNotPlanned(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPatch {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ps map[string]string
+		if err := json.Unmarshal(b, &ps); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if len(ps) != 2 {
+			t.Errorf("Wrong length patch: %v", ps)
+		} else if ps["state"] != "closed" {
+			t.Errorf("Wrong state: %s", ps["state"])
+		} else if ps["state_reason"] != "not_planned" {
+			t.Errorf("Wrong state_reason: %s", ps["state_reason"])
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.CloseIssueAsNotPlanned("k8s", "kuber", 5); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
