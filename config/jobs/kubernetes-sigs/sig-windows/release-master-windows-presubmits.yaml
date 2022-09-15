@@ -57,7 +57,7 @@ presubmits:
     optional: true
     run_if_changed: 'capz/.*'
     decoration_config:
-      timeout: 3h
+      timeout: 4h
     path_alias: k8s.io/windows-testing
     branches:
       - master
@@ -99,7 +99,7 @@ presubmits:
     optional: true
     run_if_changed: 'capz/gmsa/.*|capz/templates/gmsa.yaml'
     decoration_config:
-      timeout: 3h
+      timeout: 4h
     path_alias: k8s.io/windows-testing
     branches:
       - master
