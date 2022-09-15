@@ -216,6 +216,9 @@ postsubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "15"
       tolerations:
       - key: "highcpu"
         operator: "Equal"
@@ -223,9 +226,6 @@ postsubmits:
         effect: "NoSchedule"
       nodeSelector:
         highcpu: "true"
-      resources:
-        requests:
-          cpu: "15"
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
