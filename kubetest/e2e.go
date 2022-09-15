@@ -26,7 +26,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"k8s.io/test-infra/kubetest/e2e"
@@ -243,11 +242,10 @@ func run(deploy deployer, o options) error {
 
 	// TODO: consider remapping charts, etc to testCmd
 
-	var kubemarkWg sync.WaitGroup
-	var kubemarkDownErr error
 	if o.down && o.kubemark {
-		kubemarkWg.Add(1)
-		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, o.provider, dump, o.logexporterGCSPath)
+		if err := kubemarkDown(o.provider, dump, o.logexporterGCSPath); err != nil {
+			errs = util.AppendError(errs, err)
+		}
 	}
 
 	if o.charts {
@@ -277,10 +275,6 @@ func run(deploy deployer, o options) error {
 			return nil
 		}))
 	}
-
-	// Wait for kubemarkDown step to finish before going further.
-	kubemarkWg.Wait()
-	errs = util.AppendError(errs, kubemarkDownErr)
 
 	// Save the state if we upped a new cluster without downing it
 	if o.save != "" && ((!o.down && o.up) || (o.up && o.deployment != "none")) {
@@ -770,8 +764,7 @@ func kubemarkGinkgoTest(testArgs []string, dump string) error {
 }
 
 // Brings down the kubemark cluster.
-func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCSPath string) {
-	defer wg.Done()
+func kubemarkDown(provider, dump, logexporterGCSPath string) error {
 	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
 		logDumpPath := logDumpPath(provider)
 		masterName := os.Getenv("MASTER_NAME")
@@ -794,7 +787,7 @@ func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCS
 		)
 		return control.FinishRunning(cmd)
 	})
-	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
+	return control.XMLWrap(&suite, "Kubemark TearDown", func() error {
 		return control.FinishRunning(exec.Command(path.Join(kubemarkPath(), "stop-kubemark.sh")))
 	})
 }
