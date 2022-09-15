@@ -73,6 +73,8 @@ presubmits:
                 value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
+              - name: CLUSTER_PROVISIONING_TOOL
+                value: "capz"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-25-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-1-25
@@ -129,6 +131,10 @@ presubmits:
                 value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
+              - name: CLUSTER_PROVISIONING_TOOL
+                value: "capz"
+              - name: GINKGO_PARALLEL_NODES
+                value: "30"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-25-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-25
