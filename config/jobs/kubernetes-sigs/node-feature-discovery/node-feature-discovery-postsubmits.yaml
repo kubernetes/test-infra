@@ -10,6 +10,7 @@ postsubmits:
       testgrid-dashboards: sig-node-node-feature-discovery
       testgrid-tab-name: e2e-test-image
       description: "Run end-to-end tests for node-feature-discovery after merging a pull request"
+      testgrid-alert-email: markus.lehtonen@intel.com,feruzjon.muyassarov@intel.com
     spec:
       containers:
       - image: golang:1.19
