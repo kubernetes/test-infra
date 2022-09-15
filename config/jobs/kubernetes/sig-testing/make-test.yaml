@@ -14,10 +14,6 @@ presubmits:
     always_run: true
     path_alias: k8s.io/kubernetes
     spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
           command:
@@ -31,6 +27,10 @@ presubmits:
             requests:
               cpu: 4
               memory: "36Gi"
+          # unit tests have no business requiring root or doing privileged operations
+          securityContext:
+            runAsUser: 2000
+            allowPrivilegeEscalation: false
   - name: pull-kubernetes-unit-experimental
     # try clonerefs with preclone
     decoration_config:
@@ -87,10 +87,6 @@ presubmits:
     skip_report: false
     path_alias: k8s.io/kubernetes
     spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-go-canary
           command:
@@ -104,6 +100,10 @@ presubmits:
             requests:
               cpu: 4
               memory: "36Gi"
+          # unit tests have no business requiring root or doing privileged operations
+          securityContext:
+            runAsUser: 2000
+            allowPrivilegeEscalation: false
 periodics:
   - interval: 1h
     name: ci-kubernetes-unit
@@ -123,10 +123,6 @@ periodics:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
           command:
@@ -140,6 +136,10 @@ periodics:
             requests:
               cpu: 4
               memory: "36Gi"
+          # unit tests have no business requiring root or doing privileged operations
+          securityContext:
+            runAsUser: 2000
+            allowPrivilegeEscalation: false
   - interval: 6h
     name: ci-kubernetes-generate-make-test-count10
     annotations:
@@ -153,10 +153,6 @@ periodics:
     labels:
       preset-service-account: "true"
     spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
           command:
@@ -165,3 +161,7 @@ periodics:
             - -c
           args:
             - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=600s GOFLAGS=-count=10'
+          # unit tests have no business requiring root or doing privileged operations
+          securityContext:
+            runAsUser: 2000
+            allowPrivilegeEscalation: false
