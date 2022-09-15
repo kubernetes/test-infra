@@ -67,11 +67,11 @@ presubmits:
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
               - name: KUBERNETES_VERSION
-                value: "1.22.2"
+                value: "latest-1.22"
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
               - name: CLUSTER_TEMPLATE
-                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
               - name: K8S_FEATURE_GATES
                 value: "MixedProtocolLBService=true"
       annotations:

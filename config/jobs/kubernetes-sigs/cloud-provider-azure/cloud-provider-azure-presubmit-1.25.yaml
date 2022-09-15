@@ -70,7 +70,7 @@ presubmits:
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
               - name: CLUSTER_TEMPLATE
-                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
               - name: CLUSTER_PROVISIONING_TOOL
