@@ -150,6 +150,7 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -204,6 +205,7 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         label:lifecycle/rotten
         label:kind/bug
@@ -321,6 +323,7 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         label:lifecycle/stale
         -label:lifecycle/rotten
@@ -376,6 +379,7 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
