@@ -66,11 +66,11 @@ presubmits:
               - name: TEST_CCM
                 value: "true"
               - name: KUBERNETES_VERSION
-                value: "1.23.5"
+                value: "latest-1.23"
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
               - name: CLUSTER_TEMPLATE
-                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
               - name: K8S_FEATURE_GATES
