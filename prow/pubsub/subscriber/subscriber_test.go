@@ -301,19 +301,14 @@ func TestHandleMessage(t *testing.T) {
 			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
 			fr := fakeReporter{}
+			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true)
+			cacheHandler, _ := config.NewInRepoConfigCacheHandler(100, ca, gitClient, 1)
 			s := Subscriber{
-				Metrics:       NewMetrics(),
-				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
-				ConfigAgent:   ca,
-				Reporter:      &fr,
-				InRepoConfigCacheGetter: &config.InRepoConfigCacheGetter{
-					CacheSize:      100,
-					CacheCopies:    1,
-					Agent:          ca,
-					GitHubOptions:  flagutil.GitHubOptions{},
-					CookieFilePath: "abc",
-					DryRun:         true,
-				},
+				Metrics:                  NewMetrics(),
+				ProwJobClient:            fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
+				ConfigAgent:              ca,
+				Reporter:                 &fr,
+				InRepoConfigCacheHandler: cacheHandler,
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessageOfType(tc.eventType)

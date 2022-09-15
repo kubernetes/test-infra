@@ -89,7 +89,11 @@ func NewGerritController(
 		newPoolPending:   make(chan bool),
 	}
 
-	cacheGetter, err := config.NewInRepoConfigCacheGetter(cfgAgent, configOptions.InRepoConfigCacheSize, configOptions.InRepoConfigCacheCopies, &configOptions.InRepoConfigCacheDirBase, flagutil.GitHubOptions{}, cookieFilePath, false)
+	gitClient, err := (&flagutil.GitHubOptions{}).GitClientFactory(cookieFilePath, &configOptions.InRepoConfigCacheDirBase, false)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating git client.")
+	}
+	cacheGetter, err := config.NewInRepoConfigCacheHandler(configOptions.InRepoConfigCacheSize, cfgAgent, gitClient, configOptions.InRepoConfigCacheCopies)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
 	}
@@ -113,9 +117,9 @@ type GerritProvider struct {
 	gc          gerritClient
 	pjclientset ctrlruntimeclient.Client
 
-	cookiefilePath          string
-	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter
-	tokenPathOverride       string
+	cookiefilePath           string
+	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler
+	tokenPathOverride        string
 
 	logger *logrus.Entry
 }
@@ -124,7 +128,7 @@ func newGerritProvider(
 	logger *logrus.Entry,
 	cfg config.Getter,
 	pjclientset ctrlruntimeclient.Client,
-	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter,
+	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler,
 	cookiefilePath string,
 	tokenPathOverride string,
 ) *GerritProvider {
@@ -138,13 +142,13 @@ func newGerritProvider(
 	gerritClient.ApplyGlobalConfig(orgRepoConfigGetter, nil, cookiefilePath, tokenPathOverride, nil)
 
 	return &GerritProvider{
-		logger:                  logger,
-		cfg:                     cfg,
-		pjclientset:             pjclientset,
-		gc:                      gerritClient,
-		inRepoConfigCacheGetter: inRepoConfigCacheGetter,
-		cookiefilePath:          cookiefilePath,
-		tokenPathOverride:       tokenPathOverride,
+		logger:                   logger,
+		cfg:                      cfg,
+		pjclientset:              pjclientset,
+		gc:                       gerritClient,
+		inRepoConfigCacheHandler: inRepoConfigCacheHandler,
+		cookiefilePath:           cookiefilePath,
+		tokenPathOverride:        tokenPathOverride,
 	}
 }
 
@@ -294,12 +298,8 @@ func (p *GerritProvider) GetTideContextPolicy(org, repo, branch, cloneURI string
 	presubmits := p.cfg().GetPresubmitsStatic(orgRepo)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
-	if p.inRepoConfigCacheGetter != nil {
-		handler, err := p.inRepoConfigCacheGetter.GetCache()
-		if err != nil {
-			return nil, fmt.Errorf("faled to get inrepoconfig cache: %v", err)
-		}
-		presubmitsFromCache, err := handler.GetPresubmits(orgRepo, cloneURI, baseSHAGetter, headSHAGetter)
+	if p.inRepoConfigCacheHandler != nil {
+		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(orgRepo, cloneURI, baseSHAGetter, headSHAGetter)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
 		}
@@ -387,15 +387,11 @@ func (p *GerritProvider) GetPresubmits(identifier, cloneURI string, baseSHAGette
 	presubmits := p.cfg().GetPresubmitsStatic(identifier)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
-	if p.inRepoConfigCacheGetter != nil {
+	if p.inRepoConfigCacheHandler != nil {
 		// The second parameter for GetCache is `org` name, this is not use for
 		// GetCache at all, as the cache key is `cloneURI` when it's not empty,
 		// and when cloning `org` is not used when `cloneURI` is not empty.
-		handler, err := p.inRepoConfigCacheGetter.GetCache()
-		if err != nil {
-			return nil, fmt.Errorf("faled to get inrepoconfig cache: %v", err)
-		}
-		presubmitsFromCache, err := handler.GetPresubmits(identifier, cloneURI, baseSHAGetter, headSHAGetters...)
+		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(identifier, cloneURI, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
 		}

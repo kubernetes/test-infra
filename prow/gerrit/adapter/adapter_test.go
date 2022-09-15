@@ -37,7 +37,6 @@ import (
 	prowfake "k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/git/v2"
@@ -1372,19 +1371,6 @@ func TestProcessChange(t *testing.T) {
 			fakeLastSync := client.LastSyncState{tc.instance: map[string]time.Time{}}
 			fakeLastSync[tc.instance][tc.change.Project] = timeNow.Add(-time.Minute)
 
-			var gc fgc
-			gc.instanceMap = tc.instancesMap
-			inRepoConfigCacheGetter, err := config.NewInRepoConfigCacheGetter(nil, 1, 1, nil, flagutil.GitHubOptions{}, "", false)
-			if err != nil {
-				t.Fatalf("Failed creating cache getter: %v", err)
-			}
-			c := &Controller{
-				config:                  fca.Config,
-				prowJobClient:           fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-				gc:                      &gc,
-				tracker:                 &fakeSync{val: fakeLastSync},
-				inRepoConfigCacheGetter: inRepoConfigCacheGetter,
-			}
 			cloneURI, err := makeCloneURI(tc.instance, tc.change.Project)
 			if err != nil {
 				t.Errorf("error making CloneURI %v", err)
@@ -1395,7 +1381,17 @@ func TestProcessChange(t *testing.T) {
 				t.Errorf("error making test repo cache %v", err)
 			}
 
-			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI, cache)
+			var gc fgc
+			gc.instanceMap = tc.instancesMap
+			c := &Controller{
+				config:                   fca.Config,
+				prowJobClient:            fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				gc:                       &gc,
+				tracker:                  &fakeSync{val: fakeLastSync},
+				inRepoConfigCacheHandler: cache,
+			}
+
+			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {

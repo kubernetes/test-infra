@@ -105,11 +105,11 @@ type ProwJobClient interface {
 // validates them using Prow Configuration and
 // use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
-	ConfigAgent             *config.Agent
-	Metrics                 *Metrics
-	ProwJobClient           ProwJobClient
-	Reporter                reportClient
-	InRepoConfigCacheGetter *config.InRepoConfigCacheGetter
+	ConfigAgent              *config.Agent
+	Metrics                  *Metrics
+	ProwJobClient            ProwJobClient
+	Reporter                 reportClient
+	InRepoConfigCacheHandler *config.InRepoConfigCacheHandler
 }
 
 type messageInterface interface {
@@ -456,16 +456,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	// Normalize job name
 	pe.Name = strings.TrimSpace(pe.Name)
 
-	var cache *config.InRepoConfigCacheHandler
-	var err error
-	if eType != PeriodicProwJobEvent {
-		cache, err = s.InRepoConfigCacheGetter.GetCache()
-		if err != nil {
-			return err
-		}
-	}
-
-	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), cache, pe)
+	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, pe)
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
