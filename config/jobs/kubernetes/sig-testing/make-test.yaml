@@ -30,7 +30,6 @@ presubmits:
           # unit tests have no business requiring root or doing privileged operations
           securityContext:
             runAsUser: 2000
-            allowPrivilegeEscalation: false
   - name: pull-kubernetes-unit-experimental
     # try clonerefs with preclone
     decoration_config:
@@ -58,11 +57,6 @@ presubmits:
           command:
             - make
             - test
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
@@ -103,7 +97,6 @@ presubmits:
           # unit tests have no business requiring root or doing privileged operations
           securityContext:
             runAsUser: 2000
-            allowPrivilegeEscalation: false
 periodics:
   - interval: 1h
     name: ci-kubernetes-unit
@@ -139,7 +132,6 @@ periodics:
           # unit tests have no business requiring root or doing privileged operations
           securityContext:
             runAsUser: 2000
-            allowPrivilegeEscalation: false
   - interval: 6h
     name: ci-kubernetes-generate-make-test-count10
     annotations:
@@ -164,4 +156,3 @@ periodics:
           # unit tests have no business requiring root or doing privileged operations
           securityContext:
             runAsUser: 2000
-            allowPrivilegeEscalation: false
