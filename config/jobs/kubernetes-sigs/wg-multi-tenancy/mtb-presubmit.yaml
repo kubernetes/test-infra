@@ -16,5 +16,5 @@ presubmits:
           command:
             - wrapper.sh
             - ./benchmarks/kubectl-mtb/hack/ci-test.sh
-          securityContext:
-            privileged: true
+        securityContext:
+           privileged: true
