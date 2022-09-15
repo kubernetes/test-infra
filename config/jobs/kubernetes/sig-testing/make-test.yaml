@@ -14,10 +14,6 @@ presubmits:
     always_run: true
     path_alias: k8s.io/kubernetes
     spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
           command:
