@@ -123,11 +123,11 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # everything below will be triggered on every new image tag ...
-ADD ["images/kubekins-e2e/kops-e2e-runner.sh", \
-    "images/kubekins-e2e/kubetest", \
-    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
-    "logexporter/cluster/log-dump.sh", \
-    "logexporter/cluster/logexporter-daemonset.yaml", \
-    "/workspace/"]
+COPY ["images/kubekins-e2e/kops-e2e-runner.sh", \
+      "images/kubekins-e2e/kubetest", \
+      "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
+      "logexporter/cluster/log-dump.sh", \
+      "logexporter/cluster/logexporter-daemonset.yaml", \
+      "/workspace/"]
 ENV LOG_DUMP_SCRIPT_PATH "/workspace/log-dump.sh"
 RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/log-dump.sh"]

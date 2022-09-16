@@ -40,7 +40,7 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
     ./google-cloud-sdk/install.sh -q && \
     ln -s /google-cloud-sdk/bin/* /bin/
 
-ADD *.py schema.json runner.sh buckets.yaml /kettle/
+COPY *.py schema.json runner.sh buckets.yaml /kettle/
 
 VOLUME ["/data"]
 

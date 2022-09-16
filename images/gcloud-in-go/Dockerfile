@@ -43,5 +43,5 @@ RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.ta
     gcloud components install alpha beta kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
 
-ADD runner /
+COPY runner /
 ENTRYPOINT ["/bin/bash", "/runner"]

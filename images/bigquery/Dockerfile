@@ -42,5 +42,5 @@ RUN gcloud config set core/disable_usage_reporting true && \
     gcloud --version
 
 WORKDIR /workspace
-ADD runner /
+COPY runner /
 ENTRYPOINT ["/bin/bash", "/runner"]

@@ -66,6 +66,9 @@ verify:
 .PHONY: verify-eslint
 verify-eslint:
 	hack/make-rules/verify/eslint.sh
+.PHONY: dockerfile-lint
+dockerfile-lint:
+	hack/make-rules/verify/dockerfile-lint.sh
 # go linters
 .PHONY: go-lint
 go-lint:

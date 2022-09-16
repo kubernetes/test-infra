@@ -22,8 +22,8 @@ RUN apt-get update && \
     apt-get install -y systemd python3
 
 # Setup gcloud SDK for using gsutil.
-ADD ["https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", \
-     "/workspace/"]
+COPY ["https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", \
+      "/workspace/"]
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1
 RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
@@ -35,7 +35,7 @@ RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
     gcloud info | tee /workspace/gcloud-info.txt
 
 # Setup the log exporter script.
-ADD ["logexporter", "/workspace/"]
+COPY ["logexporter", "/workspace/"]
 WORKDIR "/workspace"
 
 ENTRYPOINT ["/workspace/logexporter"]
