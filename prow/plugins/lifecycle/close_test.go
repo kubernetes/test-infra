@@ -84,6 +84,7 @@ func TestCloseComment(t *testing.T) {
 		labels        []string
 		shouldClose   bool
 		shouldComment bool
+		isPr          bool
 	}{
 		{
 			name:          "non-close comment",
@@ -254,6 +255,17 @@ func TestCloseComment(t *testing.T) {
 			shouldClose:   false,
 			shouldComment: true,
 		},
+		{
+			name:          "cannot close PR as not planned",
+			action:        github.GenericCommentActionCreated,
+			state:         "open",
+			body:          "/close not-planned",
+			commenter:     "author",
+			labels:        []string{"error"},
+			shouldClose:   false,
+			shouldComment: true,
+			isPr:          true,
+		},
 	}
 	for _, tc := range testcases {
 		fc := &fakeClientClose{labels: tc.labels}
@@ -264,6 +276,7 @@ func TestCloseComment(t *testing.T) {
 			User:        github.User{Login: tc.commenter},
 			Number:      5,
 			IssueAuthor: github.User{Login: "author"},
+			IsPR:        tc.isPr,
 		}
 		if err := handleClose(fc, logrus.WithField("plugin", "fake-close"), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
@@ -279,7 +292,7 @@ func TestCloseComment(t *testing.T) {
 		} else if !tc.shouldComment && fc.commented {
 			t.Errorf("For case %s, should not have commented but did.", tc.name)
 		}
-		if fc.stateReason != tc.stateReason {
+		if !tc.isPr && fc.stateReason != tc.stateReason {
 			t.Errorf("For case %s, unexpected state_reason value, expected %s, but got %s", tc.name, tc.stateReason, fc.stateReason)
 		}
 	}
