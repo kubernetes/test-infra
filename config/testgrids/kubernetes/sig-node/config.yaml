@@ -11,6 +11,9 @@ dashboard_groups:
     - sig-node-cadvisor
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
+    - sig-node-node-feature-discovery-master
+    - sig-node-node-feature-discovery-release-0-10
+    - sig-node-node-feature-discovery-release-0-11
     - sig-node-kernel-module-management
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
@@ -51,6 +54,9 @@ dashboards:
 
 - name: sig-node-cri-tools
 - name: sig-node-node-feature-discovery
+- name: sig-node-node-feature-discovery-master
+- name: sig-node-node-feature-discovery-release-0-10
+- name: sig-node-node-feature-discovery-release-0-11
 - name: sig-node-kernel-module-management
 
 - name: sig-node-node-problem-detector
