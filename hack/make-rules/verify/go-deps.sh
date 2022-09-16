@@ -75,7 +75,7 @@ main() {
           -x "bazel-testlogs" \
          "${REPO_ROOT}" "${TMP_REPO}" 2>/dev/null || true)
   if [[ -n "${diff}" ]]; then
-    echo "unexpectedly dirty working directory after hack/update/deps.sh" >&2
+    echo "unexpectedly dirty working directory after ${0}" >&2
     echo "" >&2
     echo "${diff}" >&2
     echo "" >&2
