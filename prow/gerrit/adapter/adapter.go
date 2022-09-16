@@ -429,8 +429,9 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	}
 
 	type jobSpec struct {
-		spec   prowapi.ProwJobSpec
-		labels map[string]string
+		spec        prowapi.ProwJobSpec
+		labels      map[string]string
+		annotations map[string]string
 	}
 
 	var jobSpecs []jobSpec
@@ -459,8 +460,9 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 					triggerTimes[postsubmit.Name] = change.Submitted.Time
 				}
 				jobSpecs = append(jobSpecs, jobSpec{
-					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
-					labels: postsubmit.Labels,
+					spec:        pjutil.PostsubmitSpec(postsubmit, refs),
+					labels:      postsubmit.Labels,
+					annotations: postsubmit.Annotations,
 				})
 			}
 		}
@@ -536,15 +538,11 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 		for _, presubmit := range toTrigger {
 			jobSpecs = append(jobSpecs, jobSpec{
-				spec:   pjutil.PresubmitSpec(presubmit, refs),
-				labels: presubmit.Labels,
+				spec:        pjutil.PresubmitSpec(presubmit, refs),
+				labels:      presubmit.Labels,
+				annotations: presubmit.Annotations,
 			})
 		}
-	}
-
-	annotations := map[string]string{
-		kube.GerritID:       change.ID,
-		kube.GerritInstance: instance,
 	}
 
 	for _, jSpec := range jobSpecs {
@@ -554,6 +552,12 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		}
 		labels[kube.GerritRevision] = change.CurrentRevision
 		labels[kube.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
+		annotations := make(map[string]string)
+		for k, v := range jSpec.annotations {
+			annotations[k] = v
+		}
+		annotations[kube.GerritID] = change.ID
+		annotations[kube.GerritInstance] = instance
 
 		if _, ok := labels[kube.GerritReportLabel]; !ok {
 			logger.WithField("job", jSpec.spec.Job).Debug("Job uses default value of 'Code-Review' for 'prow.k8s.io/gerrit-report-label' label. This default will removed in March 2022.")

@@ -24,6 +24,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
@@ -54,7 +55,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 		{
 			name: "Basic happy path (presubmits)",
 			baseContent: map[string][]byte{
-				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow.yaml": []byte(`presubmits: [{"name": "hans", "annotations": {"foo.bar": "foobar"}, "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
@@ -62,6 +63,9 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				}
+				if diff := cmp.Diff(p.Presubmits[0].Annotations, map[string]string{"foo.bar": "foobar"}); diff != "" {
+					return errors.New(diff)
 				}
 				return nil
 			},
