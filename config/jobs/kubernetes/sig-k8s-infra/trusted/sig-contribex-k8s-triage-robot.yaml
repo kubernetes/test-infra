@@ -130,14 +130,14 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
-- name: ci-k8s-triage-robot-close
+- name: ci-k8s-triage-robot-close-issues
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Closes rotten issues after 30d of inactivity
-    testgrid-tab-name: close
+    testgrid-tab-name: close-issues
   spec:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20220915-cd08dd395d
@@ -149,6 +149,7 @@ periodics:
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        is:issue
         -repo:kubernetes-sigs/kind
         -label:lifecycle/frozen
         label:lifecycle/rotten
@@ -158,14 +159,69 @@ periodics:
       - |-
         --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
 
-        This bot triages issues and PRs according to the following rules:
+        This bot triages issues according to the following rules:
         - After 90d of inactivity, `lifecycle/stale` is applied
         - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
         - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
 
         You can:
-        - Reopen this issue or PR with `/reopen`
-        - Mark this issue or PR as fresh with `/remove-lifecycle rotten`
+        - Reopen this issue with `/reopen`
+        - Mark this issue as fresh with `/remove-lifecycle rotten`
+        - Offer to help out with [Issue Triage][1]
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /close not-planned
+
+        [1]: https://www.kubernetes.dev/docs/guide/issue-triage/
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+- name: ci-k8s-triage-robot-close-prs
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Closes rotten PRs after 30d of inactivity
+    testgrid-tab-name: close-prs
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20220915-cd08dd395d
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        is:pr
+        -repo:kubernetes-sigs/kind
+        -label:lifecycle/frozen
+        label:lifecycle/rotten
+      - --updated=720h
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
+
+        This bot triages PRs according to the following rules:
+        - After 90d of inactivity, `lifecycle/stale` is applied
+        - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the PR is closed
+
+        You can:
+        - Reopen this PR with `/reopen`
+        - Mark this PR as fresh with `/remove-lifecycle rotten`
         - Offer to help out with [Issue Triage][1]
 
         Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
