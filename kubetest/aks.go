@@ -208,9 +208,6 @@ func (a *aksDeployer) Up() error {
 		return fmt.Errorf("failed to extract resulting managed cluster: %w", err)
 	}
 	masterIP := *managedCluster.ManagedClusterProperties.Fqdn
-	if err != nil {
-		return fmt.Errorf("failed to get masterIP: %w", err)
-	}
 	masterInternalIP := masterIP
 
 	if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {

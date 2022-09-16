@@ -459,7 +459,7 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 	}
 
 	// Return error if apps restrictions if feature is disabled, but there are apps restrictions in the config
-	if !p.enableAppsRestrictions && bp != nil && bp.Restrictions != nil && bp.Restrictions.Apps != nil {
+	if !p.enableAppsRestrictions && bp.Restrictions != nil && bp.Restrictions.Apps != nil {
 		return fmt.Errorf("'enable-apps-restrictions' command line flag is not true, but Apps Restrictions are maintained for %s/%s=%s", orgName, repo, branchName)
 	}
 
