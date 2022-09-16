@@ -96,6 +96,20 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 	// Add a comment after closing the PR or issue
 	// to leave an audit trail of who asked to close it.
 	if e.IsPR {
+		// PRs cannot be closed as Not Planned because the
+		// "not_planned" state only exists for issues, which
+		// is why allowing PRs to be closed when /close not-planned
+		// is commented feels awkward.
+		if closeNotPlannedRe.MatchString(e.Body) {
+			response := "PRs cannot be closed as Not Planned."
+			log.Infof("Commenting \"%s\".", response)
+			return gc.CreateComment(
+				org,
+				repo,
+				number,
+				plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, response),
+			)
+		}
 		log.Info("Closing PR.")
 		if err := gc.ClosePR(org, repo, number); err != nil {
 			return fmt.Errorf("Error closing PR: %w", err)
