@@ -1,6 +1,6 @@
 # test-infra
 
-[![GoDoc](https://godoc.org/github.com/kubernetes/test-infra?status.svg)](https://godoc.org/github.com/kubernetes/test-infra)
+[![GoDoc](https://godoc.org/k8s.io/test-infra?status.svg)](https://godoc.org/k8s.io/test-infra)
 [![Build status](https://prow.k8s.io/badge.svg?jobs=ci-test-infra-continuous-test)](https://testgrid.k8s.io/sig-testing-misc#continuous)
 
 This repository contains tools and configuration files for the testing and
