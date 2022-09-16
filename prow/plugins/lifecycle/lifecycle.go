@@ -43,11 +43,11 @@ func help(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.Plugin
 		Description: "Close, reopen, flag and/or unflag an issue or PR as frozen/stale/rotten",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/close",
+		Usage:       "/close [not-planned]",
 		Description: "Closes an issue or PR.",
 		Featured:    false,
 		WhoCanUse:   "Authors and collaborators on the repository can trigger this command.",
-		Examples:    []string{"/close"},
+		Examples:    []string{"/close", "/close not-planned"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/reopen",

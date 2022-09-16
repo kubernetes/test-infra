@@ -6,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220915-f0ff885869-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -24,12 +24,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      requests:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        memory: "9000Mi"
-        # during the tests more like 3-20m is used
-        cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest Release
@@ -42,7 +43,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220915-f0ff885869-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -60,12 +61,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      requests:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        memory: "9000Mi"
-        # during the tests more like 3-20m is used
-        cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest Release Candidate
@@ -78,7 +80,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220915-f0ff885869-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -96,12 +98,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      requests:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        memory: "9000Mi"
-        # during the tests more like 3-20m is used
-        cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest
@@ -114,7 +117,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220915-f0ff885869-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -132,12 +135,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      requests:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        memory: "9000Mi"
-        # during the tests more like 3-20m is used
-        cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Kubernetes Master Driver Latest Canary Sidecars
@@ -150,7 +154,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220915-f0ff885869-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -168,13 +172,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    resources:
-      requests:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        memory: "9000Mi"
-        # during the tests more like 3-20m is used
-        cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Stable
@@ -187,7 +191,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220915-f0ff885869-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -205,13 +209,13 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    resources:
-      requests:
-        # these are both a bit below peak usage during build
-        # this is mostly for building kubernetes
-        memory: "9000Mi"
-        # during the tests more like 3-20m is used
-        cpu: 2000m
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
     testgrid-tab-name: Migration Kubernetes Master Driver Latest

@@ -26,12 +26,16 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-var closeRe = regexp.MustCompile(`(?mi)^/close\s*$`)
+var (
+	closeRe           = regexp.MustCompile(`(?mi)^/close\s*$`)
+	closeNotPlannedRe = regexp.MustCompile(`(?mi)^/close not-planned\s*$`)
+)
 
 type closeClient interface {
 	IsCollaborator(owner, repo, login string) (bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	CloseIssue(owner, repo string, number int) error
+	CloseIssueAsNotPlanned(org, repo string, number int) error
 	ClosePR(owner, repo string, number int) error
 	GetIssueLabels(owner, repo string, number int) ([]github.Label, error)
 }
@@ -55,7 +59,7 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 		return nil
 	}
 
-	if !closeRe.MatchString(e.Body) {
+	if !closeRe.MatchString(e.Body) && !closeNotPlannedRe.MatchString(e.Body) {
 		return nil
 	}
 
@@ -101,9 +105,19 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 	}
 
 	log.Info("Closing issue.")
-	if err := gc.CloseIssue(org, repo, number); err != nil {
-		return fmt.Errorf("Error closing issue: %w", err)
+	var reply string
+	if closeNotPlannedRe.MatchString(e.Body) {
+		if err := gc.CloseIssueAsNotPlanned(org, repo, number); err != nil {
+			return fmt.Errorf("Error closing issue as \"Not Planned\": %w", err)
+		}
+		reply = "Closing this issue, marking it as \"Not Planned\"."
+	} else {
+		if err := gc.CloseIssue(org, repo, number); err != nil {
+			return fmt.Errorf("Error closing issue: %w", err)
+		}
+		reply = "Closing this issue."
 	}
-	response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, "Closing this issue.")
+
+	response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, reply)
 	return gc.CreateComment(org, repo, number, response)
 }

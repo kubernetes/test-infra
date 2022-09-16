@@ -119,9 +119,9 @@ var tmplContentFooter = template.Must(template.New("content-footer").Parse(tmplC
 
 func htmlContentFooter(out io.Writer, path string) error {
 	args := struct {
-		Path    string
+		Path string
 	}{
-		Path:    path,
+		Path: path,
 	}
 	return tmplContentFooter.Execute(out, args)
 }
