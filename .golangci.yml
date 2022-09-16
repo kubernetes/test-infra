@@ -11,6 +11,9 @@ linters-settings:
     threshold: 100
   gocyclo:
     min-complexity: 50
+  govet:
+    enable:
+      - nilness
 
 linters:
   enable:
