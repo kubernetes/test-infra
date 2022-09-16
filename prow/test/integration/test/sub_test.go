@@ -476,7 +476,7 @@ this-is-from-repo5
 			// log as much as possible to make it easier to see why a test
 			// failed), or when the test succeeds (where we clean up the ProwJob
 			// that was created by sub).
-			timeout := 90 * time.Second
+			timeout := 120 * time.Second
 			pollInterval := 500 * time.Millisecond
 			if waitErr := wait.Poll(pollInterval, timeout, expectJobSuccess); waitErr != nil {
 				if podName == nil {
