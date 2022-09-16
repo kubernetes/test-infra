@@ -525,20 +525,21 @@ func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCacheHandle
 	}
 	return cache, nil
 }
+
 func TestProcessChange(t *testing.T) {
 	testInstance := "https://gerrit"
 	var testcases = []struct {
-		name             string
-		change           client.ChangeInfo
-		numPJ            int
-		pjRef            string
-		instancesMap     map[string]*gerrit.AccountInfo
-		instance         string
-		shouldError      bool
-		shouldSkipReport bool
-		expectedLabels   map[string]string
+		name                string
+		change              client.ChangeInfo
+		numPJ               int
+		pjRef               string
+		instancesMap        map[string]*gerrit.AccountInfo
+		instance            string
+		shouldError         bool
+		shouldSkipReport    bool
+		expectedLabels      map[string]string
+		expectedAnnotations map[string]string
 	}{
-
 		{
 			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change",
 			change: client.ChangeInfo{
@@ -648,6 +649,13 @@ func TestProcessChange(t *testing.T) {
 				kube.RepoLabel:         "test-infra",
 				kube.BaseRefLabel:      "",
 				kube.PullLabel:         "0",
+			},
+			expectedAnnotations: map[string]string{
+				"prow.k8s.io/context":         "always-runs-all-branches",
+				"prow.k8s.io/gerrit-id":       "",
+				"prow.k8s.io/gerrit-instance": "https://gerrit",
+				"prow.k8s.io/job":             "always-runs-all-branches",
+				"foo":                         "bar",
 			},
 		},
 		{
@@ -1215,7 +1223,8 @@ func TestProcessChange(t *testing.T) {
 	testInfraPresubmits := []config.Presubmit{
 		{
 			JobBase: config.JobBase{
-				Name: "always-runs-all-branches",
+				Name:        "always-runs-all-branches",
+				Annotations: map[string]string{"foo": "bar"},
 			},
 			AlwaysRun: true,
 			Reporter: config.Reporter{
@@ -1422,8 +1431,13 @@ func TestProcessChange(t *testing.T) {
 					t.Errorf("BaseSHA should be abc, got %s", prowjobs[0].Spec.Refs.BaseSHA)
 				}
 				if tc.expectedLabels != nil {
-					if !equality.Semantic.DeepEqual(tc.expectedLabels, prowjobs[0].Labels) {
-						t.Errorf("diff between expected and actual labels:%s", diff.ObjectReflectDiff(tc.expectedLabels, prowjobs[0].Labels))
+					if diff := cmp.Diff(tc.expectedLabels, prowjobs[0].Labels); diff != "" {
+						t.Errorf("diff between expected and actual labels:\n%s", diff)
+					}
+				}
+				if tc.expectedAnnotations != nil {
+					if diff := cmp.Diff(tc.expectedAnnotations, prowjobs[0].Annotations); diff != "" {
+						t.Errorf("diff between expected and actual annotations:\n%s", diff)
 					}
 				}
 			}
