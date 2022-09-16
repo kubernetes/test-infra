@@ -147,9 +147,9 @@ class E2ENodeTest:
             prow_config['cluster'] = self.job['cluster']
         # use resources from test_suite, or job, or default
         if 'resources' in test_suite:
-            prow_config['resources'] = test_suite['resources']
+            prow_config['spec']['containers'][0]['resources'] = test_suite['resources']
         elif 'resources' in self.job:
-            prow_config['resources'] = self.job['resources']
+            prow_config['spec']['containers'][0]['resources'] = self.job['resources']
         # pull interval or cron from job
         if 'interval' in self.job:
             del prow_config['cron']
@@ -268,9 +268,9 @@ class E2ETest:
             prow_config['cluster'] = self.job['cluster']
         # use resources from test_suite, or job, or default
         if 'resources' in test_suite:
-            prow_config['resources'] = test_suite['resources']
+            prow_config['spec']['containers'][0]['resources'] = test_suite['resources']
         elif 'resources' in self.job:
-            prow_config['resources'] = self.job['resources']
+            prow_config['spec']['containers'][0]['resources'] = self.job['resources']
         if 'interval' in self.job:
             del prow_config['cron']
             prow_config['interval'] = self.job['interval']
