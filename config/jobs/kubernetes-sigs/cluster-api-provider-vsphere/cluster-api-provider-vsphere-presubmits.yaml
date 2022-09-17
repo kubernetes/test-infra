@@ -93,7 +93,9 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220916-c3af09ab20-1.24
           command:
-          - hack/ci-apidiff.sh
+          - runner.sh
+          args:
+          - ./hack/ci-apidiff.sh
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-apidiff
