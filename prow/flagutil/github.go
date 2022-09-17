@@ -413,7 +413,7 @@ func (o *GitHubOptions) appPrivateKeyGenerator() (func() *rsa.PrivateKey, error)
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
+		return nil, fmt.Errorf("failed to add the key from --app-private-key-path to secret agent: %w", err)
 	}
 
 	return generator, nil
