@@ -1,0 +1,23 @@
+periodics:
+- name: ci-kubernetes-snyk-master
+  interval: 6h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:  
+  - org: kubernetes
+    repo: sig-security
+    base_ref: main
+    workdir: true
+  labels:
+    preset-service-account: "true"
+  spec:
+    serviceAccountName: k8s-cve-feed
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220607-33951ed1ed
+      command:
+      - sh
+      - "-c"
+      - "cd sig-security-tooling/cve-feed/hack/ && ./build-deps-and-release-images.sh"
+      env:
+      - name: CVE_GCS_PATH
+        value: "gs://k8s-cve-feed"
