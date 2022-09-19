@@ -161,16 +161,20 @@ label:
       # Restrict setting of tracked/* labels to the enhancements team.
       - label: tracked/no
         allowed_teams:
-        - enhancements
+        - release-team-enhancements
+        - release-team-leads
       - label: tracked/yes
         allowed_teams:
-        - enhancements
+        - release-team-enhancements
+        - release-team-leads
       - label: tracked/out-of-tree
         allowed_teams:
-        - enhancements
+        - release-team-enhancements
+        - release-team-leads
       # Restrict setting of 'lead-opted-in' label to SIG leads.
-      - label: lead-opted-in  
+      - label: lead-opted-in
         allowed_teams:
+        - release-team-enhancements
         - sig-api-machinery-leads
         - sig-apps-leads
         - sig-architecture-leads
