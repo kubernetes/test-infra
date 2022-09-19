@@ -34,7 +34,6 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/types"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/tide/blockers"
@@ -277,7 +276,7 @@ func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdate
 
 // GetTideContextPolicy gets context policy defined by users + requirements from
 // prow jobs.
-func (p *GerritProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
+func (p *GerritProvider) GetTideContextPolicy(org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
 	pr := crc.Gerrit
 	if pr == nil {
 		return nil, errors.New("programmer error: crc.Gerrit cannot be nil for GerritProvider")
@@ -377,6 +376,32 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequest
 	}
 
 	return res, nil
+}
+
+// GetPresubmits gets presubmit jobs for a PR.
+//
+// (TODO:chaodaiG): deduplicate this with GitHub, which means inrepoconfig
+// processing all use cache client.
+func (p *GerritProvider) GetPresubmits(identifier, cloneURI string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+	// Get presubmits from Config alone.
+	presubmits := p.cfg().GetPresubmitsStatic(identifier)
+	// If InRepoConfigCache is provided, then it means that we also want to fetch
+	// from an inrepoconfig.
+	if p.inRepoConfigCacheGetter != nil {
+		// The second parameter for GetCache is `org` name, this is not use for
+		// GetCache at all, as the cache key is `cloneURI` when it's not empty,
+		// and when cloning `org` is not used when `cloneURI` is not empty.
+		handler, err := p.inRepoConfigCacheGetter.GetCache()
+		if err != nil {
+			return nil, fmt.Errorf("faled to get inrepoconfig cache: %v", err)
+		}
+		presubmitsFromCache, err := handler.GetPresubmits(identifier, cloneURI, baseSHAGetter, headSHAGetters...)
+		if err != nil {
+			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
+		}
+		presubmits = append(presubmits, presubmitsFromCache...)
+	}
+	return presubmits, nil
 }
 
 func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {
