@@ -3,7 +3,7 @@ postsubmits:
     - name: post-kernel-module-management-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-node-image-pushes
+        testgrid-dashboards: sig-node-image-pushes, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^main$
