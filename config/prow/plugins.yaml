@@ -162,12 +162,15 @@ label:
       - label: tracked/no
         allowed_teams:
         - release-team-enhancements
+        - release-team-leads
       - label: tracked/yes
         allowed_teams:
         - release-team-enhancements
+        - release-team-leads
       - label: tracked/out-of-tree
         allowed_teams:
         - release-team-enhancements
+        - release-team-leads
       # Restrict setting of 'lead-opted-in' label to SIG leads.
       - label: lead-opted-in
         allowed_teams:
