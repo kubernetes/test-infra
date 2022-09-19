@@ -69,7 +69,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: cypress/base:14.17.6
+      - image: cypress/base:18.6.0
         command:
         - /bin/bash
         - -c
