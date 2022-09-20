@@ -341,6 +341,11 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        kms:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         kompose:
           required_status_checks:
             contexts:
