@@ -136,7 +136,11 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}
 
-	cacheGetter, err := config.NewInRepoConfigCacheGetter(ca, o.config.InRepoConfigCacheSize, o.config.InRepoConfigCacheCopies, o.config.InRepoConfigCacheDirBase, prowflagutil.GitHubOptions{}, o.cookiefilePath, o.dryRun)
+	gitClient, err := (&prowflagutil.GitHubOptions{}).GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating git client.")
+	}
+	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, ca, gitClient, o.config.InRepoConfigCacheCopies)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}

@@ -34,7 +34,6 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/types"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/tide/blockers"
@@ -90,7 +89,11 @@ func NewGerritController(
 		newPoolPending:   make(chan bool),
 	}
 
-	cacheGetter, err := config.NewInRepoConfigCacheGetter(cfgAgent, configOptions.InRepoConfigCacheSize, configOptions.InRepoConfigCacheCopies, configOptions.InRepoConfigCacheDirBase, flagutil.GitHubOptions{}, cookieFilePath, false)
+	gitClient, err := (&flagutil.GitHubOptions{}).GitClientFactory(cookieFilePath, &configOptions.InRepoConfigCacheDirBase, false)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating git client.")
+	}
+	cacheGetter, err := config.NewInRepoConfigCacheHandler(configOptions.InRepoConfigCacheSize, cfgAgent, gitClient, configOptions.InRepoConfigCacheCopies)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
 	}
@@ -114,9 +117,9 @@ type GerritProvider struct {
 	gc          gerritClient
 	pjclientset ctrlruntimeclient.Client
 
-	cookiefilePath          string
-	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter
-	tokenPathOverride       string
+	cookiefilePath           string
+	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler
+	tokenPathOverride        string
 
 	logger *logrus.Entry
 }
@@ -125,7 +128,7 @@ func newGerritProvider(
 	logger *logrus.Entry,
 	cfg config.Getter,
 	pjclientset ctrlruntimeclient.Client,
-	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter,
+	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler,
 	cookiefilePath string,
 	tokenPathOverride string,
 ) *GerritProvider {
@@ -139,13 +142,13 @@ func newGerritProvider(
 	gerritClient.ApplyGlobalConfig(orgRepoConfigGetter, nil, cookiefilePath, tokenPathOverride, nil)
 
 	return &GerritProvider{
-		logger:                  logger,
-		cfg:                     cfg,
-		pjclientset:             pjclientset,
-		gc:                      gerritClient,
-		inRepoConfigCacheGetter: inRepoConfigCacheGetter,
-		cookiefilePath:          cookiefilePath,
-		tokenPathOverride:       tokenPathOverride,
+		logger:                   logger,
+		cfg:                      cfg,
+		pjclientset:              pjclientset,
+		gc:                       gerritClient,
+		inRepoConfigCacheHandler: inRepoConfigCacheHandler,
+		cookiefilePath:           cookiefilePath,
+		tokenPathOverride:        tokenPathOverride,
 	}
 }
 
@@ -277,7 +280,7 @@ func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdate
 
 // GetTideContextPolicy gets context policy defined by users + requirements from
 // prow jobs.
-func (p *GerritProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
+func (p *GerritProvider) GetTideContextPolicy(org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
 	pr := crc.Gerrit
 	if pr == nil {
 		return nil, errors.New("programmer error: crc.Gerrit cannot be nil for GerritProvider")
@@ -295,12 +298,8 @@ func (p *GerritProvider) GetTideContextPolicy(gitClient git.ClientFactory, org, 
 	presubmits := p.cfg().GetPresubmitsStatic(orgRepo)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
-	if p.inRepoConfigCacheGetter != nil {
-		handler, err := p.inRepoConfigCacheGetter.GetCache()
-		if err != nil {
-			return nil, fmt.Errorf("faled to get inrepoconfig cache: %v", err)
-		}
-		presubmitsFromCache, err := handler.GetPresubmits(orgRepo, cloneURI, baseSHAGetter, headSHAGetter)
+	if p.inRepoConfigCacheHandler != nil {
+		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(orgRepo, cloneURI, baseSHAGetter, headSHAGetter)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
 		}
@@ -377,6 +376,28 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequest
 	}
 
 	return res, nil
+}
+
+// GetPresubmits gets presubmit jobs for a PR.
+//
+// (TODO:chaodaiG): deduplicate this with GitHub, which means inrepoconfig
+// processing all use cache client.
+func (p *GerritProvider) GetPresubmits(identifier, cloneURI string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+	// Get presubmits from Config alone.
+	presubmits := p.cfg().GetPresubmitsStatic(identifier)
+	// If InRepoConfigCache is provided, then it means that we also want to fetch
+	// from an inrepoconfig.
+	if p.inRepoConfigCacheHandler != nil {
+		// The second parameter for GetCache is `org` name, this is not use for
+		// GetCache at all, as the cache key is `cloneURI` when it's not empty,
+		// and when cloning `org` is not used when `cloneURI` is not empty.
+		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(identifier, cloneURI, baseSHAGetter, headSHAGetters...)
+		if err != nil {
+			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
+		}
+		presubmits = append(presubmits, presubmitsFromCache...)
+	}
+	return presubmits, nil
 }
 
 func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {

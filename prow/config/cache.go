@@ -20,14 +20,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os/exec"
-	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/cache"
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git/v2"
 )
 
@@ -72,99 +69,6 @@ type InrepoconfigPostsubmitRequest struct {
 	HeadSHAGetters []RefGetter
 	resChan        chan []Postsubmit
 	errChan        chan error
-}
-
-type InRepoConfigCacheGetter struct {
-	CacheSize      int
-	CacheCopies    int
-	CacheDir       string
-	Agent          *Agent
-	mu             sync.Mutex
-	GitHubOptions  flagutil.GitHubOptions
-	CookieFilePath string
-	DryRun         bool
-
-	Cache *InRepoConfigCacheHandler
-}
-
-// NewInRepoConfigCacheGetter initialize InRepoConfigCacheGetter.
-func NewInRepoConfigCacheGetter(
-	configAgent *Agent,
-	inRepoConfigCacheSize int,
-	inRepoConfigCacheCopies int,
-	inRepoConfigCacheDirBase string,
-	gitHubOptions flagutil.GitHubOptions,
-	cookieFilePath string,
-	dryRun bool,
-) (*InRepoConfigCacheGetter, error) {
-
-	// If we are provided credentials for Git hosts, use them. These credentials
-	// hold per-host information in them so it's safe to set them globally.
-	if cookieFilePath != "" {
-		cmd := exec.Command("git", "config", "--global", "http.cookiefile", cookieFilePath)
-		if out, err := cmd.CombinedOutput(); err != nil {
-			return nil, fmt.Errorf("unable to set cookiefile. Error: %v\nOutput: %s", err, string(out))
-		}
-	}
-
-	return &InRepoConfigCacheGetter{
-		CacheSize:      inRepoConfigCacheSize,
-		CacheCopies:    inRepoConfigCacheCopies,
-		CacheDir:       inRepoConfigCacheDirBase,
-		Agent:          configAgent,
-		mu:             sync.Mutex{},
-		GitHubOptions:  gitHubOptions,
-		CookieFilePath: cookieFilePath,
-		DryRun:         dryRun,
-	}, nil
-}
-
-// GetCache returns InRepoConfigCacheHandler based on authentication methods. If
-// GitHub bot token or GitHub app private key is provided then returns handler
-// that works best with GitHub, if http.cookiefile is provided then returns
-// handler that authenticate with cookiefile.
-func (irc *InRepoConfigCacheGetter) GetCache() (*InRepoConfigCacheHandler, error) {
-	// No repo is cloned in getCache, Since this function should happen fast it is safe to lock the whole function.
-	irc.mu.Lock()
-	defer irc.mu.Unlock()
-	if irc.Cache != nil {
-		return irc.Cache, nil
-	}
-
-	var gitClientFactory git.ClientFactory
-	var cache *InRepoConfigCacheHandler
-	var err error
-	if irc.CookieFilePath != "" && irc.GitHubOptions.TokenPath == "" && irc.GitHubOptions.AppPrivateKeyPath == "" {
-		opts := git.ClientFactoryOpts{
-			CookieFilePath: irc.CookieFilePath,
-			CacheDirBase:   &irc.CacheDir,
-		}
-		gitClientFactory, err = git.NewClientFactory(opts.Apply)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
-		}
-	} else {
-		gitClient, err := irc.GitHubOptions.GitClient(irc.DryRun)
-		if err != nil {
-			return nil, fmt.Errorf("Error getting git client: %w", err)
-		}
-		gitClientFactory = git.ClientFactoryFrom(gitClient)
-	}
-
-	// Initialize cache for fetching Presubmit and Postsubmit information. If
-	// the cache cannot be initialized, exit with an error.
-	cache, err = NewInRepoConfigCacheHandler(
-		irc.CacheSize,
-		irc.Agent,
-		NewInRepoConfigGitCache(gitClientFactory),
-		irc.CacheCopies)
-	// If we cannot initialize the cache, exit with an error.
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
-	}
-
-	irc.Cache = cache
-	return cache, nil
 }
 
 type InRepoConfigCacheHandler struct {

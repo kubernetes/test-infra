@@ -33,7 +33,6 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/interrupts"
@@ -150,7 +149,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gitClient, err := o.github.GitClient(o.dryRun)
+	gitClient, err := o.github.GitClientFactory("", &o.config.InRepoConfigCacheDirBase, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
@@ -220,14 +219,14 @@ func main() {
 	resolver := func(org, repo string) ownersconfig.Filenames {
 		return pluginAgent.Config().OwnersFilenames(org, repo)
 	}
-	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirDenylist, resolver)
+	ownersClient := repoowners.NewClient(gitClient, githubClient, mdYAMLEnabled, skipCollaborators, ownersDirDenylist, resolver)
 
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:              githubClient,
 		ProwJobClient:             prowJobClient,
 		KubernetesClient:          infrastructureClient,
 		BuildClusterCoreV1Clients: buildClusterCoreV1Clients,
-		GitClient:                 git.ClientFactoryFrom(gitClient),
+		GitClient:                 gitClient,
 		SlackClient:               slackClient,
 		OwnersClient:              ownersClient,
 		BugzillaClient:            bugzillaClient,

@@ -100,20 +100,20 @@ type gerritClient interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config                  config.Getter
-	prowJobClient           prowJobClient
-	gc                      gerritClient
-	tracker                 LastSyncTracker
-	projectsOptOutHelp      map[string]sets.String
-	lock                    sync.RWMutex
-	cookieFilePath          string
-	configAgent             *config.Agent
-	inRepoConfigCacheGetter *config.InRepoConfigCacheGetter
-	inRepoConfigFailures    map[string]bool
-	instancesWithWorker     map[string]bool
-	repoCacheMapMux         sync.Mutex
-	latestMux               sync.Mutex
-	workerPoolSize          int
+	config                   config.Getter
+	prowJobClient            prowJobClient
+	gc                       gerritClient
+	tracker                  LastSyncTracker
+	projectsOptOutHelp       map[string]sets.String
+	lock                     sync.RWMutex
+	cookieFilePath           string
+	configAgent              *config.Agent
+	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler
+	inRepoConfigFailures     map[string]bool
+	instancesWithWorker      map[string]bool
+	repoCacheMapMux          sync.Mutex
+	latestMux                sync.Mutex
+	workerPoolSize           int
 }
 
 type LastSyncTracker interface {
@@ -123,7 +123,7 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCacheGetter *config.InRepoConfigCacheGetter) *Controller {
+	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCacheHandler *config.InRepoConfigCacheHandler) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
@@ -143,17 +143,17 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 	c := &Controller{
-		prowJobClient:           prowJobClient,
-		config:                  cfg,
-		gc:                      gerritClient,
-		tracker:                 lastSyncTracker,
-		projectsOptOutHelp:      projectsOptOutHelpMap,
-		cookieFilePath:          cookiefilePath,
-		configAgent:             ca,
-		inRepoConfigCacheGetter: inRepoConfigCacheGetter,
-		inRepoConfigFailures:    map[string]bool{},
-		instancesWithWorker:     make(map[string]bool),
-		workerPoolSize:          workerPoolSize,
+		prowJobClient:            prowJobClient,
+		config:                   cfg,
+		gc:                       gerritClient,
+		tracker:                  lastSyncTracker,
+		projectsOptOutHelp:       projectsOptOutHelpMap,
+		cookieFilePath:           cookiefilePath,
+		configAgent:              ca,
+		inRepoConfigCacheHandler: inRepoConfigCacheHandler,
+		inRepoConfigFailures:     map[string]bool{},
+		instancesWithWorker:      make(map[string]bool),
+		workerPoolSize:           workerPoolSize,
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -205,15 +205,8 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 			log.WithError(err).Error("makeCloneURI.")
 		}
 
-		cache, err := c.inRepoConfigCacheGetter.GetCache()
-		if err != nil {
-			wg.Done()
-			log.WithError(err).Error("create repo cache.")
-			continue
-		}
-
 		result := client.ResultSuccess
-		if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {
+		if err := c.processChange(log, instance, change, cloneURI); err != nil {
 			result = client.ResultError
 			log.WithError(err).Info("Failed to process change")
 		}
@@ -409,7 +402,7 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 }
 
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
-func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL, cache *config.InRepoConfigCacheHandler) error {
+func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL) error {
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
 	trimmedHostPath := cloneURI.Host + "/" + cloneURI.Path
 	if err != nil {
@@ -442,7 +435,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.Merged:
 		var postsubmits []config.Postsubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = cache.GetPostsubmits(trimmedHostPath, cloneURI.String(), func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(trimmedHostPath, cloneURI.String(), func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
@@ -469,7 +462,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.New:
 		var presubmits []config.Presubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = cache.GetPresubmits(trimmedHostPath, cloneURI.String(), func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(trimmedHostPath, cloneURI.String(), func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			if err == nil {
 				break
 			}

@@ -133,17 +133,21 @@ func main() {
 		}
 	}
 
-	cacheGetter, err := config.NewInRepoConfigCacheGetter(configAgent, o.config.InRepoConfigCacheSize, o.config.InRepoConfigCacheCopies, o.config.InRepoConfigCacheDirBase, o.github, o.cookiefilePath, o.dryRun)
+	gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Git client.")
+	}
+	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, configAgent, gitClient, o.config.InRepoConfigCacheCopies)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
 
 	s := &subscriber.Subscriber{
-		ConfigAgent:             configAgent,
-		Metrics:                 promMetrics,
-		ProwJobClient:           kubeClient,
-		Reporter:                pubsub.NewReporter(configAgent.Config), // reuse crier reporter
-		InRepoConfigCacheGetter: cacheGetter,
+		ConfigAgent:              configAgent,
+		Metrics:                  promMetrics,
+		ProwJobClient:            kubeClient,
+		Reporter:                 pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		InRepoConfigCacheHandler: cacheGetter,
 	}
 
 	subMux := http.NewServeMux()
