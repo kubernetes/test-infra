@@ -396,11 +396,10 @@ func main() {
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting GitHub client.")
 			}
-			g, err := o.github.GitClient(o.dryRun)
+			gitClient, err = o.github.GitClientFactory("", &o.config.InRepoConfigCacheDirBase, o.dryRun)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting Git client.")
 			}
-			gitClient = git.ClientFactoryFrom(g)
 		} else {
 			if len(cfg().InRepoConfig.Enabled) > 0 {
 				logrus.Info(" --github-token-path not configured. InRepoConfigEnabled, but current configuration won't display full PR history")

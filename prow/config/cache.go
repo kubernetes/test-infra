@@ -92,7 +92,7 @@ func NewInRepoConfigCacheGetter(
 	configAgent *Agent,
 	inRepoConfigCacheSize int,
 	inRepoConfigCacheCopies int,
-	inRepoConfigCacheDirBase string,
+	inRepoConfigCacheDirBase *string,
 	gitHubOptions flagutil.GitHubOptions,
 	cookieFilePath string,
 	dryRun bool,
@@ -107,16 +107,19 @@ func NewInRepoConfigCacheGetter(
 		}
 	}
 
-	return &InRepoConfigCacheGetter{
+	c := &InRepoConfigCacheGetter{
 		CacheSize:      inRepoConfigCacheSize,
 		CacheCopies:    inRepoConfigCacheCopies,
-		CacheDir:       inRepoConfigCacheDirBase,
 		Agent:          configAgent,
 		mu:             sync.Mutex{},
 		GitHubOptions:  gitHubOptions,
 		CookieFilePath: cookieFilePath,
 		DryRun:         dryRun,
-	}, nil
+	}
+	if inRepoConfigCacheDirBase != nil && *inRepoConfigCacheDirBase != "" {
+		c.CacheDir = *inRepoConfigCacheDirBase
+	}
+	return c, nil
 }
 
 // GetCache returns InRepoConfigCacheHandler based on authentication methods. If
@@ -131,29 +134,14 @@ func (irc *InRepoConfigCacheGetter) GetCache() (*InRepoConfigCacheHandler, error
 		return irc.Cache, nil
 	}
 
-	var gitClientFactory git.ClientFactory
-	var cache *InRepoConfigCacheHandler
-	var err error
-	if irc.CookieFilePath != "" && irc.GitHubOptions.TokenPath == "" && irc.GitHubOptions.AppPrivateKeyPath == "" {
-		opts := git.ClientFactoryOpts{
-			CookieFilePath: irc.CookieFilePath,
-			CacheDirBase:   &irc.CacheDir,
-		}
-		gitClientFactory, err = git.NewClientFactory(opts.Apply)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
-		}
-	} else {
-		gitClient, err := irc.GitHubOptions.GitClient(irc.DryRun)
-		if err != nil {
-			return nil, fmt.Errorf("Error getting git client: %w", err)
-		}
-		gitClientFactory = git.ClientFactoryFrom(gitClient)
+	gitClientFactory, err := irc.GitHubOptions.GitClientFactory(irc.CookieFilePath, &irc.CacheDir, irc.DryRun)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating git client: %v", err)
 	}
 
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized, exit with an error.
-	cache, err = NewInRepoConfigCacheHandler(
+	cache, err := NewInRepoConfigCacheHandler(
 		irc.CacheSize,
 		irc.Agent,
 		NewInRepoConfigGitCache(gitClientFactory),

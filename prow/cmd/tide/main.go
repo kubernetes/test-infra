@@ -34,8 +34,6 @@ import (
 	"k8s.io/test-infra/pkg/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
-	prowgit "k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -157,7 +155,10 @@ func main() {
 	}
 
 	var c *tide.Controller
-	var gitClient *prowgit.Client
+	gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Git client.")
+	}
 	provider := provider(o.providerName, cfg().Tide)
 	switch provider {
 	case githubProviderName:
@@ -180,17 +181,12 @@ func main() {
 		githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod.Duration))
 		githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
-		gitClient, err = o.github.GitClient(o.dryRun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting Git client.")
-		}
-
 		c, err = tide.NewController(
 			githubSync,
 			githubStatus,
 			mgr,
 			cfg,
-			git.ClientFactoryFrom(gitClient),
+			gitClient,
 			o.maxRecordsPerPool,
 			opener,
 			o.historyURI,
