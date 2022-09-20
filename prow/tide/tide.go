@@ -1758,7 +1758,7 @@ func (c *syncController) dividePool(pool map[string]CodeReviewCommon) (map[strin
 		if err != nil {
 			return nil, fmt.Errorf("failed to list jobs for subpool %s: %w", subpoolkey, err)
 		}
-		c.logger.WithField("subpool", subpoolkey).WithField("pj_count", len(pjs.Items)).Debug("Found prowjobs")
+		sp.log.WithField("subpool", subpoolkey).WithField("pj_count", len(pjs.Items)).Debug("Found prowjobs")
 		sps[subpoolkey].pjs = pjs.Items
 	}
 	return sps, nil

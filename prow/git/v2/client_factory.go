@@ -211,7 +211,7 @@ func (c *clientFactory) bootstrapClients(org, repo, cloneURI, dir string) (cache
 		}
 		dir = workdir
 	}
-	logger := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo})
+	logger := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "cloneURI": cloneURI})
 	logger.WithField("dir", dir).Debug("Creating a pre-initialized client.")
 	executor, err := NewCensoringExecutor(dir, c.censor, logger)
 	if err != nil {
