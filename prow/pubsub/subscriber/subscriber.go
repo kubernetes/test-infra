@@ -150,13 +150,13 @@ func (m *pubSubMessage) nack() {
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, map[string]string, error)
+	getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (jobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, map[string]string, error) {
+func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (jobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
@@ -169,37 +169,46 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRe
 		}
 	}
 	if periodicJob == nil {
-		return nil, nil, nil, fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+		err = fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+		return
 	}
 
-	prowJobSpec := pjutil.PeriodicSpec(*periodicJob)
-	return &prowJobSpec, periodicJob.Labels, periodicJob.Annotations, nil
+	spec := pjutil.PeriodicSpec(*periodicJob)
+	jobSpec = &spec
+	labels, annotations = periodicJob.Labels, periodicJob.Annotations
+	return
 }
 
 // presubmitJobHandler implements jobHandler
 type presubmitJobHandler struct {
 }
 
-func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, map[string]string, error) {
+func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (jobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
 	refs := pe.Refs
 	if refs == nil {
-		return nil, nil, nil, errors.New("Refs must be supplied")
+		err = errors.New("Refs must be supplied")
+		return
 	}
 	if len(refs.Org) == 0 {
-		return nil, nil, nil, errors.New("org must be supplied")
+		err = errors.New("org must be supplied")
+		return
 	}
 	if len(refs.Repo) == 0 {
-		return nil, nil, nil, errors.New("repo must be supplied")
+		err = errors.New("repo must be supplied")
+		return
 	}
 	if len(refs.Pulls) == 0 {
-		return nil, nil, nil, errors.New("at least 1 Pulls is required")
+		err = errors.New("at least 1 Pulls is required")
+		return
 	}
 	if len(refs.BaseSHA) == 0 {
-		return nil, nil, nil, errors.New("baseSHA must be supplied")
+		err = errors.New("baseSHA must be supplied")
+		return
 	}
 	if len(refs.BaseRef) == 0 {
-		return nil, nil, nil, errors.New("baseRef must be supplied")
+		err = errors.New("baseRef must be supplied")
+		return
 	}
 
 	var presubmitJob *config.Presubmit
@@ -250,7 +259,8 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 		}
 		if job.Name == pe.Name {
 			if presubmitJob != nil {
-				return nil, nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", pe.Name, orgRepo)
+				err = fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", pe.Name, orgRepo)
+				return
 			}
 			presubmitJob = &job
 		}
@@ -258,34 +268,41 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// This also captures the case where fetching jobs from inrepoconfig failed.
 	// However doesn't not distinguish between this case and a wrong prow job name.
 	if presubmitJob == nil {
-		return nil, nil, nil, fmt.Errorf("failed to find associated presubmit job %q from orgRepo %q", pe.Name, orgRepo)
+		err = fmt.Errorf("failed to find associated presubmit job %q from orgRepo %q", pe.Name, orgRepo)
+		return
 	}
 
-	prowJobSpec := pjutil.PresubmitSpec(*presubmitJob, *refs)
-	return &prowJobSpec, presubmitJob.Labels, presubmitJob.Annotations, nil
+	spec := pjutil.PresubmitSpec(*presubmitJob, *refs)
+	jobSpec, labels, annotations = &spec, presubmitJob.Labels, presubmitJob.Annotations
+	return
 }
 
 // postsubmitJobHandler implements jobHandler
 type postsubmitJobHandler struct {
 }
 
-func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, map[string]string, error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (jobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// postsubmit jobs require Refs to be set
 	refs := pe.Refs
 	if refs == nil {
-		return nil, nil, nil, errors.New("refs must be supplied")
+		err = errors.New("refs must be supplied")
+		return
 	}
 	if len(refs.Org) == 0 {
-		return nil, nil, nil, errors.New("org must be supplied")
+		err = errors.New("org must be supplied")
+		return
 	}
 	if len(refs.Repo) == 0 {
-		return nil, nil, nil, errors.New("repo must be supplied")
+		err = errors.New("repo must be supplied")
+		return
 	}
 	if len(refs.BaseSHA) == 0 {
-		return nil, nil, nil, errors.New("baseSHA must be supplied")
+		err = errors.New("baseSHA must be supplied")
+		return
 	}
 	if len(refs.BaseRef) == 0 {
-		return nil, nil, nil, errors.New("baseRef must be supplied")
+		err = errors.New("baseRef must be supplied")
+		return
 	}
 
 	var postsubmitJob *config.Postsubmit
@@ -331,11 +348,13 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	// This also captures the case where fetching jobs from inrepoconfig failed.
 	// However doesn't not distinguish between this case and a wrong prow job name.
 	if postsubmitJob == nil {
-		return nil, nil, nil, fmt.Errorf("failed to find associated postsubmit job %q from orgRepo %q", pe.Name, orgRepo)
+		err = fmt.Errorf("failed to find associated postsubmit job %q from orgRepo %q", pe.Name, orgRepo)
+		return
 	}
 
-	prowJobSpec := pjutil.PostsubmitSpec(*postsubmitJob, *refs)
-	return &prowJobSpec, postsubmitJob.Labels, postsubmitJob.Annotations, nil
+	spec := pjutil.PostsubmitSpec(*postsubmitJob, *refs)
+	jobSpec, labels, annotations = &spec, postsubmitJob.Labels, postsubmitJob.Annotations
+	return
 }
 
 func extractFromAttribute(attrs map[string]string, key string) (string, error) {
