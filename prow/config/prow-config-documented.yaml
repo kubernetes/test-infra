@@ -780,6 +780,9 @@ plank:
             # that holds blob storage push credentials.
             s3_credentials_secret: ""
 
+            # SetLimitEqualsMemoryRequest sets memory limit equal to request.
+            set_limit_equals_memory_request: false
+
             # SkipCloning determines if we should clone source code in the
             # initcontainers for jobs that specify refs
             skip_cloning: false
@@ -976,6 +979,9 @@ plank:
             # S3CredentialsSecret is the name of the Kubernetes secret
             # that holds blob storage push credentials.
             s3_credentials_secret: ""
+
+            # SetLimitEqualsMemoryRequest sets memory limit equal to request.
+            set_limit_equals_memory_request: false
 
             # SkipCloning determines if we should clone source code in the
             # initcontainers for jobs that specify refs

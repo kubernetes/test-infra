@@ -478,6 +478,9 @@ type DecorationConfig struct {
 	// UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
 	// hope that the test process exits cleanly before starting an upload.
 	UploadIgnoresInterrupts *bool `json:"upload_ignores_interrupts,omitempty"`
+
+	// SetLimitEqualsMemoryRequest sets memory limit equal to request.
+	SetLimitEqualsMemoryRequest *bool `json:"set_limit_equals_memory_request,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -678,6 +681,10 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 
 	if merged.UploadIgnoresInterrupts == nil {
 		merged.UploadIgnoresInterrupts = def.UploadIgnoresInterrupts
+	}
+
+	if merged.SetLimitEqualsMemoryRequest == nil {
+		merged.SetLimitEqualsMemoryRequest = def.SetLimitEqualsMemoryRequest
 	}
 
 	return &merged
