@@ -1,0 +1,38 @@
+presubmits:
+  kubernetes/gengo:
+  - name: pull-gengo-test
+    annotations:
+      testgrid-dashboards: sig-api-machinery-gengo
+      testgrid-tab-name: test
+    decorate: true
+    path_alias: k8s.io/gengo
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220916-c3af09ab20-master
+          command:
+            - runner.sh
+            - bash
+          args:
+            - -c
+            - 'go test -v -race ./...'
+
+  - name: pull-gengo-verify
+    annotations:
+      testgrid-dashboards: sig-api-machinery-gengo
+      testgrid-tab-name: verify
+    decorate: true
+    path_alias: k8s.io/gengo
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220916-c3af09ab20-master
+          command:
+            - runner.sh
+            - bash
+          args:
+           - -c
+           - |
+            go run ./examples/import-boss/main.go -i $(go list k8s.io/gengo/... | grep -v import-boss/tests | paste -sd',' -) --verify-only
