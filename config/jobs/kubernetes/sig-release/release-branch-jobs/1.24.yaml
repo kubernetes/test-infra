@@ -587,61 +587,6 @@ periodics:
       resources: {}
       securityContext:
         privileged: true
-- annotations:
-    description: Runs tests on a Kubernetes cluster with Windows containerd nodes
-      on GCE
-    testgrid-dashboards: sig-windows-gce
-    testgrid-tab-name: gce-windows-20h2-containerd-1.24
-  decorate: true
-  decoration_config:
-    timeout: 4h0m0s
-  extra_refs:
-  - base_ref: master
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/windows-testing
-    repo: windows-testing
-  interval: 4h
-  labels:
-    preset-common-gce-windows: "true"
-    preset-e2e-gce-windows: "true"
-    preset-e2e-gce-windows-containerd: "true"
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-    preset-windows-private-registry-cred: "true"
-    preset-windows-repo-list-master: "true"
-  name: ci-kubernetes-e2e-windows-20h2-containerd-gce-1-24
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest-1.24
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]
-        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --test-cmd-args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]
-        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --ginkgo-parallel=4
-      - --timeout=230m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      env:
-      - name: NO_LINUX_POOL_TAINT
-        value: "true"
-      - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: win20h2
-      - name: NODE_SIZE
-        value: n1-standard-4
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220921-e07b053bd5-1.24
-      name: ""
-      resources: {}
-      securityContext:
-        privileged: true
 postsubmits: {}
 presubmits:
   kubernetes/kubernetes:
