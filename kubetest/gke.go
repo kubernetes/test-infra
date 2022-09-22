@@ -66,6 +66,7 @@ var (
 	gkeDownTimeout                 = flag.Duration("gke-down-timeout", 1*time.Hour, "(gke only) Timeout for gcloud container clusters delete call. Defaults to 1 hour which matches gcloud's default.")
 	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
 	gkeDumpConfigMaps              = flag.String("gke-dump-configmaps", "[]", `(gke-only) A JSON description of ConfigMaps to dump as part of gathering cluster logs. Note: --dump or --dump-pre-test-logs flags must also be set. Example: '[{"Name":"my-map", "Namespace":"default", "DataKey":"my-data-key"}]`)
+	gkeDumpAdditionalLogsCmd       = flag.String("gke-dump-additional-logs-cmd", "", "(gke-only) if set, run this command to dump cluster logs.")
 
 	// poolReTemplate matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -437,6 +438,11 @@ func (g *gkeDeployer) IsUp() error {
 	return isUp(g)
 }
 
+func (g *gkeDeployer) dumpLogs() error {
+	cmdLineTokenized := strings.Fields(os.ExpandEnv(*gkeDumpAdditionalLogsCmd))
+	return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
+}
+
 // DumpClusterLogs for GKE generates a small script that wraps
 // log-dump.sh with the appropriate shell-fu to get the cluster
 // dumped.
@@ -444,6 +450,15 @@ func (g *gkeDeployer) IsUp() error {
 // TODO(zmerlynn): This whole path is really gross, but this seemed
 // the least gross hack to get this done.
 func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
+	var errs []error
+	if *gkeDumpAdditionalLogsCmd != "" {
+		if err := g.dumpLogs(); err != nil {
+			// Save error for later and carry on
+			errs = append(errs, err)
+			log.Printf("Failed to dump additional cluster logs: %v", err)
+		}
+	}
+
 	// gkeLogDumpTemplate is a template of a shell script where
 	// - %[1]s is the project
 	// - %[2]s is the zone
@@ -465,12 +480,14 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 `
 	// Prevent an obvious injection.
 	if strings.Contains(localPath, "'") || strings.Contains(gcsPath, "'") {
-		return fmt.Errorf("%q or %q contain single quotes - nice try", localPath, gcsPath)
+		errs = append(errs, fmt.Errorf("%q or %q contain single quotes - nice try", localPath, gcsPath))
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
 
 	// Generate a slice of filters to be OR'd together below
 	if err := g.getInstanceGroups(); err != nil {
-		return err
+		errs = append(errs, err)
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
 	perZoneFilters := make(map[string][]string)
 	for _, ig := range g.instanceGroups {
@@ -489,6 +506,7 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 	// Try to setup cluster access if it's possible. If credentials are already set, this will be no-op. Access to
 	// GKE cluster is required for log-exporter.
 	if err := g.getKubeConfig(); err != nil {
+		errs = append(errs, err)
 		log.Printf("error while setting up kubeconfig: %v", err)
 	}
 
@@ -513,7 +531,8 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		}
 	}
 	if len(errorMessages) > 0 {
-		return fmt.Errorf("errors while dumping logs: %s", strings.Join(errorMessages, ", "))
+		errs = append(errs, fmt.Errorf("errors while dumping logs: %s", strings.Join(errorMessages, ", ")))
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
 
 	// Fetch any ConfigMap data fields that were requested to be dumped
@@ -531,15 +550,25 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		dumpValues[jsonKey] = string(out)
 	}
 	if len(errorMessages) > 0 {
-		return fmt.Errorf("errors while dumping ConfigMaps: %s", strings.Join(errorMessages, ", "))
+		errs = append(errs, fmt.Errorf("errors while dumping ConfigMaps: %s", strings.Join(errorMessages, ", ")))
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
+
 	jsonDump, err := json.Marshal(dumpValues)
 	if err != nil {
-		return err
+		errs = append(errs, err)
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
+
 	if err := ioutil.WriteFile(filepath.Join(localPath, "gke-configmap.json"), jsonDump, 0644); err != nil {
-		return err
+		errs = append(errs, err)
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
+
+	if len(errs) > 0 {
+		return wrapErrors("DumpClusterLogs", errs...)
+	}
+
 	return nil
 }
 
@@ -1018,3 +1047,7 @@ func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 }
 
 func (g *gkeDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+
+func wrapErrors(stage string, errs ...error) error {
+	return fmt.Errorf("%s encountered %d errors: %v", stage, len(errs), errs)
+}
