@@ -3093,7 +3093,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "always"},
 			}},
-			prowYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+			prowYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
 				if len(headRefs) == 1 && headRefs[0] == "1" {
 					return nil, errors.New("you shall not get jobs")
 				}
@@ -3674,7 +3674,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 				logger:       logrus.WithField("test", tc.name),
 			}
 
-			presubmits, err := c.presubmitsForBatch(tc.prs, "org", "repo", "", "baseSHA", defaultBranch)
+			presubmits, err := c.presubmitsForBatch(tc.prs, "org", "repo", "baseSHA", defaultBranch)
 			if err != nil {
 				t.Fatalf("failed to get presubmits for batch: %v", err)
 			}
@@ -3924,7 +3924,7 @@ func (c *indexingClient) List(ctx context.Context, list ctrlruntimeclient.Object
 }
 
 func prowYAMLGetterForHeadRefs(headRefsToLookFor []string, ps []config.Presubmit) config.ProwYAMLGetter {
-	return func(_ *config.Config, _ git.ClientFactory, _, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
+	return func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
 		if len(headRefsToLookFor) != len(headRefs) {
 			return nil, fmt.Errorf("expcted %d headrefs, got %d", len(headRefsToLookFor), len(headRefs))
 		}

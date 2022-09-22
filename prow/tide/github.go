@@ -150,7 +150,7 @@ func (gi *GitHubProvider) GetRef(org, repo, ref string) (string, error) {
 	return gi.ghc.GetRef(org, repo, ref)
 }
 
-func (gi *GitHubProvider) GetTideContextPolicy(org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error) {
+func (gi *GitHubProvider) GetTideContextPolicy(org, repo, branch string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error) {
 	return gi.cfg().GetTideContextPolicy(gi.gc, org, repo, branch, baseSHAGetter, pr.HeadRefOID)
 }
 
@@ -379,8 +379,8 @@ func (gi *GitHubProvider) headContexts(pr *CodeReviewCommon) ([]Context, error) 
 	return contexts, nil
 }
 
-func (gi *GitHubProvider) GetPresubmits(identifier, _ string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
-	return gi.cfg().GetPresubmits(gi.gc, identifier, "", baseSHAGetter, headSHAGetters...)
+func (gi *GitHubProvider) GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+	return gi.cfg().GetPresubmits(gi.gc, identifier, baseSHAGetter, headSHAGetters...)
 }
 
 func (gi *GitHubProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {

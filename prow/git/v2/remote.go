@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strings"
 )
 
 // RemoteResolverFactory knows how to construct remote resolvers for
@@ -146,19 +147,28 @@ func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 }
 
 // Publish Remote will not be used by Gerrit, but cloneURIResolverFactory can be used
-// by github when CentralRemote == PublishRemote == CloneURI so both methods will return CloneURI
-type cloneURIResolverFactory struct {
-	cloneURI string
-}
+// by Gerrit when CentralRemote == PublishRemote == CloneURI so both methods will return CloneURI
+type cloneURIResolverFactory struct{}
 
-func (f *cloneURIResolverFactory) CentralRemote(_, _ string) RemoteResolver {
+func (f *cloneURIResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 	return func() (string, error) {
-		return f.cloneURI, nil
+		return cloneURIFromOrgRepo(org, repo), nil
 	}
 }
 
-func (f *cloneURIResolverFactory) PublishRemote(_, _ string) RemoteResolver {
+func (f *cloneURIResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 	return func() (string, error) {
-		return f.cloneURI, nil
+		return cloneURIFromOrgRepo(org, repo), nil
 	}
+}
+
+func cloneURIFromOrgRepo(org, repo string) string {
+	scheme := "https"
+	if strings.HasPrefix(org, "http://") {
+		scheme = "http"
+	}
+	host := strings.TrimPrefix(org, "https://")
+	host = strings.TrimPrefix(host, "http://")
+	url := &url.URL{Scheme: scheme, Host: host, Path: repo}
+	return url.String()
 }

@@ -633,7 +633,7 @@ func (c *syncController) initSubpoolData(sp *subpool) error {
 
 	sp.cc = make(map[int]contextChecker, len(sp.prs))
 	for _, pr := range sp.prs {
-		sp.cc[pr.Number], err = c.provider.GetTideContextPolicy(sp.org, sp.repo, sp.branch, cloneURI, refGetterFactory(string(sp.sha)), &pr)
+		sp.cc[pr.Number], err = c.provider.GetTideContextPolicy(sp.org, sp.repo, sp.branch, refGetterFactory(string(sp.sha)), &pr)
 		if err != nil {
 			return fmt.Errorf("error setting up context checker for pr %d: %w", pr.Number, err)
 		}
@@ -909,7 +909,7 @@ func (c *syncController) accumulateBatch(sp subpool) (successBatch []CodeReviewC
 			continue
 		}
 
-		requiredPresubmits, err := c.presubmitsForBatch(state.prs, sp.org, sp.repo, sp.cloneURI, sp.sha, sp.branch)
+		requiredPresubmits, err := c.presubmitsForBatch(state.prs, sp.org, sp.repo, sp.sha, sp.branch)
 		if err != nil {
 			sp.log.WithError(err).Error("Error getting presubmits for batch")
 			continue
@@ -1049,7 +1049,7 @@ func pickNewBatch(gc git.ClientFactory, cfg config.Getter, provider provider) fu
 	return func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
 		var res []CodeReviewCommon
 		// TODO(chaodaiG): make sure cloning works for gerrit.
-		r, err := gc.ClientFor(sp.org, sp.repo, sp.cloneURI)
+		r, err := gc.ClientFor(sp.org, sp.repo)
 		if err != nil {
 			return nil, err
 		}
@@ -1137,7 +1137,7 @@ func (c *syncController) pickBatch(sp subpool, cc map[int]contextChecker, newBat
 		}
 	}
 
-	presubmits, err := c.presubmitsForBatch(res, sp.org, sp.repo, sp.cloneURI, sp.sha, sp.branch)
+	presubmits, err := c.presubmitsForBatch(res, sp.org, sp.repo, sp.sha, sp.branch)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1515,7 +1515,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 
 	for _, pr := range sp.prs {
 		log := c.logger.WithField("base-sha", sp.sha).WithFields(pr.logFields())
-		presubmitsForPull, err := c.provider.GetPresubmits(sp.org+"/"+sp.repo, sp.cloneURI, refGetterFactory(sp.sha), refGetterFactory(pr.HeadRefOID))
+		presubmitsForPull, err := c.provider.GetPresubmits(sp.org+"/"+sp.repo, refGetterFactory(sp.sha), refGetterFactory(pr.HeadRefOID))
 		if err != nil {
 			c.logger.WithError(err).Debug("Failed to get presubmits for PR, excluding from subpool")
 			continue
@@ -1547,7 +1547,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 
 // presubmitsForBatch filters presubmit jobs from a repo based on the PRs in the
 // pool.
-func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, cloneURI, baseSHA, baseBranch string) ([]config.Presubmit, error) {
+func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
 	log := c.logger.WithFields(logrus.Fields{"repo": repo, "org": org, "base-sha": baseSHA, "base-branch": baseBranch})
 
 	var headRefGetters []config.RefGetter
@@ -1555,7 +1555,7 @@ func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, c
 		headRefGetters = append(headRefGetters, refGetterFactory(pr.HeadRefOID))
 	}
 
-	presubmits, err := c.provider.GetPresubmits(org+"/"+repo, cloneURI, refGetterFactory(baseSHA), headRefGetters...)
+	presubmits, err := c.provider.GetPresubmits(org+"/"+repo, refGetterFactory(baseSHA), headRefGetters...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get presubmits for batch: %w", err)
 	}

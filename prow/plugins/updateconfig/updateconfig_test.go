@@ -1790,7 +1790,7 @@ func testUpdate(clients localgit.Clients, t *testing.T) {
 		repo := "repo"
 		c := setupLocalGitRepo(clients, t, org, repo)
 
-		gitRepo, err := c.ClientFor(org, repo, "")
+		gitRepo, err := c.ClientFor(org, repo)
 		if err != nil {
 			t.Fatalf("Failed to clone: %v.", err)
 		}

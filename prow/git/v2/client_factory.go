@@ -33,9 +33,9 @@ import (
 type ClientFactory interface {
 	// ClientFromDir creates a client that operates on a repo that has already
 	// been cloned to the given directory.
-	ClientFromDir(org, repo, cloneURI, dir string) (RepoClient, error)
+	ClientFromDir(org, repo, dir string) (RepoClient, error)
 	// ClientFor creates a client that operates on a new clone of the repo.
-	ClientFor(org, repo, cloneURI string) (RepoClient, error)
+	ClientFor(org, repo string) (RepoClient, error)
 
 	// Clean removes the caches used to generate clients
 	Clean() error
@@ -147,6 +147,8 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 			host:     o.Host,
 			username: o.Username,
 		}
+	} else if o.CookieFilePath != "" {
+		remote = &cloneURIResolverFactory{}
 	} else {
 		remote = &httpResolverFactory{
 			host:     o.Host,
@@ -203,7 +205,7 @@ type clientFactory struct {
 }
 
 // bootstrapClients returns a repository client and cloner for a dir.
-func (c *clientFactory) bootstrapClients(org, repo, cloneURI, dir string) (cacher, cloner, RepoClient, error) {
+func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner, RepoClient, error) {
 	if dir == "" {
 		workdir, err := os.Getwd()
 		if err != nil {
@@ -211,7 +213,7 @@ func (c *clientFactory) bootstrapClients(org, repo, cloneURI, dir string) (cache
 		}
 		dir = workdir
 	}
-	logger := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "cloneURI": cloneURI})
+	logger := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo})
 	logger.WithField("dir", dir).Debug("Creating a pre-initialized client.")
 	executor, err := NewCensoringExecutor(dir, c.censor, logger)
 	if err != nil {
@@ -219,11 +221,6 @@ func (c *clientFactory) bootstrapClients(org, repo, cloneURI, dir string) (cache
 	}
 	var remote RemoteResolverFactory
 	remote = c.remote
-	if cloneURI != "" {
-		remote = &cloneURIResolverFactory{
-			cloneURI: cloneURI,
-		}
-	}
 	client := &repoClient{
 		publisher: publisher{
 			remotes: remotes{
@@ -246,8 +243,8 @@ func (c *clientFactory) bootstrapClients(org, repo, cloneURI, dir string) (cache
 
 // ClientFromDir returns a repository client for a directory that's already initialized with content.
 // If the directory isn't specified, the current working directory is used.
-func (c *clientFactory) ClientFromDir(org, repo, cloneURI, dir string) (RepoClient, error) {
-	_, _, client, err := c.bootstrapClients(org, repo, cloneURI, dir)
+func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error) {
+	_, _, client, err := c.bootstrapClients(org, repo, dir)
 	return client, err
 }
 
@@ -259,10 +256,10 @@ func (c *clientFactory) ClientFromDir(org, repo, cloneURI, dir string) (RepoClie
 //
 // org and repo are used for determining where the repo is cloned, cloneURI
 // overrides org/repo for cloning.
-func (c *clientFactory) ClientFor(org, repo, cloneURI string) (RepoClient, error) {
+func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	cacheDir := path.Join(c.cacheDir, org, repo)
 	c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "dir": cacheDir}).Debug("Creating a client from the cache.")
-	cacheClientCacher, _, _, err := c.bootstrapClients(org, repo, cloneURI, cacheDir)
+	cacheClientCacher, _, _, err := c.bootstrapClients(org, repo, cacheDir)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +268,7 @@ func (c *clientFactory) ClientFor(org, repo, cloneURI string) (RepoClient, error
 	if err != nil {
 		return nil, err
 	}
-	_, repoClientCloner, repoClient, err := c.bootstrapClients(org, repo, cloneURI, repoDir)
+	_, repoClientCloner, repoClient, err := c.bootstrapClients(org, repo, repoDir)
 	if err != nil {
 		return nil, err
 	}

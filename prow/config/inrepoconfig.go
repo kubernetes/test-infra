@@ -56,7 +56,7 @@ type ProwYAML struct {
 
 // ProwYAMLGetter is used to retrieve a ProwYAML. Tests should provide
 // their own implementation and set that on the Config.
-type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, cloneURI, baseSHA string, headSHAs ...string) (*ProwYAML, error)
+type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
 
 // Verify prowYAMLGetterWithDefaults and prowYAMLGetter are both of type
 // ProwYAMLGetter.
@@ -73,7 +73,6 @@ func prowYAMLGetter(
 	c *Config,
 	gc git.ClientFactory,
 	identifier string,
-	cloneURI string,
 	baseSHA string,
 	headSHAs ...string) (*ProwYAML, error) {
 
@@ -88,7 +87,7 @@ func prowYAMLGetter(
 	if orgRepo.Repo == "" {
 		return nil, fmt.Errorf("didn't get two results when splitting repo identifier %q", identifier)
 	}
-	repo, err := gc.ClientFor(orgRepo.Org, orgRepo.Repo, cloneURI)
+	repo, err := gc.ClientFor(orgRepo.Org, orgRepo.Repo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone repo for %q: %w", identifier, err)
 	}
@@ -218,11 +217,10 @@ func prowYAMLGetterWithDefaults(
 	c *Config,
 	gc git.ClientFactory,
 	identifier string,
-	cloneURI string,
 	baseSHA string,
 	headSHAs ...string) (*ProwYAML, error) {
 
-	prowYAML, err := prowYAMLGetter(c, gc, identifier, cloneURI, baseSHA, headSHAs...)
+	prowYAML, err := prowYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +286,7 @@ func NewInRepoConfigGitCache(factory git.ClientFactory) git.ClientFactory {
 	}
 }
 
-func (c *InRepoConfigGitCache) ClientFor(org, repo, cloneURI string) (git.RepoClient, error) {
+func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, error) {
 	key := fmt.Sprintf("%s/%s", org, repo)
 	getCache := func(threadSafe bool) (git.RepoClient, error) {
 		if client, ok := c.cache[key]; ok {
@@ -339,7 +337,7 @@ func (c *InRepoConfigGitCache) ClientFor(org, repo, cloneURI string) (git.RepoCl
 	if cached != nil || err != nil {
 		return cached, err
 	}
-	coreClient, err := c.ClientFactory.ClientFor(org, repo, cloneURI)
+	coreClient, err := c.ClientFactory.ClientFor(org, repo)
 	if err != nil {
 		return nil, err
 	}

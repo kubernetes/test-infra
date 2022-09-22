@@ -814,7 +814,6 @@ func fakeProwYAMLGetter(
 	c *config.Config,
 	gc git.ClientFactory,
 	identifier string,
-	cloneURI string,
 	baseSHA string,
 	headSHAs ...string) (*config.ProwYAML, error) {
 

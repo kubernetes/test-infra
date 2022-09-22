@@ -240,7 +240,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 		logger.Debug("Getting prow jobs.")
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
-		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, refs.CloneURI, baseSHAGetter, headSHAGetters...)
+		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logger.WithError(err).Info("Failed to get presubmits")
 		} else {
@@ -324,7 +324,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 		logger.Debug("Getting prow jobs.")
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
-		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, refs.CloneURI, baseSHAGetter)
+		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
 		if err != nil {
 			logger.WithError(err).Info("Failed to get postsubmits from inrepoconfig")
 		} else {

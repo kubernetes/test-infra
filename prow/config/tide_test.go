@@ -1092,7 +1092,7 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 }
 
 func fakeProwYAMLGetterFactory(presubmits []Presubmit, postsubmits []Postsubmit) ProwYAMLGetter {
-	return func(_ *Config, _ git.ClientFactory, _, _, _ string, _ ...string) (*ProwYAML, error) {
+	return func(_ *Config, _ git.ClientFactory, _, _ string, _ ...string) (*ProwYAML, error) {
 		return &ProwYAML{
 			Presubmits:  presubmits,
 			Postsubmits: postsubmits,

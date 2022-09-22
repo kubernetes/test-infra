@@ -218,7 +218,7 @@ func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitCli
 		return nil, nil
 	}
 	prRefGetter := config.NewRefGetterForGitHubPullRequest(gitHubClient, org, repo, prNumber)
-	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, cloneURI, prRefGetter.BaseSHA, prRefGetter.HeadSHA)
+	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, prRefGetter.BaseSHA, prRefGetter.HeadSHA)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Presubmits for pull request %s/%s#%d: %w", org, repo, prNumber, err)
 	}
