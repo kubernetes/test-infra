@@ -31,9 +31,9 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/types"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/tide/blockers"
@@ -66,6 +66,7 @@ type gerritClient interface {
 func NewGerritController(
 	mgr manager,
 	cfgAgent *config.Agent,
+	gc git.ClientFactory,
 	maxRecordsPerPool int,
 	opener io.Opener,
 	historyURI,
@@ -89,15 +90,11 @@ func NewGerritController(
 		newPoolPending:   make(chan bool),
 	}
 
-	gitClient, err := (&flagutil.GitHubOptions{}).GitClientFactory(cookieFilePath, &configOptions.InRepoConfigCacheDirBase, false)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating git client.")
-	}
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(configOptions.InRepoConfigCacheSize, cfgAgent, gitClient, configOptions.InRepoConfigCacheCopies)
+	cacheGetter, err := config.NewInRepoConfigCacheHandler(configOptions.InRepoConfigCacheSize, cfgAgent, gc, configOptions.InRepoConfigCacheCopies)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
 	}
-	provider := newGerritProvider(logger, cfgAgent.Config, nil, cacheGetter, cookieFilePath, "")
+	provider := newGerritProvider(logger, cfgAgent.Config, mgr.GetClient(), cacheGetter, cookieFilePath, "")
 	syncCtrl, err := newSyncController(ctx, logger, mgr, provider, cfgAgent.Config, nil, hist, false, statusUpdate)
 	if err != nil {
 		return nil, err
