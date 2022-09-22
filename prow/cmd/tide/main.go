@@ -201,6 +201,7 @@ func main() {
 		c, err = tide.NewGerritController(
 			mgr,
 			configAgent,
+			gitClient,
 			o.maxRecordsPerPool,
 			opener,
 			o.historyURI,
