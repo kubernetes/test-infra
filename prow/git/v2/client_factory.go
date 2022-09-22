@@ -123,7 +123,11 @@ func defaultClientFactoryOpts(cfo *ClientFactoryOpts) {
 }
 
 // NewClientFactory allows for the creation of repository clients. It uses github.com
-// without authentication by default.
+// without authentication by default, if UseSSH then returns
+// sshRemoteResolverFactory, and if CookieFilePath is provided then returns
+// gerritResolverFactory(Assuming that git http.cookiefile is used only by
+// Gerrit, this function needs to be updated if it turned out that this
+// assumtpion is not correct.)
 func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	o := ClientFactoryOpts{}
 	defaultClientFactoryOpts(&o)
@@ -148,7 +152,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 			username: o.Username,
 		}
 	} else if o.CookieFilePath != "" {
-		remote = &cloneURIResolverFactory{}
+		remote = &gerritResolverFactory{}
 	} else {
 		remote = &httpResolverFactory{
 			host:     o.Host,

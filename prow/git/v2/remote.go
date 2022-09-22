@@ -146,23 +146,28 @@ func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 	}
 }
 
-// Publish Remote will not be used by Gerrit, but cloneURIResolverFactory can be used
-// by Gerrit when CentralRemote == PublishRemote == CloneURI so both methods will return CloneURI
-type cloneURIResolverFactory struct{}
+// gerritResolverFactory is meant to be used by Gerrit only. It's so diffrent
+// from GitHub that there is no way any of the remotes logic can be shared
+// between these two providers. The resulting CentralRemote and PublishRemote
+// are both the clone URI.
+type gerritResolverFactory struct{}
 
-func (f *cloneURIResolverFactory) CentralRemote(org, repo string) RemoteResolver {
+func (f *gerritResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 	return func() (string, error) {
-		return cloneURIFromOrgRepo(org, repo), nil
+		return gerritCloneURIFromOrgRepo(org, repo), nil
 	}
 }
 
-func (f *cloneURIResolverFactory) PublishRemote(org, repo string) RemoteResolver {
+func (f *gerritResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 	return func() (string, error) {
-		return cloneURIFromOrgRepo(org, repo), nil
+		return gerritCloneURIFromOrgRepo(org, repo), nil
 	}
 }
 
-func cloneURIFromOrgRepo(org, repo string) string {
+// gerritCloneURIFromOrgRepo returns Gerrit clone URI from org and repo. The org
+// is normalized to enure that it contains `https://` and `http://` prefixes
+// that are required for Gerrit.
+func gerritCloneURIFromOrgRepo(org, repo string) string {
 	scheme := "https"
 	if strings.HasPrefix(org, "http://") {
 		scheme = "http"
