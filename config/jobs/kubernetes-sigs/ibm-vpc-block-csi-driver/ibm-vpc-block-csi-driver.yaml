@@ -65,7 +65,7 @@ presubmits:
     path_alias: sigs.k8s.io/ibm-vpc-block-csi-driver
     annotations:
       testgrid-dashboards: sig-cloud-provider-ibm-vpc-block-csi-driver
-      testgrid-tab-name: verify
+      testgrid-tab-name: sanity
       description: ibm-vpc-block-csi-driver sanity execution.
     spec:
       containers:
