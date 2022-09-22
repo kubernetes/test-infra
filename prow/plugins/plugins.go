@@ -568,7 +568,7 @@ func init() {
 }
 
 // Metrics is a set of metrics that are gathered by plugins.
-// It is up the the consumers of these metrics to ensure that they
+// It is up the consumers of these metrics to ensure that they
 // update the values in a thread-safe manner.
 type Metrics struct {
 	ConfigMapGauges *prometheus.GaugeVec

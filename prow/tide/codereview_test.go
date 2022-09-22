@@ -35,7 +35,7 @@ func TestMinStruct(t *testing.T) {
 
 		crc := &CodeReviewCommon{}
 		// For unknown reason, including Gerrit field causing timeout, ignoring
-		// it, it should be fine as this test is focusing on the the fields for
+		// it, it should be fine as this test is focusing on the fields for
 		// the Min struct only.
 		fuzzer.SkipFieldsWithPattern(regexp.MustCompile(`Gerrit`)).Fuzz(crc)
 
