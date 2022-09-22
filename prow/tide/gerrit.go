@@ -280,7 +280,7 @@ func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdate
 
 // GetTideContextPolicy gets context policy defined by users + requirements from
 // prow jobs.
-func (p *GerritProvider) GetTideContextPolicy(org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
+func (p *GerritProvider) GetTideContextPolicy(org, repo, branch string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
 	pr := crc.Gerrit
 	if pr == nil {
 		return nil, errors.New("programmer error: crc.Gerrit cannot be nil for GerritProvider")
@@ -299,7 +299,7 @@ func (p *GerritProvider) GetTideContextPolicy(org, repo, branch, cloneURI string
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
 	if p.inRepoConfigCacheHandler != nil {
-		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(orgRepo, cloneURI, baseSHAGetter, headSHAGetter)
+		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetter)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
 		}
@@ -382,16 +382,13 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequest
 //
 // (TODO:chaodaiG): deduplicate this with GitHub, which means inrepoconfig
 // processing all use cache client.
-func (p *GerritProvider) GetPresubmits(identifier, cloneURI string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
+func (p *GerritProvider) GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error) {
 	// Get presubmits from Config alone.
 	presubmits := p.cfg().GetPresubmitsStatic(identifier)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
 	if p.inRepoConfigCacheHandler != nil {
-		// The second parameter for GetCache is `org` name, this is not use for
-		// GetCache at all, as the cache key is `cloneURI` when it's not empty,
-		// and when cloning `org` is not used when `cloneURI` is not empty.
-		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(identifier, cloneURI, baseSHAGetter, headSHAGetters...)
+		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
 		}

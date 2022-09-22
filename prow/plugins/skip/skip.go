@@ -98,7 +98,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	headSHAGetter := func() (string, error) {
 		return pr.Head.SHA, nil
 	}
-	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, "", baseSHAGetter, headSHAGetter)
+	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
 	if err != nil {
 		return fmt.Errorf("failed to get presubmits: %w", err)
 	}

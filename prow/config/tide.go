@@ -682,7 +682,7 @@ func (c Config) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, bra
 	headSHAGetter := func() (string, error) {
 		return headSHA, nil
 	}
-	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, "", baseSHAGetter, headSHAGetter)
+	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get presubmits: %w", err)
 	}

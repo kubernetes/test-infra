@@ -255,7 +255,7 @@ type provider interface {
 	// into a context.
 	headContexts(pr *CodeReviewCommon) ([]Context, error)
 	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error
-	GetTideContextPolicy(org, repo, branch, cloneURI string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error)
+	GetTideContextPolicy(org, repo, branch string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error)
 	prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error)
 
 	// GetPresubmits will return all presubmits for the given identifier. This includes
@@ -264,6 +264,6 @@ type provider interface {
 	// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
 	// also need the result of that GitHub call just keep a pointer to its result, but must
 	// nilcheck that pointer before accessing it.
-	GetPresubmits(identifier, cloneURI string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
+	GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
 	GetChangedFiles(org, repo string, number int) ([]string, error)
 }

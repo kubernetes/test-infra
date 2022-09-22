@@ -394,7 +394,7 @@ func GetAndCheckRefs(
 // does a call to GitHub and who also need the result of that GitHub call just
 // keep a pointer to its result, but must nilcheck that pointer before accessing
 // it.
-func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
 	}
@@ -407,7 +407,7 @@ func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier, clone
 		return nil, err
 	}
 
-	prowYAML, err := c.ProwYAMLGetterWithDefaults(c, gc, identifier, cloneURI, baseSHA, headSHAs...)
+	prowYAML, err := c.ProwYAMLGetterWithDefaults(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +416,7 @@ func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier, clone
 }
 
 // getProwYAML is like getProwYAMLWithDefaults, minus the defaulting logic.
-func (c *Config) getProwYAML(gc git.ClientFactory, identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
 	}
@@ -429,7 +429,7 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier, cloneURI string, 
 		return nil, err
 	}
 
-	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, cloneURI, baseSHA, headSHAs...)
+	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
@@ -443,8 +443,8 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier, cloneURI string, 
 // Consumers that pass in a RefGetter implementation that does a call to GitHub and who
 // also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
-func (c *Config) GetPresubmits(gc git.ClientFactory, identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
-	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, cloneURI, baseSHAGetter, headSHAGetters...)
+func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -463,8 +463,8 @@ func (c *Config) GetPresubmitsStatic(identifier string) []Presubmit {
 // Consumers that pass in a RefGetter implementation that does a call to GitHub and who
 // also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
-func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier, cloneURI string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, cloneURI, baseSHAGetter, headSHAGetters...)
+func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}

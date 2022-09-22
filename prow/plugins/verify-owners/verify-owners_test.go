@@ -649,7 +649,7 @@ func testParseOwnersFile(clients localgit.Clients, t *testing.T) {
 				Patch:    test.patch,
 			}
 
-			r, err := c.ClientFor("org", "repo", "")
+			r, err := c.ClientFor("org", "repo")
 			if err != nil {
 				t.Fatalf("error cloning the repo: %v", err)
 			}

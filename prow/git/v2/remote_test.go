@@ -225,3 +225,40 @@ func TestHTTPResolverFactory(t *testing.T) {
 		}
 	}
 }
+
+func TestCloneURIFromOrgRepo(t *testing.T) {
+	tests := []struct {
+		name string
+		org  string
+		repo string
+		want string
+	}{
+		{
+			name: "base",
+			org:  "foo",
+			repo: "bar/baz",
+			want: "https://foo/bar/baz",
+		},
+		{
+			name: "with-https",
+			org:  "https://foo",
+			repo: "bar/baz",
+			want: "https://foo/bar/baz",
+		},
+		{
+			name: "with-http",
+			org:  "http://foo",
+			repo: "bar/baz",
+			want: "http://foo/bar/baz",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if got, want := cloneURIFromOrgRepo(tc.org, tc.repo), tc.want; got != want {
+				t.Errorf("wrong cloneURI. Want: '%s', got: '%s'", want, got)
+			}
+		})
+	}
+}

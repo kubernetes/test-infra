@@ -435,7 +435,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.Merged:
 		var postsubmits []config.Postsubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(trimmedHostPath, cloneURI.String(), func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
@@ -462,7 +462,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.New:
 		var presubmits []config.Presubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(trimmedHostPath, cloneURI.String(), func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			if err == nil {
 				break
 			}

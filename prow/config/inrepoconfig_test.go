@@ -620,10 +620,10 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			var p, pCached *ProwYAML
 			var errCached error
 			if headSHA == baseSHA {
-				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "", baseSHA)
-				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, "", baseSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA)
+				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, baseSHA)
 			} else {
-				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, "", baseSHA, headSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
 				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, baseSHA, headSHA)
 			}
 
@@ -675,7 +675,7 @@ type testClientFactory struct {
 	clientsCreated    int
 }
 
-func (cf *testClientFactory) ClientFor(org, repo, cloneURI string) (git.RepoClient, error) {
+func (cf *testClientFactory) ClientFor(org, repo string) (git.RepoClient, error) {
 	cf.clientsCreated++
 	// Returning this RepoClient ensures that only Fetch() is called and that Close() is not.
 
@@ -708,7 +708,7 @@ func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
 		if err := lg.MakeFakeRepo("org", repo); err != nil {
 			t.Fatal(err)
 		}
-		rc, err := c.ClientFor("org", repo, "")
+		rc, err := c.ClientFor("org", repo)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -730,7 +730,7 @@ func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
 
 	// Thread 1: gets a client for repo1, signals on signal1, then blocks on block1 before Clean()ing the repo1 client.
 	go func() {
-		client, err := cache.ClientFor(org, repo1, "")
+		client, err := cache.ClientFor(org, repo1)
 		if err != nil {
 			t.Errorf("Unexpected error getting repo client for thread 1: %v.", err)
 			return
@@ -742,7 +742,7 @@ func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
 
 	// Thread 2: gets a client for repo1, signals success on signal2, then Clean()s the repo1 client.
 	go func() {
-		client, err := cache.ClientFor(org, repo1, "")
+		client, err := cache.ClientFor(org, repo1)
 		if err != nil {
 			t.Errorf("Unexpected error getting repo client for thread 2: %v.", err)
 			return
@@ -754,7 +754,7 @@ func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
 
 	// Thread 3: gets a client for repo2, signals success on signal3, then Clean()s the repo2 client.
 	go func() {
-		client, err := cache.ClientFor(org, repo2, "")
+		client, err := cache.ClientFor(org, repo2)
 		if err != nil {
 			t.Errorf("Unexpected error getting repo client for thread 3: %v.", err)
 			return
@@ -781,7 +781,7 @@ func TestInRepoConfigClean(t *testing.T) {
 	if err := lg.MakeFakeRepo(org, repo); err != nil {
 		t.Fatal(err)
 	}
-	rc, err := c.ClientFor(org, repo, "")
+	rc, err := c.ClientFor(org, repo)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -793,7 +793,7 @@ func TestInRepoConfigClean(t *testing.T) {
 	cache := NewInRepoConfigGitCache(cf)
 
 	// First time clone should work
-	repoClient, err := cache.ClientFor(org, repo, "")
+	repoClient, err := cache.ClientFor(org, repo)
 	if err != nil {
 		t.Fatalf("Unexpected error getting repo client for thread 1: %v.", err)
 	}
@@ -809,7 +809,7 @@ func TestInRepoConfigClean(t *testing.T) {
 	}
 
 	// Second time should be none dirty
-	repoClient, err = cache.ClientFor(org, repo, "")
+	repoClient, err = cache.ClientFor(org, repo)
 	if err != nil {
 		t.Fatalf("Unexpected error getting repo client for thread 1: %v.", err)
 	}
