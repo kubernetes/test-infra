@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git/localgit"
+	v2 "k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -223,6 +224,28 @@ index 1ea52dc..5bd70a9 100644
 
 var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 
+func makeFakeRepoWithCommit(clients localgit.Clients, t *testing.T) (*localgit.LocalGit, v2.ClientFactory) {
+	lg, c, err := clients()
+	if err != nil {
+		t.Fatalf("Making localgit: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Cleaning up localgit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Cleaning up client: %v", err)
+		}
+	})
+	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
+		t.Fatalf("Adding initial commit: %v", err)
+	}
+	return lg, c
+}
+
 func TestCherryPickIC(t *testing.T) {
 	t.Parallel()
 	testCherryPickIC(localgit.New, t)
@@ -234,24 +257,7 @@ func TestCherryPickICV2(t *testing.T) {
 }
 
 func testCherryPickIC(clients localgit.Clients, t *testing.T) {
-	lg, c, err := clients()
-	if err != nil {
-		t.Fatalf("Making localgit: %v", err)
-	}
-	defer func() {
-		if err := lg.Clean(); err != nil {
-			t.Errorf("Cleaning up localgit: %v", err)
-		}
-		if err := c.Clean(); err != nil {
-			t.Errorf("Cleaning up client: %v", err)
-		}
-	}()
-	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
-		t.Fatalf("Making fake repo: %v", err)
-	}
-	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
-		t.Fatalf("Adding initial commit: %v", err)
-	}
+	lg, c := makeFakeRepoWithCommit(clients, t)
 	if err := lg.CheckoutNewBranch("foo", "bar", "stage"); err != nil {
 		t.Fatalf("Checking out pull branch: %v", err)
 	}
@@ -334,24 +340,7 @@ func TestCherryPickPRV2(t *testing.T) {
 }
 
 func testCherryPickPR(clients localgit.Clients, t *testing.T) {
-	lg, c, err := clients()
-	if err != nil {
-		t.Fatalf("Making localgit: %v", err)
-	}
-	defer func() {
-		if err := lg.Clean(); err != nil {
-			t.Errorf("Cleaning up localgit: %v", err)
-		}
-		if err := c.Clean(); err != nil {
-			t.Errorf("Cleaning up client: %v", err)
-		}
-	}()
-	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
-		t.Fatalf("Making fake repo: %v", err)
-	}
-	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
-		t.Fatalf("Adding initial commit: %v", err)
-	}
+	lg, c := makeFakeRepoWithCommit(clients, t)
 	expectedBranches := []string{"release-1.5", "release-1.6", "release-1.8"}
 	for _, branch := range expectedBranches {
 		if err := lg.CheckoutNewBranch("foo", "bar", branch); err != nil {
@@ -509,24 +498,7 @@ func TestCherryPickOfCherryPickPRV2(t *testing.T) {
 // function works as intended when the user performs a cherry-pick from
 // a branch that's already a cherry-pick branch
 func testCherryPickOfCherryPickPR(clients localgit.Clients, t *testing.T) {
-	lg, c, err := clients()
-	if err != nil {
-		t.Fatalf("Making localgit: %v", err)
-	}
-	defer func() {
-		if err := lg.Clean(); err != nil {
-			t.Errorf("Cleaning up localgit: %v", err)
-		}
-		if err := c.Clean(); err != nil {
-			t.Errorf("Cleaning up client: %v", err)
-		}
-	}()
-	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
-		t.Fatalf("Making fake repo: %v", err)
-	}
-	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
-		t.Fatalf("Adding initial commit: %v", err)
-	}
+	lg, c := makeFakeRepoWithCommit(clients, t)
 	expectedBranches := []string{"release-1.5", "release-1.6", "release-1.8"}
 	for _, branch := range expectedBranches {
 		if err := lg.CheckoutNewBranch("foo", "bar", branch); err != nil {
@@ -652,24 +624,7 @@ func TestCherryPickPRWithLabelsV2(t *testing.T) {
 }
 
 func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
-	lg, c, err := clients()
-	if err != nil {
-		t.Fatalf("Making localgit: %v", err)
-	}
-	defer func() {
-		if err := lg.Clean(); err != nil {
-			t.Errorf("Cleaning up localgit: %v", err)
-		}
-		if err := c.Clean(); err != nil {
-			t.Errorf("Cleaning up client: %v", err)
-		}
-	}()
-	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
-		t.Fatalf("Making fake repo: %v", err)
-	}
-	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
-		t.Fatalf("Adding initial commit: %v", err)
-	}
+	lg, c := makeFakeRepoWithCommit(clients, t)
 	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.5"); err != nil {
 		t.Fatalf("Checking out pull branch: %v", err)
 	}
