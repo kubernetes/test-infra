@@ -23,6 +23,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git/localgit"
@@ -59,7 +60,17 @@ func (f *fghc) AddLabel(org, repo string, number int, label string) error {
 }
 
 func (f *fghc) AssignIssue(org, repo string, number int, logins []string) error {
+	var users []github.User
+	for _, login := range logins {
+		users = append(users, github.User{Login: login})
+	}
+
 	f.Lock()
+	for i := range f.prs {
+		if number == f.prs[i].Number {
+			f.prs[i].Assignees = append(f.prs[i].Assignees, users...)
+		}
+	}
 	defer f.Unlock()
 	return nil
 }
@@ -893,6 +904,91 @@ func TestCherryPickCreateIssue(t *testing.T) {
 			t.Fatalf(errMsg("comment"), expectedComment, actualComment)
 		}
 
+	}
+}
+
+func TestCherryPickPRAssignments(t *testing.T) {
+	t.Parallel()
+	testCherryPickPRAssignments(localgit.New, t)
+}
+
+func TestCherryPickPRAssignmentsV2(t *testing.T) {
+	t.Parallel()
+	testCherryPickPRAssignments(localgit.NewV2, t)
+}
+
+func testCherryPickPRAssignments(clients localgit.Clients, t *testing.T) {
+	for _, prowAssignments := range []bool{true, false} {
+		lg, c := makeFakeRepoWithCommit(clients, t)
+		if err := lg.CheckoutNewBranch("foo", "bar", "stage"); err != nil {
+			t.Fatalf("Checking out pull branch: %v", err)
+		}
+
+		user := github.User{
+			Login: "wiseguy",
+		}
+		ghc := &fghc{
+			pr: &github.PullRequest{
+				Base: github.PullRequestBranch{
+					Ref: "master",
+				},
+				Merged: true,
+				Title:  "This is a fix for X",
+				Body:   body,
+			},
+			isMember: true,
+			patch:    patch,
+		}
+		ic := github.IssueCommentEvent{
+			Action: github.IssueCommentActionCreated,
+			Repo: github.Repo{
+				Owner: github.User{
+					Login: "foo",
+				},
+				Name:     "bar",
+				FullName: "foo/bar",
+			},
+			Issue: github.Issue{
+				Number:      2,
+				State:       "closed",
+				PullRequest: &struct{}{},
+			},
+			Comment: github.IssueComment{
+				User: user,
+				Body: "/cherrypick stage",
+			},
+		}
+
+		botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
+		getSecret := func() []byte {
+			return []byte("sha=abcdefg")
+		}
+
+		s := &Server{
+			botUser:        botUser,
+			gc:             c,
+			push:           func(forkName, newBranch string, force bool) error { return nil },
+			ghc:            ghc,
+			tokenGenerator: getSecret,
+			log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
+			repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+
+			prowAssignments: prowAssignments,
+		}
+
+		if err := s.handleIssueComment(logrus.NewEntry(logrus.StandardLogger()), ic); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		var expected []github.User
+		if prowAssignments {
+			expected = append(expected, user)
+		}
+
+		got := ghc.prs[0].Assignees
+		if !cmp.Equal(got, expected) {
+			t.Errorf("Expected (%d):\n+%v\nGot (%d):\n%+v\n", len(expected), expected, len(got), got)
+		}
 	}
 }
 
