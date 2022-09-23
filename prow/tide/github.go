@@ -27,6 +27,7 @@ import (
 	"time"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
@@ -393,6 +394,31 @@ func (gi *GitHubProvider) GetChangedFiles(org, repo string, number int) ([]strin
 		files = append(files, c.Filename)
 	}
 	return files, nil
+}
+
+func (gi *GitHubProvider) refsForJob(sp subpool, prs []CodeReviewCommon) (prowapi.Refs, error) {
+	refs := prowapi.Refs{
+		Org:     sp.org,
+		Repo:    sp.repo,
+		BaseRef: sp.branch,
+		BaseSHA: sp.sha,
+	}
+	for _, pr := range prs {
+		refs.Pulls = append(
+			refs.Pulls,
+			prowapi.Pull{
+				Number: pr.Number,
+				Title:  pr.Title,
+				Author: string(pr.AuthorLogin),
+				SHA:    pr.HeadRefOID,
+			},
+		)
+	}
+	return refs, nil
+}
+
+func (gi *GitHubProvider) labelsAndAnnotations(instance string, jobLabels, jobAnnotations map[string]string, changes ...CodeReviewCommon) (labels, annotations map[string]string) {
+	return
 }
 
 // dateToken generates a GitHub search query token for the specified date range.

@@ -267,7 +267,7 @@ func TestMakeCloneURI(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual, err := makeCloneURI(tc.instance, tc.project)
+			actual, err := MakeCloneURI(tc.instance, tc.project)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -339,11 +339,7 @@ func TestCreateRefs(t *testing.T) {
 			},
 		},
 	}
-	cloneURI, err := makeCloneURI(reviewHost, change.Project)
-	if err != nil {
-		t.Errorf("failed to make clone URI: %v", err)
-	}
-	actual, err := createRefs(reviewHost, change, cloneURI, "abcdef")
+	actual, err := CreateRefs(reviewHost, change.Project, change.Branch, "abcdef", change)
 	if err != nil {
 		t.Errorf("unexpected error creating refs: %v", err)
 	}
@@ -1370,11 +1366,6 @@ func TestProcessChange(t *testing.T) {
 			fakeLastSync := client.LastSyncState{tc.instance: map[string]time.Time{}}
 			fakeLastSync[tc.instance][tc.change.Project] = timeNow.Add(-time.Minute)
 
-			cloneURI, err := makeCloneURI(tc.instance, tc.change.Project)
-			if err != nil {
-				t.Errorf("error making CloneURI %v", err)
-			}
-
 			cache, err := createTestRepoCache(t, fca)
 			if err != nil {
 				t.Errorf("error making test repo cache %v", err)
@@ -1390,7 +1381,7 @@ func TestProcessChange(t *testing.T) {
 				inRepoConfigCacheHandler: cache,
 			}
 
-			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI)
+			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {

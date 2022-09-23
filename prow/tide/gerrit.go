@@ -31,6 +31,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	gerritadaptor "k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
@@ -404,4 +405,21 @@ func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string
 		files = append(files, f)
 	}
 	return files, nil
+}
+
+func (p *GerritProvider) refsForJob(sp subpool, prs []CodeReviewCommon) (prowapi.Refs, error) {
+	var changes []client.ChangeInfo
+	for _, pr := range prs {
+		changes = append(changes, *pr.Gerrit)
+	}
+	return gerritadaptor.CreateRefs(sp.org, sp.repo, sp.branch, sp.sha, changes...)
+}
+
+func (p *GerritProvider) labelsAndAnnotations(instance string, jobLabels, jobAnnotations map[string]string, prs ...CodeReviewCommon) (labels, annotations map[string]string) {
+	var changes []client.ChangeInfo
+	for _, pr := range prs {
+		changes = append(changes, *pr.Gerrit)
+	}
+	labels, annotations = gerritadaptor.LabelsAndAnnotations(instance, jobLabels, jobAnnotations, changes...)
+	return
 }
