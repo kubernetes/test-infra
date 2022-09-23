@@ -35,12 +35,12 @@ RUN env GOOS=linux \
 
 
 # Stage 2
-FROM alpine:3.12.0
+FROM alpine:3.15.6
 
-# Google Cloud SDK requires python 2.7.9+ (https://cloud.google.com/python/setup#installing_the_cloud_sdk).
+# Google Cloud SDK requires python 3.9+ (https://cloud.google.com/python/setup#installing_the_cloud_sdk).
 # update_summaries.sh requires bash.
 RUN apk add --no-cache \
-    python2 \
+    python3 \
     bash
 
 # Copy the Google Cloud SDK and link the binaries
