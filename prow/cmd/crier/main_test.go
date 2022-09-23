@@ -33,8 +33,6 @@ func TestOptions(t *testing.T) {
 	var defaultGitHubOptions flagutil.GitHubOptions
 	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
 
-	defaultGerritProjects := make(map[string][]string)
-
 	cases := []struct {
 		name     string
 		args     []string
@@ -52,13 +50,10 @@ func TestOptions(t *testing.T) {
 		//Gerrit Reporter
 		{
 			name: "gerrit supports multiple workers",
-			args: []string{"--gerrit-workers=99", "--gerrit-projects=foo=bar", "--cookiefile=foobar", "--config-path=foo"},
+			args: []string{"--gerrit-workers=99", "--cookiefile=foobar", "--config-path=foo"},
 			expected: &options{
 				gerritWorkers:  99,
 				cookiefilePath: "foobar",
-				gerritProjects: map[string][]string{
-					"foo": {"bar"},
-				},
 				config: configflagutil.ConfigOptions{
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
@@ -74,12 +69,9 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "gerrit missing --cookiefile",
-			args: []string{"--gerrit-workers=5", "--gerrit-projects=foo=bar", "--config-path=foo"},
+			args: []string{"--gerrit-workers=5", "--config-path=foo"},
 			expected: &options{
 				gerritWorkers: 5,
-				gerritProjects: map[string][]string{
-					"foo": {"bar"},
-				},
 				config: configflagutil.ConfigOptions{
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
@@ -108,7 +100,6 @@ func TestOptions(t *testing.T) {
 				},
 				pubsubWorkers:          7,
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
@@ -133,7 +124,6 @@ func TestOptions(t *testing.T) {
 					InRepoConfigCacheCopies:               1,
 				},
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
@@ -158,7 +148,6 @@ func TestOptions(t *testing.T) {
 				},
 				dryrun:                 true,
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
@@ -177,7 +166,6 @@ func TestOptions(t *testing.T) {
 					InRepoConfigCacheCopies:               1,
 				},
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
@@ -196,7 +184,6 @@ func TestOptions(t *testing.T) {
 					InRepoConfigCacheCopies:               1,
 				},
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      0.5,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},

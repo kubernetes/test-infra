@@ -75,45 +75,6 @@ func init() {
 	prometheus.MustRegister(clientMetrics.queryResults)
 }
 
-// ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
-type ProjectsFlag map[string][]string
-
-func (p ProjectsFlag) String() string {
-	var hosts []string
-	for host, repos := range p {
-		hosts = append(hosts, host+"="+strings.Join(repos, ","))
-	}
-	return strings.Join(hosts, " ")
-}
-
-// Set populates ProjectsFlag upon flag.Parse()
-func (p ProjectsFlag) Set(value string) error {
-	parts := strings.SplitN(value, "=", 2)
-	if len(parts) != 2 {
-		return fmt.Errorf("%s not in the form of host=repo-a,repo-b,etc", value)
-	}
-	host := parts[0]
-	if _, ok := p[host]; ok {
-		return fmt.Errorf("duplicate host: %s", host)
-	}
-	repos := strings.Split(parts[1], ",")
-	p[host] = repos
-	return nil
-}
-
-// ProjectsFlagToConfig converts Gerrit project configured as command line args
-// to prow config struct for backward compatilibity
-func ProjectsFlagToConfig(hostProjects ProjectsFlag) map[string]map[string]*config.GerritQueryFilter {
-	res := make(map[string]map[string]*config.GerritQueryFilter)
-	for host, projects := range hostProjects {
-		res[host] = make(map[string]*config.GerritQueryFilter)
-		for _, project := range projects {
-			res[host][project] = nil
-		}
-	}
-	return res
-}
-
 type gerritAuthentication interface {
 	SetCookieAuth(name, value string)
 }

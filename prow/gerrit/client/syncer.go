@@ -52,15 +52,14 @@ func NewSyncTime(path string, opener opener, ctx context.Context) *SyncTime {
 	}
 }
 
-func (st *SyncTime) Init(hostProjects ProjectsFlag) error {
-	logrus.WithField("projects", hostProjects).Info(st.val)
+func (st *SyncTime) Init(hostProjects map[string]map[string]*config.GerritQueryFilter) error {
 	st.lock.RLock()
 	zero := st.val == nil
 	st.lock.RUnlock()
 	if !zero {
 		return nil
 	}
-	return st.update(ProjectsFlagToConfig(hostProjects))
+	return st.update(hostProjects)
 }
 
 func (st *SyncTime) update(hostProjects map[string]map[string]*config.GerritQueryFilter) error {
