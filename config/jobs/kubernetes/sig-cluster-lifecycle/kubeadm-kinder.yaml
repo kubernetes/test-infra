@@ -39,13 +39,14 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 2000m
           memory: "9000Mi"
+          cpu: 2000m
         requests:
-          cpu: 2000m
           memory: "9000Mi"
+          cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-25
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   labels:
@@ -81,11 +82,15 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          memory: "9000Mi"
+          cpu: 2000m
         requests:
           memory: "9000Mi"
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-24
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   labels:
@@ -121,11 +126,15 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          memory: "9000Mi"
+          cpu: 2000m
         requests:
           memory: "9000Mi"
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-23
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   labels:
@@ -161,11 +170,15 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          memory: "9000Mi"
+          cpu: 2000m
         requests:
           memory: "9000Mi"
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-22
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   labels:
@@ -201,6 +214,9 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          memory: "9000Mi"
+          cpu: 2000m
         requests:
           memory: "9000Mi"
           cpu: 2000m

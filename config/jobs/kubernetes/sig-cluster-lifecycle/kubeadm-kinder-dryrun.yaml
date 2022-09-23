@@ -39,8 +39,8 @@ periodics:
         privileged: true
       resources:
         limits:
-          cpu: 2000m
           memory: "9000Mi"
+          cpu: 2000m
         requests:
-          cpu: 2000m
           memory: "9000Mi"
+          cpu: 2000m
