@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -32,6 +31,7 @@ import (
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
@@ -76,11 +76,10 @@ func verifyRerunRefs(refs *prowapi.Refs) error {
 func setRerunOrgRepo(refs *prowapi.Refs, labels map[string]string) string {
 	org, repo := refs.Org, refs.Repo
 	orgRepo := org + "/" + repo
-	// Add "https://" prefix to orgRepo if this is a gerrit job.
+	// Normalize prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
-	prefix := "https://"
-	if labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
-		orgRepo = prefix + orgRepo
+	if labels[kube.GerritRevision] != "" && !gerritsource.IsGerritOrg(refs.Org) {
+		orgRepo = gerritsource.CloneURIFromOrgRepo(refs.Org, refs.Repo)
 	}
 	return orgRepo
 }

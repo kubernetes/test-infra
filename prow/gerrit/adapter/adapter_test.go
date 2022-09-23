@@ -233,57 +233,6 @@ func TestHandleInRepoConfigError(t *testing.T) {
 	}
 }
 
-func TestMakeCloneURI(t *testing.T) {
-	cases := []struct {
-		name     string
-		instance string
-		project  string
-		expected string
-		err      bool
-	}{
-		{
-			name:     "happy case",
-			instance: "https://android.googlesource.com",
-			project:  "platform/build",
-			expected: "https://android.googlesource.com/platform/build",
-		},
-		{
-			name:     "reject non urls",
-			instance: "!!!://",
-			project:  "platform/build",
-			err:      true,
-		},
-		{
-			name:     "require instance to specify host",
-			instance: "android.googlesource.com",
-			project:  "platform/build",
-			err:      true,
-		},
-		{
-			name:     "reject instances with paths",
-			instance: "https://android.googlesource.com/platform",
-			project:  "build",
-			err:      true,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			actual, err := MakeCloneURI(tc.instance, tc.project)
-			switch {
-			case err != nil:
-				if !tc.err {
-					t.Errorf("unexpected error: %v", err)
-				}
-			case tc.err:
-				t.Error("failed to receive expected exception")
-			case actual.String() != tc.expected:
-				t.Errorf("actual %q != expected %q", actual.String(), tc.expected)
-			}
-		})
-	}
-}
-
 type fakeSync struct {
 	val  client.LastSyncState
 	lock sync.Mutex
@@ -322,7 +271,7 @@ func TestCreateRefs(t *testing.T) {
 		},
 	}
 	expected := prowapi.Refs{
-		Org:      "cat-review.example.com",
+		Org:      "https://cat-review.example.com",
 		Repo:     "meow/purr",
 		BaseRef:  "master",
 		BaseSHA:  "abcdef",
@@ -616,7 +565,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -658,7 +607,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -737,7 +686,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -779,7 +728,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -844,7 +793,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -886,7 +835,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -925,7 +874,7 @@ func TestProcessChange(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							"prow.k8s.io/context":             "",
+							"prow.k8s.io/context":             "other-test",
 							"prow.k8s.io/refs.pull":           "0",
 							"created-by-prow":                 "true",
 							"prow.k8s.io/gerrit-revision":     "1",
@@ -939,14 +888,14 @@ func TestProcessChange(t *testing.T) {
 						},
 						Annotations: map[string]string{
 							"prow.k8s.io/job":             "other-test",
-							"prow.k8s.io/context":         "",
+							"prow.k8s.io/context":         "other-test",
 							"prow.k8s.io/gerrit-instance": "https://gerrit",
 							"prow.k8s.io/gerrit-id":       "",
 						},
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "other-repo",
 							RepoLink: "https://gerrit/other-repo",
 							BaseSHA:  "abc",
@@ -1006,7 +955,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "postsubmits-project",
 							RepoLink: "https://gerrit/postsubmits-project",
 							BaseSHA:  "abc",
@@ -1087,7 +1036,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1128,7 +1077,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1169,7 +1118,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1254,7 +1203,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1295,7 +1244,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1355,7 +1304,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1397,7 +1346,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1439,7 +1388,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1500,7 +1449,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1568,7 +1517,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1661,7 +1610,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1730,7 +1679,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1804,7 +1753,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1884,7 +1833,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -1964,7 +1913,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2006,7 +1955,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2110,7 +2059,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2152,7 +2101,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2213,7 +2162,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2255,7 +2204,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2320,7 +2269,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2362,7 +2311,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2404,7 +2353,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2489,7 +2438,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2532,7 +2481,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2575,7 +2524,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "test-infra",
 							RepoLink: "https://gerrit/test-infra",
 							BaseSHA:  "abc",
@@ -2637,7 +2586,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "postsubmits-project",
 							RepoLink: "https://gerrit/postsubmits-project",
 							BaseSHA:  "abc",
@@ -2680,7 +2629,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "postsubmits-project",
 							RepoLink: "https://gerrit/postsubmits-project",
 							BaseSHA:  "abc",
@@ -2742,7 +2691,7 @@ func TestProcessChange(t *testing.T) {
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "kubernetes/test-infra",
 							RepoLink: "https://gerrit/kubernetes/test-infra",
 							BaseSHA:  "abc",
@@ -2771,21 +2720,21 @@ func TestProcessChange(t *testing.T) {
 							"prow.k8s.io/refs.repo":           "test-infra",
 							"prow.k8s.io/type":                "presubmit",
 							"prow.k8s.io/job":                 "other-test",
-							"prow.k8s.io/context":             "",
+							"prow.k8s.io/context":             "other-test",
 							"prow.k8s.io/refs.org":            "gerrit",
 							"prow.k8s.io/refs.pull":           "0",
 							"created-by-prow":                 "true",
 						},
 						Annotations: map[string]string{
 							"prow.k8s.io/job":             "other-test",
-							"prow.k8s.io/context":         "",
+							"prow.k8s.io/context":         "other-test",
 							"prow.k8s.io/gerrit-instance": "https://gerrit",
 							"prow.k8s.io/gerrit-id":       "",
 						},
 					},
 					Spec: prowapi.ProwJobSpec{
 						Refs: &prowapi.Refs{
-							Org:      "gerrit",
+							Org:      "https://gerrit",
 							Repo:     "kubernetes/test-infra",
 							RepoLink: "https://gerrit/kubernetes/test-infra",
 							BaseSHA:  "abc",
@@ -2908,13 +2857,17 @@ func TestProcessChange(t *testing.T) {
 			ProwYAMLGetterWithDefaults: fakeProwYAMLGetter,
 			ProwYAMLGetter:             fakeProwYAMLGetter,
 			PresubmitsStatic: map[string][]config.Presubmit{
-				"gerrit/test-infra": testInfraPresubmits,
+				"https://gerrit/test-infra": testInfraPresubmits,
 				"https://gerrit/kubernetes/test-infra": {
 					{
 						JobBase: config.JobBase{
 							Name: "other-test",
 						},
 						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context:    "other-test",
+							SkipReport: true,
+						},
 					},
 				},
 				"https://gerrit/other-repo": {
@@ -2923,11 +2876,15 @@ func TestProcessChange(t *testing.T) {
 							Name: "other-test",
 						},
 						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context:    "other-test",
+							SkipReport: true,
+						},
 					},
 				},
 			},
 			PostsubmitsStatic: map[string][]config.Postsubmit{
-				"gerrit/postsubmits-project": {
+				"https://gerrit/postsubmits-project": {
 					{
 						JobBase: config.JobBase{
 							Name: "test-bar",
@@ -2973,6 +2930,7 @@ func TestProcessChange(t *testing.T) {
 				gc:                       &gc,
 				tracker:                  &fakeSync{val: fakeLastSync},
 				inRepoConfigCacheHandler: cache,
+				inRepoConfigFailures:     make(map[string]bool),
 			}
 
 			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)
@@ -3010,7 +2968,15 @@ func TestProcessChange(t *testing.T) {
 
 			// It seems that the PJs are very deterministic, consider sorting
 			// them if this test becomes flaky.
-			if diff := cmp.Diff(tc.wantPjs, gotProwjobs); diff != "" {
+			if diff := cmp.Diff(tc.wantPjs, gotProwjobs, cmpopts.SortSlices(func(a, b *prowapi.ProwJob) bool {
+				if b == nil {
+					return true
+				}
+				if a == nil {
+					return false
+				}
+				return a.Labels["prow.k8s.io/job"] < b.Labels["prow.k8s.io/job"]
+			})); diff != "" {
 				t.Fatalf("%q Prowjobs mismatch. Want(-), got(+):\n%s", tc.name, diff)
 			}
 

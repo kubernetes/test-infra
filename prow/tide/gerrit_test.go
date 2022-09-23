@@ -581,7 +581,7 @@ func TestGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			presubmits: map[string][]config.Presubmit{
-				"foo1/bar1": {
+				"https://foo1/bar1": {
 					{
 						Reporter: config.Reporter{Context: "job-1"},
 						JobBase: config.JobBase{
@@ -611,7 +611,7 @@ func TestGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			presubmits: map[string][]config.Presubmit{
-				"foo1/bar1": {
+				"https://foo1/bar1": {
 					{
 						Reporter: config.Reporter{Context: "job-1"},
 						JobBase: config.JobBase{
@@ -642,7 +642,7 @@ func TestGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			presubmits: map[string][]config.Presubmit{
-				"foo1/bar1": {
+				"https://foo1/bar1": {
 					{
 						Reporter: config.Reporter{Context: "job-1"},
 						JobBase: config.JobBase{

@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	gerritadaptor "k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
@@ -291,17 +292,11 @@ func (p *GerritProvider) GetTideContextPolicy(org, repo, branch string, baseSHAG
 	headSHAGetter := func() (string, error) {
 		return crc.HeadRefOID, nil
 	}
-	orgRepo := org + "/" + repo
+	cloneURI := gerritsource.CloneURIFromOrgRepo(org, repo)
 	// Get presubmits from Config alone.
-	presubmits := p.cfg().GetPresubmitsStatic(orgRepo)
-	// If InRepoConfigCache is provided, then it means that we also want to fetch
-	// from an inrepoconfig.
-	if p.inRepoConfigCacheHandler != nil {
-		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetter)
-		if err != nil {
-			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
-		}
-		presubmits = append(presubmits, presubmitsFromCache...)
+	presubmits, err := p.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting presubmits: %v", err)
 	}
 
 	requireLabels := sets.NewString()
