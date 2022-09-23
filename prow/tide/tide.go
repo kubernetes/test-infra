@@ -834,9 +834,6 @@ func pickHighestPriorityPR(log *logrus.Entry, prs []CodeReviewCommon, cc map[int
 			if smallestNumber != -1 && pr.Number >= smallestNumber {
 				continue
 			}
-			if commits := pr.GitHubCommits(); commits == nil || len(commits.Nodes) < 1 {
-				continue
-			}
 			if !isPassingTestsFunc(log, &pr, cc[pr.Number]) {
 				continue
 			}
