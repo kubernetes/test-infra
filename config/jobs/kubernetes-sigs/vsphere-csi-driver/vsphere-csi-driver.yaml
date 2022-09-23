@@ -64,7 +64,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.6.0
+      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.7.1
         command:
         - /bin/shellcheck.sh
     annotations:
