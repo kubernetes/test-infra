@@ -808,6 +808,8 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Ent
 	return failed
 }
 
+// hasAllLabels is used by pickHighestPriorityPR. Returns true when wantLabels
+// is empty, otherwise ensures that PR labels contain all wantLabels.
 func hasAllLabels(pr CodeReviewCommon, wantLabels []string) bool {
 	if len(wantLabels) == 0 {
 		return true
@@ -827,7 +829,7 @@ func pickHighestPriorityPR(log *logrus.Entry, prs []CodeReviewCommon, cc map[int
 	var smallestPR CodeReviewCommon
 	for _, p := range append(priorities, config.TidePriority{}) {
 		for _, pr := range prs {
-			// This should only apply to GitHub PRs
+			// This should only apply to GitHub PRs, for Gerrit this is always true.
 			if !hasAllLabels(pr, p.Labels) {
 				continue
 			}
@@ -1161,7 +1163,7 @@ func (c *syncController) isRetestEligible(log *logrus.Entry, candidate *CodeRevi
 		contextNames = append(contextNames, string(headContext.Context))
 	}
 
-	if len(cc.MissingRequiredContexts(contextNames)) > 0 {
+	if missedContexts := cc.MissingRequiredContexts(contextNames); len(missedContexts) > 0 {
 		return false
 	}
 
@@ -1320,7 +1322,10 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 }
 
 func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs []CodeReviewCommon) error {
-	refs := refsForJob(sp, prs)
+	refs, err := c.provider.refsForJob(sp, prs)
+	if err != nil {
+		return fmt.Errorf("failed creating refs: %v", err)
+	}
 
 	// If PRs require the same job, we only want to trigger it once.
 	// If multiple required jobs have the same context, we assume the
@@ -1340,7 +1345,8 @@ func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs 
 			}
 			spec = pjutil.BatchSpec(ps, refs)
 		}
-		pj := pjutil.NewProwJob(spec, ps.Labels, ps.Annotations)
+		labels, annotations := c.provider.labelsAndAnnotations(sp.org, ps.Labels, ps.Annotations, prs...)
+		pj := pjutil.NewProwJob(spec, labels, annotations)
 		pj.Namespace = c.config().ProwJobNamespace
 		log := c.logger.WithFields(pjutil.ProwJobFields(&pj))
 		start := time.Now()

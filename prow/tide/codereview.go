@@ -138,27 +138,6 @@ func (crc *CodeReviewCommon) GitHubCommits() *Commits {
 	return &crc.GitHub.Commits
 }
 
-func refsForJob(sp subpool, prs []CodeReviewCommon) prowapi.Refs {
-	refs := prowapi.Refs{
-		Org:     sp.org,
-		Repo:    sp.repo,
-		BaseRef: sp.branch,
-		BaseSHA: sp.sha,
-	}
-	for _, pr := range prs {
-		refs.Pulls = append(
-			refs.Pulls,
-			prowapi.Pull{
-				Number: pr.Number,
-				Title:  pr.Title,
-				Author: string(pr.AuthorLogin),
-				SHA:    pr.HeadRefOID,
-			},
-		)
-	}
-	return refs
-}
-
 // CodeReviewCommonFromPullRequest derives CodeReviewCommon struct from GitHub
 // PullRequest struct, by extracting shared fields among different code review
 // providers.
@@ -266,4 +245,7 @@ type provider interface {
 	// nilcheck that pointer before accessing it.
 	GetPresubmits(identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
 	GetChangedFiles(org, repo string, number int) ([]string, error)
+
+	refsForJob(sp subpool, prs []CodeReviewCommon) (prowapi.Refs, error)
+	labelsAndAnnotations(instance string, jobLabels, jobAnnotations map[string]string, changes ...CodeReviewCommon) (labels, annotations map[string]string)
 }
