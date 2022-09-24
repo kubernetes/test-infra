@@ -64,9 +64,13 @@ func TestSyncTime(t *testing.T) {
 		opener: open,
 		ctx:    ctx,
 	}
-	testProjectsFlag := ProjectsFlag{"foo": []string{"bar"}}
+	testProjects := map[string]map[string]*config.GerritQueryFilter{
+		"foo": map[string]*config.GerritQueryFilter{
+			"bar": &config.GerritQueryFilter{},
+		},
+	}
 	now := time.Now()
-	if err := st.Init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjects); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 	cur := st.Current()["foo"]["bar"]
@@ -97,7 +101,7 @@ func TestSyncTime(t *testing.T) {
 		opener: open,
 		ctx:    ctx,
 	}
-	if err := st.Init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjects); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 	if actual := st.Current()["foo"]["bar"]; !actual.Equal(expected) {
@@ -121,7 +125,7 @@ func TestSyncTime(t *testing.T) {
 		opener: fakeOpener{}, // return storage.ErrObjectNotExist on open
 		ctx:    ctx,
 	}
-	if err := st.Init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjects); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 	if actual := st.Current()["foo"]["bar"]; now.After(actual) || actual.After(later) {
@@ -146,11 +150,15 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 		opener: open,
 		ctx:    ctx,
 	}
-	testProjectsFlag := ProjectsFlag{
-		"foo1": []string{"bar1"},
-		"foo2": []string{"bar2"},
+	testProjects := map[string]map[string]*config.GerritQueryFilter{
+		"foo1": map[string]*config.GerritQueryFilter{
+			"bar1": &config.GerritQueryFilter{},
+		},
+		"foo2": map[string]*config.GerritQueryFilter{
+			"bar2": &config.GerritQueryFilter{},
+		},
 	}
-	if err := st.Init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjects); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 
@@ -217,7 +225,15 @@ func TestNewProjectAddition(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create opener: %v", err)
 	}
-	testProjectsFlag := ProjectsFlag{"foo": []string{"bar"}, "qwe": []string{"qux"}}
+
+	testProjects := map[string]map[string]*config.GerritQueryFilter{
+		"foo": map[string]*config.GerritQueryFilter{
+			"bar": &config.GerritQueryFilter{},
+		},
+		"qwe": map[string]*config.GerritQueryFilter{
+			"qux": &config.GerritQueryFilter{},
+		},
+	}
 
 	st := SyncTime{
 		path:   path,
@@ -225,7 +241,7 @@ func TestNewProjectAddition(t *testing.T) {
 		ctx:    ctx,
 	}
 
-	if err := st.Init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjects); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 	if _, ok := st.val["qwe"]; !ok {

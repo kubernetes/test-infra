@@ -38,7 +38,6 @@ import (
 	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
-	gerritclient "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -48,7 +47,6 @@ import (
 type options struct {
 	client           prowflagutil.KubernetesOptions
 	cookiefilePath   string
-	gerritProjects   gerritclient.ProjectsFlag
 	github           prowflagutil.GitHubOptions
 	githubEnablement prowflagutil.GitHubEnablementOptions
 
@@ -85,10 +83,6 @@ func (o *options) validate() error {
 	}
 
 	if o.gerritWorkers > 0 {
-		if len(o.gerritProjects) == 0 {
-			logrus.Info("--gerrit-projects is not set, using global config")
-		}
-
 		if o.cookiefilePath == "" {
 			logrus.Info("--cookiefile is not set, using anonymous authentication")
 		}
@@ -116,11 +110,7 @@ func (o *options) validate() error {
 }
 
 func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
-
-	o.gerritProjects = gerritclient.ProjectsFlag{}
-
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
-	fs.Var(&o.gerritProjects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
 	fs.IntVar(&o.gerritWorkers, "gerrit-workers", 0, "Number of gerrit report workers (0 means disabled)")
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
@@ -225,7 +215,7 @@ func main() {
 		orgRepoConfigGetter := func() *config.GerritOrgRepoConfigs {
 			return cfg().Gerrit.OrgReposConfig
 		}
-		gerritReporter, err := gerritreporter.NewReporter(orgRepoConfigGetter, o.cookiefilePath, o.gerritProjects, mgr.GetClient())
+		gerritReporter, err := gerritreporter.NewReporter(orgRepoConfigGetter, o.cookiefilePath, mgr.GetClient())
 		if err != nil {
 			logrus.WithError(err).Fatal("Error starting gerrit reporter")
 		}

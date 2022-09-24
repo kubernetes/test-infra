@@ -123,22 +123,19 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCacheHandler *config.InRepoConfigCacheHandler) *Controller {
+	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCacheHandler *config.InRepoConfigCacheHandler) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
 	if cfg().Gerrit.OrgReposConfig != nil {
 		projectsOptOutHelpMap = cfg().Gerrit.OrgReposConfig.OptOutHelpRepos()
-	} else {
-		for i, p := range projectsOptOutHelp {
-			projectsOptOutHelpMap[i] = sets.NewString(p...)
-		}
 	}
 	lastSyncTracker := client.NewSyncTime(lastSyncFallback, op, ctx)
-	if err := lastSyncTracker.Init(projects); err != nil {
+
+	if err := lastSyncTracker.Init(cfg().Gerrit.OrgReposConfig.AllRepos()); err != nil {
 		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
 	}
-	gerritClient, err := client.NewClient(client.ProjectsFlagToConfig(projects))
+	gerritClient, err := client.NewClient(nil)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}

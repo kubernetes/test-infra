@@ -257,26 +257,26 @@ func newStamp(t time.Time) *gerrit.Timestamp {
 func TestUpdateClients(t *testing.T) {
 	tests := []struct {
 		name              string
-		existingInstances map[string][]string
-		newInstances      map[string][]string
+		existingInstances map[string]map[string]*config.GerritQueryFilter
+		newInstances      map[string]map[string]*config.GerritQueryFilter
 		wantInstances     map[string]map[string]*config.GerritQueryFilter
 	}{
 		{
 			name:              "normal",
-			existingInstances: map[string][]string{"foo1": {"bar1"}},
-			newInstances:      map[string][]string{"foo2": {"bar2"}},
+			existingInstances: map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
+			newInstances:      map[string]map[string]*config.GerritQueryFilter{"foo2": {"bar2": nil}},
 			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo2": {"bar2": nil}},
 		},
 		{
 			name:              "same instance",
-			existingInstances: map[string][]string{"foo1": {"bar1"}},
-			newInstances:      map[string][]string{"foo1": {"bar2"}},
+			existingInstances: map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
+			newInstances:      map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar2": nil}},
 			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar2": nil}},
 		},
 		{
 			name:              "delete",
-			existingInstances: map[string][]string{"foo1": {"bar1"}, "foo2": {"bar2"}},
-			newInstances:      map[string][]string{"foo1": {"bar1"}},
+			existingInstances: map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}, "foo2": {"bar2": nil}},
+			newInstances:      map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
 			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
 		},
 	}
@@ -286,14 +286,14 @@ func TestUpdateClients(t *testing.T) {
 			client := &Client{
 				handlers: make(map[string]*gerritInstanceHandler),
 			}
-			for instance, projects := range ProjectsFlagToConfig(tc.existingInstances) {
+			for instance, projects := range tc.existingInstances {
 				client.handlers[instance] = &gerritInstanceHandler{
 					instance: instance,
 					projects: projects,
 				}
 			}
 
-			if err := client.UpdateClients(ProjectsFlagToConfig(tc.newInstances)); err != nil {
+			if err := client.UpdateClients(tc.newInstances); err != nil {
 				t.Fatal(err)
 			}
 			gotInstances := make(map[string]map[string]*config.GerritQueryFilter)

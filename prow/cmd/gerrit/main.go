@@ -35,17 +35,14 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/gerrit/adapter"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
 type options struct {
-	cookiefilePath     string
-	tokenPathOverride  string
-	config             configflagutil.ConfigOptions
-	projects           client.ProjectsFlag
-	projectsOptOutHelp client.ProjectsFlag
+	cookiefilePath    string
+	tokenPathOverride string
+	config            configflagutil.ConfigOptions
 	// lastSyncFallback is the path to sync the latest timestamp
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
 	lastSyncFallback       string
@@ -57,10 +54,6 @@ type options struct {
 }
 
 func (o *options) validate() error {
-	if len(o.projects) == 0 {
-		logrus.Info("--gerrit-projects is not set, using global config")
-	}
-
 	if o.cookiefilePath != "" && o.tokenPathOverride != "" {
 		return fmt.Errorf("only one of --cookiefile=%q --token-path=%q allowed, not both", o.cookiefilePath, o.tokenPathOverride)
 	}
@@ -90,11 +83,7 @@ func (o *options) validate() error {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	o.projects = client.ProjectsFlag{}
-	o.projectsOptOutHelp = client.ProjectsFlag{}
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
-	fs.Var(&o.projects, "gerrit-projects", "(Deprecated 2022/03, set under Gerrit in prow config.yaml) Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat fs for each host. Setting is deprecated, no effect if configured globally")
-	fs.Var(&o.projectsOptOutHelp, "gerrit-projects-opt-out-help", "(Deprecated 2022/03, set under Gerrit in prow config.yaml) Set of gerrit repos that do not need help information for running the tests to be commented on their changes. The format is the same as --gerrit-projects. Setting is deprecated, no effect if configured globally")
 	fs.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "The /local/path, gs://path/to/object or s3://path/to/object to sync the latest timestamp")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
@@ -144,7 +133,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, cacheGetter)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, cacheGetter)
 
 	logrus.Infof("Starting gerrit fetcher")
 
