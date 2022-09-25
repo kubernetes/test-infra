@@ -464,6 +464,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	switch change.Status {
 	case client.Merged:
 		var postsubmits []config.Postsubmit
+		// Gerrit server might be unavailable intermittently, retry inrepoconfig
+		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
 			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			// Break if there was no error, or if there was a merge conflict
@@ -471,10 +473,21 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				break
 			}
 		}
-		if err := c.handleInRepoConfigError(err, instance, change); err != nil {
-			return err
+		// Postsubmit jobs are triggered only once. Still try to fall back on
+		// static jobs if failed to retrieve inrepoconfig jobs.
+		if err != nil {
+			// Reports error back to Gerrit. handleInRepoConfigError is
+			// responsible for not sending the same message again and again on
+			// the same commit.
+			if postErr := c.handleInRepoConfigError(err, instance, change); postErr != nil {
+				logger.WithError(postErr).Error("Failed reporting inrepoconfig processing error back to Gerrit.")
+			}
+			// Static postsubmit jobs are included as part of output from
+			// inRepoConfigCacheHandler.GetPostsubmits, fallback to static only
+			// when inrepoconfig failed.
+			postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
 		}
-		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
+
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
@@ -491,16 +504,37 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		}
 	case client.New:
 		var presubmits []config.Presubmit
+		// Gerrit server might be unavailable intermittently, retry inrepoconfig
+		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
 			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			if err == nil {
 				break
 			}
 		}
-		if err := c.handleInRepoConfigError(err, instance, change); err != nil {
+		if err != nil {
+			// Reports error back to Gerrit. handleInRepoConfigError is
+			// responsible for not sending the same message again and again on
+			// the same commit.
+			if postErr := c.handleInRepoConfigError(err, instance, change); postErr != nil {
+				logger.WithError(postErr).Error("Failed reporting inrepoconfig processing error back to Gerrit.")
+			}
+			// There is no need to keep going when failed to get inrepoconfig
+			// jobs.
+			// Imagining the scenario that:
+			// - Commit #abc triggered static job job-A, inrepoconfig jobs job-B
+			// and job-C
+			// - Both job-B and job-C failed
+			// - Commit #def was pushed. Inrepoconfig failed, falling back to
+			// trigger static job job-A.
+			// - job-A passed.
+			// - Prow would make decision on the result of job-A and ignore the
+			// rest. (Yes this is a Prow bug, which should not be a problem when
+			// each prowjob is reported to an individual Gerrit Check).
+			// So long story short: kicking off partial prowjobs is worse than
+			// kicking off nothing.
 			return err
 		}
-		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
 
 		account, err := c.gc.Account(instance)
 		if err != nil {
