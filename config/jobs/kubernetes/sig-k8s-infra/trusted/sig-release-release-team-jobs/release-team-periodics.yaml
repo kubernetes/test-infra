@@ -22,5 +22,5 @@ periodics:
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
-              name: k8s-triage-robot-github-token
+              name: k8s-release-enhancements-triage-github-token
               key: token
