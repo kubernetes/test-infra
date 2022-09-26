@@ -56,7 +56,9 @@ const (
 	jobReportFormatUrlNotFoundRegex = `^(\S+) (\S+) \(URL_NOT_FOUND\) (\S+)$`
 	jobReportFormatWithoutURLRegex  = `^(\S+) (\S+) (\S+)$`
 	errorLinePrefix                 = "NOTE FROM PROW"
-	jobReportHeader                 = "%s %d out of %d pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n"
+	// jobReportHeader expects 4 args. {defaultProwHeader}, {jobs-passed},
+	// {jobs-total}, {additional-text(optional)}.
+	jobReportHeader = "%s %d out of %d pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests.%s\n"
 
 	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
 	lgtm = "+1"
@@ -599,6 +601,14 @@ func deserialize(s string, j *Job) error {
 	return fmt.Errorf("Could not deserialize %q to a job", s)
 }
 
+func headerMessageLine(success, total int, additionalText string) string {
+	return fmt.Sprintf(jobReportHeader, defaultProwHeader, success, total, additionalText)
+}
+
+func isHeaderMessageLine(s string) bool {
+	return strings.HasPrefix(s, defaultProwHeader)
+}
+
 func errorMessageLine(s string) string {
 	return fmt.Sprintf("[%s: %s]", errorLinePrefix, s)
 }
@@ -640,12 +650,16 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	}
 
 	// Construct JobReport.
+	var additionalText string
 	report := JobReport{Total: len(pjs)}
 	for _, pj := range pjs {
 		job := jobFromPJ(pj)
 		report.Jobs = append(report.Jobs, job)
 		if pj.Status.State == v1.SuccessState {
 			report.Success++
+		}
+		if val, ok := pj.Labels[kube.CreatedByTideLabel]; ok && val == "true" {
+			additionalText = " (Not a duplicated report. Some of the jobs below were triggered by Tide)"
 		}
 	}
 	numJobs := len(report.Jobs)
@@ -656,7 +670,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	// of the Header + Message.
 
 	// Construct report.Header portion.
-	report.Header = fmt.Sprintf(jobReportHeader, defaultProwHeader, report.Success, report.Total)
+	report.Header = headerMessageLine(report.Success, report.Total, additionalText)
 	commentSize := len(report.Header)
 
 	// Construct report.Messages portion. We need to construct the long list of
@@ -789,7 +803,7 @@ func ParseReport(message string) *JobReport {
 	start := 0
 	isReport := false
 	for start < len(contents) {
-		if strings.HasPrefix(contents[start], defaultProwHeader) {
+		if isHeaderMessageLine(contents[start]) {
 			isReport = true
 			break
 		}

@@ -23,6 +23,9 @@ const (
 	// resources
 	// TODO: Namespace this label.
 	CreatedByProw = "created-by-prow"
+	// CreatedByTideLabel is added by tide when it triggered a job.
+	// TODO: Namespace this label.
+	CreatedByTideLabel = "created-by-tide"
 	// ProwJobTypeLabel is added in resources created by prow and
 	// carries the job type (presubmit, postsubmit, periodic, batch)
 	// that the pod is running.

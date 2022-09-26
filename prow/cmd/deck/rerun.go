@@ -49,7 +49,7 @@ var (
 		kube.GerritPatchset,
 		kube.GerritReportLabel,
 		github.EventGUID,
-		"created-by-tide",
+		kube.CreatedByTideLabel,
 		// Annotations
 		kube.GerritID,
 		kube.GerritInstance,
