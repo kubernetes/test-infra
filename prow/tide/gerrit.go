@@ -59,7 +59,7 @@ const (
 
 type gerritClient interface {
 	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error)
-	GetChange(instance, id string) (*gerrit.ChangeInfo, error)
+	GetChange(instance, id string, addtionalFeilds ...string) (*gerrit.ChangeInfo, error)
 	GetBranchRevision(instance, project, branch string) (string, error)
 }
 
@@ -396,7 +396,11 @@ func (p *GerritProvider) GetPresubmits(identifier string, baseSHAGetter config.R
 }
 
 func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {
-	change, err := p.gc.GetChange(org, strconv.Itoa(number))
+	// "CURRENT_FILES" lists all changed files from current revision, which is
+	// what we want, "CURRENT_REVISION" is required for "CURRENT_FILES"
+	// according to
+	// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes.
+	change, err := p.gc.GetChange(org, strconv.Itoa(number), "CURRENT_FILES", "CURRENT_REVISION")
 	if err != nil {
 		return nil, fmt.Errorf("failed get change: %v", err)
 	}
