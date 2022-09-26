@@ -2233,11 +2233,15 @@ func TestJobReportFormats(t *testing.T) {
 }
 
 func TestGenerateReport(t *testing.T) {
-	job := func(name, url string, state v1.ProwJobState) *v1.ProwJob {
+	job := func(name, url string, state v1.ProwJobState, createdByTide bool) *v1.ProwJob {
 		var out v1.ProwJob
 		out.Spec.Job = name
 		out.Status.URL = url
 		out.Status.State = state
+		out.Labels = make(map[string]string)
+		if createdByTide {
+			out.Labels[kube.CreatedByTideLabel] = "true"
+		}
 		return &out
 	}
 
@@ -2251,61 +2255,72 @@ func TestGenerateReport(t *testing.T) {
 		{
 			name: "basic",
 			jobs: []*v1.ProwJob{
-				job("this", "url", v1.SuccessState),
-				job("that", "hey", v1.FailureState),
-				job("left", "foo", v1.AbortedState),
-				job("right", "bar", v1.ErrorState),
+				job("this", "url", v1.SuccessState, false),
+				job("that", "hey", v1.FailureState, false),
+				job("left", "foo", v1.AbortedState, false),
+				job("right", "bar", v1.ErrorState, false),
 			},
-			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests.\n",
+			wantMessage: "❌ [that](hey) FAILURE\n🚫 [right](bar) ERROR\n🚫 [left](foo) ABORTED\n✔️ [this](url) SUCCESS\n",
+		},
+		{
+			name: "include-tide-jobs",
+			jobs: []*v1.ProwJob{
+				job("this", "url", v1.SuccessState, true),
+				job("that", "hey", v1.FailureState, false),
+				job("left", "foo", v1.AbortedState, false),
+				job("right", "bar", v1.ErrorState, false),
+			},
+			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests. (Not a duplicated report. Some of the jobs below were triggered by Tide)\n",
 			wantMessage: "❌ [that](hey) FAILURE\n🚫 [right](bar) ERROR\n🚫 [left](foo) ABORTED\n✔️ [this](url) SUCCESS\n",
 		},
 		{
 			name: "short lines only",
 			jobs: []*v1.ProwJob{
-				job("this", "url", v1.SuccessState),
-				job("that", "hey", v1.FailureState),
-				job("some", "other", v1.SuccessState),
+				job("this", "url", v1.SuccessState, false),
+				job("that", "hey", v1.FailureState, false),
+				job("some", "other", v1.SuccessState, false),
 			},
-			// 130 is the length of the Header.
+			// 131 is the length of the Header.
 			// 154 is the comment size room we give for the Message part. Note
 			// that it should be 1 char more than what we have in the
 			// wantMessage part, because we always return comments *under* the
 			// commentSizeLimit.
-			commentSizeLimit: 130 + 154,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			commentSizeLimit: 131 + 154,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests.\n",
 			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 3/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
 			name: "mix of short and long lines",
 			jobs: []*v1.ProwJob{
-				job("this", "url", v1.SuccessState),
-				job("that", "hey", v1.FailureState),
-				job("some", "other", v1.SuccessState),
+				job("this", "url", v1.SuccessState, false),
+				job("that", "hey", v1.FailureState, false),
+				job("some", "other", v1.SuccessState, false),
 			},
-			commentSizeLimit: 130 + 161,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			commentSizeLimit: 131 + 161,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests.\n",
 			wantMessage:      "❌ [that](hey) FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
 			name: "too many jobs",
 			jobs: []*v1.ProwJob{
-				job("this", "url", v1.SuccessState),
-				job("that", "hey", v1.FailureState),
-				job("some", "other", v1.SuccessState),
+				job("this", "url", v1.SuccessState, false),
+				job("that", "hey", v1.FailureState, false),
+				job("some", "other", v1.SuccessState, false),
 			},
 			commentSizeLimit: 1,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests.\n",
 			wantMessage:      "[NOTE FROM PROW: Skipped displaying 3/3 jobs due to reaching gerrit comment size limit (too many jobs)]",
 		},
 		{
 			name: "too many jobs; only truncate the last job",
 			jobs: []*v1.ProwJob{
-				job("this", "url", v1.SuccessState),
-				job("that", "hey", v1.FailureState),
-				job("some", "other", v1.SuccessState),
+				job("this", "url", v1.SuccessState, false),
+				job("that", "hey", v1.FailureState, false),
+				job("some", "other", v1.SuccessState, false),
 			},
 			commentSizeLimit: 130 + 150,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests.\n",
 			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n[NOTE FROM PROW: Skipped displaying 1/3 jobs due to reaching gerrit comment size limit (too many jobs)]",
 		},
 		{
@@ -2313,10 +2328,10 @@ func TestGenerateReport(t *testing.T) {
 			// field set (because the job did not even get scheduled).
 			name: "missing URLs",
 			jobs: []*v1.ProwJob{
-				job("right", "", v1.ErrorState),
+				job("right", "", v1.ErrorState, false),
 			},
 			commentSizeLimit: 1000,
-			wantHeader:       "Prow Status: 0 out of 1 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantHeader:       "Prow Status: 0 out of 1 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests.\n",
 			wantMessage:      "🚫 right (URL_NOT_FOUND) ERROR\n",
 		},
 	}
