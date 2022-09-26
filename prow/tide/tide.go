@@ -1175,7 +1175,8 @@ func (c *syncController) isRetestEligible(log *logrus.Entry, candidate *CodeRevi
 		// In the case where a status is pending,
 		// If the prowjob was triggered by tide, then tide had considered it a
 		// good candidate. We should still consider it as a candidate.
-		pjLabels := createdByTideLabels()
+		pjLabels := make(map[string]string)
+		pjLabels[kube.CreatedByTideLabel] = "true"
 		pjLabels[kube.ProwJobTypeLabel] = string(prowapi.PresubmitJob)
 		pjLabels[kube.OrgLabel] = string(candidate.Org)
 		pjLabels[kube.RepoLabel] = string(candidate.Repo)
@@ -1350,9 +1351,7 @@ func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs 
 		if pj.Labels == nil {
 			pj.Labels = map[string]string{}
 		}
-		for k, v := range createdByTideLabels() {
-			pj.Labels[k] = v
-		}
+		pj.Labels[kube.CreatedByTideLabel] = "true"
 		if err := c.prowJobClient.Create(c.ctx, &pj); err != nil {
 			log.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
 			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %w", spec.Job, prNumbers(prs), err)
@@ -1360,10 +1359,6 @@ func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs 
 		log.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 	}
 	return nil
-}
-
-func createdByTideLabels() map[string]string {
-	return map[string]string{"created-by-tide": "true"}
 }
 
 // nonFailedBatchForJobAndRefsExists ensures that the batch job exists
