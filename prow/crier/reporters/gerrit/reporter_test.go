@@ -89,7 +89,7 @@ func (f *fgc) SetReview(instance, id, revision, message string, labels map[strin
 	return nil
 }
 
-func (f *fgc) GetChange(instance, id string) (*gerrit.ChangeInfo, error) {
+func (f *fgc) GetChange(instance, id string, addtionalFields ...string) (*gerrit.ChangeInfo, error) {
 	if f.changes == nil {
 		return nil, errors.New("fake client changes is not initialized")
 	}

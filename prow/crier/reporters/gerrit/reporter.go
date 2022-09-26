@@ -101,7 +101,7 @@ var (
 
 type gerritClient interface {
 	SetReview(instance, id, revision, message string, labels map[string]string) error
-	GetChange(instance, id string) (*gerrit.ChangeInfo, error)
+	GetChange(instance, id string, additionalFields ...string) (*gerrit.ChangeInfo, error)
 	ChangeExist(instance, id string) (bool, error)
 }
 

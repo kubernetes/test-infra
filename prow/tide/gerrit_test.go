@@ -59,7 +59,7 @@ func (f *fakeGerritClient) QueryChangesForProject(instance, project string, last
 	return f.changes[instance][project], nil
 }
 
-func (f *fakeGerritClient) GetChange(instance, id string) (*gerrit.ChangeInfo, error) {
+func (f *fakeGerritClient) GetChange(instance, id string, addtionalFields ...string) (*gerrit.ChangeInfo, error) {
 	if f.changes == nil || f.changes[instance] == nil {
 		return nil, errors.New("instance not exist")
 	}

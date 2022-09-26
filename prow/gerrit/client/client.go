@@ -388,7 +388,7 @@ func (c *Client) QueryChangesForProject(instance, project string, lastUpdate tim
 	return changes, nil
 }
 
-func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
+func (c *Client) GetChange(instance, id string, addtionalFields ...string) (*ChangeInfo, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	h, ok := c.handlers[instance]
@@ -396,7 +396,7 @@ func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
 		return nil, fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	info, resp, err := h.changeService.GetChange(id, nil)
+	info, resp, err := h.changeService.GetChange(id, &gerrit.ChangeOptions{AdditionalFields: addtionalFields})
 	if err != nil {
 		return nil, fmt.Errorf("error getting current change: %w", responseBodyError(err, resp))
 	}
