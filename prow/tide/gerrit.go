@@ -96,7 +96,7 @@ func NewGerritController(
 		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
 	}
 	provider := newGerritProvider(logger, cfgAgent.Config, mgr.GetClient(), cacheGetter, cookieFilePath, "")
-	syncCtrl, err := newSyncController(ctx, logger, mgr, provider, cfgAgent.Config, nil, hist, false, statusUpdate)
+	syncCtrl, err := newSyncController(ctx, logger, mgr, provider, cfgAgent.Config, gc, hist, false, statusUpdate)
 	if err != nil {
 		return nil, err
 	}
