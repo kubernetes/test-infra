@@ -1,6 +1,6 @@
 periodics:
 - name: periodic-cluster-api-test-main
-  interval: 1h
+  interval: 2h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -24,7 +24,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-test-mink8s-main
-  interval: 1h
+  interval: 2h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -55,100 +55,8 @@ periodics:
     testgrid-tab-name: capi-test-mink8s-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
-- name: periodic-cluster-api-e2e-upgrade-v0-3-to-main
-  interval: 1h
-  decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: main
-    path_alias: sigs.k8s.io/cluster-api
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220928-cd48f52a16-1.25
-        args:
-          - runner.sh
-          - "./scripts/ci-e2e.sh"
-        env:
-          - name: GINKGO_FOCUS
-            value: "\\[clusterctl-Upgrade\\]"
-          - name: INIT_WITH_BINARY
-            value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.25/clusterctl-{OS}-{ARCH}
-          - name: INIT_WITH_PROVIDERS_CONTRACT
-            value: v1alpha3
-          - name: INIT_WITH_KUBERNETES_VERSION
-            value: v1.21.12
-          # CAPI does not work with v1.21 if ClusterClass is enabled, so we have to disable it.
-          - name: CLUSTER_TOPOLOGY
-            value: "false"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 7300m
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-upgrade-v0-3-to-main
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "4"
-- name: periodic-cluster-api-e2e-upgrade-v1-2-to-main
-  interval: 1h
-  decorate: true
-  decoration_config:
-    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: main
-    path_alias: sigs.k8s.io/cluster-api
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    serviceAccountName: prowjob-default-sa
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220928-cd48f52a16-1.25
-      args:
-      - runner.sh
-      - "./scripts/ci-e2e.sh"
-      env:
-      - name: GINKGO_FOCUS
-        value: "\\[clusterctl-Upgrade\\]"
-      - name: INIT_WITH_BINARY
-        value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.1/clusterctl-{OS}-{ARCH}
-      - name: INIT_WITH_PROVIDERS_CONTRACT
-        value: v1beta1
-      - name: INIT_WITH_KUBERNETES_VERSION
-        value: v1.25.0
-
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 7300m
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-upgrade-v1-2-to-main
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-main
-  interval: 1h
+  interval: 2h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -186,7 +94,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-main
-  interval: 1h
+  interval: 2h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
