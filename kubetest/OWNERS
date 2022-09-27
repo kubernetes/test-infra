@@ -3,10 +3,12 @@
 reviewers:
 - BenTheElder
 - wojtek-t # For European timezone emergencies.
+- marseel
 - feiskyer
 approvers:
 - BenTheElder
 - wojtek-t # For European timezone emergencies.
+- marseel
 - feiskyer
 emeritus_approvers:
 - amwat
