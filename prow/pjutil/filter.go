@@ -41,7 +41,7 @@ var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 // 1. presubmits that can be run with '/test all' command.
 // 2. optional presubmits commands that can be run with their trigger, e.g. '/test job'
 // 3. required presubmits commands that can be run with their trigger, e.g. '/test job'
-func AvailablePresubmits(changes config.ChangedFilesProvider, org, repo, branch string,
+func AvailablePresubmits(changes config.ChangedFilesProvider, branch string,
 	presubmits []config.Presubmit, logger *logrus.Entry) (sets.String, sets.String, sets.String, error) {
 	runWithTestAllNames := sets.NewString()
 	optionalJobTriggerCommands := sets.NewString()
