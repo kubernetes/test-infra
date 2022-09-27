@@ -79,6 +79,12 @@ default:
         - name: area/platform/vsphere
         - name: sig/vmware
         - name: vmware
+    - color: 0052cc
+      description: Issues or PRs that should potentially be discussed in a Kubernetes community meeting.
+      name: area/community-meeting
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: 0ffa16
       description: Indicates a PR has been approved by an approver from all required OWNERS files.
       name: approved
