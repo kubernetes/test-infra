@@ -545,7 +545,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			optedOut := isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project)
 			c.lock.RUnlock()
 			if needsHelp && !optedOut {
-				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
+				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(listChangedFiles(change), change.Branch, presubmits, logger.WithField("help", true))
 				if err != nil {
 					return err
 				}

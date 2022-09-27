@@ -232,7 +232,7 @@ func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.Strin
 
 func addHelpComment(githubClient githubClient, body, org, repo, branch string, number int, presubmits []config.Presubmit, HTMLURL, user, note string, logger *logrus.Entry) error {
 	changes := config.NewGitHubDeferredChangedFilesProvider(githubClient, org, repo, number)
-	testAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(changes, org, repo, branch, presubmits, logger)
+	testAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(changes, branch, presubmits, logger)
 	if err != nil {
 		return err
 	}
