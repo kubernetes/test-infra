@@ -87,7 +87,7 @@ func NewInRepoConfigCacheHandler(size int,
 	}
 
 	for i := 0; i < count; i++ {
-		cacheClient, err := NewInRepoConfigCache(size, configAgent, gitClientFactory)
+		cacheClient, err := NewInRepoConfigCache(size, configAgent, NewInRepoConfigGitCache(gitClientFactory))
 		if err != nil {
 			return nil, err
 		}
