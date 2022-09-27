@@ -55,7 +55,6 @@ type InRepoConfigCache struct {
 
 type InrepoconfigPresubmitRequest struct {
 	Identifier     string
-	CloneURI       string
 	BaseSHAGetter  RefGetter
 	HeadSHAGetters []RefGetter
 	resChan        chan []Presubmit
@@ -64,7 +63,6 @@ type InrepoconfigPresubmitRequest struct {
 
 type InrepoconfigPostsubmitRequest struct {
 	Identifier     string
-	CloneURI       string
 	BaseSHAGetter  RefGetter
 	HeadSHAGetters []RefGetter
 	resChan        chan []Postsubmit

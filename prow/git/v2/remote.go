@@ -21,7 +21,8 @@ import (
 	"fmt"
 	"net/url"
 	"path"
-	"strings"
+
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 )
 
 // RemoteResolverFactory knows how to construct remote resolvers for
@@ -154,26 +155,12 @@ type gerritResolverFactory struct{}
 
 func (f *gerritResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 	return func() (string, error) {
-		return gerritCloneURIFromOrgRepo(org, repo), nil
+		return gerritsource.CloneURIFromOrgRepo(org, repo), nil
 	}
 }
 
 func (f *gerritResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 	return func() (string, error) {
-		return gerritCloneURIFromOrgRepo(org, repo), nil
+		return gerritsource.CloneURIFromOrgRepo(org, repo), nil
 	}
-}
-
-// gerritCloneURIFromOrgRepo returns Gerrit clone URI from org and repo. The org
-// is normalized to enure that it contains `https://` and `http://` prefixes
-// that are required for Gerrit.
-func gerritCloneURIFromOrgRepo(org, repo string) string {
-	scheme := "https"
-	if strings.HasPrefix(org, "http://") {
-		scheme = "http"
-	}
-	host := strings.TrimPrefix(org, "https://")
-	host = strings.TrimPrefix(host, "http://")
-	url := &url.URL{Scheme: scheme, Host: host, Path: repo}
-	return url.String()
 }

@@ -59,6 +59,44 @@ func pStr(str string) *string {
 	return &str
 }
 
+func TestKeysForIdentifier(t *testing.T) {
+	tests := []struct {
+		name       string
+		identifier string
+		want       []string
+	}{
+		{
+			name:       "base",
+			identifier: "foo",
+			want:       []string{"foo", "*"},
+		},
+		{
+			name:       "with-http",
+			identifier: "http://foo",
+			want:       []string{"http://foo", "foo", "*"},
+		},
+		{
+			name:       "with-https",
+			identifier: "https://foo",
+			want:       []string{"https://foo", "foo", "*"},
+		},
+		{
+			name:       "org-name-contains-https",
+			identifier: "https-foo",
+			want:       []string{"https-foo", "*"},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if diff := cmp.Diff(tc.want, keysForIdentifier(tc.identifier)); diff != "" {
+				t.Errorf("Keys mismatch. Want(-), got(+):\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestDefaultJobBase(t *testing.T) {
 	bar := "bar"
 	filled := JobBase{
@@ -8946,14 +8984,14 @@ func TestSplitRepoName(t *testing.T) {
 		{
 			name:     "ref name with http://",
 			full:     "http://orgA/repoB",
-			wantOrg:  "orgA",
+			wantOrg:  "http://orgA",
 			wantRepo: "repoB",
 			wantErr:  false,
 		},
 		{
 			name:     "ref name with https://",
 			full:     "https://orgA/repoB",
-			wantOrg:  "orgA",
+			wantOrg:  "https://orgA",
 			wantRepo: "repoB",
 			wantErr:  false,
 		},

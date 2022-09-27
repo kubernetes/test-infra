@@ -19,7 +19,6 @@ package adapter
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -38,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -219,6 +219,7 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 // and creates prowjobs according to specs
 func (c *Controller) Sync() {
 	processSingleInstance := func(instance string) {
+		// Assumes the passed in instance was already normalized with https:// prefix.
 		log := logrus.WithField("host", instance)
 		syncTime := c.tracker.Current()
 		latest := syncTime.DeepCopy()
@@ -273,21 +274,6 @@ func (c *Controller) Sync() {
 	}
 }
 
-func MakeCloneURI(instance, project string) (*url.URL, error) {
-	u, err := url.Parse(instance)
-	if err != nil {
-		return nil, fmt.Errorf("instance %s is not a url: %w", instance, err)
-	}
-	if u.Host == "" {
-		return nil, errors.New("instance does not set host")
-	}
-	if u.Path != "" {
-		return nil, errors.New("instance cannot set path (this is set by project)")
-	}
-	u.Path = project
-	return u, nil
-}
-
 // listChangedFiles lists (in lexicographic order) the files changed as part of a Gerrit patchset
 func listChangedFiles(changeInfo client.ChangeInfo) config.ChangedFilesProvider {
 	return func() ([]string, error) {
@@ -300,12 +286,12 @@ func listChangedFiles(changeInfo client.ChangeInfo) config.ChangedFilesProvider 
 	}
 }
 
+// CreateRefs creates refs for a presubmit job from given changes.
+//
+// Passed in instance must contain https:// prefix.
 func CreateRefs(instance, project, branch, baseSHA string, changes ...client.ChangeInfo) (prowapi.Refs, error) {
 	var refs prowapi.Refs
-	cloneURI, err := MakeCloneURI(instance, project)
-	if err != nil {
-		return refs, fmt.Errorf("makeCloneURI for instance '%s' and project '%s' error: %v", instance, project, err)
-	}
+	cloneURI := source.CloneURIFromOrgRepo(instance, project)
 
 	var codeHost string // Something like https://android.googlesource.com
 	parts := strings.SplitN(instance, ".", 2)
@@ -314,11 +300,11 @@ func CreateRefs(instance, project, branch, baseSHA string, changes ...client.Cha
 		codeHost += "." + parts[1]
 	}
 	refs = prowapi.Refs{
-		Org:      cloneURI.Host, // Something like android-review.googlesource.com
-		Repo:     project,       // Something like platform/build
+		Org:      instance, // Something like android-review.googlesource.com
+		Repo:     project,  // Something like platform/build
 		BaseRef:  branch,
 		BaseSHA:  baseSHA,
-		CloneURI: cloneURI.String(), // Something like https://android-review.googlesource.com/platform/build
+		CloneURI: cloneURI, // Something like https://android-review.googlesource.com/platform/build
 		RepoLink: fmt.Sprintf("%s/%s", codeHost, project),
 		BaseLink: fmt.Sprintf("%s/%s/+/%s", codeHost, project, baseSHA),
 	}
@@ -428,13 +414,8 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
 func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
-	cloneURI, err := MakeCloneURI(instance, change.Project)
-	if err != nil {
-		return fmt.Errorf("makeCloneURI for instance '%s' and project '%s' error: %v", instance, change.Project, err)
-	}
-
+	cloneURI := source.CloneURIFromOrgRepo(instance, change.Project)
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
-	trimmedHostPath := cloneURI.Host + "/" + cloneURI.Path
 	if err != nil {
 		return fmt.Errorf("GetBranchRevision: %w", err)
 	}
@@ -464,17 +445,30 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	switch change.Status {
 	case client.Merged:
 		var postsubmits []config.Postsubmit
+		// Gerrit server might be unavailable intermittently, retry inrepoconfig
+		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(cloneURI, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
 			}
 		}
-		if err := c.handleInRepoConfigError(err, instance, change); err != nil {
-			return err
+		// Postsubmit jobs are triggered only once. Still try to fall back on
+		// static jobs if failed to retrieve inrepoconfig jobs.
+		if err != nil {
+			// Reports error back to Gerrit. handleInRepoConfigError is
+			// responsible for not sending the same message again and again on
+			// the same commit.
+			if postErr := c.handleInRepoConfigError(err, instance, change); postErr != nil {
+				logger.WithError(postErr).Error("Failed reporting inrepoconfig processing error back to Gerrit.")
+			}
+			// Static postsubmit jobs are included as part of output from
+			// inRepoConfigCacheHandler.GetPostsubmits, fallback to static only
+			// when inrepoconfig failed.
+			postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI]...)
 		}
-		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
+
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
@@ -491,16 +485,37 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		}
 	case client.New:
 		var presubmits []config.Presubmit
+		// Gerrit server might be unavailable intermittently, retry inrepoconfig
+		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(cloneURI, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 			if err == nil {
 				break
 			}
 		}
-		if err := c.handleInRepoConfigError(err, instance, change); err != nil {
+		if err != nil {
+			// Reports error back to Gerrit. handleInRepoConfigError is
+			// responsible for not sending the same message again and again on
+			// the same commit.
+			if postErr := c.handleInRepoConfigError(err, instance, change); postErr != nil {
+				logger.WithError(postErr).Error("Failed reporting inrepoconfig processing error back to Gerrit.")
+			}
+			// There is no need to keep going when failed to get inrepoconfig
+			// jobs.
+			// Imagining the scenario that:
+			// - Commit #abc triggered static job job-A, inrepoconfig jobs job-B
+			// and job-C
+			// - Both job-B and job-C failed
+			// - Commit #def was pushed. Inrepoconfig failed, falling back to
+			// trigger static job job-A.
+			// - job-A passed.
+			// - Prow would make decision on the result of job-A and ignore the
+			// rest. (Yes this is a Prow bug, which should not be a problem when
+			// each prowjob is reported to an individual Gerrit Check).
+			// So long story short: kicking off partial prowjobs is worse than
+			// kicking off nothing.
 			return err
 		}
-		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
 
 		account, err := c.gc.Account(instance)
 		if err != nil {
@@ -549,7 +564,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				if err != nil {
 					return err
 				}
-				message := pjutil.HelpMessage(cloneURI.Host, change.Project, change.Branch, note, runWithTestAllNames, optionalJobsCommands, requiredJobsCommands)
+				message := pjutil.HelpMessage(instance, change.Project, change.Branch, note, runWithTestAllNames, optionalJobsCommands, requiredJobsCommands)
 				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 					return err
 				}
