@@ -1264,55 +1264,48 @@ presubmits:
             cpu: 4
             memory: 6Gi
 
-  # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha).
-  # crio >= 1.23.0 has the necessary support for Container Device Interface (CDI).
-  - name: pull-kubernetes-node-crio-dra
-    cluster: k8s-infra-prow-build
+  # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
+  # on a kind cluster with containerd updated to a version with CDI support.
+  - name: pull-kubernetes-kind-dra
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-crio-dra
+    decorate: true
     # Not relevant for most PRs.
     always_run: false
     # This covers most of the code related to dynamic resource allocation.
-    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/
+    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/dynamic-resource-allocation/
     # The tests might still be flaky or this job might get triggered accidentally for
     # an unrelated PR.
     optional: true
-    max_concurrency: 12
     labels:
       preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220928-cd48f52a16-master
+        command:
+        - runner.sh
         args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=240"
-        - --scenario=kubernetes_e2e
-        - -- # end bootstrap args, scenario args below
-        - --deployment=node
-        - --env=KUBE_SSH_USER=core
-        - --env=KUBE_FEATURE_GATES=DynamicResourceAllocation=true
-        - --gcp-zone=us-west1-b
-        - '--test_args=--nodes=4 --focus="\[Feature:DynamicResourceAllocation\]"'
-        - --provider=gce
-        - --timeout=180m
-        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
+        - /bin/sh
+        - -xc
+        - >
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test" &&
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
+          test/e2e/dra/kind-build-image.sh dra/node:latest &&
+          kind create cluster --config test/e2e/dra/kind.yaml --image dra/node:latest &&
+          KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus=DynamicResourceAllocation
+
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
           requests:
-            cpu: 4
-            memory: 6Gi
-        env:
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m

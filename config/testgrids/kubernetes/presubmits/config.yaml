@@ -126,8 +126,8 @@ dashboards:
   - name: pull-kubernetes-node-e2e-containerd-features-kubetest2
     test_group_name: pull-kubernetes-node-e2e-containerd-features-kubetest2
     base_options: width=10
-  - name: pull-kubernetes-node-crio-dra
-    test_group_name: pull-kubernetes-node-crio-dra
+  - name: pull-kubernetes-kind-dra
+    test_group_name: pull-kubernetes-kind-dra
     base_options: width=10
     alert_options:
       alert_mail_to_addresses: patrick.ohly@intel.com
