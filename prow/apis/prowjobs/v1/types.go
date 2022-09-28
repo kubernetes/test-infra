@@ -27,6 +27,7 @@ import (
 
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowgithub "k8s.io/test-infra/prow/github"
@@ -481,6 +482,11 @@ type DecorationConfig struct {
 
 	// SetLimitEqualsMemoryRequest sets memory limit equal to request.
 	SetLimitEqualsMemoryRequest *bool `json:"set_limit_equals_memory_request,omitempty"`
+	// DefaultMemoryRequest is the default requested memory on a test container.
+	// If SetLimitEqualsMemoryRequest is also true then the Limit will also be
+	// set the same as this request. Could be overridden by memory request
+	// defined explicitly on prowjob.
+	DefaultMemoryRequest *resource.Quantity `json:"default_memory_request,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -685,6 +691,10 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 
 	if merged.SetLimitEqualsMemoryRequest == nil {
 		merged.SetLimitEqualsMemoryRequest = def.SetLimitEqualsMemoryRequest
+	}
+
+	if merged.DefaultMemoryRequest == nil {
+		merged.DefaultMemoryRequest = def.DefaultMemoryRequest
 	}
 
 	return &merged

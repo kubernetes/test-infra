@@ -143,6 +143,17 @@ spec:
                       that contains a git http.cookiefile, which should be used during
                       the cloning process.
                     type: string
+                  default_memory_request:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: DefaultMemoryRequest is the default requested memory
+                      on a test container. If SetLimitEqualsMemoryRequest is also
+                      true then the Limit will also be set the same as this request.
+                      Could be overridden by memory request defined explicitly on
+                      prowjob.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   default_service_account_name:
                     description: DefaultServiceAccountName is the name of the Kubernetes
                       service account that should be used by the pod if one is not

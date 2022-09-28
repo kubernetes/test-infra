@@ -816,6 +816,20 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
 
+	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.DefaultMemoryRequest != nil {
+		for i, container := range spec.Containers {
+			if container.Resources.Requests != nil {
+				if _, ok := container.Resources.Requests[v1.ResourceMemory]; ok {
+					continue // Memory request already defined, no need to default
+				}
+			}
+			if spec.Containers[i].Resources.Requests == nil {
+				spec.Containers[i].Resources.Requests = make(v1.ResourceList)
+			}
+			spec.Containers[i].Resources.Requests[v1.ResourceMemory] = *pj.Spec.DecorationConfig.DefaultMemoryRequest
+		}
+	}
+
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest != nil && *pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest {
 		for i, container := range spec.Containers {
 			if container.Resources.Requests == nil {

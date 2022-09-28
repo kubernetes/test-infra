@@ -672,6 +672,12 @@ plank:
             # a git http.cookiefile, which should be used during the cloning process.
             cookiefile_secret: ""
 
+            # DefaultMemoryRequest is the default requested memory on a test container.
+            # If SetLimitEqualsMemoryRequest is also true then the Limit will also be
+            # set the same as this request. Could be overridden by memory request
+            # defined explicitly on prowjob.
+            default_memory_request: "0"
+
             # DefaultServiceAccountName is the name of the Kubernetes service account
             # that should be used by the pod if one is not specified in the podspec.
             default_service_account_name: ""
@@ -871,6 +877,12 @@ plank:
             # CookieFileSecret is the name of a kubernetes secret that contains
             # a git http.cookiefile, which should be used during the cloning process.
             cookiefile_secret: ""
+
+            # DefaultMemoryRequest is the default requested memory on a test container.
+            # If SetLimitEqualsMemoryRequest is also true then the Limit will also be
+            # set the same as this request. Could be overridden by memory request
+            # defined explicitly on prowjob.
+            default_memory_request: "0"
 
             # DefaultServiceAccountName is the name of the Kubernetes service account
             # that should be used by the pod if one is not specified in the podspec.

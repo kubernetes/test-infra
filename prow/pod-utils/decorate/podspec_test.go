@@ -1274,6 +1274,10 @@ func TestDecorate(t *testing.T) {
 	defaultServiceAccountName := "default-sa"
 	censor := true
 	ignoreInterrupts := true
+	resourcePtr := func(s string) *resource.Quantity {
+		q := resource.MustParse(s)
+		return &q
+	}
 	var testCases = []struct {
 		name      string
 		spec      *coreapi.PodSpec
@@ -1373,6 +1377,68 @@ func TestDecorate(t *testing.T) {
 						GCSCredentialsSecret:        &gCSCredentialsSecret,
 						DefaultServiceAccountName:   &defaultServiceAccountName,
 						SetLimitEqualsMemoryRequest: utilpointer.BoolPtr(true),
+					},
+					Refs: &prowapi.Refs{
+						Org: "org", Repo: "repo", BaseRef: "main", BaseSHA: "abcd1234",
+						Pulls: []prowapi.Pull{{Number: 1, SHA: "aksdjhfkds"}},
+					},
+					ExtraRefs: []prowapi.Refs{{Org: "other", Repo: "something", BaseRef: "release", BaseSHA: "sldijfsd"}},
+				},
+			},
+			rawEnv: map[string]string{"custom": "env"},
+		},
+		{
+			name: "default memory request",
+			spec: &coreapi.PodSpec{
+				Containers: []coreapi.Container{
+					{
+						Name:    "test",
+						Command: []string{"/bin/ls"},
+						Args:    []string{"-l", "-a"},
+						Resources: coreapi.ResourceRequirements{
+							Requests: coreapi.ResourceList{
+								"memory": resource.MustParse("8Gi"),
+							},
+							Limits: coreapi.ResourceList{
+								"memory": resource.MustParse("100Gi"),
+							},
+						},
+					},
+					{
+						Name:    "test2",
+						Command: []string{"/bin/ls"},
+						Args:    []string{"-l", "-a"},
+					},
+				},
+				ServiceAccountName: "tester",
+			},
+			pj: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: time.Minute},
+						GracePeriod: &prowapi.Duration{Duration: time.Hour},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "cloneimage",
+							InitUpload: "initimage",
+							Entrypoint: "entrypointimage",
+							Sidecar:    "sidecarimage",
+						},
+						Resources: &prowapi.Resources{
+							CloneRefs:       &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							InitUpload:      &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							PlaceEntrypoint: &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							Sidecar:         &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "bucket",
+							PathStrategy: "single",
+							DefaultOrg:   "org",
+							DefaultRepo:  "repo",
+						},
+						GCSCredentialsSecret:        &gCSCredentialsSecret,
+						DefaultServiceAccountName:   &defaultServiceAccountName,
+						SetLimitEqualsMemoryRequest: utilpointer.BoolPtr(true),
+						DefaultMemoryRequest:        resourcePtr("4Gi"),
 					},
 					Refs: &prowapi.Refs{
 						Org: "org", Repo: "repo", BaseRef: "main", BaseSHA: "abcd1234",
