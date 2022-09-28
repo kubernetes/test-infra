@@ -230,14 +230,17 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 	// current prowjob doesn't have this label or has an invalid value, this
 	// will be reflected as warning message in prow.
 	patchsetNumFromPJ := func(pj *v1.ProwJob) int {
+		log := log.WithFields(logrus.Fields{"label": kube.GerritPatchset, "job": pj.Name})
 		ps, ok := pj.ObjectMeta.Labels[kube.GerritPatchset]
 		if !ok {
-			log.Warnf("Label %s not found in prowjob %s", kube.GerritPatchset, pj.Name)
+			// This label exists only in jobs that are created by Gerrit. For jobs that are
+			// created by Pubsub it's entirely up to the users.
+			log.Debug("Label not found in prowjob.")
 			return -1
 		}
 		intPs, err := strconv.Atoi(ps)
 		if err != nil {
-			log.Warnf("Found non integer label for %s: %s in prowjob %s", kube.GerritPatchset, ps, pj.Name)
+			log.Debug("Found non integer label value in prowjob.")
 			return -1
 		}
 		return intPs
