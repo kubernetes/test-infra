@@ -29,6 +29,7 @@ import (
 	gitignore "github.com/denormal/go-gitignore"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
@@ -110,13 +111,13 @@ func prowYAMLGetter(
 	// TODO(mpherman): This is to hopefully mittigate issue with gerrit merges. Need to come up with a solution that checks
 	// each CLs merge strategy as they can differ. ifNecessary is just the gerrit default
 	var mergeMethod types.PullRequestMergeType
-	if c.Gerrit.OrgReposConfig != nil {
+	if gerritsource.IsGerritOrg(identifier) {
 		mergeMethod = types.MergeIfNecessary
 	} else {
 		mergeMethod = c.Tide.MergeMethod(orgRepo)
 	}
 
-	log.Debugf("Using merge strategy %q.", mergeMethod)
+	log.WithField("merge-strategy", mergeMethod).Debug("Using merge strategy.")
 	if err := ensureHeadCommits(repo, headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to fetch headSHAs: %v", err)
 	}
