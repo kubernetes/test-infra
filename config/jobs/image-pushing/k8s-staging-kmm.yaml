@@ -17,4 +17,5 @@ postsubmits:
               - --project=k8s-staging-kmm
               - --scratch-bucket=gs://k8s-staging-kmm-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
