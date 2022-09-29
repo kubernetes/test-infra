@@ -25,6 +25,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -117,6 +118,7 @@ func NewLegacyRepoPathBuilder(defaultOrg, defaultRepo string) RepoPathBuilder {
 			return repo
 		}
 		// handle gerrit repo
+		org = gerritsource.TrimHTTPSPrefix(org)
 		repo = strings.Replace(repo, "/", "_", -1)
 		return fmt.Sprintf("%s_%s", org, repo)
 	}
@@ -130,6 +132,7 @@ func NewSingleDefaultRepoPathBuilder(defaultOrg, defaultRepo string) RepoPathBui
 			return ""
 		}
 		// handle gerrit repo
+		org = gerritsource.TrimHTTPSPrefix(org)
 		repo = strings.Replace(repo, "/", "_", -1)
 		return fmt.Sprintf("%s_%s", org, repo)
 	}
@@ -140,6 +143,7 @@ func NewSingleDefaultRepoPathBuilder(defaultOrg, defaultRepo string) RepoPathBui
 func NewExplicitRepoPathBuilder() RepoPathBuilder {
 	return func(org, repo string) string {
 		// handle gerrit repo
+		org = gerritsource.TrimHTTPSPrefix(org)
 		repo = strings.Replace(repo, "/", "_", -1)
 		return fmt.Sprintf("%s_%s", org, repo)
 	}
