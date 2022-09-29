@@ -41,7 +41,7 @@ import (
 const pluginName = "override"
 
 var (
-	overrideRe = regexp.MustCompile(`(?mi)^/override( (.+))?$`)
+	overrideRe = regexp.MustCompile(`(?mi)^/override( ([^\r\n]+))?[\r\n]?$`)
 )
 
 type Context struct {
