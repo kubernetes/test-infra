@@ -466,7 +466,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			// Static postsubmit jobs are included as part of output from
 			// inRepoConfigCacheHandler.GetPostsubmits, fallback to static only
 			// when inrepoconfig failed.
-			postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI]...)
+			postsubmits = append(postsubmits, c.config().GetPostsubmitsStatic(cloneURI)...)
 		}
 
 		for _, postsubmit := range postsubmits {

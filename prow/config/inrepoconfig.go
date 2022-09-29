@@ -241,10 +241,10 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 	if err := defaultPostsubmits(p.Postsubmits, p.Presets, c, identifier); err != nil {
 		return err
 	}
-	if err := c.validatePresubmits(append(p.Presubmits, c.PresubmitsStatic[identifier]...)); err != nil {
+	if err := c.validatePresubmits(append(p.Presubmits, c.GetPresubmitsStatic(identifier)...)); err != nil {
 		return err
 	}
-	if err := c.validatePostsubmits(append(p.Postsubmits, c.PostsubmitsStatic[identifier]...)); err != nil {
+	if err := c.validatePostsubmits(append(p.Postsubmits, c.GetPostsubmitsStatic(identifier)...)); err != nil {
 		return err
 	}
 

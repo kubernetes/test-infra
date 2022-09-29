@@ -334,7 +334,7 @@ func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, 
 		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
 		// inrepoconfig. Tide will still respect errors here and not merge.
 		log.WithError(err).Debug("Failed to get presubmits")
-		presubmits = cfg.PresubmitsStatic[orgRepo]
+		presubmits = cfg.GetPresubmitsStatic(orgRepo)
 	}
 	return presubmits
 }
@@ -344,7 +344,7 @@ func getPostsubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config,
 	if err != nil {
 		// Fall back to static postsubmits, loading inrepoconfig returned an error.
 		log.WithError(err).Error("Failed to get postsubmits")
-		postsubmits = cfg.PostsubmitsStatic[orgRepo]
+		postsubmits = cfg.GetPostsubmitsStatic(orgRepo)
 	}
 	return postsubmits
 }

@@ -470,7 +470,17 @@ func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAG
 
 // GetPresubmitsStatic will return presubmits for the given identifier that are versioned inside the tested repo.
 func (c *Config) GetPresubmitsStatic(identifier string) []Presubmit {
-	return c.PresubmitsStatic[identifier]
+	keys := []string{identifier}
+	if gerritsource.IsGerritOrg(identifier) {
+		// For Gerrit, allow users to define jobs without https:// prefix, which
+		// is what's supported right now.
+		keys = append(keys, gerritsource.TrimHTTPSPrefix(identifier))
+	}
+	var res []Presubmit
+	for _, key := range keys {
+		res = append(res, c.PresubmitsStatic[key]...)
+	}
+	return res
 }
 
 // GetPostsubmits will return all postsubmits for the given identifier. This includes
@@ -485,12 +495,22 @@ func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHA
 		return nil, err
 	}
 
-	return append(c.PostsubmitsStatic[identifier], prowYAML.Postsubmits...), nil
+	return append(c.GetPostsubmitsStatic(identifier), prowYAML.Postsubmits...), nil
 }
 
 // GetPostsubmitsStatic will return postsubmits for the given identifier that are versioned inside the tested repo.
 func (c *Config) GetPostsubmitsStatic(identifier string) []Postsubmit {
-	return c.PostsubmitsStatic[identifier]
+	keys := []string{identifier}
+	if gerritsource.IsGerritOrg(identifier) {
+		// For Gerrit, allow users to define jobs without https:// prefix, which
+		// is what's supported right now.
+		keys = append(keys, gerritsource.TrimHTTPSPrefix(identifier))
+	}
+	var res []Postsubmit
+	for _, key := range keys {
+		res = append(res, c.PostsubmitsStatic[key]...)
+	}
+	return res
 }
 
 // OwnersDirDenylist is used to configure regular expressions matching directories
