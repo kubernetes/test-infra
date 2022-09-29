@@ -39,6 +39,10 @@ type fgc struct {
 	comments map[string]map[string][]gerrit.CommentInfo
 }
 
+func (f *fgc) GetRelatedChanges(changeID string, revisionID string) (*gerrit.RelatedChangesInfo, *gerrit.Response, error) {
+	return &gerrit.RelatedChangesInfo{}, nil, nil
+}
+
 func (f *fgc) ListChangeComments(id string) (*map[string][]gerrit.CommentInfo, *gerrit.Response, error) {
 	comments := map[string][]gerrit.CommentInfo{}
 

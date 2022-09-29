@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	gitignore "github.com/denormal/go-gitignore"
@@ -365,4 +366,22 @@ func (rc *skipCleanRepoClient) Clean() error {
 	// Skip cleaning and unlock to allow reuse as a cached entry.
 	rc.Mutex.Unlock()
 	return nil
+}
+
+// ContainsInRepoConfigPath indicates whether the specified list of changed
+// files (repo relative paths) includes a file that might be an inrepo config file.
+//
+// This function could report a false positive as it doesn't consider .prowignore files.
+// It is designed to be used to help short circuit when we know a change doesn't touch
+// the inrepo config.
+func ContainsInRepoConfigPath(files []string) bool {
+	for _, file := range files {
+		if file == inRepoConfigFileName {
+			return true
+		}
+		if strings.HasPrefix(file, inRepoConfigDirName+"/") {
+			return true
+		}
+	}
+	return false
 }

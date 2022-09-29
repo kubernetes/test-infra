@@ -96,6 +96,7 @@ type gerritClient interface {
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 	Account(instance string) (*gerrit.AccountInfo, error)
+	HasRelatedChanges(instance, id, revision string) (bool, error)
 }
 
 // Controller manages gerrit changes.
@@ -425,10 +426,38 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		labels      map[string]string
 		annotations map[string]string
 	}
-
 	var jobSpecs []jobSpec
-
-	changedFiles := client.ChangedFilesProvider(&change)
+	baseSHAGetter := func() (string, error) { return baseSHA, nil }
+	var hasRelatedChanges *bool
+	// This headSHAGetter will return the empty string instead of the head SHA in cases where we can be certain that change does not
+	// modify inrepoconfig. This allows multiple changes to share a ProwYAML cache entry so long as they don't touch inrepo config themselves.
+	headSHAGetter := func() (string, error) {
+		changes, err := client.ChangedFilesProvider(&change)()
+		if err != nil {
+			// This is a best effort optimization, log the error, but just use CurrentRevision in this case.
+			logger.WithError(err).Info("Failed to get changed files for the purpose of prowYAML cache optimization. Skipping optimization.")
+			return change.CurrentRevision, nil
+		}
+		if config.ContainsInRepoConfigPath(changes) {
+			return change.CurrentRevision, nil
+		}
+		if hasRelatedChanges == nil {
+			if res, err := c.gc.HasRelatedChanges(instance, change.ChangeID, change.CurrentRevision); err != nil {
+				logger.WithError(err).Info("Failed to get related changes for the purpose of prowYAML cache optimization. Skipping optimization.")
+				return change.CurrentRevision, nil
+			} else {
+				hasRelatedChanges = &res
+			}
+		}
+		if *hasRelatedChanges {
+			// If the change is part of a chain the commit may include files not identified by the API.
+			// So we can't easily check if the change includes inrepo config file changes.
+			return change.CurrentRevision, nil
+		}
+		// If we know the change doesn't touch the inrepo config itself, we don't need to check out the head commits.
+		// This is particularly useful because it lets multiple changes share a ProwYAML cache entry so long as they don't touch inrepo config themselves.
+		return "", nil
+	}
 
 	switch change.Status {
 	case client.Merged:
@@ -436,7 +465,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(cloneURI, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
@@ -458,7 +487,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		}
 
 		for _, postsubmit := range postsubmits {
-			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
+			if shouldRun, err := postsubmit.ShouldRun(change.Branch, client.ChangedFilesProvider(&change)); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
 			} else if shouldRun {
 				if change.Submitted != nil {
@@ -476,7 +505,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(cloneURI, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			if err == nil {
 				break
 			}

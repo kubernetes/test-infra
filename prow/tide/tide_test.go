@@ -3575,9 +3575,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 		{
 			name: "Inrepoconfig jobs get included if headref matches",
 			prs: []CodeReviewCommon{
-				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2, func(pr *PullRequest) {
+					pr.HeadRefOID = githubql.String("sha2")
+				})),
 				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1, func(pr *PullRequest) {
-					pr.HeadRefOID = githubql.String("sha")
+					pr.HeadRefOID = githubql.String("sha1")
 				})),
 			},
 			jobs: []config.Presubmit{
@@ -3586,7 +3588,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 					Reporter:  config.Reporter{Context: "foo"},
 				},
 			},
-			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"sha", ""}, []config.Presubmit{{
+			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"sha1", "sha2"}, []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "bar"},
 			}}),
@@ -3604,9 +3606,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 		{
 			name: "Inrepoconfig jobs do not get included if headref doesnt match",
 			prs: []CodeReviewCommon{
-				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2, func(pr *PullRequest) {
+					pr.HeadRefOID = githubql.String("sha2")
+				})),
 				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1, func(pr *PullRequest) {
-					pr.HeadRefOID = githubql.String("sha")
+					pr.HeadRefOID = githubql.String("sha1")
 				})),
 			},
 			jobs: []config.Presubmit{
@@ -3615,7 +3619,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 					Reporter:  config.Reporter{Context: "foo"},
 				},
 			},
-			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"other-sha", ""}, []config.Presubmit{{
+			prowYAMLGetter: prowYAMLGetterForHeadRefs([]string{"other-sha", "sha2"}, []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "bar"},
 			}}),
