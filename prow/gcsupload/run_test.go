@@ -295,6 +295,15 @@ func TestBuilderForStrategy(t *testing.T) {
 				{org: "org2", repo: "repo"}: "org2_repo",
 			},
 		},
+		{
+			name:        "gerrit",
+			strategy:    prowapi.PathStrategyLegacy,
+			defaultOrg:  "org",
+			defaultRepo: "repo",
+			expectedPaths: map[info]string{
+				{org: "https://org", repo: "repo/sub"}: "org_repo_sub",
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
