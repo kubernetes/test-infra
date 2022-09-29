@@ -1138,6 +1138,152 @@ func TestProcessChange(t *testing.T) {
 			},
 		},
 		{
+			name: "presubmit runs when a file matching run_if_changed is renamed",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Files: map[string]client.FileInfo{
+							"bee-movie-script.txt": {},
+							"just-a-copy.bar":      {Status: "C", OldPath: "important.go"},  // Copied file doesn't affect original
+							"important.bar":        {Status: "R", OldPath: "important.foo"}, // Renamed file affects original
+						},
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			wantPjs: []*prowapi.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"prow.k8s.io/refs.org":            "gerrit",
+							"prow.k8s.io/gerrit-revision":     "1",
+							"prow.k8s.io/refs.pull":           "0",
+							"prow.k8s.io/job":                 "always-runs-all-branches",
+							"prow.k8s.io/gerrit-report-label": "Code-Review",
+							"prow.k8s.io/gerrit-patchset":     "0",
+							"prow.k8s.io/refs.base_ref":       "",
+							"created-by-prow":                 "true",
+							"prow.k8s.io/context":             "always-runs-all-branches",
+							"prow.k8s.io/refs.repo":           "test-infra",
+							"prow.k8s.io/type":                "presubmit",
+						},
+						Annotations: map[string]string{
+							"prow.k8s.io/gerrit-instance": "https://gerrit",
+							"prow.k8s.io/gerrit-id":       "",
+							"foo":                         "bar",
+							"prow.k8s.io/context":         "always-runs-all-branches",
+							"prow.k8s.io/job":             "always-runs-all-branches",
+						},
+					},
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{
+							Org:      "https://gerrit",
+							Repo:     "test-infra",
+							RepoLink: "https://gerrit/test-infra",
+							BaseSHA:  "abc",
+							BaseLink: "https://gerrit/test-infra/+/abc",
+							CloneURI: "https://gerrit/test-infra",
+							Pulls: []prowapi.Pull{
+								{
+									SHA:        "1",
+									Link:       "https://gerrit/c/test-infra/+/0",
+									CommitLink: "https://gerrit/test-infra/+/1",
+									AuthorLink: "https://gerrit/q/",
+								},
+							},
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"prow.k8s.io/job":                 "reported-job-runs-on-foo-file-change",
+							"prow.k8s.io/refs.org":            "gerrit",
+							"prow.k8s.io/gerrit-revision":     "1",
+							"prow.k8s.io/gerrit-patchset":     "0",
+							"prow.k8s.io/gerrit-report-label": "Code-Review",
+							"prow.k8s.io/type":                "presubmit",
+							"created-by-prow":                 "true",
+							"prow.k8s.io/refs.pull":           "0",
+							"prow.k8s.io/context":             "foo-job-reported",
+							"prow.k8s.io/refs.repo":           "test-infra",
+							"prow.k8s.io/refs.base_ref":       "",
+						},
+						Annotations: map[string]string{
+							"prow.k8s.io/job":             "reported-job-runs-on-foo-file-change",
+							"prow.k8s.io/gerrit-id":       "",
+							"prow.k8s.io/gerrit-instance": "https://gerrit",
+							"prow.k8s.io/context":         "foo-job-reported",
+						},
+					},
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{
+							Org:      "https://gerrit",
+							Repo:     "test-infra",
+							RepoLink: "https://gerrit/test-infra",
+							BaseSHA:  "abc",
+							BaseLink: "https://gerrit/test-infra/+/abc",
+							CloneURI: "https://gerrit/test-infra",
+							Pulls: []prowapi.Pull{
+								{
+									SHA:        "1",
+									Link:       "https://gerrit/c/test-infra/+/0",
+									CommitLink: "https://gerrit/test-infra/+/1",
+									AuthorLink: "https://gerrit/q/",
+								},
+							},
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"prow.k8s.io/refs.base_ref":       "",
+							"prow.k8s.io/gerrit-patchset":     "0",
+							"prow.k8s.io/gerrit-report-label": "Code-Review",
+							"prow.k8s.io/refs.org":            "gerrit",
+							"prow.k8s.io/refs.pull":           "0",
+							"prow.k8s.io/type":                "presubmit",
+							"prow.k8s.io/job":                 "runs-on-all-but-baz-branch",
+							"created-by-prow":                 "true",
+							"prow.k8s.io/context":             "runs-on-all-but-baz-branch",
+							"prow.k8s.io/refs.repo":           "test-infra",
+							"prow.k8s.io/gerrit-revision":     "1",
+						},
+						Annotations: map[string]string{
+							"prow.k8s.io/job":             "runs-on-all-but-baz-branch",
+							"prow.k8s.io/context":         "runs-on-all-but-baz-branch",
+							"prow.k8s.io/gerrit-instance": "https://gerrit",
+							"prow.k8s.io/gerrit-id":       "",
+						},
+					},
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{
+							Org:      "https://gerrit",
+							Repo:     "test-infra",
+							RepoLink: "https://gerrit/test-infra",
+							BaseSHA:  "abc",
+							BaseLink: "https://gerrit/test-infra/+/abc",
+							CloneURI: "https://gerrit/test-infra",
+							Pulls: []prowapi.Pull{
+								{
+									SHA:        "1",
+									Link:       "https://gerrit/c/test-infra/+/0",
+									CommitLink: "https://gerrit/test-infra/+/1",
+									AuthorLink: "https://gerrit/q/",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "presubmit does not run when a file matches run_if_changed but the change is WorkInProgress",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",

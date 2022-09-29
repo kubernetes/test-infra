@@ -399,11 +399,7 @@ func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string
 	if err != nil {
 		return nil, fmt.Errorf("failed get change: %v", err)
 	}
-	var files []string
-	for f := range change.Revisions[change.CurrentRevision].Files {
-		files = append(files, f)
-	}
-	return files, nil
+	return client.ChangedFilesProvider(change)()
 }
 
 func (p *GerritProvider) refsForJob(sp subpool, prs []CodeReviewCommon) (prowapi.Refs, error) {

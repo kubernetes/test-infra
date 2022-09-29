@@ -34,6 +34,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/version"
 )
@@ -682,5 +683,23 @@ func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, p
 				log.Debug("Ignored change")
 			}
 		}
+	}
+}
+
+// ChangedFilesProvider lists (in lexicographic order) the files changed as part of a Gerrit patchset.
+// It includes the original paths of renamed files.
+func ChangedFilesProvider(changeInfo *ChangeInfo) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		changed := sets.NewString()
+		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
+		for file, info := range revision.Files {
+			changed.Insert(file)
+			// If the file is renamed (R) or copied (C) the old file path is included.
+			// We care about the old path in the rename case, but not the copy case.
+			if info.Status == "R" {
+				changed.Insert(info.OldPath)
+			}
+		}
+		return changed.List(), nil
 	}
 }

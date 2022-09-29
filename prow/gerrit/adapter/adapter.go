@@ -274,18 +274,6 @@ func (c *Controller) Sync() {
 	}
 }
 
-// listChangedFiles lists (in lexicographic order) the files changed as part of a Gerrit patchset
-func listChangedFiles(changeInfo client.ChangeInfo) config.ChangedFilesProvider {
-	return func() ([]string, error) {
-		var changed []string
-		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
-		for file := range revision.Files {
-			changed = append(changed, file)
-		}
-		return changed, nil
-	}
-}
-
 // CreateRefs creates refs for a presubmit job from given changes.
 //
 // Passed in instance must contain https:// prefix.
@@ -440,7 +428,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	var jobSpecs []jobSpec
 
-	changedFiles := listChangedFiles(change)
+	changedFiles := client.ChangedFilesProvider(&change)
 
 	switch change.Status {
 	case client.Merged:
@@ -546,7 +534,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				triggerTimes: triggerTimes,
 			})
 		}
-		toTrigger, err := pjutil.FilterPresubmits(pjutil.NewAggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
+		toTrigger, err := pjutil.FilterPresubmits(pjutil.NewAggregateFilter(filters), client.ChangedFilesProvider(&change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("filter presubmits: %w", err)
 		}
@@ -560,7 +548,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			optedOut := isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project)
 			c.lock.RUnlock()
 			if needsHelp && !optedOut {
-				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(listChangedFiles(change), change.Branch, presubmits, logger.WithField("help", true))
+				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(client.ChangedFilesProvider(&change), change.Branch, presubmits, logger.WithField("help", true))
 				if err != nil {
 					return err
 				}
