@@ -26,7 +26,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
-	"github.com/sirupsen/logrus/hooks/test"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/types"
@@ -42,6 +41,7 @@ var _ gerritClient = (*fakeGerritClient)(nil)
 
 type fakeGerritClient struct {
 	reviews int
+	// map{org: map{project: []changes}}
 	changes map[string]map[string][]gerrit.ChangeInfo
 }
 
@@ -63,16 +63,22 @@ func (f *fakeGerritClient) GetChange(instance, id string, addtionalFields ...str
 	if f.changes == nil || f.changes[instance] == nil {
 		return nil, errors.New("instance not exist")
 	}
-	for _, c := range f.changes[instance][id] {
-		if c.ID == id {
-			return &c, nil
+	for _, prs := range f.changes[instance] {
+		for _, pr := range prs {
+			if pr.ID == id {
+				return &pr, nil
+			}
 		}
 	}
-	return nil, errors.New("instance not exist")
+	return nil, errors.New("change not exist")
 }
 
 func (f *fakeGerritClient) GetBranchRevision(instance, project, branch string) (string, error) {
 	return "abc", nil
+}
+
+func (f *fakeGerritClient) SubmitChange(instance, id string, wait bool) (*gerrit.ChangeInfo, error) {
+	return f.GetChange(instance, id)
 }
 
 func (f *fakeGerritClient) addChanges(instance, project string, changes []gerrit.ChangeInfo) {
@@ -547,15 +553,152 @@ func TestGerritHeadContexts(t *testing.T) {
 }
 
 func TestMergePR(t *testing.T) {
-	testLogger, hook := test.NewNullLogger()
-	fc := &GerritProvider{logger: testLogger.WithContext(context.Background())}
-	var wantErr error
-	if gotErr := fc.mergePRs(subpool{}, nil, nil); wantErr != gotErr {
-		t.Fatalf("Error not matching. Want: %v, got: %v", wantErr, gotErr)
+	tests := []struct {
+		name          string
+		subpool       subpool
+		clientChanges map[string]map[string][]gerrit.ChangeInfo
+		prs           []gerrit.ChangeInfo
+		wantErr       error
+	}{
+		{
+			name: "single",
+			subpool: subpool{
+				org:  "org",
+				repo: "repo",
+			},
+			clientChanges: map[string]map[string][]gerrit.ChangeInfo{
+				"org": {
+					"repo": {
+						{
+							ID: "abc123",
+						},
+					},
+				},
+			},
+			prs: []gerrit.ChangeInfo{
+				{
+					ID: "abc123",
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "multiple",
+			subpool: subpool{
+				org:  "org",
+				repo: "repo",
+			},
+			clientChanges: map[string]map[string][]gerrit.ChangeInfo{
+				"org": {
+					"repo": {
+						{
+							ID: "abc123",
+						},
+						{
+							ID: "def456",
+						},
+					},
+				},
+			},
+			prs: []gerrit.ChangeInfo{
+				{
+					ID: "abc123",
+				},
+				{
+					ID: "def456",
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "single-error",
+			subpool: subpool{
+				org:  "org",
+				repo: "repo",
+			},
+			// Empty changes results in SubmitChange error.
+			clientChanges: map[string]map[string][]gerrit.ChangeInfo{},
+			prs: []gerrit.ChangeInfo{
+				{
+					ID: "abc123",
+				},
+			},
+			wantErr: errors.New("failed submitting change 'org' from org 'abc123': instance not exist"),
+		},
+		{
+			name: "multiple-error",
+			subpool: subpool{
+				org:  "org",
+				repo: "repo",
+			},
+			// Empty changes results in SubmitChange error.
+			clientChanges: map[string]map[string][]gerrit.ChangeInfo{},
+			prs: []gerrit.ChangeInfo{
+				{
+					ID: "abc123",
+				},
+				{
+					ID: "def456",
+				},
+			},
+			wantErr: errors.New("[failed submitting change 'org' from org 'abc123': instance not exist, failed submitting change 'org' from org 'def456': instance not exist]"),
+		},
+		{
+			name: "partial-error",
+			subpool: subpool{
+				org:  "org",
+				repo: "repo",
+			},
+			clientChanges: map[string]map[string][]gerrit.ChangeInfo{
+				"org": {
+					"repo": {
+						{
+							ID: "abc123",
+						},
+					},
+				},
+			},
+			prs: []gerrit.ChangeInfo{
+				{
+					ID: "abc123",
+				},
+				{
+					ID: "def456",
+				},
+			},
+			wantErr: errors.New("failed submitting change 'org' from org 'def456': change not exist"),
+		},
 	}
-	wantLog := "The merge function hasn't been implemented yet, just logging for now."
-	if gotLog := hook.LastEntry().Message; wantLog != gotLog {
-		t.Fatalf("Log mismatch. Want: %q, got: %q", wantErr, gotLog)
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fgc := newFakeGerritClient()
+			fgc.changes = tc.clientChanges
+			fc := &GerritProvider{
+				logger: logrus.WithContext(context.Background()),
+				gc:     fgc,
+			}
+
+			var prsToMerge []CodeReviewCommon
+			for _, pr := range tc.prs {
+				prsToMerge = append(prsToMerge, *CodeReviewCommonFromGerrit(&pr, tc.subpool.org))
+			}
+
+			gotErr := fc.mergePRs(tc.subpool, prsToMerge, nil)
+			if tc.wantErr == nil {
+				if gotErr != nil {
+					t.Fatalf("Error mismatch. Want nil, got: %v", gotErr)
+				}
+				return
+			}
+			if gotErr == nil {
+				t.Fatalf("Error mismatch. Want %v, got nil", tc.wantErr)
+			}
+			if tc.wantErr.Error() != gotErr.Error() {
+				t.Fatalf("Error not matching. Want: %v, got: %v", tc.wantErr, gotErr)
+			}
+		})
 	}
 }
 

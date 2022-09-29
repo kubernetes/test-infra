@@ -89,6 +89,7 @@ type gerritChange interface {
 	SetReview(changeID, revisionID string, input *gerrit.ReviewInput) (*gerrit.ReviewResult, *gerrit.Response, error)
 	ListChangeComments(changeID string) (*map[string][]gerrit.CommentInfo, *gerrit.Response, error)
 	GetChange(changeId string, opt *gerrit.ChangeOptions) (*ChangeInfo, *gerrit.Response, error)
+	SubmitChange(id string, opt *gerrit.SubmitInput) (*ChangeInfo, *gerrit.Response, error)
 }
 
 type gerritProjects interface {
@@ -399,6 +400,22 @@ func (c *Client) GetChange(instance, id string, addtionalFields ...string) (*Cha
 	info, resp, err := h.changeService.GetChange(id, &gerrit.ChangeOptions{AdditionalFields: addtionalFields})
 	if err != nil {
 		return nil, fmt.Errorf("error getting current change: %w", responseBodyError(err, resp))
+	}
+
+	return info, nil
+}
+
+func (c *Client) SubmitChange(instance, id string, wait bool) (*ChangeInfo, error) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		return nil, fmt.Errorf("not activated gerrit instance: %s", instance)
+	}
+
+	info, resp, err := h.changeService.SubmitChange(id, &gerrit.SubmitInput{WaitForMerge: wait})
+	if err != nil {
+		return nil, fmt.Errorf("error submitting current change: %w", responseBodyError(err, resp))
 	}
 
 	return info, nil
