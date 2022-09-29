@@ -521,7 +521,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 			return fmt.Errorf("failed to add label %s: %w", label, err)
 		}
 	}
-	if !s.prowAssignments {
+	if s.prowAssignments {
 		if err := s.ghc.AssignIssue(org, repo, createdNum, []string{requestor}); err != nil {
 			logger.WithError(err).Warn("failed to assign to new PR")
 			// Ignore returning errors on failure to assign as this is most likely
