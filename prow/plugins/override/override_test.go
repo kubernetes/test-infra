@@ -674,7 +674,7 @@ func TestHandle(t *testing.T) {
 		{
 			name: "override with extra whitespace",
 			// Note two spaces here to start, and trailing whitespace
-			comment: "/override  broken-test \n",
+			comment: "/override  broken-test \r\n", // github ends lines with \r\n
 			contexts: []github.Status{
 				{
 					Context: "broken-test",
