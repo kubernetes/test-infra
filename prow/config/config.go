@@ -398,7 +398,9 @@ func GetAndCheckRefs(
 		if err != nil {
 			return "", nil, fmt.Errorf("failed to get headRef: %v", err)
 		}
-		headSHAs = append(headSHAs, headSHA)
+		if headSHA != "" {
+			headSHAs = append(headSHAs, headSHA)
+		}
 	}
 
 	return baseSHA, headSHAs, nil

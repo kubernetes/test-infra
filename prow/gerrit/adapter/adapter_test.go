@@ -72,6 +72,10 @@ type fgc struct {
 	instanceMap map[string]*gerrit.AccountInfo
 }
 
+func (f *fgc) HasRelatedChanges(instance, id, revision string) (bool, error) {
+	return false, nil
+}
+
 func (f *fgc) ApplyGlobalConfig(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
 
 }

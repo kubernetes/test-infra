@@ -91,6 +91,7 @@ type gerritChange interface {
 	ListChangeComments(changeID string) (*map[string][]gerrit.CommentInfo, *gerrit.Response, error)
 	GetChange(changeId string, opt *gerrit.ChangeOptions) (*ChangeInfo, *gerrit.Response, error)
 	SubmitChange(id string, opt *gerrit.SubmitInput) (*ChangeInfo, *gerrit.Response, error)
+	GetRelatedChanges(changeID string, revisionID string) (*gerrit.RelatedChangesInfo, *gerrit.Response, error)
 }
 
 type gerritProjects interface {
@@ -707,6 +708,9 @@ func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, p
 // It includes the original paths of renamed files.
 func ChangedFilesProvider(changeInfo *ChangeInfo) config.ChangedFilesProvider {
 	return func() ([]string, error) {
+		if changeInfo == nil {
+			return nil, fmt.Errorf("programmer error! The passed '*ChangeInfo' was nil which shouldn't ever happen")
+		}
 		changed := sets.NewString()
 		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
 		for file, info := range revision.Files {
@@ -719,4 +723,22 @@ func ChangedFilesProvider(changeInfo *ChangeInfo) config.ChangedFilesProvider {
 		}
 		return changed.List(), nil
 	}
+}
+
+// HasRelatedChanges determines if the specified change is part of a chain.
+// In other words, it determines if this change depends on any other changes or if any other changes depend on this change.
+func (c *Client) HasRelatedChanges(instance, id, revision string) (bool, error) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		return false, fmt.Errorf("not activated gerrit instance: %s", instance)
+	}
+
+	info, resp, err := h.changeService.GetRelatedChanges(id, revision)
+	if err != nil {
+		return false, fmt.Errorf("error getting related changes: %w", responseBodyError(err, resp))
+	}
+
+	return len(info.Changes) > 0, nil
 }
