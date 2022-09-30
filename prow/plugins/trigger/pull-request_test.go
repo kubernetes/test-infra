@@ -135,6 +135,7 @@ func TestHandlePullRequest(t *testing.T) {
 		ShouldBuild      bool
 		ShouldComment    bool
 		HasOkToTest      bool
+		HasNeedsOkToTest bool
 		prLabel          string
 		prChanges        bool
 		prAction         github.PullRequestEventAction
@@ -210,7 +211,7 @@ func TestHandlePullRequest(t *testing.T) {
 			prIsDraft:   true,
 		},
 		{
-			name: "Trusted user switch PR from draft to normal shoud build",
+			name: "Trusted user switch PR from draft to normal should build",
 
 			Author:      "t",
 			ShouldBuild: true,
@@ -417,6 +418,22 @@ func TestHandlePullRequest(t *testing.T) {
 			ShouldBuild: true,
 			jobToAbort:  jobToAbort,
 		},
+		{
+			name: "Trusted user PR with needs-ok-to-test should build and label removed",
+
+			Author: "t",
+			// Add this label in the test
+			HasNeedsOkToTest: true,
+
+			// PR has changed
+			prAction: github.PullRequestActionSynchronize,
+
+			// No labels should be added. Only removed.
+			issueLabelsAdded: nil,
+
+			// We expect a build
+			ShouldBuild: true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
@@ -459,6 +476,10 @@ func TestHandlePullRequest(t *testing.T) {
 			}
 			if err := c.Config.SetPresubmits(presubmits); err != nil {
 				t.Fatalf("failed to set presubmits: %v", err)
+			}
+
+			if tc.HasNeedsOkToTest {
+				g.IssueLabelsExisting = append(g.IssueLabelsExisting, issueLabels(labels.NeedsOkToTest)...)
 			}
 
 			if tc.HasOkToTest {
@@ -523,14 +544,14 @@ func TestHandlePullRequest(t *testing.T) {
 				}
 
 				if pj.Status.State != prowapi.AbortedState {
-					t.Errorf("exptected job %s to be aborted, found state: %v", tc.jobToAbort.Name, pj.Status.State)
+					t.Errorf("expected job %s to be aborted, found state: %v", tc.jobToAbort.Name, pj.Status.State)
 				}
 				if pj.Complete() {
-					t.Errorf("exptected job %s to not be set to complete.", tc.jobToAbort.Name)
+					t.Errorf("expected job %s to not be set to complete.", tc.jobToAbort.Name)
 				}
 			}
 			if cmp.Diff(tc.issueLabelsAdded, g.IssueLabelsAdded) != "" {
-				t.Errorf("exptected added issue labels %v to match %v", tc.issueLabelsAdded, g.IssueLabelsAdded)
+				t.Errorf("expected added issue labels %v to match %v", tc.issueLabelsAdded, g.IssueLabelsAdded)
 			}
 		})
 	}

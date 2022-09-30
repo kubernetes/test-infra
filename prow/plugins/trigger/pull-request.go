@@ -230,7 +230,6 @@ func buildAllIfTrusted(c Client, trigger plugins.Trigger, pr github.PullRequestE
 		return fmt.Errorf("could not validate PR: %s", err)
 	} else if trusted {
 		// Eventually remove needs-ok-to-test
-		// Will not work for org members since labels are not fetched in this case
 		if github.HasLabel(labels.NeedsOkToTest, l) {
 			if err := c.GitHubClient.RemoveLabel(org, repo, num, labels.NeedsOkToTest); err != nil {
 				return err
@@ -321,13 +320,7 @@ func draftMsg(ghc githubClient, pr github.PullRequest) error {
 // It first checks if the author is in the org, then looks for "ok-to-test" label.
 // If already known, GitHub labels should be provided to save tokens. Otherwise, it fetches them.
 func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
-	// First check if the author is a member of the org.
-	if trustedResponse, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedApps, trigger.TrustedOrg, author, org, repo); err != nil {
-		return l, false, fmt.Errorf("error checking %s for trust: %w", author, err)
-	} else if trustedResponse.IsTrusted {
-		return l, true, nil
-	}
-	// Then check if PR has ok-to-test label
+	// If we don't have any labels we need to fetch them
 	if l == nil {
 		var err error
 		l, err = tprc.GetIssueLabels(org, repo, num)
@@ -335,6 +328,15 @@ func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, 
 			return l, false, err
 		}
 	}
+
+	// First check if the author is a member of the org.
+	if trustedResponse, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedApps, trigger.TrustedOrg, author, org, repo); err != nil {
+		return l, false, fmt.Errorf("error checking %s for trust: %w", author, err)
+	} else if trustedResponse.IsTrusted {
+		return l, true, nil
+	}
+
+	// Then check if PR has ok-to-test label
 	return l, github.HasLabel(labels.OkToTest, l), nil
 }
 
