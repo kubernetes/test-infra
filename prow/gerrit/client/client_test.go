@@ -54,6 +54,10 @@ func (f *fgc) ListChangeComments(id string) (*map[string][]gerrit.CommentInfo, *
 	return &comments, nil, nil
 }
 
+func (f *fgc) SubmitChange(changeID string, input *gerrit.SubmitInput) (*ChangeInfo, *gerrit.Response, error) {
+	return nil, nil, nil
+}
+
 func TestApplyGlobalConfigOnce(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "value.txt")

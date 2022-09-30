@@ -62,6 +62,7 @@ type gerritClient interface {
 	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error)
 	GetChange(instance, id string, addtionalFeilds ...string) (*gerrit.ChangeInfo, error)
 	GetBranchRevision(instance, project, branch string) (string, error)
+	SubmitChange(instance, id string, wait bool) (*gerrit.ChangeInfo, error)
 }
 
 // NewController makes a Controller out of the given clients.
@@ -272,9 +273,18 @@ func (p *GerritProvider) headContexts(crc *CodeReviewCommon) ([]Context, error) 
 	return res, nil
 }
 
-func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error {
-	p.logger.Info("The merge function hasn't been implemented yet, just logging for now.")
-	return nil
+func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, _ *threadSafePRSet) error {
+	logger := p.logger.WithFields(logrus.Fields{"repo": sp.repo, "org": sp.org, "branch": sp.branch})
+	logger.Info("Merging subpool.")
+
+	var errs []error
+	for _, pr := range prs {
+		logger.WithField("id", pr.Gerrit.ID).Info("Submitting change.")
+		if _, err := p.gc.SubmitChange(sp.org, pr.Gerrit.ID, true); err != nil {
+			errs = append(errs, fmt.Errorf("failed submitting change '%s' from org '%s': %v", sp.org, pr.Gerrit.ID, err))
+		}
+	}
+	return utilerrors.NewAggregate(errs)
 }
 
 // GetTideContextPolicy gets context policy defined by users + requirements from
