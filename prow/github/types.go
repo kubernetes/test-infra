@@ -321,7 +321,7 @@ type PullRequestChange struct {
 
 // Repo contains general repository information: it includes fields available
 // in repo records returned by GH "List" methods but not those returned by GH
-// "Get" method.
+// "Get" method. Use FullRepo struct for "Get" method.
 // See also https://developer.github.com/v3/repos/#list-organization-repositories
 type Repo struct {
 	Owner         User   `json:"owner"`
