@@ -850,6 +850,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: d93f0b
+        description: Denotes that an issue has been opted in to a release
+        name: lead-opted-in
+        target: issues
+        prowPlugin: label
+        addedBy: SIG leads ONLY
+      - color: d93f0b
         description: Denotes an issue tracking an enhancement targeted for Alpha status
         name: stage/alpha
         target: issues
@@ -871,17 +877,20 @@ repos:
         description: Denotes an out-of-tree enhancement issue, which does not need to be tracked by the Release Team
         name: tracked/out-of-tree
         target: issues
-        addedBy: humans
+        prowPlugin: label
+        addedBy: Release enhancements team ONLY
       - color: e04338
         description: Denotes an enhancement issue is NOT actively being tracked by the Release Team
         name: tracked/no
         target: issues
-        addedBy: humans
+        prowPlugin: label
+        addedBy: Release enhancements team ONLY
       - color: 108737
         description: Denotes an enhancement issue is actively being tracked by the Release Team
         name: tracked/yes
         target: issues
-        addedBy: humans
+        prowPlugin: label
+        addedBy: Release enhancements team ONLY
   kubernetes/k8s.io:
     labels:
       - color: 0052cc
@@ -2055,4 +2064,3 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
-
