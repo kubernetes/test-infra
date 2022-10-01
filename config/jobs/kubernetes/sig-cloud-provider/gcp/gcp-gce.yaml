@@ -444,6 +444,59 @@ presubmits:
           securityContext:
             privileged: true
 
+  - name: pull-e2e-gce-cloud-provider-disabled
+    cluster: k8s-infra-prow-build
+    optional: true
+    always_run: false
+    skip_branches:
+      - release-\d+\.\d+ # per-release image
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: google-gce
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-use-new-registry: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+        - args:
+            - --root=/go/src
+            - --repo=k8s.io/kubernetes=$(PULL_REFS)
+            - --repo=k8s.io/release
+            - --upload=gs://kubernetes-jenkins/pr-logs
+            - --timeout=120
+            - --scenario=kubernetes_e2e
+            - --
+            - --build=quick
+            - --cluster=
+            - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --extract=local
+            - --gcp-master-image=gci
+            - --gcp-node-image=gci
+            - --gcp-nodes=4
+            - --gcp-zone=us-west1-b
+            - --ginkgo-parallel=30
+            - --provider=gce
+            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+            - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220908-70b61d242b-master
+          resources:
+            limits:
+              cpu: 4
+              memory: "14Gi"
+            requests:
+              cpu: 4
+              memory: "14Gi"
+          securityContext:
+            privileged: true
+
 periodics:
 - interval: 168h # one week
   name: canary-e2e-gce-cloud-provider-disabled
