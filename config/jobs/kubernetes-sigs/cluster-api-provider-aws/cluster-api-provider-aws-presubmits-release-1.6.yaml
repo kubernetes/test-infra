@@ -1,9 +1,9 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
-  - name: pull-cluster-api-provider-aws-test-release-1-5
+  - name: pull-cluster-api-provider-aws-test-release-1-6
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.5$
+    - ^release-1.6$
     always_run: true
     optional: false
     decorate: true
@@ -14,9 +14,9 @@ presubmits:
         command:
         - "./scripts/ci-test.sh"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-test-release-1-5
-  - name: pull-cluster-api-provider-aws-apidiff-release-1-5
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-test-release-1-6
+  - name: pull-cluster-api-provider-aws-apidiff-release-1-6
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-aws
     always_run: true
@@ -25,7 +25,7 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.5$
+    - ^release-1.6$
     spec:
       containers:
       - command:
@@ -33,15 +33,15 @@ presubmits:
         - ./scripts/ci-apidiff.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220928-cd48f52a16-1.24
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-apidiff-release-1-5
-  - name: pull-cluster-api-provider-aws-build-release-1-5
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-apidiff-release-1-6
+  - name: pull-cluster-api-provider-aws-build-release-1-6
     always_run: true
     optional: false
     decorate: true
     branches:
       # The script this job runs is not in all branches.
-      - ^release-1.5$
+      - ^release-1.6$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
@@ -49,13 +49,13 @@ presubmits:
         command:
         - "./scripts/ci-build.sh"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-build-release-1-5
-  - name: pull-cluster-api-provider-aws-verify-release-1-5
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-build-release-1-6
+  - name: pull-cluster-api-provider-aws-verify-release-1-6
     always_run: true
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.5$
+    - ^release-1.6$
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
@@ -70,15 +70,15 @@ presubmits:
         securityContext:
             privileged: true
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-verify-release-1-5
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-verify-release-1-6
     labels:
       preset-dind-enabled: "true"
   # conformance test
-  - name: pull-cluster-api-provider-aws-e2e-conformance-release-1-5
+  - name: pull-cluster-api-provider-aws-e2e-conformance-release-1-6
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.5$
+    - ^release-1.6$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -122,14 +122,14 @@ presubmits:
               memory: "9Gi"
               cpu: 2
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-conformance-release-1-5
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-conformance-release-1-6
       testgrid-num-columns-recent: '20'
   # conformance test against kubernetes main branch with `kind` + cluster-api-provider-aws
-  - name: pull-cluster-api-provider-aws-e2e-conformance-with-ci-artifacts-release-1-5
+  - name: pull-cluster-api-provider-aws-e2e-conformance-with-ci-artifacts-release-1-6
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.5$
+    - ^release-1.6$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -163,13 +163,13 @@ presubmits:
               cpu: 2
               memory: "9Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-conformance-release-1-5-k8s-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-conformance-release-1-6-k8s-main
       testgrid-num-columns-recent: '20'
-  - name: pull-cluster-api-provider-aws-e2e-blocking-release-1-5
+  - name: pull-cluster-api-provider-aws-e2e-blocking-release-1-6
     branches:
       # The script this job runs is not in all branches.
-      - ^release-1.5$
+      - ^release-1.6$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     #run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     always_run: true
@@ -207,13 +207,13 @@ presubmits:
               cpu: 2
               memory: "9Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-quick-e2e-release-1-5
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-quick-e2e-release-1-6
       testgrid-num-columns-recent: '20'
-  - name: pull-cluster-api-provider-aws-e2e-release-1-5
+  - name: pull-cluster-api-provider-aws-e2e-release-1-6
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.5$
+    - ^release-1.6$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -245,13 +245,13 @@ presubmits:
               cpu: 2
               memory: "9Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-e2e-release-1-5
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-e2e-release-1-6
       testgrid-num-columns-recent: '20'
-  - name: pull-cluster-api-provider-aws-e2e-eks-release-1-5
+  - name: pull-cluster-api-provider-aws-e2e-eks-release-1-6
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.5$
+    - ^release-1.6$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true
@@ -283,6 +283,6 @@ presubmits:
               cpu: 2
               memory: "9Gi"
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-      testgrid-tab-name: pr-e2e-eks-release-1-5
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+      testgrid-tab-name: pr-e2e-eks-release-1-6
       testgrid-num-columns-recent: '20'

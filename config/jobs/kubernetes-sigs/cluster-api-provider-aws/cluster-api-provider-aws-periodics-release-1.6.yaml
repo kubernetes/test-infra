@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-aws-e2e-release-1-5
+- name: periodic-cluster-api-provider-aws-e2e-release-1-6
   decorate: true
   decoration_config:
     timeout: 5h
@@ -13,7 +13,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
-    base_ref: release-1.5
+    base_ref: release-1.6
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
@@ -36,11 +36,11 @@ periodics:
           cpu: 2
           memory: "9Gi"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-    testgrid-tab-name: periodic-e2e-release-1-5
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+    testgrid-tab-name: periodic-e2e-release-1-6
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-eks-e2e-release-1-5
+- name: periodic-cluster-api-provider-aws-eks-e2e-release-1-6
   decorate: true
   decoration_config:
     timeout: 5h
@@ -54,7 +54,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-aws
-    base_ref: release-1.5
+    base_ref: release-1.6
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
@@ -74,11 +74,11 @@ periodics:
           cpu: 2
           memory: "9Gi"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-    testgrid-tab-name: periodic-eks-e2e-release-1-5
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+    testgrid-tab-name: periodic-eks-e2e-release-1-6
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-conformance-release-1-5
+- name: periodic-cluster-api-provider-aws-e2e-conformance-release-1-6
   decorate: true
   decoration_config:
     timeout: 5h
@@ -92,7 +92,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-aws
-      base_ref: release-1.5
+      base_ref: release-1.6
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
@@ -115,11 +115,11 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-    testgrid-tab-name: periodic-conformance-release-1-5
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+    testgrid-tab-name: periodic-conformance-release-1-6
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-e2e-conformance-with-k8s-ci-artifacts-release-1-5
+- name: periodic-cluster-api-provider-aws-e2e-conformance-with-k8s-ci-artifacts-release-1-6
   max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
@@ -134,7 +134,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-aws
-      base_ref: release-1.5
+      base_ref: release-1.6
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     - org: kubernetes-sigs
       repo: image-builder
@@ -170,7 +170,7 @@ periodics:
             memory: "9Gi"
             cpu: 2
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
-    testgrid-tab-name: periodic-conformance-release-1-5-k8s-main
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
+    testgrid-tab-name: periodic-conformance-release-1-6-k8s-main
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
