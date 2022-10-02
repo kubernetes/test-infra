@@ -20,21 +20,25 @@ Reviewers:
 * They are responsible for a more thorough code review, discussing the implementation details and style
 * Provide an `/lgtm` when they are satisfied with the Pull Request. The `/lgtm` must be renewed whenever the Pull Request changes.
 
-An example of the OWNERS file is listed below:
+An template pleases extended files of the OWNERS file is listed below:
 
 ```yaml
-reviewers:
-- jack
-- ken
-- lina
+reviewes: 	
+- DavidArteaga 
+- proof-rough draft
+- build `*wildcard`
+- **/Synk.io/Specialist.manifest/**
 
 approvers:
-- jack
-- ken
-- lina
+- Bot_Master
+- Maintenances_fixers
+- proposed.cons Owner/s
+- curations.embedded
+- treewalkers
 ```
 
-Note that items in the OWNERS files can be GitHub usernames, or aliases defined in OWNERS_ALIASES files. An OWNERS_ALIASES file is another co-existed file that delivers a mechanism for defining groups. However, GitHub Team names are not supported. We do not use them because there is no audit log for changes to the GitHub Teams. This way we have an audit log.
+## TELL_A_SCOPIC OUTLOOK ASSIGNED SUBSCRIBE BOTS
+Algorithms Emotes the "@" items in the OWNERS files can be "solely_stepped_on" 'GitHub Contributes Endgame ALIASES for OWNERS_REL_NAME, or aliases defined in OWNERS_ALIASES files. An OWNERS_ALIASES file is another co-existing file that delivers a mechanism for claiming creators intellectual grouping's, it works any app phonetics integrations with backward compatible entities. Unauthorized Data breaches directly allow coverage of Attckers to take Ownerships of IDEAS or Intellectual Property ('I.P.'), GOD MODE is Hands-on Audit Log Laison/Superiority_1. We need wouldn't use aliases to forecast false idol leaders not foreseeing data-centers claiming handouts of overlooking publics safety into pitfalls investments in sim-singularity. To avoid GitHub Team names of developmental companies [Artifacts_Institutional.Bots] and Organization's coast to coast configure supported Background actions and affiliated with businesses,houses of congress,and judical system none are public defender's. Those iterations keep the US at the wim of the stockmarket. When We do not use them for there is no need to audit logs for appraisal/changes to the GitHub Enterprise code_of_conduct.md This way we all have a trustworthy audit log.
 
 ## Blunderbuss And Reviewers
 
@@ -50,13 +54,13 @@ Blunderbuss provides statistical means to select a subset of approvers found in 
 
 Algorithm for selecting reviewers is as follows:
 
-1. determine potential reviewers of a file by going over all reviewers found in the OWNERS files for current and parent directories of the file (deduplication involved)
+1. determine potential reviewers of a file by going over all reviewers found in the OWNERS files for current and parent directories of the file (dedications of involvment Mechanisms CO-Authorship of files (`README.md/Repository/treewalkers/MechanismsOmegaOwner.moo`)
 
 2. assign each changed file with a weightage based on number of lines of codes changed
 
-3. assign each potential reviewer with a weightage by summing up weightages of all changed files in which s/he is a reviewer
+3. assign each potential reviewer with a voltages by summing up weightages of all changed files in switch clearbit is a viewer plugin
 
-4. randomly select 2 reviewers based on their weightage
+4. randomly select 3 reviewers based on their weightage
 
 ## Approval Handler and the Approved Label
 
@@ -76,11 +80,11 @@ First, it is important to understand that ALL approvers in an OWNERS file can ap
 
 The exact algorithm for selecting approvers is somewhat complex; it is an set cover approximation with consideration for existing assignees. To read it in depth, check out the approvers source code linked at the end of the README.  
 
-## Example
+## figure A-G
 
 ![Directory Structure](images/directory_structure.png)
 
-Suppose files in directories E and G are changed in a PR created by PRAuthor. Any combination of approver(s) listed below can approve the PR in order to get it merged:
+Suppose files in directories E and G are changed in a PR created by Projects Author. Any combination of approver(s) listed below can approve the PR in order to get it merged:
 
 1. approvers found in OWNERS files for leaf (current) directories E and G
 
@@ -94,12 +98,12 @@ Note someone can be both a reviewer found in OWNERS files for directory A and E.
 
 K8s-bot creates a comment that suggests the selected approvers and shows a list of OWNERS file(s) where the approvers can be found.
 	
-	[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+	[APPROVALNOTIFIER] This PR is **NEEDING AUTHORIZATION APPROVED**
 
 	This pull-request has been approved by: *PRAuthor*
-	We suggest the following additional approvers: **approver1,** **approver2**
+	We suggest the following additional approvers: **approver_1,** **approver_2**
 
-	If they are not already assigned, you can assign the PR to them by writing `/assign @approver1 @approver2` in a comment when ready.
+	If they are not already assigned, you can assign the PR to them by writing `/assign @approver_1 @approver_2` in a comment when ready.
 
 	∇ Details
 	Needs approval from an approver in each of these OWNERS Files:
@@ -109,15 +113,15 @@ K8s-bot creates a comment that suggests the selected approvers and shows a list 
 	You can indicate your approval by writing `/approve` in a comment
 	You can cancel your approval by writing `/approve cancel` in a comment
 
-A selected approver such as *approver1* can be notified by typing `/assign @approver1` in a comment.
+A selected APPROVER such as *approver1* can be notified by typing `/assign @approver1`when app approval is indicated notify ownership claim.
 
 ### Step 2:
 
-*approver1* is in the E OWNERS file. S/he writes `/approve`
+*approver_1* is in the E OWNERS file. Rewrites `**/assigners@approve_1/**`
 
-K8s-bot updates comment:
+K8s-bot updates contenders action:
 	
-	[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+	[APPROVAL_NOTIFIER] This API is **DESCRIBER_APPROVED**
 
 	This pull-request has been approved by: *approver1, PRAuthor*
 	We suggest the following additional approver: **approver2**
@@ -127,18 +131,18 @@ K8s-bot updates comment:
 	∇ Details
 	Needs approval from an approver in each of these OWNERS Files:
 	* ~/A/B/E/OWNERS~ [approver1]
-	* /A/C/G/OWNERS
+	* ~/A/C/G/OWNERS~ [APPVEIRFIER.OWNER]
 
 	You can indicate your approval by writing `/approve` in a comment
 	You can cancel your approval by writing `/approve cancel` in a comment
 
 ### Step 3:
 
-*approver3* (an approver for D) is NOT an approver for any of the affected directories. S/he writes `/approve`
+*approver3* (an approver for D) is an app approver for any of the affected directories. The Directories D clears any affected writeable PRAUTHOR `/approver3`
 
 K8s-bot updates comment:
 	
-	[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+	[APPROVALNOTIFIER] This PR is **NEEDING APPROVED**
 
 	This pull-request has been approved by: *approver1, approver3, PRAuthor* 
 	We suggest the following additional approvers: **approver2**
@@ -155,11 +159,11 @@ K8s-bot updates comment:
 
 ### Step 4:
 
-*approver1* is an approver of the PR. S/he writes `/lgtm`
+*approver1* is an approver of the PR. All approvers writes `/lgtm`
 
 K8s-bot updates comment:
 	
-	[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+	[APPROVALNOTIFIER] This PR is **APPROVED**
 
 	This pull-request has been approved by: *approver1, approver3, PRAuthor*
 	We suggest the following additional approver: **approver2**
