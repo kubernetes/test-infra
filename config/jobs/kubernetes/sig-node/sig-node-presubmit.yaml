@@ -1297,6 +1297,7 @@ presubmits:
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
           test/e2e/dra/kind-build-image.sh dra/node:latest &&
           kind create cluster --config test/e2e/dra/kind.yaml --image dra/node:latest &&
+          trap 'kind export logs "${ARTIFACTS}/kind"' EXIT &&
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus=DynamicResourceAllocation
 
         # docker-in-docker needs privileged mode
