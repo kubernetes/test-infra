@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"strings"
@@ -50,7 +49,7 @@ const LogFileName = "sidecar-logs.json"
 func LogSetup() (*os.File, error) {
 	logrusutil.ComponentInit()
 	logrus.SetLevel(logrus.DebugLevel)
-	logFile, err := ioutil.TempFile("", "sidecar-logs*.txt")
+	logFile, err := os.CreateTemp("", "sidecar-logs*.txt")
 	if err == nil {
 		logrus.SetOutput(io.MultiWriter(os.Stderr, logFile))
 	}
@@ -188,7 +187,7 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 			}
 			continue
 		}
-		metadataRaw, err := ioutil.ReadFile(metadataFile)
+		metadataRaw, err := os.ReadFile(metadataFile)
 		if err != nil {
 			logrus.WithError(err).Errorf("cannot read %s", metadataFile)
 			errors[ent] = err

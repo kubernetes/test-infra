@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -65,7 +64,7 @@ func TestCensor(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			censorer := secretutil.NewCensorer()
 			censorer.Refresh(testCase.secrets...)
-			input := ioutil.NopCloser(bytes.NewBufferString(testCase.input))
+			input := io.NopCloser(bytes.NewBufferString(testCase.input))
 			outputSink := &bytes.Buffer{}
 			output := nopWriteCloser(outputSink)
 			if err := censor(input, output, censorer, testCase.bufferSize); err != nil {
@@ -110,7 +109,7 @@ func copyTestData(t *testing.T) string {
 			return os.Symlink(link, dest)
 		}
 		if info.Name() == "link" {
-			link, err := ioutil.ReadFile(path)
+			link, err := os.ReadFile(path)
 			if err != nil {
 				t.Fatalf("failed to read input link: %v", err)
 			}
@@ -187,7 +186,7 @@ func TestCensorRobustnessForCorruptArchive(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to open archived input: %v", err)
 	}
-	raw, err := ioutil.ReadAll(file)
+	raw, err := io.ReadAll(file)
 	if err != nil {
 		t.Fatalf("failed to read archived input: %v", err)
 	}
