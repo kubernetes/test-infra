@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -46,7 +45,7 @@ func (o fakeOpener) Writer(ctx context.Context, path string, _ ...io.WriterOptio
 
 func TestSyncTime(t *testing.T) {
 
-	dir, err := ioutil.TempDir("", "fake-gerrit-value")
+	dir, err := os.MkdirTemp("", "fake-gerrit-value")
 	if err != nil {
 		t.Fatalf("Could not create temp file: %v", err)
 	}
@@ -207,7 +206,7 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 }
 
 func TestNewProjectAddition(t *testing.T) {
-	dir, err := ioutil.TempDir("", "fake-gerrit-value")
+	dir, err := os.MkdirTemp("", "fake-gerrit-value")
 	if err != nil {
 		t.Fatalf("Could not create temp file: %v", err)
 	}
@@ -217,7 +216,7 @@ func TestNewProjectAddition(t *testing.T) {
 	testTime := time.Now().Add(-time.Minute)
 	testStVal := LastSyncState{"foo": {"bar": testTime}}
 	testStValBytes, _ := json.Marshal(testStVal)
-	_ = ioutil.WriteFile(path, testStValBytes, os.ModePerm)
+	_ = os.WriteFile(path, testStValBytes, os.ModePerm)
 
 	var noCreds string
 	ctx := context.Background()

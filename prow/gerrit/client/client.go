@@ -22,8 +22,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -261,7 +262,7 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 		}
 		auth = func() (string, error) {
 			// TODO(fejta): listen for changes
-			raw, err := ioutil.ReadFile(cookiefilePath)
+			raw, err := os.ReadFile(cookiefilePath)
 			if err != nil {
 				return "", fmt.Errorf("read cookie: %w", err)
 			}
@@ -271,7 +272,7 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 		}
 	case tokenPath != "":
 		auth = func() (string, error) {
-			raw, err := ioutil.ReadFile(tokenPath)
+			raw, err := os.ReadFile(tokenPath)
 			if err != nil {
 				return "", fmt.Errorf("read token: %w", err)
 			}
@@ -448,7 +449,7 @@ func responseBodyError(err error, resp *gerrit.Response) error {
 		return err
 	}
 	defer resp.Body.Close()
-	b, _ := ioutil.ReadAll(resp.Body) // Ignore the error since this is best effort.
+	b, _ := io.ReadAll(resp.Body) // Ignore the error since this is best effort.
 	return fmt.Errorf("%w, response body: %q", err, string(b))
 }
 
