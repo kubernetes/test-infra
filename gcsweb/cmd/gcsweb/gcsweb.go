@@ -24,7 +24,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -152,7 +151,7 @@ func getStorageClient(o options) (*storage.Client, error) {
 	}
 
 	if o.oauthTokenFile != "" {
-		b, err := ioutil.ReadFile(o.oauthTokenFile)
+		b, err := os.ReadFile(o.oauthTokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading oauth token file %s: %w", o.oauthTokenFile, err)
 		}
