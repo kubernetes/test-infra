@@ -26,7 +26,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -1021,7 +1020,7 @@ func (c *client) requestRawWithContext(ctx context.Context, r *request) (int, []
 		return 0, nil, err
 	}
 	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -1132,7 +1131,7 @@ func (c *client) requestRetryWithContext(ctx context.Context, method, path, acce
 					if acceptedScopes != "" && !want.HasAny(got...) {
 						err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, acceptedScopes)
 					} else {
-						body, _ := ioutil.ReadAll(resp.Body)
+						body, _ := io.ReadAll(resp.Body)
 						err = fmt.Errorf("the GitHub API request returns a 403 error: %s", string(body))
 					}
 					resp.Body.Close()
@@ -2004,7 +2003,7 @@ func (c *client) readPaginatedResultsWithValuesWithContext(ctx context.Context, 
 			return fmt.Errorf("return code not 2XX: %s", resp.Status)
 		}
 
-		b, err := ioutil.ReadAll(resp.Body)
+		b, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}

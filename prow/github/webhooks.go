@@ -17,7 +17,7 @@ limitations under the License.
 package github
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -56,7 +56,7 @@ func ValidateWebhook(w http.ResponseWriter, r *http.Request, tokenGenerator func
 		responseHTTPError(w, http.StatusBadRequest, "400 Bad Request: Hook only accepts content-type: application/json - please reconfigure this hook on GitHub")
 		return "", "", nil, false, http.StatusBadRequest
 	}
-	payload, err := ioutil.ReadAll(r.Body)
+	payload, err := io.ReadAll(r.Body)
 	if err != nil {
 		responseHTTPError(w, http.StatusInternalServerError, "500 Internal Server Error: Failed to read request body")
 		return "", "", nil, false, http.StatusInternalServerError

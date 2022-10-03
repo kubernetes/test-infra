@@ -18,7 +18,6 @@ package github
 
 import (
 	"crypto/rsa"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -34,7 +33,7 @@ func TestGetOrg(t *testing.T) {
 	if appID == "" || privateKeyPath == "" || org == "" {
 		t.SkipNow()
 	}
-	keyData, err := ioutil.ReadFile(privateKeyPath)
+	keyData, err := os.ReadFile(privateKeyPath)
 	if err != nil {
 		t.Fatalf("Failed to read private key: %v", err)
 	}
