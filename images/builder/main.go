@@ -19,7 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -63,7 +62,7 @@ func getProjectID() (string, error) {
 
 func getImageName(o options, tag string, config string) (string, error) {
 	var cloudbuildyamlFile CloudBuildYAMLFile
-	buf, _ := ioutil.ReadFile(o.cloudbuildFile)
+	buf, _ := os.ReadFile(o.cloudbuildFile)
 	if err := yaml.Unmarshal(buf, &cloudbuildyamlFile); err != nil {
 		return "", fmt.Errorf("failed to get image name: %w", err)
 	}
@@ -127,7 +126,7 @@ func (o *options) validateConfigDir() error {
 }
 
 func (o *options) uploadBuildDir(targetBucket string) (string, error) {
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %w", err)
 	}
@@ -223,7 +222,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 
 	if err := cmd.Run(); err != nil {
 		if o.logDir != "" {
-			buildLog, _ := ioutil.ReadFile(logFilePath)
+			buildLog, _ := os.ReadFile(logFilePath)
 			fmt.Println(string(buildLog))
 		}
 		return fmt.Errorf("error running %s: %w", cmd.Args, err)
@@ -235,7 +234,7 @@ func runSingleJob(o options, jobName, uploaded, version string, subs map[string]
 type variants map[string]map[string]string
 
 func getVariants(o options) (variants, error) {
-	content, err := ioutil.ReadFile(path.Join(o.configDir, "variants.yaml"))
+	content, err := os.ReadFile(path.Join(o.configDir, "variants.yaml"))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("failed to load variants.yaml: %w", err)
