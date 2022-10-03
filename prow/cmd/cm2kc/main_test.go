@@ -18,7 +18,6 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,12 +59,12 @@ func TestGenjobs(t *testing.T) {
 			in := resolvePath(t, "_in.yaml")
 			outE := resolvePath(t, "_out.yaml")
 
-			expected, err := ioutil.ReadFile(outE)
+			expected, err := os.ReadFile(outE)
 			if err != nil {
 				t.Errorf("Failed reading expected output file %v: %v", outE, err)
 			}
 
-			tmpDir, err := ioutil.TempDir("", "")
+			tmpDir, err := os.MkdirTemp("", "")
 			if err != nil {
 				t.Errorf("Failed creating temp file: %v", err)
 			}
@@ -79,7 +78,7 @@ func TestGenjobs(t *testing.T) {
 			os.Args = append(os.Args, "--input="+in, "--output="+outA)
 			main()
 
-			actual, err := ioutil.ReadFile(outA)
+			actual, err := os.ReadFile(outA)
 			if err != nil {
 				t.Errorf("Failed reading actual output file %v: %v", outA, err)
 			}
@@ -88,7 +87,7 @@ func TestGenjobs(t *testing.T) {
 			t.Logf("actual (%v):\n%v\n", test.name, string(actual))
 
 			if os.Getenv("REFRESH_GOLDEN") == "true" {
-				if err = ioutil.WriteFile(outE, actual, 0644); err != nil {
+				if err = os.WriteFile(outE, actual, 0644); err != nil {
 					t.Errorf("Failed writing expected output file %v: %v", outE, err)
 				}
 				expected = actual

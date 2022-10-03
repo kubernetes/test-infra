@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -235,16 +234,16 @@ func handleSecrets(client ClientInterface, ctx context.Context, clientoptions cl
 	if err = reconcileWebhooks(ctx, caPem, cl); err != nil {
 		return "", "", err
 	}
-	tempDir, err := ioutil.TempDir("", "cert")
+	tempDir, err := os.MkdirTemp("", "cert")
 	if err != nil {
 		return "", "", fmt.Errorf("unable to create temp directory %v", err)
 	}
 	certFile := filepath.Join(tempDir, certFile)
-	if err := ioutil.WriteFile(certFile, []byte(cert), 0666); err != nil {
+	if err := os.WriteFile(certFile, []byte(cert), 0666); err != nil {
 		return "", "", fmt.Errorf("could not write contents of cert file %v", err)
 	}
 	privKeyFile := filepath.Join(tempDir, privKeyFile)
-	if err := ioutil.WriteFile(privKeyFile, []byte(privKey), 0666); err != nil {
+	if err := os.WriteFile(privKeyFile, []byte(privKey), 0666); err != nil {
 		return "", "", fmt.Errorf("could not write contents of privKey file %v", err)
 	}
 	return certFile, privKeyFile, nil

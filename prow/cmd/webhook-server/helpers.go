@@ -23,13 +23,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"io/ioutil"
-
 	"encoding/json"
 	"encoding/pem"
-
 	"fmt"
-
+	stdio "io"
 	"math/big"
 	"strings"
 	"time"
@@ -459,7 +456,7 @@ func (wa *webhookAgent) fetchClusters(d time.Duration, ctx context.Context, stat
 					logrus.Warnf("Build cluster status file location was specified, but could not be found: %v. This is expected when the location is first configured, before plank creates the file.", err)
 				} else {
 					defer reader.Close()
-					b, err := ioutil.ReadAll(reader)
+					b, err := stdio.ReadAll(reader)
 					if err != nil {
 						return fmt.Errorf("error reading build cluster status file: %w", err)
 					}

@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -65,7 +64,7 @@ func readRequest(r io.Reader, contentType string) (*admissionapi.AdmissionReques
 	if r == nil {
 		return nil, fmt.Errorf("no body")
 	}
-	body, err := ioutil.ReadAll(r)
+	body, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("read body: %w", err)
 	}

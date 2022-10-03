@@ -26,7 +26,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -336,7 +335,7 @@ func main() {
 		var fjc fakePjListingClientWrapper
 		var pjs prowapi.ProwJobList
 		staticPjsPath := path.Join(o.pregeneratedData, "prowjobs.json")
-		content, err := ioutil.ReadFile(staticPjsPath)
+		content, err := os.ReadFile(staticPjsPath)
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to read jobs from prowjobs.json.")
 		}
@@ -523,7 +522,7 @@ func (c *podLogClient) GetLogs(name, container string) ([]byte, error) {
 		return nil, err
 	}
 	defer reader.Close()
-	return ioutil.ReadAll(reader)
+	return io.ReadAll(reader)
 }
 
 type pjListingClientWrapper struct {
@@ -727,7 +726,7 @@ func initLocalLensHandler(cfg config.Getter, o options, sg *spyglass.Spyglass) e
 }
 
 func loadToken(file string) ([]byte, error) {
-	raw, err := ioutil.ReadFile(file)
+	raw, err := os.ReadFile(file)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -1254,7 +1253,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 
 	var data string
 	if requestType != spyglassapi.RequestActionInitial {
-		dataBytes, err := ioutil.ReadAll(r.Body)
+		dataBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
 			return
@@ -1281,7 +1280,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 		Director: func(r *http.Request) {
 			r.URL = lens.RemoteConfig.ParsedEndpoint
 			r.ContentLength = int64(len(serializedRequest))
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(serializedRequest))
+			r.Body = io.NopCloser(bytes.NewBuffer(serializedRequest))
 		},
 	}).ServeHTTP(w, r)
 }

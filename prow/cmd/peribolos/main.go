@@ -20,7 +20,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -178,7 +177,7 @@ func main() {
 		return
 	}
 
-	raw, err := ioutil.ReadFile(o.config)
+	raw, err := os.ReadFile(o.config)
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not read --config-path file")
 	}

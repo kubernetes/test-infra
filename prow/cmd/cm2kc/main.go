@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -135,7 +134,7 @@ func main() {
 
 	o.parseFlags()
 
-	in, err := ioutil.ReadFile(o.input)
+	in, err := os.ReadFile(o.input)
 	if err != nil {
 		printErrAndExit(err, 1)
 	}
@@ -155,7 +154,7 @@ func main() {
 		printErrAndExit(err, 1)
 	}
 
-	if err = ioutil.WriteFile(o.output, kc, 0644); err != nil {
+	if err = os.WriteFile(o.output, kc, 0644); err != nil {
 		printErrAndExit(err, 1)
 	}
 }
