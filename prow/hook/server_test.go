@@ -18,7 +18,7 @@ package hook
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -547,7 +547,7 @@ foo/bar:
 				m.Unlock()
 				return &http.Response{
 					StatusCode: 200,
-					Body:       ioutil.NopCloser(bytes.NewBufferString(`OK`)),
+					Body:       io.NopCloser(bytes.NewBufferString(`OK`)),
 					Header:     make(http.Header),
 				}
 			})
