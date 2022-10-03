@@ -26,7 +26,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"sort"
 	"strconv"
@@ -379,7 +378,7 @@ func loadTests(testsFilepaths []string, memoize bool) (map[string][]failure, err
 // into v. Internally, it calls encoding/json's Unmarshal using v as the second argument. Therefore,
 // v mut be a non-nil pointer.
 func getJSON(filepath string, v interface{}) error {
-	contents, err := ioutil.ReadFile(filepath)
+	contents, err := os.ReadFile(filepath)
 	if err != nil {
 		return fmt.Errorf("Could not open file '%s': %s", filepath, err)
 	}
@@ -400,7 +399,7 @@ func writeJSON(filepath string, v interface{}) error {
 		return fmt.Errorf("Could not encode JSON: %s\nTried to encode the following: %#v", err, v)
 	}
 
-	err = ioutil.WriteFile(filepath, output, 0644)
+	err = os.WriteFile(filepath, output, 0644)
 	if err != nil {
 		return fmt.Errorf("Could not write JSON to file: %s", err)
 	}
