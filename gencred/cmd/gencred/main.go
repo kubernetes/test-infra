@@ -21,7 +21,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -143,7 +142,7 @@ func (o *options) defaultAndValidateFlags() (*config, error) {
 	var c config
 	if len(o.config) > 0 {
 		// Load from config yaml file
-		body, err := ioutil.ReadFile(o.config)
+		body, err := os.ReadFile(o.config)
 		if err != nil {
 			util.PrintErrAndExit(err)
 		}
@@ -194,13 +193,13 @@ func (o *options) defaultAndValidateFlags() (*config, error) {
 
 // mergeConfigs merges an existing kubeconfig file with a new entry with precedence given to the existing config.
 func mergeConfigs(c clusterConfig, kubeconfig []byte) ([]byte, error) {
-	tmpFile, err := ioutil.TempFile("", "")
+	tmpFile, err := os.CreateTemp("", "")
 	if err != nil {
 		return nil, &util.ExitError{Message: err.Error(), Code: 1}
 	}
 	defer os.Remove(tmpFile.Name())
 
-	err = ioutil.WriteFile(tmpFile.Name(), kubeconfig, 0644)
+	err = os.WriteFile(tmpFile.Name(), kubeconfig, 0644)
 	if err != nil {
 		return nil, &util.ExitError{Message: err.Error(), Code: 1}
 	}
@@ -257,7 +256,7 @@ func writeConfig(c clusterConfig, clientset kubernetes.Interface) error {
 			}
 		}
 
-		if err = ioutil.WriteFile(*c.Output, kubeconfig, 0644); err != nil {
+		if err = os.WriteFile(*c.Output, kubeconfig, 0644); err != nil {
 			return &util.ExitError{Message: fmt.Sprintf("unable to write to file %v: %v.", file, err), Code: 1}
 		}
 	}

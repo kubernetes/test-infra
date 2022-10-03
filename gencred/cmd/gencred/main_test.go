@@ -17,7 +17,6 @@ limitations under the License.
 package gencred
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -114,7 +113,7 @@ func TestValidateFlags(t *testing.T) {
 			if len(test.config) > 0 {
 				tmpDir := t.TempDir()
 				tmpFile := path.Join(tmpDir, test.name+".yaml")
-				if err := ioutil.WriteFile(tmpFile, []byte(test.config), 0644); err != nil {
+				if err := os.WriteFile(tmpFile, []byte(test.config), 0644); err != nil {
 					t.Fatalf("Failed writing tmp file: %v", err)
 				}
 				os.Args = append(os.Args, "--config="+tmpFile)
