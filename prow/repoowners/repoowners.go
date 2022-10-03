@@ -18,7 +18,6 @@ package repoowners
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -462,7 +461,7 @@ func (a RepoAliases) ExpandAllAliases() sets.String {
 
 func loadAliasesFrom(baseDir, filename string, log *logrus.Entry) RepoAliases {
 	path := filepath.Join(baseDir, filename)
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if os.IsNotExist(err) {
 		log.WithError(err).Infof("No alias file exists at %q. Using empty alias map.", path)
 		return nil
@@ -598,7 +597,7 @@ func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return FullConfig{}, err
 	}
@@ -617,7 +616,7 @@ func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return SimpleConfig{}, err
 	}
@@ -637,7 +636,7 @@ func SaveSimpleConfig(simple SimpleConfig, path string) error {
 	if err != nil {
 		return nil
 	}
-	return ioutil.WriteFile(path, b, 0644)
+	return os.WriteFile(path, b, 0644)
 }
 
 // LoadFullConfig loads FullConfig from bytes `b`
@@ -653,7 +652,7 @@ func SaveFullConfig(full FullConfig, path string) error {
 	if err != nil {
 		return nil
 	}
-	return ioutil.WriteFile(path, b, 0644)
+	return os.WriteFile(path, b, 0644)
 }
 
 // ParseAliasesConfig will unmarshal an OWNERS_ALIASES file's content into RepoAliases.
@@ -680,7 +679,7 @@ var mdStructuredHeaderRegex = regexp.MustCompile("^---\n(.|\n)*\n---")
 // If no yaml header is found, do nothing
 // Returns an error if the file cannot be read or the yaml header is found but cannot be unmarshalled.
 func decodeOwnersMdConfig(path string, config *SimpleConfig) error {
-	fileBytes, err := ioutil.ReadFile(path)
+	fileBytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
