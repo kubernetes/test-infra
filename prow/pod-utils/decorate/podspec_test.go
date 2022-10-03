@@ -18,7 +18,6 @@ package decorate
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -1116,11 +1115,11 @@ func TestProwJobToPod(t *testing.T) {
 				if err != nil {
 					t.Fatalf("failed to marhsal pod: %v", err)
 				}
-				if err := ioutil.WriteFile(fixtureName, marshalled, 0644); err != nil {
+				if err := os.WriteFile(fixtureName, marshalled, 0644); err != nil {
 					t.Errorf("failed to update fixture: %v", err)
 				}
 			}
-			expectedRaw, err := ioutil.ReadFile(fixtureName)
+			expectedRaw, err := os.ReadFile(fixtureName)
 			if err != nil {
 				t.Fatalf("failed to read fixture: %v", err)
 			}
