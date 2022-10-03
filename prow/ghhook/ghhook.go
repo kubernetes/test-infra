@@ -21,7 +21,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -93,7 +93,7 @@ func GetOptions(fs *flag.FlagSet, args []string) (*Options, error) {
 }
 
 func (o *Options) hmacValueFromFile() (string, error) {
-	b, err := ioutil.ReadFile(o.HMACPath)
+	b, err := os.ReadFile(o.HMACPath)
 	if err != nil {
 		return "", fmt.Errorf("read %s: %w", o.HMACPath, err)
 	}
