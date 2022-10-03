@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -87,7 +86,7 @@ func TestFindConfigToUpdate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
+			tmpDir, err := os.MkdirTemp("", tc.name)
 			if err != nil {
 				t.Fatalf("Failed creating temp dir: %v", err)
 			}
@@ -161,7 +160,7 @@ func TestCopyFiles(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
+			tmpDir, err := os.MkdirTemp("", tc.name)
 			if err != nil {
 				t.Fatalf("Failed creating temp dir: %v", err)
 			}
@@ -207,7 +206,7 @@ func pathToNode(t *testing.T, root, p string) node {
 	if info.IsDir() {
 		n.IsDir = true
 	} else {
-		bs, err := ioutil.ReadFile(p)
+		bs, err := os.ReadFile(p)
 		if err != nil {
 			t.Fatalf("Failed to read %q: %v", p, err)
 		}
@@ -233,7 +232,7 @@ func seedTempDir(t *testing.T, root string, srcNodes, dstNodes []node) (string, 
 				if err := os.MkdirAll(dir, 0755); err != nil {
 					t.Fatalf("Failed creating dir %q: %v", dir, err)
 				}
-				if err := ioutil.WriteFile(p, []byte(n.Content), 0777); err != nil {
+				if err := os.WriteFile(p, []byte(n.Content), 0777); err != nil {
 					t.Fatalf("Failed creating file %q: %v", p, err)
 				}
 			}

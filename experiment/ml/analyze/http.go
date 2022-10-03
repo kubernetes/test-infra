@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -71,7 +71,7 @@ func processRequest(ctx context.Context, storageClient *storage.Client, predicto
 	if r.ContentLength > maxRequestLen {
 		return http.StatusBadRequest, "Request too long", fmt.Errorf("%d byte request", r.ContentLength)
 	}
-	bytes, err := ioutil.ReadAll(r.Body)
+	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		return http.StatusBadRequest, "Could not read request", fmt.Errorf("read request: %w", err)
 	}
