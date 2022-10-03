@@ -21,8 +21,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 	"text/template"
@@ -436,7 +436,7 @@ func main() {
 	}
 
 	if o.outputPath != "" {
-		if err := ioutil.WriteFile(o.outputPath, output, 0666); err != nil {
+		if err := os.WriteFile(o.outputPath, output, 0666); err != nil {
 			log.Fatalf("Failed to write new presubmits: %v.\n", err)
 		}
 	} else {
