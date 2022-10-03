@@ -50,3 +50,27 @@ presubmits:
       - image: golang:1.18
         command:
         - ci/prow/unit-tests
+  - name: pull-kernel-module-management-pre-built-driver-container-no-nfd
+    always_run: true
+    decorate: true
+    optional: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: pre-built-driver-container-no-nfd
+      description: "run a pre-build driver-container e2e test without NFD."
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220916-c3af09ab20-master
+        env:
+        #- name: GO111MODULE
+        #  value: on
+        #- name: BAZEL_VERSION
+        #  value: 5.3.0
+        #- name: USE_TEST_INFRA_LOG_DUMPING
+        #  value: true
+        - name: TEST
+          value: ci/prow/e2e-pre-built-driver-container-no-nfd
+        command:
+        - runner.sh
+        args:
+        - ci/prow/e2e-runner
