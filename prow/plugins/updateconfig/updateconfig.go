@@ -21,7 +21,7 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -93,7 +93,7 @@ type OSFileGetter struct {
 }
 
 func (g *OSFileGetter) GetFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filepath.Join(g.Root, filename))
+	return os.ReadFile(filepath.Join(g.Root, filename))
 }
 
 // Update updates the configmap with the data from the identified files.

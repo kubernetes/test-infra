@@ -18,7 +18,7 @@ package golint
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -158,7 +158,7 @@ func problemsInFiles(r git.RepoClient, files map[string]string) (map[string]map[
 	l := new(lint.Linter)
 	for f, patch := range files {
 		problems[f] = make(map[int]lint.Problem)
-		src, err := ioutil.ReadFile(filepath.Join(r.Directory(), f))
+		src, err := os.ReadFile(filepath.Join(r.Directory(), f))
 		if err != nil {
 			lintErrorComments = append(lintErrorComments, github.DraftReviewComment{
 				Path: f,

@@ -18,8 +18,8 @@ package approve
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -50,7 +50,7 @@ const prNumber = 1
 func TestPluginConfig(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 
-	b, err := ioutil.ReadFile("../../../config/prow/plugins.yaml")
+	b, err := os.ReadFile("../../../config/prow/plugins.yaml")
 	if err != nil {
 		t.Fatalf("Failed to read plugin config: %v.", err)
 	}
@@ -159,7 +159,7 @@ func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, erro
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.SimpleConfig{}, err
 	}
@@ -176,7 +176,7 @@ func (fr fakeRepo) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.FullConfig{}, err
 	}

@@ -17,7 +17,7 @@ limitations under the License.
 package plugins
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"testing"
@@ -323,11 +323,11 @@ plugins:
 			t.Parallel()
 
 			tempDir := t.TempDir()
-			if err := ioutil.WriteFile(filepath.Join(tempDir, "_plugins.yaml"), []byte(tc.config), 0644); err != nil {
+			if err := os.WriteFile(filepath.Join(tempDir, "_plugins.yaml"), []byte(tc.config), 0644); err != nil {
 				t.Fatalf("failed to write config: %v", err)
 			}
 			for supplementalConfigName, supplementalConfig := range tc.supplementalConfigs {
-				if err := ioutil.WriteFile(filepath.Join(tempDir, supplementalConfigName), []byte(supplementalConfig), 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(tempDir, supplementalConfigName), []byte(supplementalConfig), 0644); err != nil {
 					t.Fatalf("failed to write supplemental config %s: %v", supplementalConfigName, err)
 				}
 			}
@@ -417,7 +417,7 @@ func TestLoadConfigUpdater(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			tempDir := t.TempDir()
-			if err := ioutil.WriteFile(filepath.Join(tempDir, "_plugins.yaml"), []byte(tc.config), 0644); err != nil {
+			if err := os.WriteFile(filepath.Join(tempDir, "_plugins.yaml"), []byte(tc.config), 0644); err != nil {
 				t.Fatalf("failed to write config: %v", err)
 			}
 			agent := &ConfigAgent{}

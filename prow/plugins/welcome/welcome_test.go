@@ -19,7 +19,7 @@ package welcome
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -452,7 +452,7 @@ func TestWelcomeConfig(t *testing.T) {
 func TestPluginConfig(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 
-	b, err := ioutil.ReadFile("../../../config/prow/plugins.yaml")
+	b, err := os.ReadFile("../../../config/prow/plugins.yaml")
 	if err != nil {
 		t.Fatalf("Failed to read plugin config: %v.", err)
 	}
