@@ -25,7 +25,6 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	mathrand "math/rand"
 	"os"
@@ -93,7 +92,7 @@ func newAksDeployer() (*aksDeployer, error) {
 		return nil, fmt.Errorf("error trying to get Azure Client: %w", err)
 	}
 
-	outputDir, err := ioutil.TempDir(os.Getenv("HOME"), "aks")
+	outputDir, err := os.MkdirTemp(os.Getenv("HOME"), "aks")
 	if err != nil {
 		return nil, fmt.Errorf("error creating tempdir: %w", err)
 	}
@@ -142,7 +141,7 @@ func (a *aksDeployer) Up() error {
 		return fmt.Errorf("error downloading AKS cluster template: %v with error %w", a.templateURL, err)
 	}
 
-	template, err := ioutil.ReadFile(templateFile)
+	template, err := os.ReadFile(templateFile)
 	if err != nil {
 		return fmt.Errorf("failed to read downloaded cluster template file: %w", err)
 	}
@@ -199,7 +198,7 @@ func (a *aksDeployer) Up() error {
 	}
 
 	kubeconfigPath := path.Join(a.outputDir, "kubeconfig")
-	if err := ioutil.WriteFile(kubeconfigPath, *(*credentialList.Kubeconfigs)[0].Value, 0644); err != nil {
+	if err := os.WriteFile(kubeconfigPath, *(*credentialList.Kubeconfigs)[0].Value, 0644); err != nil {
 		return fmt.Errorf("failed to write kubeconfig out")
 	}
 
@@ -352,7 +351,7 @@ func (a *aksDeployer) dockerLogin() error {
 		log.Println("Attempting Docker login with docker cred.")
 		username = os.Getenv("DOCKER_USERNAME")
 		passwordFile := os.Getenv("DOCKER_PASSWORD_FILE")
-		password, err := ioutil.ReadFile(passwordFile)
+		password, err := os.ReadFile(passwordFile)
 		if err != nil {
 			return fmt.Errorf("error reading docker password file %v: %w", passwordFile, err)
 		}

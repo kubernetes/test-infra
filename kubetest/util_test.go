@@ -19,7 +19,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -27,7 +26,7 @@ import (
 
 func TestHttpFileScheme(t *testing.T) {
 	expected := "some testdata"
-	tmpfile, err := ioutil.TempFile("", "test_http_file_scheme")
+	tmpfile, err := os.CreateTemp("", "test_http_file_scheme")
 	if err != nil {
 		t.Errorf("Error creating temporary file: %v", err)
 	}

@@ -22,7 +22,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -491,7 +490,7 @@ func acquireKubernetes(o *options, d deployer) error {
 func findVersion() string {
 	// The version may be in a version file
 	if _, err := os.Stat("version"); err == nil {
-		b, err := ioutil.ReadFile("version")
+		b, err := os.ReadFile("version")
 		if err == nil {
 			return strings.TrimSpace(string(b))
 		}
@@ -514,7 +513,7 @@ func findVersion() string {
 
 // maybeMergeMetadata will add new keyvals into the map; quietly eats errors.
 func maybeMergeJSON(meta map[string]string, path string) {
-	if data, err := ioutil.ReadFile(path); err == nil {
+	if data, err := os.ReadFile(path); err == nil {
 		json.Unmarshal(data, &meta)
 	}
 }
@@ -810,7 +809,7 @@ func prepareGcp(o *options) error {
 	log.Printf("Checking presence of public key in %s", o.gcpProject)
 	if out, err := control.Output(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "project-info", "describe")); err != nil {
 		return err
-	} else if b, err := ioutil.ReadFile(pk); err != nil {
+	} else if b, err := os.ReadFile(pk); err != nil {
 		return err
 	} else if !strings.Contains(string(out), string(b)) {
 		log.Print("Uploading public ssh key to project metadata...")
@@ -1014,7 +1013,7 @@ func prepareGinkgoParallel(v *ginkgoParallelValue) error {
 }
 
 func publish(pub string) error {
-	v, err := ioutil.ReadFile("version")
+	v, err := os.ReadFile("version")
 	if err != nil {
 		return err
 	}

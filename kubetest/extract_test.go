@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -117,7 +116,7 @@ func TestGetKube(t *testing.T) {
 	} else {
 		defer os.Chdir(o)
 	}
-	if d, err := ioutil.TempDir("", "extract"); err != nil {
+	if d, err := os.MkdirTemp("", "extract"); err != nil {
 		t.Fatal(err)
 	} else if err := os.Chdir(d); err != nil {
 		t.Fatal(err)
@@ -125,7 +124,7 @@ func TestGetKube(t *testing.T) {
 
 	for _, tc := range cases {
 		bytes := []byte(fmt.Sprintf("#!/bin/bash\necho hello\n%s\nmkdir -p ./kubernetes/cluster && touch ./kubernetes/cluster/get-kube-binaries.sh", tc.script))
-		if err := ioutil.WriteFile("./get-kube.sh", bytes, 0700); err != nil {
+		if err := os.WriteFile("./get-kube.sh", bytes, 0700); err != nil {
 			t.Fatal(err)
 		}
 		err := getKube("url", "version", false)
@@ -267,7 +266,7 @@ func TestExtractStrategies(t *testing.T) {
 	releaseBucket := "k8s-release"
 
 	for _, tc := range cases {
-		if d, err := ioutil.TempDir("", "extract"); err != nil {
+		if d, err := os.MkdirTemp("", "extract"); err != nil {
 			t.Fatal(err)
 		} else if err := os.Chdir(d); err != nil {
 			t.Fatal(err)
@@ -363,7 +362,7 @@ func TestGciExtractStrategy(t *testing.T) {
 	releaseBucket := "k8s-release"
 
 	for _, tc := range cases {
-		if d, err := ioutil.TempDir("", "extract"); err != nil {
+		if d, err := os.MkdirTemp("", "extract"); err != nil {
 			t.Fatal(err)
 		} else if err := os.Chdir(d); err != nil {
 			t.Fatal(err)

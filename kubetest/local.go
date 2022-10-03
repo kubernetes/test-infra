@@ -20,7 +20,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -41,7 +40,7 @@ type localCluster struct {
 var _ deployer = localCluster{}
 
 func newLocalCluster() *localCluster {
-	tempDir, err := ioutil.TempDir("", "kubetest-local")
+	tempDir, err := os.MkdirTemp("", "kubetest-local")
 	if err != nil {
 		log.Fatal("unable to create temp directory")
 	}

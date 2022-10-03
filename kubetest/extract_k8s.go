@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -137,7 +137,7 @@ func (e extractStrategy) name() string {
 
 func (l extractStrategies) Extract(project, zone, region, ciBucket, releaseBucket string, extractSrc bool) error {
 	// rm -rf kubernetes*
-	files, err := ioutil.ReadDir(".")
+	files, err := os.ReadDir(".")
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func ensureKube() (string, error) {
 	}
 
 	// Download it to a temp file
-	f, err := ioutil.TempFile("", "get-kube")
+	f, err := os.CreateTemp("", "get-kube")
 	if err != nil {
 		return "", err
 	}
@@ -339,7 +339,7 @@ var httpCat = func(url string) ([]byte, error) {
 		return nil, fmt.Errorf("Unexpected HTTP status code: %d", resp.StatusCode)
 	}
 
-	release, err := ioutil.ReadAll(resp.Body)
+	release, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -435,7 +435,7 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 	switch e.mode {
 	case localBazel:
 		vFile := util.K8s("kubernetes", "bazel-bin", "version")
-		vByte, err := ioutil.ReadFile(vFile)
+		vByte, err := os.ReadFile(vFile)
 		if err != nil {
 			return err
 		}
@@ -451,7 +451,7 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 		return getKube(fmt.Sprintf("file://%s", root), version, extractSrc)
 	case local:
 		url := util.K8s("kubernetes", "_output", "gcs-stage")
-		files, err := ioutil.ReadDir(url)
+		files, err := os.ReadDir(url)
 		if err != nil {
 			return err
 		}

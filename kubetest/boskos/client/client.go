@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -407,7 +406,7 @@ func (c *Client) acquire(rtype, state, dest, requestID string) (*common.Resource
 
 		switch resp.StatusCode {
 		case http.StatusOK:
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return false, err
 			}
@@ -560,7 +559,7 @@ func (c *Client) reset(rtype, state string, expire time.Duration, dest string) (
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return false, err
 			}
@@ -594,7 +593,7 @@ func (c *Client) metric(rtype string) (common.Metric, error) {
 			return false, nil
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return false, err
 		}
