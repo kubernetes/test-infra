@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/cgi"
 	"os"
@@ -125,7 +125,7 @@ func GitCGIHandler(gitBinary, gitReposParentDir string) http.Handler {
 // repo.
 func SetupRepoHandler(gitReposParentDir string, mux *sync.Mutex) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		buf, err := ioutil.ReadAll(req.Body)
+		buf, err := io.ReadAll(req.Body)
 		defer req.Body.Close()
 		if err != nil {
 			logrus.Errorf("failed to read request body: %v", err)
@@ -250,7 +250,7 @@ func convertToBareRepo(repo *git.Repository, repoPath string) error {
 	config.Core.IsBare = true
 	repo.SetConfig(config)
 
-	tempDir, err := ioutil.TempDir("", "fgs")
+	tempDir, err := os.MkdirTemp("", "fgs")
 	if err != nil {
 		return err
 	}

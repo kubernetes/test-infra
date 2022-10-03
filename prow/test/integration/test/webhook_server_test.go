@@ -18,11 +18,9 @@ package integration
 
 import (
 	"context"
-
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
-
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -109,7 +107,7 @@ func TestWebhookServerMutateProwjob(t *testing.T) {
 		t.Fatalf("could not get prowjob: %v", err)
 	}
 
-	originalProwJobYAML, err := ioutil.ReadFile(absValidBareProwJobPath)
+	originalProwJobYAML, err := os.ReadFile(absValidBareProwJobPath)
 	if err != nil {
 		t.Fatalf("unable to read yaml file %v", err)
 	}
