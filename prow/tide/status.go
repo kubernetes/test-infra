@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"net/url"
 	"sort"
 	"strconv"
@@ -504,7 +504,7 @@ func (sc *statusController) load() {
 	}
 	defer io.LogClose(reader)
 
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := stdio.ReadAll(reader)
 	if err != nil {
 		entry.WithError(err).Warn("Cannot read stored state")
 		return
