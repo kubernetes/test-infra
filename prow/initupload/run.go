@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
@@ -77,7 +77,7 @@ func (o Options) Run() error {
 //          error - when unexpected file operation happens
 func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (bool, []clone.Record, error) {
 	var cloneRecords []clone.Record
-	data, err := ioutil.ReadFile(logfile)
+	data, err := os.ReadFile(logfile)
 	if err != nil {
 		return true, cloneRecords, fmt.Errorf("could not read clone log: %w", err)
 	}
