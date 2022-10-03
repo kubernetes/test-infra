@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
@@ -107,11 +106,11 @@ func TestRoundTrip(t *testing.T) {
 				t.Errorf("actual status code differs from expected: %s", diff)
 			}
 
-			actualBody, err := ioutil.ReadAll(response.Body)
+			actualBody, err := io.ReadAll(response.Body)
 			if err != nil {
 				t.Fatalf("failed to read actual response body: %v", err)
 			}
-			expectedBody, err := ioutil.ReadAll(tc.expectedResponse.Body)
+			expectedBody, err := io.ReadAll(tc.expectedResponse.Body)
 			if err != nil {
 				t.Fatalf("failed to read expected response body: %v", err)
 			}
@@ -127,7 +126,7 @@ func serializeOrDie(in interface{}) io.ReadCloser {
 	if err != nil {
 		panic(fmt.Sprintf("Serialization failed: %v", err))
 	}
-	return ioutil.NopCloser(bytes.NewBuffer(rawData))
+	return io.NopCloser(bytes.NewBuffer(rawData))
 }
 
 type fakeRoundTripper struct {

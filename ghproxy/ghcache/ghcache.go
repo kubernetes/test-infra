@@ -29,7 +29,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -441,7 +440,7 @@ func Prune(baseDir string, now func() time.Time) {
 			metadataPath := path.Join(base, cachePartitionCandidate.Name(), cachePartitionMetadataFileName)
 
 			// Read optimistically and just ignore errors
-			raw, err := ioutil.ReadFile(metadataPath)
+			raw, err := os.ReadFile(metadataPath)
 			if err != nil {
 				continue
 			}
@@ -479,7 +478,7 @@ func writecachePartitionMetadata(basePath, tempDir string, expiresAt *time.Time)
 			errs = append(errs, fmt.Errorf("failed to create dir %s: %w", destBase, err))
 		}
 		dest := path.Join(destBase, cachePartitionMetadataFileName)
-		if err := ioutil.WriteFile(dest, serialized, 0644); err != nil {
+		if err := os.WriteFile(dest, serialized, 0644); err != nil {
 			errs = append(errs, fmt.Errorf("failed to write %s: %w", dest, err))
 		}
 	}
