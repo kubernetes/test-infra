@@ -43,7 +43,7 @@ loader = jinja2.FileSystemLoader(searchpath="./templates")
 
 # Returns a string representing the periodic prow job and the number of job invocations per week
 def build_test(cloud='aws',
-               distro='u2004',
+               distro='u2204',
                networking='kubenet',
                container_runtime='containerd',
                irsa=True,
@@ -489,7 +489,6 @@ def generate_misc():
         # A special test for disabling IRSA
         build_test(name_override="kops-grid-scenario-no-irsa",
                    cloud="aws",
-                   distro="u2004",
                    runs_per_day=3,
                    irsa=False,
                    extra_flags=['--api-loadbalancer-type=public',
@@ -555,7 +554,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-amd64-conformance",
                    k8s_version="ci",
-                   distro='u2004',
+                   distro='u2204',
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=["--node-size=c5.large",
@@ -567,7 +566,6 @@ def generate_misc():
         build_test(name_override="kops-aws-misc-updown",
                    k8s_version="stable",
                    networking="calico",
-                   distro='u2004',
                    kops_channel="alpha",
                    kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
                    publish_version_marker="gs://kops-ci/bin/latest-ci-updown-green.txt",
@@ -580,7 +578,6 @@ def generate_misc():
         build_test(name_override="kops-aws-aws-load-balancer-controller",
                    cloud="aws",
                    networking="cilium",
-                   distro="u2004",
                    kops_channel="alpha",
                    runs_per_day=1,
                    scenario="aws-lb-controller",
@@ -605,7 +602,6 @@ def generate_misc():
         build_test(name_override="kops-aws-metrics-server",
                    cloud="aws",
                    networking="cilium",
-                   distro="u2004",
                    kops_channel="alpha",
                    runs_per_day=3,
                    scenario="metrics-server",
@@ -614,7 +610,6 @@ def generate_misc():
         build_test(name_override="kops-aws-pod-identity-webhook",
                    cloud="aws",
                    networking="cilium",
-                   distro="u2004",
                    kops_channel="alpha",
                    runs_per_day=3,
                    scenario="podidentitywebhook",
@@ -623,7 +618,6 @@ def generate_misc():
         build_test(name_override="kops-aws-addon-resource-tracking",
                    cloud="aws",
                    networking="cilium",
-                   distro="u2004",
                    kops_channel="alpha",
                    runs_per_day=3,
                    scenario="addon-resource-tracking",
@@ -632,7 +626,6 @@ def generate_misc():
         build_test(name_override="kops-aws-external-dns",
                    cloud="aws",
                    networking="cilium",
-                   distro="u2004",
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=[
@@ -686,7 +679,7 @@ def generate_conformance():
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
-                distro="u2004arm64",
+                distro="u2204arm64",
                 extra_flags=["--zones=eu-central-1a",
                              "--node-size=t4g.large",
                              "--master-size=t4g.large"],
@@ -904,10 +897,9 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.24', '1.23', '1.22', '1.21', '1.20']:
+    for version in ['1.25', '1.24', '1.23', '1.22', '1.21', '1.20']:
         results.append(
             build_test(
-                distro='u2004',
                 k8s_version=version,
                 irsa=version >= '1.22',
                 kops_channel='alpha',
