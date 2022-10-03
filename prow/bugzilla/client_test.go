@@ -20,7 +20,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -156,7 +156,7 @@ func TestCreateBug(t *testing.T) {
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		raw, err := ioutil.ReadAll(r.Body)
+		raw, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("failed to read request body: %v", err)
 			http.Error(w, "500 Server Error", http.StatusInternalServerError)
@@ -342,7 +342,7 @@ func TestCreateComment(t *testing.T) {
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		raw, err := ioutil.ReadAll(r.Body)
+		raw, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("failed to read request body: %v", err)
 			http.Error(w, "500 Server Error", http.StatusInternalServerError)
@@ -520,7 +520,7 @@ func TestUpdateBug(t *testing.T) {
 			return
 		} else {
 			if id == 1705243 {
-				raw, err := ioutil.ReadAll(r.Body)
+				raw, err := io.ReadAll(r.Body)
 				if err != nil {
 					t.Errorf("failed to read update body: %v", err)
 				}
@@ -659,7 +659,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 			Parameters []AddExternalBugParameters `json:"params"`
 			ID         string                     `json:"id"`
 		}
-		raw, err := ioutil.ReadAll(r.Body)
+		raw, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("failed to read request body: %v", err)
 			http.Error(w, "500 Server Error", http.StatusInternalServerError)
@@ -790,7 +790,7 @@ func TestRemovePullRequestAsExternalBug(t *testing.T) {
 			Parameters []RemoveExternalBugParameters `json:"params"`
 			ID         string                        `json:"id"`
 		}
-		raw, err := ioutil.ReadAll(r.Body)
+		raw, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("failed to read request body: %v", err)
 			http.Error(w, "500 Server Error", http.StatusInternalServerError)
