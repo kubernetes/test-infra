@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -83,7 +82,7 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "Couldn't read the HTML template: %v.", err)
 		os.Exit(1)
 	}
-	script, err := ioutil.ReadFile(filepath.Join(resourceDir, "browser_bundle.es2015.js"))
+	script, err := os.ReadFile(filepath.Join(resourceDir, "browser_bundle.es2015.js"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't read JavaScript: %v.", err)
 		os.Exit(1)
@@ -103,9 +102,9 @@ func run(flags *flags, cmd *cobra.Command, args []string) {
 		var content []byte
 		var err error
 		if arg == "-" {
-			content, err = ioutil.ReadAll(os.Stdin)
+			content, err = io.ReadAll(os.Stdin)
 		} else {
-			content, err = ioutil.ReadFile(arg)
+			content, err = os.ReadFile(arg)
 		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Couldn't read coverage file: %v.", err)
