@@ -18,7 +18,6 @@ package git
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -141,7 +140,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		}
 	}
 
-	cacheDir, err := ioutil.TempDir(*o.CacheDirBase, "gitcache")
+	cacheDir, err := os.MkdirTemp(*o.CacheDirBase, "gitcache")
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +175,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 // NewLocalClientFactory allows for the creation of repository clients
 // based on a local filepath remote for testing
 func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor) (ClientFactory, error) {
-	cacheDir, err := ioutil.TempDir("", "gitcache")
+	cacheDir, err := os.MkdirTemp("", "gitcache")
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +267,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		return nil, err
 	}
 
-	repoDir, err := ioutil.TempDir(c.cacheDirBase, "gitrepo")
+	repoDir, err := os.MkdirTemp(c.cacheDirBase, "gitrepo")
 	if err != nil {
 		return nil, err
 	}
