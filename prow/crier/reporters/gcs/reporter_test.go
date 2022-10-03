@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"path"
 	"strings"
 	"testing"
@@ -136,7 +136,7 @@ func TestReportJobFinished(t *testing.T) {
 			var content []byte
 			for path, buf := range fakeOpener.Buffer {
 				if strings.HasSuffix(path, prowv1.FinishedStatusFile) {
-					content, err = ioutil.ReadAll(buf)
+					content, err = stdio.ReadAll(buf)
 					if err != nil {
 						t.Fatalf("Failed reading content: %v", err)
 					}
@@ -484,7 +484,7 @@ func TestReportProwJob(t *testing.T) {
 	var err error
 	for p, b := range fakeOpener.Buffer {
 		if strings.HasSuffix(p, prowv1.ProwJobFile) {
-			content, err = ioutil.ReadAll(b)
+			content, err = stdio.ReadAll(b)
 			if err != nil {
 				t.Fatalf("Failed reading content: %v", err)
 			}
