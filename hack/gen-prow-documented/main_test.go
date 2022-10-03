@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -64,7 +64,7 @@ skip_report: true
 		t.Run(tc.name, func(t *testing.T) {
 			tmpDir := t.TempDir()
 			in, out := tc.name+".in", tc.name+".out"
-			if err := ioutil.WriteFile(path.Join(tmpDir, in), tc.rawContents, 0644); err != nil {
+			if err := os.WriteFile(path.Join(tmpDir, in), tc.rawContents, 0644); err != nil {
 				t.Fatalf("Failed creating input: %v", err)
 			}
 			g := genConfig{
@@ -79,7 +79,7 @@ skip_report: true
 				t.Fatalf("Got unexpected error: %v", err)
 			}
 
-			got, err := ioutil.ReadFile(path.Join(tmpDir, out))
+			got, err := os.ReadFile(path.Join(tmpDir, out))
 			if err != nil {
 				t.Fatalf("Failed reading out: %v", err)
 			}

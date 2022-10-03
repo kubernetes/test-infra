@@ -19,7 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -77,7 +76,7 @@ func (g *genConfig) gen(rootDir string) error {
 	if err != nil {
 		return fmt.Errorf("genyaml errored: %w", err)
 	}
-	if err := ioutil.WriteFile(path.Join(rootDir, g.out), []byte(actualYaml), 0644); err != nil {
+	if err := os.WriteFile(path.Join(rootDir, g.out), []byte(actualYaml), 0644); err != nil {
 		return fmt.Errorf("failed to write fixture: %w", err)
 	}
 	return nil
