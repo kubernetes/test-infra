@@ -26,6 +26,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	stdio "io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -522,7 +523,7 @@ func (c *podLogClient) GetLogs(name, container string) ([]byte, error) {
 		return nil, err
 	}
 	defer reader.Close()
-	return io.ReadAll(reader)
+	return stdio.ReadAll(reader)
 }
 
 type pjListingClientWrapper struct {
@@ -1253,7 +1254,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 
 	var data string
 	if requestType != spyglassapi.RequestActionInitial {
-		dataBytes, err := io.ReadAll(r.Body)
+		dataBytes, err := stdio.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
 			return
@@ -1280,7 +1281,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 		Director: func(r *http.Request) {
 			r.URL = lens.RemoteConfig.ParsedEndpoint
 			r.ContentLength = int64(len(serializedRequest))
-			r.Body = io.NopCloser(bytes.NewBuffer(serializedRequest))
+			r.Body = stdio.NopCloser(bytes.NewBuffer(serializedRequest))
 		},
 	}).ServeHTTP(w, r)
 }
