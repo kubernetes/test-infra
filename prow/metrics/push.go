@@ -21,7 +21,7 @@ package metrics
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -93,7 +93,7 @@ func push(job string, grouping map[string]string, pushURL string, g prometheus.G
 	}
 	defer resp.Body.Close()
 	if !(resp.StatusCode == 200 || resp.StatusCode == 202) {
-		body, _ := ioutil.ReadAll(resp.Body) // Ignore any further error as this is for an error message only.
+		body, _ := io.ReadAll(resp.Body) // Ignore any further error as this is for an error message only.
 		return fmt.Errorf("unexpected status code %d while pushing to %s: %s", resp.StatusCode, pushURL, body)
 	}
 	return nil
