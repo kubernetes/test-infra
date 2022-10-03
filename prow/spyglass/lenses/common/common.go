@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -97,7 +97,7 @@ type lensHandlerOpts struct {
 
 func newLensHandler(lens api.Lens, opts lensHandlerOpts) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			writeHTTPError(w, fmt.Errorf("failed to read request body: %w", err), http.StatusInternalServerError)
 			return
