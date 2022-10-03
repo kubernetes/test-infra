@@ -19,7 +19,7 @@ package kube
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -92,7 +92,7 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 		candidates = append(candidates, opts.file)
 	}
 	if opts.dir != "" {
-		files, err := ioutil.ReadDir(opts.dir)
+		files, err := os.ReadDir(opts.dir)
 		if err != nil {
 			return nil, fmt.Errorf("kubecfg dir: %w", err)
 		}
