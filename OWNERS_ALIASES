@@ -179,12 +179,12 @@ aliases:
     - tabbysable
     - tallclair
   committee-steering:
+    - bentheelder
     - cblecker
-    - dims
     - justaugustus
-    - liggitt
     - mrbobbytables
     - parispittman
+    - palnabarun
     - tpepper
 ## BEGIN CUSTOM CONTENT
   provider-aws:
