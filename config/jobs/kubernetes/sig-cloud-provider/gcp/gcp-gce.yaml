@@ -478,6 +478,7 @@ presubmits:
             - --cluster=
             - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
             - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=KUBE_TEST_IGNORE_CLOUDPROVIDER_TAINT=true
             - --extract=local
             - --gcp-master-image=gci
             - --gcp-node-image=gci
@@ -500,7 +501,7 @@ presubmits:
             privileged: true
 
 periodics:
-- interval: 168h # one week
+- interval: 24h # one day
   name: canary-e2e-gce-cloud-provider-disabled
   cluster: k8s-infra-prow-build
   labels:
