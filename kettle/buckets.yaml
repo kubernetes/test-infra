@@ -9,7 +9,7 @@
 #   exclude_jobs: A list of job names that will not be uploaded to BQ
 
 gs://kubernetes-jenkins/logs/:
-  contact: "fejta"
+  contact: "spiffxp"
   prefix: ""
   sequential: false
   exclude_jobs:

@@ -5,10 +5,10 @@ filters:
     approvers:
       - cblecker
       - spiffxp
-      - fejta
     reviewers:
       - cblecker
       - spiffxp
+    emeritus_approvers:
       - fejta
     labels:
       - area/label_sync

@@ -117,7 +117,7 @@ class HelperTest(unittest.TestCase):
 class StreamTest(unittest.TestCase):
 
     fake_buckets = {'kubernetes-jenkins':
-                        {'contact': 'fejta',
+                        {'contact': 'spiffxp',
                          'prefix': '',
                          'sequential': False,
                          'exclude_jobs': ['ci-test-infra-benchmark-demo',
