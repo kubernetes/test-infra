@@ -2,10 +2,8 @@
 
 reviewers:
 - chaodaiG
-- fejta
-approvers:
-- fejta
 emeritus_approvers:
+- fejta
 - Katharine
 labels:
 - area/prow/gerrit

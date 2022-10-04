@@ -2,11 +2,10 @@
 reviewers:
 - chaodaiG
 - cjwagner
-- fejta
 approvers:
 - cjwagner
-- fejta
 emeritus_approvers:
+- fejta
 - krzyzacy
 labels:
 - area/prow/crier

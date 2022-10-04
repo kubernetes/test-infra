@@ -2,12 +2,12 @@
 
 reviewers:
 - cjwagner
-- fejta
 - stevekuznetsov
 approvers:
 - cjwagner
-- fejta
 - stevekuznetsov
+emeritus_approvers:
+- fejta
 
 labels:
 - area/robots

@@ -2,12 +2,11 @@
 
 reviewers:
 - chaodaiG
-- fejta
 approvers:
 - chaodaiG
-- fejta
 emeritus_approvers:
 - amwat
+- fejta
 - krzyzacy
 labels:
 - area/prow/gerrit
