@@ -155,7 +155,13 @@ postsubmits:
               - .
 ```
 
+If you need the `.git` directory to be uploaded to your build environment:
+- pass the `--with-git-dir` command-line option to `run.sh`;
+- add an empty `.gcloudignore` file to your repository. This will override the
+  [default values][gcloudignore].
+
 [gcr instructions]: https://github.com/kubernetes/k8s.io/blob/main/k8s.gcr.io/README.md
 [gcb documentation]: https://cloud.google.com/cloud-build/docs/configuring-builds/create-basic-configuration
 [gcb-docker-gcloud]: https://github.com/kubernetes/test-infra/blob/master/images/gcb-docker-gcloud/Dockerfile
+[gcloudignore]: https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore
 [substitution docs]: https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values#using_user-defined_substitutions
