@@ -263,7 +263,7 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 
 	if len(nonexistent) > 0 {
 		log.Infof("Nonexistent labels: %v", nonexistent)
-		msg := fmt.Sprintf("The label(s) `%s` cannot be applied. These labels are supported: `%s`", strings.Join(nonexistent, ", "), strings.Join(append(config.AdditionalLabels, sets.StringKeySet(restrictedLabels).List()...), ", "))
+		msg := fmt.Sprintf("The label(s) `%s` cannot be applied. These labels are supported: `%s`. Is this label configured under `labels -> additional_labels` or `labels -> restricted_labels` in `plugin.yaml`?", strings.Join(nonexistent, ", "), strings.Join(append(config.AdditionalLabels, sets.StringKeySet(restrictedLabels).List()...), ", "))
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
