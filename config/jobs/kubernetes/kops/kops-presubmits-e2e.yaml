@@ -1705,11 +1705,11 @@ presubmits:
         - name: KOPS_VERSION_A
           value: "latest"
         - name: K8S_VERSION_A
-          value: "v1.20.6"
+          value: "v1.24.6"
         - name: KOPS_VERSION_B
           value: "latest"
         - name: K8S_VERSION_B
-          value: "v1.21.7"
+          value: "v1.25.2"
         - name: KOPS_SKIP_E2E
           value: "1"
         - name: KOPS_TEMPLATE
@@ -1775,7 +1775,7 @@ presubmits:
         - name: KOPS_VERSION_A
           value: "1.23"
         - name: K8S_VERSION_A
-          value: "v1.23.0"
+          value: "v1.24.0"
         - name: KOPS_VERSION_B
           value: "latest"
         - name: K8S_VERSION_B

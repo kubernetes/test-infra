@@ -788,9 +788,6 @@ def generate_upgrades():
 
     versions_list = [
         #  kops    k8s          kops      k8s
-        # 1.23 release branch
-        ((kops23, 'v1.22.1'), ('1.23', 'v1.23.1')),
-        ((kops23, 'v1.23.1'), ('1.23', 'v1.23.1')),
         # 1.24 release branch
         ((kops23, 'v1.22.1'), ('1.24', 'v1.23.1')),
         ((kops23, 'v1.23.1'), ('1.24', 'v1.24.0')),
@@ -810,6 +807,7 @@ def generate_upgrades():
         ((kops24, 'v1.23.1'), ('latest', 'v1.24.0')),
         ((kops24, 'v1.24.0'), ('latest', 'v1.24.0')),
         # 1.25 upgrade to latest
+        ((kops25, 'v1.20.6'), ('latest', 'v1.21.7')),
         ((kops25, 'v1.23.1'), ('latest', 'v1.24.0')),
         ((kops25, 'v1.24.0'), ('latest', 'v1.24.0')),
         ((kops25, 'v1.24.0'), ('latest', 'v1.25.0')),
@@ -819,7 +817,6 @@ def generate_upgrades():
         (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
-        (('latest', 'v1.20.6'), ('latest', 'v1.21.7')),
         # kOps latest should always be able to upgrade from stable to latest and stable to ci
         (('latest', 'stable'), ('latest', 'latest')),
         (('latest', 'stable'), ('latest', 'ci')),
@@ -897,7 +894,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.25', '1.24', '1.23', '1.22', '1.21', '1.20']:
+    for version in ['1.25', '1.24', '1.23', '1.22', '1.21']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -916,7 +913,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.25', '1.24', '1.23', '1.22']:
+    for version in ['master', '1.25', '1.24']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
@@ -1262,9 +1259,9 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "latest",
-                'K8S_VERSION_A': "v1.20.6",
+                'K8S_VERSION_A': "v1.24.6",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.21.7",
+                'K8S_VERSION_B': "v1.25.2",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
                 'KOPS_CONTROL_PLANE': '3',
@@ -1280,7 +1277,7 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "1.23",
-                'K8S_VERSION_A': "v1.23.0",
+                'K8S_VERSION_A': "v1.24.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
                 'KOPS_SKIP_E2E': '1',
