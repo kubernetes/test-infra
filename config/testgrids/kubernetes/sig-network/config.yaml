@@ -1,7 +1,6 @@
 dashboard_groups:
 - name: sig-network
   dashboard_names:
-    - sig-network-dualstack-azure-e2e
     - sig-network-dns
     - sig-network-external-dns
     - sig-network-gce
@@ -13,7 +12,6 @@ dashboard_groups:
 
 dashboards:
 - name: sig-network-dns
-- name: sig-network-dualstack-azure-e2e
 - name: sig-network-external-dns
 - name: sig-network-gce
   dashboard_tab:
