@@ -1407,6 +1407,10 @@ presubmits:
   - always_run: false
     branches:
     - release-1.25
+    annotations:
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     cluster: k8s-infra-prow-build
     context: pull-kubernetes-files-remake
     decorate: true

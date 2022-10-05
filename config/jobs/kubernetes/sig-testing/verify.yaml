@@ -26,9 +26,6 @@ presubmits:
         env:
         - name: EXCLUDE_TYPECHECK
           value: "y"
-        # this is now covered by the optional pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
-        - name: EXCLUDE_FILES_REMAKE
-          value: "y"
         - name: EXCLUDE_GODEP
           value: "y"
         - name: KUBE_VERIFY_GIT_BRANCH
@@ -73,9 +70,6 @@ presubmits:
         - ./hack/jenkins/verify-dockerized.sh
         env:
         - name: EXCLUDE_TYPECHECK
-          value: "y"
-        # this is now covered by pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
-        - name: EXCLUDE_FILES_REMAKE
           value: "y"
         - name: EXCLUDE_GODEP
           value: "y"
