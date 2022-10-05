@@ -788,7 +788,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220812-2d111f2c30
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20221005-e022c897cc
         command:
         - runner.sh
         - /workspace/scenarios/execute.py
