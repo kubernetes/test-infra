@@ -35,6 +35,7 @@ import (
 	"strings"
 	"time"
 
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/tide"
 
@@ -232,6 +233,7 @@ var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the
 	l("github-login",
 		l("redirect")),
 	l("github-link"),
+	l("git-provider-link"),
 	l("job-history",
 		v("job")),
 	l("log"),
@@ -589,6 +591,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 	// Handles link to github
 	mux.HandleFunc("/github-link", HandleGitHubLink(o.github.Host, secure))
+	mux.HandleFunc("/git-provider-link", HandleGenericProviderLink(o.github.Host, secure))
 
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
@@ -1491,6 +1494,54 @@ func HandleGitHubLink(githubHost string, secure bool) http.HandlerFunc {
 			scheme = "https"
 		}
 		redirectURL := scheme + "://" + githubHost + "/" + r.URL.Query().Get("dest")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+	}
+}
+
+// HandleGenericProviderLink returns link based on different providers.
+func HandleGenericProviderLink(githubHost string, secure bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var redirectURL string
+
+		vals := r.URL.Query()
+		target := vals.Get("target")
+		repo, branch, number, commit, author := vals.Get("repo"), vals.Get("branch"), vals.Get("number"), vals.Get("commit"), vals.Get("author")
+		// repo could be passed in with single quote, as it might contains https://
+		repo = strings.Trim(repo, "'")
+		if gerritsource.IsGerritOrg(repo) {
+			org, repo, err := gerritsource.OrgRepoFromCloneURI(repo)
+			if err != nil {
+				logrus.WithError(err).WithField("cloneURI", repo).Warn("Failed resolve org and repo from cloneURI.")
+				http.Redirect(w, r, "", http.StatusNotFound)
+				return
+			}
+			switch target {
+			case "commit":
+				redirectURL = org + "/" + repo + "/+/" + commit
+			case "branch":
+				redirectURL = org + "/" + repo + "/+/refs/heads/" + branch
+			case "pr":
+				redirectURL = org + "/c/" + repo + "/+/" + number
+			}
+		} else {
+			scheme := "http"
+			if secure {
+				scheme = "https"
+			}
+			prefix := scheme + "://" + githubHost + "/"
+			switch target {
+			case "commit":
+				redirectURL = prefix + repo + "/commit/" + commit
+			case "branch":
+				redirectURL = prefix + repo + "/tree/" + branch
+			case "pr":
+				redirectURL = prefix + repo + "/pull/" + number
+			case "prcommit":
+				redirectURL = prefix + repo + "/pull/" + number + "/" + commit
+			case "author":
+				redirectURL = prefix + author
+			}
+		}
 		http.Redirect(w, r, redirectURL, http.StatusFound)
 	}
 }
