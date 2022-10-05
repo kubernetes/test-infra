@@ -56,15 +56,17 @@ type RepoCreateOptions struct {
 //
 // See https://developer.github.com/v3/repos/#edit
 type Repo struct {
-	Description      *string `json:"description,omitempty"`
-	HomePage         *string `json:"homepage,omitempty"`
-	Private          *bool   `json:"private,omitempty"`
-	HasIssues        *bool   `json:"has_issues,omitempty"`
-	HasProjects      *bool   `json:"has_projects,omitempty"`
-	HasWiki          *bool   `json:"has_wiki,omitempty"`
-	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
-	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+	Description              *string `json:"description,omitempty"`
+	HomePage                 *string `json:"homepage,omitempty"`
+	Private                  *bool   `json:"private,omitempty"`
+	HasIssues                *bool   `json:"has_issues,omitempty"`
+	HasProjects              *bool   `json:"has_projects,omitempty"`
+	HasWiki                  *bool   `json:"has_wiki,omitempty"`
+	AllowSquashMerge         *bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit         *bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge         *bool   `json:"allow_rebase_merge,omitempty"`
+	SquashMergeCommitTitle   *string `json:"squash_merge_commit_title,omitempty"`
+	SquashMergeCommitMessage *string `json:"squash_merge_commit_message,omitempty"`
 
 	DefaultBranch *string `json:"default_branch,omitempty"`
 	Archived      *bool   `json:"archived,omitempty"`

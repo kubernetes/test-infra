@@ -321,7 +321,7 @@ type PullRequestChange struct {
 
 // Repo contains general repository information: it includes fields available
 // in repo records returned by GH "List" methods but not those returned by GH
-// "Get" method.
+// "Get" method. Use FullRepo struct for "Get" method.
 // See also https://developer.github.com/v3/repos/#list-organization-repositories
 type Repo struct {
 	Owner         User   `json:"owner"`
@@ -364,9 +364,11 @@ type ParentRepo struct {
 type FullRepo struct {
 	Repo
 
-	AllowSquashMerge bool `json:"allow_squash_merge,omitempty"`
-	AllowMergeCommit bool `json:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge bool `json:"allow_rebase_merge,omitempty"`
+	AllowSquashMerge         bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit         bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge         bool   `json:"allow_rebase_merge,omitempty"`
+	SquashMergeCommitTitle   string `json:"squash_merge_commit_title,omitempty"`
+	SquashMergeCommitMessage string `json:"squash_merge_commit_message,omitempty"`
 }
 
 // RepoRequest contains metadata used in requests to create or update a Repo.
@@ -376,16 +378,18 @@ type FullRepo struct {
 // - https://developer.github.com/v3/repos/#create
 // - https://developer.github.com/v3/repos/#edit
 type RepoRequest struct {
-	Name             *string `json:"name,omitempty"`
-	Description      *string `json:"description,omitempty"`
-	Homepage         *string `json:"homepage,omitempty"`
-	Private          *bool   `json:"private,omitempty"`
-	HasIssues        *bool   `json:"has_issues,omitempty"`
-	HasProjects      *bool   `json:"has_projects,omitempty"`
-	HasWiki          *bool   `json:"has_wiki,omitempty"`
-	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
-	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+	Name                     *string `json:"name,omitempty"`
+	Description              *string `json:"description,omitempty"`
+	Homepage                 *string `json:"homepage,omitempty"`
+	Private                  *bool   `json:"private,omitempty"`
+	HasIssues                *bool   `json:"has_issues,omitempty"`
+	HasProjects              *bool   `json:"has_projects,omitempty"`
+	HasWiki                  *bool   `json:"has_wiki,omitempty"`
+	AllowSquashMerge         *bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit         *bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge         *bool   `json:"allow_rebase_merge,omitempty"`
+	SquashMergeCommitTitle   *string `json:"squash_merge_commit_title,omitempty"`
+	SquashMergeCommitMessage *string `json:"squash_merge_commit_message,omitempty"`
 }
 
 type WorkflowRuns struct {
@@ -426,6 +430,8 @@ func (r RepoRequest) ToRepo() *FullRepo {
 	setBool(&repo.AllowSquashMerge, r.AllowSquashMerge)
 	setBool(&repo.AllowMergeCommit, r.AllowMergeCommit)
 	setBool(&repo.AllowRebaseMerge, r.AllowRebaseMerge)
+	setString(&repo.SquashMergeCommitTitle, r.SquashMergeCommitTitle)
+	setString(&repo.SquashMergeCommitMessage, r.SquashMergeCommitMessage)
 
 	return &repo
 }
