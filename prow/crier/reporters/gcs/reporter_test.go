@@ -375,7 +375,8 @@ func TestReportJobStarted(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to marshal started.json: %v", err)
 				}
-				if err := io.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), opener, providers.GCSStoragePath("kubernetes-jenkins", path.Join(subDir, "started.json")), content); err != nil {
+				storagePath, _ := providers.StoragePath("kubernetes-jenkins", path.Join(subDir, "started.json"))
+				if err := io.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), opener, storagePath, content); err != nil {
 					t.Fatalf("Failed creating started.json: %v", err)
 				}
 			}
@@ -384,7 +385,8 @@ func TestReportJobStarted(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to marshal clone record: %v", err)
 				}
-				if err := io.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), opener, providers.GCSStoragePath("kubernetes-jenkins", path.Join(subDir, "clone-records.json")), content); err != nil {
+				storagePath, _ := providers.StoragePath("kubernetes-jenkins", path.Join(subDir, "clone-records.json"))
+				if err := io.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), opener, storagePath, content); err != nil {
 					t.Fatalf("Failed seeding clone-records.json: %v", err)
 				}
 			}
@@ -416,7 +418,8 @@ func TestReportJobStarted(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			content, err := io.ReadContent(ctx, logrus.WithContext(ctx), opener, providers.GCSStoragePath("kubernetes-jenkins", path.Join(subDir, "started.json")))
+			storagePath, _ := providers.StoragePath("kubernetes-jenkins", path.Join(subDir, "started.json"))
+			content, err := io.ReadContent(ctx, logrus.WithContext(ctx), opener, storagePath)
 			if err != nil {
 				t.Fatalf("Failed reading started.json: %v", err)
 			}

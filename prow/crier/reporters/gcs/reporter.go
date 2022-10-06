@@ -89,7 +89,14 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 	// by crier and there is something new (clone record).
 	var existingStarted metadata.Started
 	var existing bool
-	content, err := io.ReadContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)))
+	startedFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile))
+	if err != nil {
+		// Started.json storage path is invalid, so this function will
+		// eventually fail.
+		return fmt.Errorf("failed to resolve started.json path: %v", err)
+	}
+
+	content, err := io.ReadContent(ctx, log, gr.opener, startedFilePath)
 	if err != nil {
 		if !io.IsNotExist(err) {
 			log.WithError(err).Warn("Failed to read started.json.")
@@ -120,14 +127,20 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 
 	// Try to read clone records
 	cloneRecord := make([]clone.Record, 0)
-	cloneRecordBytes, err := io.ReadContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.CloneRecordFile)))
+	cloneRecordFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.CloneRecordFile))
 	if err != nil {
-		if !io.IsNotExist(err) {
-			log.WithError(err).Warn("Failed to read clone records.")
-		}
+		// This is user config error
+		log.WithError(err).Debug("Failed to resolve clone-records.json path.")
 	} else {
-		if err := json.Unmarshal(cloneRecordBytes, &cloneRecord); err != nil {
-			log.WithError(err).Warn("Failed to unmarshal clone records.")
+		cloneRecordBytes, err := io.ReadContent(ctx, log, gr.opener, cloneRecordFilePath)
+		if err != nil {
+			if !io.IsNotExist(err) {
+				log.WithError(err).Warn("Failed to read clone records.")
+			}
+		} else {
+			if err := json.Unmarshal(cloneRecordBytes, &cloneRecord); err != nil {
+				log.WithError(err).Warn("Failed to unmarshal clone records.")
+			}
 		}
 	}
 	s := downwardapi.PjToStarted(pj, cloneRecord)
@@ -143,7 +156,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 	// Add a new var for better readability.
 	overwrite := existing
 	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)}
-	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile)), output, overwriteOpt)
+	return io.WriteContent(ctx, log, gr.opener, startedFilePath, output, overwriteOpt)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
@@ -175,7 +188,11 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 	}
 	//PreconditionDoesNotExist:true means create only when file not exist.
 	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(true)}
-	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile)), output, overwriteOpt)
+	finishedFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile))
+	if err != nil {
+		return fmt.Errorf("failed to resolve finished.json path: %v", err)
+	}
+	return io.WriteContent(ctx, log, gr.opener, finishedFilePath, output, overwriteOpt)
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
@@ -195,7 +212,11 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj 
 		return nil
 	}
 	overWriteOpts := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(false)}
-	return io.WriteContent(ctx, log, gr.opener, providers.GCSStoragePath(bucketName, path.Join(dir, prowv1.ProwJobFile)), output, overWriteOpts)
+	prowJobFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.ProwJobFile))
+	if err != nil {
+		return fmt.Errorf("failed to resolve prowjob.json path: %v", err)
+	}
+	return io.WriteContent(ctx, log, gr.opener, prowJobFilePath, output, overWriteOpts)
 }
 
 func (gr *gcsReporter) GetName() string {

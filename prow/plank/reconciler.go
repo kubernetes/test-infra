@@ -240,7 +240,12 @@ func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters set
 					continue
 				}
 				noCache := "no-cache"
-				if err := io.WriteContent(ctx, r.log, r.opener, providers.GCSStoragePath(bucket, subPath), payload, io.WriterOptions{CacheControl: &noCache}); err != nil {
+				fullStoragePath, err := providers.StoragePath(bucket, subPath)
+				if err != nil {
+					r.log.WithError(err).Error("Failed to resolve storage path.")
+					continue
+				}
+				if err := io.WriteContent(ctx, r.log, r.opener, fullStoragePath, payload, io.WriterOptions{CacheControl: &noCache}); err != nil {
 					r.log.WithError(err).Error("Error writing cluster status info.")
 				}
 			}
