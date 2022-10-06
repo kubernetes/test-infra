@@ -1,8 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- cjwagner
+- chaodaiG
+- mpherman2
 approvers:
-- cjwagner
+- chaodaiG
+- mpherman2
 labels:
-  - area/prow/plugins
+ - area/prow/hook
