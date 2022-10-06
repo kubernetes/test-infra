@@ -317,6 +317,7 @@ type delegate struct {
 	dry          bool
 	fake         bool
 	usesAppsAuth bool
+	usesGhaToken bool
 	throttle     throttler
 	getToken     func() []byte
 	censor       func([]byte) []byte
@@ -392,6 +393,12 @@ const (
 	DefaultMax404Retries = 2
 	DefaultMaxSleepTime  = 2 * time.Minute
 	DefaultInitialDelay  = 2 * time.Second
+
+	// Fake User/Login names this client uses with the ephemeral token assigned
+	// during a GitHub Action run. Only used when this client is instantiated
+	// from a GitHub Action by setting IsGitHubAction to true in ClientOptions
+	GitHubActionEphemeralUser  = "ProwAssignedGithubActionEphemeralUser"
+	GitHubActionEphemeralLogin = "ProwAssignedGithubActionEphemeralLogin"
 )
 
 // Force the compiler to check if the TokenSource is implementing correctly.
@@ -636,6 +643,8 @@ type ClientOptions struct {
 	AppID         string
 	AppPrivateKey func() *rsa.PrivateKey
 
+	IsGitHubAction bool
+
 	// the following fields determine which server we talk to
 	GraphqlEndpoint string
 	Bases           []string
@@ -741,6 +750,7 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 			censor:        options.Censor,
 			dry:           options.DryRun,
 			usesAppsAuth:  options.AppID != "",
+			usesGhaToken:  options.IsGitHubAction,
 			maxRetries:    options.MaxRetries,
 			max404Retries: options.Max404Retries,
 			initialDelay:  options.InitialDelay,
@@ -768,6 +778,16 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 		userGenerator = func() (string, error) {
 			return "x-access-token", nil
 		}
+	} else if options.IsGitHubAction {
+		// Use the Emphemeral Access token provided by GitHub Actions
+		tokenGenerator = func(_ string) (string, error) {
+			return string(options.GetToken()), nil
+		}
+		// Indicates that the GitHub Action Ephemeral User is in use
+		userGenerator = func() (string, error) {
+			return GitHubActionEphemeralUser, nil
+		}
+
 	} else {
 		// Use Personal Access token auth for git actions
 		tokenGenerator = func(_ string) (string, error) {
@@ -1283,6 +1303,14 @@ func (c *client) getUserData(ctx context.Context) error {
 			Name:  resp.Name,
 			Login: resp.Slug,
 			Email: fmt.Sprintf("%s@users.noreply.github.com", resp.Slug),
+		}
+		return nil
+	}
+	if c.delegate.usesGhaToken {
+		c.userData = &UserData{
+			Name:  GitHubActionEphemeralUser,
+			Login: GitHubActionEphemeralLogin,
+			Email: fmt.Sprintf("%s@users.noreply.github.com", GitHubActionEphemeralUser),
 		}
 		return nil
 	}
