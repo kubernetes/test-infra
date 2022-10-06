@@ -9,7 +9,6 @@ default_test_group:
   ignore_skip: true # Don't show skipped tests by default.
   column_header:
     - configuration_value: Commit # Shows the commit number on column header
-    - configuration_value: infra-commit
   num_columns_recent: 10
   use_kubernetes_client: true # These two fields are deprecated and should always be true
   is_external: true
