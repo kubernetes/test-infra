@@ -12,6 +12,7 @@ periodics:
     repo: sig-release
     base_ref: master
   spec:
+    suspend: true
     containers:
     - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
       command:
