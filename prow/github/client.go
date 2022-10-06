@@ -397,11 +397,10 @@ const (
 	// Fake User/Login names this client uses with the ephemeral token assigned
 	// during a GitHub Action run. Only used when this client is instantiated
 	// from a GitHub Action by setting IsGitHubAction to true in ClientOptions
-	GitHubActionEphemeralUser  = "ProwAssignedGithubActionEphemeralUser"
-	GitHubActionEphemeralLogin = "ProwAssignedGithubActionEphemeralLogin"
+	GitHubActionEphemeralUser  = "ProwAssignedGitHubActionEphemeralUser"
+	GitHubActionEphemeralLogin = "ProwAssignedGitHubActionEphemeralLogin"
 )
 
-// Force the compiler to check if the TokenSource is implementing correctly.
 // Tokensource is needed to dynamically update the token in the GraphQL client.
 var _ oauth2.TokenSource = &reloadingTokenSource{}
 
