@@ -191,14 +191,15 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 	var missingLabels []string
 	for _, l1 := range q.Labels {
 		var found bool
+		altLabels := sets.NewString(strings.Split(l1, ",")...)
 		for _, l2 := range pr.Labels.Nodes {
-			if string(l2.Name) == l1 {
+			if altLabels.Has(string(l2.Name)) {
 				found = true
 				break
 			}
 		}
 		if !found {
-			missingLabels = append(missingLabels, l1)
+			missingLabels = append(missingLabels, strings.ReplaceAll(l1, ",", " or "))
 		}
 	}
 	diff += len(missingLabels)
