@@ -1,3 +1,18 @@
+presets:
+- labels:
+    preset-use-sandbox-registry: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST
+    value: https://raw.githubusercontent.com/kubernetes/registry.k8s.io/main/hack/images/default-sandbox.yaml
+  - name: KUBE_DOCKER_REGISTRY
+    value: registry-sandbox.k8s.io
+  - name: KUBE_ADDON_REGISTRY
+    value: registry-sandbox.k8s.io
+  - name: TEST_ETCD_DOCKER_REPOSITORY
+    value: registry-sandbox.k8s.io/etcd
+  - name: CONTAINERD_INFRA_CONTAINER
+    value: registry-sandbox.k8s.io/pause:3.8
+
 periodics:
 - name: e2e-kops-grid-gcr-mirror-canary
   cron: '11 0-23/1 * * *'
