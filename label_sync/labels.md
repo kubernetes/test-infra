@@ -347,12 +347,13 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
+| <a id="lead-opted-in" href="#lead-opted-in">`lead-opted-in`</a> | Denotes that an issue has been opted in to a release| SIG leads ONLY |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="stage/alpha" href="#stage/alpha">`stage/alpha`</a> | Denotes an issue tracking an enhancement targeted for Alpha status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
 | <a id="stage/beta" href="#stage/beta">`stage/beta`</a> | Denotes an issue tracking an enhancement targeted for Beta status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
 | <a id="stage/stable" href="#stage/stable">`stage/stable`</a> | Denotes an issue tracking an enhancement targeted for Stable/GA status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
-| <a id="tracked/no" href="#tracked/no">`tracked/no`</a> | Denotes an enhancement issue is NOT actively being tracked by the Release Team| humans | |
-| <a id="tracked/out-of-tree" href="#tracked/out-of-tree">`tracked/out-of-tree`</a> | Denotes an out-of-tree enhancement issue, which does not need to be tracked by the Release Team| humans | |
-| <a id="tracked/yes" href="#tracked/yes">`tracked/yes`</a> | Denotes an enhancement issue is actively being tracked by the Release Team| humans | |
+| <a id="tracked/no" href="#tracked/no">`tracked/no`</a> | Denotes an enhancement issue is NOT actively being tracked by the Release Team| Release enhancements team ONLY |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="tracked/out-of-tree" href="#tracked/out-of-tree">`tracked/out-of-tree`</a> | Denotes an out-of-tree enhancement issue, which does not need to be tracked by the Release Team| Release enhancements team ONLY |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="tracked/yes" href="#tracked/yes">`tracked/yes`</a> | Denotes an enhancement issue is actively being tracked by the Release Team| Release enhancements team ONLY |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/k8s.io, for both issues and PRs
 
