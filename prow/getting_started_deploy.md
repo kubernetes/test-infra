@@ -188,7 +188,7 @@ kubectl create secret -n prow generic github-token --from-file=cert=/path/to/git
 
 ### Update the sample manifest
 
-There are two sample manifests to get you started:
+There are three sample manifests to get you started:
 * [`starter-s3.yaml`](/config/prow/cluster/starter/starter-s3.yaml) sets up a minio as blob storage for logs and is particularly well suited to quickly get something working. NOTE: this method requires 2 PVs of 100Gi each.
 * [`starter-gcs.yaml`](/config/prow/cluster/starter/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](#configure-a-gcs-bucket) for details.
 * [`starter-azure.yaml`](/config/prow/cluster/starter/starter-azure.yaml) uses Azure as blob storage and requires MinIO deployment. See [this](#configure-an-azure-blob-storage) for details.
