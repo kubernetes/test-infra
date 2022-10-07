@@ -112,30 +112,6 @@ presubmits:
       testgrid-tab-name: pull-e2e-test-multi-az
       description: aws ebs csi driver e2e test on mutiple AZs on pull request
       testgrid-num-columns-recent: '30'
-  - name: pull-aws-ebs-csi-driver-migration-test
-    always_run: true
-    decorate: true
-    skip_branches:
-    - gh-pages
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-aws-credential-aws-oss-testing: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230120-fd0935fac9-master
-          command:
-            - runner.sh
-          args:
-            - make
-            - test-e2e-migration
-          securityContext:
-            privileged: true
-    annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
-      testgrid-tab-name: pull-migration-test
-      description: aws ebs csi driver migration test on pull request
-      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test
     always_run: true
     decorate: true
