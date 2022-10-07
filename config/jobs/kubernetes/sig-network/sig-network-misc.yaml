@@ -28,7 +28,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
-      preset-use-new-registry: "true"
     spec:
       containers:
       - command:

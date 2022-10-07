@@ -45,7 +45,6 @@ periodics:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-use-new-registry: "true"
   name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-25
   spec:
     containers:
@@ -728,7 +727,6 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-      preset-use-new-registry: "true"
     name: pull-kubernetes-e2e-gce-ubuntu-containerd
     spec:
       containers:
@@ -838,7 +836,6 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-      preset-use-new-registry: "true"
     name: pull-kubernetes-e2e-gce-ubuntu-containerd-serial
     optional: true
     spec:
