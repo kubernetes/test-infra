@@ -48,12 +48,18 @@ func FormatRecord(record Record) string {
 		}
 	}
 	for _, command := range record.Commands {
-		fmt.Fprintf(&output, "$ %s\n", command.Command)
+		runtime := ""
+		if command.Duration != 0 {
+			runtime = fmt.Sprintf(" (runtime: %v)", command.Duration)
+		}
+		fmt.Fprintf(&output, "$ %s%s\n", command.Command, runtime)
 		fmt.Fprint(&output, command.Output)
 		if command.Error != "" {
 			fmt.Fprintf(&output, "# Error: %s\n", command.Error)
 		}
 	}
+	fmt.Fprintf(&output, "# Final SHA: %v\n", record.FinalSHA)
+	fmt.Fprintf(&output, "# Total runtime: %v\n", record.Duration)
 
 	return output.String()
 }
