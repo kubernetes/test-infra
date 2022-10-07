@@ -59,3 +59,5 @@ presubmits:
       testgrid-tab-name: pull-e2e
       description: AWS IAM Authenticator end-to-end test on pull request
       testgrid-num-columns-recent: '30'
+    branches:
+    - master
