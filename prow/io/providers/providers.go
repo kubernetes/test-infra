@@ -29,6 +29,8 @@ import (
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/memblob"
 	"gocloud.dev/blob/s3blob"
+
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 const (
@@ -160,7 +162,11 @@ func ParseStoragePath(storagePath string) (storageProvider, bucket, relativePath
 	return storageProvider, bucket, relativePath, nil
 }
 
-// GCSStoragePath is the reverse of ParseStoragePath.
-func GCSStoragePath(bucket, path string) string {
-	return fmt.Sprintf("%s://%s/%s", GS, bucket, path)
+// StoragePath is the reverse of ParseStoragePath.
+func StoragePath(bucket, path string) (string, error) {
+	pp, err := prowv1.ParsePath(bucket)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s://%s/%s", pp.StorageProvider(), pp.Bucket(), path), nil
 }
