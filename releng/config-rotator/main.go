@@ -20,7 +20,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -148,7 +147,7 @@ func main() {
 		log.Fatalf("Failed to marshal new presubmits: %v\n", err)
 	}
 
-	if err := ioutil.WriteFile(o.configFile, output, 0666); err != nil {
+	if err := os.WriteFile(o.configFile, output, 0666); err != nil {
 		log.Fatalf("Failed to write new presubmits: %v.\n", err)
 	}
 }

@@ -23,8 +23,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	stdio "io"
 	"io/fs"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -376,7 +376,7 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	} else if unknownEnabled {
-		cfgBytes, err := ioutil.ReadFile(o.config.ConfigPath)
+		cfgBytes, err := os.ReadFile(o.config.ConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
@@ -385,7 +385,7 @@ func validate(o options) error {
 		}
 	}
 	if pcfg != nil && (unknownEnabled || unknownAllEnabled) {
-		pcfgBytes, err := ioutil.ReadFile(o.pluginsConfig.PluginConfigPath)
+		pcfgBytes, err := os.ReadFile(o.pluginsConfig.PluginConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
@@ -1225,7 +1225,7 @@ func validateCluster(cfg *config.Config, opener io.Opener) error {
 			logrus.Warnf("Build cluster status file location was specified, but could not be found: %v. This is expected when the location is first configured, before plank creates the file.", err)
 		} else {
 			defer reader.Close()
-			b, err := ioutil.ReadAll(reader)
+			b, err := stdio.ReadAll(reader)
 			if err != nil {
 				return fmt.Errorf("error reading build cluster status file: %w", err)
 			}

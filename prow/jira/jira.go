@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -707,7 +707,7 @@ func JiraErrorBody(err error) string {
 func HandleJiraError(response *jira.Response, err error) error {
 	if err != nil && strings.Contains(err.Error(), "Please analyze the request body for more details.") {
 		if response != nil && response.Response != nil {
-			body, readError := ioutil.ReadAll(response.Body)
+			body, readError := stdio.ReadAll(response.Body)
 			if readError != nil && readError.Error() != "http: read on closed response body" {
 				logrus.WithError(readError).Warn("Failed to read Jira response body.")
 			}

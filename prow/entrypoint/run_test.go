@@ -17,7 +17,6 @@ limitations under the License.
 package entrypoint
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -150,7 +149,7 @@ func TestOptions_Run(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", testCase.name)
+			tmpDir, err := os.MkdirTemp("", testCase.name)
 			if err != nil {
 				t.Errorf("%s: error creating temp dir: %v", testCase.name, err)
 			}
@@ -174,7 +173,7 @@ func TestOptions_Run(t *testing.T) {
 			if testCase.previousMarker != "" {
 				p := path.Join(tmpDir, "previous-marker.txt")
 				options.PreviousMarker = p
-				if err := ioutil.WriteFile(p, []byte(testCase.previousMarker), 0600); err != nil {
+				if err := os.WriteFile(p, []byte(testCase.previousMarker), 0600); err != nil {
 					t.Fatalf("could not create previous marker: %v", err)
 				}
 			}
@@ -196,7 +195,7 @@ func TestOptions_Run(t *testing.T) {
 }
 
 func compareFileContents(name, file, expected string, t *testing.T) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatalf("%s: could not read file: %v", name, err)
 	}

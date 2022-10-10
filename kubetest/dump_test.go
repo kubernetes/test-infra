@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -161,7 +160,7 @@ func Test_logDumperNode_shellToFile(t *testing.T) {
 			stderr:  []byte(g.stderr),
 		})
 
-		tmpfile, err := ioutil.TempFile("", "")
+		tmpfile, err := os.CreateTemp("", "")
 		if err != nil {
 			t.Errorf("error creating temp file: %v", err)
 			continue
@@ -184,7 +183,7 @@ func Test_logDumperNode_shellToFile(t *testing.T) {
 			continue
 		}
 
-		actual, err := ioutil.ReadFile(tmpfile.Name())
+		actual, err := os.ReadFile(tmpfile.Name())
 		if err != nil {
 			t.Errorf("unexpected error reading file: %v", err)
 			continue
@@ -198,7 +197,7 @@ func Test_logDumperNode_shellToFile(t *testing.T) {
 }
 
 func Test_logDumperNode_dump(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "")
+	tmpdir, err := os.MkdirTemp("", "")
 	if err != nil {
 		t.Errorf("error creating temp dir: %v", err)
 		return

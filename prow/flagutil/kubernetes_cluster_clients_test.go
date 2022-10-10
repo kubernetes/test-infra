@@ -17,7 +17,6 @@ limitations under the License.
 package flagutil
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,7 +27,7 @@ import (
 func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 	dir := t.TempDir()
 	configFile := filepath.Join(dir, "some-file")
-	if err := ioutil.WriteFile(configFile, []byte("a"), 0644); err != nil {
+	if err := os.WriteFile(configFile, []byte("a"), 0644); err != nil {
 		t.Fatalf("failed to write kubeconfig file %q: %v", configFile, err)
 	}
 	configDir := filepath.Join(dir, "some-dir")
@@ -138,7 +137,7 @@ users:
     token: cde
 `
 
-	tmpFile, err := ioutil.TempFile("", "")
+	tmpFile, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatalf("failed to get tempfile: %v", err)
 	}

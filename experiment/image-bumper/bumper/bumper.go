@@ -19,9 +19,9 @@ package bumper
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -262,14 +262,14 @@ func updateAllTags(tagPicker func(host, image, tag string) (string, error), cont
 // UpdateFile updates a file in place.
 func (cli *Client) UpdateFile(tagPicker func(imageHost, imageName, currentTag string) (string, error),
 	path string, imageFilter *regexp.Regexp) error {
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %w", path, err)
 	}
 
 	newContent := updateAllTags(tagPicker, content, imageFilter)
 
-	if err := ioutil.WriteFile(path, newContent, 0644); err != nil {
+	if err := os.WriteFile(path, newContent, 0644); err != nil {
 		return fmt.Errorf("failed to write %s: %w", path, err)
 	}
 	return nil

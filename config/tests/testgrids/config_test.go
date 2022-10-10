@@ -20,7 +20,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/mail"
 	"os"
 	"path"
@@ -102,7 +101,7 @@ func TestMain(m *testing.M) {
 			inputs = defaultInputs
 		}
 		// Generate proto from testgrid config
-		tmpDir, err := ioutil.TempDir("", "testgrid-config-test")
+		tmpDir, err := os.MkdirTemp("", "testgrid-config-test")
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

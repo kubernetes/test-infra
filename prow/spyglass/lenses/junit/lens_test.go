@@ -21,7 +21,7 @@ import (
 	"bytes"
 	"context"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -81,7 +81,7 @@ func (fa *FakeArtifact) ReadAll() ([]byte, error) {
 		return nil, lenses.ErrFileTooLarge
 	}
 	r := bytes.NewReader(fa.content)
-	return ioutil.ReadAll(r)
+	return io.ReadAll(r)
 }
 
 func (fa *FakeArtifact) ReadTail(n int64) ([]byte, error) {

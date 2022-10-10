@@ -18,7 +18,6 @@ package configurator
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -47,13 +46,13 @@ func Test_announceChanges(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			directory, err := ioutil.TempDir("", "")
+			directory, err := os.MkdirTemp("", "")
 			if err != nil {
 				t.Fatalf("Error in creating temporary dir: %v", err)
 			}
 			defer os.RemoveAll(directory)
 
-			file, err := ioutil.TempFile(directory, "1*.yaml")
+			file, err := os.CreateTemp(directory, "1*.yaml")
 			if err != nil {
 				t.Fatalf("Error in creating temporary file: %v", err)
 			}
@@ -77,7 +76,7 @@ func Test_announceChanges(t *testing.T) {
 					t.Fatalf("OS error with deleting file")
 				}
 			case test.addFile:
-				if _, err := ioutil.TempFile(directory, "2*.yaml"); err != nil {
+				if _, err := os.CreateTemp(directory, "2*.yaml"); err != nil {
 					t.Fatalf("OS error with adding new file")
 				}
 			}

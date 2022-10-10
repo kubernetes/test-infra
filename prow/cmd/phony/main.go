@@ -18,7 +18,7 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
+	"os"
 
 	"github.com/sirupsen/logrus"
 
@@ -39,7 +39,7 @@ func main() {
 	if *payload == "" {
 		body = []byte("{}")
 	} else {
-		d, err := ioutil.ReadFile(*payload)
+		d, err := os.ReadFile(*payload)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not read payload file.")
 		}

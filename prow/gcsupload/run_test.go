@@ -17,7 +17,6 @@ limitations under the License.
 package gcsupload
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -204,7 +203,7 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				BuildID: "build",
 			}
 
-			tmpDir, err := ioutil.TempDir("", testCase.name)
+			tmpDir, err := os.MkdirTemp("", testCase.name)
 			if err != nil {
 				t.Errorf("%s: error creating temp dir: %v", testCase.name, err)
 			}

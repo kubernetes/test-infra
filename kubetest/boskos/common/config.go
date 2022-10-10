@@ -19,7 +19,7 @@ package common
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -105,7 +105,7 @@ func ValidateConfig(config *BoskosConfig) error {
 // ParseConfig reads in configPath and returns a list of resource objects
 // on success.
 func ParseConfig(configPath string) (*BoskosConfig, error) {
-	file, err := ioutil.ReadFile(configPath)
+	file, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}

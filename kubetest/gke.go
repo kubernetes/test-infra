@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -242,7 +241,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 
 	// Override kubecfg to a temporary file rather than trashing the user's.
-	f, err := ioutil.TempFile("", "gke-kubecfg")
+	f, err := os.CreateTemp("", "gke-kubecfg")
 	if err != nil {
 		return nil, err
 	}
@@ -560,7 +559,7 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		return wrapErrors("DumpClusterLogs", errs...)
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(localPath, "gke-configmap.json"), jsonDump, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(localPath, "gke-configmap.json"), jsonDump, 0644); err != nil {
 		errs = append(errs, err)
 		return wrapErrors("DumpClusterLogs", errs...)
 	}

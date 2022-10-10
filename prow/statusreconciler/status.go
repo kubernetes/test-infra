@@ -18,7 +18,7 @@ package statusreconciler
 
 import (
 	"context"
-	"io/ioutil"
+	stdio "io"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -116,7 +116,7 @@ func (s *statusController) loadState() (storedState, error) {
 	}
 	defer io.LogClose(reader)
 
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := stdio.ReadAll(reader)
 	if err != nil {
 		entry.WithError(err).Warn("Cannot read stored state")
 		return state, err

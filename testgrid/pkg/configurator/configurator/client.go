@@ -19,7 +19,6 @@ package configurator
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -116,7 +115,7 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 		return fmt.Errorf("invalid url %s: %w", path, err)
 	}
 	if u.Scheme != "gs" {
-		return ioutil.WriteFile(path, bytes, 0644)
+		return os.WriteFile(path, bytes, 0644)
 	}
 	var p gcs.Path
 	if err = p.SetURL(u); err != nil {
@@ -143,7 +142,7 @@ func doOneshot(ctx context.Context, opt *options.Options, prowConfigAgent *prowC
 	// Remains nil if no default YAML
 	var d *yamlcfg.DefaultConfiguration
 	if opt.DefaultYAML != "" {
-		b, err := ioutil.ReadFile(opt.DefaultYAML)
+		b, err := os.ReadFile(opt.DefaultYAML)
 		if err != nil {
 			return err
 		}

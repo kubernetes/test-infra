@@ -25,7 +25,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -267,7 +267,7 @@ func TestCreateComment(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5/comments" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -294,7 +294,7 @@ func TestCreateCommentCensored(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5/comments" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -758,7 +758,7 @@ func TestCreateStatus(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/statuses/abcdef" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -859,7 +859,7 @@ func addLabelHTTPServer(t *testing.T, org, repo string, number int, labels ...st
 		if r.URL.Path != fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number) {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1073,7 +1073,7 @@ func TestAssignIssue(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5/assignees" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1123,7 +1123,7 @@ func TestUnassignIssue(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5/assignees" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1380,7 +1380,7 @@ func TestRequestReview(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5/requested_reviewers" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1442,7 +1442,7 @@ func TestUnrequestReview(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5/requested_reviewers" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1490,7 +1490,7 @@ func TestCloseIssue(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1520,7 +1520,7 @@ func TestCloseIssueAsNotPlanned(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1550,7 +1550,7 @@ func TestReopenIssue(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1578,7 +1578,7 @@ func TestClosePR(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1606,7 +1606,7 @@ func TestReopenPR(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1919,7 +1919,7 @@ func TestCreateTeam(t *testing.T) {
 		if r.URL.Path != "/orgs/foo/teams" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1967,7 +1967,7 @@ func TestEditTeam(t *testing.T) {
 		if r.URL.Path != "/orgs/someOrg/teams/some-team" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -2500,7 +2500,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 			if r.URL.Path != "/repos/org/repo/branches/master/protection" {
 				t.Errorf("Bad request path: %s", r.URL.Path)
 			}
-			b, err := ioutil.ReadAll(r.Body)
+			b, err := io.ReadAll(r.Body)
 			if err != nil {
 				t.Fatalf("Could not read request body: %v", err)
 			}
@@ -2573,7 +2573,7 @@ func TestClearMilestone(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -2600,7 +2600,7 @@ func TestSetMilestone(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -2699,7 +2699,7 @@ func TestUpdatePullRequestBranch(t *testing.T) {
 				t.Errorf("Bad request path: %s", r.URL.Path)
 			}
 
-			b, err := ioutil.ReadAll(r.Body)
+			b, err := io.ReadAll(r.Body)
 			if err != nil {
 				t.Fatalf("Could not read request body: %v", err)
 			}
@@ -2848,7 +2848,7 @@ func TestCreateRepo(t *testing.T) {
 				} else if !tc.isUser && r.URL.Path != "/orgs/org/repos" {
 					t.Errorf("Bad request path to create org-owned repo: %s", r.URL.Path)
 				}
-				b, err := ioutil.ReadAll(r.Body)
+				b, err := io.ReadAll(r.Body)
 				if err != nil {
 					t.Fatalf("Could not read request body: %v", err)
 				}
@@ -2932,7 +2932,7 @@ func TestUpdateRepo(t *testing.T) {
 				if r.URL.Path != expectedPath {
 					t.Errorf("Bad request path to create user-owned repo: %s (expected %s)", r.URL.Path, expectedPath)
 				}
-				b, err := ioutil.ReadAll(r.Body)
+				b, err := io.ReadAll(r.Body)
 				if err != nil {
 					t.Fatalf("Could not read request body: %v", err)
 				}
@@ -3215,7 +3215,7 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 						t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
 					}
 				}
-				return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
+				return &http.Response{Body: io.NopCloser(&bytes.Buffer{})}, nil
 			}}
 			ghClient.(*client).client.(*http.Client).Transport = checkingRoundTripper
 			ghClient.(*client).gqlc.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
@@ -3354,7 +3354,7 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		if got := r.Header.Get("User-Agent"); got != expectedUserAgent {
 			return nil, fmt.Errorf("expected User-Agent %q, got %q", expectedUserAgent, got)
 		}
-		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(bytes.NewBufferString("{}"))}, nil
 	}}
 
 	_, _, client, err := NewClientFromOptions(
@@ -3517,7 +3517,7 @@ func TestCreatePullRequestReviewComment(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5/comments" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -3589,7 +3589,7 @@ func TestCreateCheckRun(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/check-runs" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}

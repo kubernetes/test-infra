@@ -23,7 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -55,7 +55,7 @@ func ServeExternalPluginHelp(mux *http.ServeMux, log *logrus.Entry, provider Ext
 				http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
 				return
 			}
-			b, err := ioutil.ReadAll(r.Body)
+			b, err := io.ReadAll(r.Body)
 			if err != nil {
 				serverError("reading request body", err)
 				return

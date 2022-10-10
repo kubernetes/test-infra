@@ -21,7 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"sync"
@@ -475,7 +475,7 @@ func (s *serveMuxHandler) dispatch(endpoint string, payload []byte, h http.Heade
 		return err
 	}
 	defer resp.Body.Close()
-	rb, err := ioutil.ReadAll(resp.Body)
+	rb, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

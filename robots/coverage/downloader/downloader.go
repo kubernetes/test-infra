@@ -22,7 +22,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"path"
 	"sort"
 	"strconv"
@@ -68,7 +68,7 @@ func readGcsObject(ctx context.Context, client *storage.Client, bucket, object s
 	if err != nil {
 		return nil, fmt.Errorf("cannot read object '%s': %w", object, err)
 	}
-	return ioutil.ReadAll(reader)
+	return io.ReadAll(reader)
 }
 
 // FindBaseProfile finds the coverage profile file from the latest healthy build

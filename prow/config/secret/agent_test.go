@@ -19,7 +19,6 @@ package secret
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -33,7 +32,7 @@ import (
 
 func TestCensoringFormatter(t *testing.T) {
 	var err error
-	secret1, err := ioutil.TempFile("", "")
+	secret1, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatalf("failed to set up a temporary file: %v", err)
 	}
@@ -42,7 +41,7 @@ func TestCensoringFormatter(t *testing.T) {
 	}
 	defer secret1.Close()
 	defer os.Remove(secret1.Name())
-	secret2, err := ioutil.TempFile("", "")
+	secret2, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatalf("failed to set up a temporary file: %v", err)
 	}
@@ -119,7 +118,7 @@ func testAddWithParser(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	secretPath := filepath.Join(tmpDir, "secret")
-	if err := ioutil.WriteFile(secretPath, []byte("1"), 0644); err != nil {
+	if err := os.WriteFile(secretPath, []byte("1"), 0644); err != nil {
 		t.Fatalf("failed to write initial content of secret: %v", err)
 	}
 
@@ -163,13 +162,13 @@ func testAddWithParser(t *testing.T) {
 	}
 	checkValueAndErr(1, nil)
 
-	if err := ioutil.WriteFile(secretPath, []byte("2"), 0644); err != nil {
+	if err := os.WriteFile(secretPath, []byte("2"), 0644); err != nil {
 		t.Fatalf("failed to update secret on disk: %v", err)
 	}
 	// expect secret to get updated
 	checkValueAndErr(2, nil)
 
-	if err := ioutil.WriteFile(secretPath, []byte("not-a-number"), 0644); err != nil {
+	if err := os.WriteFile(secretPath, []byte("not-a-number"), 0644); err != nil {
 		t.Fatalf("failed to update secret on disk: %v", err)
 	}
 	// expect secret to remain unchanged and an error in the parsing func

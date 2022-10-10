@@ -25,7 +25,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -249,7 +248,7 @@ func TestHandleLog(t *testing.T) {
 			} else {
 				resp := rr.Result()
 				defer resp.Body.Close()
-				if body, err := ioutil.ReadAll(resp.Body); err != nil {
+				if body, err := io.ReadAll(resp.Body); err != nil {
 					t.Errorf("Error reading response body: %v", err)
 				} else if string(body) != "hello" {
 					t.Errorf("Unexpected body: got %s.", string(body))
@@ -321,7 +320,7 @@ func TestHandleProwJobs(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -390,7 +389,7 @@ func TestProwJob(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -468,7 +467,7 @@ func TestTide(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -531,7 +530,7 @@ func TestTideHistory(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -577,7 +576,7 @@ func TestHelp(t *testing.T) {
 		}
 		resp := rr.Result()
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("Error reading response body: %v", err)
 		}
@@ -786,7 +785,7 @@ func TestHandleConfig(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -828,7 +827,7 @@ func TestHandlePluginConfig(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}

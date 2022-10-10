@@ -21,7 +21,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/google/go-github/github"
@@ -157,7 +157,7 @@ func (c *IssueCreator) initialize() error {
 	if c.tokenFile == "" {
 		return errors.New("'--token-file' is a required flag")
 	}
-	b, err := ioutil.ReadFile(c.tokenFile)
+	b, err := os.ReadFile(c.tokenFile)
 	if err != nil {
 		return fmt.Errorf("failed to read token file '%s': %w", c.tokenFile, err)
 	}

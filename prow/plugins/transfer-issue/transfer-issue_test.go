@@ -21,7 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -225,7 +225,7 @@ func (t *testClient) MutateWithGitHubAppsSupport(ctx context.Context, m interfac
 	gqlc := githubv4.NewClient(&http.Client{
 		Transport: testRoundTripper{rt: func(r *http.Request) (*http.Response, error) {
 			defer r.Body.Close()
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				return nil, err
 			}
@@ -233,7 +233,7 @@ func (t *testClient) MutateWithGitHubAppsSupport(ctx context.Context, m interfac
 			if !(strings.Contains(s, "fakeRepoNodeID") && strings.Contains(s, "fakeIssueNodeID")) {
 				return nil, fmt.Errorf("unexpected request body: %s", s)
 			}
-			return &http.Response{StatusCode: http.StatusOK, Body: ioutil.NopCloser(bytes.NewBufferString(mr))}, nil
+			return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewBufferString(mr))}, nil
 		}},
 	})
 

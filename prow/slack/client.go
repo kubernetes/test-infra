@@ -19,7 +19,7 @@ package slack
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -118,7 +118,7 @@ func (sl *Client) postMessage(url string, uv *url.Values) error {
 	}
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	apiResponse := struct {
 		Ok    bool   `json:"ok"`
 		Error string `json:"error"`

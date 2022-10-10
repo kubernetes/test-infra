@@ -22,7 +22,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -88,7 +87,7 @@ func TestPathToKeyKeyToPath(t *testing.T) {
 // test stateful cache methods
 func TestCacheStorage(t *testing.T) {
 	// create a cache in a tempdir
-	dir, err := ioutil.TempDir("", "cache-tests")
+	dir, err := os.MkdirTemp("", "cache-tests")
 	if err != nil {
 		t.Fatalf("Failed to create tempdir for tests! %v", err)
 	}
@@ -170,7 +169,7 @@ func TestCacheStorage(t *testing.T) {
 				t.Fatalf("Got key does not exist for test case '%s' which should.", tc.Name)
 			}
 			if exists {
-				read, err2 := ioutil.ReadAll(contents)
+				read, err2 := io.ReadAll(contents)
 				if err2 != nil {
 					t.Fatalf("Failed to read contents for test case '%s", tc.Name)
 				}

@@ -18,7 +18,6 @@ package clone
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
@@ -796,7 +795,7 @@ func TestGitHeadTimestamp(t *testing.T) {
 
 // makeFakeGitRepo creates a fake git repo with a constant digest and timestamp.
 func makeFakeGitRepo(fakeTimestamp int) (string, error) {
-	fakeGitDir, err := ioutil.TempDir("", "fakegit")
+	fakeGitDir, err := os.MkdirTemp("", "fakegit")
 	if err != nil {
 		return "", err
 	}

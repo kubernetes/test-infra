@@ -22,7 +22,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -93,7 +92,7 @@ func getOpenAPISpec(url string) apiArray {
 	if err != nil {
 		log.Fatal(err)
 	}
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

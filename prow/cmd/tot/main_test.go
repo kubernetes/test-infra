@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -38,7 +37,7 @@ func expectEqual(t *testing.T, msg string, have interface{}, want interface{}) {
 }
 
 func makeStore(t *testing.T) *store {
-	tmp, err := ioutil.TempFile("", "tot_test_")
+	tmp, err := os.CreateTemp("", "tot_test_")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -177,7 +176,7 @@ postsubmits:
 	}
 	tmpDir := t.TempDir()
 	for fp, content := range configs {
-		if err := ioutil.WriteFile(path.Join(tmpDir, fp), []byte(content), 0644); err != nil {
+		if err := os.WriteFile(path.Join(tmpDir, fp), []byte(content), 0644); err != nil {
 			t.Fatal(err)
 		}
 	}

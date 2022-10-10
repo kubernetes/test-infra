@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -126,11 +125,11 @@ func TestRenderBody(t *testing.T) {
 			body := (Lens{}).Body([]api.Artifact{&tc.artifact}, ".", "", nil, config.Spyglass{})
 			fixtureName := filepath.Join("testdata", fmt.Sprintf("%s.yaml", strings.ReplaceAll(t.Name(), "/", "_")))
 			if os.Getenv("UPDATE") != "" {
-				if err := ioutil.WriteFile(fixtureName, []byte(body), 0644); err != nil {
+				if err := os.WriteFile(fixtureName, []byte(body), 0644); err != nil {
 					t.Errorf("failed to update fixture: %v", err)
 				}
 			}
-			expectedRaw, err := ioutil.ReadFile(fixtureName)
+			expectedRaw, err := os.ReadFile(fixtureName)
 			if err != nil {
 				t.Fatalf("failed to read fixture: %v", err)
 			}

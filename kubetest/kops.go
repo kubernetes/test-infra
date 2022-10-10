@@ -24,7 +24,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -191,7 +190,7 @@ func migrateKopsEnv() error {
 }
 
 func newKops(provider, gcpProject, cluster string) (*kops, error) {
-	tmpdir, err := ioutil.TempDir("", "kops")
+	tmpdir, err := os.MkdirTemp("", "kops")
 	if err != nil {
 		return nil, err
 	}
@@ -547,7 +546,7 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 	if strings.HasPrefix(privateKeyPath, "~/") {
 		privateKeyPath = filepath.Join(os.Getenv("HOME"), privateKeyPath[2:])
 	}
-	key, err := ioutil.ReadFile(privateKeyPath)
+	key, err := os.ReadFile(privateKeyPath)
 	if err != nil {
 		return fmt.Errorf("error reading private key %q: %w", k.sshPrivateKey, err)
 	}

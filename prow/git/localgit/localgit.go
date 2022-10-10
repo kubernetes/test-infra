@@ -20,7 +20,6 @@ package localgit
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -59,7 +58,7 @@ func New() (*LocalGit, v2.ClientFactory, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	t, err := ioutil.TempDir("", "localgit")
+	t, err := os.MkdirTemp("", "localgit")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -144,7 +143,7 @@ func (lg *LocalGit) AddCommit(org, repo string, files map[string][]byte) error {
 		if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
 			return err
 		}
-		if err := ioutil.WriteFile(path, b, os.ModePerm); err != nil {
+		if err := os.WriteFile(path, b, os.ModePerm); err != nil {
 			return err
 		}
 		if err := runCmd(lg.Git, rdir, "add", f); err != nil {
@@ -201,7 +200,7 @@ func NewV2() (*LocalGit, v2.ClientFactory, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	t, err := ioutil.TempDir("", "localgit")
+	t, err := os.MkdirTemp("", "localgit")
 	if err != nil {
 		return nil, nil, err
 	}

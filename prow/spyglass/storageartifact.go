@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"sync"
 
 	pkgio "k8s.io/test-infra/prow/io"
@@ -197,7 +196,7 @@ func (a *StorageArtifact) ReadAtMost(n int64) ([]byte, error) {
 			return nil, fmt.Errorf("error getting artifact reader: %w", err)
 		}
 		defer reader.Close()
-		p, err = ioutil.ReadAll(reader) // Must readall for gzipped files
+		p, err = io.ReadAll(reader) // Must readall for gzipped files
 		if err != nil {
 			return nil, fmt.Errorf("error reading all from artifact: %w", err)
 		}
@@ -225,7 +224,7 @@ func (a *StorageArtifact) ReadAtMost(n int64) ([]byte, error) {
 		return nil, fmt.Errorf("error getting artifact reader: %w", err)
 	}
 	defer reader.Close()
-	p, err = ioutil.ReadAll(reader)
+	p, err = io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading all from artifact: %w", err)
 	}
@@ -249,7 +248,7 @@ func (a *StorageArtifact) ReadAll() ([]byte, error) {
 		return nil, fmt.Errorf("error getting artifact reader: %w", err)
 	}
 	defer reader.Close()
-	p, err := ioutil.ReadAll(reader)
+	p, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading all from artifact: %w", err)
 	}
@@ -283,7 +282,7 @@ func (a *StorageArtifact) ReadTail(n int64) ([]byte, error) {
 		return nil, fmt.Errorf("error getting artifact reader: %w", err)
 	}
 	defer reader.Close()
-	read, err := ioutil.ReadAll(reader)
+	read, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading all from artiact: %w", err)
 	}

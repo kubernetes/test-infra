@@ -19,7 +19,7 @@ package genyaml
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -56,7 +56,7 @@ func fileName(t *testing.T, extension string) string {
 }
 
 func readFile(t *testing.T, extension string) []byte {
-	data, err := ioutil.ReadFile(fileName(t, extension))
+	data, err := os.ReadFile(fileName(t, extension))
 	if err != nil {
 		t.Errorf("Failed reading .%s file: %v.", extension, err)
 	}

@@ -18,7 +18,6 @@ package verifyowners
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -462,7 +461,7 @@ func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, trigger
 	// If OWNERS_ALIASES exists, get all aliases.
 	path := filepath.Join(dir, filenames.OwnersAliases)
 	if _, err := os.Stat(path); err == nil {
-		b, err := ioutil.ReadFile(path)
+		b, err := os.ReadFile(path)
 		if err != nil {
 			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("Failed to read %s: %w", path, err)
 		}

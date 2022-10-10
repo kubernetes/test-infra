@@ -17,7 +17,6 @@ limitations under the License.
 package bumper
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -167,13 +166,13 @@ func (w *fakeWriter) Write(content []byte) (n int, err error) {
 }
 
 func writeToFile(t *testing.T, path, content string) {
-	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 		t.Errorf("write file %s dir with error '%v'", path, err)
 	}
 }
 
 func TestCallWithWriter(t *testing.T) {
-	dir, err := ioutil.TempDir("", "TestCallWithWriter")
+	dir, err := os.MkdirTemp("", "TestCallWithWriter")
 	if err != nil {
 		t.Errorf("failed to create temp dir '%s': '%v'", dir, err)
 	}

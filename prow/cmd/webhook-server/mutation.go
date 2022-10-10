@@ -19,7 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -32,7 +32,7 @@ import (
 )
 
 func (wa *webhookAgent) serveMutate(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		logrus.WithError(err).Info("unable to read request")
 		http.Error(w, fmt.Sprintf("bad request %v", err), http.StatusBadRequest)

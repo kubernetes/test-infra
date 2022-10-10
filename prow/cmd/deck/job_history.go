@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"path"
 	"regexp"
@@ -116,7 +115,7 @@ func (bucket blobStorageBucket) readObject(ctx context.Context, key string) ([]b
 		return nil, fmt.Errorf("creating reader for object %s: %w", key, err)
 	}
 	defer rc.Close()
-	return ioutil.ReadAll(rc)
+	return io.ReadAll(rc)
 }
 
 func (bucket blobStorageBucket) getName() string {

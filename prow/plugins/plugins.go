@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -283,7 +283,7 @@ func NewFakeConfigAgent() ConfigAgent {
 // loading fail.
 // If skipResolveConfigUpdater is true, the ConfigUpdater of the config will not be resolved.
 func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins, skipResolveConfigUpdater bool) error {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -317,7 +317,7 @@ func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, 
 				return nil
 			}
 
-			data, err := ioutil.ReadFile(path)
+			data, err := os.ReadFile(path)
 			if err != nil {
 				errs = append(errs, fmt.Errorf("failed to read %s: %w", path, err))
 				return nil

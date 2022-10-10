@@ -18,7 +18,7 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -271,7 +271,7 @@ func TestRerun(t *testing.T) {
 			} else if !tc.rerunCreatesJob && tc.httpCode == http.StatusOK {
 				resp := rr.Result()
 				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
+				body, err := io.ReadAll(resp.Body)
 				if err != nil {
 					t.Fatalf("Error reading response body: %v", err)
 				}
@@ -582,7 +582,7 @@ func TestLatestRerun(t *testing.T) {
 
 				resp := rr.Result()
 				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
+				body, err := io.ReadAll(resp.Body)
 				if err != nil {
 					t.Fatalf("Error reading response body: %v", err)
 				}

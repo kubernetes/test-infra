@@ -22,7 +22,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -242,7 +241,7 @@ func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {
 	}
 
 	if caCertFile != "" {
-		caCert, err := ioutil.ReadFile(caCertFile)
+		caCert, err := os.ReadFile(caCertFile)
 		if err != nil {
 			return nil, err
 		}

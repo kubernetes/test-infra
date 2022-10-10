@@ -23,7 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"os"
 	"path"
@@ -1730,7 +1730,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 
 	versionFilePath := filepath.Join(path.Dir(prowConfig), ConfigVersionFileName)
 	if _, errAccess := os.Stat(versionFilePath); errAccess == nil {
-		content, err := ioutil.ReadFile(versionFilePath)
+		content, err := os.ReadFile(versionFilePath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read versionfile %s: %w", versionFilePath, err)
 		}
@@ -1846,10 +1846,10 @@ func yamlToConfig(path string, nc interface{}, opts ...yaml.JSONOpt) error {
 	return nil
 }
 
-// ReadFileMaybeGZIP wraps ioutil.ReadFile, returning the decompressed contents
+// ReadFileMaybeGZIP wraps os.ReadFile, returning the decompressed contents
 // if the file is gzipped, or otherwise the raw contents.
 func ReadFileMaybeGZIP(path string) ([]byte, error) {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -1863,7 +1863,7 @@ func ReadFileMaybeGZIP(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ioutil.ReadAll(gzipReader)
+	return io.ReadAll(gzipReader)
 }
 
 func (c *Config) mergeJobConfig(jc JobConfig) error {

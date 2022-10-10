@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -163,7 +163,7 @@ func init() {
 }
 
 func createTempWorkingDir() error {
-	tempDir, err := ioutil.TempDir(".", "transfigure_")
+	tempDir, err := os.MkdirTemp(".", "transfigure_")
 	if err != nil {
 		return fmt.Errorf("%v (Caused by: %v)", "Error creating temp directory", err)
 	}
@@ -294,7 +294,7 @@ func populateGitUserAndEmail() error {
 		return fmt.Errorf("%v (Caused by: %v)", "Error sending request", err)
 	}
 	// Read in the desired fields from the response body.
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("%v (Caused by: %v)", "Error reading from response", err)
 	}
@@ -322,7 +322,7 @@ func populateGitUserAndEmail() error {
 }
 
 func readGitHubToken() error {
-	token, err := ioutil.ReadFile(o.githubToken)
+	token, err := os.ReadFile(o.githubToken)
 	o.tokenContents = strings.TrimSpace(string(token))
 	return wrapErrorOrNil("Error reading github token "+o.githubToken, err)
 }

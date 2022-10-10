@@ -42,7 +42,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -103,7 +102,7 @@ func main() {
 			continue
 		}
 		defer zf.Close()
-		b, err := ioutil.ReadAll(zf)
+		b, err := io.ReadAll(zf)
 		if err != nil {
 			log.Println("Failed to read eample", f.Name, err)
 			continue

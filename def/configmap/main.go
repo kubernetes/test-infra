@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -91,7 +90,7 @@ func buildConfigMap(name, namespace string, labels map[string]string, data map[s
 	if len(data) > 0 {
 		cm.Data = map[string]string{}
 		for key, value := range data {
-			buf, err := ioutil.ReadFile(value)
+			buf, err := os.ReadFile(value)
 			if err != nil {
 				wd, _ := os.Getwd()
 				return nil, fmt.Errorf("could not read %s/%s: %w", wd, value, err)
@@ -119,7 +118,7 @@ func main() {
 		fmt.Print(string(buf))
 		return
 	}
-	err = ioutil.WriteFile(opt.output, buf, 0644)
+	err = os.WriteFile(opt.output, buf, 0644)
 	if err != nil {
 		log.Fatalf("Failed to write %s: %v", opt.output, err)
 	}

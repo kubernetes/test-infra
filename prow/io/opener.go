@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -105,7 +104,7 @@ func NewOpener(ctx context.Context, gcsCredentialsFile, s3CredentialsFile string
 	}
 	var s3Credentials []byte
 	if s3CredentialsFile != "" {
-		s3Credentials, err = ioutil.ReadFile(s3CredentialsFile)
+		s3Credentials, err = os.ReadFile(s3CredentialsFile)
 		if err != nil {
 			return nil, err
 		}
@@ -493,7 +492,7 @@ func ReadContent(ctx context.Context, logger *logrus.Entry, opener Opener, path 
 		return nil, err
 	}
 	defer r.Close()
-	return ioutil.ReadAll(r)
+	return io.ReadAll(r)
 }
 
 func WriteContent(ctx context.Context, logger *logrus.Entry, opener Opener, path string, content []byte, opts ...WriterOptions) error {

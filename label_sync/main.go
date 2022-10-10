@@ -22,7 +22,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -353,7 +352,7 @@ func LoadConfig(path string, orgs string) (*Configuration, error) {
 		return nil, errors.New("empty path")
 	}
 	var c Configuration
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,7 @@ package integration
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 	"strings"
@@ -234,7 +234,7 @@ func TestDeck(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected response status code %d, got %d, ", http.StatusOK, resp.StatusCode)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Failed getting deck body response content %v", err)
 	}
@@ -300,7 +300,7 @@ func TestDeckTenantIDs(t *testing.T) {
 			if resp.StatusCode != http.StatusOK {
 				t.Fatalf("Expected response status code %d, got %d, ", http.StatusOK, resp.StatusCode)
 			}
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				t.Fatalf("Failed getting deck body response content %v", err)
 			}
@@ -435,7 +435,7 @@ func TestRerun(t *testing.T) {
 				time.Sleep(waitDur)
 				continue
 			}
-			body, err := ioutil.ReadAll(res.Body)
+			body, err := io.ReadAll(res.Body)
 			if err != nil {
 				lastErr = fmt.Errorf("could not read body response %v", err)
 				res.Body.Close()

@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -128,7 +128,7 @@ func TestHandlePrStatusWithoutLogin(t *testing.T) {
 	}
 	response := rr.Result()
 	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatalf("Error with reading response body: %v", err)
 	}
@@ -163,7 +163,7 @@ func TestHandlePrStatusWithInvalidToken(t *testing.T) {
 	response := rr.Result()
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatalf("Error with reading response body: %v", err)
 	}
@@ -318,7 +318,7 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 			}
 			response := rr.Result()
 			defer response.Body.Close()
-			body, err := ioutil.ReadAll(response.Body)
+			body, err := io.ReadAll(response.Body)
 			if err != nil {
 				t.Fatalf("Error with reading response body: %v", err)
 			}

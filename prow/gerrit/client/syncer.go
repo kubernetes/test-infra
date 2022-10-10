@@ -21,7 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"sync"
 	"time"
 
@@ -106,7 +106,7 @@ func (st *SyncTime) currentState() (LastSyncState, error) {
 		return nil, fmt.Errorf("open: %w", err)
 	}
 	defer io.LogClose(r)
-	buf, err := ioutil.ReadAll(r)
+	buf, err := stdio.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("read: %w", err)
 	}

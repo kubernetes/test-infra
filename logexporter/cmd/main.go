@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -108,7 +107,7 @@ func createSystemdLogfile(service string, outputMode string, outputDir string) e
 		return fmt.Errorf("Journalctl command for '%v' service failed: %w", service, err)
 	}
 	logfile := filepath.Join(outputDir, service+".log")
-	if err := ioutil.WriteFile(logfile, output, 0444); err != nil {
+	if err := os.WriteFile(logfile, output, 0444); err != nil {
 		return fmt.Errorf("Writing to file of journalctl logs for '%v' service failed: %w", service, err)
 	}
 	return nil
@@ -123,7 +122,7 @@ func createFullSystemdLogfile(outputDir string) error {
 		return fmt.Errorf("Journalctl command failed: %w", err)
 	}
 	logfile := filepath.Join(outputDir, "systemd.log")
-	if err := ioutil.WriteFile(logfile, output, 0444); err != nil {
+	if err := os.WriteFile(logfile, output, 0444); err != nil {
 		return fmt.Errorf("Writing full journalctl logs to file failed: %w", err)
 	}
 	return nil
@@ -247,7 +246,7 @@ func runCommand(name string, arg ...string) error {
 
 func dumpNetworkDebugInfo() {
 	klog.Info("Dumping network connectivity debug info")
-	resolv, err := ioutil.ReadFile("/etc/resolv.conf")
+	resolv, err := os.ReadFile("/etc/resolv.conf")
 	if err != nil {
 		klog.Errorf("Failed to read /etc/resolv.conf: %v", err)
 	}
@@ -278,7 +277,7 @@ func main() {
 		klog.Fatalf("Bad config provided: %v", err)
 	}
 
-	localTmpLogPath, err := ioutil.TempDir("/tmp", "k8s-systemd-logs")
+	localTmpLogPath, err := os.MkdirTemp("/tmp", "k8s-systemd-logs")
 	if err != nil {
 		klog.Fatalf("Could not create temporary dir locally for copying logs: %v", err)
 	}

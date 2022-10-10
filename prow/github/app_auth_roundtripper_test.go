@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
@@ -105,7 +104,7 @@ func TestAppsAuth(t *testing.T) {
 			},
 			responses: map[string]*http.Response{"/app": {
 				StatusCode: 401,
-				Body:       ioutil.NopCloser(&bytes.Buffer{}),
+				Body:       io.NopCloser(&bytes.Buffer{}),
 			}},
 			verifyRequests: func(r []*http.Request) error {
 				if n := len(r); n != 1 {
@@ -521,5 +520,5 @@ func serializeOrDie(in interface{}) io.ReadCloser {
 	if err != nil {
 		panic(fmt.Sprintf("Serialization failed: %v", err))
 	}
-	return ioutil.NopCloser(bytes.NewBuffer(rawData))
+	return io.NopCloser(bytes.NewBuffer(rawData))
 }

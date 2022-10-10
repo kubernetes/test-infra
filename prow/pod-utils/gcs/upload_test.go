@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"sync"
 	"testing"
 
@@ -225,7 +225,7 @@ func Test_openerObjectWriter_Write(t *testing.T) {
 				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
 			}
 
-			gotObjectContent, err := ioutil.ReadAll(reader)
+			gotObjectContent, err := stdio.ReadAll(reader)
 			if err != nil {
 				t.Errorf("Got unexpected error reading object %s: %v", tt.ObjectDest, err)
 			}

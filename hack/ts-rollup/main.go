@@ -18,17 +18,15 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 	"sync"
-
-	"context"
 
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -78,7 +76,7 @@ type packageInfo struct {
 }
 
 func loadPackagesInfo(f string) (*packagesInfo, error) {
-	b, err := ioutil.ReadFile(f)
+	b, err := os.ReadFile(f)
 	if err != nil {
 		return nil, fmt.Errorf("reading file %q: %w", f, err)
 	}

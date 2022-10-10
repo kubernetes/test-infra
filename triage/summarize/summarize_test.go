@@ -19,7 +19,6 @@ package summarize
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -138,7 +137,7 @@ func failOnMismatchedTestSlices(t *testing.T, want []test, got []test) {
 
 func TestSummarize(t *testing.T) {
 	// Setup
-	tmpdir, err := ioutil.TempDir("", "summarize_test_*")
+	tmpdir, err := os.MkdirTemp("", "summarize_test_*")
 	if err != nil {
 		t.Errorf("Could not create temporary directory: %s", err)
 		return
@@ -207,7 +206,7 @@ func TestSummarize(t *testing.T) {
 		tests = append(tests, result...)
 		tests = append(tests, []byte("\n")...)
 	}
-	err = ioutil.WriteFile(testsPath, tests, 0644)
+	err = os.WriteFile(testsPath, tests, 0644)
 	if err != nil {
 		t.Errorf("Could not write JSON to file: %s", err)
 		return

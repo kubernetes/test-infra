@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -114,7 +114,7 @@ func TestWait(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
+			tmpDir, err := os.MkdirTemp("", tc.name)
 			if err != nil {
 				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
 			}
@@ -130,7 +130,7 @@ func TestWait(t *testing.T) {
 				p := path.Join(tmpDir, fmt.Sprintf("marker-%d.txt", i))
 				var opt wrapper.Options
 				opt.MarkerFile = p
-				if err := ioutil.WriteFile(p, []byte(m), 0600); err != nil {
+				if err := os.WriteFile(p, []byte(m), 0600); err != nil {
 					t.Fatalf("could not create marker %d: %v", i, err)
 				}
 				entries = append(entries, opt)
@@ -222,7 +222,7 @@ func TestWaitParallelContainers(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
+			tmpDir, err := os.MkdirTemp("", tc.name)
 			if err != nil {
 				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
 			}
@@ -361,7 +361,7 @@ func TestCombineMetadata(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
+			tmpDir, err := os.MkdirTemp("", tc.name)
 			if err != nil {
 				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
 			}
@@ -386,7 +386,7 @@ func TestCombineMetadata(t *testing.T) {
 					continue
 				}
 				// not-json is invalid json
-				if err := ioutil.WriteFile(p, []byte(m), 0600); err != nil {
+				if err := os.WriteFile(p, []byte(m), 0600); err != nil {
 					t.Fatalf("could not create metadata %d: %v", i, err)
 				}
 			}
@@ -479,7 +479,7 @@ func TestLogReaders(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
+			tmpDir, err := os.MkdirTemp("", tc.name)
 			if err != nil {
 				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
 			}
@@ -494,7 +494,7 @@ func TestLogReaders(t *testing.T) {
 				if log == "missing" {
 					continue
 				}
-				if err := ioutil.WriteFile(p, []byte(log), 0600); err != nil {
+				if err := os.WriteFile(p, []byte(log), 0600); err != nil {
 					t.Fatalf("could not create log %s: %v", name, err)
 				}
 			}
@@ -517,7 +517,7 @@ func TestLogReaders(t *testing.T) {
 			const repl = "$1 <SNIP>"
 			actual := make(map[string]string)
 			for name, reader := range readers {
-				buf, err := ioutil.ReadAll(reader)
+				buf, err := io.ReadAll(reader)
 				if err != nil {
 					t.Fatalf("failed to read all: %v", err)
 				}
@@ -546,7 +546,7 @@ func TestSideCarLogsUpload(t *testing.T) {
 	logrus.Info(testString)
 	var once sync.Once
 
-	localOutputDir, err := ioutil.TempDir("", "testdir")
+	localOutputDir, err := os.MkdirTemp("", "testdir")
 	if err != nil {
 		t.Errorf("Unable to create temp dir: %v", err)
 	}
@@ -585,7 +585,7 @@ func TestSideCarLogsUpload(t *testing.T) {
 
 	options.doUpload(context.Background(), spec, true, false, metadata, buildLogs, logFile, &once)
 
-	files, err := ioutil.ReadDir(localOutputDir)
+	files, err := os.ReadDir(localOutputDir)
 	if err != nil {
 		t.Errorf("Unable to access files in directory: %v", err)
 	}
@@ -594,7 +594,7 @@ func TestSideCarLogsUpload(t *testing.T) {
 	}
 
 	var s []byte
-	s, err = ioutil.ReadFile(filepath.Join(localOutputDir, LogFileName))
+	s, err = os.ReadFile(filepath.Join(localOutputDir, LogFileName))
 	if err != nil {
 		t.Fatalf("Unable to read log file: %v", err)
 	}
