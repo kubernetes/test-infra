@@ -176,6 +176,7 @@ label:
       - label: lead-opted-in
         allowed_teams:
         - release-team-enhancements
+        - release-team-leads
         - sig-api-machinery-leads
         - sig-apps-leads
         - sig-architecture-leads
