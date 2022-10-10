@@ -992,7 +992,7 @@ func TestHandleGitHubLink(t *testing.T) {
 	}
 }
 
-func TestHandleGenericProviderLink(t *testing.T) {
+func TestHandleGitProviderLink(t *testing.T) {
 	tests := []struct {
 		name  string
 		query string
@@ -1065,7 +1065,7 @@ func TestHandleGenericProviderLink(t *testing.T) {
 				t.Fatalf("Error making request: %v", err)
 			}
 
-			handler := HandleGenericProviderLink(ghoptions.Host, true)
+			handler := HandleGitProviderLink(ghoptions.Host, true)
 			rr := httptest.NewRecorder()
 			handler.ServeHTTP(rr, req)
 			if rr.Code != http.StatusFound {

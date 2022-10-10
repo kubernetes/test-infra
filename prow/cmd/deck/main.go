@@ -591,7 +591,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 	// Handles link to github
 	mux.HandleFunc("/github-link", HandleGitHubLink(o.github.Host, secure))
-	mux.HandleFunc("/git-provider-link", HandleGenericProviderLink(o.github.Host, secure))
+	mux.HandleFunc("/git-provider-link", HandleGitProviderLink(o.github.Host, secure))
 
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
@@ -1499,7 +1499,7 @@ func HandleGitHubLink(githubHost string, secure bool) http.HandlerFunc {
 }
 
 // HandleGenericProviderLink returns link based on different providers.
-func HandleGenericProviderLink(githubHost string, secure bool) http.HandlerFunc {
+func HandleGitProviderLink(githubHost string, secure bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var redirectURL string
 
