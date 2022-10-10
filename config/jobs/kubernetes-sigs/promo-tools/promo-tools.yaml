@@ -15,7 +15,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221007-a06f7d6a2c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221010-3da4a9c21a-master
         command:
         - runner.sh
         args:
@@ -52,7 +52,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221007-a06f7d6a2c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221010-3da4a9c21a-master
         command:
         - runner.sh
         args:
@@ -84,7 +84,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -120,7 +120,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221007-a06f7d6a2c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221010-3da4a9c21a-master
         command:
         - "make"
         args:
