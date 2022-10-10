@@ -2,6 +2,7 @@ presubmits:
   # Check that changes to promoter manifests are valid.
   kubernetes/k8s.io:
   - name: pull-k8sio-cip
+    cluster: k8s-infra-prow-build
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-k8sio
@@ -19,6 +20,13 @@ presubmits:
         args:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        resources:
+          limits:
+            cpu: 2
+            memory: "4Gi"
+          requests:
+            cpu: 2
+            memory: "4Gi"
   # Check that images to be promoted are free of fixable vulnerabilities
   - name: pull-k8sio-cip-vuln
     annotations:
