@@ -991,6 +991,94 @@ func TestHandleGitHubLink(t *testing.T) {
 	}
 }
 
+func TestHandleGitProviderLink(t *testing.T) {
+	tests := []struct {
+		name  string
+		query string
+		want  string
+	}{
+		{
+			name:  "github-commit",
+			query: "target=commit&repo=bar&commit=abc123",
+			want:  "https://github.mycompany.com/bar/commit/abc123",
+		},
+		{
+			name:  "github-branch",
+			query: "target=branch&repo=bar&branch=main",
+			want:  "https://github.mycompany.com/bar/tree/main",
+		},
+		{
+			name:  "github-pr",
+			query: "target=pr&repo=bar&number=2",
+			want:  "https://github.mycompany.com/bar/pull/2",
+		},
+		{
+			name:  "github-pr-with-quote",
+			query: "target=pr&repo='bar'&number=2",
+			want:  "https://github.mycompany.com/bar/pull/2",
+		},
+		{
+			name:  "github-author",
+			query: "target=author&author=chaodaiG",
+			want:  "https://github.mycompany.com/chaodaiG",
+		},
+		{
+			name:  "github-author-withquote",
+			query: "target=author&repo='bar'&author=chaodaiG",
+			want:  "https://github.mycompany.com/chaodaiG",
+		},
+		{
+			name:  "github-invalid",
+			query: "target=invalid&repo=bar&commit=abc123",
+			want:  "/",
+		},
+		{
+			name:  "gerrit-commit",
+			query: "target=commit&repo='https://foo/bar'&commit=abc123",
+			want:  "https://foo/bar/+/abc123",
+		},
+		{
+			name:  "gerrit-branch",
+			query: "target=branch&repo='https://foo/bar'&branch=main",
+			want:  "https://foo/bar/+/refs/heads/main",
+		},
+		{
+			name:  "gerrit-pr",
+			query: "target=pr&repo='https://foo/bar'&number=2",
+			want:  "https://foo/c/bar/+/2",
+		},
+		{
+			name:  "gerrit-invalid",
+			query: "target=invalid&repo='https://foo/bar'&commit=abc123",
+			want:  "/",
+		},
+	}
+
+	ghoptions := flagutil.GitHubOptions{Host: "github.mycompany.com"}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			url := fmt.Sprintf("/git-provider-link?%s", tc.query)
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
+
+			handler := HandleGitProviderLink(ghoptions.Host, true)
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+			if rr.Code != http.StatusFound {
+				t.Fatalf("Bad error code: %d", rr.Code)
+			}
+			resp := rr.Result()
+			defer resp.Body.Close()
+			if want, got := tc.want, resp.Header.Get("Location"); want != got {
+				t.Fatalf("Wrong URL. Want: %s, got: %s", want, got)
+			}
+		})
+	}
+}
+
 func TestHttpStatusForError(t *testing.T) {
 	testCases := []struct {
 		name           string

@@ -9,7 +9,8 @@ declare const tideHistory: HistoryData;
 const recordDisplayLimit = 500;
 
 interface FilteredRecord extends Record {
-  // The following are not initially present and are instead populated based on the 'History' map key while filtering.
+  // The following are not initially present and are instead populated based on
+  // the 'History' map key while filtering.
   repo: string;
   branch: string;
 }
@@ -36,12 +37,15 @@ function optionsForRepoBranch(repo: string, branch: string): Options {
   const hist: {[key: string]: Record[]} = typeof tideHistory !== 'undefined' ? tideHistory.History : {};
   const poolKeys = Object.keys(hist);
   for (const poolKey of poolKeys) {
-    const match = RegExp('(.*?):(.*)').exec(poolKey);
+    // poolKey is in the formatted as `<org>/<repo>:branch`, for example:
+    // - GitHub: `foo/bar:main` # repo: bar
+    // - Gerrit: `https://foo/bar/baz:main` # repo: bar/baz
+    const match = RegExp('(((https|http)://[^/]*/)?.*?):(.*)').exec(poolKey);
     if (!match) {
       continue;
     }
-    const recRepo = match[1];
-    const recBranch = match[2];
+    const recRepo = match[3];
+    const recBranch = match[4];
 
     opts.repos[recRepo] = true;
     if (!repo || repo === recRepo) {
@@ -250,12 +254,12 @@ function redrawRecords(recs: FilteredRecord[]): void {
 
       r.appendChild(cell.link(
         `${rec.repo} ${rec.branch}`,
-        `/github-link?dest=${rec.repo}/tree/${rec.branch}`,
+        `/git-provider-link?target=branch&repo='${rec.repo}'&branch=${rec.branch}`,
       ));
       if (rec.baseSHA) {
         r.appendChild(cell.link(
           rec.baseSHA.slice(0, 7),
-          `/github-link?dest=${rec.repo}/commit/${rec.baseSHA}`,
+          `/git-provider-link?target=commit&repo='${rec.repo}'&commit=${rec.baseSHA}`,
         ));
       } else {
         r.appendChild(cell.text(""));
