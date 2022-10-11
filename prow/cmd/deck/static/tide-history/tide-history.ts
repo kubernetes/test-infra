@@ -44,7 +44,7 @@ function optionsForRepoBranch(repo: string, branch: string): Options {
     if (!match) {
       continue;
     }
-    const recRepo = match[3];
+    const recRepo = match[1];
     const recBranch = match[4];
 
     opts.repos[recRepo] = true;
