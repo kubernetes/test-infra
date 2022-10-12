@@ -70,7 +70,7 @@ periodics:
     preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
-    timeout: 210m
+    timeout: 240m
   extra_refs:
   - org: kubernetes
     repo: perf-tests
@@ -117,7 +117,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-args=--testoverrides=./testing/load/golang/custom_api_call_thresholds.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=180m
+      - --timeout=210m
       - --use-logexporter
       - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       env:
