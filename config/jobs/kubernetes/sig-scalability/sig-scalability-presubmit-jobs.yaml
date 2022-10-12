@@ -912,7 +912,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-lint
     spec:
       containers:
-      - image: golangci/golangci-lint:v1.50
+      - image: golangci/golangci-lint:v1.47.3
         command:
         - make
         args:
