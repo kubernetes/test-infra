@@ -68,6 +68,11 @@ presets:
       value: "true"
     - name: WORKER_MACHINE_COUNT
       value: 0 # Don't create linux worker nodes
+- labels:
+    preset-capz-gmsa-setup: "true"
+  env:
+    - name: GMSA
+      value: "true"
 periodics:
 - name: ci-kubernetes-e2e-capz-master-containerd-windows
   interval: 3h
@@ -192,6 +197,7 @@ periodics:
     preset-capz-windows-common-main: "true"
     preset-capz-containerd-latest: "true"
     preset-capz-serial-slow: "true"
+    preset-capz-gmsa-setup: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
