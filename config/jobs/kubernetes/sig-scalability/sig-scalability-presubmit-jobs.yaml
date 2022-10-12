@@ -866,7 +866,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: golang:1.15
+      - image: golang:1.18
         command:
         - verify/test.sh
         resources:
@@ -912,7 +912,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-lint
     spec:
       containers:
-      - image: golangci/golangci-lint:v1.31
+      - image: golangci/golangci-lint:v1.50
         command:
         - make
         args:
