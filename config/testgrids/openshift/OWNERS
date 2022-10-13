@@ -1,15 +1,15 @@
 reviewers:
-- stevekuznetsov
 - droslean
 - hongkailiu
-- petr-muller
+- jmguzik
+- smg247
 - bparees
 - jeremyeder
+
 approvers:
-- stevekuznetsov
 - droslean
 - hongkailiu
-- petr-muller
+- jmguzik
+- smg247
 - bparees
 - jeremyeder
-- alvaroaleman
