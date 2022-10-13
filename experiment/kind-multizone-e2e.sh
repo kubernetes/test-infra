@@ -143,7 +143,7 @@ create_cluster() {
     ;;
   esac
 
-  # create the config file
+  # create the config file with 2 nodes per zone
   cat <<EOF > "${ARTIFACTS}/kind-config.yaml"
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -164,7 +164,28 @@ nodes:
     kind: JoinConfiguration
     nodeRegistration:
       kubeletExtraArgs:
+        node-labels: "topology.kubernetes.io/zone=zone-a"
+- role: worker
+  kubeadmConfigPatches:
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
         node-labels: "topology.kubernetes.io/zone=zone-b"
+- role: worker
+  kubeadmConfigPatches:
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "topology.kubernetes.io/zone=zone-b"
+- role: worker
+  kubeadmConfigPatches:
+  - |
+    kind: JoinConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "topology.kubernetes.io/zone=zone-c"
 - role: worker
   kubeadmConfigPatches:
   - |
