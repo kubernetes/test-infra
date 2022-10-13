@@ -171,6 +171,12 @@ type Presubmit struct {
 	// (Default: `/test <job name>`)
 	RerunCommand string `json:"rerun_command,omitempty"`
 
+	// RunBeforeMerge indicates that a job should always run by Tide as long as
+	// Brancher matches.
+	// This is used when a prowjob is so expensive that it's not ideal to run on
+	// every single push from all PRs.
+	RunBeforeMerge bool `json:"run_before_merge"`
+
 	Brancher
 
 	RegexpChangeMatcher

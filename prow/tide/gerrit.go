@@ -322,20 +322,28 @@ func (p *GerritProvider) GetTideContextPolicy(org, repo, branch string, baseSHAG
 			continue
 		}
 
+		// jobs that produce required contexts and will
+		// always run should be required at all times.
+		// jobs with `RunBeforeMerge` are also required.
 		var isJobRequired bool
-		if val, ok := pj.Labels[kube.GerritReportLabel]; ok && requireLabels.Has(val) {
+		// jobs that trigger conditionally are required if present.
+		var isJobRequiredWhenPresent bool
+
+		if pj.RunBeforeMerge {
 			isJobRequired = true
+		}
+		if val, ok := pj.Labels[kube.GerritReportLabel]; ok && requireLabels.Has(val) {
+			if pj.TriggersConditionally() {
+				isJobRequiredWhenPresent = true
+			} else {
+				isJobRequired = true
+			}
 		}
 
 		if isJobRequired {
-			if pj.TriggersConditionally() {
-				// jobs that trigger conditionally are required if present.
-				requiredIfPresent.Insert(pj.Context)
-			} else {
-				// jobs that produce required contexts and will
-				// always run should be required at all times
-				required.Insert(pj.Context)
-			}
+			required.Insert(pj.Context)
+		} else if isJobRequiredWhenPresent {
+			requiredIfPresent.Insert(pj.Context)
 		} else {
 			optional.Insert(pj.Context)
 		}

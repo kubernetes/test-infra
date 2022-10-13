@@ -1531,7 +1531,12 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 				continue
 			}
 
-			shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), false, false)
+			// Only keep the jobs that are required for this PR. Order of
+			// filters:
+			// - Brancher
+			// - RunBeforeMerge
+			// - Files changed
+			shouldRun, err := ps.ShouldRun(sp.branch, c.changedFiles.prChanges(&pr), ps.RunBeforeMerge, false)
 			if err != nil {
 				return nil, err
 			}
