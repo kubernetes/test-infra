@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,10 +32,10 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pkg/layeredsets"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
-	ownersFileName = "OWNERS"
 	// ApprovalNotificationName defines the name used in the title for the approval notifications.
 	ApprovalNotificationName = "ApprovalNotifier"
 )
@@ -46,6 +46,7 @@ type Repo interface {
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
+	Filenames() ownersconfig.Filenames
 }
 
 // Owners provides functionality related to owners of a specific code change.
@@ -174,7 +175,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 	for !ap.RequirementsMet() {
 		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
 		if newApprover == "" {
-			o.log.Warnf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
+			o.log.Warnf("Couldn't find/suggest approvers for each file. Unapproved: %q", ap.UnapprovedFiles().List())
 			return ap.GetCurrentApproversSet()
 		}
 		ap.AddApprover(newApprover, "", "")
@@ -327,9 +328,9 @@ type Approvers struct {
 	ManuallyApproved func() bool
 }
 
-// IntersectSetsCase runs the intersection between to sets.String in a
+// CaseInsensitiveIntersection runs the intersection between to sets.String in a
 // case-insensitive way. It returns the name with the case of "one".
-func IntersectSetsCase(one, other sets.String) sets.String {
+func CaseInsensitiveIntersection(one, other sets.String) sets.String {
 	lower := sets.NewString()
 	for item := range other {
 		lower.Insert(strings.ToLower(item))
@@ -521,9 +522,10 @@ func (ap Approvers) GetFiles(baseURL *url.URL, branch string) []File {
 	allFiles := []File{}
 	for owner := range ap.UnapprovedOwners() {
 		allFiles = append(allFiles, UnapprovedFile{
-			baseURL:  baseURL,
-			branch:   branch,
-			filepath: owner,
+			baseURL:        baseURL,
+			branch:         branch,
+			filepath:       owner,
+			ownersFilename: ap.owners.repo.Filenames().Owners,
 		})
 	}
 
@@ -591,11 +593,7 @@ func (ap Approvers) RequirementsMet() bool {
 // IsApproved returns a bool indicating whether the PR is fully approved.
 // If a human manually added the approved label, this returns true, ignoring normal approval rules.
 func (ap Approvers) IsApproved() bool {
-	reqsMet := ap.RequirementsMet()
-	if !reqsMet && ap.ManuallyApproved() {
-		return true
-	}
-	return reqsMet
+	return ap.RequirementsMet() || ap.ManuallyApproved()
 }
 
 // ListApprovals returns the list of approvals
@@ -623,7 +621,7 @@ type File interface {
 	String() string
 }
 
-// ApprovedFolder contains the information of a an approved folder.
+// ApprovedFolder contains the information of an approved folder.
 type ApprovedFolder struct {
 	baseURL    *url.URL
 	folderpath string
@@ -722,13 +720,14 @@ func (ua UnapprovedFolder) String() string {
 
 // UnapprovedFile contains information approved an unapproved owners file
 type UnapprovedFile struct {
-	baseURL  *url.URL
-	filepath string
-	branch   string
+	baseURL        *url.URL
+	filepath       string
+	ownersFilename string
+	branch         string
 }
 
 func (uaf UnapprovedFile) String() string {
-	fullOwnersPath := filepath.Join(uaf.filepath, ownersFileName)
+	fullOwnersPath := filepath.Join(uaf.filepath, uaf.ownersFilename)
 	if strings.HasSuffix(uaf.filepath, ".md") {
 		fullOwnersPath = uaf.filepath
 	}

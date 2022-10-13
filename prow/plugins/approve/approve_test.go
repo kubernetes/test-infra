@@ -1367,7 +1367,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 	}
 }
 
-func TestHandle_GanularApprover(t *testing.T) {
+func TestHandle_GranularApprover(t *testing.T) {
 	// This function does not need to test IsApproved, that is tested in approvers/approvers_test.go.
 
 	// includes tests with mixed case usernames

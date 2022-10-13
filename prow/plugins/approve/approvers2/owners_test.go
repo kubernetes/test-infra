@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pkg/layeredsets"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
@@ -37,6 +38,10 @@ type FakeRepo struct {
 	approversMap      map[string]layeredsets.String
 	leafApproversMap  map[string]sets.String
 	noParentOwnersMap map[string]bool
+}
+
+func (f FakeRepo) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
 }
 
 // Note to self: this function is used to calculating if the PR is approved
