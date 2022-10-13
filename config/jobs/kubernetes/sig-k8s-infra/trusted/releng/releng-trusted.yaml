@@ -47,13 +47,22 @@ postsubmits:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - --confirm
+        # TODO: these are *not* threads 🤷‍♂️
+        # https://www.geeksforgeeks.org/golang-goroutine-vs-thread/
+        #
+        # this should probably be a multiple of cores below
+        - --threads=14
+        env:
+        - name: GOMAXPROCS
+          value: "7"
         resources:
+          # request most of one node 🚀
           requests:
-            cpu: 2
-            memory: "4Gi"
+            cpu: 7
+            memory: "40Gi"
           limits:
-            cpu: 2
-            memory: "4Gi"
+            cpu: 7
+            memory: "40Gi"
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -146,6 +155,22 @@ periodics:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - --confirm
+      # TODO: these are *not* threads 🤷‍♂️
+      # https://www.geeksforgeeks.org/golang-goroutine-vs-thread/
+      #
+      # this should probably be a multiple of cores below
+      - --threads=14
+      env:
+      - name: GOMAXPROCS
+        value: "7"
+      resources:
+        # request most of one node 🚀
+        requests:
+          cpu: 7
+          memory: "40Gi"
+        limits:
+          cpu: 7
+          memory: "40Gi"
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
