@@ -35,8 +35,8 @@ LINT_COMMAND=("yamllint" "-c" "config/jobs/.yamllint.conf" "config/jobs" "config
     --rm -i \
     -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
     --security-opt="label=disable" \
-    "quay.io/kubermatic/yamllint:0.1" \
-    "${LINT_COMMAND[@]}"
+    "cytopia/yamllint:1.26@sha256:1bf8270a671a2e5f2fea8ac2e80164d627e0c5fa083759862bbde80628f942b2" \
+    "${LINT_COMMAND[@]:1}"
 
 if [[ -n "${NO_DOCKER:-}" ]]; then
   (
