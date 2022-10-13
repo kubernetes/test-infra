@@ -26,6 +26,7 @@ import (
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 type fakeapproval struct {
@@ -283,9 +284,10 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: sets.NewString(),
 			expectedFiles: []File{UnapprovedFile{
-				baseURL:  &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
-				filepath: "b",
-				branch:   "master",
+				baseURL:        &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
+				filepath:       "b",
+				branch:         "master",
+				ownersFilename: ownersconfig.FakeFilenames.Owners,
 			}},
 		},
 		{
@@ -299,9 +301,10 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(),
 			expectedFiles: []File{UnapprovedFile{
-				baseURL:  &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
-				filepath: "",
-				branch:   "master",
+				baseURL:        &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
+				filepath:       "",
+				branch:         "master",
+				ownersFilename: ownersconfig.FakeFilenames.Owners,
 			}},
 		},
 		{
@@ -310,14 +313,16 @@ func TestGetFiles(t *testing.T) {
 			currentlyApproved: sets.NewString(),
 			expectedFiles: []File{
 				UnapprovedFile{
-					baseURL:  &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
-					filepath: "a/combo",
-					branch:   "master",
+					baseURL:        &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
+					filepath:       "a/combo",
+					branch:         "master",
+					ownersFilename: ownersconfig.FakeFilenames.Owners,
 				},
 				UnapprovedFile{
-					baseURL:  &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
-					filepath: "a/d",
-					branch:   "master",
+					baseURL:        &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
+					filepath:       "a/d",
+					branch:         "master",
+					ownersFilename: ownersconfig.FakeFilenames.Owners,
 				},
 			},
 		},
@@ -327,9 +332,10 @@ func TestGetFiles(t *testing.T) {
 			currentlyApproved: eApprovers,
 			expectedFiles: []File{
 				UnapprovedFile{
-					baseURL:  &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
-					filepath: "a/d",
-					branch:   "master",
+					baseURL:        &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
+					filepath:       "a/d",
+					branch:         "master",
+					ownersFilename: ownersconfig.FakeFilenames.Owners,
 				},
 			},
 		},
@@ -345,9 +351,10 @@ func TestGetFiles(t *testing.T) {
 			currentlyApproved: cApprovers,
 			expectedFiles: []File{
 				UnapprovedFile{
-					baseURL:  &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
-					filepath: "a/d",
-					branch:   "master",
+					baseURL:        &url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"},
+					filepath:       "a/d",
+					branch:         "master",
+					ownersFilename: ownersconfig.FakeFilenames.Owners,
 				},
 			},
 		},
