@@ -578,7 +578,7 @@ periodics:
     description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
     testgrid-num-columns-recent: '3'
-- interval: 6h
+- interval: 12h
   name: ci-kubernetes-kind-multizone
   cluster: k8s-infra-prow-build
   decorate: true
