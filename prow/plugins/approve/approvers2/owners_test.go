@@ -35,9 +35,10 @@ const (
 )
 
 type FakeRepo struct {
-	approversMap      map[string]layeredsets.String
-	leafApproversMap  map[string]sets.String
-	noParentOwnersMap map[string]bool
+	approversMap                 map[string]layeredsets.String
+	leafApproversMap             map[string]sets.String
+	noParentOwnersMap            map[string]bool
+	autoApproveUnownedSubfolders map[string]bool
 }
 
 func (f FakeRepo) Filenames() ownersconfig.Filenames {
@@ -82,6 +83,10 @@ func (f FakeRepo) FindApproverOwnersForFile(path string) string {
 
 func (f FakeRepo) IsNoParentOwners(path string) bool {
 	return f.noParentOwnersMap[path]
+}
+
+func (f FakeRepo) IsAutoApproveUnownedSubfolders(ownerFilePath string) bool {
+	return f.autoApproveUnownedSubfolders[ownerFilePath]
 }
 
 func canonicalize(path string) string {

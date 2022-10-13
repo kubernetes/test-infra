@@ -46,6 +46,7 @@ type Repo interface {
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
+	IsAutoApproveUnownedSubfolders(directory string) bool
 	Filenames() ownersconfig.Filenames
 }
 
@@ -68,6 +69,10 @@ func (o Owners) GetApprovers() map[string]sets.String {
 	filesToApprovers := map[string]sets.String{}
 
 	for _, fn := range o.filenames {
+		ownersFile := o.repo.FindApproverOwnersForFile(fn)
+		if strings.Contains(filepath.Dir(filepath.Dir(fn)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
+			continue
+		}
 		filesToApprovers[fn] = o.repo.Approvers(fn).Set()
 	}
 
@@ -188,6 +193,12 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
 	for _, fn := range o.filenames {
+		ownersFile := o.repo.FindApproverOwnersForFile(fn)
+		// If the ownersfile for fn is in the parent folder and has AllowFolderCreation enabled, we purge
+		// the file from our filenames list, because it doesn't need approval
+		if strings.Contains(filepath.Dir(filepath.Dir(fn)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
+			continue
+		}
 		owners.Insert(o.repo.FindApproverOwnersForFile(fn))
 	}
 	o.removeSubdirs(owners)
@@ -463,6 +474,7 @@ func (ap Approvers) GetNoIssueApproversSet() sets.String {
 }
 
 // GetFilesApprovers returns a map from files -> list of current approvers.
+// Note: This does not include any files that are auto approved by IsAutoApproveUnownedSubfolders.
 func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
 	for fn, potentialApprovers := range ap.owners.GetApprovers() {
@@ -471,6 +483,12 @@ func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	}
 
 	return filesApprovers
+}
+
+// GetFilesCount return the number of files in the PR.
+// Note: This is used to add information in the approval notifier message.
+func (ap Approvers) GetFilesCount() int {
+	return len(ap.owners.filenames)
 }
 
 // NoIssueApprovers returns the list of people who have "no-issue"
@@ -810,7 +828,7 @@ The pull request process is described [here]({{ .prProcessLink }})
 
 {{ end -}}
 
-Out of **{{len .ap.GetFilesApprovers}}** files: **{{sub (len .ap.GetFilesApprovers) (len .ap.UnapprovedFiles)}}** are approved and **{{len .ap.UnapprovedFiles}}** are unapproved.  
+Out of **{{.ap.GetFilesCount}}** files: **{{sub .ap.GetFilesCount (len .ap.UnapprovedFiles)}}** are approved and **{{len .ap.UnapprovedFiles}}** are unapproved.  
 
 {{if ne (len .ap.UnapprovedFiles) 0 -}}
 Needs approval from approvers in these files:
