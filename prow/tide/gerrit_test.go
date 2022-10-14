@@ -19,6 +19,8 @@ package tide
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -40,7 +42,6 @@ import (
 var _ gerritClient = (*fakeGerritClient)(nil)
 
 type fakeGerritClient struct {
-	reviews int
 	// map{org: map{project: []changes}}
 	changes map[string]map[string][]gerrit.ChangeInfo
 }
@@ -79,6 +80,23 @@ func (f *fakeGerritClient) GetBranchRevision(instance, project, branch string) (
 
 func (f *fakeGerritClient) SubmitChange(instance, id string, wait bool) (*gerrit.ChangeInfo, error) {
 	return f.GetChange(instance, id)
+}
+
+func (f *fakeGerritClient) SetReview(instance, id, revision, message string, _ map[string]string) error {
+	change, err := f.GetChange(instance, id)
+	if err != nil {
+		return fmt.Errorf("change not found: %v", err)
+	}
+	revNum, err := strconv.Atoi(revision)
+	if err != nil {
+		return fmt.Errorf("failed converting revision '%s' to int: %v", revision, err)
+	}
+	change.Messages = append(change.Messages, gerrit.ChangeMessageInfo{
+		RevisionNumber: revNum,
+		Message:        message,
+	})
+
+	return nil
 }
 
 func (f *fakeGerritClient) addChanges(instance, project string, changes []gerrit.ChangeInfo) {
@@ -675,9 +693,17 @@ func TestMergePR(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fgc := newFakeGerritClient()
 			fgc.changes = tc.clientChanges
+			cfg := config.Config{
+				ProwConfig: config.ProwConfig{
+					Gerrit: config.Gerrit{
+						DeckURL: "http://foo.bar",
+					},
+				},
+			}
 			fc := &GerritProvider{
 				logger: logrus.WithContext(context.Background()),
 				gc:     fgc,
+				cfg:    func() *config.Config { return &cfg },
 			}
 
 			var prsToMerge []CodeReviewCommon
