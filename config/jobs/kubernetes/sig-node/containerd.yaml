@@ -1338,4 +1338,32 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-credential-provider
-    description: "tests alpha feature kubelet image credential provider"
+    description: "tests feature kubelet image credential provider"
+- name: ci-kubernetes-e2e-gcp-credential-provider
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - args:
+        - --repo=k8s.io/kubernetes=master
+        - --timeout=240
+        - --root=/go/src
+        - --scenario=kubernetes_e2e
+        - --
+        - --check-leaked-resources
+        - --cluster=
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
+        - --env=KUBE_FEATURE_GATES=DisableKubeletCloudCredentialProviders=true
+        - --extract=ci/latest
+        - --gcp-zone=us-west1-b
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --provider=gce
+        - --test_args=--ginkgo.focus=\[Feature:KubeletCredentialProviders\]
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220928-cd48f52a16-master
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: gcp-kubelet-credential-provider
+    description: "tests feature gcp kubelet image credential provider"

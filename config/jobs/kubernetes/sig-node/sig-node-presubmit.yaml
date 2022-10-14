@@ -1310,3 +1310,51 @@ presubmits:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
+
+  - name: pull-kubernetes-e2e-kubelet-credential-provider
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_report: false
+    run_if_changed: '^(pkg\/credential\/provider\/|test\/e2e_node\/plugins\/gcp-credential-provider)'
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-gce-cluster-e2e-credential-provider
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221010-3da4a9c21a-master
+        args:
+          - --root=/go/src
+          - "--job=$(JOB_NAME)"
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--timeout=240"
+          - --scenario=kubernetes_e2e
+          - -- # end bootstrap args, scenario args below
+          - --check-leaked-resources
+          - --cluster=
+          - --env=ENABLE_AUTH_PROVIDER_GCP=true
+          - --env=KUBE_FEATURE_GATES=DisableKubeletCloudCredentialProviders=true
+          - --extract=ci/latest
+          - --gcp-zone=us-west1-b
+          - --gcp-node-image=gci
+          - --gcp-nodes=1
+          - --provider=gce
+          - --test_args=--ginkgo.focus=\[Feature:KubeletCredentialProviders\]
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
