@@ -24,6 +24,17 @@ interface Options {
   pulls: {[key: string]: boolean};
 }
 
+function repoBranchFromPoolKey(poolKey: string): [string, string] {
+  // poolKey is in the formatted as `<org>/<repo>:branch`, for example:
+    // - GitHub: `foo/bar:main` # repo: bar
+    // - Gerrit: `https://foo/bar/baz:main` # repo: bar/baz
+    const match = RegExp('(((https|http)://[^/]*/)?.*?):(.*)').exec(poolKey);
+    if (!match) {
+      return ["", ""];
+    }
+    return [match[1], match[4]];
+}
+
 function optionsForRepoBranch(repo: string, branch: string): Options {
   const opts: Options = {
     actions: {},
@@ -37,15 +48,10 @@ function optionsForRepoBranch(repo: string, branch: string): Options {
   const hist: {[key: string]: Record[]} = typeof tideHistory !== 'undefined' ? tideHistory.History : {};
   const poolKeys = Object.keys(hist);
   for (const poolKey of poolKeys) {
-    // poolKey is in the formatted as `<org>/<repo>:branch`, for example:
-    // - GitHub: `foo/bar:main` # repo: bar
-    // - Gerrit: `https://foo/bar/baz:main` # repo: bar/baz
-    const match = RegExp('(((https|http)://[^/]*/)?.*?):(.*)').exec(poolKey);
-    if (!match) {
+    const [recRepo, recBranch] = repoBranchFromPoolKey(poolKey);
+    if (recRepo === "") {
       continue;
     }
-    const recRepo = match[1];
-    const recBranch = match[4];
 
     opts.repos[recRepo] = true;
     if (!repo || repo === recRepo) {
@@ -182,12 +188,10 @@ function redraw(): void {
   const hist: {[key: string]: Record[]} = typeof tideHistory !== 'undefined' ? tideHistory.History : {};
   const poolKeys = Object.keys(hist);
   for (const poolKey of poolKeys) {
-    const match = RegExp('(.*?):(.*)').exec(poolKey);
-    if (!match || match.length !== 3) {
+    const [repo, branch] = repoBranchFromPoolKey(poolKey);
+    if (repo === "") {
       return;
     }
-    const repo = match[1];
-    const branch = match[2];
 
     if (!equalSelected(repoSel, repo)) {
       continue;
