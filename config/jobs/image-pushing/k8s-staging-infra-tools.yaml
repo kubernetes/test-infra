@@ -68,6 +68,7 @@ postsubmits:
         testgrid-alert-email: public-log-asn-matcher@ii.coop
         description: Builds the public-log-asn-matcher image for generating data that is used for reviewing Kubernetes Public artifact traffic in DataStudio.
       decorate: true
+      run_if_changed: "^images/public-log-asn-matcher/"
       branches:
         - ^main$
       spec:
