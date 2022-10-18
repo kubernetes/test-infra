@@ -22,7 +22,7 @@ set -o pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "${REPO_ROOT}"
 
-NODE_IMAGE='node:14-bullseye-slim'
+NODE_IMAGE='node:18-bullseye-slim'
 
 DOCKER=(docker)
 
