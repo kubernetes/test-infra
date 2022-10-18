@@ -69,8 +69,7 @@ presubmits:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
         - name: KUBERNETES_VERSION
-          value: "latest"
-          #value: "1.25.0"
+          value: "1.25.0"
         - name: TEST
           value: ci/prow/e2e-pre-built-driver-container-no-nfd
         command:
