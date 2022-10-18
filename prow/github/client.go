@@ -1910,9 +1910,8 @@ func (c *client) CreateIssue(org, repo, title, body string, milestone int, label
 	}
 	_, err := c.request(&request{
 		// allow the description and draft fields
-		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
-		accept:      "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
+		accept:      "application/vnd.github+json, application/vnd.github.shadow-cat-preview",
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues", org, repo),
 		org:         org,
@@ -3629,9 +3628,7 @@ func (c *client) CreateTeam(org string, team Team) (*Team, error) {
 	_, err := c.request(&request{
 		method: http.MethodPost,
 		path:   path,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		accept:      "application/vnd.github.hellcat-preview+json",
+		accept:      "application/vnd.github+json",
 		org:         org,
 		requestBody: &team,
 		exitCodes:   []int{201},
@@ -3667,9 +3664,7 @@ func (c *client) EditTeam(org string, t Team) (*Team, error) {
 	_, err := c.request(&request{
 		method: http.MethodPatch,
 		path:   path,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		accept:      "application/vnd.github.hellcat-preview+json",
+		accept:      "application/vnd.github+json",
 		org:         org,
 		requestBody: &team,
 		exitCodes:   []int{200, 201},
@@ -3732,9 +3727,7 @@ func (c *client) ListTeams(org string) ([]Team, error) {
 	var teams []Team
 	err := c.readPaginatedResults(
 		path,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
+		"application/vnd.github+json",
 		org,
 		func() interface{} {
 			return &[]Team{}
@@ -3893,9 +3886,7 @@ func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember,
 			"per_page": []string{"100"},
 			"role":     []string{role},
 		},
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
+		"application/vnd.github+json",
 		org,
 		func() interface{} {
 			return &[]TeamMember{}
@@ -3971,9 +3962,7 @@ func (c *client) ListTeamRepos(org string, id int) ([]Repo, error) {
 		url.Values{
 			"per_page": []string{"100"},
 		},
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
+		"application/vnd.github+json",
 		org,
 		func() interface{} {
 			return &[]Repo{}
@@ -4013,8 +4002,6 @@ func (c *client) ListTeamReposBySlug(org, teamSlug string) ([]Repo, error) {
 		url.Values{
 			"per_page": []string{"100"},
 		},
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
 		"application/vnd.github.v3+json",
 		org,
 		func() interface{} {
@@ -4327,9 +4314,7 @@ func (c *client) IsCollaborator(org, repo, user string) (bool, error) {
 	}
 	code, err := c.request(&request{
 		method: http.MethodGet,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		accept:    "application/vnd.github.hellcat-preview+json",
+		accept:    "application/vnd.github+json",
 		path:      fmt.Sprintf("/repos/%s/%s/collaborators/%s", org, repo, user),
 		org:       org,
 		exitCodes: []int{204, 404, 302},
@@ -4361,9 +4346,7 @@ func (c *client) ListCollaborators(org, repo string) ([]User, error) {
 	var users []User
 	err := c.readPaginatedResults(
 		path,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
+		"application/vnd.github+json",
 		org,
 		func() interface{} {
 			return &[]User{}
@@ -4890,7 +4873,7 @@ func (c *client) DeleteProjectCard(org string, projectCardID int) error {
 
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		accept:    "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		accept:    "application/vnd.github+json",
 		path:      fmt.Sprintf("/projects/columns/cards/:%d", projectCardID),
 		org:       org,
 		exitCodes: []int{204},
