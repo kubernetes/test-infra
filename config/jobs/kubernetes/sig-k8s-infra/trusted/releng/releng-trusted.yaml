@@ -51,7 +51,7 @@ postsubmits:
         # https://www.geeksforgeeks.org/golang-goroutine-vs-thread/
         #
         # this should probably be a multiple of cores below
-        - --threads=14
+        - --threads=28
         env:
         - name: GOMAXPROCS
           value: "7"
@@ -159,7 +159,7 @@ periodics:
       # https://www.geeksforgeeks.org/golang-goroutine-vs-thread/
       #
       # this should probably be a multiple of cores below
-      - --threads=14
+      - --threads=28
       env:
       - name: GOMAXPROCS
         value: "7"
