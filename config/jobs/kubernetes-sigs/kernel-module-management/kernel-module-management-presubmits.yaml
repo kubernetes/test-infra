@@ -64,8 +64,13 @@ presubmits:
         #  value: on
         #- name: BAZEL_VERSION
         #  value: 5.3.0
-        #- name: USE_TEST_INFRA_LOG_DUMPING
-        #  value: true
+
+        #  https://github.com/kubernetes/kubernetes/tree/master/cluster/log-dump#this-directory-is-deprecated
+        - name: USE_TEST_INFRA_LOG_DUMPING
+          value: "true"
+        - name: KUBERNETES_VERSION
+          value: "latest"
+          #value: "1.25.0"
         - name: TEST
           value: ci/prow/e2e-pre-built-driver-container-no-nfd
         command:
