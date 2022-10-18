@@ -23,6 +23,8 @@ presubmits:
         env:
         - name: CIP_E2E_KEY_FILE
           value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
         volumeMounts:
         - name: k8s-cip-test-prod-service-account-creds
           mountPath: /etc/k8s-cip-test-prod-service-account
@@ -60,6 +62,8 @@ presubmits:
         env:
         - name: CIP_E2E_KEY_FILE
           value: "/etc/k8s-gcr-audit-test-prod-service-account/service-account.json"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
         volumeMounts:
         - name: k8s-gcr-audit-test-prod-service-account-creds
           mountPath: /etc/k8s-gcr-audit-test-prod-service-account
