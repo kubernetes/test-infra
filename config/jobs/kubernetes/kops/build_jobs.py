@@ -82,6 +82,10 @@ def build_test(cloud='aws',
     if networking == 'kopeio' and distro in ('flatcar'):
         return None
 
+    # Won't backport the rp_filter fixes to kops 1.23
+    if networking == 'cilium' and distro == 'u2204'and kops_version == '1.23':
+        return None
+
     if cloud == 'aws':
         kops_image = distro_images[distro]
         kops_ssh_user = distros_ssh_user[distro]
