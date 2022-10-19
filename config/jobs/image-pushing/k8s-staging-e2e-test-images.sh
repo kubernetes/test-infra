@@ -47,6 +47,7 @@ readonly IMAGES=(
     resource-consumer
     sample-apiserver
     sample-device-plugin
+    user-with-predefined-group
     volume/iscsi
     volume/rbd
     volume/nfs
