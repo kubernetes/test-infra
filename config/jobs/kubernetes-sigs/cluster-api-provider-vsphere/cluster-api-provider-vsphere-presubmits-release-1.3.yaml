@@ -24,7 +24,7 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^release-1.3$
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum)'
+    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum|main\.go)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -49,7 +49,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum)'
+    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum|main\.go)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     branches:
@@ -87,7 +87,7 @@ presubmits:
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|packaging|pkg|test)/|Dockerfile|Makefile|hack/e2e\.sh|go\.mod|go\.sum)'
+    run_if_changed: '^((api|cmd|config|contrib|controllers|packaging|pkg|test)/|Dockerfile|Makefile|hack/e2e\.sh|go\.mod|go\.sum|main\.go)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
