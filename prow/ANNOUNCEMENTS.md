@@ -195,8 +195,6 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
- - *September 23th, 2022* Prowjobs for Gerrit stop voting on "Code-Review" label
-   when there is no Gerrit label configured for the job.
  - *August 24th, 2022* Deck by default validating storage buckets, can still opt
    out by setting `deck.skip_storage_path_validation: true` in your Prow config.
    Buckets specified in job configs (`<job>.gcs_configuration.bucket`) and plank

@@ -331,6 +331,11 @@ func LabelsAndAnnotations(instance string, jobLabels, jobAnnotations map[string]
 		change := changes[0]
 		labels[kube.GerritRevision] = change.CurrentRevision
 		labels[kube.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
+		if _, ok := labels[kube.GerritReportLabel]; !ok {
+			logrus.Debug("Job uses default value of 'Code-Review' for 'prow.k8s.io/gerrit-report-label' label. This default will removed in March 2022.")
+			labels[kube.GerritReportLabel] = client.CodeReview
+		}
+
 		annotations[kube.GerritID] = change.ID
 	}
 
