@@ -55,8 +55,20 @@ const (
 	// ref:
 	// https://gerrit-review.googlesource.com/Documentation/user-search.html#_search_operators.
 	// Also good to know: `(repo:repo-A OR repo:repo-B)`
-	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable+label:" + tideEnablementLabel
+	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable"
 )
+
+func gerritQueryParam(optInByDefault bool) string {
+	// By default require `Prow-Auto-Submit` label.
+	// If the repo enabled optInByDefault, `Prow-Auto-Submit` is no longer
+	// required. But users can still temporarily opting out of merge automation
+	// by voting -1 on this label.
+	enablementLabelQueryParam := "+label:" + tideEnablementLabel
+	if optInByDefault {
+		enablementLabelQueryParam = "+-label:" + tideEnablementLabel + "=-1"
+	}
+	return gerritDefaultQueryParam + enablementLabelQueryParam
+}
 
 type gerritClient interface {
 	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error)
@@ -171,17 +183,17 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 	// TODO(chaodai): parallize this to boot the performance.
 	for instance, projs := range p.cfg().Tide.Gerrit.Queries.AllRepos() {
 		instance, projs := instance, projs
-		for projName := range projs {
+		for projName, projFilter := range projs {
 			wg.Add(1)
-			go func(projName string) {
-				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritDefaultQueryParam)
+			go func(projName string, optInByDefault bool) {
+				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritQueryParam(optInByDefault))
 				if err != nil {
 					p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName}).WithError(err).Warn("Querying gerrit project for changes.")
 					errChan <- fmt.Errorf("failed querying project '%s' from instance '%s': %v", projName, instance, err)
 					return
 				}
 				resChan <- changesFromProject{instance: instance, project: projName, changes: changes}
-			}(projName)
+			}(projName, projFilter.OptInByDefault)
 		}
 	}
 

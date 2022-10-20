@@ -933,6 +933,9 @@ type GerritOrgRepoConfig struct {
 type GerritQueryFilter struct {
 	Branches         []string `json:"branches,omitempty"`
 	ExcludedBranches []string `json:"excluded_branches,omitempty"`
+	// OptInByDefault indicates that all of the PRs are considered by Tide from
+	// these repos, unless `Prow-Auto-Submit` label is voted -1.
+	OptInByDefault bool `json:"opt_in_by_default,omitempry"`
 }
 
 func (goc *GerritOrgRepoConfigs) AllRepos() map[string]map[string]*GerritQueryFilter {
