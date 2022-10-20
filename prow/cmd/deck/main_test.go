@@ -1050,7 +1050,7 @@ func TestHandleGitProviderLink(t *testing.T) {
 		{
 			name:  "gerrit-pr",
 			query: "target=pr&repo='https://foo-review.abc/bar'&number=2",
-			want:  "https://foo.abc/c/bar/+/2",
+			want:  "https://foo-review.abc/c/bar/+/2",
 		},
 		{
 			name:  "gerrit-invalid",
