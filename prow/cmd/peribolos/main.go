@@ -1075,7 +1075,11 @@ func configureTeamAndMembers(opt options, client github.Client, githubTeams map[
 	if !opt.fixTeamMembers {
 		logrus.Infof("Skipping %s member configuration", name)
 	} else if err = configureTeamMembers(client, orgName, gt, team, opt.ignoreInvitees); err != nil {
-		return fmt.Errorf("failed to update %s members: %w", name, err)
+		if opt.confirm {
+			return fmt.Errorf("failed to update %s members: %w", name, err)
+		}
+		logrus.WithError(err).Warnf("failed to update %s members: %s", name, err)
+		return nil
 	}
 
 	for childName, childTeam := range team.Children {
