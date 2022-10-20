@@ -205,7 +205,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-96ba49123f-experimental
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-c1f65f2ba7-experimental
       name: ""
       resources:
         limits:
@@ -1186,7 +1186,7 @@ presubmits:
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dockershim/image-config.yaml
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-96ba49123f-experimental
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-c1f65f2ba7-experimental
         name: ""
         resources:
           limits:
@@ -1315,7 +1315,7 @@ presubmits:
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config.yaml
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-96ba49123f-experimental
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-c1f65f2ba7-experimental
         name: ""
         resources:
           limits:
