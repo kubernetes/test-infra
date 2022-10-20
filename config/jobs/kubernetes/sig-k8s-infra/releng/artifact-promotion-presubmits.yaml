@@ -14,7 +14,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.5-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.6-1
         command:
         - /kpromo
         args:
@@ -42,7 +42,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-vuln-scanning
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.5-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.6-1
         command:
         - /kpromo
         args:
@@ -85,7 +85,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.5-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.6-1
         command:
         - /kpromo
         args:
