@@ -43,27 +43,6 @@ const (
 	gitCmd = "git"
 )
 
-type fileArrayFlag []string
-
-func (af *fileArrayFlag) String() string {
-	return fmt.Sprint(*af)
-}
-
-func (af *fileArrayFlag) Set(value string) error {
-	for _, e := range strings.Split(value, ",") {
-		fn := strings.TrimSpace(e)
-		info, err := os.Stat(fn)
-		if err != nil {
-			return fmt.Errorf("getting file info for %q", fn)
-		}
-		if info.IsDir() && !strings.HasSuffix(fn, string(os.PathSeparator)) {
-			fn = fn + string(os.PathSeparator)
-		}
-		*af = append(*af, fn)
-	}
-	return nil
-}
-
 // Options is the options for autobumper operations.
 type Options struct {
 	// The target GitHub org name where the autobump PR will be created. Only required when SkipPullRequest is false.

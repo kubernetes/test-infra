@@ -31,30 +31,3 @@ func RateLimiter(controllerName string) workqueue.RateLimitingInterface {
 	)
 	return workqueue.NewNamedRateLimitingQueue(rl, controllerName)
 }
-
-// for testing
-
-type fakeLimiter struct {
-	added string
-}
-
-func (fl *fakeLimiter) ShutDown() {}
-func (fl *fakeLimiter) Get() (interface{}, bool) {
-	return "not implemented", true
-}
-func (fl *fakeLimiter) Done(interface{})   {}
-func (fl *fakeLimiter) Forget(interface{}) {}
-func (fl *fakeLimiter) AddRateLimited(a interface{}) {
-	fl.added = a.(string)
-}
-func (fl *fakeLimiter) Add(a interface{}) {
-	fl.added = a.(string)
-}
-func (fl *fakeLimiter) AddAfter(a interface{}, d time.Duration) {
-	fl.added = a.(string)
-}
-func (fl *fakeLimiter) Len() {
-}
-func (fl *fakeLimiter) NumRequeues(item interface{}) int {
-	return 0
-}

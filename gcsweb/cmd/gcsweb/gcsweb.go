@@ -519,7 +519,6 @@ type Record struct {
 	Name  string
 	MTime time.Time
 	Size  int64
-	isDir bool
 }
 
 // Render writes HTML representing this Record to the provided output.

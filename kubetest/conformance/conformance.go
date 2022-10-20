@@ -25,23 +25,12 @@ import (
 	"os/exec"
 	"time"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/test-infra/kubetest/e2e"
-	"k8s.io/test-infra/kubetest/process"
 )
-
-// Tester runs conformance tests against a given cluster.
-type Tester struct {
-	kubecfg   string
-	ginkgo    string
-	e2etest   string
-	reportdir string
-	testArgs  *string
-	control   *process.Control
-}
 
 // BuildTester returns an object that knows how to test the cluster it deployed.
 func (d *Deployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {

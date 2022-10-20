@@ -104,7 +104,6 @@ type options struct {
 	nodeArgs                string
 	nodeTestArgs            string
 	nodeTests               bool
-	outputDir               string
 	preTestCmd              string
 	postTestCmd             string
 	provider                string
@@ -115,7 +114,6 @@ type options struct {
 	skipRegex               string
 	soak                    bool
 	soakDuration            time.Duration
-	sshUser                 string
 	stage                   stageStrategy
 	storageTestDriverPath   string
 	test                    bool

@@ -64,8 +64,8 @@ func TestSyncTime(t *testing.T) {
 		ctx:    ctx,
 	}
 	testProjects := map[string]map[string]*config.GerritQueryFilter{
-		"foo": map[string]*config.GerritQueryFilter{
-			"bar": &config.GerritQueryFilter{},
+		"foo": {
+			"bar": {},
 		},
 	}
 	now := time.Now()
@@ -150,11 +150,11 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 		ctx:    ctx,
 	}
 	testProjects := map[string]map[string]*config.GerritQueryFilter{
-		"foo1": map[string]*config.GerritQueryFilter{
-			"bar1": &config.GerritQueryFilter{},
+		"foo1": {
+			"bar1": {},
 		},
-		"foo2": map[string]*config.GerritQueryFilter{
-			"bar2": &config.GerritQueryFilter{},
+		"foo2": {
+			"bar2": {},
 		},
 	}
 	if err := st.Init(testProjects); err != nil {
@@ -226,11 +226,11 @@ func TestNewProjectAddition(t *testing.T) {
 	}
 
 	testProjects := map[string]map[string]*config.GerritQueryFilter{
-		"foo": map[string]*config.GerritQueryFilter{
-			"bar": &config.GerritQueryFilter{},
+		"foo": {
+			"bar": {},
 		},
-		"qwe": map[string]*config.GerritQueryFilter{
-			"qux": &config.GerritQueryFilter{},
+		"qwe": {
+			"qux": {},
 		},
 	}
 
