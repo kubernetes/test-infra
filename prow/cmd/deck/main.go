@@ -1515,13 +1515,19 @@ func HandleGitProviderLink(githubHost string, secure bool) http.HandlerFunc {
 				http.Redirect(w, r, "", http.StatusNotFound)
 				return
 			}
+			orgCodeURL, err := gerritsource.CodeRootURL(org)
+			if err != nil {
+				logrus.WithError(err).WithField("cloneURI", repo).Warn("Failed deriving source code URL from cloneURI.")
+				http.Redirect(w, r, "", http.StatusNotFound)
+				return
+			}
 			switch target {
 			case "commit":
-				redirectURL = org + "/" + repo + "/+/" + commit
+				redirectURL = orgCodeURL + "/" + repo + "/+/" + commit
 			case "branch":
-				redirectURL = org + "/" + repo + "/+/refs/heads/" + branch
+				redirectURL = orgCodeURL + "/" + repo + "/+/refs/heads/" + branch
 			case "pr":
-				redirectURL = org + "/c/" + repo + "/+/" + number
+				redirectURL = orgCodeURL + "/c/" + repo + "/+/" + number
 			}
 		} else {
 			scheme := "http"

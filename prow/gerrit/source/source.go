@@ -89,3 +89,18 @@ func orgRepo(org, repo string) string {
 	repo = strings.Trim(repo, "/")
 	return org + "/" + repo
 }
+
+// CodeRootURL converts code review URL into source code URL, simply
+// trimming the `-review` suffix from the name of the org.
+//
+// Gerrit URL for sourcecode looks like
+// https://android.googlesource.com, and the code review URL looks like
+// https://android-review.googlesource.com/c/platform/frameworks/support/+/2260382.
+func CodeRootURL(reviewURL string) (string, error) {
+	orgParts := strings.Split(reviewURL, ".")
+	if !strings.HasSuffix(orgParts[0], "-review") {
+		return "", fmt.Errorf("cannot find '-review' suffix from the first part of url %v", orgParts)
+	}
+	orgParts[0] = strings.TrimSuffix(orgParts[0], "-review")
+	return strings.Join(orgParts, "."), nil
+}
