@@ -1262,7 +1262,7 @@ tide:
                   - ""
                 excluded_branches:
                   - ""
-                opt_in_by_default: false
+                opt_in_by_default: true
             opt_out_help: true
             org: ' '
             repos:

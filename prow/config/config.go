@@ -935,7 +935,7 @@ type GerritQueryFilter struct {
 	ExcludedBranches []string `json:"excluded_branches,omitempty"`
 	// OptInByDefault indicates that all of the PRs are considered by Tide from
 	// these repos, unless `Prow-Auto-Submit` label is voted -1.
-	OptInByDefault bool `json:"opt_in_by_default,omitempry"`
+	OptInByDefault bool `json:"opt_in_by_default,omitempty"`
 }
 
 func (goc *GerritOrgRepoConfigs) AllRepos() map[string]map[string]*GerritQueryFilter {

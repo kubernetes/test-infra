@@ -59,13 +59,16 @@ const (
 )
 
 func gerritQueryParam(optInByDefault bool) string {
+	// Whenever a the `Prow-Auto-Submit` label is voted with -1 by anyone, the
+	// PR has to be excluded from Tide.
+	enablementLabelQueryParam := "+-label:" + tideEnablementLabel + "=-1"
 	// By default require `Prow-Auto-Submit` label.
 	// If the repo enabled optInByDefault, `Prow-Auto-Submit` is no longer
 	// required. But users can still temporarily opting out of merge automation
 	// by voting -1 on this label.
-	enablementLabelQueryParam := "+label:" + tideEnablementLabel
-	if optInByDefault {
-		enablementLabelQueryParam = "+-label:" + tideEnablementLabel + "=-1"
+	if !optInByDefault {
+		// We want `-label:Prow-Auto-Submit=-1 label:Prow-Auto-Submit`
+		enablementLabelQueryParam += "+label:" + tideEnablementLabel
 	}
 	return gerritDefaultQueryParam + enablementLabelQueryParam
 }
@@ -185,6 +188,10 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 		instance, projs := instance, projs
 		for projName, projFilter := range projs {
 			wg.Add(1)
+			var optInByDefault bool
+			if projFilter != nil {
+				optInByDefault = projFilter.OptInByDefault
+			}
 			go func(projName string, optInByDefault bool) {
 				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritQueryParam(optInByDefault))
 				if err != nil {
@@ -193,7 +200,7 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 					return
 				}
 				resChan <- changesFromProject{instance: instance, project: projName, changes: changes}
-			}(projName, projFilter.OptInByDefault)
+			}(projName, optInByDefault)
 		}
 	}
 
