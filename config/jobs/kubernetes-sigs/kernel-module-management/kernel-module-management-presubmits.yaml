@@ -58,7 +58,7 @@ presubmits:
       description: "run a pre-build driver-container e2e test without NFD."
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221010-3da4a9c21a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-96ba49123f-master
         env:
         #- name: GO111MODULE
         #  value: on
