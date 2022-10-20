@@ -18,7 +18,7 @@ linters-settings:
 linters:
   enable:
   - govet
-  - deadcode
+  - unused
   - misspell
   - ineffassign
   - staticcheck

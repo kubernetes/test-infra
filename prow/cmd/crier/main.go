@@ -56,7 +56,6 @@ type options struct {
 	pubsubWorkers         int
 	githubWorkers         int
 	slackWorkers          int
-	k8sGCSWorkers         int
 	blobStorageWorkers    int
 	k8sBlobStorageWorkers int
 

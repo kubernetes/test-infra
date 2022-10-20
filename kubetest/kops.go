@@ -159,9 +159,6 @@ type kops struct {
 
 	// featureFlags is a list of feature flags to enable, comma delimited
 	featureFlags string
-
-	// multipleZones denotes using more than one zone
-	multipleZones bool
 }
 
 var _ deployer = kops{}

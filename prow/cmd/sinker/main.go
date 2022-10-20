@@ -182,7 +182,6 @@ func main() {
 
 type controller struct {
 	ctx           context.Context
-	cancel        context.CancelFunc
 	logger        *logrus.Entry
 	prowJobClient ctrlruntimeclient.Client
 	podClients    map[string]ctrlruntimeclient.Client

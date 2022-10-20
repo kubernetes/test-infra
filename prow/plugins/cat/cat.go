@@ -90,11 +90,10 @@ type clowder interface {
 }
 
 type realClowder struct {
-	url     string
-	lock    sync.RWMutex
-	update  time.Time
-	key     string
-	keyPath string
+	url    string
+	lock   sync.RWMutex
+	update time.Time
+	key    string
 }
 
 func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {

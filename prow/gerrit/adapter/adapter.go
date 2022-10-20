@@ -112,7 +112,6 @@ type Controller struct {
 	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler
 	inRepoConfigFailures     map[string]bool
 	instancesWithWorker      map[string]bool
-	repoCacheMapMux          sync.Mutex
 	latestMux                sync.Mutex
 	workerPoolSize           int
 }

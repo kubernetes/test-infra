@@ -18,7 +18,6 @@ package jira
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -104,26 +103,6 @@ func TestRegex(t *testing.T) {
 			}
 		})
 	}
-}
-
-type fakeGitHubClient struct {
-	editedComments map[string]string
-}
-
-func (f *fakeGitHubClient) EditComment(org, repo string, id int, body string) error {
-	if f.editedComments == nil {
-		f.editedComments = map[string]string{}
-	}
-	f.editedComments[fmt.Sprintf("%s/%s:%d", org, repo, id)] = body
-	return nil
-}
-
-func (f *fakeGitHubClient) GetIssue(org, repo string, number int) (*github.Issue, error) {
-	return &github.Issue{}, nil
-}
-
-func (f *fakeGitHubClient) EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error) {
-	return issue, nil
 }
 
 func TestHandle(t *testing.T) {

@@ -131,10 +131,6 @@ func (l *extractStrategies) Enabled() bool {
 	return len(*l) > 0
 }
 
-func (e extractStrategy) name() string {
-	return filepath.Base(e.option)
-}
-
 func (l extractStrategies) Extract(project, zone, region, ciBucket, releaseBucket string, extractSrc bool) error {
 	// rm -rf kubernetes*
 	files, err := os.ReadDir(".")

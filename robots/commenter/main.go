@@ -86,7 +86,6 @@ type meta struct {
 }
 
 type options struct {
-	asc             bool
 	ceiling         int
 	comment         string
 	includeArchived bool
@@ -94,7 +93,6 @@ type options struct {
 	includeLocked   bool
 	useTemplate     bool
 	query           string
-	sort            string
 	endpoint        flagutil.Strings
 	graphqlEndpoint string
 	token           string

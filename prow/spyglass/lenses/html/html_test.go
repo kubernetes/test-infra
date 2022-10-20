@@ -32,9 +32,8 @@ import (
 )
 
 type FakeArtifact struct {
-	path      string
-	content   []byte
-	sizeLimit int64
+	path    string
+	content []byte
 }
 
 func (fa *FakeArtifact) JobPath() string {

@@ -38,7 +38,6 @@ type ReadHandler func(exists bool, contents io.ReadSeeker) error
 // Cache implements disk backed cache storage
 type Cache struct {
 	diskRoot string
-	logger   *logrus.Entry
 }
 
 // NewCache returns a new Cache given the root directory that should be used

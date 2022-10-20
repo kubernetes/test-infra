@@ -3626,8 +3626,8 @@ func (c *client) CreateTeam(org string, team Team) (*Team, error) {
 	path := fmt.Sprintf("/orgs/%s/teams", org)
 	var retTeam Team
 	_, err := c.request(&request{
-		method: http.MethodPost,
-		path:   path,
+		method:      http.MethodPost,
+		path:        path,
 		accept:      "application/vnd.github+json",
 		org:         org,
 		requestBody: &team,
@@ -3662,8 +3662,8 @@ func (c *client) EditTeam(org string, t Team) (*Team, error) {
 	var retTeam Team
 	path := fmt.Sprintf("/orgs/%s/teams/%s", org, t.Slug)
 	_, err := c.request(&request{
-		method: http.MethodPatch,
-		path:   path,
+		method:      http.MethodPatch,
+		path:        path,
 		accept:      "application/vnd.github+json",
 		org:         org,
 		requestBody: &team,
@@ -4313,7 +4313,7 @@ func (c *client) IsCollaborator(org, repo, user string) (bool, error) {
 		return true, nil
 	}
 	code, err := c.request(&request{
-		method: http.MethodGet,
+		method:    http.MethodGet,
 		accept:    "application/vnd.github+json",
 		path:      fmt.Sprintf("/repos/%s/%s/collaborators/%s", org, repo, user),
 		org:       org,

@@ -221,11 +221,6 @@ func extractBucketPrefixPair(storagePath string) (string, string) {
 	return split[0], split[1]
 }
 
-// CanonicalLink gets a link to the location of job-specific artifacts in GCS
-func (src *storageJobSource) canonicalLink() string {
-	return path.Join(src.linkPrefix, src.bucket, src.jobPrefix)
-}
-
 // JobPath gets the prefix to all artifacts in GCS in the job
 func (src *storageJobSource) jobPath() string {
 	return fmt.Sprintf("%s/%s", src.bucket, src.jobPrefix)

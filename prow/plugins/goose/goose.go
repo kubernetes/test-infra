@@ -87,11 +87,10 @@ type gaggle interface {
 }
 
 type realGaggle struct {
-	url     string
-	lock    sync.RWMutex
-	update  time.Time
-	key     string
-	keyPath string
+	url    string
+	lock   sync.RWMutex
+	update time.Time
+	key    string
 }
 
 func (g *realGaggle) setKey(keyPath string, log *logrus.Entry) {

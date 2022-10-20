@@ -40,7 +40,6 @@ import (
 var _ gerritClient = (*fakeGerritClient)(nil)
 
 type fakeGerritClient struct {
-	reviews int
 	// map{org: map{project: []changes}}
 	changes map[string]map[string][]gerrit.ChangeInfo
 }

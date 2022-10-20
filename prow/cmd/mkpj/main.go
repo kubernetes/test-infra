@@ -38,7 +38,6 @@ type options struct {
 	config      configflagutil.ConfigOptions
 	triggerJob  bool
 	failWithJob bool
-	outputPath  string
 	kubeOptions prowflagutil.KubernetesOptions
 	baseRef     string
 	baseSha     string

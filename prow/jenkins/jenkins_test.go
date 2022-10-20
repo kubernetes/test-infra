@@ -124,11 +124,6 @@ func intP(i int) *int {
 }
 
 func TestListBuilds(t *testing.T) {
-	type Task struct {
-		// Used for tracking unscheduled builds for jobs.
-		Name string `json:"name"`
-	}
-
 	tests := []struct {
 		name string
 
@@ -166,7 +161,9 @@ func TestListBuilds(t *testing.T) {
 				"first-int":  {Number: 1, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first-int"}, {Name: prowJobID, Value: "first-int"}}}}},
 				"second-int": {Number: 2, Result: strP(success), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second-int"}, {Name: prowJobID, Value: "second-int"}}}}},
 				// queued_pj_id is returned from the testWrapper
-				"queued_pj_id": {Number: 0, Result: nil, Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "queued-int"}, {Name: prowJobID, Value: "queued_pj_id"}}}}, enqueued: true, Task: Task{Name: "PR-763"}},
+				"queued_pj_id": {Number: 0, Result: nil, Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "queued-int"}, {Name: prowJobID, Value: "queued_pj_id"}}}}, enqueued: true, Task: struct {
+					Name string `json:"name"`
+				}{Name: "PR-763"}},
 			},
 		},
 		{

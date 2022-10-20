@@ -43,7 +43,6 @@ type fghc struct {
 	prs        []github.PullRequest
 	prComments []github.IssueComment
 	prLabels   []github.Label
-	labels     []github.Label
 	orgMembers []github.TeamMember
 	issues     []github.Issue
 }
