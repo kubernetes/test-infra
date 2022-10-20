@@ -1327,11 +1327,13 @@ func TestConfigureTeamMembers(t *testing.T) {
 			name: "ignore invitees",
 			team: org.Team{
 				Maintainers: []string{"keep-maintainer"},
-				Members:     []string{"invited-member"},
+				Members:     []string{"keep-member", "new-member"},
 			},
 			maintainers:    sets.NewString("keep-maintainer"),
+			members:        sets.NewString("keep-member"),
 			invitees:       sets.String{},
 			remove:         sets.String{},
+			addMembers:     sets.NewString("new-member"),
 			ignoreInvitees: true,
 		},
 	}
