@@ -1523,11 +1523,13 @@ func HandleGitProviderLink(githubHost string, secure bool) http.HandlerFunc {
 			}
 			switch target {
 			case "commit":
+				fallthrough
+			case "prcommit":
 				redirectURL = orgCodeURL + "/" + repo + "/+/" + commit
 			case "branch":
 				redirectURL = orgCodeURL + "/" + repo + "/+/refs/heads/" + branch
 			case "pr":
-				redirectURL = orgCodeURL + "/c/" + repo + "/+/" + number
+				redirectURL = org + "/c/" + repo + "/+/" + number
 			}
 		} else {
 			scheme := "http"

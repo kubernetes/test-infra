@@ -1038,6 +1038,11 @@ func TestHandleGitProviderLink(t *testing.T) {
 			want:  "https://foo.abc/bar/+/abc123",
 		},
 		{
+			name:  "gerrit-commit",
+			query: "target=prcommit&repo='https://foo-review.abc/bar'&commit=abc123",
+			want:  "https://foo.abc/bar/+/abc123",
+		},
+		{
 			name:  "gerrit-branch",
 			query: "target=branch&repo='https://foo-review.abc/bar'&branch=main",
 			want:  "https://foo.abc/bar/+/refs/heads/main",
@@ -1045,7 +1050,7 @@ func TestHandleGitProviderLink(t *testing.T) {
 		{
 			name:  "gerrit-pr",
 			query: "target=pr&repo='https://foo-review.abc/bar'&number=2",
-			want:  "https://foo.abc/c/bar/+/2",
+			want:  "https://foo-review.abc/c/bar/+/2",
 		},
 		{
 			name:  "gerrit-invalid",
