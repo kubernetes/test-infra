@@ -1034,22 +1034,22 @@ func TestHandleGitProviderLink(t *testing.T) {
 		},
 		{
 			name:  "gerrit-commit",
-			query: "target=commit&repo='https://foo/bar'&commit=abc123",
-			want:  "https://foo/bar/+/abc123",
+			query: "target=commit&repo='https://foo-review.abc/bar'&commit=abc123",
+			want:  "https://foo.abc/bar/+/abc123",
 		},
 		{
 			name:  "gerrit-branch",
-			query: "target=branch&repo='https://foo/bar'&branch=main",
-			want:  "https://foo/bar/+/refs/heads/main",
+			query: "target=branch&repo='https://foo-review.abc/bar'&branch=main",
+			want:  "https://foo.abc/bar/+/refs/heads/main",
 		},
 		{
 			name:  "gerrit-pr",
-			query: "target=pr&repo='https://foo/bar'&number=2",
-			want:  "https://foo/c/bar/+/2",
+			query: "target=pr&repo='https://foo-review.abc/bar'&number=2",
+			want:  "https://foo.abc/c/bar/+/2",
 		},
 		{
 			name:  "gerrit-invalid",
-			query: "target=invalid&repo='https://foo/bar'&commit=abc123",
+			query: "target=invalid&repo='https://foo-review.abc/bar'&commit=abc123",
 			want:  "/",
 		},
 	}

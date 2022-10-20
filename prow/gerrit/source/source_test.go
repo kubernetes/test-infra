@@ -193,3 +193,47 @@ func TestOrgRepoFromCloneURI(t *testing.T) {
 		})
 	}
 }
+
+func TestCodeRootURL(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      string
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "base",
+			in:   "https://foo-review.googlesource.com",
+			want: "https://foo.googlesource.com",
+		},
+		{
+			name: "with-repo",
+			in:   "https://foo-review.googlesource.com/bar",
+			want: "https://foo.googlesource.com/bar",
+		},
+		{
+			name:    "invalid",
+			in:      "https://foo.googlesource.com",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotErr := CodeRootURL(tc.in)
+			if tc.wantErr {
+				if gotErr == nil {
+					t.Fatal("Want error, got nil")
+				}
+				return
+			}
+			if gotErr != nil {
+				t.Fatalf("Want no error, got: %v", gotErr)
+			}
+			if want, got := tc.want, got; want != got {
+				t.Fatalf("Want: %s, got: %s", want, got)
+			}
+		})
+	}
+}
