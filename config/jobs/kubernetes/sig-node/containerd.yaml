@@ -224,7 +224,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-96ba49123f-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-c1f65f2ba7-1.22
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.22
@@ -298,7 +298,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-96ba49123f-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-c1f65f2ba7-1.22
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.22
