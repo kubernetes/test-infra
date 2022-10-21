@@ -63,6 +63,7 @@ type gerritClient interface {
 	GetChange(instance, id string, addtionalFeilds ...string) (*gerrit.ChangeInfo, error)
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SubmitChange(instance, id string, wait bool) (*gerrit.ChangeInfo, error)
+	SetReview(instance, id, revision, message string, _ map[string]string) error
 }
 
 // NewController makes a Controller out of the given clients.
@@ -274,14 +275,30 @@ func (p *GerritProvider) headContexts(crc *CodeReviewCommon) ([]Context, error) 
 }
 
 func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, _ *threadSafePRSet) error {
-	logger := p.logger.WithFields(logrus.Fields{"repo": sp.repo, "org": sp.org, "branch": sp.branch})
+	logger := p.logger.WithFields(logrus.Fields{"repo": sp.repo, "org": sp.org, "branch": sp.branch, "prs": len(prs)})
 	logger.Info("Merging subpool.")
+
+	isBatch := len(prs) > 1
 
 	var errs []error
 	for _, pr := range prs {
-		logger.WithField("id", pr.Gerrit.ID).Info("Submitting change.")
-		if _, err := p.gc.SubmitChange(sp.org, pr.Gerrit.ID, true); err != nil {
+		logger := logger.WithField("id", pr.Gerrit.ID)
+		logger.Info("Submitting change.")
+		_, err := p.gc.SubmitChange(sp.org, pr.Gerrit.ID, true)
+		if err != nil {
 			errs = append(errs, fmt.Errorf("failed submitting change '%s' from org '%s': %v", sp.org, pr.Gerrit.ID, err))
+		}
+		// Comment on the PR if it's a batch.
+		// In case of flaky tests, Tide triggered prowjobs for highest priority
+		// PR might fail even when batch prowjobs passed. And in this case Crier
+		// would report this failure on the PR before Tide merges the PR, this
+		// might cause confusing to users so comment on the PR explaining that
+		// the merge was based on batch testing.
+		if isBatch && err != nil {
+			msg := fmt.Sprintf("The Tide batch containing current change passed all required prowjobs, so this submission was performed by Tide. See %s/tide-history for record", p.cfg().Gerrit.DeckURL)
+			if err := p.gc.SetReview(sp.org, pr.Gerrit.ID, pr.Gerrit.CurrentRevision, msg, nil); err != nil {
+				logger.WithError(err).Warn("Failed commenting after batch submission.")
+			}
 		}
 	}
 	return utilerrors.NewAggregate(errs)
