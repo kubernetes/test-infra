@@ -33,6 +33,27 @@ presubmits:
         - make
         args:
         - test-integration
+  - name: pull-kueue-test-e2e-main
+    always_run: true
+    decorate: true
+    optional: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-main
+      description: "Run kueue end to end tests"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test-e2e-kind
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
   - name: pull-kueue-verify-main
     always_run: true
     decorate: true
