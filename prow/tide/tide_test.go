@@ -2983,6 +2983,63 @@ func TestPresubmitsByPull(t *testing.T) {
 			}}},
 		},
 		{
+			name: "no-always-run-no-trigger",
+			presubmits: []config.Presubmit{
+				{
+					Reporter:  config.Reporter{Context: "presubmit"},
+					AlwaysRun: false,
+					Brancher: config.Brancher{
+						Branches: []string{defaultBranch, "dev"},
+					},
+				},
+				{
+					Reporter: config.Reporter{Context: "never"},
+				},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{},
+		},
+		{
+			name: "no-always-run-no-trigger-tide-wants-it",
+			presubmits: []config.Presubmit{
+				{
+					Reporter:  config.Reporter{Context: "presubmit"},
+					AlwaysRun: false,
+					Brancher: config.Brancher{
+						Branches: []string{defaultBranch, "dev"},
+					},
+					RunBeforeMerge: true,
+				},
+				{
+					Reporter: config.Reporter{Context: "never"},
+				},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{100: {{
+				Reporter:       config.Reporter{Context: "presubmit"},
+				AlwaysRun:      false,
+				RunBeforeMerge: true,
+				Brancher: config.Brancher{
+					Branches: []string{defaultBranch, "dev"},
+				},
+			}}},
+		},
+		{
+			name: "brancher-not-match-when-tide-wants-it",
+			presubmits: []config.Presubmit{
+				{
+					Reporter:  config.Reporter{Context: "presubmit"},
+					AlwaysRun: false,
+					Brancher: config.Brancher{
+						Branches: []string{"release", "dev"},
+					},
+					RunBeforeMerge: true,
+				},
+				{
+					Reporter: config.Reporter{Context: "never"},
+				},
+			},
+			expectedPresubmits: map[int][]config.Presubmit{},
+		},
+		{
 			name: "run_if_changed (uncached)",
 			presubmits: []config.Presubmit{
 				{
