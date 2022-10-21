@@ -222,7 +222,7 @@ periodics:
       - --allow-dup
       - --extra-version-markers=k8s-stable3
       - --registry=gcr.io/kubernetes-ci-images
-      image: gcr.io/k8s-staging-test-infra/bootstrap:v20221005-e022c897cc
+      image: gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
       name: ""
       resources:
         limits:
