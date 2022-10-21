@@ -55,8 +55,23 @@ const (
 	// ref:
 	// https://gerrit-review.googlesource.com/Documentation/user-search.html#_search_operators.
 	// Also good to know: `(repo:repo-A OR repo:repo-B)`
-	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable+label:" + tideEnablementLabel
+	gerritDefaultQueryParam = "status:open+-is:wip+is:submittable"
 )
+
+func gerritQueryParam(optInByDefault bool) string {
+	// Whenever a the `Prow-Auto-Submit` label is voted with -1 by anyone, the
+	// PR has to be excluded from Tide.
+	enablementLabelQueryParam := "+-label:" + tideEnablementLabel + "=-1"
+	// By default require `Prow-Auto-Submit` label.
+	// If the repo enabled optInByDefault, `Prow-Auto-Submit` is no longer
+	// required. But users can still temporarily opting out of merge automation
+	// by voting -1 on this label.
+	if !optInByDefault {
+		// We want `-label:Prow-Auto-Submit=-1 label:Prow-Auto-Submit`
+		enablementLabelQueryParam += "+label:" + tideEnablementLabel
+	}
+	return gerritDefaultQueryParam + enablementLabelQueryParam
+}
 
 type gerritClient interface {
 	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error)
@@ -172,17 +187,21 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 	// TODO(chaodai): parallize this to boot the performance.
 	for instance, projs := range p.cfg().Tide.Gerrit.Queries.AllRepos() {
 		instance, projs := instance, projs
-		for projName := range projs {
+		for projName, projFilter := range projs {
 			wg.Add(1)
-			go func(projName string) {
-				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritDefaultQueryParam)
+			var optInByDefault bool
+			if projFilter != nil {
+				optInByDefault = projFilter.OptInByDefault
+			}
+			go func(projName string, optInByDefault bool) {
+				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritQueryParam(optInByDefault))
 				if err != nil {
 					p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName}).WithError(err).Warn("Querying gerrit project for changes.")
 					errChan <- fmt.Errorf("failed querying project '%s' from instance '%s': %v", projName, instance, err)
 					return
 				}
 				resChan <- changesFromProject{instance: instance, project: projName, changes: changes}
-			}(projName)
+			}(projName, optInByDefault)
 		}
 	}
 

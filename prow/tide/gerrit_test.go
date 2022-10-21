@@ -109,6 +109,34 @@ func (f *fakeGerritClient) addChanges(instance, project string, changes []gerrit
 	f.changes[instance][project] = append(f.changes[instance][project], changes...)
 }
 
+func TestGerritQueryParam(t *testing.T) {
+	tests := []struct {
+		name  string
+		optIn bool
+		want  string
+	}{
+		{
+			name:  "default",
+			optIn: false,
+			want:  "status:open+-is:wip+is:submittable+-label:Prow-Auto-Submit=-1+label:Prow-Auto-Submit",
+		},
+		{
+			name:  "opt-in",
+			optIn: true,
+			want:  "status:open+-is:wip+is:submittable+-label:Prow-Auto-Submit=-1",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if want, got := tc.want, gerritQueryParam(tc.optIn); want != got {
+				t.Errorf("Wrong query param. Want: %s, got: %s", want, got)
+			}
+		})
+	}
+}
+
 func TestQuery(t *testing.T) {
 	tests := []struct {
 		name    string
