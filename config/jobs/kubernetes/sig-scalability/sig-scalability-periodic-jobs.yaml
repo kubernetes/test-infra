@@ -919,7 +919,7 @@ periodics:
 
 - interval: 12h
   cluster: k8s-infra-prow-build
-  name: ci-kubernetes-e2e-gci-gce-benchmark-1
+  name: ci-kubernetes-e2e-gci-gce-benchmark-requests-1
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -939,8 +939,8 @@ periodics:
     base_ref: master
     path_alias: k8s.io/perf-tests
   annotations:
-    testgrid-dashboards: sig-scalability-gce
-    testgrid-tab-name: gce-benchmark-1
+    testgrid-dashboards: sig-scalability-benchmarks
+    testgrid-tab-name: gce-benchmark-requests-1
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221010-3da4a9c21a-master
