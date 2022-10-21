@@ -1,6 +1,6 @@
 periodics:
 - name: ci-k8sio-audit
-  interval: 2h
+  interval: 3h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
