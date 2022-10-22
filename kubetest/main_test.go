@@ -68,13 +68,7 @@ func TestWriteMetadata(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		topDir, err := os.MkdirTemp("", "TestWriteMetadata")
-
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		defer os.RemoveAll(topDir) // Stack up all the cleanups
+		topDir := t.TempDir()
 
 		dumpDir := filepath.Join(topDir, "artifacts")
 		if err := os.Mkdir(dumpDir, 0755); err != nil {

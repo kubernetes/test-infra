@@ -46,11 +46,7 @@ func Test_announceChanges(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			directory, err := os.MkdirTemp("", "")
-			if err != nil {
-				t.Fatalf("Error in creating temporary dir: %v", err)
-			}
-			defer os.RemoveAll(directory)
+			directory := t.TempDir()
 
 			file, err := os.CreateTemp(directory, "1*.yaml")
 			if err != nil {

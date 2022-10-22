@@ -197,17 +197,7 @@ func Test_logDumperNode_shellToFile(t *testing.T) {
 }
 
 func Test_logDumperNode_dump(t *testing.T) {
-	tmpdir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Errorf("error creating temp dir: %v", err)
-		return
-	}
-
-	defer func() {
-		if err := os.RemoveAll(tmpdir); err != nil {
-			t.Errorf("error removing temp dir: %v", err)
-		}
-	}()
+	tmpdir := t.TempDir()
 
 	host1Client := &mockSSHClient{}
 	host1Client.commands = append(host1Client.commands,

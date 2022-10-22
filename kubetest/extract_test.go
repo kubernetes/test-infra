@@ -116,9 +116,9 @@ func TestGetKube(t *testing.T) {
 	} else {
 		defer os.Chdir(o)
 	}
-	if d, err := os.MkdirTemp("", "extract"); err != nil {
-		t.Fatal(err)
-	} else if err := os.Chdir(d); err != nil {
+
+	d := t.TempDir()
+	if err := os.Chdir(d); err != nil {
 		t.Fatal(err)
 	}
 
@@ -266,9 +266,8 @@ func TestExtractStrategies(t *testing.T) {
 	releaseBucket := "k8s-release"
 
 	for _, tc := range cases {
-		if d, err := os.MkdirTemp("", "extract"); err != nil {
-			t.Fatal(err)
-		} else if err := os.Chdir(d); err != nil {
+		d := t.TempDir()
+		if err := os.Chdir(d); err != nil {
 			t.Fatal(err)
 		}
 
@@ -362,9 +361,8 @@ func TestGciExtractStrategy(t *testing.T) {
 	releaseBucket := "k8s-release"
 
 	for _, tc := range cases {
-		if d, err := os.MkdirTemp("", "extract"); err != nil {
-			t.Fatal(err)
-		} else if err := os.Chdir(d); err != nil {
+		d := t.TempDir()
+		if err := os.Chdir(d); err != nil {
 			t.Fatal(err)
 		}
 

@@ -290,11 +290,7 @@ deck:
 	}
 	for _, tc := range testCases {
 		// save the config
-		spyglassConfigDir, err := os.MkdirTemp("", "spyglassConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(spyglassConfigDir)
+		spyglassConfigDir := t.TempDir()
 
 		spyglassConfig := filepath.Join(spyglassConfigDir, "config.yaml")
 		if err := os.WriteFile(spyglassConfig, []byte(tc.spyglassConfig), 0666); err != nil {
@@ -3260,11 +3256,7 @@ postsubmits:
 		t.Run(tc.name, func(t *testing.T) {
 
 			// save the config
-			prowConfigDir, err := os.MkdirTemp("", "prowConfig")
-			if err != nil {
-				t.Fatalf("fail to make tempdir: %v", err)
-			}
-			defer os.RemoveAll(prowConfigDir)
+			prowConfigDir := t.TempDir()
 
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 			if err := os.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
@@ -3280,11 +3272,7 @@ postsubmits:
 
 			jobConfig := ""
 			if len(tc.jobConfigs) > 0 {
-				jobConfigDir, err := os.MkdirTemp("", "jobConfig")
-				if err != nil {
-					t.Fatalf("fail to make tempdir: %v", err)
-				}
-				defer os.RemoveAll(jobConfigDir)
+				jobConfigDir := t.TempDir()
 
 				// cover both job config as a file & a dir
 				if len(tc.jobConfigs) == 1 {
@@ -3466,12 +3454,8 @@ bar_jobs.yaml`,
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			jobConfigDir, err := os.MkdirTemp("", "jobConfig")
-			if err != nil {
-				t.Fatalf("fail to make tempdir: %v", err)
-			}
-			defer os.RemoveAll(jobConfigDir)
-			err = os.Mkdir(filepath.Join(jobConfigDir, "subdir"), 0777)
+			jobConfigDir := t.TempDir()
+			err := os.Mkdir(filepath.Join(jobConfigDir, "subdir"), 0777)
 			if err != nil {
 				t.Fatalf("fail to make subdir: %v", err)
 			}
@@ -3625,11 +3609,7 @@ func TestSecretAgentLoading(t *testing.T) {
 	changedTokenValue := "121f3cb3e7f70feeb35f9204f5a988d7292c7ba0"
 
 	// Creating a temporary directory.
-	secretDir, err := os.MkdirTemp("", "secretDir")
-	if err != nil {
-		t.Fatalf("fail to create a temporary directory: %v", err)
-	}
-	defer os.RemoveAll(secretDir)
+	secretDir := t.TempDir()
 
 	// Create the first temporary secret.
 	firstTempSecret := filepath.Join(secretDir, "firstTempSecret")
@@ -3732,11 +3712,7 @@ github_reporter:
 
 	for _, tc := range testCases {
 		// save the config
-		prowConfigDir, err := os.MkdirTemp("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		prowConfigDir := t.TempDir()
 
 		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 		if err := os.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
@@ -4272,11 +4248,7 @@ tide:
 
 	for _, tc := range testCases {
 		// save the config
-		prowConfigDir, err := os.MkdirTemp("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		prowConfigDir := t.TempDir()
 
 		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
 		if err := os.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {

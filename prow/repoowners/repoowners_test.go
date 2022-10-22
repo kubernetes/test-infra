@@ -1187,11 +1187,7 @@ func TestExpandAliases(t *testing.T) {
 }
 
 func TestSaveSimpleConfig(t *testing.T) {
-	dir, err := os.MkdirTemp("", "simpleConfig")
-	if err != nil {
-		t.Errorf("unexpected error when creating temp dir")
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	tests := []struct {
 		name     string
@@ -1243,11 +1239,7 @@ reviewers:
 }
 
 func TestSaveFullConfig(t *testing.T) {
-	dir, err := os.MkdirTemp("", "fullConfig")
-	if err != nil {
-		t.Errorf("unexpected error when creating temp dir")
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	tests := []struct {
 		name     string

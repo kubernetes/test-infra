@@ -203,15 +203,7 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				BuildID: "build",
 			}
 
-			tmpDir, err := os.MkdirTemp("", testCase.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", testCase.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", testCase.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			for _, testPath := range testCase.paths {
 				if strings.HasSuffix(testPath, "/") {
