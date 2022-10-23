@@ -1671,6 +1671,99 @@ func TestPluginsMergeFrom(t *testing.T) {
 	}
 }
 
+func TestBlunderbussMergeFrom(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name           string
+		from           *Blunderbuss
+		to             *Blunderbuss
+		expected       *Blunderbuss
+		expectedErrMsg string
+	}{
+		{
+			name:     "Merging for two different repos in an org",
+			from:     &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
+			to:       &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-2": {}}},
+			expected: &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}, "org/repo-2": {}}},
+		},
+		{
+			name:     "Merging org and repo in org",
+			from:     &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-2": {}}},
+			to:       &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org": {}}},
+			expected: &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org": {}, "org/repo-2": {}}},
+		},
+		{
+			name:     "Merging 2 orgs",
+			from:     &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
+			to:       &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org-2/repo-1": {}}},
+			expected: &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}, "org-2/repo-1": {}}},
+		},
+		{
+			name: "Merging global config with org/repo config succeeds",
+			from: &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
+			to:   &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+			expected: &Blunderbuss{
+				BlunderbussConfig: BlunderbussConfig{},
+				OrgsRepos:         map[string]BlunderbussConfig{"org/repo-1": {}},
+			},
+		},
+		{
+			name: "Merging org/repo config with global config succeeds",
+			from: &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+			to:   &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
+			expected: &Blunderbuss{
+				BlunderbussConfig: BlunderbussConfig{},
+				OrgsRepos:         map[string]BlunderbussConfig{"org/repo-1": {}},
+			},
+		},
+		{
+			name:     "Merging identical global configs succeeds",
+			from:     &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+			to:       &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+			expected: &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+		},
+		{
+			name:           "Merging differing global configs fails",
+			from:           &Blunderbuss{BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 1}},
+			to:             &Blunderbuss{BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 2}},
+			expectedErrMsg: "global configurations for blunderbuss do not match",
+		},
+		{
+			name:           "Merging the same organization fails",
+			from:           &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org": {}}},
+			to:             &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org": {}}},
+			expectedErrMsg: "found duplicate config for blunderbuss.orgsRepos[\"org\"]",
+		},
+		{
+			name:           "Merging the same repository fails",
+			from:           &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
+			to:             &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
+			expectedErrMsg: "found duplicate config for blunderbuss.orgsRepos[\"org/repo-1\"]",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			err := tc.to.mergeFrom(tc.from)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if tc.expectedErrMsg != errMsg {
+				t.Fatalf("expected error message %q, got %q", tc.expectedErrMsg, errMsg)
+			}
+			if err != nil {
+				return
+			}
+
+			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
+				t.Errorf("expected config differs from actual: %s", diff)
+			}
+		})
+	}
+}
+
 func TestBugzillaMergeFrom(t *testing.T) {
 	t.Parallel()
 
@@ -1986,7 +2079,7 @@ func TestBugzillaMergeFrom(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
-				t.Errorf("expexcted config differs from actual: %s", diff)
+				t.Errorf("expected config differs from actual: %s", diff)
 			}
 		})
 	}
@@ -2009,6 +2102,7 @@ func TestHasConfigFor(t *testing.T) {
 				fuzzedConfig.Triggers = nil
 				fuzzedConfig.Welcome = nil
 				fuzzedConfig.ExternalPlugins = nil
+				fuzzedConfig.Blunderbuss = Blunderbuss{BlunderbussConfig: BlunderbussConfig{}}
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
 		},
@@ -2235,6 +2329,16 @@ func TestMergeFrom(t *testing.T) {
 				{Repos: []string{"foo/bar"}},
 				{Repos: []string{"foo/baz"}},
 			}},
+		},
+		{
+			name:                "Blunderbuss config gets merged",
+			in:                  Configuration{Blunderbuss: Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"foo/bar": {}}}},
+			supplementalConfigs: []Configuration{{Blunderbuss: Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"foo/baz": {}}}}},
+			expected: Configuration{Blunderbuss: Blunderbuss{
+				OrgsRepos: map[string]BlunderbussConfig{
+					"foo/bar": {},
+					"foo/baz": {},
+				}}},
 		},
 		{
 			name: "ExternalPlugins get merged",
