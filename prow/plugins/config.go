@@ -145,8 +145,8 @@ type ExternalPlugin struct {
 	Events []string `json:"events,omitempty"`
 }
 
-// Blunderbuss defines configuration for the blunderbuss plugin.
-type Blunderbuss struct {
+// BlunderbussConfig defines configuration options for the blunderbuss plugin.
+type BlunderbussConfig struct {
 	// ReviewerCount is the minimum number of reviewers to request
 	// reviews from. Defaults to requesting reviews from 2 reviewers
 	ReviewerCount *int `json:"request_count,omitempty"`
@@ -170,6 +170,14 @@ type Blunderbuss struct {
 	// This is useful when a bot user or admin opens a PR that will be
 	// merged regardless of approvals.
 	IgnoreAuthors []string `json:"ignore_authors,omitempty"`
+}
+
+// Blunderbuss defines overall configuration for the blunderbuss plugin.
+type Blunderbuss struct {
+	BlunderbussConfig `json:",inline,omitempty"`
+	// OrgsRepos allows sharding for org and repo-specific Blunderbuss settings,
+	// providing Blunderbuss settings under either org or org/repo keys.
+	OrgsRepos map[string]BlunderbussConfig `json:"orgs_repos,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -849,6 +857,28 @@ func (c *Configuration) ApproveFor(org, repo string) *Approve {
 		a.PrProcessLink = "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process"
 	}
 	return a
+}
+
+// BlunderbussFor finds the BlunderbussConfig for an org or repo, if one exists.
+// Blunderbuss configuration can be listed for a repository or an organization.
+func (c *Configuration) BlunderbussFor(org, repo string) BlunderbussConfig {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	// First search for repo config
+	for orgAndRepo, blunderbuss := range c.Blunderbuss.OrgsRepos {
+		if orgAndRepo == fullName {
+			return blunderbuss
+		}
+	}
+
+	// If nothing is found, loop again looking for an org config
+	for orgOnly, blunderbuss := range c.Blunderbuss.OrgsRepos {
+		if orgOnly == org {
+			return blunderbuss
+		}
+	}
+
+	// Return base config
+	return c.Blunderbuss.BlunderbussConfig
 }
 
 // LgtmFor finds the Lgtm for a repo, if one exists
@@ -1919,7 +1949,8 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 
 	diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla,
 		ExternalPlugins: other.ExternalPlugins, Label: Label{RestrictedLabels: other.Label.RestrictedLabels},
-		Lgtm: other.Lgtm, Plugins: other.Plugins, Triggers: other.Triggers, Welcome: other.Welcome},
+		Lgtm: other.Lgtm, Plugins: other.Plugins, Triggers: other.Triggers, Welcome: other.Welcome,
+		Blunderbuss: other.Blunderbuss},
 		config.DefaultDiffOpts...)
 
 	if diff != "" {
@@ -1941,6 +1972,10 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 	c.Lgtm = append(c.Lgtm, other.Lgtm...)
 	c.Triggers = append(c.Triggers, other.Triggers...)
 	c.Welcome = append(c.Welcome, other.Welcome...)
+
+	if err := c.Blunderbuss.mergeFrom(&other.Blunderbuss); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge .blunderbuss from supplemental config: %w", err))
+	}
 
 	if err := c.mergeExternalPluginsFrom(other.ExternalPlugins); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge .external-plugins from supplemental config: %w", err))
@@ -2058,6 +2093,37 @@ func (l *Label) mergeFrom(other *Label) error {
 	return utilerrors.NewAggregate(errs)
 }
 
+// Merge two Blunderbuss configurations, returning an aggregated error for conflicts
+func (b *Blunderbuss) mergeFrom(other *Blunderbuss) error {
+	// No config actually specified, so no action required
+	if other == nil {
+		return nil
+	}
+
+	var errs []error
+
+	// Add error when both configs declare different global defaults
+	if !reflect.DeepEqual(b.BlunderbussConfig, other.BlunderbussConfig) {
+		errs = append(errs, fmt.Errorf("global configurations for blunderbuss do not match"))
+	}
+
+	// Initialize the OrgsRepos map if it's empty to accept incoming OrgsRepos configs
+	if other.OrgsRepos != nil && b.OrgsRepos == nil {
+		b.OrgsRepos = map[string]BlunderbussConfig{}
+	}
+
+	// Merge OrgsRepos configs, skipping conflicts and adding a message to the aggregated error message
+	for orgOrRepo, config := range other.OrgsRepos {
+		if _, ok := b.OrgsRepos[orgOrRepo]; ok {
+			errs = append(errs, fmt.Errorf("found duplicate config for blunderbuss.orgsRepos[\"%s\"]", orgOrRepo))
+			continue
+		}
+		b.OrgsRepos[orgOrRepo] = config
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
 func getLabelConfigFromRestrictedLabelsSlice(s []RestrictedLabel, label string) int {
 	for idx, item := range s {
 		if item.Label == label {
@@ -2070,9 +2136,9 @@ func getLabelConfigFromRestrictedLabelsSlice(s []RestrictedLabel, label string) 
 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
 	equals := reflect.DeepEqual(c,
-		&Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins,
-			Label: Label{RestrictedLabels: c.Label.RestrictedLabels}, Lgtm: c.Lgtm, Plugins: c.Plugins,
-			Triggers: c.Triggers, Welcome: c.Welcome})
+		&Configuration{Approve: c.Approve, Blunderbuss: c.Blunderbuss, Bugzilla: c.Bugzilla,
+			ExternalPlugins: c.ExternalPlugins, Label: Label{RestrictedLabels: c.Label.RestrictedLabels},
+			Lgtm: c.Lgtm, Plugins: c.Plugins, Triggers: c.Triggers, Welcome: c.Welcome})
 
 	if !equals || c.Bugzilla.Default != nil {
 		global = true
@@ -2080,6 +2146,14 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 	orgs = sets.String{}
 	repos = sets.String{}
 	for orgOrRepo := range c.Plugins {
+		if strings.Contains(orgOrRepo, "/") {
+			repos.Insert(orgOrRepo)
+		} else {
+			orgs.Insert(orgOrRepo)
+		}
+	}
+
+	for orgOrRepo := range c.Blunderbuss.OrgsRepos {
 		if strings.Contains(orgOrRepo, "/") {
 			repos.Insert(orgOrRepo)
 		} else {
