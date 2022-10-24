@@ -94,7 +94,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -129,7 +129,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -167,7 +167,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -210,7 +210,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -255,7 +255,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -297,7 +297,7 @@ periodics:
 #     path_alias: sigs.k8s.io/azurefile-csi-driver
 #   spec:
 #     containers:
-#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
 #         command:
 #           - runner.sh
 #           - ./scripts/ci-entrypoint.sh
@@ -337,7 +337,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"

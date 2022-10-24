@@ -68,7 +68,7 @@ presubmits:
     - release-1.23
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -98,7 +98,7 @@ presubmits:
     - release-1.23
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -128,7 +128,7 @@ presubmits:
     - release-1.23
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221021-f25568465b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
