@@ -481,15 +481,22 @@ func TestLogReaders(t *testing.T) {
 				entries = append(entries, opt)
 			}
 
-			readers := logReaders(entries)
+			readers := logReadersFuncs(entries)
 			const repl = "$1 <SNIP>"
 			actual := make(map[string]string)
-			for name, reader := range readers {
-				buf, err := io.ReadAll(reader)
+			for name, newReader := range readers {
+				r, err := newReader()
+				if err != nil {
+					t.Fatalf("failed to make reader: %v", err)
+				}
+				buf, err := io.ReadAll(r)
 				if err != nil {
 					t.Fatalf("failed to read all: %v", err)
 				}
 				actual[name] = re.ReplaceAllString(string(buf), repl)
+				if err := r.Close(); err != nil {
+					t.Fatalf("failed to close reader: %v", err)
+				}
 			}
 
 			for name, log := range tc.expected {
@@ -543,7 +550,7 @@ func TestSideCarLogsUpload(t *testing.T) {
 
 	entries := options.entries()
 	metadata := combineMetadata(entries)
-	buildLogs := logReaders(entries)
+	buildLogs := logReadersFuncs(entries)
 
 	options.doUpload(context.Background(), spec, true, false, metadata, buildLogs, logFile, &once)
 

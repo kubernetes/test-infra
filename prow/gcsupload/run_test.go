@@ -17,6 +17,7 @@ limitations under the License.
 package gcsupload
 
 import (
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -105,8 +106,12 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				},
 			},
 			extra: map[string]gcs.UploadFunc{
-				"something": gcs.DataUpload(strings.NewReader("data")),
-				"else":      gcs.DataUpload(strings.NewReader("data")),
+				"something": gcs.DataUpload(func() (io.ReadCloser, error) {
+					return io.NopCloser(strings.NewReader("data")), nil
+				}),
+				"else": gcs.DataUpload(func() (io.ReadCloser, error) {
+					return io.NopCloser(strings.NewReader("data")), nil
+				}),
 			},
 			expected: []string{
 				"pr-logs/directory/job/build.txt",

@@ -19,15 +19,137 @@ package gcs
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	stdio "io"
+	"os"
+	"path"
+	"reflect"
 	"sync"
 	"testing"
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
 )
+
+type (
+	fakeReader struct {
+		closeWillFail bool
+		meta          *readerFuncMetadata
+	}
+	readerFuncMetadata struct {
+		NewReaderAttemptsNum int
+		ReaderWasClosed      bool
+	}
+	readerFuncOptions struct {
+		newAlwaysFail          bool
+		newFailsOnNthAttempt   int
+		closeFailsOnNthAttempt int
+		closeAlwaysFails       bool
+	}
+)
+
+func (r *fakeReader) Read(p []byte) (n int, err error) {
+	return 0, stdio.EOF
+}
+
+func (r *fakeReader) Close() error {
+	if r.closeWillFail {
+		return errors.New("fake reader: close fails")
+	}
+	r.meta.ReaderWasClosed = true
+	return nil
+}
+
+func newReaderFunc(opt readerFuncOptions) (ReaderFunc, *readerFuncMetadata) {
+	meta := readerFuncMetadata{}
+	return ReaderFunc(func() (io.ReadCloser, error) {
+		defer func() {
+			meta.NewReaderAttemptsNum += 1
+		}()
+		if opt.newAlwaysFail {
+			return nil, errors.New("reader func: always failing")
+		}
+		if opt.newFailsOnNthAttempt > -1 && meta.NewReaderAttemptsNum == opt.newFailsOnNthAttempt {
+			return nil, fmt.Errorf("reader func: fails on attempt no.: %d", meta.NewReaderAttemptsNum)
+		}
+		closeWillFail := opt.closeAlwaysFails
+		if opt.closeFailsOnNthAttempt > -1 && meta.NewReaderAttemptsNum == opt.closeFailsOnNthAttempt {
+			closeWillFail = true
+		}
+		return &fakeReader{closeWillFail: closeWillFail, meta: &meta}, nil
+	}), &meta
+}
+
+func TestUploadNewReaderFunc(t *testing.T) {
+	var testCases = []struct {
+		name               string
+		isErrExpected      bool
+		readerFuncOpts     readerFuncOptions
+		wantReaderFuncMeta readerFuncMetadata
+	}{
+		{
+			name:          "Succeed on firt retry",
+			isErrExpected: false,
+			readerFuncOpts: readerFuncOptions{
+				newFailsOnNthAttempt:   -1,
+				closeFailsOnNthAttempt: -1,
+			},
+			wantReaderFuncMeta: readerFuncMetadata{
+				NewReaderAttemptsNum: 1,
+				ReaderWasClosed:      true,
+			},
+		},
+		{
+			name:          "Reader cannot be created",
+			isErrExpected: true,
+			readerFuncOpts: readerFuncOptions{
+				newAlwaysFail:          true,
+				newFailsOnNthAttempt:   -1,
+				closeFailsOnNthAttempt: -1,
+			},
+			wantReaderFuncMeta: readerFuncMetadata{
+				NewReaderAttemptsNum: 4,
+				ReaderWasClosed:      false,
+			},
+		},
+		{
+			name: "Fail on first attempt",
+			readerFuncOpts: readerFuncOptions{
+				newFailsOnNthAttempt:   0,
+				closeFailsOnNthAttempt: -1,
+			},
+			wantReaderFuncMeta: readerFuncMetadata{
+				NewReaderAttemptsNum: 2,
+				ReaderWasClosed:      true,
+			},
+		},
+	}
+	tempDir := t.TempDir()
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			f, err := os.CreateTemp(tempDir, "*test-upload-new-read-fn")
+			if err != nil {
+				t.Fatalf("create tmp file: %v", err)
+			}
+			uploadTargets := make(map[string]UploadFunc)
+			readerFunc, readerFuncMeta := newReaderFunc(testCase.readerFuncOpts)
+			uploadTargets[path.Base(f.Name())] = DataUpload(readerFunc)
+			bucket := fmt.Sprintf("%s://%s", providers.File, path.Dir(f.Name()))
+			err = Upload(context.TODO(), bucket, "", "", uploadTargets)
+			if testCase.isErrExpected && err == nil {
+				t.Errorf("error expected but got nil")
+			}
+			if !reflect.DeepEqual(testCase.wantReaderFuncMeta, *readerFuncMeta) {
+				t.Errorf("unexpected ReaderFuncMetadata: %s", diff.ObjectReflectDiff(testCase.wantReaderFuncMeta, *readerFuncMeta))
+			}
+		})
+	}
+
+}
 
 func TestUploadWithRetries(t *testing.T) {
 

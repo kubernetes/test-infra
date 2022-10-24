@@ -37,6 +37,8 @@ import (
 // UploadFunc knows how to upload into an object
 type UploadFunc func(writer dataWriter) error
 
+type ReaderFunc func() (io.ReadCloser, error)
+
 type destToWriter func(dest string) dataWriter
 
 const retryCount = 4
@@ -139,58 +141,73 @@ func FileUpload(file string) UploadFunc {
 // attributes on the object.
 func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 	return func(writer dataWriter) error {
-		reader, err := os.Open(file)
-		if err != nil {
-			return err
-		}
-		if fi, err := reader.Stat(); err == nil {
+		if fi, err := os.Stat(file); err == nil {
 			opts.BufferSize = utilpointer.Int64Ptr(fi.Size())
 			if *opts.BufferSize > 25*1024*1024 {
 				*opts.BufferSize = 25 * 1024 * 1024
 			}
 		}
 
-		uploadErr := DataUploadWithOptions(reader, opts)(writer)
+		newReader := func() (io.ReadCloser, error) {
+			reader, err := os.Open(file)
+			if err != nil {
+				return nil, err
+			}
+			return reader, nil
+		}
+
+		uploadErr := DataUploadWithOptions(newReader, opts)(writer)
 		if uploadErr != nil {
 			uploadErr = fmt.Errorf("upload error: %w", uploadErr)
 		}
-		closeErr := reader.Close()
-		if closeErr != nil {
-			closeErr = fmt.Errorf("reader close error: %w", closeErr)
-		}
-
-		return utilerrors.NewAggregate([]error{uploadErr, closeErr})
+		return uploadErr
 	}
 }
 
 // DataUpload returns an UploadFunc which copies all
 // data from src reader into GCS.
-func DataUpload(src io.Reader) UploadFunc {
-	return DataUploadWithOptions(src, pkgio.WriterOptions{})
+func DataUpload(newReader ReaderFunc) UploadFunc {
+	return DataUploadWithOptions(newReader, pkgio.WriterOptions{})
 }
 
 // DataUploadWithMetadata returns an UploadFunc which copies all
 // data from src reader into GCS and also sets the provided metadata
 // fields onto the object.
-func DataUploadWithMetadata(src io.Reader, metadata map[string]string) UploadFunc {
-	return DataUploadWithOptions(src, pkgio.WriterOptions{Metadata: metadata})
+func DataUploadWithMetadata(newReader ReaderFunc, metadata map[string]string) UploadFunc {
+	return DataUploadWithOptions(newReader, pkgio.WriterOptions{Metadata: metadata})
 }
 
 // DataUploadWithOptions returns an UploadFunc which copies all data
 // from src reader into GCS and also sets the provided attributes on
 // the object.
-func DataUploadWithOptions(src io.Reader, attrs pkgio.WriterOptions) UploadFunc {
-	return func(writer dataWriter) error {
+func DataUploadWithOptions(newReader ReaderFunc, attrs pkgio.WriterOptions) UploadFunc {
+	return func(writer dataWriter) (e error) {
+		errors := make([]error, 0, 4)
+		defer func() {
+			if err := writer.Close(); err != nil {
+				errors = append(errors, fmt.Errorf("writer close error: %w", err))
+			}
+			e = utilerrors.NewAggregate(errors)
+		}()
+
 		writer.ApplyWriterOptions(attrs)
-		_, copyErr := io.Copy(writer, src)
-		if copyErr != nil {
-			copyErr = fmt.Errorf("copy error: %w", copyErr)
+
+		reader, err := newReader()
+		if err != nil {
+			errors = append(errors, fmt.Errorf("reader new error: %w", err))
+			return e
 		}
-		closeErr := writer.Close()
-		if closeErr != nil {
-			closeErr = fmt.Errorf("writer close error: %w", closeErr)
+		defer func() {
+			if err := reader.Close(); err != nil {
+				errors = append(errors, fmt.Errorf("reader close error: %w", err))
+			}
+		}()
+
+		if _, err := io.Copy(writer, reader); err != nil {
+			errors = append(errors, fmt.Errorf("copy error: %w", err))
 		}
-		return utilerrors.NewAggregate([]error{copyErr, closeErr})
+
+		return e
 	}
 }
 
