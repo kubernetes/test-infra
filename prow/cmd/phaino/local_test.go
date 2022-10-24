@@ -87,11 +87,7 @@ func TestPathAlias(t *testing.T) {
 }
 
 func TestReadRepo(t *testing.T) {
-	dir, err := os.MkdirTemp("", "read-repo")
-	if err != nil {
-		t.Fatalf("Cannot create temp dir: %v", err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	cases := []struct {
 		name      string
@@ -242,11 +238,7 @@ func TestFindRepoFromLocal(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			dir, err := os.MkdirTemp("", "find-repo-"+tc.name)
-			if err != nil {
-				t.Fatalf("Cannot create temp dir: %v", err)
-			}
-			defer os.RemoveAll(dir)
+			dir := t.TempDir()
 
 			tc.dirs = append(tc.dirs, tc.wd)
 			for _, d := range tc.dirs {

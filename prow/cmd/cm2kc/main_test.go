@@ -64,12 +64,7 @@ func TestGenjobs(t *testing.T) {
 				t.Errorf("Failed reading expected output file %v: %v", outE, err)
 			}
 
-			tmpDir, err := os.MkdirTemp("", "")
-			if err != nil {
-				t.Errorf("Failed creating temp file: %v", err)
-			}
-			defer os.Remove(tmpDir)
-
+			tmpDir := t.TempDir()
 			outA := filepath.Join(tmpDir, "out.yaml")
 
 			os.Args = []string{"cm2kc"}

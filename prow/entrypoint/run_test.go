@@ -149,15 +149,7 @@ func TestOptions_Run(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			tmpDir, err := os.MkdirTemp("", testCase.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", testCase.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", testCase.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			options := Options{
 				AlwaysZero:  testCase.alwaysZero,

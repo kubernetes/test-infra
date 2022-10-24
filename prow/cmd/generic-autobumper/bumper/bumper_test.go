@@ -172,11 +172,7 @@ func writeToFile(t *testing.T, path, content string) {
 }
 
 func TestCallWithWriter(t *testing.T) {
-	dir, err := os.MkdirTemp("", "TestCallWithWriter")
-	if err != nil {
-		t.Errorf("failed to create temp dir '%s': '%v'", dir, err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	file1 := filepath.Join(dir, "secret1")
 	file2 := filepath.Join(dir, "secret2")
@@ -274,15 +270,7 @@ func TestGetAssignment(t *testing.T) {
 }
 
 func TestCDToRootDir(t *testing.T) {
-	tmpDir, err := os.MkdirTemp(".", "test-update-references_")
-	if err != nil {
-		t.Fatalf("Failed created tmp dir: %v", err)
-	}
-	t.Cleanup(func() {
-		if err := os.RemoveAll(tmpDir); err != nil {
-			t.Logf("Failed cleanup tmp dir %q: %v", tmpDir, err)
-		}
-	})
+	tmpDir := t.TempDir()
 	for dir, fps := range map[string][]string{
 		"testdata/dir": {"extra-file"},
 	} {
@@ -326,7 +314,7 @@ func TestCDToRootDir(t *testing.T) {
 			defer os.Chdir(curtDir)
 			defer os.Setenv(envName, curtBuildWorkspaceDir)
 
-			os.Setenv(envName, filepath.Join(curtDir, tc.buildWorkspaceDir))
+			os.Setenv(envName, tc.buildWorkspaceDir)
 			err := cdToRootDir()
 			if tc.expectError && err == nil {
 				t.Errorf("Expected to get an error but the result is nil")

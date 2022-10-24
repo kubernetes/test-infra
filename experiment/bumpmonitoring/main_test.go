@@ -86,13 +86,7 @@ func TestFindConfigToUpdate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := os.MkdirTemp("", tc.name)
-			if err != nil {
-				t.Fatalf("Failed creating temp dir: %v", err)
-			}
-			t.Cleanup(func() {
-				os.RemoveAll(tmpDir)
-			})
+			tmpDir := t.TempDir()
 			srcRootDir, dstRootDir := seedTempDir(t, tmpDir, tc.srcNodes, tc.dstNodes)
 			c := client{
 				srcPath: srcRootDir,
@@ -160,13 +154,7 @@ func TestCopyFiles(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := os.MkdirTemp("", tc.name)
-			if err != nil {
-				t.Fatalf("Failed creating temp dir: %v", err)
-			}
-			t.Cleanup(func() {
-				os.RemoveAll(tmpDir)
-			})
+			tmpDir := t.TempDir()
 			srcRootDir, dstRootDir := seedTempDir(t, tmpDir, tc.srcNodes, tc.dstNodes)
 			c := client{
 				srcPath: srcRootDir,

@@ -114,15 +114,7 @@ func TestWait(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := os.MkdirTemp("", tc.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			var entries []wrapper.Options
 
@@ -222,15 +214,7 @@ func TestWaitParallelContainers(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := os.MkdirTemp("", tc.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			var entries []wrapper.Options
 
@@ -361,15 +345,7 @@ func TestCombineMetadata(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := os.MkdirTemp("", tc.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 			var entries []wrapper.Options
 
 			for i, m := range tc.pieces {
@@ -479,15 +455,7 @@ func TestLogReaders(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := os.MkdirTemp("", tc.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			for name, log := range tc.processLogs {
 				p := path.Join(tmpDir, name)
@@ -546,13 +514,7 @@ func TestSideCarLogsUpload(t *testing.T) {
 	logrus.Info(testString)
 	var once sync.Once
 
-	localOutputDir, err := os.MkdirTemp("", "testdir")
-	if err != nil {
-		t.Errorf("Unable to create temp dir: %v", err)
-	}
-	defer func() {
-		os.RemoveAll(localOutputDir)
-	}()
+	localOutputDir := t.TempDir()
 
 	options := Options{
 		GcsOptions: &gcsupload.Options{

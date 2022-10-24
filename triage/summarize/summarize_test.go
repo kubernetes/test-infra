@@ -137,12 +137,7 @@ func failOnMismatchedTestSlices(t *testing.T, want []test, got []test) {
 
 func TestSummarize(t *testing.T) {
 	// Setup
-	tmpdir, err := os.MkdirTemp("", "summarize_test_*")
-	if err != nil {
-		t.Errorf("Could not create temporary directory: %s", err)
-		return
-	}
-	defer os.RemoveAll(tmpdir)
+	tmpdir := t.TempDir()
 
 	// Save the old working directory
 	olddir, err := os.Getwd()

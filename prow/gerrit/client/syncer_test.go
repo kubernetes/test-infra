@@ -45,11 +45,7 @@ func (o fakeOpener) Writer(ctx context.Context, path string, _ ...io.WriterOptio
 
 func TestSyncTime(t *testing.T) {
 
-	dir, err := os.MkdirTemp("", "fake-gerrit-value")
-	if err != nil {
-		t.Fatalf("Could not create temp file: %v", err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	path := filepath.Join(dir, "value.txt")
 	var noCreds string
 	ctx := context.Background()
@@ -206,11 +202,7 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 }
 
 func TestNewProjectAddition(t *testing.T) {
-	dir, err := os.MkdirTemp("", "fake-gerrit-value")
-	if err != nil {
-		t.Fatalf("Could not create temp file: %v", err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	path := filepath.Join(dir, "value.txt")
 
 	testTime := time.Now().Add(-time.Minute)

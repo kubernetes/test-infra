@@ -40,29 +40,16 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	srcRoot, err := os.MkdirTemp("", "clonerefs_unittest")
-	if err != nil {
-		t.Fatalf("Error while creating temp dir: %v.", err)
-	}
-	defer os.RemoveAll(srcRoot)
+	srcRoot := t.TempDir()
 
-	oauthTokenDir, err := os.MkdirTemp("", "oauth")
-	if err != nil {
-		t.Fatalf("Error while creating oauth token dir: %v.", err)
-	}
-	defer os.RemoveAll(oauthTokenDir)
-
+	oauthTokenDir := t.TempDir()
 	oauthTokenFilePath := filepath.Join(oauthTokenDir, "oauth-token")
 	oauthTokenValue := []byte("12345678")
 	if err := os.WriteFile(oauthTokenFilePath, oauthTokenValue, 0644); err != nil {
 		t.Fatalf("Error while create oauth token file: %v", err)
 	}
 
-	githubAppDir, err := os.MkdirTemp("", "github-app")
-	if err != nil {
-		t.Fatalf("Error while creating github app dir: %v.", err)
-	}
-	defer os.RemoveAll(githubAppDir)
+	githubAppDir := t.TempDir()
 	githubAppPrivateKeyFilePath := filepath.Join(githubAppDir, "private-key.pem")
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {

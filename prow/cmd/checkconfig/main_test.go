@@ -689,11 +689,7 @@ presubmits:
 		tc := testcases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			// Set up config files
-			root, err := os.MkdirTemp("", fmt.Sprintf("TestValidateUnknownFieldsAll-%s_*", tc.name))
-			if err != nil {
-				t.Fatalf("Error creating temp dir: %v.", err)
-			}
-			defer os.RemoveAll(root) // clean up
+			root := t.TempDir()
 
 			prowConfigFile := filepath.Join(root, "config.yaml")
 			if err := os.WriteFile(prowConfigFile, []byte(tc.configContent), 0666); err != nil {
@@ -713,7 +709,7 @@ presubmits:
 				}
 			}
 			// Test validation
-			_, err = config.LoadStrict(prowConfigFile, jobConfigDir, nil, "")
+			_, err := config.LoadStrict(prowConfigFile, jobConfigDir, nil, "")
 			if (err != nil) != tc.expectedErr {
 				if tc.expectedErr {
 					t.Error("Expected an error, but did not receive one.")

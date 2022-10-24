@@ -22,7 +22,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -87,11 +86,7 @@ func TestPathToKeyKeyToPath(t *testing.T) {
 // test stateful cache methods
 func TestCacheStorage(t *testing.T) {
 	// create a cache in a tempdir
-	dir, err := os.MkdirTemp("", "cache-tests")
-	if err != nil {
-		t.Fatalf("Failed to create tempdir for tests! %v", err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	cache := NewCache(dir)
 
 	// sanity checks
@@ -99,7 +94,7 @@ func TestCacheStorage(t *testing.T) {
 		t.Fatalf("Expected DiskRoot to be %v not %v", dir, cache.DiskRoot())
 	}
 	// we haven't put anything yet, so get should return exists == false
-	err = cache.Get("some/key", func(exists bool, contents io.ReadSeeker) error {
+	err := cache.Get("some/key", func(exists bool, contents io.ReadSeeker) error {
 		if exists {
 			t.Fatal("no keys should exist yet!")
 		}
