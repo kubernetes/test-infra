@@ -1270,24 +1270,21 @@ func TestConfigureTeamMembers(t *testing.T) {
 		slug           string
 	}{
 		{
-			name:           "fail when listing fails",
-			slug:           "some-slug",
-			ignoreInvitees: false,
-			err:            true,
+			name: "fail when listing fails",
+			slug: "some-slug",
+			err:  true,
 		},
 		{
-			name:           "fail when removal fails",
-			members:        sets.NewString("fail"),
-			ignoreInvitees: false,
-			err:            true,
+			name:    "fail when removal fails",
+			members: sets.NewString("fail"),
+			err:     true,
 		},
 		{
 			name: "fail when add fails",
 			team: org.Team{
 				Maintainers: []string{"fail"},
 			},
-			ignoreInvitees: false,
-			err:            true,
+			err: true,
 		},
 		{
 			name: "some of everything",
@@ -1300,7 +1297,6 @@ func TestConfigureTeamMembers(t *testing.T) {
 			remove:         sets.NewString("drop-maintainer", "drop-member"),
 			addMembers:     sets.NewString("new-member"),
 			addMaintainers: sets.NewString("new-maintainer"),
-			ignoreInvitees: false,
 		},
 		{
 			name: "do not reinvitee invitees",
@@ -1310,7 +1306,6 @@ func TestConfigureTeamMembers(t *testing.T) {
 			},
 			invitees:       sets.NewString("invited-maintainer", "invited-member"),
 			addMaintainers: sets.NewString("newbie"),
-			ignoreInvitees: false,
 		},
 		{
 			name: "do not remove pending invitees",
@@ -1318,10 +1313,9 @@ func TestConfigureTeamMembers(t *testing.T) {
 				Maintainers: []string{"keep-maintainer"},
 				Members:     []string{"invited-member"},
 			},
-			maintainers:    sets.NewString("keep-maintainer"),
-			invitees:       sets.NewString("invited-member"),
-			remove:         sets.String{},
-			ignoreInvitees: false,
+			maintainers: sets.NewString("keep-maintainer"),
+			invitees:    sets.NewString("invited-member"),
+			remove:      sets.String{},
 		},
 		{
 			name: "ignore invitees",
