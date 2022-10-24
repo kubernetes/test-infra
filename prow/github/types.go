@@ -1152,12 +1152,16 @@ const (
 	// OrgUnaffiliated probably means user not a member yet, this was returned
 	// from an org invitation, had to add it so unmarshal doesn't crash
 	OrgUnaffiliated OrgPermissionLevel = "unaffiliated"
+	// OrgReinstate means the user was removed and the invited again before n months have passed.
+	// More info here: https://docs.github.com/en/github-ae@latest/organizations/managing-membership-in-your-organization/reinstating-a-former-member-of-your-organization
+	OrgReinstate OrgPermissionLevel = "reinstate"
 )
 
 var orgPermissionLevels = map[OrgPermissionLevel]bool{
 	OrgMember:       true,
 	OrgAdmin:        true,
 	OrgUnaffiliated: true,
+	OrgReinstate:    true,
 }
 
 // MarshalText returns the byte representation of the permission
