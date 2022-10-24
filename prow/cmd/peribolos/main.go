@@ -57,6 +57,7 @@ type options struct {
 	fixTeams          bool
 	fixTeamRepos      bool
 	fixRepos          bool
+	ignoreInvitees    bool
 	ignoreSecretTeams bool
 	allowRepoArchival bool
 	allowRepoPublish  bool
@@ -83,6 +84,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
 	flags.BoolVar(&o.dumpFull, "dump-full", false, "Output current config of the org as a valid input config file instead of a snippet")
+	flags.BoolVar(&o.ignoreInvitees, "ignore-invitees", false, "Do not compare missing members with active invitations (compatibility for GitHub Enterprise)")
 	flags.BoolVar(&o.ignoreSecretTeams, "ignore-secret-teams", false, "Do not dump or update secret teams if set")
 	flags.BoolVar(&o.fixOrg, "fix-org", false, "Change org metadata if set")
 	flags.BoolVar(&o.fixOrgMembers, "fix-org-members", false, "Add/remove org members if set")
@@ -784,7 +786,7 @@ type inviteClient interface {
 
 func orgInvitations(opt options, client inviteClient, orgName string) (sets.String, error) {
 	invitees := sets.String{}
-	if !opt.fixOrgMembers && !opt.fixTeamMembers {
+	if (!opt.fixOrgMembers && !opt.fixTeamMembers) || opt.ignoreInvitees {
 		return invitees, nil
 	}
 	is, err := client.ListOrgInvitations(orgName)
@@ -1072,8 +1074,12 @@ func configureTeamAndMembers(opt options, client github.Client, githubTeams map[
 	// Configure team members
 	if !opt.fixTeamMembers {
 		logrus.Infof("Skipping %s member configuration", name)
-	} else if err = configureTeamMembers(client, orgName, gt, team); err != nil {
-		return fmt.Errorf("failed to update %s members: %w", name, err)
+	} else if err = configureTeamMembers(client, orgName, gt, team, opt.ignoreInvitees); err != nil {
+		if opt.confirm {
+			return fmt.Errorf("failed to update %s members: %w", name, err)
+		}
+		logrus.WithError(err).Warnf("failed to update %s members: %s", name, err)
+		return nil
 	}
 
 	for childName, childTeam := range team.Children {
@@ -1234,7 +1240,7 @@ func teamInvitations(client teamMembersClient, orgName, teamSlug string) (sets.S
 }
 
 // configureTeamMembers will add/update people to the appropriate role on the team, and remove anyone else.
-func configureTeamMembers(client teamMembersClient, orgName string, gt github.Team, team org.Team) error {
+func configureTeamMembers(client teamMembersClient, orgName string, gt github.Team, team org.Team, ignoreInvitees bool) error {
 	// Get desired state
 	wantMaintainers := sets.NewString(team.Maintainers...)
 	wantMembers := sets.NewString(team.Members...)
@@ -1259,9 +1265,12 @@ func configureTeamMembers(client teamMembersClient, orgName string, gt github.Te
 		haveMaintainers.Insert(m.Login)
 	}
 
-	invitees, err := teamInvitations(client, orgName, gt.Slug)
-	if err != nil {
-		return fmt.Errorf("failed to list %s(%s) invitees: %w", gt.Slug, gt.Name, err)
+	invitees := sets.String{}
+	if !ignoreInvitees {
+		invitees, err = teamInvitations(client, orgName, gt.Slug)
+		if err != nil {
+			return fmt.Errorf("failed to list %s(%s) invitees: %w", gt.Slug, gt.Name, err)
+		}
 	}
 
 	adder := func(user string, super bool) error {
