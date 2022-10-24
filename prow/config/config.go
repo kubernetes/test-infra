@@ -671,13 +671,13 @@ type Plank struct {
 	// e.g. gs://my-bucket/cluster-status.json
 	BuildClusterStatusFile string `json:"build_cluster_status_file,omitempty"`
 
-	// JobQueueConcurrencies is an optional field used to define job queue max concurrency.
+	// JobQueueCapacities is an optional field used to define job queue max concurrency.
 	// Each job can be assigned to a specific queue which has its own max concurrency,
 	// independent from the job's name. Setting the concurrency to 0 will block any job
 	// from being triggered. Setting the concurrency to a negative value will remove the
 	// limit. An example use case would be easier scheduling of jobs using boskos resources.
 	// This mechanism is separate from ProwJob's MaxConcurrency setting.
-	JobQueueConcurrencies map[string]int `json:"job_queue_capacities,omitempty"`
+	JobQueueCapacities map[string]int `json:"job_queue_capacities,omitempty"`
 }
 
 type ProwJobDefaultEntry struct {
@@ -2171,7 +2171,7 @@ func (c Config) validateJobBase(v JobBase, jobType prowapi.ProwJobType) error {
 	if err := validateAnnotation(v.Annotations); err != nil {
 		return err
 	}
-	validJobQueueNames := sets.StringKeySet(c.Plank.JobQueueConcurrencies)
+	validJobQueueNames := sets.StringKeySet(c.Plank.JobQueueCapacities)
 	if err := validateJobQueueName(v.JobQueueName, validJobQueueNames); err != nil {
 		return err
 	}

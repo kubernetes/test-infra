@@ -61,7 +61,7 @@ const (
 	podUnscheduledTimeout = time.Minute * 5
 )
 
-func newFakeConfigAgent(t *testing.T, maxConcurrency int, queueConcurrencies map[string]int) *fca {
+func newFakeConfigAgent(t *testing.T, maxConcurrency int, queueCapacities map[string]int) *fca {
 	presubmits := []config.Presubmit{
 		{
 			JobBase: config.JobBase{
@@ -98,7 +98,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, queueConcurrencies map
 						MaxConcurrency: maxConcurrency,
 						MaxGoroutines:  20,
 					},
-					JobQueueConcurrencies: queueConcurrencies,
+					JobQueueCapacities:    queueCapacities,
 					PodPendingTimeout:     &metav1.Duration{Duration: podPendingTimeout},
 					PodRunningTimeout:     &metav1.Duration{Duration: podRunningTimeout},
 					PodUnscheduledTimeout: &metav1.Duration{Duration: podUnscheduledTimeout},
@@ -130,7 +130,7 @@ func TestTerminateDupes(t *testing.T) {
 
 		TerminatedPJs sets.String
 	}
-	var testcases = []testCase{
+	testcases := []testCase{
 		{
 			Name: "terminate all duplicates",
 
@@ -305,7 +305,6 @@ func TestTerminateDupes(t *testing.T) {
 			if extra := observedCompletedProwJobs.Difference(tc.TerminatedPJs); extra.Len() > 0 {
 				t.Errorf("found unexpectedly deleted prowJobs: %v", extra.List())
 			}
-
 		})
 	}
 }
@@ -338,7 +337,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		ExpectedPendingTime *metav1.Time
 	}
 
-	var testcases = []testCase{
+	testcases := []testCase{
 		{
 			Name: "start new pod",
 			PJ: prowapi.ProwJob{
@@ -814,7 +813,6 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			if actual.Complete() != tc.ExpectedComplete {
 				t.Error("got wrong completion")
 			}
-
 		})
 	}
 }
@@ -825,7 +823,6 @@ func startTime(s time.Time) *metav1.Time {
 }
 
 func TestSyncPendingJob(t *testing.T) {
-
 	type testCase struct {
 		Name string
 
@@ -842,7 +839,7 @@ func TestSyncPendingJob(t *testing.T) {
 		ExpectedURL             string
 		ExpectedBuildID         string
 	}
-	var testcases = []testCase{
+	testcases := []testCase{
 		{
 			Name: "reset when pod goes missing",
 			PJ: prowapi.ProwJob{
@@ -1590,7 +1587,6 @@ func TestSyncPendingJob(t *testing.T) {
 			if actual := actual.Complete(); actual != tc.ExpectedComplete {
 				t.Errorf("expected complete: %t, got complete: %t", tc.ExpectedComplete, actual)
 			}
-
 		})
 	}
 }
@@ -1886,11 +1882,11 @@ func TestMaxConcurency(t *testing.T) {
 	}
 
 	type testCase struct {
-		Name                  string
-		JobQueueConcurrencies map[string]int
-		ProwJob               prowapi.ProwJob
-		ExistingProwJobs      []prowapi.ProwJob
-		PendingJobs           map[string]pendingJob
+		Name               string
+		JobQueueCapacities map[string]int
+		ProwJob            prowapi.ProwJob
+		ExistingProwJobs   []prowapi.ProwJob
+		PendingJobs        map[string]pendingJob
 
 		ExpectedResult bool
 	}
@@ -2001,16 +1997,16 @@ func TestMaxConcurency(t *testing.T) {
 			ExpectedResult: true,
 		},
 		{
-			Name:                  "Job queue concurency 0 never runs",
-			ProwJob:               prowapi.ProwJob{Spec: prowapi.ProwJobSpec{JobQueueName: "queue"}},
-			JobQueueConcurrencies: map[string]int{"queue": 0},
-			ExpectedResult:        false,
+			Name:               "Job queue capacity 0 never runs",
+			ProwJob:            prowapi.ProwJob{Spec: prowapi.ProwJobSpec{JobQueueName: "queue"}},
+			JobQueueCapacities: map[string]int{"queue": 0},
+			ExpectedResult:     false,
 		},
 		{
-			Name:                  "Job queue concurency -1 always runs",
-			ProwJob:               prowapi.ProwJob{Spec: prowapi.ProwJobSpec{JobQueueName: "queue"}},
-			JobQueueConcurrencies: map[string]int{"queue": -1},
-			ExpectedResult:        true,
+			Name:               "Job queue capacity -1 always runs",
+			ProwJob:            prowapi.ProwJob{Spec: prowapi.ProwJobSpec{JobQueueName: "queue"}},
+			JobQueueCapacities: map[string]int{"queue": -1},
+			ExpectedResult:     true,
 		},
 		{
 			Name: "Num pending within max concurrency but exceeds job queue concurrency",
@@ -2022,9 +2018,9 @@ func TestMaxConcurency(t *testing.T) {
 					JobQueueName:   "queue",
 				},
 			},
-			JobQueueConcurrencies: map[string]int{"queue": 10},
-			PendingJobs:           map[string]pendingJob{"my-pj": {Duplicates: 10, JobQueue: "queue"}},
-			ExpectedResult:        false,
+			JobQueueCapacities: map[string]int{"queue": 10},
+			PendingJobs:        map[string]pendingJob{"my-pj": {Duplicates: 10, JobQueue: "queue"}},
+			ExpectedResult:     false,
 		},
 	}
 
@@ -2066,7 +2062,7 @@ func TestMaxConcurency(t *testing.T) {
 				},
 				buildClients: buildClients,
 				log:          logrus.NewEntry(logrus.StandardLogger()),
-				config:       newFakeConfigAgent(t, 0, tc.JobQueueConcurrencies).Config,
+				config:       newFakeConfigAgent(t, 0, tc.JobQueueCapacities).Config,
 				clock:        clock.RealClock{},
 			}
 			// We filter ourselves out via the UID, so make sure its not the empty string
@@ -2081,7 +2077,6 @@ func TestMaxConcurency(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 type patchTrackingFakeClient struct {
@@ -2181,7 +2176,6 @@ func TestSyncAbortedJob(t *testing.T) {
 	const cluster = "cluster"
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-
 			pj := &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "my-pj",
