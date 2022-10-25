@@ -1877,6 +1877,24 @@ func TestValidateJobBase(t *testing.T) {
 			pass: true,
 		},
 		{
+			name: "valid jenkins job - nested job",
+			base: JobBase{
+				Name:      "folder/job",
+				Agent:     ja,
+				Namespace: &cfg.PodNamespace,
+			},
+			pass: true,
+		},
+		{
+			name: "invalid jenkins job",
+			base: JobBase{
+				Name:      "job.",
+				Agent:     ja,
+				Namespace: &cfg.PodNamespace,
+			},
+			pass: false,
+		},
+		{
 			name: "invalid concurrency",
 			base: JobBase{
 				Name:           "name",
