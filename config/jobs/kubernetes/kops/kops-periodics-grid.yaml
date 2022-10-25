@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -94,7 +94,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -157,7 +157,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -220,7 +220,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -283,7 +283,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -346,7 +346,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -2305,7 +2305,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -2368,7 +2368,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -2431,7 +2431,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -2494,7 +2494,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -2557,7 +2557,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -2620,7 +2620,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -4579,7 +4579,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -4642,7 +4642,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -4705,7 +4705,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -4768,7 +4768,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -4831,7 +4831,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -4894,7 +4894,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -6727,7 +6727,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -6790,7 +6790,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -6853,7 +6853,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -6916,7 +6916,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -6979,7 +6979,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -7042,7 +7042,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -9001,7 +9001,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -9064,7 +9064,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -9127,7 +9127,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -9190,7 +9190,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -9253,7 +9253,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -9316,7 +9316,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11275,7 +11275,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -11338,7 +11338,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -11401,7 +11401,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -11464,7 +11464,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11527,7 +11527,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11590,7 +11590,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -13165,7 +13165,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -13228,7 +13228,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -13291,7 +13291,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -13354,7 +13354,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -13417,7 +13417,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -13480,7 +13480,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -13543,7 +13543,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -13606,7 +13606,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -13669,7 +13669,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -16576,7 +16576,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -16639,7 +16639,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -16702,7 +16702,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -16765,7 +16765,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -16828,7 +16828,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -16891,7 +16891,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -16954,7 +16954,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -17017,7 +17017,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -17080,7 +17080,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -19987,7 +19987,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -20050,7 +20050,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -20113,7 +20113,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -20176,7 +20176,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -20239,7 +20239,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -20302,7 +20302,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -20365,7 +20365,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -20428,7 +20428,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -20491,7 +20491,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -23272,7 +23272,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -23335,7 +23335,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -23398,7 +23398,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -23461,7 +23461,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -23524,7 +23524,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -23587,7 +23587,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -23650,7 +23650,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -23713,7 +23713,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -23776,7 +23776,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -26683,7 +26683,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -26746,7 +26746,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -26809,7 +26809,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -26872,7 +26872,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -26935,7 +26935,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -26998,7 +26998,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -27061,7 +27061,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -27124,7 +27124,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -27187,7 +27187,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=flannel --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -30094,7 +30094,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -30157,7 +30157,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -30220,7 +30220,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -30283,7 +30283,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -30346,7 +30346,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -30409,7 +30409,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -30472,7 +30472,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -30535,7 +30535,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.24/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -30598,7 +30598,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kopeio --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
