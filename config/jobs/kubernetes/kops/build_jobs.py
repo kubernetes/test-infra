@@ -1164,6 +1164,14 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            name="pull-kops-e2e-aws-dns-none",
+            cloud="aws",
+            distro="u2204",
+            networking="calico",
+            extra_flags=["--dns=none"],
+        ),
+
+        presubmit_test(
             branch='master',
             k8s_version='1.24',
             kops_channel='alpha',
