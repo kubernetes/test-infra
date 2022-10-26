@@ -36,6 +36,9 @@ import (
 const (
 	S3 = "s3"
 	GS = "gs"
+	// TODO(danilo-gemoli): complete the implementation since at this time only opener.Writer()
+	// is supported
+	File = "file"
 )
 
 // GetBucket opens and returns a gocloud blob.Bucket based on credentials and a path.

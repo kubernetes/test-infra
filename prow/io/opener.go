@@ -275,7 +275,8 @@ func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (i
 		options.apply(writer, nil)
 		return writer, nil
 	}
-	if strings.HasPrefix(p, "/") {
+	if strings.HasPrefix(p, "/") || strings.HasPrefix(p, providers.File+"://") {
+		p := strings.TrimPrefix(p, providers.File+"://")
 		// create parent dir if doesn't exist
 		dir := path.Dir(p)
 		if err := os.MkdirAll(dir, 0755); err != nil {
