@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gangway
+  namespace: default
+  labels:
+    app: gangway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gangway
+  template:
+    metadata:
+      labels:
+        app: gangway
+    spec:
+      terminationGracePeriodSeconds: 30
+      serviceAccountName: gangway
+      containers:
+      - name: gangway
+        image: localhost:5001/gangway
+        args:
+        - --config-path=/etc/config/config.yaml
+        - --job-config-path=/etc/job-config
+        - --grace-period=110s
+        # This cookie file is only here to trigger the creation of a
+        # Gerrit-flavored Git client factory. So this makes this gangway deployment
+        # "tied" to Gerrit.
+        #
+        # TODO (listx): Allow gangway to be deployed with access to multiple
+        # GitHub/Gerrit credentials (and make it know which one to use based on
+        # the org/repo name). We can't simply deploy a 2nd gangway deployment
+        # configured with GitHub creds to test that codepath because currently
+        # gangway will always choose one or the other.
+        - --cookiefile=/etc/cookies/cookies
+        - --dry-run=false
+        ports:
+        - name: grpc
+          containerPort: 32000
+        - name: metrics
+          containerPort: 9090
+        volumeMounts:
+        - name: cookies
+          mountPath: /etc/cookies
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
+          readOnly: true
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
+          timeoutSeconds: 600
+        env:
+        # When cloning from an inrepoconfig repo, don't bother verifying certs.
+        # This allows us to use "https://..." addresses to fakegitserver.
+        - name: GIT_SSL_NO_VERIFY
+          value: "1"
+      volumes:
+      - name: cookies
+        secret:
+          defaultMode: 420
+          secretName: http-cookiefile
+      - name: config
+        configMap:
+          name: config
+      - name: job-config
+        configMap:
+          name: job-config
+      tolerations:
+      - key: "prowcomponent"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
