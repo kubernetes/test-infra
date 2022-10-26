@@ -48,10 +48,36 @@ go_bindata=${REPO_ROOT}/_bin/go-bindata
 go build -o "${REPO_ROOT}/_bin/go-bindata" github.com/go-bindata/go-bindata/v3/go-bindata
 controller_gen=${REPO_ROOT}/_bin/controller-gen
 go build -o "${REPO_ROOT}/_bin/controller-gen" sigs.k8s.io/controller-tools/cmd/controller-gen
-echo "Finished installations."
-do_clean=${1:-}
+protoc_gen_go="${REPO_ROOT}/_bin/protoc-gen-go" # golang protobuf plugin
+GOBIN="${REPO_ROOT}/_bin" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
+GOBIN="${REPO_ROOT}/_bin" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 cd "${REPO_ROOT}"
+ensure-protoc-deps(){
+  # Install protoc
+  if [[ ! -f "_bin/protoc/bin/protoc" ]]; then
+    mkdir -p _bin/protoc
+    # See https://developers.google.com/protocol-buffers/docs/news/2022-05-06 for
+    # a note on the versioning scheme change.
+    PROTOC_VERSION=21.9
+    PROTOC_ZIP="protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+    curl -OL "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP}"
+    unzip -o $PROTOC_ZIP -d _bin/protoc bin/protoc
+    unzip -o $PROTOC_ZIP -d _bin/protoc 'include/*'
+    rm -f $PROTOC_ZIP
+  fi
+
+  # Clone proto dependencies.
+  if ! [[ -f "${REPO_ROOT}"/_bin/protoc/include/googleapis/google/api/annotations.proto ]]; then
+    >/dev/null pushd "${REPO_ROOT}"/_bin/protoc/include
+    git clone --depth=1 https://github.com/googleapis/googleapis
+    >/dev/null popd
+  fi
+}
+ensure-protoc-deps
+
+echo "Finished installations."
+do_clean=${1:-}
 
 # FAKE_GOPATH is for mimicking GOPATH layout.
 # K8s code-generator tools all assume the structure of ${GOPATH}/src/k8s.io/...,
@@ -231,6 +257,42 @@ EOF
   unset HOME
 }
 
+# Generate gRPC stubs for a given protobuf file.
+gen-proto-stubs(){
+  local dir
+  dir="$(dirname "$1")"
+
+  # We need the "paths=source_relative" bits to prevent a nested directory
+  # structure (so that the generated files can sit next to the .proto files,
+  # instead of under a "k8.io/test-infra/prow/..." subfolder).
+  "${REPO_ROOT}/_bin/protoc/bin/protoc" \
+    "--plugin=${protoc_gen_go}" \
+    "--proto_path=${REPO_ROOT}/_bin/protoc/include/google/protobuf" \
+    "--proto_path=${REPO_ROOT}/_bin/protoc/include/googleapis" \
+    "--proto_path=${dir}" \
+    --go_out="${dir}" --go_opt=paths=source_relative \
+    --go-grpc_out="${dir}" --go-grpc_opt=paths=source_relative \
+    "$1"
+}
+
+gen-all-proto-stubs(){
+  echo >&2 "Generating proto stubs"
+
+  # Expose the golang protobuf plugin binaries (protoc-gen-go,
+  # protoc-gen-go-grpc) to the PATH so that protoc can find it.
+  export PATH="${REPO_ROOT}/_bin:$PATH"
+
+  while IFS= read -r -d '' proto; do
+    echo >&2 "  $proto"
+    gen-proto-stubs "$proto"
+  done < <(find "${REPO_ROOT}" \
+    -not '(' -path "${REPO_ROOT}/vendor" -prune ')' \
+    -not '(' -path "${REPO_ROOT}/node_modules" -prune ')' \
+    -not '(' -path "${REPO_ROOT}/_bin" -prune ')' \
+    -name '*.proto' \
+    -print0 | sort -z)
+}
+
 gen-prow-config-documented
 
 export GO111MODULE=off
@@ -251,3 +313,5 @@ gen-informer
 gen-spyglass-bindata
 gen-prowjob-crd
 export GO111MODULE=on
+
+gen-all-proto-stubs
