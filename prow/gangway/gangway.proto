@@ -1,0 +1,147 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "k8s.io/test-infra/prow/gangway";
+
+service Prow {
+  // FIXME: In the future we can just return a unique token (only), in the same
+  // way that GCB returns immediately with the globally-unique BuildId. That is,
+  // in the future the response will be a union of either the full JobExecution
+  // message or a single JobExecutionToken (string). See
+  // https://docs.google.com/document/d/1v77jp1Nb5C2C2-PdV02SGViO9CyZ9SvNxCPOHyIUQeo/edit#bookmark=id.q68srxklvpt4.
+  rpc CreateJobExecution(CreateJobExecutionRequest) returns (JobExecution) {
+    option (google.api.http) = {
+      post: "/v1/executions"
+      body: "execution"
+    };
+  }
+  rpc GetJobExecution(GetJobExecutionRequest) returns (JobExecution) {
+    // Client example:
+    //   curl http://DOMAIN_NAME/v1/executions/1
+    option (google.api.http) = {
+      get: "/v1/executions/{execution}"
+    };
+  }
+  rpc ListJobExecutions(ListJobExecutionsRequest) returns (JobExecutions) {
+    // Client example:
+    //   curl
+    //   http://DOMAIN_NAME/v1/executions?job_name=my-prow-job&status=SUCCESS
+    option (google.api.http) = {
+      get: "/v1/executions"
+    };
+  }
+}
+
+message CreateJobExecutionRequest {
+  JobDefinition job_definition = 1;
+  // The source code to clone. Typically this is your repo that you want to test
+  // (for presubmits) or the repo whose master/main branch has changed (for
+  // postsubmits).
+  GitReferenceDynamic base_repo = 2;
+  // Extra source code repositories to clone. This is typically used for
+  // periodics that are not tied to any particular repo, but can be defined for
+  // presubmits or postsubmits as well.
+  //
+  // Currently periodics can define an `extraRefs` YAML array that is almost the
+  // same thing (minus the ability to define additional modifications to it, as
+  // per the definition of GitRerefenceDynamic).
+  //
+  // The `extra_repos` here will only take precedence if defined.
+  repeated GitReferenceDynamic extra_repos = 4;
+  // These pod-spec options are used to further customize the execution
+  // environment. These are critical for some components (e.g., identifying that
+  // this pod is tied to a Gerrit change).
+  PodSpecOptions pod_spec_options = 5;
+}
+
+message PodSpecOptions {
+  map<string, string> envs = 1;
+  map<string, string> labels = 2;
+  map<string, string> annotations = 3;
+}
+
+/* Look up a single Prow Job execution. */
+message GetJobExecutionRequest {
+  string id = 1;
+}
+
+/* Look up all Prow Job executions that match all fields given here. */
+message ListJobExecutionsRequest {
+  string job_name = 1;            // Mapped to URL query parameter `job_name`.
+  JobExecutionStatus status = 2;  // Mapped to URL query parameter `status`.
+}
+
+message JobExecutions {
+  repeated JobExecution job_execution = 1;
+}
+
+message JobExecution {
+  string id = 1;
+  CreateJobExecutionRequest create_job_execution_request = 2;
+  JobExecutionStatus status = 3;
+  JobExecutionType type = 4;
+  string gcs_path = 5;
+  google.protobuf.Timestamp create_time = 6;
+  google.protobuf.Timestamp update_time = 7;
+  string updated_by = 8;
+}
+
+/* JobDefinition uniquely defines a single Prow Job from the vast sea of
+ * possible candidates. */
+message JobDefinition {
+  string name = 1;
+  JobExecutionType execution_type = 2;
+  GitReferenceDynamic inrepoconfig_source = 3;
+}
+
+/* The Prow codebase currently uses the word "Prow Job" to mean both the
+ * definition and the execution, but we avoid that here (JobExecutionStatus
+ * instead of ProwJobStatus). */
+enum JobExecutionStatus {
+  JOB_EXECUTION_STATUS_UNSPECIFIED = 0;
+  TRIGGERED = 1;
+  PENDING = 2;
+  SUCCESS = 3;
+  FAILURE = 4;
+  ABORTED = 5;
+  ERROR = 6;
+}
+
+enum JobExecutionType {
+  JOB_EXECUTION_TYPE_UNSPECIFIED = 0;
+  PERIODIC = 1;
+  POSTSUBMIT = 2;
+  PRESUBMIT = 3;
+  BATCH = 4;
+}
+
+/* A "static" Git reference that already exists somewhere on the internet. */
+message GitReferenceStatic {
+  // For GitHub repos, the "org" and "repo" can be parsed from the url. For
+  // Gerrit, the "host" and "repo" can be parsed out.
+  string url = 1;
+  // This is the 40-character SHA that uniquely identifies a commit.
+  string commit = 2;
+  // This is either the branch or tag that contains the commit defined above. We
+  // need this because we need a starting point to search for the commit
+  // (otherwise we're reduced to searching through all refs for this commit,
+  // which can be expensive).
+  string ref = 3;
+}
+
+/* A "dynamic" Git reference that doesn't exist yet, but is created by Prow
+ * by making modifications to static references. */
+message GitReferenceDynamic {
+  GitReferenceStatic base = 1;
+  // List of references to merge into the base reference. The url in each of
+  // these must match the one defined in base.
+  //
+  // Presubmits use this to define additional either GitHub "pull requests" or
+  // Gerrit "changes" to merge into the base Git reference before running the
+  // job against it. Can be just 1 (e.g., a plain presubmit) or multiple (if we
+  // are testing multiple PRs at once, such as in a batch job created by Tide).
+  // API consumers will typically want to just define 1 additional ref to merge.
+  repeated GitReferenceStatic refs_to_merge = 2;
+}
