@@ -3694,6 +3694,125 @@ func TestSecretAgentLoading(t *testing.T) {
 
 }
 
+func TestValidTestFailureRiskAnalysisConfig(t *testing.T) {
+
+	var testCases = []struct {
+		name            string
+		prowConfig      string
+		expectError     bool
+		expectEnabled   bool
+		expectLocator   string
+		expectValuePath string
+		expectedPathLen int
+	}{
+		{
+			name:            "empty config should default to enabled false",
+			prowConfig:      ``,
+			expectEnabled:   false,
+			expectedPathLen: 1,
+		},
+		{
+			name: "enabled true",
+			prowConfig: `
+github_reporter:
+  test_failure_risk_analysis: 
+    enabled: true
+`,
+			expectEnabled:   true,
+			expectedPathLen: 1,
+		},
+		{
+			name: "enabled false",
+			prowConfig: `
+github_reporter:
+  test_failure_risk_analysis: 
+    enabled: false
+`,
+			expectEnabled:   false,
+			expectedPathLen: 1,
+		},
+		{
+			name: "enabled false (garbage)",
+			prowConfig: `
+github_reporter:
+test_failure_risk_analysis: 
+enabled: garbage
+`,
+			expectEnabled:   false,
+			expectedPathLen: 1,
+		},
+		{
+			name: "enabled with locator and value path",
+			prowConfig: `
+github_reporter:
+  test_failure_risk_analysis: 
+    enabled: true
+    summary_locator: "find_this_file"
+    summary_value_path: "key1,key2,valuekey"
+`,
+			expectEnabled:   true,
+			expectLocator:   "find_this_file",
+			expectValuePath: "key1,key2,valuekey",
+			expectedPathLen: 3,
+		},
+		{
+			name: "single value path",
+			prowConfig: `
+github_reporter:
+  test_failure_risk_analysis: 
+    enabled: true
+    summary_locator: "find_this_file"
+    summary_value_path: "key1"
+`,
+			expectEnabled:   true,
+			expectLocator:   "find_this_file",
+			expectValuePath: "key1",
+			expectedPathLen: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		// save the config
+		prowConfigDir := t.TempDir()
+
+		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+		if err := os.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+			t.Fatalf("fail to write prow config: %v", err)
+		}
+
+		cfg, err := Load(prowConfig, "", nil, "")
+		if tc.expectError && err == nil {
+			t.Errorf("tc %s: Expect error, but got nil", tc.name)
+		} else if !tc.expectError && err != nil {
+			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
+		}
+
+		if err == nil {
+
+			isEnabled := cfg.GitHubReporter.TestFailureRiskAnalysis.Enabled
+			if isEnabled != tc.expectEnabled {
+				t.Errorf("tc %s: expected enabled %t, got %t", tc.name, tc.expectEnabled, isEnabled)
+			}
+
+			valuePath := cfg.GitHubReporter.TestFailureRiskAnalysis.SummaryValuePath
+			if valuePath != tc.expectValuePath {
+				t.Errorf("tc %s: expected value path %s, got %s", tc.name, tc.expectValuePath, valuePath)
+			}
+
+			locator := cfg.GitHubReporter.TestFailureRiskAnalysis.SummaryLocator
+			if locator != tc.expectLocator {
+				t.Errorf("tc %s: expected locator %s, got %s", tc.name, tc.expectLocator, locator)
+			}
+
+			p := strings.Split(cfg.GitHubReporter.TestFailureRiskAnalysis.SummaryValuePath, ",")
+			if len(p) != tc.expectedPathLen {
+				t.Errorf("tc %s: expected path length %d, got %d", tc.name, tc.expectedPathLen, len(p))
+			}
+		}
+	}
+
+}
+
 func TestValidGitHubReportType(t *testing.T) {
 	var testCases = []struct {
 		name        string
@@ -8141,6 +8260,7 @@ github_reporter:
   job_types_to_report:
   - presubmit
   - postsubmit
+  test_failure_risk_analysis: {}
 horologium: {}
 in_repo_config:
   allowed_clusters:
@@ -8221,6 +8341,7 @@ github_reporter:
   job_types_to_report:
   - presubmit
   - postsubmit
+  test_failure_risk_analysis: {}
 horologium: {}
 in_repo_config:
   allowed_clusters:
@@ -8294,6 +8415,7 @@ github_reporter:
   job_types_to_report:
   - presubmit
   - postsubmit
+  test_failure_risk_analysis: {}
 horologium: {}
 in_repo_config:
   allowed_clusters:
@@ -8372,6 +8494,7 @@ github_reporter:
   job_types_to_report:
   - presubmit
   - postsubmit
+  test_failure_risk_analysis: {}
 horologium: {}
 in_repo_config:
   allowed_clusters:

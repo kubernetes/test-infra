@@ -525,6 +525,17 @@ github_reporter:
     # contexts will still be written.
     summary_comment_repos:
       - ""
+    test_failure_risk_analysis:
+        # Enabled controls the inclusion of a risk summary column in the failure report comment table.
+        enabled: true
+
+        # SummaryLocator is an optional string representing a regex identifying the json file within the list of artifacts that
+        # contains the summary value.
+        summary_locator: ' '
+
+        # SummaryValuePath is an optional string with a comma separated list of keys representing the path to the value within the summary json file that
+        # represents the overall risk for the test failure.
+        summary_value_path: ' '
 horologium:
     # TickInterval is the interval in which we check if new jobs need to be
     # created. Defaults to one minute.

@@ -61,6 +61,8 @@ type options struct {
 	kubernetes             prowflagutil.KubernetesOptions
 	github                 prowflagutil.GitHubOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
+
+	storage prowflagutil.StorageClientOptions
 }
 
 func (o *options) Validate() error {
@@ -113,7 +115,7 @@ func gatherOptions() options {
 
 	fs.BoolVar(&o.skipReport, "skip-report", false, "Whether or not to ignore report with githubClient")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config, &o.storage} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -196,7 +198,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
-	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
+	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport, o.storage)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}

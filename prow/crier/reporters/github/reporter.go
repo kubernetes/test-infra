@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
 	"k8s.io/test-infra/prow/github/report"
+	analysis "k8s.io/test-infra/prow/github/report/analysis"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -43,21 +44,23 @@ const (
 
 // Client is a github reporter client
 type Client struct {
-	gc          report.GitHubClient
-	config      config.Getter
-	reportAgent v1.ProwJobAgent
-	prLocks     *criercommonlib.ShardedLock
-	lister      ctrlruntimeclient.Reader
+	gc           report.GitHubClient
+	config       config.Getter
+	reportAgent  v1.ProwJobAgent
+	prLocks      *criercommonlib.ShardedLock
+	lister       ctrlruntimeclient.Reader
+	riskAnalysis analysis.ProwJobFailureRiskAnalysis
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent, lister ctrlruntimeclient.Reader) *Client {
+func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent, lister ctrlruntimeclient.Reader, ra analysis.ProwJobFailureRiskAnalysis) *Client {
 	c := &Client{
-		gc:          gc,
-		config:      cfg,
-		reportAgent: reportAgent,
-		prLocks:     criercommonlib.NewShardedLock(),
-		lister:      lister,
+		gc:           gc,
+		config:       cfg,
+		reportAgent:  reportAgent,
+		prLocks:      criercommonlib.NewShardedLock(),
+		lister:       lister,
+		riskAnalysis: ra,
 	}
 	c.prLocks.RunCleanup()
 	return c
@@ -147,7 +150,7 @@ func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) 
 			}
 		}
 	}
-	err = report.ReportComment(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), toReport, c.config().GitHubReporter, mustCreateComment)
+	err = report.ReportComment(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), toReport, c.config().GitHubReporter, mustCreateComment, c.riskAnalysis)
 
 	return []*v1.ProwJob{pj}, nil, err
 }

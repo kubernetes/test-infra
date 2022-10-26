@@ -992,6 +992,17 @@ type JenkinsOperator struct {
 	LabelSelector labels.Selector `json:"-"`
 }
 
+type TestFailureRiskAnalysisConfig struct {
+	// Enabled controls the inclusion of a risk summary column in the failure report comment table.
+	Enabled bool `json:"enabled,omitempty"`
+	// SummaryLocator is an optional string representing a regex identifying the json file within the list of artifacts that
+	// contains the summary value.
+	SummaryLocator string `json:"summary_locator,omitempty"`
+	// SummaryValuePath is an optional string with a comma separated list of keys representing the path to the value within the summary json file that
+	// represents the overall risk for the test failure.
+	SummaryValuePath string `json:"summary_value_path,omitempty"`
+}
+
 // GitHubReporter holds the config for report behavior in github.
 type GitHubReporter struct {
 	// JobTypesToReport is used to determine which type of prowjob
@@ -1006,6 +1017,8 @@ type GitHubReporter struct {
 	// comments is only sent when all jobs from current SHA are finished. Status
 	// contexts will still be written.
 	SummaryCommentRepos []string `json:"summary_comment_repos,omitempty"`
+
+	TestFailureRiskAnalysis TestFailureRiskAnalysisConfig `json:"test_failure_risk_analysis,omitempty"`
 }
 
 // Sinker is config for the sinker controller.

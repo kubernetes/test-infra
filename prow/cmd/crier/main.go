@@ -38,6 +38,7 @@ import (
 	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	analysis "k8s.io/test-infra/prow/github/report/analysis"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -245,7 +246,11 @@ func main() {
 		}
 
 		hasReporter = true
-		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent), mgr.GetCache())
+		var raFn analysis.ProwJobFailureRiskAnalysis
+		if cfg().GitHubReporter.TestFailureRiskAnalysis.Enabled {
+			raFn = analysis.CreateRiskAnalysisFn(*cfg(), o.storage)
+		}
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent), mgr.GetCache(), raFn)
 		if err := crier.New(mgr, githubReporter, o.githubWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct github reporter controller")
 		}

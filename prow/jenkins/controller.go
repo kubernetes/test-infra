@@ -32,6 +32,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	reportlib "k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/kube"
@@ -80,10 +81,12 @@ type Controller struct {
 	// shared across the controller and a goroutine that gathers metrics.
 	pjs   []prowapi.ProwJob
 	clock clock.WithTickerAndDelayedExecution
+
+	storage prowflagutil.StorageClientOptions
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
+func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool, storage prowflagutil.StorageClientOptions) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -103,6 +106,7 @@ func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github
 		skipReport:    skipReport,
 		pendingJobs:   make(map[string]int),
 		clock:         clock.RealClock{},
+		storage:       storage,
 	}, nil
 }
 
@@ -220,11 +224,10 @@ func (c *Controller) Sync() error {
 
 	var reportErrs []error
 	if !c.skipReport {
-		reportConfig := c.cfg().GitHubReporter
 		jConfig := c.config()
 		for report := range reportCh {
 			reportTemplate := jConfig.ReportTemplateForRepo(report.Spec.Refs)
-			if err := reportlib.Report(context.Background(), c.ghc, reportTemplate, report, reportConfig); err != nil {
+			if err := reportlib.Report(context.Background(), c.ghc, reportTemplate, report, c.cfg(), c.storage); err != nil {
 				reportErrs = append(reportErrs, err)
 				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 			}

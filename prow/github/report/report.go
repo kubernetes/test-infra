@@ -30,7 +30,9 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
+	analysis "k8s.io/test-infra/prow/github/report/analysis"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -118,11 +120,17 @@ func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
 
 // Report is creating/updating/removing reports in GitHub based on the state of
 // the provided ProwJob.
-func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, config config.GitHubReporter) error {
-	if err := ReportStatusContext(ctx, ghc, pj, config); err != nil {
+func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, config *config.Config, storage prowflagutil.StorageClientOptions) error {
+	if err := ReportStatusContext(ctx, ghc, pj, config.GitHubReporter); err != nil {
 		return err
 	}
-	return ReportComment(ctx, ghc, reportTemplate, []v1.ProwJob{pj}, config, false)
+
+	var riskAnalysis analysis.ProwJobFailureRiskAnalysis
+	if config.GitHubReporter.TestFailureRiskAnalysis.Enabled {
+		riskAnalysis = analysis.CreateRiskAnalysisFn(*config, storage)
+	}
+
+	return ReportComment(ctx, ghc, reportTemplate, []v1.ProwJob{pj}, config.GitHubReporter, false, riskAnalysis)
 }
 
 // ReportStatusContext reports prowjob status on a PR.
@@ -150,7 +158,7 @@ func ReportStatusContext(ctx context.Context, ghc GitHubClient, pj prowapi.ProwJ
 // ReportComment takes multiple prowjobs as input. When there are more than one
 // prowjob, they are required to have identical refs, aka they are the same repo
 // and the same pull request.
-func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pjs []prowapi.ProwJob, config config.GitHubReporter, mustCreate bool) error {
+func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pjs []prowapi.ProwJob, config config.GitHubReporter, mustCreate bool, riskAnalysis analysis.ProwJobFailureRiskAnalysis) error {
 	if ghc == nil {
 		return errors.New("trying to report pj, but found empty github client")
 	}
@@ -184,7 +192,7 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 	if err != nil {
 		return fmt.Errorf("error getting bot name checker: %w", err)
 	}
-	deletes, entries, updateID := parseIssueComments(validPjs, botNameChecker, ics)
+	deletes, entries, updateID := parseIssueComments(validPjs, botNameChecker, ics, riskAnalysis)
 	for _, delete := range deletes {
 		if err := ghc.DeleteCommentWithContext(ctx, refs.Org, refs.Repo, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %w", err)
@@ -202,7 +210,7 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 	}
 
 	if len(entries) > 0 || (mustCreate && !aborted) {
-		comment, err := createComment(reportTemplate, validPjs, entries)
+		comment, err := createComment(reportTemplate, validPjs, entries, riskAnalysis)
 		if err != nil {
 			return fmt.Errorf("generating comment: %w", err)
 		}
@@ -223,7 +231,7 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 // entries, and the ID of the comment to update. If there are no table entries
 // then don't make a new comment. Otherwise, if the comment to update is 0,
 // create a new comment.
-func parseIssueComments(pjs []prowapi.ProwJob, isBot func(string) bool, ics []github.IssueComment) ([]int, []string, int) {
+func parseIssueComments(pjs []prowapi.ProwJob, isBot func(string) bool, ics []github.IssueComment, riskAnalysis analysis.ProwJobFailureRiskAnalysis) ([]int, []string, int) {
 	var delete []int
 	var previousComments []int
 	var latestComment int
@@ -282,7 +290,7 @@ func parseIssueComments(pjs []prowapi.ProwJob, isBot func(string) bool, ics []gi
 	var createNewComment bool
 	for _, pj := range pjs {
 		if string(pj.Status.State) == github.StatusFailure {
-			newEntries = append(newEntries, createEntry(pj))
+			newEntries = append(newEntries, createEntry(pj, riskAnalysis))
 			createNewComment = true
 		}
 	}
@@ -294,7 +302,7 @@ func parseIssueComments(pjs []prowapi.ProwJob, isBot func(string) bool, ics []gi
 	return delete, newEntries, latestComment
 }
 
-func createEntry(pj prowapi.ProwJob) string {
+func createEntry(pj prowapi.ProwJob, riskAnalysis analysis.ProwJobFailureRiskAnalysis) string {
 	required := "unknown"
 
 	if pj.Spec.Type == prowapi.PresubmitJob {
@@ -305,19 +313,32 @@ func createEntry(pj prowapi.ProwJob) string {
 		}
 	}
 
-	return strings.Join([]string{
+	entryStrings := []string{
+		pj.Status.URL,
 		pj.Spec.Context,
 		pj.Spec.Refs.Pulls[0].SHA,
 		fmt.Sprintf("[link](%s)", pj.Status.URL),
 		required,
 		fmt.Sprintf("`%s`", pj.Spec.RerunCommand),
-	}, " | ")
+	}
+
+	if riskAnalysis != nil {
+		risk, err := riskAnalysis(pj)
+
+		if err != nil {
+			risk = analysis.ProwJobFailureRiskUnknown
+		}
+
+		entryStrings = append(entryStrings, string(risk))
+	}
+
+	return strings.Join(entryStrings, " | ")
 }
 
 // createComment take a ProwJob and a list of entries generated with
 // createEntry and returns a nicely formatted comment. It may fail if template
 // execution fails.
-func createComment(reportTemplate *template.Template, pjs []prowapi.ProwJob, entries []string) (string, error) {
+func createComment(reportTemplate *template.Template, pjs []prowapi.ProwJob, entries []string, riskAnalysis analysis.ProwJobFailureRiskAnalysis) (string, error) {
 	if len(pjs) == 0 {
 		return "", nil
 	}
@@ -336,11 +357,20 @@ func createComment(reportTemplate *template.Template, pjs []prowapi.ProwJob, ent
 			return "", err
 		}
 	}
+
+	columnHeaders := "Test name | Commit | Details | Required | Rerun command"
+	columnSeparators := "--- | --- | --- | --- | ---"
+
+	if riskAnalysis != nil {
+		columnHeaders = "Test name | Commit | Details | Required | Rerun command | Risk"
+		columnSeparators = "--- | --- | --- | --- | --- | ---"
+	}
+
 	lines := []string{
 		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun all failed tests or `/retest-required` to rerun all mandatory failed tests:", pjs[0].Spec.Refs.Pulls[0].Author, plural),
 		"",
-		"Test name | Commit | Details | Required | Rerun command",
-		"--- | --- | --- | --- | ---",
+		columnHeaders,
+		columnSeparators,
 	}
 	if len(entries) == 0 { // No test failed
 		lines = []string{

@@ -102,7 +102,7 @@ func TestShouldReport(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := NewReporter(nil, nil, tc.reportAgent, nil)
+			c := NewReporter(nil, nil, tc.reportAgent, nil, nil)
 			if r := c.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), &tc.pj); r == tc.report {
 				return
 			}
@@ -132,6 +132,7 @@ func TestPresumitReportingLocks(t *testing.T) {
 			}
 		},
 		v1.ProwJobAgent(""),
+		nil,
 		nil,
 	)
 

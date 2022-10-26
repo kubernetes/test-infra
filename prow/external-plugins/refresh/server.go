@@ -30,6 +30,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/pjutil"
@@ -59,6 +60,7 @@ type server struct {
 	configAgent    *config.Agent
 	ghc            github.Client
 	log            *logrus.Entry
+	storage        prowflagutil.StorageClientOptions
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -169,7 +171,6 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 
 	jenkinsConfig := s.configAgent.Config().JenkinsOperators
 	kubeReport := s.configAgent.Config().Plank.ReportTemplateForRepo(&prowapi.Refs{Org: org, Repo: repo})
-	reportConfig := s.configAgent.Config().GitHubReporter
 	for _, pj := range pjutil.GetLatestProwJobs(presubmits, prowapi.PresubmitJob) {
 		var reportTemplate *template.Template
 		switch pj.Spec.Agent {
@@ -183,7 +184,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		}
 
 		s.log.WithFields(l.Data).Infof("Refreshing the status of job %q (pj: %s)", pj.Spec.Job, pj.ObjectMeta.Name)
-		if err := report.Report(context.Background(), s.ghc, reportTemplate, pj, reportConfig); err != nil {
+		if err := report.Report(context.Background(), s.ghc, reportTemplate, pj, s.configAgent.Config(), s.storage); err != nil {
 			s.log.WithError(err).WithFields(l.Data).Info("Failed report.")
 		}
 	}

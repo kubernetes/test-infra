@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -48,6 +49,8 @@ type options struct {
 	prowURL                string
 
 	webhookSecretFile string
+
+	storage prowflagutil.StorageClientOptions
 }
 
 func (o *options) Validate() error {
@@ -71,7 +74,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.prowURL, "prow-url", "", "Prow frontend URL.")
-	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions, &o.config, &o.storage} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(os.Args[1:])
@@ -107,6 +110,7 @@ func main() {
 		configAgent:    configAgent,
 		ghc:            githubClient,
 		log:            log,
+		storage:        o.storage,
 	}
 
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)

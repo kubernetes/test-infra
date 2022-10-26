@@ -29,6 +29,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	analysis "k8s.io/test-infra/prow/github/report/analysis"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -42,6 +43,7 @@ func TestParseIssueComment(t *testing.T) {
 		expectedEntries []string
 		expectedUpdate  int
 		isOptional      bool
+		riskAnalysis    analysis.ProwJobFailureRiskAnalysis
 	}{
 		{
 			name:            "should create a new comment",
@@ -109,6 +111,23 @@ func TestParseIssueComment(t *testing.T) {
 			},
 			expectedDeletes: []int{123},
 			expectedEntries: []string{"bla test"},
+		},
+		{
+			name:    "should update a failed test with risk analysis",
+			context: "bla test",
+			state:   github.StatusFailure,
+			ics: []github.IssueComment{
+				{
+					User: github.User{Login: "k8s-ci-robot"},
+					Body: "--- | --- | ---\nbla test | something | or other\n\n" + commentTag,
+					ID:   123,
+				},
+			},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{" | bla test |  | [link]() | true | `` | high"},
+			riskAnalysis: func(pj prowapi.ProwJob) (analysis.ProwJobFailureRisk, error) {
+				return analysis.ProwJobFailureRiskHigh, nil
+			},
 		},
 		{
 			name:    "should preserve old results when updating",
@@ -179,7 +198,7 @@ func TestParseIssueComment(t *testing.T) {
 			isBot := func(candidate string) bool {
 				return candidate == "k8s-ci-robot"
 			}
-			deletes, entries, update := parseIssueComments([]prowapi.ProwJob{pj}, isBot, tc.ics)
+			deletes, entries, update := parseIssueComments([]prowapi.ProwJob{pj}, isBot, tc.ics, tc.riskAnalysis)
 			if len(deletes) != len(tc.expectedDeletes) {
 				t.Errorf("It %q: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
 			} else {
@@ -456,13 +475,52 @@ func TestShouldReport(t *testing.T) {
 
 func TestCreateComment(t *testing.T) {
 	tests := []struct {
-		name     string
-		template *template.Template
-		pjs      []prowapi.ProwJob
-		entries  []string
-		want     string
-		wantErr  bool
+		name         string
+		template     *template.Template
+		pjs          []prowapi.ProwJob
+		entries      []string
+		want         string
+		wantErr      bool
+		riskAnalysis analysis.ProwJobFailureRiskAnalysis
 	}{
+		{
+			name:     "single-job-multiple-failure-with-risk",
+			template: mustParseTemplate(t, ""),
+			riskAnalysis: func(pj prowapi.ProwJob) (analysis.ProwJobFailureRisk, error) {
+				return analysis.ProwJobFailureRiskHigh, nil
+			},
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{
+				"aaa | bbb | ccc | ddd | eee | unknown",
+				"fff | ggg | hhh | iii | jjj | high",
+			},
+			want: `@chaodaig: The following tests **failed**, say ` + "`/retest`" + ` to rerun all failed tests or ` + "`/retest-required`" + ` to rerun all mandatory failed tests:
+
+Test name | Commit | Details | Required | Rerun command | Risk
+--- | --- | --- | --- | --- | ---
+aaa | bbb | ccc | ddd | eee | unknown
+fff | ggg | hhh | iii | jjj | high
+
+
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
 		{
 			name:     "single-job-single-failure",
 			template: mustParseTemplate(t, ""),
@@ -619,7 +677,7 @@ Instructions for interacting with me using PR comments are available [here](http
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotComment, gotErr := createComment(tc.template, tc.pjs, tc.entries)
+			gotComment, gotErr := createComment(tc.template, tc.pjs, tc.entries, tc.riskAnalysis)
 			if diff := cmp.Diff(gotComment, tc.want); diff != "" {
 				t.Fatalf("comment mismatch:\n%s", diff)
 			}
@@ -712,7 +770,7 @@ func TestReportComment(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			fghc := &fakeGhClient{}
-			err := ReportComment(context.Background(), fghc, nil, tc.pjs, tc.reporterConfig, tc.mustCreate)
+			err := ReportComment(context.Background(), fghc, nil, tc.pjs, tc.reporterConfig, tc.mustCreate, nil)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
