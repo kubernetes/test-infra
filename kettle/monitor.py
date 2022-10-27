@@ -33,10 +33,9 @@ except ImportError:
 
 
 def collect(tables, stale_hours):
-    lines = []
     stale = False
     for table_spec in tables:
-        print(f'checking {table_spec}...')
+        print(f'Checking {table_spec}...')
         project, dataset_name = table_spec.split(':')
         dataset, name = dataset_name.split('.')
 
@@ -49,19 +48,21 @@ def collect(tables, stale_hours):
         # converting datetimes back into epoch-milliseconds is tiresome
         # pylint: disable=protected-access
         fields = {
+            'table_spec': table_spec,
             'size_bytes': table.num_bytes,
             'modified_time': int(table._properties.get('lastModifiedTime')),
             'row_count': table.num_rows
         }
-
         hours_old = (time.time() - fields['modified_time'] / 1000) / (3600.0)
+        fields['hours_old'] = hours_old
+
         if stale_hours and hours_old > stale_hours:
             print('ERROR: table %s is %.1f hours old. Max allowed: %s hours.' % (
                 table.table_id, hours_old, stale_hours))
             stale = True
+        print(json.dumps(fields))
 
-    print('Collected data:')
-    print(''.join(lines))
+    print(f'Finished checking tables')
 
     return int(stale)
 
