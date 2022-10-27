@@ -20,11 +20,8 @@ A dead-simple Influxdb data pusher to report BigQuery database statistics.
 
 import argparse
 import json
-import os
 import sys
 import time
-
-import influxdb
 
 try:
     from google.cloud import bigquery
@@ -35,7 +32,7 @@ except ImportError:
     traceback.print_exc()
 
 
-def collect(tables, stale_hours, influx_client):
+def collect(tables, stale_hours):
     lines = []
     stale = False
     for table_spec in tables:
@@ -69,37 +66,10 @@ def collect(tables, stale_hours, influx_client):
                 table.table_id, hours_old, stale_hours))
             stale = True
 
-        lines.append(influxdb.line_protocol.make_lines({
-            'tags': {'db': table.table_id},
-            'points': [{'measurement': 'bigquery', 'fields': fields}]
-        }))
-
     print('Collected data:')
     print(''.join(lines))
 
-    if influx_client:
-        influx_client.write_points(lines, time_precision='ms', protocol='line')
-    else:
-        print('Not uploading to influxdb; missing client.')
-
     return int(stale)
-
-
-def make_influx_client():
-    """Make an InfluxDB client from config at path $VELODROME_INFLUXDB_CONFIG"""
-    if 'VELODROME_INFLUXDB_CONFIG' not in os.environ:
-        return None
-
-    with open(os.environ['VELODROME_INFLUXDB_CONFIG']) as config_file:
-        config = json.load(config_file)
-
-    return influxdb.InfluxDBClient(
-        host=config['host'],
-        port=config['port'],
-        username=config['user'],
-        password=config['password'],
-        database='metrics',
-    )
 
 
 def main(args):
@@ -109,7 +79,7 @@ def main(args):
     parser.add_argument('--stale', type=int,
                         help='Number of hours to consider stale.')
     opts = parser.parse_args(args)
-    return collect(opts.table, opts.stale, make_influx_client())
+    return collect(opts.table, opts.stale)
 
 
 if __name__ == '__main__':
