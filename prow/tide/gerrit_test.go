@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -39,16 +40,23 @@ import (
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
+func intPtr(i int) *int {
+	return &i
+}
+
 var _ gerritClient = (*fakeGerritClient)(nil)
 
 type fakeGerritClient struct {
 	// map{org: map{project: []changes}}
 	changes map[string]map[string][]gerrit.ChangeInfo
+	// map{org: map{project: map{ID: parents_ID}}}
+	parents map[string]map[string]map[int]*int
 }
 
 func newFakeGerritClient() *fakeGerritClient {
 	return &fakeGerritClient{
 		changes: make(map[string]map[string][]gerrit.ChangeInfo),
+		parents: make(map[string]map[string]map[int]*int),
 	}
 }
 
@@ -57,7 +65,38 @@ func (f *fakeGerritClient) QueryChangesForProject(instance, project string, last
 		return nil, errors.New("queries project doesn't exist")
 	}
 
-	return f.changes[instance][project], nil
+	changesUnfilterd := f.changes[instance][project]
+	var changes []gerrit.ChangeInfo
+	var parentID *int
+	var isNotMerged bool
+	for _, filters := range addtionalFilters {
+		for _, filter := range strings.Split(filters, "+") {
+			if strings.HasPrefix(filter, "parentof:") {
+				parent, err := strconv.Atoi(strings.TrimPrefix(filter, "parentof:"))
+				if err != nil {
+					return nil, fmt.Errorf("parentof: should be followed by an integer: %v", err)
+				}
+				parentID = &parent
+			}
+			if strings.HasPrefix(filter, "-status:merged") {
+				isNotMerged = true
+			}
+		}
+	}
+	for _, c := range changesUnfilterd {
+		c := c
+		if parentID != nil {
+			if len(f.parents[instance]) == 0 || len(f.parents[instance][project]) == 0 ||
+				f.parents[instance][project][*parentID] == nil || *f.parents[instance][project][*parentID] != c.Number {
+				continue
+			}
+		}
+		if isNotMerged && c.Submitted != nil {
+			continue
+		}
+		changes = append(changes, c)
+	}
+	return changes, nil
 }
 
 func (f *fakeGerritClient) GetChange(instance, id string, addtionalFields ...string) (*gerrit.ChangeInfo, error) {
@@ -137,6 +176,234 @@ func TestGerritQueryParam(t *testing.T) {
 	}
 }
 
+func TestIsSubmissionAllowedByParents(t *testing.T) {
+	tests := []struct {
+		name    string
+		prs     []gerrit.ChangeInfo
+		parents map[int]*int
+		pr      gerrit.ChangeInfo
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "no-parent",
+			prs:  []gerrit.ChangeInfo{},
+			pr: gerrit.ChangeInfo{
+				Submittable: true,
+			},
+			want: true,
+		},
+		{
+			// This should only happen in the recursion chain, test it as a base
+			// case.
+			name: "self-not-submittable",
+			prs:  []gerrit.ChangeInfo{},
+			pr: gerrit.ChangeInfo{
+				Submittable: false,
+			},
+			want: false,
+		},
+		{
+			// This should only happen in the recursion chain, test it as a base
+			// case.
+			name: "self-already-submitted",
+			prs:  []gerrit.ChangeInfo{},
+			pr: gerrit.ChangeInfo{
+				Submitted: &gerrit.Timestamp{},
+			},
+			want: true,
+		},
+		{
+			name: "parents-all-submittable",
+			prs: []gerrit.ChangeInfo{
+				{
+					Number:      0,
+					Submittable: true,
+				},
+				{
+					Number:      1,
+					Submittable: true,
+				},
+				{
+					Number:      2,
+					Submittable: true,
+				},
+			},
+			parents: map[int]*int{
+				0: intPtr(1),
+				1: intPtr(2),
+			},
+			pr: gerrit.ChangeInfo{
+				ID:          "0",
+				Submittable: true,
+			},
+			want: true,
+		},
+		{
+			name: "direct-parent-not-submittable",
+			prs: []gerrit.ChangeInfo{
+				{
+					Number:      0,
+					Submittable: true,
+				},
+				{
+					Number:      1,
+					Submittable: false,
+				},
+				{
+					Number:      2,
+					Submittable: true,
+				},
+			},
+			parents: map[int]*int{
+				0: intPtr(1),
+				1: intPtr(2),
+			},
+			pr: gerrit.ChangeInfo{
+				Number:      0,
+				Submittable: true,
+			},
+			want: false,
+		},
+		{
+			name: "indirect-parent-not-submittable",
+			prs: []gerrit.ChangeInfo{
+				{
+					Number:      0,
+					Submittable: true,
+				},
+				{
+					Number:      1,
+					Submittable: true,
+				},
+				{
+					Number:      2,
+					Submittable: false,
+				},
+			},
+			parents: map[int]*int{
+				0: intPtr(1),
+				1: intPtr(2),
+			},
+			pr: gerrit.ChangeInfo{
+				Number:      0,
+				Submittable: true,
+			},
+			want: false,
+		},
+		{
+			name: "direct-parent-abandoned",
+			prs: []gerrit.ChangeInfo{
+				{
+					Number:      0,
+					Submittable: true,
+				},
+				{
+					Number:      1,
+					Submittable: false,
+				},
+				{
+					Number:      2,
+					Submittable: true,
+				},
+			},
+			parents: map[int]*int{
+				0: intPtr(1),
+				1: intPtr(2),
+			},
+			pr: gerrit.ChangeInfo{
+				Number:      0,
+				Submittable: true,
+			},
+			want: false,
+		},
+		{
+			name: "direct-parent-merged",
+			prs: []gerrit.ChangeInfo{
+				{
+					Number:      0,
+					Submittable: true,
+				},
+				{
+					Number:    1,
+					Submitted: &gerrit.Timestamp{},
+				},
+				{
+					Number:      2,
+					Submittable: true,
+				},
+			},
+			parents: map[int]*int{
+				0: intPtr(1),
+				1: intPtr(2),
+			},
+			pr: gerrit.ChangeInfo{
+				Number:      0,
+				Submittable: true,
+			},
+			want: true,
+		},
+		{
+			name: "indirect-parent-merged",
+			prs: []gerrit.ChangeInfo{
+				{
+					Number:      0,
+					Submittable: true,
+				},
+				{
+					Number:      1,
+					Submittable: true,
+				},
+				{
+					Number:    2,
+					Submitted: &gerrit.Timestamp{},
+				},
+			},
+			parents: map[int]*int{
+				0: intPtr(1),
+				1: intPtr(2),
+			},
+			pr: gerrit.ChangeInfo{
+				Number:      0,
+				Submittable: true,
+			},
+			want: true,
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := config.Config{
+				ProwConfig: config.ProwConfig{
+					Tide: config.Tide{
+						Gerrit: &config.TideGerritConfig{
+							Queries: config.GerritOrgRepoConfigs{config.GerritOrgRepoConfig{Org: "org", Repos: []string{"repo"}}},
+						},
+					},
+				},
+			}
+
+			fc := newGerritProvider(logrus.WithContext(context.Background()), func() *config.Config { return &cfg }, nil, nil, "", "")
+			fgc := newFakeGerritClient()
+			fgc.changes["org"] = map[string][]gerrit.ChangeInfo{"repo": tc.prs}
+			fgc.parents["org"] = map[string]map[int]*int{"repo": tc.parents}
+			fc.gc = fgc
+
+			got, gotErr := fc.isSubmissionAllowedByParents("org", "repo", time.Time{}, tc.pr)
+			if tc.wantErr {
+				if gotErr == nil {
+					t.Fatal("Want error, got nil.")
+				}
+				return
+			}
+			if tc.want != got {
+				t.Fatalf("Output mismatch. Want: %v, got: %v", tc.want, got)
+			}
+		})
+	}
+}
+
 func TestQuery(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -157,14 +424,15 @@ func TestQuery(t *testing.T) {
 				"foo1": {
 					"bar1": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar1",
+							Number:      1,
+							Project:     "bar1",
+							Submittable: true,
 						},
 					},
 				},
 			},
 			expect: map[string]CodeReviewCommon{
-				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar1"}, "foo1"),
+				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar1", Submittable: true}, "foo1"),
 			},
 		},
 		{
@@ -183,37 +451,41 @@ func TestQuery(t *testing.T) {
 				"foo1": {
 					"bar1": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar1",
+							Number:      1,
+							Project:     "bar1",
+							Submittable: true,
 						},
 					},
 					"bar2": {
 						gerrit.ChangeInfo{
-							Number:  2,
-							Project: "bar2",
+							Number:      2,
+							Project:     "bar2",
+							Submittable: true,
 						},
 					},
 				},
 				"foo2": {
 					"bar3": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar3",
+							Number:      1,
+							Project:     "bar3",
+							Submittable: true,
 						},
 					},
 					"bar4": {
 						gerrit.ChangeInfo{
-							Number:  2,
-							Project: "bar4",
+							Number:      2,
+							Project:     "bar4",
+							Submittable: true,
 						},
 					},
 				},
 			},
 			expect: map[string]CodeReviewCommon{
-				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar1"}, "foo1"),
-				"foo1/bar2#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 2, Project: "bar2"}, "foo1"),
-				"foo2/bar3#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar3"}, "foo2"),
-				"foo2/bar4#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 2, Project: "bar4"}, "foo2"),
+				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar1", Submittable: true}, "foo1"),
+				"foo1/bar2#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 2, Project: "bar2", Submittable: true}, "foo1"),
+				"foo2/bar3#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar3", Submittable: true}, "foo2"),
+				"foo2/bar4#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 2, Project: "bar4", Submittable: true}, "foo2"),
 			},
 		},
 		{
@@ -232,28 +504,32 @@ func TestQuery(t *testing.T) {
 				"foo1": {
 					"bar1": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar1",
+							Number:      1,
+							Project:     "bar1",
+							Submittable: true,
 						},
 					},
 					"bar2": {
 						gerrit.ChangeInfo{
-							Number:  2,
-							Project: "bar2",
+							Number:      2,
+							Project:     "bar2",
+							Submittable: true,
 						},
 					},
 				},
 				"foo2": {
 					"bar3": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar3",
+							Number:      1,
+							Project:     "bar3",
+							Submittable: true,
 						},
 					},
 					"bar4": {
 						gerrit.ChangeInfo{
-							Number:  2,
-							Project: "bar4",
+							Number:      2,
+							Project:     "bar4",
+							Submittable: true,
 						},
 					},
 				},

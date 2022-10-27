@@ -168,6 +168,52 @@ func newGerritProvider(
 	}
 }
 
+// isSubmissionAllowedByParents recursively queries parental PRs to find out
+// whether there is any PR in the parents chain not submittable.
+func (p *GerritProvider) isSubmissionAllowedByParents(instance, projName string, lastUpdate time.Time, change gerrit.ChangeInfo) (bool, error) {
+	// This PR was already submitted, no need to search for its parent.
+	if change.Submitted != nil {
+		return true, nil
+	}
+	if !change.Submittable {
+		return false, nil
+	}
+	if change.WorkInProgress {
+		return false, nil
+	}
+
+	// Search for parents.
+	// Ideally the parental PRs should be included as part of the
+	// gerrit.ChangeInfo, but all what it knows is `CommitInfo`(See `Revisions`
+	// from https://pkg.go.dev/github.com/andygrunwald/go-gerrit#ChangeInfo),
+	// which has no knowledge about which PR it's from(Open PR), nor whether it belongs
+	// to the target branch or not(already submitted). The least worst option is
+	// to query with `parentof:<CHANGE_ID>`. Querying without status on UI
+	// resulted in timeout, so including `-status:merged` to make it work, doing
+	// this instead of `status:open` due to the corner cases such as parent PR
+	// abandoned which will not be included as the response from the query,
+	// unfortunately Gerrit allows abandon parental PR, the child PRs will not
+	// have `submittable:true` but the submit API endpoint would reject the
+	// submission. Users will need to rebase the child PR to resolve this
+	// problem(https://stackoverflow.com/questions/25654918/gerrit-submit-change-after-abandoning-its-parent).
+	// (Ran an experiment and confirmed that `parentof` only returns the
+	// immediate parent of the PR).
+	parents, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, "-status:merged+parentof:"+strconv.Itoa(change.Number))
+	if err != nil {
+		return false, fmt.Errorf("failed querying parent")
+	}
+	for _, parent := range parents {
+		allowed, err := p.isSubmissionAllowedByParents(instance, projName, lastUpdate, parent)
+		if err != nil {
+			return false, err
+		}
+		if !allowed {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
 // Query returns all PRs from configured gerrit org/repos.
 func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 	// lastUpdate is used by gerrit adapter for achieving incremental query. In
@@ -194,11 +240,32 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 				optInByDefault = projFilter.OptInByDefault
 			}
 			go func(projName string, optInByDefault bool) {
-				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritQueryParam(optInByDefault))
+				logger := p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName})
+				changesCanbeSubmittedByItself, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritQueryParam(optInByDefault))
 				if err != nil {
-					p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName}).WithError(err).Warn("Querying gerrit project for changes.")
+					logger.WithError(err).Warn("Querying gerrit project for changes.")
 					errChan <- fmt.Errorf("failed querying project '%s' from instance '%s': %v", projName, instance, err)
 					return
+				}
+				// Gerrit has a concept of related changes, meant one PR based
+				// on top of another PR. Gerrit blocks submission of a PR if any
+				// of the parent PR cannot be submitted. Including a PR whose
+				// submission is blocked by parents is going to block serial
+				// submission of other PRs. So searching recursively to exclude
+				// such PR.
+				var changes []gerrit.ChangeInfo
+				for _, change := range changesCanbeSubmittedByItself {
+					logger := logger.WithField("change", change.Number)
+					allowed, err := p.isSubmissionAllowedByParents(instance, projName, lastUpdate, change)
+					if err != nil {
+						logger.WithError(err).Error("Failed determining submission requirement from parents.")
+						continue
+					}
+					if !allowed {
+						logger.Debug("Submission is blocked by parents.")
+						continue
+					}
+					changes = append(changes, change)
 				}
 				resChan <- changesFromProject{instance: instance, project: projName, changes: changes}
 			}(projName, optInByDefault)
