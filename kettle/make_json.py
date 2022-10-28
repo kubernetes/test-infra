@@ -188,7 +188,18 @@ def parse_junit(xml):
         time = float(child_node.attrib.get('time') or 0) #time val can be ''
         failure_text = None
         for param in child_node.findall('failure'):
-            failure_text = param.text or param.attrib.get('message', 'No Failure Message Found')
+            msg_attribute = param.attrib.get('message')
+            msg_data = param.text
+            if msg_attribute and msg_data:
+                # Use both. With Ginkgo V2, the attribute contains the failure message
+                # and the data contains the stack backtrace. We could leave out the
+                # stack backtrace, but the function names in it might be useful
+                # to distinguish different unrelated failures that happen to have the
+                # same message.
+                failure_text = msg_attribute + "\n" + msg_data
+            else:
+                # Use whatever we have, with a default if both are unset.
+                failure_text = msg_attribute or msg_data or 'No Failure Message Found'
         skipped = child_node.findall('skipped')
         return time, failure_text, skipped
 
