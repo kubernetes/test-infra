@@ -815,6 +815,9 @@ func (r *reconciler) canExecuteConcurrentlyPerQueue(ctx context.Context, pj *pro
 		return false, fmt.Errorf("failed to match queue name '%s' with Plank configuration", queueName)
 	}
 	if queueConcurrency == 0 {
+		return false, nil
+	}
+	if queueConcurrency < 0 {
 		return true, nil
 	}
 
