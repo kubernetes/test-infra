@@ -104,7 +104,7 @@ periodics:
   spec:
     serviceAccountName: k8s-cve-feed
     containers:
-    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220607-33951ed1ed
+    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221028-0729c6470f
       command:
       - sh
       - "-c"
