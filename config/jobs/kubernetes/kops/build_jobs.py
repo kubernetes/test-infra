@@ -457,8 +457,6 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
 
         # A special test for IPv6 using Calico CNI on Ubuntu 22.04
-        # This will fail until the fix for systemd DHCPv6 is added
-        # https://github.com/systemd/systemd/issues/20803
         build_test(name_override="kops-aws-cni-calico-ipv6-u2204",
                    cloud="aws",
                    distro="u2204",
@@ -475,6 +473,17 @@ def generate_misc():
                    networking="calico",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
+                                '--zones=us-west-2a',
+                                ],
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
+        # A special test for IPv6 using Calico CNI with private topology
+        build_test(name_override="kops-aws-cni-calico-ipv6-private",
+                   cloud="aws",
+                   distro="deb11",
+                   networking="calico",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
                                 '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
