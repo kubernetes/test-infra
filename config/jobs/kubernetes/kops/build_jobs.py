@@ -1177,7 +1177,7 @@ def generate_presubmits_e2e():
             distro="u2204",
             networking="calico",
             extra_flags=[
-                "--api-loadbalancer-type=public"
+                "--api-loadbalancer-type=public",
                 "--api-loadbalancer-class=network"
             ],
         ),

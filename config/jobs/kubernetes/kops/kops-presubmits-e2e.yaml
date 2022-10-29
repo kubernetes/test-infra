@@ -1142,8 +1142,8 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-dns-none
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--api-loadbalancer-type=public --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-e2e-aws-lb
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+  - name: pull-kops-e2e-aws-nlb
     branches:
     - master
     always_run: false
@@ -1173,7 +1173,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --api-loadbalancer-type=public --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1199,13 +1199,13 @@ presubmits:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2204
-      test.kops.k8s.io/extra_flags: --api-loadbalancer-type=public --discovery-store=s3://k8s-kops-prow/discovery
+      test.kops.k8s.io/extra_flags: --api-loadbalancer-type=public --api-loadbalancer-class=network --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-e2e-aws-lb
+      testgrid-tab-name: pull-kops-e2e-aws-nlb
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-latest-e2e-aws-k8s-1-24
