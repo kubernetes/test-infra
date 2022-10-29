@@ -1172,6 +1172,17 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            name="pull-kops-e2e-aws-nlb",
+            cloud="aws",
+            distro="u2204",
+            networking="calico",
+            extra_flags=[
+                "--api-loadbalancer-type=public"
+                "--api-loadbalancer-class=network"
+            ],
+        ),
+
+        presubmit_test(
             branch='master',
             k8s_version='1.24',
             kops_channel='alpha',
