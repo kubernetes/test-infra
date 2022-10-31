@@ -20,13 +20,13 @@ postsubmits:
         grace_period: 15m
       branches:
         # For publishing canary images.
-        - ^master$
-        - ^release-
+        - ^master$ # TODO(alexander-ding): when v2 is released, this needs to be switched to point to the v1.x branch
         # For publishing tagged images. Those will only get built once, i.e.
         # existing images are not getting overwritten. A new tag must be set to
-        # trigger another image build. Images are only built for tags that follow
-        # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
-        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+        # trigger another image build. Images are only built for v1 tags that follow
+        # the semver format (regex adapted from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string)
+        # v2 and beyond are released as a Go library and therefore do not need to be built
+        - ^v1\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
