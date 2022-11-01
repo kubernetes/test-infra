@@ -3,7 +3,6 @@
 reviewers:
   - bart0sh
   - derekwaynecarr
-  - ehashman
   - endocrimes
   - sjenning
   - SergeyKanzhelev
@@ -15,10 +14,10 @@ approvers:
   - sjenning
   - mrunalp
   - klueska
-  - ehashman
   - SergeyKanzhelev
   - endocrimes
 emeritus_approvers:
   - dashpole
+  - ehashman
 labels:
   - sig/node
