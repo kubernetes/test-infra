@@ -46,6 +46,7 @@ postsubmits:
         args:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --use-prow-manifest-diff
         - --confirm
         # TODO: these are *not* threads 🤷‍♂️
         # https://www.geeksforgeeks.org/golang-goroutine-vs-thread/

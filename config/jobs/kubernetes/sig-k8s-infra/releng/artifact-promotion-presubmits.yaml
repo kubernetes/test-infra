@@ -20,6 +20,7 @@ presubmits:
         args:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --use-prow-manifest-diff
         resources:
           limits:
             cpu: 2
@@ -48,6 +49,7 @@ presubmits:
         args:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --use-prow-manifest-diff
         - --vuln-severity-threshold=1
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
