@@ -162,7 +162,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: '^((exp)\/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)|managed.*\.go|aks|^azure\/services\/agentpools\/'
+    run_if_changed: '^((exp)\/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)|test\/e2e\/config|managed.*\.go|aks|^azure\/services\/agentpools\/'
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
