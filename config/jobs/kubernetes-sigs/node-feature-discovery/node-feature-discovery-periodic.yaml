@@ -1,15 +1,17 @@
-postsubmits:
-  kubernetes-sigs/node-feature-discovery:
-  - name: postsubmit-node-feature-discovery-e2e-test
-    branches:
-    - ^main$
-    - ^master$
-    max_concurrency: 1
+periodics:
+  - name: periodic-node-feature-discovery-e2e-test
     decorate: true
+    decoration_config:
+      timeout: 1h
+    cron: '0 4 * * *'
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: node-feature-discovery
+      base_ref: master
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
       testgrid-tab-name: e2e-test-image
-      description: "Run end-to-end tests for node-feature-discovery after merging a pull request"
+      description: "Run end-to-end tests for node-feature-discovery on a daily bases at 6:00 (EET)/4:00 (UTC)."
       testgrid-alert-email: markus.lehtonen@intel.com,feruzjon.muyassarov@intel.com
     spec:
       containers:
