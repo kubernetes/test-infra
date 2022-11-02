@@ -233,7 +233,8 @@ type provider interface {
 	// merging. And also transform any other label that is not voted by prow
 	// into a context.
 	headContexts(pr *CodeReviewCommon) ([]Context, error)
-	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error
+	// mergePRs attempts to merge the specified PRs and returns the prs that were successfully merged.
+	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) ([]CodeReviewCommon, error)
 	GetTideContextPolicy(org, repo, branch string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error)
 	prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error)
 

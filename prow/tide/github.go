@@ -237,15 +237,9 @@ func (gi *GitHubProvider) prepareMergeDetails(commitTemplates config.TideMergeCo
 	return ghMergeDetails
 }
 
-func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error {
-	var merged, failed []int
-	defer func() {
-		if len(merged) == 0 {
-			return
-		}
-		tideMetrics.merges.WithLabelValues(sp.org, sp.repo, sp.branch).Observe(float64(len(merged)))
-	}()
-
+func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) ([]CodeReviewCommon, error) {
+	var merged []CodeReviewCommon
+	var failed []int
 	var errs []error
 	log := sp.log.WithField("merge-targets", prNumbers(prs))
 	tideConfig := gi.cfg().Tide
@@ -280,7 +274,7 @@ func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdat
 			log.WithError(err).Debug("Merge failed.")
 		} else {
 			log.Info("Merged.")
-			merged = append(merged, pr.Number)
+			merged = append(merged, pr)
 		}
 		if !keepTrying {
 			break
@@ -293,7 +287,7 @@ func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdat
 	}
 
 	if len(errs) == 0 {
-		return nil
+		return merged, nil
 	}
 
 	// Construct a more informative error.
@@ -301,10 +295,10 @@ func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdat
 	if len(prs) > 1 {
 		batch = fmt.Sprintf(" from batch %v", prNumbers(prs))
 		if len(merged) > 0 {
-			batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
+			batch = fmt.Sprintf("%s, partial merge %v", batch, prNumbers(merged))
 		}
 	}
-	return fmt.Errorf("failed merging %v%s: %w", failed, batch, utilerrors.NewAggregate(errs))
+	return merged, fmt.Errorf("failed merging %v%s: %w", failed, batch, utilerrors.NewAggregate(errs))
 }
 
 // headContexts gets the status contexts for the commit with OID == pr.HeadRefOID
