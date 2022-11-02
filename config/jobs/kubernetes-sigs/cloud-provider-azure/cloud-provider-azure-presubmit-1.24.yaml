@@ -73,6 +73,8 @@ presubmits:
                 value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
+              - name: CCM_E2E_TIMEOUT
+                value: "3h15m"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-24-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-1-24
@@ -126,7 +128,7 @@ presubmits:
               - name: KUBERNETES_VERSION
                 value: "latest-1.24"
               - name: GINKGO_ARGS
-                value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+                value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --ginkgo.timeout=4h --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
       annotations:
@@ -177,6 +179,8 @@ presubmits:
                 value: "latest-1.24"
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
+              - name: CCM_E2E_TIMEOUT
+                value: "3h15m"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-24-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-24

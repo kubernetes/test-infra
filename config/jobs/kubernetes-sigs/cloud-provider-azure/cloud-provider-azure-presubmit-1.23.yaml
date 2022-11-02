@@ -75,6 +75,8 @@ presubmits:
                 value: "Standard"
               - name: K8S_FEATURE_GATES
                 value: "MixedProtocolLBService=true"
+              - name: CCM_E2E_TIMEOUT
+                value: "3h15m"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-1-23
@@ -128,7 +130,7 @@ presubmits:
               - name: KUBERNETES_VERSION
                 value: "latest-1.23"
               - name: GINKGO_ARGS
-                value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+                value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --ginkgo.timeout=4h --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
       annotations:
@@ -181,6 +183,8 @@ presubmits:
                 value: "1"
               - name: K8S_FEATURE_GATES
                 value: "MixedProtocolLBService=true"
+              - name: CCM_E2E_TIMEOUT
+                value: "3h15m"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-23
