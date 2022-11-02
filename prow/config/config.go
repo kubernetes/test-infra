@@ -2108,18 +2108,17 @@ func (c *Config) validateComponentConfig() error {
 
 var (
 	jobNameRegex        = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
-	jobNmaeRegexJenkins = regexp.MustCompile(`^[A-Za-z0-9-._]([A-Za-z0-9-._/]*[A-Za-z0-9-_])?$`)
+	jobNameRegexJenkins = regexp.MustCompile(`^[A-Za-z0-9-._]([A-Za-z0-9-._/]*[A-Za-z0-9-_])?$`)
 )
 
 func validateJobName(v JobBase) error {
+	nameRegex := jobNameRegex
 	if v.Agent == string(prowapi.JenkinsAgent) {
-		if !jobNmaeRegexJenkins.MatchString(v.Name) {
-			return fmt.Errorf("name: must match regex %q", jobNmaeRegexJenkins.String())
-		}
-	} else {
-		if !jobNameRegex.MatchString(v.Name) {
-			return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
-		}
+		nameRegex = jobNameRegexJenkins
+	}
+
+	if !nameRegex.MatchString(v.Name) {
+		return fmt.Errorf("name: must match regex %q", nameRegex.String())
 	}
 
 	return nil
