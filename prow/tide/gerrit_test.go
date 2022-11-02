@@ -739,7 +739,7 @@ func TestMergePR(t *testing.T) {
 				prsToMerge = append(prsToMerge, *CodeReviewCommonFromGerrit(&pr, tc.subpool.org))
 			}
 
-			gotErr := fc.mergePRs(tc.subpool, prsToMerge, nil)
+			_, gotErr := fc.mergePRs(tc.subpool, prsToMerge, nil)
 			if tc.wantErr == nil {
 				if gotErr != nil {
 					t.Fatalf("Error mismatch. Want nil, got: %v", gotErr)

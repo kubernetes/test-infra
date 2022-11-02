@@ -293,12 +293,13 @@ func (p *GerritProvider) headContexts(crc *CodeReviewCommon) ([]Context, error) 
 	return res, nil
 }
 
-func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, _ *threadSafePRSet) error {
+func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, _ *threadSafePRSet) ([]CodeReviewCommon, error) {
 	logger := p.logger.WithFields(logrus.Fields{"repo": sp.repo, "org": sp.org, "branch": sp.branch, "prs": len(prs)})
 	logger.Info("Merging subpool.")
 
 	isBatch := len(prs) > 1
 
+	var merged []CodeReviewCommon
 	var errs []error
 	for _, pr := range prs {
 		logger := logger.WithField("id", pr.Gerrit.ID)
@@ -306,6 +307,8 @@ func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, _ *threadS
 		_, err := p.gc.SubmitChange(sp.org, pr.Gerrit.ID, true)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("failed submitting change '%s' from org '%s': %v", sp.org, pr.Gerrit.ID, err))
+		} else {
+			merged = append(merged, pr)
 		}
 		// Comment on the PR if it's a batch.
 		// In case of flaky tests, Tide triggered prowjobs for highest priority
@@ -320,7 +323,7 @@ func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, _ *threadS
 			}
 		}
 	}
-	return utilerrors.NewAggregate(errs)
+	return merged, utilerrors.NewAggregate(errs)
 }
 
 // GetTideContextPolicy gets context policy defined by users + requirements from
