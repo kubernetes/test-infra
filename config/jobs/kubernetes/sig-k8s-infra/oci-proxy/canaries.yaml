@@ -15,6 +15,7 @@ presets:
 
 periodics:
 - name: e2e-kops-grid-gcr-mirror-canary
+  cluster: k8s-infra-prow-build
   cron: '11 0-23/1 * * *'
   labels:
     preset-service-account: "true"
