@@ -803,7 +803,7 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Ent
 		"total_context_count":  len(contexts),
 		"context_names":        contextsToStrings(contexts),
 		"failed_context_count": len(failed),
-		"failed_context_names": contextsToStrings(contexts),
+		"failed_context_names": contextsToStrings(failed),
 	}).Debug("Filtered out failed contexts")
 	return failed
 }
@@ -1524,7 +1524,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 			continue
 		}
 		filteredPRs = append(filteredPRs, pr)
-		log.WithField("num_possible_presubmit", len(presubmitsForPull)).Debug("Found possible preseubmits")
+		log.WithField("num_possible_presubmit", len(presubmitsForPull)).Debug("Found possible presubmits")
 
 		for _, ps := range presubmitsForPull {
 			if !ps.ContextRequired() {
