@@ -457,6 +457,8 @@ func contextsToStrings(contexts []Context) []string {
 	for _, c := range contexts {
 		names = append(names, string(c.Context))
 	}
+        // Sorting names improves readability of logs and simplifies unit tests.
+	sort.Strings(names)
 	return names
 }
 
