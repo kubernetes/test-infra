@@ -79,7 +79,7 @@ function ensureInstall() {
   # Install kind and set up cluster if not already done.
   if ! command -v kind >/dev/null 2>&1; then
     echo "Installing kind..."
-    GO111MODULE="on" go get sigs.k8s.io/kind@v0.16.0
+    GO111MODULE="on" go install sigs.k8s.io/kind@v0.16.0
   fi
   local found="false"
   for clust in $(kind get clusters); do
