@@ -412,6 +412,7 @@ func (gi *GitHubProvider) refsForJob(sp subpool, prs []CodeReviewCommon) (prowap
 }
 
 func (gi *GitHubProvider) labelsAndAnnotations(instance string, jobLabels, jobAnnotations map[string]string, changes ...CodeReviewCommon) (labels, annotations map[string]string) {
+	labels, annotations = jobLabels, jobAnnotations
 	return
 }
 
