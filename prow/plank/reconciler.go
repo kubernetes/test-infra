@@ -357,8 +357,54 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			pj.Status.PodName = pn
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pod is missing, starting a new pod")
 		}
-	} else {
+	} else if pod.Status.Reason == Evicted {
+		// Pod was evicted.
+		if pj.Spec.ErrorOnEviction {
+			// ErrorOnEviction is enabled, complete the PJ and mark it as
+			// errored.
+			r.log.WithField("error-on-eviction", true).WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got evicted, fail job.")
+			pj.SetComplete()
+			pj.Status.State = prowv1.ErrorState
+			pj.Status.Description = "Job pod was evicted by the cluster."
+		} else {
+			// ErrorOnEviction is disabled. Delete the pod now and recreate it in
+			// the next resync.
+			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got evicted, deleting & next sync loop will restart pod")
+			client, ok := r.buildClients[pj.ClusterAlias()]
+			if !ok {
+				return nil, fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+			}
+			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+				oldPod := pod.DeepCopy()
+				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+				if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+					return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+				}
+			}
+			r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
+			return nil, ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
+		}
+	} else if pod.DeletionTimestamp != nil && pod.Status.Reason == "NodeLost" {
+		// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
+		// vanishes and we will silently re-create it in the next iteration.
+		r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got lost, deleting & next sync loop will restart pod")
+		client, ok := r.buildClients[pj.ClusterAlias()]
+		if !ok {
+			return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+		}
 
+		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+			oldPod := pod.DeepCopy()
+			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+			if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+				return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+			}
+		}
+
+		return nil, nil
+	} else {
 		switch pod.Status.Phase {
 		case corev1.PodUnknown:
 			// Pod is in Unknown state. This can happen if there is a problem with
@@ -395,32 +441,6 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			}
 
 		case corev1.PodFailed:
-			if pod.Status.Reason == Evicted {
-				// Pod was evicted.
-				if pj.Spec.ErrorOnEviction {
-					// ErrorOnEviction is enabled, complete the PJ and mark it as errored.
-					pj.SetComplete()
-					pj.Status.State = prowv1.ErrorState
-					pj.Status.Description = "Job pod was evicted by the cluster."
-					break
-				}
-				// ErrorOnEviction is disabled. Delete the pod now and recreate it in
-				// the next resync.
-				client, ok := r.buildClients[pj.ClusterAlias()]
-				if !ok {
-					return nil, fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
-				}
-				if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
-					// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
-					oldPod := pod.DeepCopy()
-					pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
-					if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
-						return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
-					}
-				}
-				r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
-				return nil, ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
-			}
 			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.SetComplete()
 			pj.Status.State = prowv1.FailureState
@@ -494,27 +514,6 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 				return nil, nil
 			}
 		}
-	}
-
-	// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
-	// vanishes and we will silently re-create it in the next iteration.
-	if pod != nil && pod.DeletionTimestamp != nil && pod.Status.Reason == "NodeLost" {
-		r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got lost, deleting & restarting pod")
-		client, ok := r.buildClients[pj.ClusterAlias()]
-		if !ok {
-			return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
-		}
-
-		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
-			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
-			oldPod := pod.DeepCopy()
-			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
-			if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
-				return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
-			}
-		}
-
-		return nil, nil
 	}
 
 	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
