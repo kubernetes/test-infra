@@ -5,7 +5,7 @@ presets:
   # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
   # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
   - name: KUBE_GCE_NODE_IMAGE
-    value: cos-85-13310-1041-9
+    value: cos-97-16919-189-5
   - name: KUBE_GCE_NODE_PROJECT
     value: cos-cloud
   - name: NODE_ACCELERATORS
