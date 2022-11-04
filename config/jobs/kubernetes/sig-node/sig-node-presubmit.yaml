@@ -1379,6 +1379,8 @@ presubmits:
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --repo=github.com/containerd/containerd=main
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=200
         - --scenario=kubernetes_e2e
         - --
@@ -1421,6 +1423,8 @@ presubmits:
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --repo=github.com/containerd/containerd=main
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=200
         - --scenario=kubernetes_e2e
         - --
@@ -1463,6 +1467,8 @@ presubmits:
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --repo=github.com/containerd/containerd=main
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=260
         - --scenario=kubernetes_e2e
         - --
@@ -1505,6 +1511,8 @@ presubmits:
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --repo=github.com/containerd/containerd=main
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=90
         - --scenario=kubernetes_e2e
         - --
@@ -1548,6 +1556,8 @@ presubmits:
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --repo=github.com/containerd/containerd=main
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=90
         - --scenario=kubernetes_e2e
         - --
