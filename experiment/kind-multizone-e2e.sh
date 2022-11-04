@@ -174,7 +174,7 @@ nodes:
         node-labels: "topology.kubernetes.io/zone=zone-c"
 EOF
   # NOTE: must match the number of workers above
-  NUM_NODES=2
+  NUM_NODES=6
   # actually create the cluster
   # TODO(BenTheElder): settle on verbosity for this script
   KIND_CREATE_ATTEMPTED=true
