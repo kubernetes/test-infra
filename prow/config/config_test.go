@@ -3755,7 +3755,7 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 			jobSpec: &prowapi.ProwJobSpec{
 				Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
 			},
-			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+			expected: nil,
 		},
 		{
 			name:     "no refs return wildcard empty string match",
