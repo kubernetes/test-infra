@@ -517,6 +517,14 @@ def generate_misc():
                                 ],
                    extra_dashboards=['kops-misc']),
 
+        # A special test for private topology
+        build_test(name_override="kops-aws-private",
+                   cloud="aws",
+                   runs_per_day=3,
+                   extra_flags=['--topology=private',
+                                ],
+                   extra_dashboards=['kops-misc']),
+
         build_test(name_override="kops-grid-scenario-terraform",
                    terraform_version="1.0.5",
                    extra_flags=["--zones=us-west-1a"],
