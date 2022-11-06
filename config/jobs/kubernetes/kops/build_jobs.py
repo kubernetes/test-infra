@@ -521,6 +521,7 @@ def generate_misc():
         build_test(name_override="kops-aws-private",
                    cloud="aws",
                    runs_per_day=3,
+                   networking="calico",
                    extra_flags=['--topology=private',
                                 ],
                    extra_dashboards=['kops-misc']),
