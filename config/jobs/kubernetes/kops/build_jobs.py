@@ -416,7 +416,7 @@ def generate_grid():
     # Manually expand grid coverage for GCP
     # TODO(justinsb): merge into above block when we can
     # pylint: disable=too-many-nested-blocks
-    for networking in ['kubenet', 'calico', 'cilium']: # TODO: all networking_options:
+    for networking in ['kubenet', 'calico', 'cilium', 'gce']: # TODO: all networking_options:
         for distro in ['u2004']: # TODO: all distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in [None]: # TODO: all kops_versions:
