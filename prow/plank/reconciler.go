@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/kubernetes/pkg/util/node"
 	"k8s.io/utils/clock"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -385,7 +386,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 			return nil, ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
 		}
-	} else if pod.DeletionTimestamp != nil && pod.Status.Reason == "NodeLost" {
+	} else if pod.DeletionTimestamp != nil && pod.Status.Reason == node.NodeUnreachablePodReason {
 		// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
 		// vanishes and we will silently re-create it in the next iteration.
 		r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got lost, deleting & next sync loop will restart pod")
