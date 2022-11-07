@@ -39,6 +39,8 @@ import (
 	fuzz "github.com/google/gofuzz"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
+	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -2730,20 +2732,25 @@ func TestIsPassing(t *testing.T) {
 	success := string(githubql.StatusStateSuccess)
 	failure := string(githubql.StatusStateFailure)
 	testCases := []struct {
-		name             string
-		passing          bool
-		config           config.TideContextPolicy
-		combinedContexts map[string]string
+		name              string
+		passing           bool
+		config            config.TideContextPolicy
+		combinedContexts  map[string]string
+		availableContexts []string
+		failedContexts    []string
 	}{
 		{
-			name:             "empty policy - success (trust combined status)",
-			passing:          true,
-			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+			name:              "empty policy - success (trust combined status)",
+			passing:           true,
+			combinedContexts:  map[string]string{"c1": success, "c2": success, statusContext: failure},
+			availableContexts: []string{"c1", "c2", statusContext},
 		},
 		{
-			name:             "empty policy - failure because of failed context c4 (trust combined status)",
-			passing:          false,
-			combinedContexts: map[string]string{"c1": success, "c2": success, "c3": failure, statusContext: failure},
+			name:              "empty policy - failure because of failed context c4 (trust combined status)",
+			passing:           false,
+			combinedContexts:  map[string]string{"c1": success, "c2": success, "c3": failure, statusContext: failure},
+			availableContexts: []string{"c1", "c2", "c3", statusContext},
+			failedContexts:    []string{"c3"},
 		},
 		{
 			name:    "passing (trust combined status)",
@@ -2752,7 +2759,8 @@ func TestIsPassing(t *testing.T) {
 				RequiredContexts:    []string{"c1", "c2", "c3"},
 				SkipUnknownContexts: &no,
 			},
-			combinedContexts: map[string]string{"c1": success, "c2": success, "c3": success, statusContext: failure},
+			combinedContexts:  map[string]string{"c1": success, "c2": success, "c3": success, statusContext: failure},
+			availableContexts: []string{"c1", "c2", "c3", statusContext},
 		},
 		{
 			name:    "failing because of missing required check c3",
@@ -2760,7 +2768,9 @@ func TestIsPassing(t *testing.T) {
 			config: config.TideContextPolicy{
 				RequiredContexts: []string{"c1", "c2", "c3"},
 			},
-			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+			combinedContexts:  map[string]string{"c1": success, "c2": success, statusContext: failure},
+			availableContexts: []string{"c1", "c2", statusContext},
+			failedContexts:    []string{"c3"},
 		},
 		{
 			name:             "failing because of failed context c2",
@@ -2770,6 +2780,8 @@ func TestIsPassing(t *testing.T) {
 				RequiredContexts: []string{"c1", "c2", "c3"},
 				OptionalContexts: []string{"c4"},
 			},
+			availableContexts: []string{"c1", "c2"},
+			failedContexts:    []string{"c2", "c3"},
 		},
 		{
 			name:    "passing because of failed context c4 is optional",
@@ -2780,6 +2792,7 @@ func TestIsPassing(t *testing.T) {
 				RequiredContexts: []string{"c1", "c2", "c3"},
 				OptionalContexts: []string{"c4"},
 			},
+			availableContexts: []string{"c1", "c2", "c3", "c4"},
 		},
 		{
 			name:    "skipping unknown contexts - failing because of missing required context c3",
@@ -2788,7 +2801,9 @@ func TestIsPassing(t *testing.T) {
 				RequiredContexts:    []string{"c1", "c2", "c3"},
 				SkipUnknownContexts: &yes,
 			},
-			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+			combinedContexts:  map[string]string{"c1": success, "c2": success, statusContext: failure},
+			availableContexts: []string{"c1", "c2", statusContext},
+			failedContexts:    []string{"c3"},
 		},
 		{
 			name:             "skipping unknown contexts - failing because c2 is failing",
@@ -2799,6 +2814,8 @@ func TestIsPassing(t *testing.T) {
 				OptionalContexts:    []string{"c4"},
 				SkipUnknownContexts: &yes,
 			},
+			availableContexts: []string{"c1", "c2"},
+			failedContexts:    []string{"c2"},
 		},
 		{
 			name:             "skipping unknown contexts - passing because c4 is optional",
@@ -2809,6 +2826,7 @@ func TestIsPassing(t *testing.T) {
 				OptionalContexts:    []string{"c4"},
 				SkipUnknownContexts: &yes,
 			},
+			availableContexts: []string{"c1", "c2", "c3", "c4"},
 		},
 		{
 			name:    "skipping unknown contexts - passing because c4 is optional and c5 is unknown",
@@ -2820,6 +2838,7 @@ func TestIsPassing(t *testing.T) {
 				OptionalContexts:    []string{"c4"},
 				SkipUnknownContexts: &yes,
 			},
+			availableContexts: []string{"c1", "c2", "c3", "c4", "c5"},
 		},
 	}
 
@@ -2830,6 +2849,7 @@ func TestIsPassing(t *testing.T) {
 				combinedStatus: tc.combinedContexts,
 				expectedSHA:    headSHA}
 			log := logrus.WithField("component", "tide")
+			hook := test.NewGlobal()
 			_, err := log.String()
 			if err != nil {
 				t.Fatalf("Failed to get log output before testing: %v", err)
@@ -2841,6 +2861,13 @@ func TestIsPassing(t *testing.T) {
 				t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
 			}
 
+			// The last entry is used as the hook captures 2 different logs.
+			// The required fields are available in the last entry and are validated.
+			logFields := hook.LastEntry().Data
+			assert.Equal(t, logFields["context_names"], tc.availableContexts)
+			assert.Equal(t, logFields["failed_context_names"], tc.failedContexts)
+			assert.Equal(t, logFields["total_context_count"], len(tc.availableContexts))
+			assert.Equal(t, logFields["failed_context_count"], len(tc.failedContexts))
 			if tc.passing {
 				c := &syncController{
 					provider:      &GitHubProvider{ghc: ghc, logger: log},

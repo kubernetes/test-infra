@@ -416,7 +416,7 @@ def generate_grid():
     # Manually expand grid coverage for GCP
     # TODO(justinsb): merge into above block when we can
     # pylint: disable=too-many-nested-blocks
-    for networking in ['kubenet', 'calico', 'cilium']: # TODO: all networking_options:
+    for networking in ['kubenet', 'calico', 'cilium', 'gce']: # TODO: all networking_options:
         for distro in ['u2004']: # TODO: all distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in [None]: # TODO: all kops_versions:
@@ -457,8 +457,6 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
 
         # A special test for IPv6 using Calico CNI on Ubuntu 22.04
-        # This will fail until the fix for systemd DHCPv6 is added
-        # https://github.com/systemd/systemd/issues/20803
         build_test(name_override="kops-aws-cni-calico-ipv6-u2204",
                    cloud="aws",
                    distro="u2204",
@@ -475,6 +473,17 @@ def generate_misc():
                    networking="calico",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
+                                '--zones=us-west-2a',
+                                ],
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
+        # A special test for IPv6 using Calico CNI with private topology
+        build_test(name_override="kops-aws-cni-calico-ipv6-private",
+                   cloud="aws",
+                   distro="deb11",
+                   networking="calico",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
                                 '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
@@ -505,6 +514,15 @@ def generate_misc():
                    networking="cilium",
                    extra_flags=['--api-loadbalancer-type=public',
                                 '--override=cluster.spec.warmPool.minSize=1'
+                                ],
+                   extra_dashboards=['kops-misc']),
+
+        # A special test for private topology
+        build_test(name_override="kops-aws-private",
+                   cloud="aws",
+                   runs_per_day=3,
+                   networking="calico",
+                   extra_flags=['--topology=private',
                                 ],
                    extra_dashboards=['kops-misc']),
 
@@ -1152,6 +1170,12 @@ def generate_presubmits_e2e():
             template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
             feature_flags=['APIServerNodes']
         ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-apiserver-nodes-dns-none",
+            cloud="aws",
+            template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver-dns-none.yaml.tmpl", # pylint: disable=line-too-long
+            feature_flags=['APIServerNodes']
+        ),
 
         presubmit_test(
             name="pull-kops-e2e-arm64",
@@ -1161,6 +1185,25 @@ def generate_presubmits_e2e():
             extra_flags=["--zones=eu-central-1a",
                          "--node-size=m6g.large",
                          "--master-size=m6g.large"],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-dns-none",
+            cloud="aws",
+            distro="u2204",
+            networking="calico",
+            extra_flags=["--dns=none"],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-nlb",
+            cloud="aws",
+            distro="u2204",
+            networking="calico",
+            extra_flags=[
+                "--api-loadbalancer-type=public",
+                "--api-loadbalancer-class=network"
+            ],
         ),
 
         presubmit_test(

@@ -462,7 +462,7 @@ presubmits:
             - --cluster=
             - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
             - --env=CLOUD_PROVIDER_FLAG=external
-            - --env=KUBE_TEST_IGNORE_CLOUDPROVIDER_TAINT=true
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --extract=local
             - --gcp-master-image=gci
             - --gcp-node-image=gci

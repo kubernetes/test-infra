@@ -19,6 +19,7 @@ package gcsupload
 import (
 	"context"
 	"fmt"
+	"io"
 	"mime"
 	"net/url"
 	"os"
@@ -106,7 +107,8 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 			} else {
 				fullBasePath = fmt.Sprintf("%s/%s", o.Bucket, jobBasePath)
 			}
-			uploadTargets[alias] = gcs.DataUploadWithMetadata(strings.NewReader(fullBasePath), map[string]string{
+			newReader := newStringReadCloser(fullBasePath)
+			uploadTargets[alias] = gcs.DataUploadWithMetadata(newReader, map[string]string{
 				"x-goog-meta-link": fullBasePath,
 			})
 		}
@@ -115,7 +117,8 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 			for _, latestBuild := range latestBuilds {
 				dir, filename := path.Split(latestBuild)
 				metadataFromFileName, writerOptions := gcs.WriterOptionsFromFileName(filename)
-				uploadTargets[path.Join(dir, metadataFromFileName)] = gcs.DataUploadWithOptions(strings.NewReader(spec.BuildID), writerOptions)
+				newReader := newStringReadCloser(spec.BuildID)
+				uploadTargets[path.Join(dir, metadataFromFileName)] = gcs.DataUploadWithOptions(newReader, writerOptions)
 			}
 		}
 	} else {
@@ -221,4 +224,10 @@ func gatherArtifacts(artifactDir, blobStoragePath, subDir string, uploadTargets 
 // escapeFileName escapes a file name to meet https://cloud.google.com/storage/docs/naming-objects requirements
 func escapeFileName(filename string) string {
 	return strings.ReplaceAll(filename, "#", "%23")
+}
+
+func newStringReadCloser(s string) gcs.ReaderFunc {
+	return func() (io.ReadCloser, error) {
+		return io.NopCloser(strings.NewReader(s)), nil
+	}
 }

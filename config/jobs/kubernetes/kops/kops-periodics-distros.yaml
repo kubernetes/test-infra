@@ -95,7 +95,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20220911-1135' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20221020-1174' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -351,7 +351,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221018' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -415,7 +415,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20221018' --channel=alpha --networking=kubenet --container-runtime=containerd --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20221101.1' --channel=alpha --networking=kubenet --container-runtime=containerd --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -479,7 +479,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20220912.1-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20221004.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -671,7 +671,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3346.1.0-hvm' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3374.1.1-hvm' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --validation-wait=20m \

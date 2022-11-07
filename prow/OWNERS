@@ -7,12 +7,14 @@ reviewers:
   - michelle192837
   - petr-muller
   - stevekuznetsov
+  - droslean
 approvers:
   - alvaroaleman
   - cblecker
   - cjwagner
   - petr-muller
   - stevekuznetsov
+  - droslean
 emeritus_approvers:
   - spxtr # 2018-09-17
   - fejta

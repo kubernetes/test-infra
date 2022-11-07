@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -56,7 +57,7 @@ func (o Options) Run() error {
 		return fmt.Errorf("could not marshal starting data: %w", err)
 	}
 
-	uploadTargets[prowv1.StartedStatusFile] = gcs.DataUpload(bytes.NewReader(startedData))
+	uploadTargets[prowv1.StartedStatusFile] = gcs.DataUpload(newBytesReadCloser(startedData))
 
 	ctx := context.Background()
 	if err := o.Options.Run(ctx, spec, uploadTargets); err != nil {
@@ -93,11 +94,11 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 		failed = failed || record.Failed
 
 	}
-	uploadTargets["clone-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
+	uploadTargets["clone-log.txt"] = gcs.DataUpload(newBytesReadCloser(cloneLog.Bytes()))
 	uploadTargets[prowv1.CloneRecordFile] = gcs.FileUpload(logfile)
 
 	if failed {
-		uploadTargets["build-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
+		uploadTargets["build-log.txt"] = gcs.DataUpload(newBytesReadCloser(cloneLog.Bytes()))
 
 		passed := !failed
 		now := time.Now().Unix()
@@ -110,7 +111,13 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 		if err != nil {
 			return true, cloneRecords, fmt.Errorf("could not marshal finishing data: %w", err)
 		}
-		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewReader(finishedData))
+		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(newBytesReadCloser(finishedData))
 	}
 	return failed, cloneRecords, nil
+}
+
+func newBytesReadCloser(data []byte) gcs.ReaderFunc {
+	return func() (io.ReadCloser, error) {
+		return io.NopCloser(bytes.NewReader(data)), nil
+	}
 }

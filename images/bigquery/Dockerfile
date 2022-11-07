@@ -24,11 +24,10 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 ARG CLOUD_SDK_VERSION=390.0.0
-ARG INFLUXDB_VERSION=5.2.2
 ARG BIGQUERY_LIBRARY_VERSION=0.26.0
 ARG RUAMEL_VERSION=0.16
 
-RUN pip3 install --no-cache-dir influxdb=={INFLUXDB_VERSION} google-cloud-bigquery==${BIGQUERY_LIBRARY_VERSION} ruamel.yaml==${RUAMEL_VERSION}}
+RUN pip3 install --no-cache-dir google-cloud-bigquery==${BIGQUERY_LIBRARY_VERSION} ruamel.yaml==${RUAMEL_VERSION}}
 
 ENV PATH=/google-cloud-sdk/bin:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1

@@ -710,7 +710,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221020-96ba49123f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         command:
         - runner.sh
         args:

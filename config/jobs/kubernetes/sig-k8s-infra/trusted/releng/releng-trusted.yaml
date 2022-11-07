@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.6-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.8-1
         command:
         - /kpromo
         args:
@@ -40,18 +40,14 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.6-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.8-1
         command:
         - /kpromo
         args:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --use-prow-manifest-diff
         - --confirm
-        # TODO: these are *not* threads 🤷‍♂️
-        # https://www.geeksforgeeks.org/golang-goroutine-vs-thread/
-        #
-        # this should probably be a multiple of cores below
-        - --threads=28
         env:
         - name: GOMAXPROCS
           value: "7"
@@ -110,7 +106,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.6-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.8-1
       command:
       - /kpromo
       args:
@@ -148,18 +144,13 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.6-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.8-1
       command:
       - /kpromo
       args:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - --confirm
-      # TODO: these are *not* threads 🤷‍♂️
-      # https://www.geeksforgeeks.org/golang-goroutine-vs-thread/
-      #
-      # this should probably be a multiple of cores below
-      - --threads=28
       env:
       - name: GOMAXPROCS
         value: "7"

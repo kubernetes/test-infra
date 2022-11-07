@@ -457,6 +457,8 @@ func contextsToStrings(contexts []Context) []string {
 	for _, c := range contexts {
 		names = append(names, string(c.Context))
 	}
+        // Sorting names improves readability of logs and simplifies unit tests.
+	sort.Strings(names)
 	return names
 }
 
@@ -803,7 +805,7 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Ent
 		"total_context_count":  len(contexts),
 		"context_names":        contextsToStrings(contexts),
 		"failed_context_count": len(failed),
-		"failed_context_names": contextsToStrings(contexts),
+		"failed_context_names": contextsToStrings(failed),
 	}).Debug("Filtered out failed contexts")
 	return failed
 }
@@ -1382,15 +1384,25 @@ func (c *syncController) nonFailedBatchForJobAndRefsExists(jobName string, refs 
 }
 
 func (c *syncController) takeAction(sp subpool, batchPending, successes, pendings, missings, batchMerges []CodeReviewCommon, missingSerialTests map[int][]config.Presubmit) (Action, []CodeReviewCommon, error) {
+	var merged []CodeReviewCommon
+	var err error
+	defer func() {
+		if len(merged) > 0 {
+			tideMetrics.merges.WithLabelValues(sp.org, sp.repo, sp.branch).Observe(float64(len(merged)))
+		}
+	}()
+
 	// Merge the batch!
 	if len(batchMerges) > 0 {
-		return MergeBatch, batchMerges, c.provider.mergePRs(sp, batchMerges, c.statusUpdate.dontUpdateStatus)
+		merged, err = c.provider.mergePRs(sp, batchMerges, c.statusUpdate.dontUpdateStatus)
+		return MergeBatch, batchMerges, err
 	}
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
 		if ok, pr := pickHighestPriorityPR(sp.log, successes, sp.cc, c.isPassingTests, c.config().Tide.Priority); ok {
-			return Merge, []CodeReviewCommon{pr}, c.provider.mergePRs(sp, []CodeReviewCommon{pr}, c.statusUpdate.dontUpdateStatus)
+			merged, err = c.provider.mergePRs(sp, []CodeReviewCommon{pr}, c.statusUpdate.dontUpdateStatus)
+			return Merge, []CodeReviewCommon{pr}, err
 		}
 	}
 	// If no presubmits are configured, just wait.
@@ -1524,7 +1536,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 			continue
 		}
 		filteredPRs = append(filteredPRs, pr)
-		log.WithField("num_possible_presubmit", len(presubmitsForPull)).Debug("Found possible preseubmits")
+		log.WithField("num_possible_presubmit", len(presubmitsForPull)).Debug("Found possible presubmits")
 
 		for _, ps := range presubmitsForPull {
 			if !ps.ContextRequired() {
