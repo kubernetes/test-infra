@@ -504,6 +504,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
       - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci
