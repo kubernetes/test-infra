@@ -109,7 +109,7 @@ def build_test(cloud='aws',
         suffix += "-k" + k8s_version.replace("1.", "")
     if kops_version:
         suffix += "-ko" + kops_version.replace("1.", "")
-    if container_runtime:
+    if container_runtime and container_runtime != "containerd":
         suffix += "-" + container_runtime
 
     tab = name_override or (f"kops-grid{suffix}")
