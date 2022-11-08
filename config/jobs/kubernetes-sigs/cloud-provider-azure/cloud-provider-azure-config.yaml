@@ -686,7 +686,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-master-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss using a stable capz release."
-- cron: '0 0/6 * * *'  # Run at 18:00 UTC everyday
+- cron: '0 0/6 * * *'  # Run every 6 hours everyday
   # cloud-provider-azure-e2e-ccm-vmssflex-capz runs Azure specific tests periodically on vmss flex.
   name: cloud-provider-azure-e2e-ccm-vmssflex-capz
   decorate: true
