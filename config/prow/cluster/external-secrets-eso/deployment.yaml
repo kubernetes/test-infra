@@ -1,0 +1,36 @@
+---
+# Source: external-secrets/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-secrets-eso
+  namespace: "default"
+  labels:
+    helm.sh/chart: external-secrets-0.6.1
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/instance: external-secrets-eso
+    app.kubernetes.io/version: "v0.6.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 0 # TODO(chaodaiG): switch to 1 once KES is deprecated.
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: external-secrets
+      app.kubernetes.io/instance: external-secrets-eso
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: external-secrets
+        app.kubernetes.io/instance: external-secrets-eso
+    spec:
+      serviceAccountName: kubernetes-external-secrets-sa
+      containers:
+        - name: external-secrets
+          image: "ghcr.io/external-secrets/external-secrets:v0.6.1"
+          imagePullPolicy: IfNotPresent
+          args:
+          - --concurrent=1
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: metrics

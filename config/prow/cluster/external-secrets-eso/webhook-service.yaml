@@ -1,0 +1,24 @@
+---
+# Source: external-secrets/templates/webhook-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-secrets-eso-webhook
+  namespace: "default"
+  labels:
+    helm.sh/chart: external-secrets-0.6.1
+    app.kubernetes.io/name: external-secrets-webhook
+    app.kubernetes.io/instance: external-secrets-eso
+    app.kubernetes.io/version: "v0.6.1"
+    app.kubernetes.io/managed-by: Helm
+    external-secrets.io/component: webhook
+spec:
+  type: ClusterIP
+  ports:
+  - port: 443
+    targetPort: 10250
+    protocol: TCP
+    name: webhook
+  selector:
+    app.kubernetes.io/name: external-secrets-webhook
+    app.kubernetes.io/instance: external-secrets-eso

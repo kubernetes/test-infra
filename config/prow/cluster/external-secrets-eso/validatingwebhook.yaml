@@ -1,0 +1,65 @@
+---
+# Source: external-secrets/templates/validatingwebhook.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: secretstore-validate
+  labels:
+    external-secrets.io/component: webhook
+webhooks:
+- name: "validate.secretstore.external-secrets.io"
+  rules:
+  - apiGroups:   ["external-secrets.io"]
+    apiVersions: ["v1beta1"]
+    operations:  ["CREATE", "UPDATE", "DELETE"]
+    resources:   ["secretstores"]
+    scope:       "Namespaced"
+  clientConfig:
+    service:
+      namespace: "default"
+      name: external-secrets-eso-webhook
+      path: /validate-external-secrets-io-v1beta1-secretstore
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  timeoutSeconds: 5
+
+- name: "validate.clustersecretstore.external-secrets.io"
+  rules:
+  - apiGroups:   ["external-secrets.io"]
+    apiVersions: ["v1beta1"]
+    operations:  ["CREATE", "UPDATE", "DELETE"]
+    resources:   ["clustersecretstores"]
+    scope:       "Cluster"
+  clientConfig:
+    service:
+      namespace: "default"
+      name: external-secrets-eso-webhook
+      path: /validate-external-secrets-io-v1beta1-clustersecretstore
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  timeoutSeconds: 5
+---
+# Source: external-secrets/templates/validatingwebhook.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: externalsecret-validate
+  labels:
+    external-secrets.io/component: webhook
+webhooks:
+- name: "validate.externalsecret.external-secrets.io"
+  rules:
+  - apiGroups:   ["external-secrets.io"]
+    apiVersions: ["v1beta1"]
+    operations:  ["CREATE", "UPDATE", "DELETE"]
+    resources:   ["externalsecrets"]
+    scope:       "Namespaced"
+  clientConfig:
+    service:
+      namespace: "default"
+      name: external-secrets-eso-webhook
+      path: /validate-external-secrets-io-v1beta1-externalsecret
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  timeoutSeconds: 5
+  failurePolicy: Fail

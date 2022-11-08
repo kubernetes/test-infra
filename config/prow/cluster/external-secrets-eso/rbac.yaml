@@ -1,0 +1,225 @@
+---
+# Source: external-secrets/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-secrets-eso-controller
+  labels:
+    helm.sh/chart: external-secrets-0.6.1
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/instance: external-secrets-eso
+    app.kubernetes.io/version: "v0.6.1"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups:
+    - "external-secrets.io"
+    resources:
+    - "secretstores"
+    - "clustersecretstores"
+    - "externalsecrets"
+    - "clusterexternalsecrets"
+    verbs:
+    - "get"
+    - "list"
+    - "watch"
+  - apiGroups:
+    - "external-secrets.io"
+    resources:
+    - "externalsecrets"
+    - "externalsecrets/status"
+    - "externalsecrets/finalizers"
+    - "secretstores"
+    - "secretstores/status"
+    - "secretstores/finalizers"
+    - "clustersecretstores"
+    - "clustersecretstores/status"
+    - "clustersecretstores/finalizers"
+    - "clusterexternalsecrets"
+    - "clusterexternalsecrets/status"
+    - "clusterexternalsecrets/finalizers"
+    verbs:
+    - "update"
+    - "patch"
+  - apiGroups:
+    - ""
+    resources:
+    - "serviceaccounts"
+    - "namespaces"
+    verbs:
+    - "get"
+    - "list"
+    - "watch"
+  - apiGroups:
+    - ""
+    resources:
+    - "configmaps"
+    verbs:
+    - "get"
+    - "list"
+    - "watch"
+  - apiGroups:
+    - ""
+    resources:
+    - "secrets"
+    verbs:
+    - "get"
+    - "list"
+    - "watch"
+    - "create"
+    - "update"
+    - "delete"
+    - "patch"
+  - apiGroups:
+    - ""
+    resources:
+    - "serviceaccounts/token"
+    verbs:
+    - "create"
+  - apiGroups:
+    - ""
+    resources:
+    - "events"
+    verbs:
+    - "create"
+    - "patch"
+  - apiGroups:
+    - "external-secrets.io"
+    resources:
+    - "externalsecrets"
+    verbs:
+    - "create"
+    - "update"
+    - "delete"
+---
+# Source: external-secrets/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-secrets-eso-view
+  labels:
+    helm.sh/chart: external-secrets-0.6.1
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/instance: external-secrets-eso
+    app.kubernetes.io/version: "v0.6.1"
+    app.kubernetes.io/managed-by: Helm
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+  - apiGroups:
+      - "external-secrets.io"
+    resources:
+      - "externalsecrets"
+      - "secretstores"
+      - "clustersecretstores"
+    verbs:
+      - "get"
+      - "watch"
+      - "list"
+---
+# Source: external-secrets/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-secrets-eso-edit
+  labels:
+    helm.sh/chart: external-secrets-0.6.1
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/instance: external-secrets-eso
+    app.kubernetes.io/version: "v0.6.1"
+    app.kubernetes.io/managed-by: Helm
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+  - apiGroups:
+      - "external-secrets.io"
+    resources:
+      - "externalsecrets"
+      - "secretstores"
+      - "clustersecretstores"
+    verbs:
+      - "create"
+      - "delete"
+      - "deletecollection"
+      - "patch"
+      - "update"
+---
+# Source: external-secrets/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-secrets-eso-controller
+  labels:
+    helm.sh/chart: external-secrets-0.6.1
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/instance: external-secrets-eso
+    app.kubernetes.io/version: "v0.6.1"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-secrets-eso-controller
+subjects:
+  - name: external-secrets-eso
+    namespace: "default"
+    kind: ServiceAccount
+---
+# Source: external-secrets/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: external-secrets-eso-leaderelection
+  namespace: "default"
+  labels:
+    helm.sh/chart: external-secrets-0.6.1
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/instance: external-secrets-eso
+    app.kubernetes.io/version: "v0.6.1"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - "configmaps"
+    resourceNames:
+    - "external-secrets-controller"
+    verbs:
+    - "get"
+    - "update"
+    - "patch"
+  - apiGroups:
+    - ""
+    resources:
+    - "configmaps"
+    verbs:
+    - "create"
+  - apiGroups:
+    - "coordination.k8s.io"
+    resources:
+    - "leases"
+    verbs:
+    - "get"
+    - "create"
+    - "update"
+    - "patch"
+---
+# Source: external-secrets/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: external-secrets-eso-leaderelection
+  namespace: "default"
+  labels:
+    helm.sh/chart: external-secrets-0.6.1
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/instance: external-secrets-eso
+    app.kubernetes.io/version: "v0.6.1"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: external-secrets-eso-leaderelection
+subjects:
+  - kind: ServiceAccount
+    name: external-secrets-eso
+    namespace: "default"
