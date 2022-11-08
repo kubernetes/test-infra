@@ -16,6 +16,10 @@ test_groups:
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-main-e2e
   - name: pull-ci-kcp-dev-kcp-main-e2e-multiple-runs
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-main-e2e-multiple-runs
+  - name: pull-ci-kcp-dev-kcp-main-e2e-shared
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-main-e2e-shared
+  - name: pull-ci-kcp-dev-kcp-main-e2e-sharded
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-main-e2e-sharded
   - name: periodic-ci-kcp-dev-kcp-main-e2e
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-main-e2e-periodic
   - name: periodic-ci-kcp-dev-kcp-main-e2e-sharded
@@ -24,7 +28,7 @@ test_groups:
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-main-e2e-shared-periodic
   - name: periodic-ci-kcp-dev-kcp-main-e2e-multiple-runs
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-main-e2e-multiple-runs-periodic
-# release-0.7  
+# release-0.7
   - name: pull-ci-kcp-dev-kcp-release-0.7-lint
     gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.7-lint
   - name: pull-ci-kcp-dev-kcp-release-0.7-codegen
@@ -143,6 +147,18 @@ dashboards:
           url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
       - name: kcp-main-pr-e2e-multiple-runs
         test_group_name: pull-ci-kcp-dev-kcp-main-e2e-multiple-runs
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+      - name: kcp-main-pr-e2e-shared
+        test_group_name: pull-ci-kcp-dev-kcp-main-e2e-shared
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+      - name: kcp-main-pr-e2e-sharded
+        test_group_name: pull-ci-kcp-dev-kcp-main-e2e-sharded
         open_test_template:
           url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
         results_url_template:
