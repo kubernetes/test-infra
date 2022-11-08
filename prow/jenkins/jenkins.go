@@ -421,15 +421,21 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 
 // getJobName generates the correct job name for this job type
 func getJobName(spec *prowapi.ProwJobSpec) string {
-	if spec.JenkinsSpec != nil && spec.JenkinsSpec.GitHubBranchSourceJob && spec.Refs != nil {
-		if len(spec.Refs.Pulls) > 0 {
-			return fmt.Sprintf("%s/view/change-requests/job/PR-%d", spec.Job, spec.Refs.Pulls[0].Number)
-		}
-
-		return fmt.Sprintf("%s/job/%s", spec.Job, spec.Refs.BaseRef)
+	jobName := spec.Job
+	if strings.Contains(jobName, "/") {
+		jobParts := strings.Split(strings.Trim(jobName, "/"), "/")
+		jobName = strings.Join(jobParts, "/job/")
 	}
 
-	return spec.Job
+	if spec.JenkinsSpec != nil && spec.JenkinsSpec.GitHubBranchSourceJob && spec.Refs != nil {
+		if len(spec.Refs.Pulls) > 0 {
+			return fmt.Sprintf("%s/view/change-requests/job/PR-%d", jobName, spec.Refs.Pulls[0].Number)
+		}
+
+		return fmt.Sprintf("%s/job/%s", jobName, spec.Refs.BaseRef)
+	}
+
+	return jobName
 }
 
 // getJobInfoPath builds an approriate path to use for this Jenkins Job to get the job information

@@ -387,6 +387,27 @@ func TestGetJobName(t *testing.T) {
 			output: "my-jenkins-job-name/view/change-requests/job/PR-123",
 		},
 		{
+			name: "GitHub Branch Source based PR job in folder",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "folder1/folder2/my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "folder1/job/folder2/job/my-jenkins-job-name/view/change-requests/job/PR-123",
+		},
+		{
 			name: "GitHub Branch Source based branch job",
 			input: &prowapi.ProwJobSpec{
 				Agent: "jenkins",
@@ -401,6 +422,22 @@ func TestGetJobName(t *testing.T) {
 				},
 			},
 			output: "my-jenkins-job-name/job/master",
+		},
+		{
+			name: "GitHub Branch Source based branch job in folder",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Type:  prowapi.PostsubmitJob,
+				Job:   "folder1/folder2/my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+				},
+			},
+			output: "folder1/job/folder2/job/my-jenkins-job-name/job/master",
 		},
 		{
 			name: "Static Jenkins job",
@@ -419,6 +456,24 @@ func TestGetJobName(t *testing.T) {
 				},
 			},
 			output: "my-k8s-job-name",
+		},
+		{
+			name: "Static Jenkins job in folder",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "folder1/folder2/my-k8s-job-name",
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "folder1/job/folder2/job/my-k8s-job-name",
 		},
 	}
 
