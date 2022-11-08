@@ -399,6 +399,7 @@ periodics:
       - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
       - --env=DEPLOY_GCI_DRIVER=false
       - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
+      - --env=KUBEPROXY_TEST_ARGS=--profiling --metrics-bind-address=0.0.0.0
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -1389,6 +1390,7 @@ presubmits:
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --env=DEPLOY_GCI_DRIVER=false
         - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
+        - --env=KUBEPROXY_TEST_ARGS=--profiling --metrics-bind-address=0.0.0.0
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2

@@ -164,7 +164,8 @@ presets:
     value: "--kube-reserved=cpu=1050m"
   - name: KUBEPROXY_TEST_ARGS
     # TODO(#74011): Remove metrics-bind-address if the default is set.
-    value: "--profiling --metrics-bind-address=0.0.0.0"
+    # FeatureGate added in #110268 v1.26
+    value: "--profiling --metrics-bind-address=0.0.0.0 --feature-gates=MinimizeIPTablesRestore=true"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity.
