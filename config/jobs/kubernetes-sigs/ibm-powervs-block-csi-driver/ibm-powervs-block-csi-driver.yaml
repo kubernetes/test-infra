@@ -52,7 +52,7 @@ presubmits:
        description: Unit tests in ibm-powervs-block-csi-driver repo.
      spec:
        containers:
-       - image: golang:1.18
+       - image: golang:1.19
          command:
          - make
          args:
@@ -68,7 +68,7 @@ presubmits:
        description: ibm-powervs-block-csi-driver basic code verification.
      spec:
        containers:
-       - image: golang:1.18
+       - image: golang:1.19
          command:
          - make
          args:
