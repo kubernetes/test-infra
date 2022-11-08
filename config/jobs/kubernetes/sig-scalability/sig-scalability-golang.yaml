@@ -91,8 +91,8 @@ periodics:
       args:
       - --cluster=gce-golang
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
-      - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
-      - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
+      - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
+      - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=DEPLOY_GCI_DRIVER=false
       - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
       - --extract=gs://k8s-infra-scale-golang-builds/ci/latest-1.23.txt
