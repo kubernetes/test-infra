@@ -15,7 +15,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221107-33c989e684-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
           command:
             - make
             - test
@@ -82,7 +82,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221107-33c989e684-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-go-canary
           command:
             - make
             - test
@@ -117,7 +117,7 @@ periodics:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221107-33c989e684-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
           command:
             - make
             - test
@@ -146,7 +146,7 @@ periodics:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221107-33c989e684-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
           command:
             - runner.sh
             - bash
