@@ -324,15 +324,16 @@ def download_junit(db, threads, client_class):
         pool.join()
 
 
-def main(db, jobs_dirs, threads, get_junit, build_limit, client_class=GCSClient):
+def main(db, jobs_dirs, threads, get_junit, build_limit, skip_gcs, client_class=GCSClient):
     """Collect test info in matching jobs."""
     setup_logging()
-    get_all_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
-                   threads, client_class, build_limit)
-    for bucket, metadata in jobs_dirs.items():
-        if not bucket.endswith('/'):
-            bucket += '/'
-        get_all_builds(db, bucket, metadata, threads, client_class, build_limit)
+    if not skip_gcs:
+        get_all_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
+                    threads, client_class, build_limit)
+        for bucket, metadata in jobs_dirs.items():
+            if not bucket.endswith('/'):
+                bucket += '/'
+            get_all_builds(db, bucket, metadata, threads, client_class, build_limit)
     if get_junit:
         download_junit(db, threads, client_class)
 
@@ -368,6 +369,11 @@ def get_options(argv):
         help='Download JUnit results from each build'
     )
     parser.add_argument(
+        '--skip-gcs',
+        action='store_true',
+        help='Scrape GCS for latest builds'
+    )
+    parser.add_argument(
         '--buildlimit',
         help='maximum number of runs within each job to pull, \
          all jobs will be collected if unset or 0',
@@ -386,4 +392,5 @@ if __name__ == '__main__':
         OPTIONS.threads,
         OPTIONS.junit,
         OPTIONS.buildlimit,
+        OPTIONS.skip_gcs,
         )
