@@ -1581,7 +1581,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
 
-  - name: pull-kubernetes-e2e-inplace-pod-resize-containerd-main
+  - name: pull-kubernetes-e2e-inplace-pod-resize-containerd-main-v2
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
@@ -1591,7 +1591,8 @@ presubmits:
       - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-kubelet-gce-cluster-e2e-inplace-pod-resize-containerd-main
+      testgrid-tab-name: pr-kubelet-gce-cluster-e2e-inplace-pod-resize-containerd-main-v2
+      description: Executes inplace pod resize e2e tests with containerd/main and cgroupv2
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1610,8 +1611,10 @@ presubmits:
           - -- # end bootstrap args, scenario args below
           - --check-leaked-resources
           - --cluster=
-          - --env=ENABLE_AUTH_PROVIDER_GCP=true
           - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
+          - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+          - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+          - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
           - --extract=ci/latest
           - --gcp-zone=us-west1-b
           - --gcp-node-image=gci
