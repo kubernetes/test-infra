@@ -77,7 +77,7 @@ presubmits:
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
-  - name: pull-containerd-release-1.5-node-e2e
+  - name: pull-containerd-node-e2e-1-5
     always_run: true
     max_concurrency: 8
     decorate: true
@@ -96,14 +96,14 @@ presubmits:
       path_alias: k8s.io/test-infra
     annotations:
       testgrid-dashboards: sig-node-containerd
-      testgrid-tab-name: pull-containerd-release-1.5-node-e2e
+      testgrid-tab-name: pull-containerd-node-e2e-1-5
       description: run node e2e tests
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - name: pull-containerd-node-e2e
+      - name: pull-containerd-node-e2e-1-5
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
