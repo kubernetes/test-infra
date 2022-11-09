@@ -240,11 +240,11 @@ def get_all_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
     """
     gcs = client_class(jobs_dir, metadata)
 
-    logging.info(f'Loading builds from {jobs_dir}')
+    logging.info('Loading builds from %s', jobs_dir)
     sys.stdout.flush()
 
     builds_have = db.get_existing_builds(jobs_dir)
-    logging.info(f'already have {len(builds_have)} builds')
+    logging.info('already have %d builds', len(builds_have))
     sys.stdout.flush()
 
     jobs_and_builds = gcs.get_builds(builds_have, build_limit)
@@ -264,7 +264,7 @@ def get_all_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
         for n, (build_dir, started, finished) in enumerate(builds_iterator):
             if not build_dir:
                 continue # skip builds that raised exceptions
-            logging.info(f'inserting build: {build_dir}')
+            logging.info('inserting build: %s', build_dir)
             if started or finished:
                 db.insert_build(build_dir, started, finished)
             if n % 200 == 0:
@@ -329,7 +329,7 @@ def main(db, jobs_dirs, threads, get_junit, build_limit, skip_gcs, client_class=
     setup_logging()
     if not skip_gcs:
         get_all_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
-                    threads, client_class, build_limit)
+                       threads, client_class, build_limit)
         for bucket, metadata in jobs_dirs.items():
             if not bucket.endswith('/'):
                 bucket += '/'
