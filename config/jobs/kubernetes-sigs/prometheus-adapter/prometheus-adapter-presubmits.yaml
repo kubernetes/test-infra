@@ -28,3 +28,30 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-test
+  - name: pull-prometheus-adapter-test-e2e
+    always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: sigs.k8s.io/prometheus-adapter
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
+        command:
+        # generic runner script, handles DIND, etc.
+        - runner.sh
+        env:
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-instrumentation-prometheus-adapter
+      testgrid-tab-name: pr-test-e2e
