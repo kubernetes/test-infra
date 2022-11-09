@@ -737,7 +737,7 @@ periodics:
     preset-e2e-gce-windows-containerd: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-windows-repo-list-master: "true"
+    preset-windows-repo-list: "true"
   name: ci-kubernetes-e2e-windows-containerd-gce-1-22
   spec:
     containers:
@@ -793,7 +793,7 @@ periodics:
     preset-e2e-gce-windows: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-windows-repo-list-master: "true"
+    preset-windows-repo-list: "true"
   name: ci-kubernetes-e2e-windows-gce-1-22
   spec:
     containers:

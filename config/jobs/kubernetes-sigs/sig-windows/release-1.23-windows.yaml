@@ -19,7 +19,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     preset-windows-private-registry-cred: "true"
-    preset-windows-repo-list-master: "true"
+    preset-windows-repo-list: "true"
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd-1-23
   spec:
     containers:
@@ -63,7 +63,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
+    preset-windows-repo-list: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
   extra_refs:
@@ -117,7 +117,7 @@ periodics:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
+    preset-windows-repo-list: "true"
     preset-windows-private-registry-cred: "true"
     preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
