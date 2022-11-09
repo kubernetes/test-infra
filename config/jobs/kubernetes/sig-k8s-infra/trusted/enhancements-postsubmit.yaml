@@ -8,7 +8,7 @@ postsubmits:
       max_concurrency: 1
       spec:
         containers:
-        - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221028-0729c6470f
+        - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
           command:
             - sh
             - "-c"
