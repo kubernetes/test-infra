@@ -82,7 +82,8 @@ func run(deploy deployer, o options) error {
 
 	// Ensures that the cleanup/down action is performed exactly once.
 	var (
-		downDone = false
+		downDone      = false
+		kubemarkUpErr error
 	)
 
 	var (
@@ -97,6 +98,18 @@ func run(deploy deployer, o options) error {
 			beforeResources, err = listResources()
 			return err
 		}))
+	}
+
+	if o.postTestCmd != "" {
+		// Guaranteed to run after the entire test, including teardown.
+		defer control.XMLWrap(&suite, "Deferred post-test command", func() error {
+			if o.test || (kubemarkUpErr == nil && o.testCmd != "") {
+				cmdLineTokenized := strings.Fields(os.ExpandEnv(o.postTestCmd))
+				return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
+			}
+			return nil
+
+		})
 	}
 
 	if o.up {
@@ -208,7 +221,6 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
-	var kubemarkUpErr error
 	if o.kubemark {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
 			if kubemarkUpErr = kubemarkUp(dump, o, deploy); kubemarkUpErr != nil {
@@ -310,13 +322,6 @@ func run(deploy deployer, o options) error {
 			}
 			log.Printf("Set %s version to %s", o.publish, string(v))
 			return gcsWrite(o.publish, v)
-		}))
-	}
-
-	if o.postTestCmd != "" && (o.test || (kubemarkUpErr == nil && o.testCmd != "")) {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "post-test command", func() error {
-			cmdLineTokenized := strings.Fields(os.ExpandEnv(o.postTestCmd))
-			return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
 		}))
 	}
 
