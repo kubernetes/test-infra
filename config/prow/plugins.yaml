@@ -970,6 +970,7 @@ plugins:
   kubernetes/k8s.io:
     plugins:
     - milestone
+    - override
 
   kubernetes/kops:
     plugins:
