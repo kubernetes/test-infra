@@ -223,7 +223,7 @@ periodics:
       - --
       - --release=kubernetes-release-dev
       - --allow-dup
-      - --extra-version-markers=k8s-stable3
+      - --extra-version-markers=k8s-stable4
       - --registry=gcr.io/kubernetes-ci-images
       image: gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
       name: ""
@@ -265,7 +265,7 @@ periodics:
       - --allow-dup
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-stable3
+      - --extra-version-markers=k8s-stable4
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
       name: ""
