@@ -56,6 +56,9 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest-1.25
       - --extract-ci-bucket=k8s-release-dev
+      - --env=KUBE_NODE_OS_DISTRIBUTION=gci
+      - --env=KUBE_GCE_NODE_IMAGE=cos-85-13310-1041-9
+      - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
