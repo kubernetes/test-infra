@@ -2106,12 +2106,29 @@ func (c *Config) validateComponentConfig() error {
 	return nil
 }
 
-var jobNameRegex = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
+var (
+	jobNameRegex        = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
+	jobNameRegexJenkins = regexp.MustCompile(`^[A-Za-z0-9-._]([A-Za-z0-9-._/]*[A-Za-z0-9-_])?$`)
+)
+
+func validateJobName(v JobBase) error {
+	nameRegex := jobNameRegex
+	if v.Agent == string(prowapi.JenkinsAgent) {
+		nameRegex = jobNameRegexJenkins
+	}
+
+	if !nameRegex.MatchString(v.Name) {
+		return fmt.Errorf("name: must match regex %q", nameRegex.String())
+	}
+
+	return nil
+}
 
 func (c Config) validateJobBase(v JobBase, jobType prowapi.ProwJobType) error {
-	if !jobNameRegex.MatchString(v.Name) {
-		return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
+	if err := validateJobName(v); err != nil {
+		return err
 	}
+
 	// Ensure max_concurrency is non-negative.
 	if v.MaxConcurrency < 0 {
 		return fmt.Errorf("max_concurrency: %d must be a non-negative number", v.MaxConcurrency)
