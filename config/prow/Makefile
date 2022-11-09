@@ -32,6 +32,9 @@ update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run=client -o yaml | kubectl replace configmap plugins -f -
 
 deploy-prow: get-cluster-credentials
+	kubectl apply -f ./cluster/external-secrets-eso/crds/
+	kubectl apply -f ./cluster/external-secrets-eso/
+
 	kubectl apply --server-side=true -f ./cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
 	kubectl apply -f ./cluster/
 
