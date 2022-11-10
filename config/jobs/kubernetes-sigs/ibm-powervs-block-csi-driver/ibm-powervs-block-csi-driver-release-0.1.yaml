@@ -1,6 +1,6 @@
 presubmits:
    kubernetes-sigs/ibm-powervs-block-csi-driver:
-   - name: pull-ibm-powervs-block-csi-driver-build
+   - name: pull-ibm-powervs-block-csi-driver-build-test-release-0-1
      always_run: true
      decorate: true
      labels:
@@ -8,14 +8,14 @@ presubmits:
      path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
      annotations:
        testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
-       testgrid-tab-name: build
+       testgrid-tab-name: build-test-release-0-1
        description: Build test in ibm-powervs-block-csi-driver repo.
      branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.1
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221107-33c989e684-1.23
          command:
          - runner.sh
          args:
@@ -24,7 +24,7 @@ presubmits:
          securityContext:
            privileged: true
 
-   - name: pull-ibm-powervs-block-csi-driver-image-build
+   - name: pull-ibm-powervs-block-csi-driver-image-build-test-release-0-1
      always_run: true
      decorate: true
      labels:
@@ -32,14 +32,14 @@ presubmits:
      path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
      annotations:
        testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
-       testgrid-tab-name: image-build
+       testgrid-tab-name: image-build-test-release-0-1
        description: Build image test in ibm-powervs-block-csi-driver repo.
      branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.1
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221107-33c989e684-1.23
          command:
          - runner.sh
          args:
@@ -48,39 +48,39 @@ presubmits:
          securityContext:
            privileged: true
 
-   - name: pull-ibm-powervs-block-csi-driver-unit
+   - name: pull-ibm-powervs-block-csi-driver-unit-test-release-0-1
      always_run: true
      decorate: true
      path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
      annotations:
        testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
-       testgrid-tab-name: unit
+       testgrid-tab-name: unit-test-release-0-1
        description: Unit tests in ibm-powervs-block-csi-driver repo.
      branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.1
      spec:
        containers:
-       - image: golang:1.19
+       - image: golang:1.17
          command:
          - make
          args:
          - test
 
-   - name: pull-ibm-powervs-block-csi-driver-verify
+   - name: pull-ibm-powervs-block-csi-driver-verify-test-release-0-1
      always_run: true
      decorate: true
      path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
      annotations:
        testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
-       testgrid-tab-name: verify
+       testgrid-tab-name: verify-test-release-0-1
        description: ibm-powervs-block-csi-driver basic code verification.
      branches:
       # The script this job runs is not in all branches.
-      - ^main$
+      - ^release-0.1
      spec:
        containers:
-       - image: golang:1.19
+       - image: golang:1.17
          command:
          - make
          args:
