@@ -1933,7 +1933,15 @@ func TestValidateAdditionalProwConfigIsInOrgRepoDirectoryStructure(t *testing.T)
 	const validGlobalConfig = `
 sinker:
   exclude_clusters:
-    - default`
+    - default
+slack_reporter_configs:
+  '*':
+    channel: '#general-announcements'
+    job_states_to_report:
+      - failure
+      - error
+	  - success
+	report_template: Job {{.Spec.Job}} ended with status {{.Status.State}}.`
 	const validOrgConfig = `
 branch-protection:
   orgs:
@@ -1941,7 +1949,14 @@ branch-protection:
       protect: true
 tide:
   merge_method:
-    my-org: squash`
+    my-org: squash
+slack_reporter_configs:
+  my-org:
+    channel: '#my-org-announcements'
+    job_states_to_report:
+      - failure
+      - error
+    report_template: Job {{.Spec.Job}} needs my-org maintainers attention.`
 	const validRepoConfig = `
 branch-protection:
   orgs:
@@ -1951,7 +1966,13 @@ branch-protection:
           protect: true
 tide:
   merge_method:
-    my-org/my-repo: squash`
+    my-org/my-repo: squash
+slack_reporter_configs:
+  my-org/my-repo:
+    channel: '#my-repo-announcements'
+    job_states_to_report:
+      - failure
+    report_template: Job {{.Spec.Job}} needs my-repo maintainers attention.`
 	const validGlobalPluginsConfig = `
 blunderbuss:
   max_request_count: 2

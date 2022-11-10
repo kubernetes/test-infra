@@ -8331,7 +8331,106 @@ tide:
     - another/repo
   status_update_period: 1m0s
   sync_period: 1m0s
-`},
+`,
+		},
+		{
+			name:       "Additional slack reporter config gets merged in",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+slack_reporter_configs:
+  my-org:
+    channel: '#channel'
+    job_states_to_report:
+    - failure
+    - error
+    job_types_to_report:
+    - periodic
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+  my-org/my-repo:
+    channel: '#other-channel'
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+`,
+			},
+			expectedProwConfig: `branch-protection: {}
+config_version_sha: abc
+deck:
+  spyglass:
+    gcs_browser_prefixes:
+      '*': ""
+    gcs_browser_prefixes_by_bucket:
+      '*': ""
+    size_limit: 100000000
+  tide_update_period: 10s
+default_job_timeout: 24h0m0s
+gerrit:
+  ratelimit: 5
+  tick_interval: 1m0s
+github:
+  link_url: https://github.com
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+horologium: {}
+in_repo_config:
+  allowed_clusters:
+    '*':
+    - default
+log_level: info
+managed_webhooks:
+  auto_accept_invitation: false
+  respect_legacy_global_token: false
+plank:
+  max_goroutines: 20
+  pod_pending_timeout: 10m0s
+  pod_running_timeout: 48h0m0s
+  pod_unscheduled_timeout: 5m0s
+pod_namespace: default
+prowjob_namespace: default
+push_gateway:
+  interval: 1m0s
+  serve_metrics: false
+sinker:
+  max_pod_age: 24h0m0s
+  max_prowjob_age: 168h0m0s
+  resync_period: 1h0m0s
+  terminated_pod_ttl: 24h0m0s
+slack_reporter_configs:
+  my-org:
+    channel: '#channel'
+    job_states_to_report:
+    - failure
+    - error
+    job_types_to_report:
+    - periodic
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+  my-org/my-repo:
+    channel: '#other-channel'
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+status_error_link: https://github.com/kubernetes/test-infra/issues
+tide:
+  context_options: {}
+  max_goroutines: 20
+  status_update_period: 1m0s
+  sync_period: 1m0s
+`,
+		},
+		{
+			name:       "Additional slack reporter config with duplication errors",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+slack_reporter_configs:
+  my-org:
+    channel: '#channel'`,
+				`
+slack_reporter_configs:
+  my-org:
+    channel: '#other-channel'`,
+			},
+			expectedErrorSubstr: "config for org or repo my-org passed more than once",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -8504,6 +8603,7 @@ func TestHasConfigFor(t *testing.T) {
 			name: "Any non-empty config with empty branchprotection and Tide properties is considered global",
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.BranchProtection = BranchProtection{}
+				fuzzedConfig.SlackReporterConfigs = SlackReporterConfigs{}
 				fuzzedConfig.Tide.MergeType = nil
 				fuzzedConfig.Tide.Queries = nil
 				return fuzzedConfig, true, nil, nil
@@ -8587,6 +8687,7 @@ func TestHasConfigFor(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			for i := 0; i < 100; i++ {
 				fuzzedConfig := &ProwConfig{}
+				fuzzedConfig.SlackReporterConfigs = SlackReporterConfigs{}
 				fuzzer.Fuzz(fuzzedConfig)
 
 				fuzzedAndManipulatedConfig, expectIsGlobal, expectOrgs, expectRepos := tc.resultGenerator(fuzzedConfig)
@@ -8694,6 +8795,12 @@ func TestProwConfigMergingProperties(t *testing.T) {
 				*pc = ProwConfig{Tide: Tide{TideGitHubConfig: TideGitHubConfig{Queries: pc.Tide.Queries}}}
 			},
 		},
+		{
+			name: "SlackReporter configurations",
+			makeMergeable: func(pc *ProwConfig) {
+				*pc = ProwConfig{SlackReporterConfigs: pc.SlackReporterConfigs}
+			},
+		},
 	}
 
 	expectedProperties := []struct {
@@ -8776,6 +8883,11 @@ func TestProwConfigMergingProperties(t *testing.T) {
 				}
 				i++
 			},
+			func(config *SlackReporterConfigs, c fuzz.Continue) {
+				for _, reporter := range *config {
+					c.Fuzz(reporter)
+				}
+			},
 		)
 
 	// Do not parallelize, the PRNG used by the fuzzer is not threadsafe
@@ -8787,6 +8899,7 @@ func TestProwConfigMergingProperties(t *testing.T) {
 
 					for i := 0; i < 100; i++ {
 						fuzzedConfig := &ProwConfig{}
+						fuzzedConfig.SlackReporterConfigs = map[string]SlackReporter{}
 						fuzzer.Fuzz(fuzzedConfig)
 
 						tc.makeMergeable(fuzzedConfig)

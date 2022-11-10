@@ -1498,6 +1498,23 @@ type SlackReporter struct {
 // Use `org/repo`, `org` or `*` as key and an `SlackReporter` struct as value.
 type SlackReporterConfigs map[string]SlackReporter
 
+func (cfg SlackReporterConfigs) mergeFrom(additional *SlackReporterConfigs) error {
+	if additional == nil {
+		return nil
+	}
+
+	var errs []error
+	for orgOrRepo, slackReporter := range *additional {
+		if _, alreadyConfigured := cfg[orgOrRepo]; alreadyConfigured {
+			errs = append(errs, fmt.Errorf("config for org or repo %s passed more than once", orgOrRepo))
+			continue
+		}
+		cfg[orgOrRepo] = slackReporter
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
 func (cfg SlackReporterConfigs) GetSlackReporter(refs *prowapi.Refs) SlackReporter {
 	if refs == nil {
 		return cfg["*"]
@@ -1512,6 +1529,11 @@ func (cfg SlackReporterConfigs) GetSlackReporter(refs *prowapi.Refs) SlackReport
 	}
 
 	return cfg["*"]
+}
+
+func (cfg SlackReporterConfigs) HasGlobalConfig() bool {
+	_, exists := cfg["*"]
+	return exists
 }
 
 func (cfg *SlackReporter) DefaultAndValidate() error {
@@ -3171,19 +3193,26 @@ func StringsToOrgRepos(vs []string) []OrgRepo {
 // If you extend this, please also extend HasConfigFor accordingly.
 func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
 	emptyReference := &ProwConfig{
-		BranchProtection: additional.BranchProtection,
-		Tide:             Tide{TideGitHubConfig: TideGitHubConfig{MergeType: additional.Tide.MergeType, Queries: additional.Tide.Queries}},
+		BranchProtection:     additional.BranchProtection,
+		Tide:                 Tide{TideGitHubConfig: TideGitHubConfig{MergeType: additional.Tide.MergeType, Queries: additional.Tide.Queries}},
+		SlackReporterConfigs: additional.SlackReporterConfigs,
 	}
 
 	var errs []error
 	if diff := cmp.Diff(additional, emptyReference); diff != "" {
-		errs = append(errs, fmt.Errorf("only 'branch-protection', 'tide.merge_method' and 'tide.queries' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff))
+		errs = append(errs, fmt.Errorf("only 'branch-protection', 'slack_reporter_configs', 'tide.merge_method' and 'tide.queries' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff))
 	}
 	if err := pc.BranchProtection.merge(&additional.BranchProtection); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge branch protection config: %w", err))
 	}
 	if err := pc.Tide.mergeFrom(&additional.Tide); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge tide config: %w", err))
+	}
+
+	if pc.SlackReporterConfigs == nil {
+		pc.SlackReporterConfigs = additional.SlackReporterConfigs
+	} else if err := pc.SlackReporterConfigs.mergeFrom(&additional.SlackReporterConfigs); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge slack-reporter config: %w", err))
 	}
 
 	return utilerrors.NewAggregate(errs)
@@ -3270,16 +3299,30 @@ func (pc *ProwConfig) HasConfigFor() (global bool, orgs sets.String, repos sets.
 		repos.Insert(query.Repos...)
 	}
 
+	for orgOrRepo := range pc.SlackReporterConfigs {
+		if orgOrRepo == "*" {
+			// configuration for "*" is globally available
+			continue
+		}
+
+		if strings.Contains(orgOrRepo, "/") {
+			repos.Insert(orgOrRepo)
+		} else {
+			orgs.Insert(orgOrRepo)
+		}
+	}
+
 	return global, orgs, repos
 }
 
 func (pc *ProwConfig) hasGlobalConfig() bool {
-	if pc.BranchProtection.ProtectTested != nil || pc.BranchProtection.AllowDisabledPolicies != nil || pc.BranchProtection.AllowDisabledJobPolicies != nil || pc.BranchProtection.ProtectReposWithOptionalJobs != nil || isPolicySet(pc.BranchProtection.Policy) {
+	if pc.BranchProtection.ProtectTested != nil || pc.BranchProtection.AllowDisabledPolicies != nil || pc.BranchProtection.AllowDisabledJobPolicies != nil || pc.BranchProtection.ProtectReposWithOptionalJobs != nil || isPolicySet(pc.BranchProtection.Policy) || pc.SlackReporterConfigs.HasGlobalConfig() {
 		return true
 	}
 	emptyReference := &ProwConfig{
-		BranchProtection: pc.BranchProtection,
-		Tide:             Tide{TideGitHubConfig: TideGitHubConfig{MergeType: pc.Tide.MergeType, Queries: pc.Tide.Queries}},
+		BranchProtection:     pc.BranchProtection,
+		Tide:                 Tide{TideGitHubConfig: TideGitHubConfig{MergeType: pc.Tide.MergeType, Queries: pc.Tide.Queries}},
+		SlackReporterConfigs: pc.SlackReporterConfigs,
 	}
 	return cmp.Diff(pc, emptyReference) != ""
 }
