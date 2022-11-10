@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"reflect"
 	"strconv"
 	"testing"
 	"time"
@@ -24,6 +25,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 )
 
 func pStr(str string) *string {
@@ -658,6 +661,92 @@ func TestParsePath(t *testing.T) {
 			}
 			if got, want := prowPath.Path, tt.wantPath; got != want {
 				t.Errorf("ParsePath() gotPath = %v, wantPath %v", got, want)
+			}
+		})
+	}
+}
+
+func TestProwJobSpec_HasPipelineRunSpec(t *testing.T) {
+	type fields struct {
+		PipelineRunSpec       *pipelinev1alpha1.PipelineRunSpec
+		TektonPipelineRunSpec *TektonPipelineRunSpec
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{{
+		name: "none set",
+		want: false,
+	}, {
+		name: "PipelineRunSpec set",
+		fields: fields{
+			PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{},
+		},
+		want: true,
+	}, {
+		name: "TektonPipelineRunSpec set",
+		fields: fields{
+			TektonPipelineRunSpec: &TektonPipelineRunSpec{},
+		},
+		want: false,
+	}, {
+		name: "TektonPipelineRunSpec.V1VBeta1 set",
+		fields: fields{
+			TektonPipelineRunSpec: &TektonPipelineRunSpec{
+				V1Beta1: &pipelinev1beta1.PipelineRunSpec{},
+			},
+		},
+		want: true,
+	}, {
+		name: "both set",
+		fields: fields{
+			PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{},
+			TektonPipelineRunSpec: &TektonPipelineRunSpec{
+				V1Beta1: &pipelinev1beta1.PipelineRunSpec{},
+			},
+		},
+		want: true,
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pjs := ProwJobSpec{
+				PipelineRunSpec:       tt.fields.PipelineRunSpec,
+				TektonPipelineRunSpec: tt.fields.TektonPipelineRunSpec,
+			}
+			if got := pjs.HasPipelineRunSpec(); got != tt.want {
+				t.Errorf("ProwJobSpec.HasPipelineRunSpec() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestProwJobSpec_GetPipelineRunSpec(t *testing.T) {
+	type fields struct {
+		PipelineRunSpec       *pipelinev1alpha1.PipelineRunSpec
+		TektonPipelineRunSpec *TektonPipelineRunSpec
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    *pipelinev1beta1.PipelineRunSpec
+		wantErr bool
+	}{
+		// TODO(eddycharly): Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pjs := ProwJobSpec{
+				PipelineRunSpec:       tt.fields.PipelineRunSpec,
+				TektonPipelineRunSpec: tt.fields.TektonPipelineRunSpec,
+			}
+			got, err := pjs.GetPipelineRunSpec()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ProwJobSpec.GetPipelineRunSpec() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ProwJobSpec.GetPipelineRunSpec() = %v, want %v", got, tt.want)
 			}
 		})
 	}
