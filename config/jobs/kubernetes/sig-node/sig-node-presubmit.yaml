@@ -1615,16 +1615,13 @@ presubmits:
           - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
           - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
           - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
-          - --extract=ci/latest
+          - --extract=local
           - --gcp-zone=us-west1-b
           - --gcp-node-image=gci
           - --gcp-nodes=1
           - --provider=gce
           - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\]
           - --timeout=150m
-        env:
-          - name: GOPATH
-            value: /go
         resources:
           limits:
             cpu: 4
