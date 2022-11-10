@@ -484,6 +484,7 @@ def generate_misc():
                    runs_per_day=3,
                    extra_flags=['--ipv6',
                                 '--topology=private',
+                                '--bastion',
                                 '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
@@ -523,6 +524,7 @@ def generate_misc():
                    runs_per_day=3,
                    networking="calico",
                    extra_flags=['--topology=private',
+                                '--bastion',
                                 ],
                    extra_dashboards=['kops-misc']),
 
