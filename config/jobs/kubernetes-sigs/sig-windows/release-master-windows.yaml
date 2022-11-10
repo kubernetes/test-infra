@@ -30,7 +30,7 @@ presets:
     preset-capz-containerd-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.6.6/containerd-1.6.6-windows-amd64.tar.gz"
+    value: "https://github.com/containerd/containerd/releases/download/v1.6.8/containerd-1.6.8-windows-amd64.tar.gz"
 - labels:
     preset-capz-serial-slow: "true"
   env:
@@ -68,6 +68,11 @@ presets:
       value: "true"
     - name: WORKER_MACHINE_COUNT
       value: 0 # Don't create linux worker nodes
+- labels:
+    preset-capz-gmsa-setup: "true"
+  env:
+    - name: GMSA
+      value: "true"
 periodics:
 - name: ci-kubernetes-e2e-capz-master-containerd-windows
   interval: 3h
@@ -89,7 +94,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -108,7 +113,7 @@ periodics:
   interval: 24h
   decorate: true
   decoration_config:
-    timeout: 4h
+    timeout: 5h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -124,7 +129,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -162,7 +167,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -183,7 +188,7 @@ periodics:
   interval: 24h
   decorate: true
   decoration_config:
-    timeout: 4h
+    timeout: 5h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -192,6 +197,7 @@ periodics:
     preset-capz-windows-common-main: "true"
     preset-capz-containerd-latest: "true"
     preset-capz-serial-slow: "true"
+    preset-capz-gmsa-setup: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -204,7 +210,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -249,7 +255,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -291,7 +297,7 @@ periodics:
 #     path_alias: sigs.k8s.io/azurefile-csi-driver
 #   spec:
 #     containers:
-#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
 #         command:
 #           - runner.sh
 #           - ./scripts/ci-entrypoint.sh
@@ -331,7 +337,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"

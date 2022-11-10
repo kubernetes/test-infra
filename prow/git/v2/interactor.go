@@ -147,7 +147,6 @@ func (i *interactor) Clone(from string) error {
 // MirrorClone sets up a mirror of the source repository.
 func (i *interactor) MirrorClone() error {
 	i.logger.Infof("Creating a mirror of the repo at %s", i.dir)
-	i.logger.Infof("Creating a mirror of the repo at %s", i.dir)
 	remote, err := i.remote()
 	if err != nil {
 		return fmt.Errorf("could not resolve remote for cloning: %w", err)

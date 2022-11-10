@@ -1,15 +1,16 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- BenTheElder
 - wojtek-t # For European timezone emergencies.
+- marseel
 - feiskyer
 approvers:
-- BenTheElder
 - wojtek-t # For European timezone emergencies.
+- marseel
 - feiskyer
 emeritus_approvers:
 - amwat
+- BenTheElder
 - krzyzacy
 - shyamjvs
 

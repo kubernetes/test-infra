@@ -34,7 +34,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-100-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -118,7 +118,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-big-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -185,7 +185,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -251,7 +251,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -272,6 +272,7 @@ presubmits:
         - --metadata-sources=cl2-metadata.json
         - --env=CL2_LOAD_TEST_THROUGHPUT=50
         - --env=CL2_DELETE_TEST_THROUGHPUT=50
+        - --env=CL2_RATE_LIMIT_POD_CREATION=false
         # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
         - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
         # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
@@ -349,7 +350,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -438,7 +439,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-scale
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -514,7 +515,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -560,7 +561,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -631,7 +632,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -704,7 +705,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -723,6 +724,7 @@ presubmits:
         - --metadata-sources=cl2-metadata.json
         - --env=CL2_LOAD_TEST_THROUGHPUT=50
         - --env=CL2_DELETE_TEST_THROUGHPUT=50
+        - --env=CL2_RATE_LIMIT_POD_CREATION=false
         # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
         - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
         # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
@@ -786,7 +788,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220614-ad0ae57da9
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
         command:
         - runner.sh
         - /workspace/scenarios/execute.py
@@ -864,7 +866,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: golang:1.15
+      - image: golang:1.18
         command:
         - verify/test.sh
         resources:
@@ -910,7 +912,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-lint
     spec:
       containers:
-      - image: golangci/golangci-lint:v1.31
+      - image: golangci/golangci-lint:v1.47.3
         command:
         - make
         args:

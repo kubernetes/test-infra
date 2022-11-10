@@ -11,9 +11,10 @@ dashboard_groups:
     - sig-node-cadvisor
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
-    - sig-node-special-resource-operator
+    - sig-node-kernel-module-management
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
+    - sig-node-image-pushes
 
 dashboards:
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
@@ -51,7 +52,7 @@ dashboards:
 
 - name: sig-node-cri-tools
 - name: sig-node-node-feature-discovery
-- name: sig-node-special-resource-operator
+- name: sig-node-kernel-module-management
 
 - name: sig-node-node-problem-detector
 
@@ -78,3 +79,4 @@ dashboards:
 
 - name: sig-node-cos
 - name: sig-node-presubmits
+- name: sig-node-image-pushes

@@ -31,7 +31,6 @@ import (
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
 
@@ -90,7 +89,7 @@ func TestShouldReport(t *testing.T) {
 			pj: v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritReportLabel: "plus-one-this-gerrit-label-please",
+						kube.GerritReportLabel: "plus-one-this-gerrit-label-please",
 					},
 				},
 				Spec: v1.ProwJobSpec{

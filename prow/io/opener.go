@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -30,10 +30,13 @@ import (
 	"sync"
 	"time"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"gocloud.dev/blob"
 	"gocloud.dev/gcerrors"
+	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs" // TODO(fejta): move this logic here
@@ -101,7 +104,7 @@ func NewOpener(ctx context.Context, gcsCredentialsFile, s3CredentialsFile string
 	}
 	var s3Credentials []byte
 	if s3CredentialsFile != "" {
-		s3Credentials, err = ioutil.ReadFile(s3CredentialsFile)
+		s3Credentials, err = os.ReadFile(s3CredentialsFile)
 		if err != nil {
 			return nil, err
 		}
@@ -272,7 +275,8 @@ func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (i
 		options.apply(writer, nil)
 		return writer, nil
 	}
-	if strings.HasPrefix(p, "/") {
+	if strings.HasPrefix(p, "/") || strings.HasPrefix(p, providers.File+"://") {
+		p := strings.TrimPrefix(p, providers.File+"://")
 		// create parent dir if doesn't exist
 		dir := path.Dir(p)
 		if err := os.MkdirAll(dir, 0755); err != nil {
@@ -479,4 +483,55 @@ func (o *opener) Iterator(ctx context.Context, prefix, delimiter string) (Object
 			Delimiter: delimiter,
 		}),
 	}, nil
+}
+
+func ReadContent(ctx context.Context, logger *logrus.Entry, opener Opener, path string) ([]byte, error) {
+	log := logger.WithFields(logrus.Fields{"path": path})
+	log.Debug("Reading")
+	r, err := opener.Reader(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	return io.ReadAll(r)
+}
+
+func WriteContent(ctx context.Context, logger *logrus.Entry, opener Opener, path string, content []byte, opts ...WriterOptions) error {
+	log := logger.WithFields(logrus.Fields{"path": path, "write-options": opts})
+	log.Debug("Uploading")
+	w, err := opener.Writer(ctx, path, opts...)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(content)
+	var writeErr error
+	if isErrUnexpected(err) {
+		writeErr = err
+		log.WithError(err).Warn("Uploading info to storage failed (write)")
+	}
+	err = w.Close()
+	var closeErr error
+	if isErrUnexpected(err) {
+		closeErr = err
+		log.WithError(err).Warn("Uploading info to storage failed (close)")
+	}
+	return utilerrors.NewAggregate([]error{writeErr, closeErr})
+}
+
+func isErrUnexpected(err error) bool {
+	if err == nil {
+		return false
+	}
+	// Precondition Failed is expected and we can silently ignore it.
+	if e, ok := err.(*googleapi.Error); ok {
+		if e.Code == http.StatusPreconditionFailed {
+			return false
+		}
+	}
+	// Precondition file already exists is expected
+	if errors.Is(err, PreconditionFailedObjectAlreadyExists) {
+		return false
+	}
+
+	return true
 }

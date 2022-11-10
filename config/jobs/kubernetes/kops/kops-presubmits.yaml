@@ -16,7 +16,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -28,6 +28,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: bazel-build
+  - name: pull-kops-build
+    skip_branches:
+    - release-1.23
+    - release-1.22
+    always_run: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 40m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "version-dist"
+        resources:
+          requests:
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: build
   - name: pull-kops-bazel-test
     branches:
     - release-1.22
@@ -44,7 +70,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -56,6 +82,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: bazel-test
+  - name: pull-kops-test
+    skip_branches:
+    - release-1.23
+    - release-1.22
+    always_run: true
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 15m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "test"
+        resources:
+          requests:
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: test
   - name: pull-kops-e2e-kubernetes-do-gossip
     branches:
     - master
@@ -72,7 +124,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -123,7 +175,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -168,7 +220,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -189,7 +241,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -250,7 +302,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -260,6 +312,8 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-boilerplate
   - name: pull-kops-verify-gofmt
+    branches:
+    - master
     always_run: true
     labels:
       preset-service-account: "true"
@@ -269,7 +323,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -281,6 +335,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gofmt
+  - name: pull-kops-verify-gofmt-go118
+    branches:
+    - release-1.24
+    - release-1.23
+    - release-1.22
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    decoration_config:
+      timeout: 10m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.24
+        command:
+        - runner.sh
+        args:
+        - "make"
+        - "verify-gofmt"
+        resources:
+          requests:
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: verify-gofmt-go118
   - name: pull-kops-verify-govet
     always_run: true
     labels:
@@ -291,7 +371,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -312,7 +392,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -332,7 +412,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -353,7 +433,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -379,7 +459,7 @@ presubmits:
     - release-1.18
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -400,11 +480,11 @@ postsubmits:
       preset-service-account: "true"
     decorate: true
     decoration_config:
-      timeout: 20m
+      timeout: 25m
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:

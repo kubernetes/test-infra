@@ -230,7 +230,6 @@ func TestComment(t *testing.T) {
 		body             string
 		expectedMessages map[string][]string
 		issueLabels      []string
-		repoLabels       []string
 		commenter        string
 	}
 	testcases := []testCase{

@@ -48,6 +48,7 @@ baseImageOverrides:
   k8s.io/test-infra/prow/test/integration/cmd/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/prow/test/integration/cmd/fakegitserver: gcr.io/k8s-prow/git:v20220523-6026203ca9
   k8s.io/test-infra/prow/test/integration/cmd/fakepubsub: google/cloud-sdk:389.0.0
+  k8s.io/test-infra/prow/test/integration/cmd/fakegcsserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
 
 # https://pkg.go.dev/cmd/link
 # -s: omit symbol/debug info

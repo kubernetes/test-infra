@@ -20,7 +20,10 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"testing/fstest"
 
+	"github.com/prometheus/client_golang/prometheus"
+	prometheus_model "github.com/prometheus/client_model/go"
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -1847,4 +1850,87 @@ func getFileMap(s string) map[string][]byte {
 
 func boolPtr(b bool) *bool {
 	return &b
+}
+
+type MapFS fstest.MapFS
+
+func (m MapFS) GetFile(name string) ([]byte, error) {
+	return fstest.MapFS(m).ReadFile(name)
+}
+
+func TestUpdateSize(t *testing.T) {
+	t.Parallel()
+	ns, name, commit := "ns", "name", "da28634f10160f8c746c387cd33b488909036e1f"
+	log := logrus.NewEntry(logrus.New())
+	fs := MapFS{
+		"s": {Data: []byte("string data"), Mode: 0777},
+		"c": {
+			// $ printf 'string data' | gzip | hexdump -ve '1/1 "0x%02x, "'
+			Data: []byte{
+				0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,
+				0x2b, 0x2e, 0x29, 0xca, 0xcc, 0x4b, 0x57, 0x48, 0x49, 0x2c,
+				0x49, 0x04, 0x00, 0x1e, 0xfb, 0x1a, 0x61, 0x0b, 0x00, 0x00,
+				0x00,
+			},
+			Mode: 0777,
+		},
+	}
+	testCases := []struct {
+		name     string
+		updates  []ConfigMapUpdate
+		expected float64
+	}{
+		{
+			name:     "empty",
+			expected: 40,
+		},
+		{
+			name: "string data",
+			updates: []ConfigMapUpdate{
+				{Key: "k0", Filename: "s"},
+				{Key: "k1", Filename: "s"},
+				{Key: "k2", Filename: "s"},
+			},
+			expected: 73,
+		},
+		{
+			name: "compressed data",
+			updates: []ConfigMapUpdate{
+				{Key: "k0", Filename: "c"},
+				{Key: "k1", Filename: "c"},
+				{Key: "k2", Filename: "c"},
+			},
+			expected: 133,
+		},
+		{
+			name: "combined data",
+			updates: []ConfigMapUpdate{
+				{Key: "k0", Filename: "s"},
+				{Key: "k1", Filename: "s"},
+				{Key: "k2", Filename: "s"},
+				{Key: "k3", Filename: "c"},
+				{Key: "k4", Filename: "c"},
+				{Key: "k5", Filename: "c"},
+			},
+			expected: 166,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			client, err := GetConfigMapClient(fake.NewSimpleClientset().CoreV1(), ns, nil, kube.DefaultClusterAlias)
+			if err != nil {
+				t.Fatalf("failed to create fake client: %v", err)
+			}
+			metrics := prometheus.NewGaugeVec(prometheus.GaugeOpts{}, []string{name, ns})
+			if err := Update(fs, client, name, ns, tc.updates, true, metrics, log, commit); err != nil {
+				t.Fatalf("unexpected error updating: %v", err)
+			}
+			var metric prometheus_model.Metric
+			metrics.WithLabelValues(name, ns).Write(&metric)
+			if n := *metric.Gauge.Value; n != tc.expected {
+				t.Fatalf("unexpected total, want %v, got %v", tc.expected, n)
+			}
+		})
+	}
 }

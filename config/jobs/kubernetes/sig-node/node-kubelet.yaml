@@ -7,7 +7,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=260
@@ -46,7 +46,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=260
@@ -59,7 +59,7 @@ periodics:
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+          - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
           - --timeout=240m
       env:
       - name: GOPATH
@@ -87,11 +87,12 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
           - --root=/go/src
+          - "--service-account=/etc/service-account/service-account.json"
           - --scenario=kubernetes_e2e
           - --
           - --deployment=node
@@ -101,7 +102,7 @@ periodics:
           - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
           - --timeout=180m
         env:
           - name: GOPATH
@@ -133,7 +134,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -171,11 +172,12 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
       - --root=/go/src
+      - "--service-account=/etc/service-account/service-account.json"
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
@@ -208,7 +210,7 @@ periodics:
 #    preset-k8s-ssh: "true"
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --timeout=90

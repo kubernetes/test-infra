@@ -13,7 +13,7 @@ periodics:
       args:
       - --ttl=2h30m
       - --path=s3://k8s-kops-prow/objs.json
-      image: gcr.io/k8s-staging-boskos/aws-janitor:v20220729-35595e8
+      image: gcr.io/k8s-staging-boskos/aws-janitor:v20221101-62e7de0
   annotations:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: ci-aws-janitor
@@ -40,7 +40,7 @@ periodics:
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
       - --janitor-path=boskos/cmd/janitor/gcp_janitor.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       resources:
         requests:
           cpu: 5
@@ -65,7 +65,7 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-experimental
       resources:
         requests:
           cpu: 5
@@ -74,29 +74,3 @@ periodics:
     testgrid-dashboards: sig-testing-maintenance
     testgrid-tab-name: pull-janitor
     description: Deletes old GCP resources from presubmit jobs
-
-- interval: 1h
-  name: maintenance-pull-scale-janitor
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=60
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_janitor
-      - --
-      - --mode=scale
-      - --ratelimit=5
-      env:
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-experimental
-      resources:
-        requests:
-          cpu: 5
-          memory: "8Gi"
-  annotations:
-    testgrid-dashboards: sig-testing-maintenance
-    testgrid-tab-name: pull-scale-janitor
-    description: Deletes old GCP resources from scalability presubmit jobs

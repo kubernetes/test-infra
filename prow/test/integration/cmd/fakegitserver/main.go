@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -78,7 +79,10 @@ func main() {
 	// integration tests (e.g., "/admin/reset" to reset all repos back to their
 	// original state).
 	r.PathPrefix("/repo").Handler(fakegitserver.GitCGIHandler(o.gitBinary, o.gitReposParentDir))
-	r.PathPrefix("/setup-repo").Handler(fakegitserver.SetupRepoHandler(o.gitReposParentDir))
+	// Set up repo might modify global git config, need to lock it to avoid
+	// errors caused by concurrent modifications.
+	var lock sync.Mutex
+	r.PathPrefix("/setup-repo").Handler(fakegitserver.SetupRepoHandler(o.gitReposParentDir, &lock))
 
 	if err := os.MkdirAll(o.gitReposParentDir, os.ModePerm); err != nil {
 		logrus.Fatalf("could not create directory %q", o.gitReposParentDir)
@@ -91,12 +95,12 @@ func main() {
 
 	// Serve HTTPS traffic.
 	if o.cert != "" && o.key != "" {
-		serverHttps := &http.Server{
+		serverHTTPS := &http.Server{
 			Addr:    fmt.Sprintf(":%d", o.portHttps),
 			Handler: r,
 		}
 		logrus.Infof("Starting HTTPS server on port %d", o.portHttps)
-		interrupts.ListenAndServeTLS(serverHttps, o.cert, o.key, 5*time.Second)
+		interrupts.ListenAndServeTLS(serverHTTPS, o.cert, o.key, 5*time.Second)
 	}
 
 	// Serve HTTP traffic.

@@ -20,15 +20,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	gitignore "github.com/denormal/go-gitignore"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
@@ -110,13 +111,13 @@ func prowYAMLGetter(
 	// TODO(mpherman): This is to hopefully mittigate issue with gerrit merges. Need to come up with a solution that checks
 	// each CLs merge strategy as they can differ. ifNecessary is just the gerrit default
 	var mergeMethod types.PullRequestMergeType
-	if c.Gerrit.OrgReposConfig != nil {
+	if gerritsource.IsGerritOrg(identifier) {
 		mergeMethod = types.MergeIfNecessary
 	} else {
 		mergeMethod = c.Tide.MergeMethod(orgRepo)
 	}
 
-	log.Debugf("Using merge strategy %q.", mergeMethod)
+	log.WithField("merge-strategy", mergeMethod).Debug("Using merge strategy.")
 	if err := ensureHeadCommits(repo, headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to fetch headSHAs: %v", err)
 	}
@@ -173,7 +174,7 @@ func ReadProwYAML(log *logrus.Entry, dir string, strict bool) (*ProwYAML, error)
 					return nil
 				}
 				log.Debugf("Reading YAML file %q", p)
-				bytes, err := ioutil.ReadFile(p)
+				bytes, err := os.ReadFile(p)
 				if err != nil {
 					return err
 				}
@@ -195,7 +196,7 @@ func ReadProwYAML(log *logrus.Entry, dir string, strict bool) (*ProwYAML, error)
 		log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")
 		prowYAMLFilePath := path.Join(dir, inRepoConfigFileName)
 		if _, err := os.Stat(prowYAMLFilePath); err == nil {
-			bytes, err := ioutil.ReadFile(prowYAMLFilePath)
+			bytes, err := os.ReadFile(prowYAMLFilePath)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read %q: %w", prowYAMLDirPath, err)
 			}
@@ -240,10 +241,10 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 	if err := defaultPostsubmits(p.Postsubmits, p.Presets, c, identifier); err != nil {
 		return err
 	}
-	if err := c.validatePresubmits(append(p.Presubmits, c.PresubmitsStatic[identifier]...)); err != nil {
+	if err := c.validatePresubmits(append(p.Presubmits, c.GetPresubmitsStatic(identifier)...)); err != nil {
 		return err
 	}
-	if err := c.validatePostsubmits(append(p.Postsubmits, c.PostsubmitsStatic[identifier]...)); err != nil {
+	if err := c.validatePostsubmits(append(p.Postsubmits, c.GetPostsubmitsStatic(identifier)...)); err != nil {
 		return err
 	}
 
@@ -364,4 +365,22 @@ func (rc *skipCleanRepoClient) Clean() error {
 	// Skip cleaning and unlock to allow reuse as a cached entry.
 	rc.Mutex.Unlock()
 	return nil
+}
+
+// ContainsInRepoConfigPath indicates whether the specified list of changed
+// files (repo relative paths) includes a file that might be an inrepo config file.
+//
+// This function could report a false positive as it doesn't consider .prowignore files.
+// It is designed to be used to help short circuit when we know a change doesn't touch
+// the inrepo config.
+func ContainsInRepoConfigPath(files []string) bool {
+	for _, file := range files {
+		if file == inRepoConfigFileName {
+			return true
+		}
+		if strings.HasPrefix(file, inRepoConfigDirName+"/") {
+			return true
+		}
+	}
+	return false
 }

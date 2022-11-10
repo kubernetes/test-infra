@@ -26,10 +26,10 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/test-infra/prow/gerrit/client"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 	"k8s.io/test-infra/prow/test/integration/internal/fakegitserver"
 	"k8s.io/test-infra/prow/test/integration/internal/fakepubsub"
@@ -212,7 +212,7 @@ this-is-from-repo1
 						},
 					},
 					Labels: map[string]string{
-						client.GerritRevision: "123",
+						kube.GerritRevision: "123",
 					},
 				},
 			},
@@ -246,6 +246,7 @@ this-is-from-repo2
 						RepoLink: "https://fakegitserver.default/repo/repo3",
 						BaseSHA:  Repo3HEADsha,
 						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/repo3",
 						Pulls: []prowjobv1.Pull{
 							{
 								Number: 1,
@@ -262,7 +263,7 @@ this-is-from-repo2
 						},
 					},
 					Labels: map[string]string{
-						client.GerritRevision: "123",
+						kube.GerritRevision: "123",
 					},
 				},
 			},
@@ -291,6 +292,7 @@ this-is-from-repo3
 						RepoLink: "https://fakegitserver.default/repo/org1/repo4",
 						BaseSHA:  Repo4HEADsha,
 						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/org1/repo4",
 						Pulls: []prowjobv1.Pull{
 							{
 								Number: 1,
@@ -307,7 +309,7 @@ this-is-from-repo3
 						},
 					},
 					Labels: map[string]string{
-						client.GerritRevision: "123",
+						kube.GerritRevision: "123",
 					},
 				},
 			},
@@ -335,10 +337,11 @@ this-is-from-repo4
 						// clone_uri is set on the job definition itself (see
 						// ProwJobDecoratedCloneURI). However sub needs Org and
 						// Repo to retrieve (clone) this inrepo job config.
-						Org:     "https://fakegitserver.default/repo/org1",
-						Repo:    "repo5",
-						BaseSHA: Repo5HEADsha,
-						BaseRef: "master",
+						Org:      "https://fakegitserver.default/repo/org1",
+						Repo:     "repo5",
+						BaseSHA:  Repo5HEADsha,
+						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/org1/repo5",
 						Pulls: []prowjobv1.Pull{
 							{
 								Number: 1,
@@ -347,7 +350,7 @@ this-is-from-repo4
 						},
 					},
 					Labels: map[string]string{
-						client.GerritRevision: "123",
+						kube.GerritRevision: "123",
 					},
 				},
 			},
@@ -473,7 +476,7 @@ this-is-from-repo5
 			// log as much as possible to make it easier to see why a test
 			// failed), or when the test succeeds (where we clean up the ProwJob
 			// that was created by sub).
-			timeout := 60 * time.Second
+			timeout := 120 * time.Second
 			pollInterval := 500 * time.Millisecond
 			if waitErr := wait.Poll(pollInterval, timeout, expectJobSuccess); waitErr != nil {
 				if podName == nil {

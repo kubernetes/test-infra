@@ -40,7 +40,7 @@ const (
 )
 
 var (
-	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$)`)
+	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$|]|\))`)
 	projectCache   = &threadsafeSet{data: sets.String{}}
 )
 
@@ -325,17 +325,16 @@ func filterOutDisabledJiraProjects(candidateNames []string, cfg *plugins.Jira) [
 		return candidateNames
 	}
 
-	var result []string
+	candidateSet := sets.NewString(candidateNames...)
 	for _, excludedProject := range cfg.DisabledJiraProjects {
 		for _, candidate := range candidateNames {
 			if strings.HasPrefix(strings.ToLower(candidate), strings.ToLower(excludedProject)) {
-				continue
+				candidateSet.Delete(candidate)
 			}
-			result = append(result, candidate)
 		}
 	}
 
-	return result
+	return candidateSet.UnsortedList()
 }
 
 // projectCachingJiraClient caches 404 for projects and uses them to introduce

@@ -107,6 +107,8 @@ presets:
     value: true
   - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
     value: pd.csi.storage.gke.io
+  - name: CL2_WAIT_FOR_CONTROLLED_PODS_USE_EXACT_OPERATION_TIMEOUT
+    value: true
 
 ### kubemark-gce-scale
 - labels:
@@ -162,7 +164,8 @@ presets:
     value: "--kube-reserved=cpu=1050m"
   - name: KUBEPROXY_TEST_ARGS
     # TODO(#74011): Remove metrics-bind-address if the default is set.
-    value: "--profiling --metrics-bind-address=0.0.0.0"
+    # FeatureGate added in #110268 v1.26
+    value: "--profiling --metrics-bind-address=0.0.0.0 --feature-gates=MinimizeIPTablesRestore=true"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity.
@@ -253,6 +256,12 @@ presets:
     value: true
   - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
     value: pd.csi.storage.gke.io
+  - name: KUBE_APISERVER_GODEBUG
+    value: gctrace=1
+  - name: CL2_WAIT_FOR_CONTROLLED_PODS_USE_EXACT_OPERATION_TIMEOUT
+    value: true
+  - name: CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT
+    value: "true"
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.

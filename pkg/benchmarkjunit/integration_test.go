@@ -19,7 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -33,7 +32,7 @@ import (
 )
 
 func createTempFile() (string, error) {
-	outFile, err := ioutil.TempFile("", "dummybenchmarks")
+	outFile, err := os.CreateTemp("", "dummybenchmarks")
 	if err != nil {
 		return "", fmt.Errorf("create error: %w", err)
 	}
@@ -84,14 +83,14 @@ func TestDummybenchmarksIntegration(t *testing.T) {
 	t.Log("Finished running benchmarkjunit. Validating JUnit XML...")
 
 	// Print log file contents.
-	rawLog, err := ioutil.ReadFile(opts.logFile)
+	rawLog, err := os.ReadFile(opts.logFile)
 	if err != nil {
 		t.Fatalf("Error reading log file: %v.", err)
 	}
 	t.Logf("Log file output:\n%s\n\n", string(rawLog))
 
 	// Read and parse JUnit output.
-	raw, err := ioutil.ReadFile(opts.outputFile)
+	raw, err := os.ReadFile(opts.outputFile)
 	if err != nil {
 		t.Fatalf("Error reading output file: %v.", err)
 	}

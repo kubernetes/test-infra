@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 4h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -50,7 +50,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
           command:
           - runner.sh
           args:
@@ -80,66 +80,6 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
-  # pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb runs Azure specific e2e tests with VMSS and basic loadbalancer.
-  - name: pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-    decorate: true
-    decoration_config:
-      timeout: 5h
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    branches:
-      - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: release-1.24
-        path_alias: k8s.io/kubernetes
-        workdir: true
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
-          command:
-            - runner.sh
-            - kubetest
-          args:
-            # Generic e2e test args
-            - --test
-            - --up
-            - --down
-            - --build=quick
-            - --dump=$(ARTIFACTS)
-            # Azure-specific test args
-            - --provider=skeleton
-            - --deployment=aksengine
-            - --aksengine-agentpoolcount=2
-            - --aksengine-admin-username=azureuser
-            - --aksengine-creds=$(AZURE_CREDENTIALS)
-            - --aksengine-orchestratorRelease=1.24
-            - --aksengine-mastervmsize=Standard_DS2_v2
-            - --aksengine-agentvmsize=Standard_D4s_v3
-            - --aksengine-ccm
-            - --aksengine-cnm
-            - --aksengine-deploy-custom-k8s
-            - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-            - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-basic-lb.json
-            - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-            # Specific test args
-            - --test-ccm
-            - --ginkgo-parallel=30
-          securityContext:
-            privileged: true
-          env:
-            - name: AZURE_LOADBALANCER_SKU
-              value: "basic"
-    annotations:
-      testgrid-dashboards: provider-azure-cloud-provider-azure
-      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-basic-lb
-      description: "Runs Azure specific tests (VMSS + basic LB) with cloud-provider-azure master (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-      testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-capz runs kubernetes conformance tests.
   - name: pull-cloud-provider-azure-e2e-capz
     skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
@@ -157,7 +97,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.4
+        base_ref: release-1.5
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes
@@ -167,7 +107,7 @@ presubmits:
         workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
           command:
           - runner.sh
           args:
@@ -205,7 +145,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 4h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
       - master
@@ -217,12 +157,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.4
+        base_ref: release-1.5
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
           command:
           - runner.sh
           args:
@@ -274,7 +214,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
           command:
             - runner.sh
           args:
@@ -326,7 +266,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -352,7 +292,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.4
+      base_ref: release-1.5
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -362,7 +302,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -414,7 +354,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -455,7 +395,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.4
+      base_ref: release-1.5
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -465,7 +405,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -513,7 +453,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.4
+    base_ref: release-1.5
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -528,7 +468,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       command:
       - runner.sh
       args:
@@ -574,7 +514,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.4
+    base_ref: release-1.5
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -589,7 +529,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       command:
       - runner.sh
       args:
@@ -659,7 +599,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       command:
       - runner.sh
       args:
@@ -680,7 +620,7 @@ periodics:
       - name: KUBERNETES_VERSION
         value: "latest"
       - name: GINKGO_ARGS
-        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_PROVISIONING_TOOL
@@ -716,7 +656,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
@@ -746,6 +686,62 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-master-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss using a stable capz release."
+- cron: '0 0/6 * * *'  # Run every 6 hours everyday
+  # cloud-provider-azure-e2e-ccm-vmssflex-capz runs Azure specific tests periodically on vmss flex.
+  name: cloud-provider-azure-e2e-ccm-vmssflex-capz
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+    - org: jackfrancis
+      repo: cluster-api-provider-azure
+      base_ref: vmss-flex-cloudprovider
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM
+          value: "true"
+        - name: TEST_VMSS_FLEX
+          value: "true"
+        - name: CONTROL_PLANE_MACHINE_COUNT
+          value: "1"
+        - name: KUBERNETES_VERSION
+          value: "latest"
+        - name: CLUSTER_TEMPLATE
+          value: https://raw.githubusercontent.com/jackfrancis/cluster-api-provider-azure/vmss-flex-cloudprovider/templates/cluster-template-external-cloud-provider-machinepool.yaml
+        - name: AZURE_LOADBALANCER_SKU
+          value: "Standard"
+        - name: CLUSTER_PROVISIONING_TOOL
+          value: "capz"
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-e2e-ccm-vmssflex-capz
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss flex."
 - cron: '0 18 * * *'  # Run at 18:00 UTC everyday
   # cloud-provider-azure-conformance-vmss-capz runs Kubernetes conformance tests periodically on vmss.
   name: cloud-provider-azure-conformance-vmss-capz
@@ -775,7 +771,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       command:
       - runner.sh
       args:
@@ -810,7 +806,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
-- cron: '0 4/3 * * *'  # Temporarily run every 3h
+- cron: '0 19 * * *'  # Run at 19:00 UTC everyday
   # cloud-provider-azure-conformance-serial-vmss-capz runs Kubernetes conformance serial tests periodically on vmss.
   name: cloud-provider-azure-conformance-serial-vmss-capz
   decorate: true
@@ -839,7 +835,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       command:
       - runner.sh
       args:
@@ -869,7 +865,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL
         value: "capz"
       - name: GINKGO_PARALLEL_NODES
-        value: "2"
+        value: "1"
       - name: GINKGO_TOLERATE_FLAKES
         value: "y"
   annotations:
@@ -906,7 +902,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       command:
       - runner.sh
       args:
@@ -971,7 +967,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       command:
       - runner.sh
       args:
@@ -990,7 +986,7 @@ periodics:
       - name: KUBERNETES_VERSION
         value: "latest"
       - name: GINKGO_ARGS
-        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_TEMPLATE

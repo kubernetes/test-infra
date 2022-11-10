@@ -21,9 +21,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -90,11 +90,10 @@ type clowder interface {
 }
 
 type realClowder struct {
-	url     string
-	lock    sync.RWMutex
-	update  time.Time
-	key     string
-	keyPath string
+	url    string
+	lock   sync.RWMutex
+	update time.Time
+	key    string
 }
 
 func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
@@ -108,7 +107,7 @@ func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
 		c.key = ""
 		return
 	}
-	b, err := ioutil.ReadFile(keyPath)
+	b, err := os.ReadFile(keyPath)
 	if err == nil {
 		c.key = strings.TrimSpace(string(b))
 		return

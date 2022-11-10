@@ -18,10 +18,10 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -29,8 +29,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"context"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/flagutil"
@@ -144,7 +142,7 @@ type imageDefs struct {
 }
 
 func loadImageDefs(p string) ([]imageDef, error) {
-	b, err := ioutil.ReadFile(p)
+	b, err := os.ReadFile(p)
 	if err != nil {
 		return nil, err
 	}

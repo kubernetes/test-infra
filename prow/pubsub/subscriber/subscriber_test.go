@@ -36,8 +36,8 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/kube"
 
 	v1 "k8s.io/api/core/v1"
 )
@@ -219,7 +219,7 @@ func TestHandleMessage(t *testing.T) {
 					},
 				},
 				Labels: map[string]string{
-					client.GerritRevision: "revision",
+					kube.GerritRevision: "revision",
 				},
 			},
 			config: &config.Config{
@@ -277,7 +277,7 @@ func TestHandleMessage(t *testing.T) {
 					},
 				},
 				Labels: map[string]string{
-					client.GerritRevision: "revision",
+					kube.GerritRevision: "revision",
 				},
 			},
 			config: &config.Config{
@@ -301,18 +301,14 @@ func TestHandleMessage(t *testing.T) {
 			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
 			fr := fakeReporter{}
+			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true)
+			cacheHandler, _ := config.NewInRepoConfigCacheHandler(100, ca, gitClient, 1)
 			s := Subscriber{
-				Metrics:       NewMetrics(),
-				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
-				ConfigAgent:   ca,
-				Reporter:      &fr,
-				InRepoConfigCacheGetter: &InRepoConfigCacheGetter{
-					CacheSize:     100,
-					CacheCopies:   1,
-					Agent:         ca,
-					GitHubOptions: flagutil.GitHubOptions{},
-					DryRun:        true,
-				},
+				Metrics:                  NewMetrics(),
+				ProwJobClient:            fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
+				ConfigAgent:              ca,
+				Reporter:                 &fr,
+				InRepoConfigCacheHandler: cacheHandler,
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessageOfType(tc.eventType)
@@ -764,7 +760,7 @@ func TestTryGetCloneURIAndHost(t *testing.T) {
 					Repo: "repo",
 				},
 				Labels: map[string]string{
-					client.GerritRevision: "foo",
+					kube.GerritRevision: "foo",
 				},
 			},
 			expectedCloneURI: "https://org/repo",

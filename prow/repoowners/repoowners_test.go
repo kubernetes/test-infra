@@ -18,7 +18,6 @@ package repoowners
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -1188,11 +1187,7 @@ func TestExpandAliases(t *testing.T) {
 }
 
 func TestSaveSimpleConfig(t *testing.T) {
-	dir, err := ioutil.TempDir("", "simpleConfig")
-	if err != nil {
-		t.Errorf("unexpected error when creating temp dir")
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	tests := []struct {
 		name     string
@@ -1225,7 +1220,7 @@ reviewers:
 		if err != nil {
 			t.Errorf("unexpected error when writing simple config")
 		}
-		b, err := ioutil.ReadFile(file)
+		b, err := os.ReadFile(file)
 		if err != nil {
 			t.Errorf("unexpected error when reading file: %s", file)
 		}
@@ -1244,11 +1239,7 @@ reviewers:
 }
 
 func TestSaveFullConfig(t *testing.T) {
-	dir, err := ioutil.TempDir("", "fullConfig")
-	if err != nil {
-		t.Errorf("unexpected error when creating temp dir")
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	tests := []struct {
 		name     string
@@ -1287,7 +1278,7 @@ options: {}
 		if err != nil {
 			t.Errorf("unexpected error when writing full config")
 		}
-		b, err := ioutil.ReadFile(file)
+		b, err := os.ReadFile(file)
 		if err != nil {
 			t.Errorf("unexpected error when reading file: %s", file)
 		}

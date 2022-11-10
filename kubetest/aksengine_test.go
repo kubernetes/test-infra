@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 )
@@ -189,16 +189,13 @@ func TestStrictJSON(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			tempDir, err := ioutil.TempDir("", "")
-			if err != nil {
-				t.Fatalf("failed to create a temporary directory: %v", err)
-			}
+			tempDir := t.TempDir()
 			// Write tc.apiModel to a file so aksEngineDeployer can read it
-			if err := ioutil.WriteFile(path.Join(tempDir, "kubernetes.json"), []byte(tc.apiModel), 0644); err != nil {
+			if err := os.WriteFile(path.Join(tempDir, "kubernetes.json"), []byte(tc.apiModel), 0644); err != nil {
 				t.Fatalf("failed to write kubernetes.json: %v", err)
 			}
 			c := getMockAKSEngineDeployer(tempDir)
-			err = c.populateAPIModelTemplate()
+			err := c.populateAPIModelTemplate()
 			if tc.expectedError && err == nil {
 				t.Fatal("expected populateAPIModelTemplate to return an error, but got no error")
 			} else if !tc.expectedError && err != nil {

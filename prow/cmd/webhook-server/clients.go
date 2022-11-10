@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,12 +29,14 @@ import (
 )
 
 type GCPClient struct {
-	client *secretmanager.Client
+	client   *secretmanager.Client
+	secretID string
 }
 
-func newGCPClient(client *secretmanager.Client) *GCPClient {
+func newGCPClient(client *secretmanager.Client, secretID string) *GCPClient {
 	return &GCPClient{
-		client: client,
+		client:   client,
+		secretID: secretID,
 	}
 }
 
@@ -75,7 +76,7 @@ func (g *GCPClient) checkSecret(ctx context.Context, secretName string) error {
 		return fmt.Errorf("could not make call to list secrets successfully %v", err)
 	}
 	for _, secret := range res {
-		if strings.Contains(secret.Name, secretID) {
+		if strings.Contains(secret.Name, g.secretID) {
 			return nil
 		}
 	}
@@ -116,13 +117,13 @@ func (l *localFSClient) AddSecretVersion(ctx context.Context, secretName string,
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(certFile, []byte(serverCertPerm), 0666); err != nil {
+	if err := os.WriteFile(certFile, []byte(serverCertPerm), 0666); err != nil {
 		return fmt.Errorf("could not write contents of cert file")
 	}
-	if err := ioutil.WriteFile(privKeyFile, []byte(serverPrivKey), 0666); err != nil {
+	if err := os.WriteFile(privKeyFile, []byte(serverPrivKey), 0666); err != nil {
 		return fmt.Errorf("could not write contents of privkey file")
 	}
-	if err := ioutil.WriteFile(caBundleFile, []byte(caPem), 0666); err != nil {
+	if err := os.WriteFile(caBundleFile, []byte(caPem), 0666); err != nil {
 		return fmt.Errorf("could not write contents of caBundle file")
 	}
 	return nil
@@ -136,12 +137,12 @@ func (l *localFSClient) GetSecretValue(ctx context.Context, secretName string, v
 		return nil, false, err
 	}
 	secretsMap := make(map[string]string)
-	files, err := ioutil.ReadDir(l.path)
+	files, err := os.ReadDir(l.path)
 	if err != nil {
 		return nil, false, fmt.Errorf("could not read file path")
 	}
 	for _, f := range files {
-		content, err := ioutil.ReadFile(filepath.Join(l.path, f.Name()))
+		content, err := os.ReadFile(filepath.Join(l.path, f.Name()))
 		if err != nil {
 			return nil, false, fmt.Errorf("error reading file %v", err)
 		}
@@ -169,7 +170,7 @@ func (l *localFSClient) checkSecret(ctx context.Context, secretName string) erro
 		return err
 	}
 
-	files, err := ioutil.ReadDir(l.path)
+	files, err := os.ReadDir(l.path)
 	if err != nil {
 		return err
 	}
@@ -177,7 +178,7 @@ func (l *localFSClient) checkSecret(ctx context.Context, secretName string) erro
 		return nil
 	}
 	for _, f := range files {
-		_, err := ioutil.ReadFile(filepath.Join(l.path, f.Name()))
+		_, err := os.ReadFile(filepath.Join(l.path, f.Name()))
 		if err != nil {
 			return fmt.Errorf("error reading file %v", err)
 		}

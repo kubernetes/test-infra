@@ -1,4 +1,0 @@
-dashboard_groups:
-  - dashboard_names:
-      - kcp-main
-    name: kcp

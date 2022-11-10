@@ -23,7 +23,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -33,14 +33,14 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-cron: 0 8-23/24 * * *
+    fork-per-release-cron: ""
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.22-blocking, google-gce
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.22
   cluster: k8s-infra-prow-build
-  cron: 0 8-23/12 * * *
+  cron: 0 8-23/24 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
@@ -57,13 +57,16 @@ periodics:
       - --extract=ci/latest-1.22
       - --extract-ci-bucket=k8s-release-dev
       - --env=KUBE_CONTAINER_RUNTIME=docker
+      - --env=KUBE_NODE_OS_DISTRIBUTION=gci
+      - --env=KUBE_GCE_NODE_IMAGE=cos-85-13310-1041-9
+      - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -73,7 +76,7 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
     testgrid-num-columns-recent: "6"
@@ -87,7 +90,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -109,7 +112,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-1.22
+      image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-1.22
       name: ""
       resources:
         limits:
@@ -121,12 +124,12 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
     testgrid-dashboards: sig-release-1.22-blocking, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-1.22
   cluster: k8s-infra-prow-build
-  interval: 6h
+  interval: 24h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -150,7 +153,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -187,7 +190,7 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -220,9 +223,9 @@ periodics:
       - --
       - --release=kubernetes-release-dev
       - --allow-dup
-      - --extra-version-markers=k8s-stable3
+      - --extra-version-markers=k8s-stable4
       - --registry=gcr.io/kubernetes-ci-images
-      image: gcr.io/k8s-staging-test-infra/bootstrap:v20220614-ad0ae57da9
+      image: gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
       name: ""
       resources:
         limits:
@@ -262,7 +265,7 @@ periodics:
       - --allow-dup
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-stable3
+      - --extra-version-markers=k8s-stable4
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
       name: ""
@@ -276,12 +279,12 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 21 * * *
+    fork-per-release-cron: ""
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.22-500
-  cron: 0 15 * * *
+  cron: 0 21 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -338,7 +341,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -353,14 +356,14 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.22'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-cron: 0 8-20/12 * * *
+    fork-per-release-cron: ""
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.22-blocking, sig-scalability-gce, google-gce,
       google-gci
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.22-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 4-16/12 * * *
+  cron: 0 8-20/12 * * *
   decorate: true
   decoration_config:
     timeout: 2h20m0s
@@ -399,6 +402,7 @@ periodics:
       - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
       - --env=DEPLOY_GCI_DRIVER=false
       - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
+      - --env=KUBEPROXY_TEST_ARGS=--profiling --metrics-bind-address=0.0.0.0
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
@@ -420,7 +424,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -434,7 +438,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.22-blocking
     testgrid-tab-name: integration-1.22
@@ -445,7 +449,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -459,7 +463,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -491,7 +495,7 @@ periodics:
     - command:
       - make
       - test
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -503,7 +507,7 @@ periodics:
     securityContext:
       runAsUser: 2000
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
       release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.22-blocking
@@ -515,7 +519,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
@@ -533,7 +537,7 @@ periodics:
         value: release-1.22
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       imagePullPolicy: Always
       name: ""
       resources:
@@ -546,12 +550,12 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 21 * * *
+    fork-per-release-cron: ""
     testgrid-dashboards: sig-k8s-infra-canaries, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.22-500-canary
   cluster: k8s-infra-prow-build
-  cron: 0 15 * * *
+  cron: 0 21 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -607,7 +611,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
       name: ""
       resources:
         limits:
@@ -622,7 +626,7 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.22'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.22-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -636,7 +640,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -656,7 +660,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-1.22
+      image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-1.22
       name: ""
       resources:
         limits:
@@ -668,7 +672,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 24h
+    fork-per-release-periodic-interval: ""
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.22-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -682,7 +686,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 6h
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -706,7 +710,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-1.22
+      image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-1.22
       name: ""
       resources:
         limits:
@@ -717,63 +721,14 @@ periodics:
           memory: 9Gi
       securityContext:
         privileged: true
-- name: ci-kubernetes-e2e-windows-containerd-gce-1-22
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  extra_refs:
-  - base_ref: master
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/windows-testing
-    repo: windows-testing
-  interval: 4h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-    preset-common-gce-windows: "true"
-    preset-e2e-gce-windows: "true"
-    preset-e2e-gce-windows-containerd: "true"
-    preset-windows-repo-list-master: "true"
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest-1.22
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --ginkgo-parallel=4
-      - --timeout=230m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      env:
-      - name: NO_LINUX_POOL_TAINT
-        value: "true"
-      - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win2019"
-      - name: KUBE_WINDOWS_CONTAINER_RUNTIME
-        value: "containerd"
-      - name: PREPULL_YAML
-        value: prepull-1.22.yaml
-      - name: NODE_SIZE
-        value: "n1-standard-4"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
-      securityContext:
-        privileged: true
-  annotations:
+- annotations:
+    description: Runs tests on a Kubernetes cluster with Windows containerd nodes
+      on GCE
     testgrid-dashboards: sig-windows-gce, sig-windows-1.22-release
     testgrid-tab-name: gce-windows-2019-containerd-1.22
-    description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
-- name: ci-kubernetes-e2e-windows-20h2-containerd-gce-1-22
   decorate: true
   decoration_config:
-    timeout: 4h
+    timeout: 4h0m0s
   extra_refs:
   - base_ref: master
     org: kubernetes-sigs
@@ -781,65 +736,13 @@ periodics:
     repo: windows-testing
   interval: 4h
   labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
     preset-e2e-gce-windows-containerd: "true"
-    preset-windows-repo-list-master: "true"
-    preset-windows-private-registry-cred: "true"
-  spec:
-    containers:
-    - args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest-1.22
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --ginkgo-parallel=4
-      - --timeout=230m
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      env:
-      - name: NO_LINUX_POOL_TAINT
-        value: "true"
-      - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win20h2"
-      - name: KUBE_WINDOWS_CONTAINER_RUNTIME
-        value: "containerd"
-      - name: PREPULL_YAML
-        value: prepull-1.22.yaml
-      - name: NODE_SIZE
-        value: "n1-standard-4"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-windows-gce, sig-windows-1.22-release
-    testgrid-tab-name: gce-windows-20h2-containerd-1.22
-    description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
-- name: ci-kubernetes-e2e-windows-gce-1-22
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  extra_refs:
-  - base_ref: master
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/windows-testing
-    repo: windows-testing
-  interval: 4h
-  labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-common-gce-windows: "true"
-    preset-e2e-gce-windows: "true"
-    preset-windows-repo-list-master: "true"
+    preset-windows-repo-list: "true"
+  name: ci-kubernetes-e2e-windows-containerd-gce-1-22
   spec:
     containers:
     - args:
@@ -851,8 +754,10 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
       - --ginkgo-parallel=4
       - --timeout=230m
       command:
@@ -862,22 +767,25 @@ periodics:
       - name: NO_LINUX_POOL_TAINT
         value: "true"
       - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win2019"
+        value: win2019
+      - name: KUBE_WINDOWS_CONTAINER_RUNTIME
+        value: containerd
       - name: PREPULL_YAML
         value: prepull-1.22.yaml
       - name: NODE_SIZE
-        value: "n1-standard-4"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        value: n1-standard-4
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
+      name: ""
+      resources: {}
       securityContext:
         privileged: true
-  annotations:
+- annotations:
+    description: Runs tests on a Kubernetes cluster with Windows docker nodes on GCE
     testgrid-dashboards: sig-windows-gce, sig-windows-1.22-release
     testgrid-tab-name: gce-windows-2019-docker-1.22
-    description: Runs tests on a Kubernetes cluster with Windows docker nodes on GCE
-- name: ci-kubernetes-e2e-windows-20h2-gce-1-22
   decorate: true
   decoration_config:
-    timeout: 4h
+    timeout: 4h0m0s
   extra_refs:
   - base_ref: master
     org: kubernetes-sigs
@@ -885,12 +793,12 @@ periodics:
     repo: windows-testing
   interval: 4h
   labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
-    preset-windows-repo-list-master: "true"
-    preset-windows-private-registry-cred: "true"
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-windows-repo-list: "true"
+  name: ci-kubernetes-e2e-windows-gce-1-22
   spec:
     containers:
     - args:
@@ -902,8 +810,10 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
       - --ginkgo-parallel=4
       - --timeout=230m
       command:
@@ -913,18 +823,16 @@ periodics:
       - name: NO_LINUX_POOL_TAINT
         value: "true"
       - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win20h2"
+        value: win2019
       - name: PREPULL_YAML
         value: prepull-1.22.yaml
       - name: NODE_SIZE
-        value: "n1-standard-4"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        value: n1-standard-4
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
+      name: ""
+      resources: {}
       securityContext:
         privileged: true
-  annotations:
-    testgrid-dashboards: sig-windows-gce, sig-windows-1.22-release
-    testgrid-tab-name: gce-windows-20h2-docker-1.22
-    description: Runs tests on a Kubernetes cluster with Windows docker nodes on GCE
 postsubmits: {}
 presubmits:
   kubernetes/kubernetes:
@@ -971,7 +879,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
         - --timeout=55m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           requests:
@@ -1012,7 +920,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1061,7 +969,7 @@ presubmits:
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1112,7 +1020,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           requests:
@@ -1164,7 +1072,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1219,7 +1127,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1267,7 +1175,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           requests:
@@ -1304,7 +1212,7 @@ presubmits:
           value: release-1.22
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         imagePullPolicy: IfNotPresent
         name: ""
         resources:
@@ -1350,7 +1258,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1394,7 +1302,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           requests:
@@ -1433,7 +1341,7 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1485,6 +1393,7 @@ presubmits:
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --env=DEPLOY_GCI_DRIVER=false
         - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
+        - --env=KUBEPROXY_TEST_ARGS=--profiling --metrics-bind-address=0.0.0.0
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -1502,7 +1411,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1580,7 +1489,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1620,7 +1529,7 @@ presubmits:
           value: ipv6
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-1.22
+        image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-1.22
         name: ""
         resources:
           requests:
@@ -1649,7 +1558,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: main
         resources:
           limits:
@@ -1678,7 +1587,7 @@ presubmits:
         env:
         - name: WHAT
           value: generated-files-remake
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: main
         resources:
           limits:
@@ -1709,7 +1618,7 @@ presubmits:
         env:
         - name: SHORT
           value: --short=false
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1749,7 +1658,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-1.22
+        image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-1.22
         name: ""
         resources:
           limits:
@@ -1793,7 +1702,7 @@ presubmits:
           value: "true"
         - name: IP_FAMILY
           value: ipv6
-        image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-1.22
+        image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-1.22
         name: ""
         resources:
           limits:
@@ -1831,7 +1740,7 @@ presubmits:
           value: "true"
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-1.22
+        image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-1.22
         name: ""
         resources:
           limits:
@@ -1857,7 +1766,7 @@ presubmits:
       - command:
         - make
         - test
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: ""
         resources:
           limits:
@@ -1885,7 +1794,7 @@ presubmits:
         env:
         - name: WHAT
           value: typecheck typecheck-providerless typecheck-dockerless
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         name: main
         resources:
           limits:
@@ -1922,7 +1831,7 @@ presubmits:
           value: release-1.22
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.22
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
         imagePullPolicy: Always
         name: ""
         resources:

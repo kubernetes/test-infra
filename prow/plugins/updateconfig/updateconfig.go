@@ -21,7 +21,7 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -93,7 +93,7 @@ type OSFileGetter struct {
 }
 
 func (g *OSFileGetter) GetFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filepath.Join(g.Root, filename))
+	return os.ReadFile(filepath.Join(g.Root, filename))
 }
 
 // Update updates the configmap with the data from the identified files.
@@ -189,6 +189,9 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	if metrics != nil {
 		var size float64
 		for _, data := range cm.Data {
+			size += float64(len(data))
+		}
+		for _, data := range cm.BinaryData {
 			size += float64(len(data))
 		}
 		// in a strict sense this can race to update the value with other goroutines

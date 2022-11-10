@@ -32,6 +32,7 @@ import (
 
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git"
+	gitv2 "k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -331,6 +332,35 @@ func (o *GitHubOptions) GitHubClientWithAccessToken(token string) (github.Client
 	return client, err
 }
 
+// GitClientFactory returns git.ClientFactory. Passing non-empty cookieFilePath
+// will result in git ClientFactory to work with Gerrit.
+// TODO(chaodaiG): move this logic to somewhere more appropriate instead of in
+// github.go.
+func (o *GitHubOptions) GitClientFactory(cookieFilePath string, cacheDir *string, dryRun bool) (gitv2.ClientFactory, error) {
+	var gitClientFactory gitv2.ClientFactory
+	if cookieFilePath != "" && o.TokenPath == "" && o.AppPrivateKeyPath == "" {
+		opts := gitv2.ClientFactoryOpts{
+			CookieFilePath: cookieFilePath,
+		}
+		if cacheDir != nil && *cacheDir != "" {
+			opts.CacheDirBase = cacheDir
+		}
+		var err error
+		gitClientFactory, err = gitv2.NewClientFactory(opts.Apply)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create git client from cookieFile: %v\n(cookieFile is only for Gerrit)", err)
+		}
+	} else {
+		gitClient, err := o.GitClient(dryRun)
+		if err != nil {
+			return nil, fmt.Errorf("Error getting git client: %w", err)
+		}
+		gitClientFactory = gitv2.ClientFactoryFrom(gitClient)
+	}
+
+	return gitClientFactory, nil
+}
+
 // GitClient returns a Git client.
 func (o *GitHubOptions) GitClient(dryRun bool) (client *git.Client, err error) {
 	client, err = git.NewClientWithHost(o.Host)
@@ -383,7 +413,7 @@ func (o *GitHubOptions) appPrivateKeyGenerator() (func() *rsa.PrivateKey, error)
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
+		return nil, fmt.Errorf("failed to add the key from --app-private-key-path to secret agent: %w", err)
 	}
 
 	return generator, nil

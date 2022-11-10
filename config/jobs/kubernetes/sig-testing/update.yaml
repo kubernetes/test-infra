@@ -19,7 +19,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -27,9 +27,6 @@ presubmits:
         - ./hack/jenkins/update-dockerized.sh
         env:
         - name: EXCLUDE_TYPECHECK
-          value: "y"
-        # this is now covered by the optional pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
-        - name: EXCLUDE_FILES_REMAKE
           value: "y"
         - name: EXCLUDE_GODEP
           value: "y"

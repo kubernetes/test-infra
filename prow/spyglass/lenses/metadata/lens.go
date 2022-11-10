@@ -36,7 +36,6 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
-	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -96,8 +95,8 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 		Metadata     map[string]interface{}
 	}
 	metadataViewData := MetadataViewData{}
-	started := gcs.Started{}
-	finished := gcs.Finished{}
+	started := metadata.Started{}
+	finished := metadata.Finished{}
 	for _, a := range artifacts {
 		read, err := a.ReadAll()
 		if err != nil {

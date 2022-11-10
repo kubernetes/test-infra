@@ -1,0 +1,26 @@
+periodics:
+- name: periodic-sync-enhancements-github-project-beta-1-26
+  interval: 6h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-release-release-team-periodics
+    description: Periodically syncs the opted-in k/enhancements issues on the Enhancements Tracking GitHub Beta Project Board
+  extra_refs:
+  - org: kubernetes
+    repo: sig-release
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+      command:
+      - ./release-team/hack/sync-enhancements-github-project-beta.sh
+      env:
+        - name: GITHUB_PROJECT_BETA_NUMBER
+          value: "98"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: k8s-release-enhancements-triage-github-token
+              key: token

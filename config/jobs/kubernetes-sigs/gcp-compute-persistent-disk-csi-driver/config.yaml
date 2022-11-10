@@ -7,7 +7,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -30,7 +30,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -50,7 +50,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -70,7 +70,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -80,6 +80,16 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "hack/verify-all.sh"
+        # docker-in-docker needs privileged mode
+        # hack/verify-all.sh runs docker to validate the built docker images
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # Peak usage was measured at 4.5 Gi
+            memory: "6000Mi"
+            # Peak cpu usage was measured at 2500m, average close to 1000m
+            cpu: 2000m
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-verify
@@ -91,7 +101,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -104,13 +114,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-kubernetes-integration

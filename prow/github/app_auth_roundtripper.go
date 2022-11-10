@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"regexp"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -91,8 +92,12 @@ func (arr *appsRoundTripper) canonicalizedPath(url *url.URL) string {
 	return strings.TrimPrefix(url.Path, arr.hostPrefixMapping[url.Host])
 }
 
+var installationPath = regexp.MustCompile(`^/repos/[^/]+/[^/]+/installation$`)
+
 func (arr *appsRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if strings.HasPrefix(arr.canonicalizedPath(r.URL), "/app") {
+	path := arr.canonicalizedPath(r.URL)
+	// We need to use a JWT when we are getting /app/* endpoints or installation information for a particular repo
+	if strings.HasPrefix(path, "/app") || installationPath.MatchString(path) {
 		if err := arr.addAppAuth(r); err != nil {
 			return nil, err
 		}

@@ -97,6 +97,8 @@ func Test_gatherOptions(t *testing.T) {
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					PluginConfigPath:                         "/etc/plugins/plugins.yaml",

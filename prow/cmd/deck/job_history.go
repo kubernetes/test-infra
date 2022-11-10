@@ -22,7 +22,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"path"
 	"regexp"
@@ -31,6 +30,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -115,7 +115,7 @@ func (bucket blobStorageBucket) readObject(ctx context.Context, key string) ([]b
 		return nil, fmt.Errorf("creating reader for object %s: %w", key, err)
 	}
 	defer rc.Close()
-	return ioutil.ReadAll(rc)
+	return io.ReadAll(rc)
 }
 
 func (bucket blobStorageBucket) getName() string {
@@ -350,13 +350,13 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 		Result:     "Unknown",
 		commitHash: "Unknown",
 	}
-	started := gcs.Started{}
+	started := metadata.Started{}
 	err := readJSON(ctx, bucket, path.Join(dir, prowv1.StartedStatusFile), &started)
 	if err != nil {
 		return b, fmt.Errorf("failed to read started.json: %w", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
-	finished := gcs.Finished{}
+	finished := metadata.Finished{}
 	err = readJSON(ctx, bucket, path.Join(dir, prowv1.FinishedStatusFile), &finished)
 	if err != nil {
 		b.Result = "Pending"

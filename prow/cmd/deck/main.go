@@ -26,7 +26,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	stdio "io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -35,6 +35,7 @@ import (
 	"strings"
 	"time"
 
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/tide"
 
@@ -232,6 +233,7 @@ var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the
 	l("github-login",
 		l("redirect")),
 	l("github-link"),
+	l("git-provider-link"),
 	l("job-history",
 		v("job")),
 	l("log"),
@@ -336,7 +338,7 @@ func main() {
 		var fjc fakePjListingClientWrapper
 		var pjs prowapi.ProwJobList
 		staticPjsPath := path.Join(o.pregeneratedData, "prowjobs.json")
-		content, err := ioutil.ReadFile(staticPjsPath)
+		content, err := os.ReadFile(staticPjsPath)
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to read jobs from prowjobs.json.")
 		}
@@ -396,11 +398,10 @@ func main() {
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting GitHub client.")
 			}
-			g, err := o.github.GitClient(o.dryRun)
+			gitClient, err = o.github.GitClientFactory("", &o.config.InRepoConfigCacheDirBase, o.dryRun)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting Git client.")
 			}
-			gitClient = git.ClientFactoryFrom(g)
 		} else {
 			if len(cfg().InRepoConfig.Enabled) > 0 {
 				logrus.Info(" --github-token-path not configured. InRepoConfigEnabled, but current configuration won't display full PR history")
@@ -524,7 +525,7 @@ func (c *podLogClient) GetLogs(name, container string) ([]byte, error) {
 		return nil, err
 	}
 	defer reader.Close()
-	return ioutil.ReadAll(reader)
+	return stdio.ReadAll(reader)
 }
 
 type pjListingClientWrapper struct {
@@ -590,6 +591,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 	// Handles link to github
 	mux.HandleFunc("/github-link", HandleGitHubLink(o.github.Host, secure))
+	mux.HandleFunc("/git-provider-link", HandleGitProviderLink(o.github.Host, secure))
 
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
@@ -728,7 +730,7 @@ func initLocalLensHandler(cfg config.Getter, o options, sg *spyglass.Spyglass) e
 }
 
 func loadToken(file string) ([]byte, error) {
-	raw, err := ioutil.ReadFile(file)
+	raw, err := os.ReadFile(file)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -898,6 +900,10 @@ func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logru
 			http.Error(w, msg, httpStatusForError(err))
 			return
 		}
+		for idx, build := range tmpl.Builds {
+			tmpl.Builds[idx].Result = strings.ToUpper(build.Result)
+
+		}
 		handleSimpleTemplate(o, cfg, "job-history.html", tmpl)(w, r)
 	}
 }
@@ -915,6 +921,11 @@ func handlePRHistory(o options, cfg config.Getter, opener io.Opener, gitHubClien
 			log.WithField("url", r.URL.String()).Info(msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
+		}
+		for idx := range tmpl.Jobs {
+			for jdx, build := range tmpl.Jobs[idx].Builds {
+				tmpl.Jobs[idx].Builds[jdx].Result = strings.ToUpper(build.Result)
+			}
 		}
 		handleSimpleTemplate(o, cfg, "pr-history.html", tmpl)(w, r)
 	}
@@ -1246,7 +1257,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 
 	var data string
 	if requestType != spyglassapi.RequestActionInitial {
-		dataBytes, err := ioutil.ReadAll(r.Body)
+		dataBytes, err := stdio.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to read body: %v", err), http.StatusInternalServerError)
 			return
@@ -1273,7 +1284,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 		Director: func(r *http.Request) {
 			r.URL = lens.RemoteConfig.ParsedEndpoint
 			r.ContentLength = int64(len(serializedRequest))
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(serializedRequest))
+			r.Body = stdio.NopCloser(bytes.NewBuffer(serializedRequest))
 		},
 	}).ServeHTTP(w, r)
 }
@@ -1483,6 +1494,62 @@ func HandleGitHubLink(githubHost string, secure bool) http.HandlerFunc {
 			scheme = "https"
 		}
 		redirectURL := scheme + "://" + githubHost + "/" + r.URL.Query().Get("dest")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+	}
+}
+
+// HandleGenericProviderLink returns link based on different providers.
+func HandleGitProviderLink(githubHost string, secure bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var redirectURL string
+
+		vals := r.URL.Query()
+		target := vals.Get("target")
+		repo, branch, number, commit, author := vals.Get("repo"), vals.Get("branch"), vals.Get("number"), vals.Get("commit"), vals.Get("author")
+		// repo could be passed in with single quote, as it might contains https://
+		repo = strings.Trim(repo, "'")
+		if gerritsource.IsGerritOrg(repo) {
+			org, repo, err := gerritsource.OrgRepoFromCloneURI(repo)
+			if err != nil {
+				logrus.WithError(err).WithField("cloneURI", repo).Warn("Failed resolve org and repo from cloneURI.")
+				http.Redirect(w, r, "", http.StatusNotFound)
+				return
+			}
+			orgCodeURL, err := gerritsource.CodeRootURL(org)
+			if err != nil {
+				logrus.WithError(err).WithField("cloneURI", repo).Warn("Failed deriving source code URL from cloneURI.")
+				http.Redirect(w, r, "", http.StatusNotFound)
+				return
+			}
+			switch target {
+			case "commit":
+				fallthrough
+			case "prcommit":
+				redirectURL = orgCodeURL + "/" + repo + "/+/" + commit
+			case "branch":
+				redirectURL = orgCodeURL + "/" + repo + "/+/refs/heads/" + branch
+			case "pr":
+				redirectURL = org + "/c/" + repo + "/+/" + number
+			}
+		} else {
+			scheme := "http"
+			if secure {
+				scheme = "https"
+			}
+			prefix := scheme + "://" + githubHost + "/"
+			switch target {
+			case "commit":
+				redirectURL = prefix + repo + "/commit/" + commit
+			case "branch":
+				redirectURL = prefix + repo + "/tree/" + branch
+			case "pr":
+				redirectURL = prefix + repo + "/pull/" + number
+			case "prcommit":
+				redirectURL = prefix + repo + "/pull/" + number + "/" + commit
+			case "author":
+				redirectURL = prefix + author
+			}
+		}
 		http.Redirect(w, r, redirectURL, http.StatusFound)
 	}
 }

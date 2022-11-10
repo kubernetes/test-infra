@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -65,7 +64,7 @@ func parseOptions() (*options, error) {
 	flag.Parse()
 
 	var o options
-	data, err := ioutil.ReadFile(config)
+	data, err := os.ReadFile(config)
 	if err != nil {
 		return nil, fmt.Errorf("read %q: %w", config, err)
 	}
@@ -167,11 +166,11 @@ func (c *client) copyFiles() error {
 	for _, subPath := range c.paths {
 		SrcPath := path.Join(c.srcPath, subPath)
 		DstPath := path.Join(c.dstPath, subPath)
-		content, err := ioutil.ReadFile(SrcPath)
+		content, err := os.ReadFile(SrcPath)
 		if err != nil {
 			return fmt.Errorf("failed reading file %q: %w", SrcPath, err)
 		}
-		if err := ioutil.WriteFile(DstPath, content, 0755); err != nil {
+		if err := os.WriteFile(DstPath, content, 0755); err != nil {
 			return fmt.Errorf("failed writing file %q: %w", DstPath, err)
 		}
 	}

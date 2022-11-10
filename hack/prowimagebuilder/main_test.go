@@ -19,7 +19,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"testing"
@@ -149,7 +149,7 @@ func TestLoadImageDefs(t *testing.T) {
 		{Dir: "prow/cmd/clonerefs", Arch: "all"},
 	}
 
-	if err := ioutil.WriteFile(file, []byte(body), 0644); err != nil {
+	if err := os.WriteFile(file, []byte(body), 0644); err != nil {
 		t.Fatalf("Failed write file: %v", err)
 	}
 	defs, err := loadImageDefs(file)

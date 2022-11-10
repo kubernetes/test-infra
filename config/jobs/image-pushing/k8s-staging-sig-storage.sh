@@ -85,7 +85,7 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
             command:
               - /run.sh
             args:
@@ -131,7 +131,7 @@ cat >>"${OUTPUT}" <<EOF
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           env:

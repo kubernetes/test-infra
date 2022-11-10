@@ -45,7 +45,6 @@ import (
 
 type options struct {
 	allContexts            bool
-	buildCluster           string
 	config                 configflagutil.ConfigOptions
 	kubeconfig             string
 	totURL                 string

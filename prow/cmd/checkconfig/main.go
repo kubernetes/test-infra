@@ -23,8 +23,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	stdio "io"
 	"io/fs"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -122,6 +122,7 @@ const (
 	validateGitHubAppInstallationWarning          = "validate-github-app-installation"
 	validateLabelWarning                          = "validate-label"
 	requiredJobAnnotationsWarning                 = "required-job-annotations"
+	periodicDefaultCloneWarning                   = "periodic-default-clone-config"
 
 	defaultHourlyTokens = 3000
 	defaultAllowedBurst = 100
@@ -146,6 +147,7 @@ var defaultWarnings = []string{
 	validateUnmanagedBranchConfigHasNoSubconfig,
 	validateLabelWarning,
 	requiredJobAnnotationsWarning,
+	periodicDefaultCloneWarning,
 }
 
 var expensiveWarnings = []string{
@@ -335,6 +337,11 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(periodicDefaultCloneWarning) {
+		if err := validatePeriodicDefaultCloneConfig(cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if o.warningEnabled(needsOkToTestWarning) {
 		if err := validateNeedsOkToTestLabel(cfg); err != nil {
 			errs = append(errs, err)
@@ -369,7 +376,7 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	} else if unknownEnabled {
-		cfgBytes, err := ioutil.ReadFile(o.config.ConfigPath)
+		cfgBytes, err := os.ReadFile(o.config.ConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
@@ -378,7 +385,7 @@ func validate(o options) error {
 		}
 	}
 	if pcfg != nil && (unknownEnabled || unknownAllEnabled) {
-		pcfgBytes, err := ioutil.ReadFile(o.pluginsConfig.PluginConfigPath)
+		pcfgBytes, err := os.ReadFile(o.pluginsConfig.PluginConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
@@ -594,6 +601,17 @@ func validateJobExtraRefs(cfg config.JobConfig) error {
 			if err := config.ValidateRefs(repo, presubmit.JobBase); err != nil {
 				validationErrs = append(validationErrs, err)
 			}
+		}
+	}
+	return utilerrors.NewAggregate(validationErrs)
+}
+
+func validatePeriodicDefaultCloneConfig(cfg config.JobConfig) error {
+	var validationErrs []error
+	for _, job := range cfg.Periodics {
+		// Top level clone configs don't make sense for periodics jobs.
+		if job.CloneDepth != 0 || job.CloneURI != "" || job.PathAlias != "" {
+			validationErrs = append(validationErrs, fmt.Errorf("periodic jobs might clone 0, 1, or more repos, top level `clone_depth`, `clone_uri`, and `path_alias` don't have any effect. Name: %q", job.Name))
 		}
 	}
 	return utilerrors.NewAggregate(validationErrs)
@@ -1207,7 +1225,7 @@ func validateCluster(cfg *config.Config, opener io.Opener) error {
 			logrus.Warnf("Build cluster status file location was specified, but could not be found: %v. This is expected when the location is first configured, before plank creates the file.", err)
 		} else {
 			defer reader.Close()
-			b, err := ioutil.ReadAll(reader)
+			b, err := stdio.ReadAll(reader)
 			if err != nil {
 				return fmt.Errorf("error reading build cluster status file: %w", err)
 			}

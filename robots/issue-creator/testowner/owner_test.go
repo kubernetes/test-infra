@@ -20,7 +20,6 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -133,7 +132,7 @@ func TestReloadingOwnerList(t *testing.T) {
 			err:    true,
 		},
 	}
-	tempfile, err := ioutil.TempFile(os.TempDir(), "ownertest")
+	tempfile, err := os.CreateTemp(os.TempDir(), "ownertest")
 	if err != nil {
 		t.Error(err)
 	}

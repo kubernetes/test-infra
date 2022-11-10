@@ -14,7 +14,7 @@ periodics:
     path_alias: sigs.k8s.io/windows-testing
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
           - "runner.sh"
           - "./scripts/ci-k8s-unit-test.sh"
@@ -26,6 +26,6 @@ periodics:
             memory: "4Gi"
   annotations:
     fork-per-release: "true"
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+#   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-signal
     testgrid-tab-name: windows-unit-master

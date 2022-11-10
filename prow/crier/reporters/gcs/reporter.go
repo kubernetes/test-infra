@@ -27,12 +27,16 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/providers"
+	"k8s.io/test-infra/prow/pod-utils/clone"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 const reporterName = "gcsreporter"
@@ -40,7 +44,7 @@ const reporterName = "gcsreporter"
 type gcsReporter struct {
 	cfg    config.Getter
 	dryRun bool
-	author util.Author
+	opener io.Opener
 }
 
 func (gr *gcsReporter) Report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error) {
@@ -71,15 +75,6 @@ func (gr *gcsReporter) reportJobState(ctx context.Context, log *logrus.Entry, pj
 // happen before the pod itself gets to upload one, at which point the pod will
 // upload its own. If for some reason one already exists, it will not be overwritten.
 func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
-	s := metadata.Started{
-		Timestamp: pj.Status.StartTime.Unix(),
-		Metadata:  metadata.Metadata{"uploader": "crier"},
-	}
-	output, err := json.MarshalIndent(s, "", "\t")
-	if err != nil {
-		return fmt.Errorf("failed to marshal started metadata: %w", err)
-	}
-
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
 		return fmt.Errorf("failed to get job destination: %w", err)
@@ -89,7 +84,79 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload started.json")
 		return nil
 	}
-	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.StartedStatusFile), false, output)
+
+	// Best-effort read of existing started.json; it's overwritten only if it's uploaded
+	// by crier and there is something new (clone record).
+	var existingStarted metadata.Started
+	var existing bool
+	startedFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.StartedStatusFile))
+	if err != nil {
+		// Started.json storage path is invalid, so this function will
+		// eventually fail.
+		return fmt.Errorf("failed to resolve started.json path: %v", err)
+	}
+
+	content, err := io.ReadContent(ctx, log, gr.opener, startedFilePath)
+	if err != nil {
+		if !io.IsNotExist(err) {
+			log.WithError(err).Warn("Failed to read started.json.")
+		}
+	} else {
+		err = json.Unmarshal(content, &existingStarted)
+		if err != nil {
+			log.WithError(err).Warn("Failed to unmarshal started.json.")
+		} else {
+			existing = true
+		}
+	}
+
+	if existing && (existingStarted.Metadata == nil || existingStarted.Metadata["uploader"] != "crier") {
+		// Uploaded by prowjob itself, skip reporting
+		log.Debug("Uploaded by pod-utils, skipping")
+		return nil
+	}
+
+	staticRevision := downwardapi.GetRevisionFromRefs(pj.Spec.Refs, pj.Spec.ExtraRefs)
+	if pj.Spec.Refs == nil || (existingStarted.RepoCommit != "" && existingStarted.RepoCommit != staticRevision) {
+		// RepoCommit could only be "", BaseRef, or the final resolved SHA,
+		// which shouldn't change for a given presubmit job. Avoid query GCS is
+		// this is already done.
+		log.Debug("RepoCommit already resolved before, skipping")
+		return nil
+	}
+
+	// Try to read clone records
+	cloneRecord := make([]clone.Record, 0)
+	cloneRecordFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.CloneRecordFile))
+	if err != nil {
+		// This is user config error
+		log.WithError(err).Debug("Failed to resolve clone-records.json path.")
+	} else {
+		cloneRecordBytes, err := io.ReadContent(ctx, log, gr.opener, cloneRecordFilePath)
+		if err != nil {
+			if !io.IsNotExist(err) {
+				log.WithError(err).Warn("Failed to read clone records.")
+			}
+		} else {
+			if err := json.Unmarshal(cloneRecordBytes, &cloneRecord); err != nil {
+				log.WithError(err).Warn("Failed to unmarshal clone records.")
+			}
+		}
+	}
+	s := downwardapi.PjToStarted(pj, cloneRecord)
+	s.Metadata = metadata.Metadata{"uploader": "crier"}
+
+	output, err := json.MarshalIndent(s, "", "\t")
+	if err != nil {
+		return fmt.Errorf("failed to marshal started metadata: %w", err)
+	}
+
+	// Overwrite if it was uploaded by crier(existing) and there might be
+	// something new.
+	// Add a new var for better readability.
+	overwrite := existing
+	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)}
+	return io.WriteContent(ctx, log, gr.opener, startedFilePath, output, overwriteOpt)
 }
 
 // reportFinishedJob uploads a finished.json for the job, iff one did not already exist.
@@ -119,7 +186,13 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload finished.json")
 		return nil
 	}
-	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.FinishedStatusFile), false, output)
+	//PreconditionDoesNotExist:true means create only when file not exist.
+	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(true)}
+	finishedFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile))
+	if err != nil {
+		return fmt.Errorf("failed to resolve finished.json path: %v", err)
+	}
+	return io.WriteContent(ctx, log, gr.opener, finishedFilePath, output, overwriteOpt)
 }
 
 func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) error {
@@ -138,7 +211,12 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj 
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload pod info")
 		return nil
 	}
-	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.ProwJobFile), true, output)
+	overWriteOpts := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(false)}
+	prowJobFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.ProwJobFile))
+	if err != nil {
+		return fmt.Errorf("failed to resolve prowjob.json path: %v", err)
+	}
+	return io.WriteContent(ctx, log, gr.opener, prowJobFilePath, output, overWriteOpts)
 }
 
 func (gr *gcsReporter) GetName() string {
@@ -153,13 +231,9 @@ func (gr *gcsReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prow
 }
 
 func New(cfg config.Getter, opener io.Opener, dryRun bool) *gcsReporter {
-	return newWithAuthor(cfg, util.StorageAuthor{Opener: opener}, dryRun)
-}
-
-func newWithAuthor(cfg config.Getter, author util.Author, dryRun bool) *gcsReporter {
 	return &gcsReporter{
 		cfg:    cfg,
 		dryRun: dryRun,
-		author: author,
+		opener: opener,
 	}
 }

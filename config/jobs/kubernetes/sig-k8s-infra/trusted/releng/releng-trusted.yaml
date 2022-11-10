@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.4-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.9-1
         command:
         - /kpromo
         args:
@@ -40,20 +40,25 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.4-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.9-1
         command:
         - /kpromo
         args:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --use-prow-manifest-diff
         - --confirm
-      resources:
-        requests:
-          cpu: 2
-          memory: "4Gi"
-        limits:
-          cpu: 2
-          memory: "4Gi"
+        env:
+        - name: GOMAXPROCS
+          value: "7"
+        resources:
+          # request most of one node 🚀
+          requests:
+            cpu: 7
+            memory: "40Gi"
+          limits:
+            cpu: 7
+            memory: "40Gi"
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -101,7 +106,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.4-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.9-1
       command:
       - /kpromo
       args:
@@ -139,13 +144,24 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.4-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.9-1
       command:
       - /kpromo
       args:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - --confirm
+      env:
+      - name: GOMAXPROCS
+        value: "7"
+      resources:
+        # request most of one node 🚀
+        requests:
+          cpu: 7
+          memory: "40Gi"
+        limits:
+          cpu: 7
+          memory: "40Gi"
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io

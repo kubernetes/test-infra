@@ -127,7 +127,7 @@ export namespace cell {
     if (pull.link) {
       pl.href = pull.link;
     } else {
-      pl.href = `/github-link?dest=${repo}/pull/${pull.number}`;
+      pl.href = `/git-provider-link?target=pr&repo='${repo}'&number=${pull.number}`;
     }
     pl.text = pull.number.toString();
     if (pull.title) {
@@ -142,7 +142,7 @@ export namespace cell {
       if (pull.commit_link) {
         cl.href = pull.commit_link;
       } else {
-        cl.href = `/github-link?dest=${repo}/pull/${pull.number}/commits/${pull.sha}`;
+        cl.href = `/git-provider-link?target=prcommit&repo='${repo}'&number=${pull.number}&commit=${pull.sha}`;
       }
       cl.text = pull.sha.slice(0, 7);
       elem.appendChild(cl);
@@ -154,7 +154,7 @@ export namespace cell {
       if (pull.author_link) {
         al.href = pull.author_link;
       } else {
-        al.href = `/github-link?dest=${  pull.author}`;
+        al.href = `/git-provider-link?target=author&repo='${repo}'&author=${pull.author}`;
       }
       al.text = pull.author;
       elem.appendChild(al);

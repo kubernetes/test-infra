@@ -321,7 +321,7 @@ type PullRequestChange struct {
 
 // Repo contains general repository information: it includes fields available
 // in repo records returned by GH "List" methods but not those returned by GH
-// "Get" method.
+// "Get" method. Use FullRepo struct for "Get" method.
 // See also https://developer.github.com/v3/repos/#list-organization-repositories
 type Repo struct {
 	Owner         User   `json:"owner"`
@@ -364,9 +364,11 @@ type ParentRepo struct {
 type FullRepo struct {
 	Repo
 
-	AllowSquashMerge bool `json:"allow_squash_merge,omitempty"`
-	AllowMergeCommit bool `json:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge bool `json:"allow_rebase_merge,omitempty"`
+	AllowSquashMerge         bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit         bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge         bool   `json:"allow_rebase_merge,omitempty"`
+	SquashMergeCommitTitle   string `json:"squash_merge_commit_title,omitempty"`
+	SquashMergeCommitMessage string `json:"squash_merge_commit_message,omitempty"`
 }
 
 // RepoRequest contains metadata used in requests to create or update a Repo.
@@ -376,16 +378,18 @@ type FullRepo struct {
 // - https://developer.github.com/v3/repos/#create
 // - https://developer.github.com/v3/repos/#edit
 type RepoRequest struct {
-	Name             *string `json:"name,omitempty"`
-	Description      *string `json:"description,omitempty"`
-	Homepage         *string `json:"homepage,omitempty"`
-	Private          *bool   `json:"private,omitempty"`
-	HasIssues        *bool   `json:"has_issues,omitempty"`
-	HasProjects      *bool   `json:"has_projects,omitempty"`
-	HasWiki          *bool   `json:"has_wiki,omitempty"`
-	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
-	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+	Name                     *string `json:"name,omitempty"`
+	Description              *string `json:"description,omitempty"`
+	Homepage                 *string `json:"homepage,omitempty"`
+	Private                  *bool   `json:"private,omitempty"`
+	HasIssues                *bool   `json:"has_issues,omitempty"`
+	HasProjects              *bool   `json:"has_projects,omitempty"`
+	HasWiki                  *bool   `json:"has_wiki,omitempty"`
+	AllowSquashMerge         *bool   `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit         *bool   `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge         *bool   `json:"allow_rebase_merge,omitempty"`
+	SquashMergeCommitTitle   *string `json:"squash_merge_commit_title,omitempty"`
+	SquashMergeCommitMessage *string `json:"squash_merge_commit_message,omitempty"`
 }
 
 type WorkflowRuns struct {
@@ -426,6 +430,8 @@ func (r RepoRequest) ToRepo() *FullRepo {
 	setBool(&repo.AllowSquashMerge, r.AllowSquashMerge)
 	setBool(&repo.AllowMergeCommit, r.AllowMergeCommit)
 	setBool(&repo.AllowRebaseMerge, r.AllowRebaseMerge)
+	setString(&repo.SquashMergeCommitTitle, r.SquashMergeCommitTitle)
+	setString(&repo.SquashMergeCommitMessage, r.SquashMergeCommitMessage)
 
 	return &repo
 }
@@ -576,14 +582,21 @@ type EnforceAdmins struct {
 
 // RequiredPullRequestReviews exposes the state of review rights.
 type RequiredPullRequestReviews struct {
-	DismissalRestrictions        *Restrictions `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool          `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool          `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int           `json:"required_approving_review_count"`
+	DismissalRestrictions        *DismissalRestrictions `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                   `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                   `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                    `json:"required_approving_review_count"`
 }
 
-// Restrictions exposes restrictions in github for an activity to people/teams.
+// DismissalRestrictions exposes restrictions in github for an activity to people/teams.
+type DismissalRestrictions struct {
+	Users []User `json:"users,omitempty"`
+	Teams []Team `json:"teams,omitempty"`
+}
+
+// Restrictions exposes restrictions in github for an activity to apps/people/teams.
 type Restrictions struct {
+	Apps  []App  `json:"apps,omitempty"`
 	Users []User `json:"users,omitempty"`
 	Teams []Team `json:"teams,omitempty"`
 }
@@ -617,18 +630,31 @@ type RequiredStatusChecks struct {
 
 // RequiredPullRequestReviewsRequest controls a request for review rights.
 type RequiredPullRequestReviewsRequest struct {
-	DismissalRestrictions        RestrictionsRequest `json:"dismissal_restrictions"`
-	DismissStaleReviews          bool                `json:"dismiss_stale_reviews"`
-	RequireCodeOwnerReviews      bool                `json:"require_code_owner_reviews"`
-	RequiredApprovingReviewCount int                 `json:"required_approving_review_count"`
+	DismissalRestrictions        DismissalRestrictionsRequest `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool                         `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool                         `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int                          `json:"required_approving_review_count"`
 }
 
-// RestrictionsRequest tells github to restrict an activity to people/teams.
+// DismissalRestrictionsRequest tells github to restrict an activity to people/teams.
 //
 // Use *[]string in order to distinguish unset and empty list.
 // This is needed by dismissal_restrictions to distinguish
 // do not restrict (empty object) and restrict everyone (nil user/teams list)
+type DismissalRestrictionsRequest struct {
+	// Users is a list of user logins
+	Users *[]string `json:"users,omitempty"`
+	// Teams is a list of team slugs
+	Teams *[]string `json:"teams,omitempty"`
+}
+
+// RestrictionsRequest tells github to restrict an activity to apps/people/teams.
+//
+// Use *[]string in order to distinguish unset and empty list.
+// do not restrict (empty object) and restrict everyone (nil apps/user/teams list)
 type RestrictionsRequest struct {
+	// Apps is a list of app names
+	Apps *[]string `json:"apps,omitempty"`
 	// Users is a list of user logins
 	Users *[]string `json:"users,omitempty"`
 	// Teams is a list of team slugs
@@ -756,19 +782,20 @@ type IssueCommentEvent struct {
 
 // Issue represents general info about an issue.
 type Issue struct {
-	ID        int       `json:"id"`
-	NodeID    string    `json:"node_id"`
-	User      User      `json:"user"`
-	Number    int       `json:"number"`
-	Title     string    `json:"title"`
-	State     string    `json:"state"`
-	HTMLURL   string    `json:"html_url"`
-	Labels    []Label   `json:"labels"`
-	Assignees []User    `json:"assignees"`
-	Body      string    `json:"body"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Milestone Milestone `json:"milestone"`
+	ID          int       `json:"id"`
+	NodeID      string    `json:"node_id"`
+	User        User      `json:"user"`
+	Number      int       `json:"number"`
+	Title       string    `json:"title"`
+	State       string    `json:"state"`
+	HTMLURL     string    `json:"html_url"`
+	Labels      []Label   `json:"labels"`
+	Assignees   []User    `json:"assignees"`
+	Body        string    `json:"body"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Milestone   Milestone `json:"milestone"`
+	StateReason string    `json:"state_reason"`
 
 	// This will be non-nil if it is a pull request.
 	PullRequest *struct{} `json:"pull_request,omitempty"`
@@ -1125,12 +1152,16 @@ const (
 	// OrgUnaffiliated probably means user not a member yet, this was returned
 	// from an org invitation, had to add it so unmarshal doesn't crash
 	OrgUnaffiliated OrgPermissionLevel = "unaffiliated"
+	// OrgReinstate means the user was removed and the invited again before n months have passed.
+	// More info here: https://docs.github.com/en/github-ae@latest/organizations/managing-membership-in-your-organization/reinstating-a-former-member-of-your-organization
+	OrgReinstate OrgPermissionLevel = "reinstate"
 )
 
 var orgPermissionLevels = map[OrgPermissionLevel]bool{
 	OrgMember:       true,
 	OrgAdmin:        true,
 	OrgUnaffiliated: true,
+	OrgReinstate:    true,
 }
 
 // MarshalText returns the byte representation of the permission
@@ -1431,6 +1462,7 @@ type InstallationPermissions struct {
 // AppInstallation represents a GitHub Apps installation.
 type AppInstallation struct {
 	ID                  int64                   `json:"id,omitempty"`
+	AppSlug             string                  `json:"app_slug,omitempty"`
 	NodeID              string                  `json:"node_id,omitempty"`
 	AppID               int64                   `json:"app_id,omitempty"`
 	TargetID            int64                   `json:"target_id,omitempty"`
@@ -1445,6 +1477,12 @@ type AppInstallation struct {
 	Permissions         InstallationPermissions `json:"permissions,omitempty"`
 	CreatedAt           string                  `json:"created_at,omitempty"`
 	UpdatedAt           string                  `json:"updated_at,omitempty"`
+}
+
+// AppInstallationList represents the result of an AppInstallationList search.
+type AppInstallationList struct {
+	Total         int               `json:"total_count,omitempty"`
+	Installations []AppInstallation `json:"installations,omitempty"`
 }
 
 // AppInstallationToken is the response when retrieving an app installation

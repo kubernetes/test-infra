@@ -2,12 +2,6 @@ presets:
 - labels:
     preset-ci-gce-device-plugin-gpu: "true"
   env:
-  # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
-  # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
-  - name: KUBE_GCE_NODE_IMAGE
-    value: cos-85-13310-1041-9
-  - name: KUBE_GCE_NODE_PROJECT
-    value: cos-cloud
   - name: NODE_ACCELERATORS
     value: type=nvidia-tesla-k80,count=2
 
@@ -19,7 +13,6 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-ci-gce-device-plugin-gpu: "true"
-    preset-use-new-registry: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}"
@@ -40,13 +33,18 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
+      # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
+      # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
+      - --env=KUBE_NODE_OS_DISTRIBUTION=gci
+      - --env=KUBE_GCE_NODE_IMAGE=cos-97-16919-189-5
+      - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       resources:
         limits:
           cpu: 1
@@ -76,13 +74,18 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
+      # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
+      # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
+      - --env=KUBE_NODE_OS_DISTRIBUTION=gci
+      - --env=KUBE_GCE_NODE_IMAGE=cos-97-16919-189-5
+      - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
       - --gcp-node-image=gci
       - --gcp-project=k8s-infra-e2e-gpu-project
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       resources:
         limits:
           cpu: 1

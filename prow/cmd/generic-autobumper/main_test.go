@@ -318,15 +318,7 @@ func (cli *fakeImageBumperCli) TagExists(imageHost, imageName, currentTag string
 }
 
 func TestUpdateReferences(t *testing.T) {
-	tmpDir, err := os.MkdirTemp(".", "test-update-references_")
-	if err != nil {
-		t.Fatalf("Failed created tmp dir: %v", err)
-	}
-	t.Cleanup(func() {
-		if err := os.RemoveAll(tmpDir); err != nil {
-			t.Logf("Failed cleanup tmp dir %q: %v", tmpDir, err)
-		}
-	})
+	tmpDir := t.TempDir()
 	for dir, fps := range map[string][]string{
 		"testdata/dir/subdir1": {"test1-1.yaml", "test1-2.yaml"},
 		"testdata/dir/subdir2": {"test2-1.yaml"},

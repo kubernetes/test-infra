@@ -68,6 +68,7 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="api-review" href="#api-review">`api-review`</a> | Categorizes an issue or PR as actively needing an API review.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/community-meeting" href="#area/community-meeting">`area/community-meeting`</a> | Issues or PRs that should potentially be discussed in a Kubernetes community meeting.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/dependency" href="#area/dependency">`area/dependency`</a> | Issues or PRs related to dependency changes| label | |
 | <a id="area/provider/aws" href="#area/provider/aws">`area/provider/aws`</a> | Issues or PRs related to aws provider <br><br> This was previously `area/platform/aws`, `area/platform/eks`, `sig/aws`, `aws`, | label | |
 | <a id="area/provider/azure" href="#area/provider/azure">`area/provider/azure`</a> | Issues or PRs related to azure provider <br><br> This was previously `area/platform/aks`, `area/platform/azure`, `sig/azure`, `azure`, | label | |
@@ -346,12 +347,13 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
+| <a id="lead-opted-in" href="#lead-opted-in">`lead-opted-in`</a> | Denotes that an issue has been opted in to a release| SIG leads ONLY |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="stage/alpha" href="#stage/alpha">`stage/alpha`</a> | Denotes an issue tracking an enhancement targeted for Alpha status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
 | <a id="stage/beta" href="#stage/beta">`stage/beta`</a> | Denotes an issue tracking an enhancement targeted for Beta status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
 | <a id="stage/stable" href="#stage/stable">`stage/stable`</a> | Denotes an issue tracking an enhancement targeted for Stable/GA status| anyone |  [stage](https://git.k8s.io/test-infra/prow/plugins/stage) |
-| <a id="tracked/no" href="#tracked/no">`tracked/no`</a> | Denotes an enhancement issue is NOT actively being tracked by the Release Team| humans | |
-| <a id="tracked/out-of-tree" href="#tracked/out-of-tree">`tracked/out-of-tree`</a> | Denotes an out-of-tree enhancement issue, which does not need to be tracked by the Release Team| humans | |
-| <a id="tracked/yes" href="#tracked/yes">`tracked/yes`</a> | Denotes an enhancement issue is actively being tracked by the Release Team| humans | |
+| <a id="tracked/no" href="#tracked/no">`tracked/no`</a> | Denotes an enhancement issue is NOT actively being tracked by the Release Team| Release enhancements team ONLY |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="tracked/out-of-tree" href="#tracked/out-of-tree">`tracked/out-of-tree`</a> | Denotes an out-of-tree enhancement issue, which does not need to be tracked by the Release Team| Release enhancements team ONLY |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="tracked/yes" href="#tracked/yes">`tracked/yes`</a> | Denotes an enhancement issue is actively being tracked by the Release Team| Release enhancements team ONLY |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/k8s.io, for both issues and PRs
 
@@ -403,7 +405,6 @@ larger set of contributors to apply/remove them.
 | <a id="area/network-policy" href="#area/network-policy">`area/network-policy`</a> | Issues or PRs related to Network Policy subproject| label | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
 | <a id="area/stable-metrics" href="#area/stable-metrics">`area/stable-metrics`</a> | Issues or PRs involving stable metrics| label | |
-| <a id="deprecated/hyperkube" href="#deprecated/hyperkube">`deprecated/hyperkube`</a> | Issues or PRs related to the hyperkube subproject <br><br> This was previously `area/hyperkube`, | label | |
 | <a id="official-cve-feed" href="#official-cve-feed">`official-cve-feed`</a> | Issues or PRs related to CVEs officially announced by Security Response Committee (SRC)| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/kubernetes, only for issues

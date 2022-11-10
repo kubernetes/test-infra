@@ -18,14 +18,11 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
         - ./.prow.sh
-        env:
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v3.0.3"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -50,34 +47,24 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-csi-test
-      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-test, using deployment 1.22 on Kubernetes 1.22
+      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-test, using deployment 1.23 on Kubernetes 1.23
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.8.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
-        - name: CSI_PROW_TESTS
-          value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2000m
+        env:
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
   - name: pull-kubernetes-csi-release-tools-external-provisioner
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -96,34 +83,34 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-external-provisioner
-      description: Kubernetes-CSI pull job in repo csi-release-tools for external-provisioner, using deployment 1.22 on Kubernetes 1.22
+      description: Kubernetes-CSI pull job in repo csi-release-tools for external-provisioner, using deployment 1.23 on Kubernetes 1.23
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.8.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
-        - name: CSI_PROW_TESTS
-          value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2000m
+        env:
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.23.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.23"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.8.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
   - name: pull-kubernetes-csi-release-tools-external-snapshotter
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -142,34 +129,34 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-external-snapshotter
-      description: Kubernetes-CSI pull job in repo csi-release-tools for external-snapshotter, using deployment 1.22 on Kubernetes 1.22
+      description: Kubernetes-CSI pull job in repo csi-release-tools for external-snapshotter, using deployment 1.23 on Kubernetes 1.23
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.8.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
-        - name: CSI_PROW_TESTS
-          value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2000m
+        env:
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.23.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.23"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.8.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
   - name: pull-kubernetes-csi-release-tools-csi-driver-host-path
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -188,31 +175,31 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-release-tools-in-csi-driver-host-path
-      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-driver-host-path, using deployment 1.22 on Kubernetes 1.22
+      description: Kubernetes-CSI pull job in repo csi-release-tools for csi-driver-host-path, using deployment 1.23 on Kubernetes 1.23
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.8.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
-        - name: CSI_PROW_TESTS
-          value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2000m
+        env:
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.23.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.23"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.8.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"

@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -305,7 +304,7 @@ func getChannelGKEVersion(project, zone, region, gkeChannel, extractionMethod st
 // gcsWrite uploads contents to the dest location in GCS.
 // It currently shells out to gsutil, but this could change in future.
 func gcsWrite(dest string, contents []byte) error {
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	if err != nil {
 		return fmt.Errorf("error creating temp file: %w", err)
 	}

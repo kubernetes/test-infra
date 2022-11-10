@@ -21,7 +21,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -159,7 +158,7 @@ func populateMapWithError(markerMap map[string]MarkerResult, err error, paths ..
 }
 
 func readMarkerFile(path string) MarkerResult {
-	returnCodeData, err := ioutil.ReadFile(path)
+	returnCodeData, err := os.ReadFile(path)
 	if err != nil {
 		return MarkerResult{-1, fmt.Errorf("bad read: %w", err)}
 	}

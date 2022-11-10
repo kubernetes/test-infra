@@ -18,7 +18,7 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -33,9 +33,9 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 	"sigs.k8s.io/yaml"
 )
@@ -271,7 +271,7 @@ func TestRerun(t *testing.T) {
 			} else if !tc.rerunCreatesJob && tc.httpCode == http.StatusOK {
 				resp := rr.Result()
 				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
+				body, err := io.ReadAll(resp.Body)
 				if err != nil {
 					t.Fatalf("Error reading response body: %v", err)
 				}
@@ -444,12 +444,12 @@ func TestLatestRerun(t *testing.T) {
 					Name:      "wowsuch",
 					Namespace: "prowjobs",
 					Labels: map[string]string{
-						client.GerritReportLabel: "foo",
-						"random":                 "foo",
+						kube.GerritReportLabel: "foo",
+						"random":               "foo",
 					},
 					Annotations: map[string]string{
-						client.GerritID: "foo",
-						"random":        "foo",
+						kube.GerritID: "foo",
+						"random":      "foo",
 					},
 				},
 				Spec: prowapi.ProwJobSpec{
@@ -582,7 +582,7 @@ func TestLatestRerun(t *testing.T) {
 
 				resp := rr.Result()
 				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
+				body, err := io.ReadAll(resp.Body)
 				if err != nil {
 					t.Fatalf("Error reading response body: %v", err)
 				}

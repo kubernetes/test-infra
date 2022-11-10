@@ -159,6 +159,16 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.SetLimitEqualsMemoryRequest != nil {
+		in, out := &in.SetLimitEqualsMemoryRequest, &out.SetLimitEqualsMemoryRequest
+		*out = new(bool)
+		**out = **in
+	}
+	if in.DefaultMemoryRequest != nil {
+		in, out := &in.DefaultMemoryRequest, &out.DefaultMemoryRequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
 	return
 }
 

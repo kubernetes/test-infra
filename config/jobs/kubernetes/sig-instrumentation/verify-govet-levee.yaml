@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220722-16ae0286c2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         imagePullPolicy: IfNotPresent
         command:
         - make
@@ -28,9 +28,6 @@ presubmits:
         - name: WHAT
           value: govet-levee
         - name: EXCLUDE_TYPECHECK
-          value: "y"
-        # this is now covered by pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
-        - name: EXCLUDE_FILES_REMAKE
           value: "y"
         - name: EXCLUDE_GODEP
           value: "y"

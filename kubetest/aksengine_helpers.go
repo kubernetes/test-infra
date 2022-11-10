@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -366,7 +365,7 @@ func getOAuthConfig(env azure.Environment, subscriptionID, tenantID string) (*ad
 }
 
 func getAzCredentials() (*Creds, error) {
-	content, err := ioutil.ReadFile(*aksCredentialsFile)
+	content, err := os.ReadFile(*aksCredentialsFile)
 	log.Printf("Reading credentials file %v", *aksCredentialsFile)
 	if err != nil {
 		return nil, fmt.Errorf("error reading credentials file %v %w", *aksCredentialsFile, err)
@@ -462,7 +461,7 @@ func populateAzureCloudConfig(isVMSS bool, credentials Creds, azureEnvironment, 
 	}
 
 	cloudConfigPath := path.Join(outputDir, "azure.json")
-	if err := ioutil.WriteFile(cloudConfigPath, cloudConfig, 0644); err != nil {
+	if err := os.WriteFile(cloudConfigPath, cloudConfig, 0644); err != nil {
 		return fmt.Errorf("cannot write Azure cloud config to file: %w", err)
 	}
 	if err := os.Setenv("CLOUD_CONFIG", cloudConfigPath); err != nil {

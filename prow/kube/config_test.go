@@ -119,6 +119,7 @@ func TestLoadClusterConfigs(t *testing.T) {
 		name               string
 		kubeconfig         string
 		kubeconfigDir      string
+		suffix             string
 		projectedTokenFile string
 		noInClusterConfig  bool
 		expected           map[string]rest.Config
@@ -157,6 +158,7 @@ func TestLoadClusterConfigs(t *testing.T) {
 		{
 			name:          "load from kubeconfigDir",
 			kubeconfigDir: filepath.Join("testdata", "load_from_kubeconfigDir"),
+			suffix:        "yaml",
 			expected: map[string]rest.Config{
 				"": {
 					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
@@ -250,7 +252,7 @@ func TestLoadClusterConfigs(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, actualErr := LoadClusterConfigs(NewConfig(ConfigFile(tc.kubeconfig),
 				ConfigDir(tc.kubeconfigDir), ConfigProjectedTokenFile(tc.projectedTokenFile),
-				NoInClusterConfig(tc.noInClusterConfig)))
+				NoInClusterConfig(tc.noInClusterConfig), ConfigSuffix(tc.suffix)))
 			if tc.expectedErr != (actualErr != nil) {
 				t.Errorf("%s: actualErr %v does not match expectedErr %v", tc.name, actualErr, tc.expectedErr)
 				return

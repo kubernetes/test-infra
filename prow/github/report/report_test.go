@@ -224,7 +224,8 @@ func createReportEntry(context string, isRequired bool) string {
 }
 
 type fakeGhClient struct {
-	status []github.Status
+	status   []github.Status
+	comments []string
 }
 
 func (gh fakeGhClient) BotUserCheckerWithContext(_ context.Context) (func(string) bool, error) {
@@ -246,7 +247,8 @@ func (gh *fakeGhClient) CreateStatusWithContext(_ context.Context, org, repo, re
 func (gh fakeGhClient) ListIssueCommentsWithContext(_ context.Context, org, repo string, number int) ([]github.IssueComment, error) {
 	return nil, nil
 }
-func (gh fakeGhClient) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
+func (gh *fakeGhClient) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
+	gh.comments = append(gh.comments, comment)
 	return nil
 }
 func (gh fakeGhClient) DeleteCommentWithContext(_ context.Context, org, repo string, ID int) error {
@@ -634,4 +636,90 @@ func mustParseTemplate(t *testing.T, s string) *template.Template {
 		t.Fatal(err)
 	}
 	return tmpl
+}
+
+func TestReportComment(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name            string
+		pjs             []prowapi.ProwJob
+		reporterConfig  config.GitHubReporter
+		mustCreate      bool
+		expectedComment bool
+	}{
+		{
+			name: "failed pj",
+			pjs: []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type:   prowapi.PresubmitJob,
+					Report: true,
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{}},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:          prowapi.FailureState,
+					CompletionTime: &metav1.Time{},
+				}},
+			},
+			reporterConfig: config.GitHubReporter{
+				JobTypesToReport: []prowapi.ProwJobType{prowapi.PresubmitJob},
+			},
+			expectedComment: true,
+		},
+		{
+			name: "succeeded pj when mustCreate is true",
+			pjs: []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type:   prowapi.PresubmitJob,
+					Report: true,
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{}},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:          prowapi.SuccessState,
+					CompletionTime: &metav1.Time{},
+				}},
+			},
+			reporterConfig: config.GitHubReporter{
+				JobTypesToReport: []prowapi.ProwJobType{prowapi.PresubmitJob},
+			},
+			mustCreate:      true,
+			expectedComment: true,
+		},
+		{
+			name: "aborted pj when mustCreate is true",
+			pjs: []prowapi.ProwJob{{
+				Spec: prowapi.ProwJobSpec{
+					Type:   prowapi.PresubmitJob,
+					Report: true,
+					Refs: &prowapi.Refs{
+						Pulls: []prowapi.Pull{{}},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:          prowapi.AbortedState,
+					CompletionTime: &metav1.Time{},
+				}},
+			},
+			reporterConfig: config.GitHubReporter{
+				JobTypesToReport: []prowapi.ProwJobType{prowapi.PresubmitJob},
+			},
+			mustCreate: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fghc := &fakeGhClient{}
+			err := ReportComment(context.Background(), fghc, nil, tc.pjs, tc.reporterConfig, tc.mustCreate)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if diff := cmp.Diff(tc.expectedComment, len(fghc.comments) == 1); diff != "" {
+				t.Fatalf("expectedComment didn't match result, diff: %s", diff)
+			}
+		})
+	}
 }

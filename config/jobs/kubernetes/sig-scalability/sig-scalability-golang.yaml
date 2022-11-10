@@ -9,6 +9,11 @@ periodics:
   decoration_config:
     timeout: 75m
   extra_refs:
+  - org: go.googlesource.com
+    repo: go
+    base_ref: master
+    path_alias: golang
+    clone_uri: https://go.googlesource.com/go
   - org: kubernetes
     repo: kubernetes
     base_ref: master
@@ -23,11 +28,6 @@ periodics:
     base_sha: 0ff1922aa2269879957646a232f657bcb57824b1 # head of master branch as of 2021-09-25
     base_ref: master
     path_alias: k8s.io/release
-  - org: go.googlesource.com
-    repo: go
-    base_ref: master
-    path_alias: golang
-    clone_uri: https://go.googlesource.com/go
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
@@ -35,10 +35,7 @@ periodics:
     testgrid-tab-name: build-and-push-k8s-at-golang-tip
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220614-ad0ae57da9
-      env:
-      - name: GCS_BUCKET
-        value: "k8s-infra-scale-golang-builds"
+    - image: gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
@@ -62,7 +59,6 @@ periodics:
   cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: golang-tip-k8s-1-23"
-  - "perfDashBuildsCount: 500"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
@@ -74,7 +70,7 @@ periodics:
     preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
-    timeout: 210m
+    timeout: 240m
   extra_refs:
   - org: kubernetes
     repo: perf-tests
@@ -88,7 +84,7 @@ periodics:
     testgrid-tab-name: golang-tip-k8s-1-23
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -121,7 +117,7 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-args=--testoverrides=./testing/load/golang/custom_api_call_thresholds.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=180m
+      - --timeout=210m
       - --use-logexporter
       - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       env:

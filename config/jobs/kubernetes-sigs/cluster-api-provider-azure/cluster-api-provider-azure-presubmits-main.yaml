@@ -5,13 +5,33 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
-        - "./scripts/ci-test.sh"
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+          result=0
+          ./scripts/ci-test-coverage.sh || result=$?
+          cp coverage.* ${ARTIFACTS}
+          cd ../../k8s.io/test-infra/gopherage
+          GO111MODULE=on go build .
+          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          exit $result
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-test-main
@@ -25,7 +45,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -48,7 +68,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
           - runner.sh
         args:
@@ -82,7 +102,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
           - runner.sh
         args:
@@ -116,12 +136,16 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
           - runner.sh
         args:
           - ./scripts/ci-e2e.sh
         env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.22"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.23"
           - name: GINKGO_FOCUS
             value: \[CSI Migration\]
           - name: GINKGO_SKIP
@@ -138,7 +162,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: '^((exp)\/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)|managed.*\.go|aks'
+    run_if_changed: '^((exp)\/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)|test\/e2e\/config|managed.*\.go|aks|^azure\/services\/agentpools\/'
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -149,7 +173,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
           - runner.sh
         args:
@@ -183,7 +207,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
           - runner.sh
         args:
@@ -212,7 +236,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
         - "runner.sh"
         - "make"
@@ -239,7 +263,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
           - runner.sh
         args:
@@ -271,7 +295,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
           command:
             - runner.sh
           args:
@@ -304,7 +328,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
           command:
             - runner.sh
           args:
@@ -344,7 +368,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
           command:
             - runner.sh
           args:
@@ -371,16 +395,17 @@ presubmits:
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-serial-slow-main
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     always_run: true
     optional: true
-    labels:
-      preset-service-account: "true"
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
           - runner.sh
         args:
@@ -388,38 +413,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-main
-  - name: pull-cluster-api-provider-azure-coverage
-    always_run: true
-    optional: true
-    decorate: true
-    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    extra_refs:
-    - org: kubernetes
-      repo: test-infra
-      base_ref: master
-      path_alias: k8s.io/test-infra
-    branches:
-    - ^main$
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-          result=0
-          ./scripts/ci-test-coverage.sh || result=$?
-          cp coverage.* ${ARTIFACTS}
-          cd ../../k8s.io/test-infra/gopherage
-          GO111MODULE=on go build .
-          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
-          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
-          exit $result
-        securityContext:
-          privileged: true
   - name: pull-cluster-api-provider-azure-e2e-workload-upgrade
     labels:
       preset-dind-enabled: "true"
@@ -439,7 +432,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -462,6 +455,7 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     decorate: true
+    run_if_changed: '^test\/e2e\/(config\/azure-dev\.yaml)|(data\/shared\/v1beta1_provider\/metadata\.yaml)$'
     optional: true
     always_run: false
     branches:
@@ -474,7 +468,7 @@ presubmits:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -509,7 +503,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
         command:
           - runner.sh
         args:

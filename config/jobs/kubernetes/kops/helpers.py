@@ -136,7 +136,10 @@ def latest_aws_image(owner, name, arch='x86_64'):
     )
     images = {}
     for image in response['Images']:
-        images[image['CreationDate']] = image['ImageLocation']
+        image_location = image['ImageLocation']
+        if image_location.startswith("amazon/"):
+            image_location = image_location.replace('amazon', owner)
+        images[image['CreationDate']] = image_location
     return images[sorted(images, reverse=True)[0]]
 
 distro_images = {

@@ -29,7 +29,6 @@ import (
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -103,7 +102,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gitClient, err := o.github.GitClient(o.dryRun)
+	gitClient, err := o.github.GitClientFactory("", nil, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
@@ -132,7 +131,7 @@ func main() {
 		botUser:        botUser,
 		email:          email,
 
-		gc:  git.ClientFactoryFrom(gitClient),
+		gc:  gitClient,
 		ghc: githubClient,
 		log: log,
 

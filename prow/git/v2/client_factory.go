@@ -18,8 +18,8 @@ package git
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"runtime"
 	"sync"
@@ -56,8 +56,6 @@ type ClientFactoryOpts struct {
 	Host string
 	// UseSSH, defaults to false
 	UseSSH *bool
-	// CloneURI will use CloneURI Remote resolver if set.
-	CloneURI string
 	// The directory in which the cache should be
 	// created. Defaults to the "/var/tmp" on
 	// Linux and os.TempDir otherwise
@@ -98,9 +96,6 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	if cfo.Username != nil {
 		target.Username = cfo.Username
 	}
-	if cfo.CloneURI != "" {
-		target.CloneURI = cfo.CloneURI
-	}
 	if cfo.CookieFilePath != "" {
 		target.CookieFilePath = cfo.CookieFilePath
 	}
@@ -127,7 +122,11 @@ func defaultClientFactoryOpts(cfo *ClientFactoryOpts) {
 }
 
 // NewClientFactory allows for the creation of repository clients. It uses github.com
-// without authentication by default.
+// without authentication by default, if UseSSH then returns
+// sshRemoteResolverFactory, and if CookieFilePath is provided then returns
+// gerritResolverFactory(Assuming that git http.cookiefile is used only by
+// Gerrit, this function needs to be updated if it turned out that this
+// assumtpion is not correct.)
 func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	o := ClientFactoryOpts{}
 	defaultClientFactoryOpts(&o)
@@ -135,22 +134,26 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		opt(&o)
 	}
 
-	cacheDir, err := ioutil.TempDir(*o.CacheDirBase, "gitcache")
+	if o.CookieFilePath != "" {
+		if output, err := exec.Command("git", "config", "--global", "http.cookiefile", o.CookieFilePath).CombinedOutput(); err != nil {
+			return nil, fmt.Errorf("unable to configure http.cookiefile.\nOutput: %s\nError: %w", string(output), err)
+		}
+	}
+
+	cacheDir, err := os.MkdirTemp(*o.CacheDirBase, "gitcache")
 	if err != nil {
 		return nil, err
 	}
-	var remotes RemoteResolverFactory
-	if len(o.CloneURI) != 0 {
-		remotes = &cloneURIResolverFactory{
-			cloneURI: o.CloneURI,
-		}
-	} else if o.UseSSH != nil && *o.UseSSH {
-		remotes = &sshRemoteResolverFactory{
+	var remote RemoteResolverFactory
+	if o.UseSSH != nil && *o.UseSSH {
+		remote = &sshRemoteResolverFactory{
 			host:     o.Host,
 			username: o.Username,
 		}
+	} else if o.CookieFilePath != "" {
+		remote = &gerritResolverFactory{}
 	} else {
-		remotes = &httpResolverFactory{
+		remote = &httpResolverFactory{
 			host:     o.Host,
 			username: o.Username,
 			token:    o.Token,
@@ -159,7 +162,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	return &clientFactory{
 		cacheDir:       cacheDir,
 		cacheDirBase:   *o.CacheDirBase,
-		remotes:        remotes,
+		remote:         remote,
 		gitUser:        o.GitUser,
 		censor:         o.Censor,
 		masterLock:     &sync.Mutex{},
@@ -172,13 +175,13 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 // NewLocalClientFactory allows for the creation of repository clients
 // based on a local filepath remote for testing
 func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor) (ClientFactory, error) {
-	cacheDir, err := ioutil.TempDir("", "gitcache")
+	cacheDir, err := os.MkdirTemp("", "gitcache")
 	if err != nil {
 		return nil, err
 	}
 	return &clientFactory{
 		cacheDir:   cacheDir,
-		remotes:    &pathResolverFactory{baseDir: baseDir},
+		remote:     &pathResolverFactory{baseDir: baseDir},
 		gitUser:    gitUser,
 		censor:     censor,
 		masterLock: &sync.Mutex{},
@@ -188,7 +191,7 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 }
 
 type clientFactory struct {
-	remotes        RemoteResolverFactory
+	remote         RemoteResolverFactory
 	gitUser        GitUserGetter
 	censor         Censor
 	logger         *logrus.Entry
@@ -219,11 +222,13 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	var remote RemoteResolverFactory
+	remote = c.remote
 	client := &repoClient{
 		publisher: publisher{
 			remotes: remotes{
-				publishRemote: c.remotes.PublishRemote(org, repo),
-				centralRemote: c.remotes.CentralRemote(org, repo),
+				publishRemote: remote.PublishRemote(org, repo),
+				centralRemote: remote.CentralRemote(org, repo),
 			},
 			executor: executor,
 			info:     c.gitUser,
@@ -231,7 +236,7 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 		},
 		interactor: interactor{
 			dir:      dir,
-			remote:   c.remotes.CentralRemote(org, repo),
+			remote:   remote.CentralRemote(org, repo),
 			executor: executor,
 			logger:   logger,
 		},
@@ -251,6 +256,9 @@ func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error)
 // In that case, it must do a full git mirror clone. For large repos, this can
 // take a while. Once that is done, it will do a git fetch instead of a clone,
 // which will usually take at most a few seconds.
+//
+// org and repo are used for determining where the repo is cloned, cloneURI
+// overrides org/repo for cloning.
 func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	cacheDir := path.Join(c.cacheDir, org, repo)
 	c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "dir": cacheDir}).Debug("Creating a client from the cache.")
@@ -259,7 +267,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		return nil, err
 	}
 
-	repoDir, err := ioutil.TempDir(c.cacheDirBase, "gitrepo")
+	repoDir, err := os.MkdirTemp(c.cacheDirBase, "gitrepo")
 	if err != nil {
 		return nil, err
 	}
@@ -278,12 +286,6 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		// we have not yet cloned this repo, we need to do a full clone
 		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
-		}
-		if len(c.cookieFilePath) > 0 {
-			err := repoClient.Config("--global", "http.cookiefile", c.cookieFilePath)
-			if err != nil {
-				return nil, fmt.Errorf("unable to configure http.cookiefile: %w", err)
-			}
 		}
 		if err := cacheClientCacher.MirrorClone(); err != nil {
 			return nil, err

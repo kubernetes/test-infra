@@ -42,6 +42,7 @@ type runnable interface {
 // Run clones the refs under the prescribed directory and optionally
 // configures the git username and email in the repository as well.
 func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string, userGenerator github.UserGenerator, tokenGenerator github.TokenGenerator) Record {
+	startTime := time.Now()
 	record := Record{Refs: refs}
 
 	var (
@@ -75,6 +76,7 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	// aborting early and returning if any command fails.
 	runCommands := func(commands []runnable) error {
 		for _, command := range commands {
+			startTime := time.Now()
 			formattedCommand, output, err := command.run()
 			log := logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output})
 			if err != nil {
@@ -87,9 +89,10 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 				record.Failed = true
 			}
 			record.Commands = append(record.Commands, Command{
-				Command: censorToken(string(secret.Censor([]byte(formattedCommand))), token),
-				Output:  censorToken(string(secret.Censor([]byte(output))), token),
-				Error:   censorToken(string(secret.Censor([]byte(message))), token),
+				Command:  censorToken(string(secret.Censor([]byte(formattedCommand))), token),
+				Output:   censorToken(string(secret.Censor([]byte(output))), token),
+				Error:    censorToken(string(secret.Censor([]byte(message))), token),
+				Duration: time.Since(startTime),
 			})
 			if err != nil {
 				return err
@@ -117,6 +120,8 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	} else {
 		record.FinalSHA = finalSHA
 	}
+
+	record.Duration = time.Since(startTime)
 
 	return record
 }

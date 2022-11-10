@@ -21,8 +21,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 	"text/template"
@@ -86,7 +86,6 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 			p.SkipBranches = nil
 			p.Branches = []string{"release-" + version}
 			p.Context = generatePresubmitContextVariant(p.Name, p.Context, version)
-			p.Name = generatePresubmitNameVariant(p.Name, version)
 			if p.Spec != nil {
 				for i := range p.Spec.Containers {
 					c := &p.Spec.Containers[i]
@@ -367,14 +366,6 @@ func generateNameVariant(name, version string, generic bool) string {
 	return replaceAllMaster(name, suffix)
 }
 
-func generatePresubmitNameVariant(name, version string) string {
-	suffix := "-" + version
-	if !strings.HasSuffix(name, masterSuffix) {
-		return name + suffix
-	}
-	return replaceAllMaster(name, suffix)
-}
-
 func generatePresubmitContextVariant(name, context, version string) string {
 	suffix := "-" + version
 
@@ -445,7 +436,7 @@ func main() {
 	}
 
 	if o.outputPath != "" {
-		if err := ioutil.WriteFile(o.outputPath, output, 0666); err != nil {
+		if err := os.WriteFile(o.outputPath, output, 0666); err != nil {
 			log.Fatalf("Failed to write new presubmits: %v.\n", err)
 		}
 	} else {

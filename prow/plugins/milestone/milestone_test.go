@@ -109,8 +109,7 @@ func TestMilestoneStatus(t *testing.T) {
 		fakeClient.MilestoneMap = milestonesMap
 		fakeClient.Milestone = tc.previousMilestone
 
-		maintainersID := 42
-		maintainersName := "fake-maintainers-team"
+		maintainersTeamName := "leads"
 		e := &github.GenericCommentEvent{
 			Action: github.GenericCommentActionCreated,
 			Body:   tc.body,
@@ -119,10 +118,10 @@ func TestMilestoneStatus(t *testing.T) {
 			User:   github.User{Login: tc.commenter},
 		}
 
-		repoMilestone := map[string]plugins.Milestone{"": {MaintainersID: 0, MaintainersTeam: maintainersName}}
+		repoMilestone := map[string]plugins.Milestone{"": {MaintainersTeam: "admins"}}
 
 		if !tc.noRepoMaintainer {
-			repoMilestone["org/repo"] = plugins.Milestone{MaintainersID: maintainersID, MaintainersTeam: maintainersName}
+			repoMilestone["org/repo"] = plugins.Milestone{MaintainersTeam: maintainersTeamName}
 		}
 
 		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, repoMilestone); err != nil {

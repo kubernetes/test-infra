@@ -1,19 +1,18 @@
 dashboard_groups:
 - name: sig-network
   dashboard_names:
-    - sig-network-dualstack-azure-e2e
     - sig-network-dns
     - sig-network-external-dns
     - sig-network-gce
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
     - sig-network-gateway-api
+    - sig-network-policy-api
     - sig-network-ingress-controller-conformance
     - sig-network-kind
 
 dashboards:
 - name: sig-network-dns
-- name: sig-network-dualstack-azure-e2e
 - name: sig-network-external-dns
 - name: sig-network-gce
   dashboard_tab:
@@ -96,5 +95,6 @@ dashboards:
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
 - name: sig-network-gateway-api
+- name: sig-network-policy-api
 - name: sig-network-ingress-controller-conformance
 - name: sig-network-kind

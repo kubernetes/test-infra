@@ -120,10 +120,29 @@ func TestCommandFilter(t *testing.T) {
 	var testCases = []struct {
 		name         string
 		body         string
+		half         int
 		presubmits   []config.Presubmit
 		expected     [][]bool
 		expectedName string
 	}{
+		{
+			name: "loose-trigger",
+			body: "something/test job-abcdefg",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "trigger",
+					},
+					Trigger:      `/test job-a`,
+					RerunCommand: "/test job-a", // rerun command has to be set when trigger is set.
+				},
+			},
+			// Loose trigger without `^` and `$` means it would match the text
+			// from anywhere in the message. For example a comment like:
+			// `something/test job-abcdefg` would match this job.
+			expected:     [][]bool{{true, true, true}},
+			expectedName: "command-filter: something/test job-abcdefg",
+		},
 		{
 			name: "command filter matches jobs whose triggers match the body",
 			body: "/test trigger",
@@ -149,7 +168,8 @@ func TestCommandFilter(t *testing.T) {
 		{
 			name: "truncate-name",
 			body: `/test trigger
-fill in random content so that it exceeds the limit of 50 chars`,
+fill in random content so that it exceeds the limit of half*2 chars`,
+			half: 10,
 			presubmits: []config.Presubmit{
 				{
 					JobBase: config.JobBase{
@@ -160,8 +180,9 @@ fill in random content so that it exceeds the limit of 50 chars`,
 				},
 			},
 			expected: [][]bool{{true, true, true}},
-			expectedName: `command-filter: /test trigger
-fill in random content so that it ex`,
+			expectedName: `command-filter: /test trig
+...
+lf*2 chars`,
 		},
 	}
 
@@ -174,6 +195,9 @@ fill in random content so that it ex`,
 				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)
 			}
 			filter := NewCommandFilter(testCase.body)
+			if testCase.half > 0 {
+				filter.half = testCase.half
+			}
 			for i, presubmit := range testCase.presubmits {
 				actualFiltered, actualForced, actualDefault := filter.ShouldRun(presubmit)
 				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]

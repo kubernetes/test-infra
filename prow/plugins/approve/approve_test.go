@@ -18,8 +18,8 @@ package approve
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -50,7 +50,7 @@ const prNumber = 1
 func TestPluginConfig(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 
-	b, err := ioutil.ReadFile("../../../config/prow/plugins.yaml")
+	b, err := os.ReadFile("../../../config/prow/plugins.yaml")
 	if err != nil {
 		t.Fatalf("Failed to read plugin config: %v.", err)
 	}
@@ -159,7 +159,7 @@ func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, erro
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.SimpleConfig{}, err
 	}
@@ -176,7 +176,7 @@ func (fr fakeRepo) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.FullConfig{}, err
 	}
@@ -265,7 +265,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -430,7 +430,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -468,7 +468,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -689,7 +689,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing `+"`/assign @alice`"+` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing `+"`/assign @alice`"+` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -766,7 +766,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -835,7 +835,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -872,7 +872,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -947,7 +947,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -984,7 +984,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -1018,7 +1018,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -1053,7 +1053,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -1218,7 +1218,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 

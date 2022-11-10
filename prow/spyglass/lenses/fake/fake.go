@@ -19,7 +19,7 @@ package fake
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 )
 
 type Artifact struct {
@@ -62,7 +62,7 @@ func (fa *Artifact) ReadAt(b []byte, off int64) (int, error) {
 
 func (fa *Artifact) ReadAll() ([]byte, error) {
 	r := bytes.NewReader(fa.Content)
-	return ioutil.ReadAll(r)
+	return io.ReadAll(r)
 }
 
 func (fa *Artifact) ReadTail(n int64) ([]byte, error) {

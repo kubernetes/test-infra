@@ -20,6 +20,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	stdio "io"
+	"path"
 	"strings"
 	"testing"
 	"time"
@@ -31,8 +33,19 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/testutil"
+	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/io/fakeopener"
+	"k8s.io/test-infra/prow/io/providers"
+	"k8s.io/test-infra/prow/pod-utils/clone"
 )
+
+type fca struct {
+	c config.Config
+}
+
+func (ca fca) Config() *config.Config {
+	return &ca.c
+}
 
 func TestReportJobFinished(t *testing.T) {
 	completionTime := &metav1.Time{Time: time.Date(2010, 10, 10, 19, 00, 0, 0, time.UTC)}
@@ -71,7 +84,7 @@ func TestReportJobFinished(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("report %s job", tc.jobState), func(t *testing.T) {
 			ctx := context.Background()
-			cfg := testutil.Fca{C: config.Config{
+			cfg := fca{c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
 						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
@@ -87,8 +100,8 @@ func TestReportJobFinished(t *testing.T) {
 					},
 				},
 			}}.Config
-			ta := &testutil.TestAuthor{}
-			reporter := newWithAuthor(cfg, ta, false)
+			fakeOpener := &fakeopener.FakeOpener{}
+			reporter := New(cfg, fakeOpener, false)
 
 			pj := &prowv1.ProwJob{
 				Spec: prowv1.ProwJobSpec{
@@ -120,15 +133,18 @@ func TestReportJobFinished(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.Path, prowv1.FinishedStatusFile) {
-				t.Errorf("Expected file to be written to finished.json, but got %q", ta.Path)
+			var content []byte
+			for path, buf := range fakeOpener.Buffer {
+				if strings.HasSuffix(path, prowv1.FinishedStatusFile) {
+					content, err = stdio.ReadAll(buf)
+					if err != nil {
+						t.Fatalf("Failed reading content: %v", err)
+					}
+					break
+				}
 			}
-			if ta.Overwrite {
-				t.Errorf("Expected file to be written without overwriting, but overwrite was enabled")
-			}
-
 			var result metadata.Finished
-			if err := json.Unmarshal(ta.Content, &result); err != nil {
+			if err := json.Unmarshal(content, &result); err != nil {
 				t.Errorf("Couldn't decode result as metadata.Finished: %v", err)
 			}
 			if result.Timestamp == nil {
@@ -146,11 +162,195 @@ func TestReportJobFinished(t *testing.T) {
 }
 
 func TestReportJobStarted(t *testing.T) {
-	states := []prowv1.ProwJobState{prowv1.TriggeredState, prowv1.PendingState, prowv1.SuccessState, prowv1.AbortedState, prowv1.ErrorState, prowv1.FailureState}
-	for _, state := range states {
-		t.Run(fmt.Sprintf("report %s job started", state), func(t *testing.T) {
+	tests := []struct {
+		name            string
+		existingStarted *metadata.Started
+		state           prowv1.ProwJobState
+		cloneRecord     []clone.Record
+		expect          metadata.Started
+	}{
+		{
+			name:  "TriggeredState",
+			state: prowv1.TriggeredState,
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit:            "def456",
+				DeprecatedRepoVersion: "def456",
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "PendingState",
+			state: prowv1.PendingState,
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit:            "def456",
+				DeprecatedRepoVersion: "def456",
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "SuccessState",
+			state: prowv1.SuccessState,
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit:            "def456",
+				DeprecatedRepoVersion: "def456",
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "AbortedState",
+			state: prowv1.AbortedState,
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit:            "def456",
+				DeprecatedRepoVersion: "def456",
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "ErrorState",
+			state: prowv1.ErrorState,
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit:            "def456",
+				DeprecatedRepoVersion: "def456",
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "FailureState",
+			state: prowv1.ErrorState,
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit:            "def456",
+				DeprecatedRepoVersion: "def456",
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+		{
+			name:  "overwrite-crier-uploaded",
+			state: prowv1.SuccessState,
+			existingStarted: &metadata.Started{
+				Timestamp:  1286735400,
+				Pull:       "12345",
+				Repos:      map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit: "def456",
+				Metadata:   metadata.Metadata{"uploader": string("crier")},
+			},
+			cloneRecord: []clone.Record{
+				{
+					Refs: prowv1.Refs{
+						Org:     "kubernetes",
+						Repo:    "test-infra",
+						BaseRef: "main",
+						Pulls:   []prowv1.Pull{{Number: 12345, SHA: "def456"}},
+					},
+					FinalSHA: "abc123",
+				},
+			},
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+				RepoCommit:            "abc123",
+				DeprecatedRepoVersion: "abc123",
+			},
+		},
+		{
+			name:  "overwrite-crier-uploaded-without-SHA",
+			state: prowv1.SuccessState,
+			existingStarted: &metadata.Started{
+				Timestamp:  1286735400,
+				Pull:       "12345",
+				Repos:      map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit: "def456",
+				Metadata:   metadata.Metadata{"uploader": string("crier")},
+			},
+			cloneRecord: []clone.Record{
+				{
+					Refs: prowv1.Refs{
+						Org:     "kubernetes",
+						Repo:    "test-infra",
+						BaseRef: "main",
+						Pulls:   []prowv1.Pull{{Number: 12345, SHA: "def456"}},
+					},
+					FinalSHA: "abc123",
+				},
+			},
+			expect: metadata.Started{
+				Timestamp:             1286735400,
+				Pull:                  "12345",
+				Repos:                 map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				Metadata:              metadata.Metadata{"uploader": string("crier")},
+				RepoCommit:            "abc123",
+				DeprecatedRepoVersion: "abc123",
+			},
+		},
+		{
+			name:  "no-overwrite-others-uploaded",
+			state: prowv1.SuccessState,
+			existingStarted: &metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+			},
+			cloneRecord: []clone.Record{
+				{
+					Refs: prowv1.Refs{
+						Org:     "kubernetes",
+						Repo:    "test-infra",
+						BaseRef: "main",
+						Pulls:   []prowv1.Pull{{Number: 12345}},
+					},
+					FinalSHA: "abc123",
+				},
+			},
+			expect: metadata.Started{
+				Timestamp: 1286735400,
+				Pull:      "12345",
+				Repos:     map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+			},
+		},
+		{
+			name:  "no-cloneref-self-update",
+			state: prowv1.SuccessState,
+			existingStarted: &metadata.Started{
+				Timestamp:  100, // Intentionally wrong timestamp. Crier will change it if it overwrites.
+				Pull:       "12345",
+				Repos:      map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit: "main",
+				Metadata:   metadata.Metadata{"uploader": string("crier")},
+			},
+			expect: metadata.Started{
+				Timestamp:  100,
+				Pull:       "12345",
+				Repos:      map[string]string{"kubernetes/test-infra": "main,12345:def456"},
+				RepoCommit: "main",
+				Metadata:   metadata.Metadata{"uploader": string("crier")},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			cfg := testutil.Fca{C: config.Config{
+			cfg := fca{c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
 						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
@@ -166,22 +366,47 @@ func TestReportJobStarted(t *testing.T) {
 					},
 				},
 			}}.Config
-			ta := &testutil.TestAuthor{}
-			reporter := newWithAuthor(cfg, ta, false)
+			// Storage path decided by Prow
+			const subDir = "some-prefix/pr-logs/pull/test-infra/12345/my-little-job/123"
+
+			opener := &fakeopener.FakeOpener{}
+			if tc.existingStarted != nil {
+				content, err := json.Marshal(*tc.existingStarted)
+				if err != nil {
+					t.Fatalf("Failed to marshal started.json: %v", err)
+				}
+				storagePath, _ := providers.StoragePath("kubernetes-jenkins", path.Join(subDir, "started.json"))
+				if err := io.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), opener, storagePath, content); err != nil {
+					t.Fatalf("Failed creating started.json: %v", err)
+				}
+			}
+			if len(tc.cloneRecord) > 0 {
+				content, err := json.Marshal(tc.cloneRecord)
+				if err != nil {
+					t.Fatalf("Failed to marshal clone record: %v", err)
+				}
+				storagePath, _ := providers.StoragePath("kubernetes-jenkins", path.Join(subDir, "clone-records.json"))
+				if err := io.WriteContent(ctx, logrus.NewEntry(logrus.StandardLogger()), opener, storagePath, content); err != nil {
+					t.Fatalf("Failed seeding clone-records.json: %v", err)
+				}
+			}
+
+			reporter := New(cfg, opener, false)
 
 			pj := &prowv1.ProwJob{
 				Spec: prowv1.ProwJobSpec{
 					Type: prowv1.PresubmitJob,
 					Refs: &prowv1.Refs{
-						Org:   "kubernetes",
-						Repo:  "test-infra",
-						Pulls: []prowv1.Pull{{Number: 12345}},
+						Org:     "kubernetes",
+						Repo:    "test-infra",
+						BaseRef: "main",
+						Pulls:   []prowv1.Pull{{Number: 12345, SHA: "def456"}},
 					},
 					Agent: prowv1.KubernetesAgent,
 					Job:   "my-little-job",
 				},
 				Status: prowv1.ProwJobStatus{
-					State:     state,
+					State:     tc.state,
 					StartTime: metav1.Time{Time: time.Date(2010, 10, 10, 18, 30, 0, 0, time.UTC)},
 					PodName:   "some-pod",
 					BuildID:   "123",
@@ -193,19 +418,18 @@ func TestReportJobStarted(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.Path, prowv1.StartedStatusFile) {
-				t.Errorf("Expected file to be written to started.json, but got %q", ta.Path)
-			}
-			if ta.Overwrite {
-				t.Errorf("Expected file to be written without overwriting, but overwrite was enabled")
+			storagePath, _ := providers.StoragePath("kubernetes-jenkins", path.Join(subDir, "started.json"))
+			content, err := io.ReadContent(ctx, logrus.WithContext(ctx), opener, storagePath)
+			if err != nil {
+				t.Fatalf("Failed reading started.json: %v", err)
 			}
 
 			var result metadata.Started
-			if err := json.Unmarshal(ta.Content, &result); err != nil {
-				t.Errorf("Couldn't decode result as metadata.Started: %v", err)
+			if err := json.Unmarshal(content, &result); err != nil {
+				t.Fatalf("Couldn't decode result as metadata.Started: %v", err)
 			}
-			if result.Timestamp != pj.Status.StartTime.Unix() {
-				t.Errorf("Expected started.json timestamp to be %d, but got %d", pj.Status.StartTime.Unix(), result.Timestamp)
+			if diff := cmp.Diff(tc.expect, result); diff != "" {
+				t.Fatalf("Started.json mismatch. Want(-), got(+):\n%s", diff)
 			}
 		})
 	}
@@ -213,7 +437,7 @@ func TestReportJobStarted(t *testing.T) {
 
 func TestReportProwJob(t *testing.T) {
 	ctx := context.Background()
-	cfg := testutil.Fca{C: config.Config{
+	cfg := fca{c: config.Config{
 		ProwConfig: config.ProwConfig{
 			Plank: config.Plank{
 				DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
@@ -229,8 +453,8 @@ func TestReportProwJob(t *testing.T) {
 			},
 		},
 	}}.Config
-	ta := &testutil.TestAuthor{}
-	reporter := newWithAuthor(cfg, ta, false)
+	fakeOpener := &fakeopener.FakeOpener{}
+	reporter := New(cfg, fakeOpener, false)
 
 	pj := &prowv1.ProwJob{
 		Spec: prowv1.ProwJobSpec{
@@ -256,16 +480,20 @@ func TestReportProwJob(t *testing.T) {
 		t.Fatalf("Unexpected error calling reportProwjob: %v", err)
 	}
 
-	if !strings.HasSuffix(ta.Path, fmt.Sprintf("/%s", prowv1.ProwJobFile)) {
-		t.Errorf("Expected prowjob to be written to %s, got %q", prowv1.ProwJobFile, ta.Path)
-	}
-
-	if !ta.Overwrite {
-		t.Errorf("Expected %s to be written with overwrite enabled, but it was not.", prowv1.ProwJobFile)
+	var content []byte
+	var err error
+	for p, b := range fakeOpener.Buffer {
+		if strings.HasSuffix(p, prowv1.ProwJobFile) {
+			content, err = stdio.ReadAll(b)
+			if err != nil {
+				t.Fatalf("Failed reading content: %v", err)
+			}
+			break
+		}
 	}
 
 	var result prowv1.ProwJob
-	if err := json.Unmarshal(ta.Content, &result); err != nil {
+	if err := json.Unmarshal(content, &result); err != nil {
 		t.Fatalf("Couldn't unmarshal %s: %v", prowv1.ProwJobFile, err)
 	}
 	if !cmp.Equal(*pj, result) {
@@ -304,7 +532,7 @@ func TestShouldReport(t *testing.T) {
 					BuildID:   tc.buildID,
 				},
 			}
-			gr := newWithAuthor(testutil.Fca{}.Config, nil, false)
+			gr := New(fca{}.Config, nil, false)
 			result := gr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 			if result != tc.shouldReport {
 				t.Errorf("Got ShouldReport() returned %v, but expected %v", result, tc.shouldReport)

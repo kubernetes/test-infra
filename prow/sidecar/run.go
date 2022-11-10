@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"strings"
@@ -41,6 +40,8 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
+
+	testgridmetadata "github.com/GoogleCloudPlatform/testgrid/metadata"
 )
 
 const LogFileName = "sidecar-logs.json"
@@ -48,7 +49,7 @@ const LogFileName = "sidecar-logs.json"
 func LogSetup() (*os.File, error) {
 	logrusutil.ComponentInit()
 	logrus.SetLevel(logrus.DebugLevel)
-	logFile, err := ioutil.TempFile("", "sidecar-logs*.txt")
+	logFile, err := os.CreateTemp("", "sidecar-logs*.txt")
 	if err == nil {
 		logrus.SetOutput(io.MultiWriter(os.Stderr, logFile))
 	}
@@ -121,7 +122,7 @@ func (o Options) Run(ctx context.Context, logFile *os.File) (int, error) {
 				// perform pre upload tasks
 				o.preUpload()
 
-				buildLogs := logReaders(entries)
+				buildLogs := logReadersFuncs(entries)
 				metadata := combineMetadata(entries)
 
 				//Peform best-effort upload
@@ -148,29 +149,34 @@ func (o Options) Run(ctx context.Context, logFile *os.File) (int, error) {
 
 	o.preUpload()
 
-	buildLogs := logReaders(entries)
+	buildLogs := logReadersFuncs(entries)
 	metadata := combineMetadata(entries)
 	return failures, o.doUpload(context.Background(), spec, passed, aborted, metadata, buildLogs, logFile, &once)
 }
 
 const errorKey = "sidecar-errors"
 
-func logReaders(entries []wrapper.Options) map[string]io.Reader {
-	readers := make(map[string]io.Reader)
+func logReadersFuncs(entries []wrapper.Options) map[string]gcs.ReaderFunc {
+	readerFuncs := make(map[string]gcs.ReaderFunc)
 	for _, opt := range entries {
+		opt := opt
+		f := func() (io.ReadCloser, error) {
+			log, err := os.Open(opt.ProcessLog)
+			if err != nil {
+				logrus.WithError(err).Errorf("Failed to open %s", opt.ProcessLog)
+				r := strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err))
+				return io.NopCloser(r), nil
+			} else {
+				return log, nil
+			}
+		}
 		buildLog := "build-log.txt"
 		if len(entries) > 1 {
 			buildLog = fmt.Sprintf("%s-build-log.txt", opt.ContainerName)
 		}
-		log, err := os.Open(opt.ProcessLog)
-		if err != nil {
-			logrus.WithError(err).Errorf("Failed to open %s", opt.ProcessLog)
-			readers[buildLog] = strings.NewReader(fmt.Sprintf("Failed to open %s: %v\n", opt.ProcessLog, err))
-		} else {
-			readers[buildLog] = log
-		}
+		readerFuncs[buildLog] = f
 	}
-	return readers
+	return readerFuncs
 }
 
 func combineMetadata(entries []wrapper.Options) map[string]interface{} {
@@ -186,7 +192,7 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 			}
 			continue
 		}
-		metadataRaw, err := ioutil.ReadFile(metadataFile)
+		metadataRaw, err := os.ReadFile(metadataFile)
 		if err != nil {
 			logrus.WithError(err).Errorf("cannot read %s", metadataFile)
 			errors[ent] = err
@@ -224,7 +230,7 @@ func (o Options) preUpload() {
 	}
 }
 
-func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReaders map[string]io.Reader, logFile *os.File, once *sync.Once) error {
+func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReadersFuncs map[string]gcs.ReaderFunc, logFile *os.File, once *sync.Once) error {
 	startTime := time.Now()
 	logrus.Info("Starting to upload")
 	uploadTargets := make(map[string]gcs.UploadFunc)
@@ -233,8 +239,8 @@ func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed
 		logrus.WithField("duration", time.Since(startTime).String()).Info("Finished uploading")
 	}()
 
-	for logName, reader := range logReaders {
-		uploadTargets[logName] = gcs.DataUpload(reader)
+	for logName, readerFunc := range logReadersFuncs {
+		uploadTargets[logName] = gcs.DataUpload(readerFunc)
 	}
 
 	logFileName := logFile.Name()
@@ -245,13 +251,19 @@ func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed
 		logFile.Close()
 	})
 
-	f, err := os.Open(logFileName)
-	if err != nil {
-		logrus.WithError(err).Error("Could not open log file")
-	} else {
-		defer f.Close()
-		uploadTargets[LogFileName] = gcs.DataUpload(bufio.NewReader(f))
+	newLogReader := func() (io.ReadCloser, error) {
+		f, err := os.Open(logFileName)
+		if err != nil {
+			logrus.WithError(err).Error("Could not open log file")
+			return nil, err
+		}
+		r := bufio.NewReader(f)
+		return struct {
+			io.Reader
+			io.Closer
+		}{r, f}, nil
 	}
+	uploadTargets[LogFileName] = gcs.DataUpload(newLogReader)
 
 	var result string
 	switch {
@@ -264,7 +276,7 @@ func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed
 	}
 
 	now := time.Now().Unix()
-	finished := gcs.Finished{
+	finished := testgridmetadata.Finished{
 		Timestamp: &now,
 		Passed:    &passed,
 		Result:    result,
@@ -279,7 +291,10 @@ func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed
 	if err != nil {
 		logrus.WithError(err).Warn("Could not marshal finishing data")
 	} else {
-		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewBuffer(finishedData))
+		newReader := func() (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader(finishedData)), nil
+		}
+		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(newReader)
 	}
 
 	if err := o.GcsOptions.Run(ctx, spec, uploadTargets); err != nil {

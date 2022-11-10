@@ -22,7 +22,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"net/http"
 	"sort"
 	"sync"
@@ -265,7 +265,7 @@ func (ja *JobAgent) GetJobLog(job, id string, container string) ([]byte, error) 
 			return nil, err
 		}
 		defer resp.Body.Close()
-		return ioutil.ReadAll(resp.Body)
+		return stdio.ReadAll(resp.Body)
 
 	}
 	return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: the agent is missing from the prow config file", j.ObjectMeta.Name, j.Spec.Agent)

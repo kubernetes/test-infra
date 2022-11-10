@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220802-33e6c8437f"
-        initupload: "gcr.io/k8s-prow/initupload:v20220802-33e6c8437f"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220802-33e6c8437f"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20220802-33e6c8437f"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20221110-d224b81b1a"
+        initupload: "gcr.io/k8s-prow/initupload:v20221110-d224b81b1a"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20221110-d224b81b1a"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20221110-d224b81b1a"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -35,6 +35,10 @@ plank:
           requests:
             cpu: 100m
   - cluster: gke_rules-k8s_us-central1-f_testing
+    config:
+      gcs_credentials_secret: ""
+      default_service_account_name: "prowjob-default-sa"
+  - cluster: test-infra-trusted
     config:
       gcs_credentials_secret: ""
       default_service_account_name: "prowjob-default-sa"
@@ -168,6 +172,9 @@ deck:
       github_team_ids:
       - 2009231 # test-infra-admins
       - 2460384 # milestone-maintainers
+  # additional_allowed_buckets is used only when skip_storage_path_validation is
+  # false
+  skip_storage_path_validation: false
   additional_allowed_buckets:
     - k8s-ovn
     - containerd-integration
@@ -334,10 +341,12 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        kms:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         kompose:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
         kops:
@@ -491,6 +500,10 @@ branch-protection:
               protect: true
             release-1.22:
               protect: true
+            release-1.23:
+              protect: true
+            release-1.24:
+              protect: true
     kubernetes-client:
       protect: true
       required_status_checks:
@@ -540,6 +553,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cluster-api:
+          required_status_checks:
+            contexts:
+            - lint
         cluster-api-provider-gcp:
           required_status_checks:
             contexts:
@@ -605,6 +622,10 @@ branch-protection:
           restrictions:
             users:
             - k8s-ci-robot
+        sig-storage-local-static-provisioner:
+          branches:
+            gh-pages:
+              protect: false
 
 tide:
   sync_period: 2m
@@ -668,7 +689,7 @@ tide:
     - kubernetes/kubernetes
     excludedBranches:
     - master
-    - release-1.25
+    - release-1.26
     labels:
     - lgtm
     - approved
@@ -688,10 +709,10 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
-    milestone: v1.25
+    milestone: v1.26
     includedBranches:
     - master
-    - release-1.25
+    - release-1.26
     labels:
     - lgtm
     - approved
@@ -768,6 +789,7 @@ tide:
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/ibm-vpc-block-csi-driver: squash
+    kubernetes-sigs/kernel-module-management: squash
     kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
@@ -811,6 +833,9 @@ tide:
         # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
         # to ensure things get merged in.
         - "cla/linuxfoundation"
+        repos:
+          cluster-api:
+            from-branch-protection: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
   priority:

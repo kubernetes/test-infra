@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -41,29 +40,16 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	srcRoot, err := ioutil.TempDir("", "clonerefs_unittest")
-	if err != nil {
-		t.Fatalf("Error while creating temp dir: %v.", err)
-	}
-	defer os.RemoveAll(srcRoot)
+	srcRoot := t.TempDir()
 
-	oauthTokenDir, err := ioutil.TempDir("", "oauth")
-	if err != nil {
-		t.Fatalf("Error while creating oauth token dir: %v.", err)
-	}
-	defer os.RemoveAll(oauthTokenDir)
-
+	oauthTokenDir := t.TempDir()
 	oauthTokenFilePath := filepath.Join(oauthTokenDir, "oauth-token")
 	oauthTokenValue := []byte("12345678")
-	if err := ioutil.WriteFile(oauthTokenFilePath, oauthTokenValue, 0644); err != nil {
+	if err := os.WriteFile(oauthTokenFilePath, oauthTokenValue, 0644); err != nil {
 		t.Fatalf("Error while create oauth token file: %v", err)
 	}
 
-	githubAppDir, err := ioutil.TempDir("", "github-app")
-	if err != nil {
-		t.Fatalf("Error while creating github app dir: %v.", err)
-	}
-	defer os.RemoveAll(githubAppDir)
+	githubAppDir := t.TempDir()
 	githubAppPrivateKeyFilePath := filepath.Join(githubAppDir, "private-key.pem")
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
@@ -73,7 +59,7 @@ func TestRun(t *testing.T) {
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
-	if err := ioutil.WriteFile(githubAppPrivateKeyFilePath, githubAppPrivateKeyValue, 0644); err != nil {
+	if err := os.WriteFile(githubAppPrivateKeyFilePath, githubAppPrivateKeyValue, 0644); err != nil {
 		t.Fatalf("Error while create github app private key file: %v", err)
 	}
 

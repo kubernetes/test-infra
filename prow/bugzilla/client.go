@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"sort"
@@ -232,6 +232,11 @@ func (c *client) GetBug(id int) (*Bug, error) {
 	if err != nil {
 		return nil, err
 	}
+	values := req.URL.Query()
+	values.Add("include_fields", "_default")
+	// redhat bugzilla docs claim that flags are a default field, but they are actually not returned unless added to include_fields
+	values.Add("include_fields", "flags")
+	req.URL.RawQuery = values.Encode()
 	raw, err := c.request(req, logger)
 	if err != nil {
 		return nil, err
@@ -742,7 +747,7 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 			logger.WithError(err).Warn("could not close response body")
 		}
 	}()
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read response body: %w", err)
 	}

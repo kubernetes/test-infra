@@ -2,11 +2,11 @@
 reviewers:
 - chaodaiG
 - cjwagner
-- fejta
 approvers:
+- chaodaiG
 - cjwagner
-- fejta
 emeritus_approvers:
+- fejta
 - krzyzacy
 - Katharine
 labels:

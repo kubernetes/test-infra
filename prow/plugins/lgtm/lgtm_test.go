@@ -18,7 +18,7 @@ package lgtm
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -120,7 +120,7 @@ func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.SimpleConfig{}, err
 	}
@@ -137,7 +137,7 @@ func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, er
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.FullConfig{}, err
 	}

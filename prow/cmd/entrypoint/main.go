@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -40,7 +39,7 @@ func copy(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("read info '%s': %w", src, err)
 	}
-	body, err := ioutil.ReadFile(src)
+	body, err := os.ReadFile(src)
 	if err != nil {
 		return fmt.Errorf("read file '%s': %w", src, err)
 	}
@@ -49,7 +48,7 @@ func copy(src, dst string) error {
 	if err := os.MkdirAll(dstDir, 0755); err != nil {
 		return fmt.Errorf("create dir '%s': %w", dstDir, err)
 	}
-	if err := ioutil.WriteFile(dst, body, info.Mode()); err != nil {
+	if err := os.WriteFile(dst, body, info.Mode()); err != nil {
 		return fmt.Errorf("write file '%s': %w", dst, err)
 	}
 	return nil

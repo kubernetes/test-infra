@@ -20,7 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -689,14 +689,10 @@ presubmits:
 		tc := testcases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			// Set up config files
-			root, err := ioutil.TempDir("", fmt.Sprintf("TestValidateUnknownFieldsAll-%s_*", tc.name))
-			if err != nil {
-				t.Fatalf("Error creating temp dir: %v.", err)
-			}
-			defer os.RemoveAll(root) // clean up
+			root := t.TempDir()
 
 			prowConfigFile := filepath.Join(root, "config.yaml")
-			if err := ioutil.WriteFile(prowConfigFile, []byte(tc.configContent), 0666); err != nil {
+			if err := os.WriteFile(prowConfigFile, []byte(tc.configContent), 0666); err != nil {
 				t.Fatalf("Error writing config.yaml file: %v.", err)
 			}
 			var jobConfigDir string
@@ -707,18 +703,18 @@ presubmits:
 				}
 				for file, content := range tc.jobConfigContent {
 					file = filepath.Join(jobConfigDir, file)
-					if err := ioutil.WriteFile(file, []byte(content), 0666); err != nil {
+					if err := os.WriteFile(file, []byte(content), 0666); err != nil {
 						t.Fatalf("Error writing %q file: %v.", file, err)
 					}
 				}
 			}
 			// Test validation
-			_, err = config.LoadStrict(prowConfigFile, jobConfigDir, nil, "")
+			_, err := config.LoadStrict(prowConfigFile, jobConfigDir, nil, "")
 			if (err != nil) != tc.expectedErr {
 				if tc.expectedErr {
 					t.Error("Expected an error, but did not receive one.")
 				} else {
-					content, _ := ioutil.ReadFile(prowConfigFile)
+					content, _ := os.ReadFile(prowConfigFile)
 					t.Log(string(content))
 					t.Errorf("Unexpected error: %v.", err)
 				}
@@ -741,9 +737,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: no strict config",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes"},
+							},
 						},
 					},
 				},
@@ -774,10 +772,12 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: tide repo exclusion",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs:          []string{"kubernetes"},
-							ExcludedRepos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs:          []string{"kubernetes"},
+								ExcludedRepos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -808,9 +808,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: protection repo exclusion",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -841,9 +843,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: tide more general",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes"},
+							},
 						},
 					},
 				},
@@ -874,9 +878,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: tide more specific",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -902,9 +908,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: org level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes", "k8s"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes", "k8s"},
+							},
 						},
 					},
 				},
@@ -930,12 +938,14 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: repo level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/kubernetes"},
-						},
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/kubernetes"},
+							},
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -965,13 +975,15 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: branch level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos:            []string{"kubernetes/test-infra"},
-							IncludedBranches: []string{"master"},
-						},
-						{
-							Repos: []string{"kubernetes/kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos:            []string{"kubernetes/test-infra"},
+								IncludedBranches: []string{"master"},
+							},
+							{
+								Repos: []string{"kubernetes/kubernetes"},
+							},
 						},
 					},
 				},
@@ -1005,9 +1017,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: global strict",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -1447,6 +1461,8 @@ func TestOptions(t *testing.T) {
 					ConfigPath:                            "prow/config.yaml",
 					JobConfigPath:                         "config/jobs/org/job.yaml",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					PluginConfigPath:                         "prow/plugins/plugin.yaml",
@@ -1577,7 +1593,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 
 		if tc.prowYAMLData != nil {
 			fileName := filepath.Join(t.TempDir(), ".prow.yaml")
-			if err := ioutil.WriteFile(fileName, tc.prowYAMLData, 0666); err != nil {
+			if err := os.WriteFile(fileName, tc.prowYAMLData, 0666); err != nil {
 				t.Fatalf("failed to write to tempfile: %v", err)
 			}
 
@@ -1585,7 +1601,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 		}
 
 		// Need an empty file to load the config from so we go through its defaulting
-		tempConfig, err := ioutil.TempFile("", "prow-test")
+		tempConfig, err := os.CreateTemp("", "prow-test")
 		if err != nil {
 			t.Fatalf("failed to get tempfile: %v", err)
 		}
@@ -1728,7 +1744,7 @@ func (fo *fakeOpener) Reader(ctx context.Context, path string) (io.ReadCloser, e
 	if fo.readError != nil {
 		return nil, fo.readError
 	}
-	return ioutil.NopCloser(strings.NewReader(fo.content)), nil
+	return stdio.NopCloser(strings.NewReader(fo.content)), nil
 }
 
 func (fo *fakeOpener) Close() error {
@@ -1917,7 +1933,15 @@ func TestValidateAdditionalProwConfigIsInOrgRepoDirectoryStructure(t *testing.T)
 	const validGlobalConfig = `
 sinker:
   exclude_clusters:
-    - default`
+    - default
+slack_reporter_configs:
+  '*':
+    channel: '#general-announcements'
+    job_states_to_report:
+      - failure
+      - error
+	  - success
+	report_template: Job {{.Spec.Job}} ended with status {{.Status.State}}.`
 	const validOrgConfig = `
 branch-protection:
   orgs:
@@ -1925,7 +1949,14 @@ branch-protection:
       protect: true
 tide:
   merge_method:
-    my-org: squash`
+    my-org: squash
+slack_reporter_configs:
+  my-org:
+    channel: '#my-org-announcements'
+    job_states_to_report:
+      - failure
+      - error
+    report_template: Job {{.Spec.Job}} needs my-org maintainers attention.`
 	const validRepoConfig = `
 branch-protection:
   orgs:
@@ -1935,7 +1966,13 @@ branch-protection:
           protect: true
 tide:
   merge_method:
-    my-org/my-repo: squash`
+    my-org/my-repo: squash
+slack_reporter_configs:
+  my-org/my-repo:
+    channel: '#my-repo-announcements'
+    job_states_to_report:
+      - failure
+    report_template: Job {{.Spec.Job}} needs my-repo maintainers attention.`
 	const validGlobalPluginsConfig = `
 blunderbuss:
   max_request_count: 2

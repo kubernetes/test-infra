@@ -1,0 +1,45 @@
+presubmits:
+  kubernetes-sigs/network-policy-api:
+  - name: pull-network-policy-api-verify
+    annotations:
+      testgrid-dashboards: sig-network-policy-api
+      testgrid-tab-name: verify
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/network-policy-api
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - verify
+  - name: pull-network-policy-api-crd-e2e
+    annotations:
+      testgrid-dashboards: sig-network-policy-api
+      testgrid-tab-name: crd-e2e
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/network-policy-api
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - crd-e2e
+          # docker-in-docker needs privileged mode.
+          securityContext:
+            privileged: true

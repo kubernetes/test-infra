@@ -37,6 +37,7 @@ declare -ra PROW_COMPONENTS=(
   crier
   deck
   deck-tenanted
+  fakegcsserver
   fakegerritserver
   fakegitserver
   fakeghserver
@@ -48,6 +49,7 @@ declare -ra PROW_COMPONENTS=(
   sinker
   sub
   tide
+  webhook-server
 )
 
 # These are the images to build. The keys are the short (unique) image names,
@@ -65,6 +67,7 @@ declare -rA PROW_IMAGES=(
   [sub]=prow/cmd/sub
   [tide]=prow/cmd/tide
   # Fakes.
+  [fakegcsserver]=prow/test/integration/cmd/fakegcsserver
   [fakegerritserver]=prow/test/integration/cmd/fakegerritserver
   [fakegitserver]=prow/test/integration/cmd/fakegitserver
   [fakeghserver]=prow/test/integration/cmd/fakeghserver
@@ -75,6 +78,7 @@ declare -rA PROW_IMAGES=(
   [initupload]=prow/cmd/initupload
   [entrypoint]=prow/cmd/entrypoint
   [sidecar]=prow/cmd/sidecar
+  [webhook-server]=prow/cmd/webhook-server
 )
 
 # Defines the one-to-many relationship between Prow images and components. This
@@ -90,10 +94,12 @@ declare -rA PROW_IMAGES_TO_COMPONENTS=(
   [sinker]=sinker
   [sub]=sub
   [tide]=tide
+  [fakegcsserver]=fakegcsserver
   [fakegerritserver]=fakegerritserver
   [fakegitserver]=fakegitserver
   [fakeghserver]=fakeghserver
   [fakepubsub]=fakepubsub
+  [webhook-server]=webhook-server
 )
 
 # Defines the order in which we'll start and wait for components to be ready.
@@ -117,6 +123,7 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   # tests on a cold machine), it takes a long time for the deployment to pull it
   # from the local registry.
   fakepubsub.yaml
+  fakegcsserver.yaml
   fakegerritserver.yaml
   fakegitserver.yaml
   gerrit.yaml
@@ -153,6 +160,9 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   deck_service.yaml
   deck_deployment.yaml
   deck_tenant_deployment.yaml
+  webhook_server_rbac.yaml
+  webhook_server_service.yaml
+  webhook_server_deployment.yaml
   WAIT_crier
   WAIT_deck
   WAIT_deck-tenanted
@@ -163,6 +173,7 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   WAIT_fakepubsub
   sub.yaml
   WAIT_sub
+  WAIT_fakegcsserver
 )
 
 function do_kubectl() {

@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"net/url"
 	"sort"
 	"strconv"
@@ -62,15 +62,15 @@ type storedState struct {
 	PreviousQuery string
 }
 
+// statusController is a goroutine runs in the background
 type statusController struct {
 	pjClient           ctrlruntimeclient.Client
 	logger             *logrus.Entry
 	config             config.Getter
+	ghProvider         *GitHubProvider
 	ghc                githubClient
 	gc                 git.ClientFactory
 	usesGitHubAppsAuth bool
-
-	mergeChecker *mergeChecker
 
 	// shutDown is used to signal to the main controller that the statusController
 	// has completed processing after newPoolPending is closed.
@@ -191,14 +191,15 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 	var missingLabels []string
 	for _, l1 := range q.Labels {
 		var found bool
+		altLabels := sets.NewString(strings.Split(l1, ",")...)
 		for _, l2 := range pr.Labels.Nodes {
-			if string(l2.Name) == l1 {
+			if altLabels.Has(string(l2.Name)) {
 				found = true
 				break
 			}
 		}
 		if !found {
-			missingLabels = append(missingLabels, l1)
+			missingLabels = append(missingLabels, strings.ReplaceAll(l1, ",", " or "))
 		}
 	}
 	diff += len(missingLabels)
@@ -278,7 +279,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 
 	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 
-	if reason, err := sc.mergeChecker.isAllowed(crc); err != nil {
+	if reason, err := sc.ghProvider.isAllowedToMerge(crc); err != nil {
 		return "", "", fmt.Errorf("error checking if merge is allowed: %w", err)
 	} else if reason != "" {
 		log.WithField("reason", reason).Debug("The PR is not mergeable")
@@ -414,7 +415,7 @@ func (sc *statusController) setStatuses(all []CodeReviewCommon, pool map[string]
 	process := func(pr *CodeReviewCommon) {
 		processed.Insert(prKey(pr))
 		log := sc.logger.WithFields(pr.logFields())
-		contexts, err := headContexts(log, sc.ghc, pr)
+		contexts, err := sc.ghProvider.headContexts(pr)
 		if err != nil {
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
@@ -504,7 +505,7 @@ func (sc *statusController) load() {
 	}
 	defer io.LogClose(reader)
 
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := stdio.ReadAll(reader)
 	if err != nil {
 		entry.WithError(err).Warn("Cannot read stored state")
 		return
@@ -657,7 +658,7 @@ func (sc *statusController) search() []CodeReviewCommon {
 			}
 			sc.storedStateLock.Unlock()
 
-			result, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
+			result, err := sc.ghProvider.search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
 			log.WithField("duration", time.Since(now).String()).WithField("result_count", len(result)).Debug("Searched for open PRs.")
 
 			func() {
@@ -669,7 +670,7 @@ func (sc *statusController) search() []CodeReviewCommon {
 					log.Debug("no new results")
 					return
 				}
-				latest := result[len(result)-1].UpdatedAtTime
+				latest := result[len(result)-1].UpdatedAt
 				if latest.IsZero() {
 					log.Debug("latest PR has zero time")
 					return
@@ -684,7 +685,10 @@ func (sc *statusController) search() []CodeReviewCommon {
 			lock.Lock()
 			defer lock.Unlock()
 
-			prs = append(prs, result...)
+			for _, pr := range result {
+				pr := pr
+				prs = append(prs, *CodeReviewCommonFromPullRequest(&pr))
+			}
 			errs = append(errs, err)
 		}()
 

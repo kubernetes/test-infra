@@ -18,9 +18,9 @@ limitations under the License.
 package pprof
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/http/pprof"
+	"os"
 	"runtime"
 	runtimepprof "runtime/pprof"
 	"strconv"
@@ -61,13 +61,13 @@ func Serve(port int) {
 // pre-determined interval for future parsing and analysis.
 func WriteMemoryProfiles(interval time.Duration) {
 	logrus.Info("Writing memory profiles.")
-	profileDir, err := ioutil.TempDir("", "heap-profiles-")
+	profileDir, err := os.MkdirTemp("", "heap-profiles-")
 	if err != nil {
 		logrus.WithError(err).Warn("Could not create a directory to store memory profiles.")
 		return
 	}
 	interrupts.TickLiteral(func() {
-		profile, err := ioutil.TempFile(profileDir, "heap-profile-")
+		profile, err := os.CreateTemp(profileDir, "heap-profile-")
 		if err != nil {
 			logrus.WithError(err).Warn("Could not create a file to store a memory profile.")
 			return

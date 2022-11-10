@@ -21,7 +21,7 @@ package buildifier
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -113,7 +113,7 @@ func modifiedBazelFiles(ghc githubClient, org, repo string, number int, sha stri
 func problemsInFiles(r git.RepoClient, files map[string]string) (map[string]bool, error) {
 	problems := map[string]bool{}
 	for f := range files {
-		src, err := ioutil.ReadFile(filepath.Join(r.Directory(), f))
+		src, err := os.ReadFile(filepath.Join(r.Directory(), f))
 		if err != nil {
 			return nil, err
 		}

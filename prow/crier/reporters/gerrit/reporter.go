@@ -56,7 +56,9 @@ const (
 	jobReportFormatUrlNotFoundRegex = `^(\S+) (\S+) \(URL_NOT_FOUND\) (\S+)$`
 	jobReportFormatWithoutURLRegex  = `^(\S+) (\S+) (\S+)$`
 	errorLinePrefix                 = "NOTE FROM PROW"
-	jobReportHeader                 = "%s %d out of %d pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n"
+	// jobReportHeader expects 4 args. {defaultProwHeader}, {jobs-passed},
+	// {jobs-total}, {additional-text(optional)}.
+	jobReportHeader = "%s %d out of %d pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests.%s\n"
 
 	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
 	lgtm = "+1"
@@ -101,7 +103,7 @@ var (
 
 type gerritClient interface {
 	SetReview(instance, id, revision, message string, labels map[string]string) error
-	GetChange(instance, id string) (*gerrit.ChangeInfo, error)
+	GetChange(instance, id string, additionalFields ...string) (*gerrit.ChangeInfo, error)
 	ChangeExist(instance, id string) (bool, error)
 }
 
@@ -130,15 +132,17 @@ type JobReport struct {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][]string, pjclientset ctrlruntimeclient.Client) (*Client, error) {
-	gc, err := client.NewClient(projects)
+func NewReporter(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, cookiefilePath string, pjclientset ctrlruntimeclient.Client) (*Client, error) {
+	// Initialize an empty client, the orgs/repos will be filled in by
+	// ApplyGlobalConfig later.
+	gc, err := client.NewClient(nil)
 	if err != nil {
 		return nil, err
 	}
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
 	// it will completely override previously configured gerrit hosts and projects.
 	// it will also by the way authenticate gerrit
-	applyGlobalConfig(cfg, gc, cookiefilePath)
+	gc.ApplyGlobalConfig(orgRepoConfigGetter, nil, cookiefilePath, "", func() {})
 
 	// Authenticate creates a goroutine for rotating token secrets when called the first
 	// time, afterwards it only authenticate once.
@@ -155,33 +159,6 @@ func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][
 
 	c.prLocks.RunCleanup()
 	return c, nil
-}
-
-func applyGlobalConfig(cfg config.Getter, gerritClient *client.Client, cookiefilePath string) {
-	applyGlobalConfigOnce(cfg, gerritClient, cookiefilePath)
-
-	go func() {
-		for {
-			applyGlobalConfigOnce(cfg, gerritClient, cookiefilePath)
-			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
-			time.Sleep(time.Second)
-		}
-	}()
-}
-
-func applyGlobalConfigOnce(cfg config.Getter, gerritClient *client.Client, cookiefilePath string) {
-	orgReposConfig := cfg().Gerrit.OrgReposConfig
-	if orgReposConfig == nil {
-		return
-	}
-	// Updates clients based on global gerrit config.
-	gerritClient.UpdateClients(orgReposConfig.AllRepos())
-	// Authenticate creates a goroutine for rotating token secrets when called the first
-	// time, afterwards it only authenticate once.
-	// Newly added orgs/repos are only authenticated by the goroutine when token secret is
-	// rotated, which is up to 1 hour after config change. Explicitly call Authenticate
-	// here to get them authenticated immediately.
-	gerritClient.Authenticate(cookiefilePath, "")
 }
 
 // GetName returns the name of the reporter
@@ -211,15 +188,15 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 	}
 
 	// has gerrit metadata (scheduled by gerrit adapter)
-	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
-		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
-		pj.ObjectMeta.Labels[client.GerritRevision] == "" {
+	if pj.ObjectMeta.Annotations[kube.GerritID] == "" ||
+		pj.ObjectMeta.Annotations[kube.GerritInstance] == "" ||
+		pj.ObjectMeta.Labels[kube.GerritRevision] == "" {
 		log.Info("Not a gerrit job")
 		return false
 	}
 
 	// Don't wait for report aggregation if not voting on any label
-	if pj.ObjectMeta.Labels[client.GerritReportLabel] == "" {
+	if pj.ObjectMeta.Labels[kube.GerritReportLabel] == "" {
 		return true
 	}
 
@@ -253,14 +230,17 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 	// current prowjob doesn't have this label or has an invalid value, this
 	// will be reflected as warning message in prow.
 	patchsetNumFromPJ := func(pj *v1.ProwJob) int {
-		ps, ok := pj.ObjectMeta.Labels[client.GerritPatchset]
+		log := log.WithFields(logrus.Fields{"label": kube.GerritPatchset, "job": pj.Name})
+		ps, ok := pj.ObjectMeta.Labels[kube.GerritPatchset]
 		if !ok {
-			log.Warnf("Label %s not found in prowjob %s", client.GerritPatchset, pj.Name)
+			// This label exists only in jobs that are created by Gerrit. For jobs that are
+			// created by Pubsub it's entirely up to the users.
+			log.Debug("Label not found in prowjob.")
 			return -1
 		}
 		intPs, err := strconv.Atoi(ps)
 		if err != nil {
-			log.Warnf("Found non integer label for %s: %s in prowjob %s", client.GerritPatchset, ps, pj.Name)
+			log.Debug("Found non integer label value in prowjob.")
 			return -1
 		}
 		return intPs
@@ -270,7 +250,7 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 	patchsetNum := patchsetNumFromPJ(pj)
 
 	// Check all other prowjobs to see whether they agree or not
-	return allPJsAgreeToReport([]string{client.GerritRevision, kube.ProwJobTypeLabel, client.GerritReportLabel}, func(otherPj *v1.ProwJob) bool {
+	return allPJsAgreeToReport([]string{kube.GerritRevision, kube.ProwJobTypeLabel, kube.GerritReportLabel}, func(otherPj *v1.ProwJob) bool {
 		if otherPj.Status.State == v1.TriggeredState || otherPj.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
 			log.Info("Other jobs with same label are still running on this revision")
@@ -337,11 +317,11 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	newCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	clientGerritRevision := client.GerritRevision
-	clientGerritID := client.GerritID
-	clientGerritInstance := client.GerritInstance
+	clientGerritRevision := kube.GerritRevision
+	clientGerritID := kube.GerritID
+	clientGerritInstance := kube.GerritInstance
 	pjTypeLabel := kube.ProwJobTypeLabel
-	gerritReportLabel := client.GerritReportLabel
+	gerritReportLabel := kube.GerritReportLabel
 
 	var pjsOnRevisionWithSameLabel v1.ProwJobList
 	var pjsToUpdateState []v1.ProwJob
@@ -386,7 +366,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		"id":       gerritID,
 	})
 	var reportLabel string
-	if val, ok := pj.ObjectMeta.Labels[client.GerritReportLabel]; ok {
+	if val, ok := pj.ObjectMeta.Labels[kube.GerritReportLabel]; ok {
 		reportLabel = val
 	} else {
 		reportLabel = codeReview
@@ -624,6 +604,14 @@ func deserialize(s string, j *Job) error {
 	return fmt.Errorf("Could not deserialize %q to a job", s)
 }
 
+func headerMessageLine(success, total int, additionalText string) string {
+	return fmt.Sprintf(jobReportHeader, defaultProwHeader, success, total, additionalText)
+}
+
+func isHeaderMessageLine(s string) bool {
+	return strings.HasPrefix(s, defaultProwHeader)
+}
+
 func errorMessageLine(s string) string {
 	return fmt.Sprintf("[%s: %s]", errorLinePrefix, s)
 }
@@ -665,12 +653,16 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	}
 
 	// Construct JobReport.
+	var additionalText string
 	report := JobReport{Total: len(pjs)}
 	for _, pj := range pjs {
 		job := jobFromPJ(pj)
 		report.Jobs = append(report.Jobs, job)
 		if pj.Status.State == v1.SuccessState {
 			report.Success++
+		}
+		if val, ok := pj.Labels[kube.CreatedByTideLabel]; ok && val == "true" {
+			additionalText = " (Not a duplicated report. Some of the jobs below were triggered by Tide)"
 		}
 	}
 	numJobs := len(report.Jobs)
@@ -681,7 +673,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	// of the Header + Message.
 
 	// Construct report.Header portion.
-	report.Header = fmt.Sprintf(jobReportHeader, defaultProwHeader, report.Success, report.Total)
+	report.Header = headerMessageLine(report.Success, report.Total, additionalText)
 	commentSize := len(report.Header)
 
 	// Construct report.Messages portion. We need to construct the long list of
@@ -814,7 +806,7 @@ func ParseReport(message string) *JobReport {
 	start := 0
 	isReport := false
 	for start < len(contents) {
-		if strings.HasPrefix(contents[start], defaultProwHeader) {
+		if isHeaderMessageLine(contents[start]) {
 			isReport = true
 			break
 		}

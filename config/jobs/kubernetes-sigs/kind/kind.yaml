@@ -1,5 +1,5 @@
 periodics:
-- name: ci-kind-test
+- name: ci-kind-unit-test
   interval: 6h
   decorate: true
   extra_refs:
@@ -7,12 +7,11 @@ periodics:
     repo: kind
     base_ref: main
     path_alias: sigs.k8s.io/kind
-  always_run: true
   labels:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-master
       command:
       - wrapper.sh
       - make
@@ -20,11 +19,11 @@ periodics:
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
-    annotations:
-      testgrid-dashboards: sig-testing-kind
-      testgrid-tab-name: ci unit test
-      testgrid-alert-email: bentheelder@google.com
-      description: kind CI unit test
+  annotations:
+    testgrid-dashboards: sig-testing-kind
+    testgrid-tab-name: kind-ci-unit-test
+    testgrid-alert-email: bentheelder@google.com
+    description: kind CI unit test
 # conformance test against kubernetes master branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance
@@ -43,7 +42,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-master
       command:
         - wrapper.sh
         - bash
@@ -87,7 +86,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-master
       command:
         - wrapper.sh
         - bash
@@ -136,7 +135,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -181,7 +180,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20220729-6ff0496f1d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221107-33c989e684-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"

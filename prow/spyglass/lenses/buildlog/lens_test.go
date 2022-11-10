@@ -19,7 +19,7 @@ package buildlog
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -1108,7 +1108,7 @@ func TestAnalyzeArtifact(t *testing.T) {
 func testHighlighter(t *testing.T, wantReq highlightRequest, code int, response string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Helper()
-		buf, err := ioutil.ReadAll(r.Body)
+		buf, err := stdio.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Failed to read body: %v", err)
 		}

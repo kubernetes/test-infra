@@ -18,7 +18,7 @@ package integration
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -65,7 +65,7 @@ func TestHook(t *testing.T) {
 		t.Fatalf("Failed add label: %v", err)
 	}
 
-	d, err := ioutil.ReadFile(commentFile)
+	d, err := os.ReadFile(commentFile)
 	if err != nil {
 		t.Fatalf("Could not read payload file: %v", err)
 	}

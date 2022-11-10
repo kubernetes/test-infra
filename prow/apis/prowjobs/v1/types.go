@@ -29,6 +29,7 @@ import (
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowgithub "k8s.io/test-infra/prow/github"
@@ -98,7 +99,7 @@ const (
 
 const (
 	// StartedStatusFile is the JSON file that stores information about the build
-	// at the start ob the build. See testgrid/metadata/job.go for more details.
+	// at the start of the build. See testgrid/metadata/job.go for more details.
 	StartedStatusFile = "started.json"
 
 	// FinishedStatusFile is the JSON file that stores information about the build
@@ -107,6 +108,9 @@ const (
 
 	// ProwJobFile is the JSON file that stores the prowjob information.
 	ProwJobFile = "prowjob.json"
+
+	// CloneRecordFile is the JSON file that stores clone records of a prowjob.
+	CloneRecordFile = "clone-records.json"
 )
 
 // +genclient
@@ -496,6 +500,14 @@ type DecorationConfig struct {
 	// UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
 	// hope that the test process exits cleanly before starting an upload.
 	UploadIgnoresInterrupts *bool `json:"upload_ignores_interrupts,omitempty"`
+
+	// SetLimitEqualsMemoryRequest sets memory limit equal to request.
+	SetLimitEqualsMemoryRequest *bool `json:"set_limit_equals_memory_request,omitempty"`
+	// DefaultMemoryRequest is the default requested memory on a test container.
+	// If SetLimitEqualsMemoryRequest is also true then the Limit will also be
+	// set the same as this request. Could be overridden by memory request
+	// defined explicitly on prowjob.
+	DefaultMemoryRequest *resource.Quantity `json:"default_memory_request,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -696,6 +708,14 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 
 	if merged.UploadIgnoresInterrupts == nil {
 		merged.UploadIgnoresInterrupts = def.UploadIgnoresInterrupts
+	}
+
+	if merged.SetLimitEqualsMemoryRequest == nil {
+		merged.SetLimitEqualsMemoryRequest = def.SetLimitEqualsMemoryRequest
+	}
+
+	if merged.DefaultMemoryRequest == nil {
+		merged.DefaultMemoryRequest = def.DefaultMemoryRequest
 	}
 
 	return &merged

@@ -19,7 +19,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -49,7 +48,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
-	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -59,6 +57,44 @@ import (
 
 func pStr(str string) *string {
 	return &str
+}
+
+func TestKeysForIdentifier(t *testing.T) {
+	tests := []struct {
+		name       string
+		identifier string
+		want       []string
+	}{
+		{
+			name:       "base",
+			identifier: "foo",
+			want:       []string{"foo", "*"},
+		},
+		{
+			name:       "with-http",
+			identifier: "http://foo",
+			want:       []string{"http://foo", "foo", "*"},
+		},
+		{
+			name:       "with-https",
+			identifier: "https://foo",
+			want:       []string{"https://foo", "foo", "*"},
+		},
+		{
+			name:       "org-name-contains-https",
+			identifier: "https-foo",
+			want:       []string{"https-foo", "*"},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if diff := cmp.Diff(tc.want, keysForIdentifier(tc.identifier)); diff != "" {
+				t.Errorf("Keys mismatch. Want(-), got(+):\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestDefaultJobBase(t *testing.T) {
@@ -255,14 +291,10 @@ deck:
 	}
 	for _, tc := range testCases {
 		// save the config
-		spyglassConfigDir, err := ioutil.TempDir("", "spyglassConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(spyglassConfigDir)
+		spyglassConfigDir := t.TempDir()
 
 		spyglassConfig := filepath.Join(spyglassConfigDir, "config.yaml")
-		if err := ioutil.WriteFile(spyglassConfig, []byte(tc.spyglassConfig), 0666); err != nil {
+		if err := os.WriteFile(spyglassConfig, []byte(tc.spyglassConfig), 0666); err != nil {
 			t.Fatalf("fail to write spyglass config: %v", err)
 		}
 
@@ -971,7 +1003,7 @@ periodics:
 			prowConfigDir := t.TempDir()
 
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-			if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+			if err := os.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
 				t.Fatalf("fail to write prow config: %v", err)
 			}
 
@@ -1094,7 +1126,7 @@ gerrit:
 			prowConfigDir := t.TempDir()
 
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-			if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+			if err := os.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
 				t.Fatalf("fail to write prow config: %v", err)
 			}
 
@@ -1846,6 +1878,24 @@ func TestValidateJobBase(t *testing.T) {
 			pass: true,
 		},
 		{
+			name: "valid jenkins job - nested job",
+			base: JobBase{
+				Name:      "folder/job",
+				Agent:     ja,
+				Namespace: &cfg.PodNamespace,
+			},
+			pass: true,
+		},
+		{
+			name: "invalid jenkins job",
+			base: JobBase{
+				Name:      "job.",
+				Agent:     ja,
+				Namespace: &cfg.PodNamespace,
+			},
+			pass: false,
+		},
+		{
 			name: "invalid concurrency",
 			base: JobBase{
 				Name:           "name",
@@ -1967,9 +2017,9 @@ func TestValidateDeck(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is default value => no error",
+			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is default value => error",
 			deck:        Deck{AdditionalAllowedBuckets: []string{"hello", "world"}},
-			expectedErr: "",
+			expectedErr: "skip_storage_path_validation is enabled",
 		},
 		{
 			name:        "AdditionalAllowedBuckets has items, SkipStoragePathValidation is true => error",
@@ -2074,7 +2124,7 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 				Context: "context",
 			},
 			labels: map[string]string{
-				gerrit.GerritReportLabel: "label",
+				kube.GerritReportLabel: "label",
 			},
 		},
 		{
@@ -2088,16 +2138,16 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 			name:     "no errors if job is set to skip report and Gerrit report label is empty",
 			reporter: Reporter{SkipReport: true},
 			labels: map[string]string{
-				gerrit.GerritReportLabel: "",
+				kube.GerritReportLabel: "",
 			},
 		},
 		{
 			name:     "error if job is set to skip report and Gerrit report label is set to non-empty",
 			reporter: Reporter{SkipReport: true},
 			labels: map[string]string{
-				gerrit.GerritReportLabel: "label",
+				kube.GerritReportLabel: "label",
 			},
-			expected: fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", gerrit.GerritReportLabel),
+			expected: fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", kube.GerritReportLabel),
 		},
 	}
 
@@ -2146,7 +2196,7 @@ func TestGerritAllRepos(t *testing.T) {
 	tests := []struct {
 		name string
 		in   *GerritOrgRepoConfigs
-		want map[string][]string
+		want map[string]map[string]*GerritQueryFilter
 	}{
 		{
 			name: "multiple-org",
@@ -2160,10 +2210,7 @@ func TestGerritAllRepos(t *testing.T) {
 					Repos: []string{"repo-2"},
 				},
 			},
-			want: map[string][]string{
-				"org-1": {"repo-1"},
-				"org-2": {"repo-2"},
-			},
+			want: map[string]map[string]*GerritQueryFilter{"org-1": {"repo-1": nil}, "org-2": {"repo-2": nil}},
 		},
 		{
 			name: "org-union",
@@ -2177,9 +2224,7 @@ func TestGerritAllRepos(t *testing.T) {
 					Repos: []string{"repo-2"},
 				},
 			},
-			want: map[string][]string{
-				"org-1": {"repo-1", "repo-2"},
-			},
+			want: map[string]map[string]*GerritQueryFilter{"org-1": {"repo-1": nil, "repo-2": nil}},
 		},
 		{
 			name: "empty",
@@ -3230,37 +3275,29 @@ postsubmits:
 		t.Run(tc.name, func(t *testing.T) {
 
 			// save the config
-			prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-			if err != nil {
-				t.Fatalf("fail to make tempdir: %v", err)
-			}
-			defer os.RemoveAll(prowConfigDir)
+			prowConfigDir := t.TempDir()
 
 			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-			if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+			if err := os.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
 				t.Fatalf("fail to write prow config: %v", err)
 			}
 
 			if tc.versionFileContent != "" {
 				versionFile := filepath.Join(prowConfigDir, "VERSION")
-				if err := ioutil.WriteFile(versionFile, []byte(tc.versionFileContent), 0600); err != nil {
+				if err := os.WriteFile(versionFile, []byte(tc.versionFileContent), 0600); err != nil {
 					t.Fatalf("failed to write prow version file: %v", err)
 				}
 			}
 
 			jobConfig := ""
 			if len(tc.jobConfigs) > 0 {
-				jobConfigDir, err := ioutil.TempDir("", "jobConfig")
-				if err != nil {
-					t.Fatalf("fail to make tempdir: %v", err)
-				}
-				defer os.RemoveAll(jobConfigDir)
+				jobConfigDir := t.TempDir()
 
 				// cover both job config as a file & a dir
 				if len(tc.jobConfigs) == 1 {
 					// a single file
 					jobConfig = filepath.Join(jobConfigDir, "config.yaml")
-					if err := ioutil.WriteFile(jobConfig, []byte(tc.jobConfigs[0]), 0666); err != nil {
+					if err := os.WriteFile(jobConfig, []byte(tc.jobConfigs[0]), 0666); err != nil {
 						t.Fatalf("fail to write job config: %v", err)
 					}
 				} else {
@@ -3268,7 +3305,7 @@ postsubmits:
 					jobConfig = jobConfigDir
 					for idx, config := range tc.jobConfigs {
 						subConfig := filepath.Join(jobConfigDir, fmt.Sprintf("config_%d.yaml", idx))
-						if err := ioutil.WriteFile(subConfig, []byte(config), 0666); err != nil {
+						if err := os.WriteFile(subConfig, []byte(config), 0666); err != nil {
 							t.Fatalf("fail to write job config: %v", err)
 						}
 					}
@@ -3436,12 +3473,8 @@ bar_jobs.yaml`,
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			jobConfigDir, err := ioutil.TempDir("", "jobConfig")
-			if err != nil {
-				t.Fatalf("fail to make tempdir: %v", err)
-			}
-			defer os.RemoveAll(jobConfigDir)
-			err = os.Mkdir(filepath.Join(jobConfigDir, "subdir"), 0777)
+			jobConfigDir := t.TempDir()
+			err := os.Mkdir(filepath.Join(jobConfigDir, "subdir"), 0777)
 			if err != nil {
 				t.Fatalf("fail to make subdir: %v", err)
 			}
@@ -3449,7 +3482,7 @@ bar_jobs.yaml`,
 			for _, fileMap := range []map[string]string{commonFiles, tc.files} {
 				for name, content := range fileMap {
 					fullName := filepath.Join(jobConfigDir, name)
-					if err := ioutil.WriteFile(fullName, []byte(content), 0666); err != nil {
+					if err := os.WriteFile(fullName, []byte(content), 0666); err != nil {
 						t.Fatalf("fail to write file %s: %v", fullName, err)
 					}
 				}
@@ -3595,21 +3628,17 @@ func TestSecretAgentLoading(t *testing.T) {
 	changedTokenValue := "121f3cb3e7f70feeb35f9204f5a988d7292c7ba0"
 
 	// Creating a temporary directory.
-	secretDir, err := ioutil.TempDir("", "secretDir")
-	if err != nil {
-		t.Fatalf("fail to create a temporary directory: %v", err)
-	}
-	defer os.RemoveAll(secretDir)
+	secretDir := t.TempDir()
 
 	// Create the first temporary secret.
 	firstTempSecret := filepath.Join(secretDir, "firstTempSecret")
-	if err := ioutil.WriteFile(firstTempSecret, []byte(tempTokenValue), 0666); err != nil {
+	if err := os.WriteFile(firstTempSecret, []byte(tempTokenValue), 0666); err != nil {
 		t.Fatalf("fail to write secret: %v", err)
 	}
 
 	// Create the second temporary secret.
 	secondTempSecret := filepath.Join(secretDir, "secondTempSecret")
-	if err := ioutil.WriteFile(secondTempSecret, []byte(tempTokenValue), 0666); err != nil {
+	if err := os.WriteFile(secondTempSecret, []byte(tempTokenValue), 0666); err != nil {
 		t.Fatalf("fail to write secret: %v", err)
 	}
 
@@ -3629,10 +3658,10 @@ func TestSecretAgentLoading(t *testing.T) {
 	}
 
 	// Change the values of the files.
-	if err := ioutil.WriteFile(firstTempSecret, []byte(changedTokenValue), 0666); err != nil {
+	if err := os.WriteFile(firstTempSecret, []byte(changedTokenValue), 0666); err != nil {
 		t.Fatalf("fail to write secret: %v", err)
 	}
-	if err := ioutil.WriteFile(secondTempSecret, []byte(changedTokenValue), 0666); err != nil {
+	if err := os.WriteFile(secondTempSecret, []byte(changedTokenValue), 0666); err != nil {
 		t.Fatalf("fail to write secret: %v", err)
 	}
 
@@ -3702,14 +3731,10 @@ github_reporter:
 
 	for _, tc := range testCases {
 		// save the config
-		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		prowConfigDir := t.TempDir()
 
 		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-		if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+		if err := os.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
@@ -4242,14 +4267,10 @@ tide:
 
 	for _, tc := range testCases {
 		// save the config
-		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
-		if err != nil {
-			t.Fatalf("fail to make tempdir: %v", err)
-		}
-		defer os.RemoveAll(prowConfigDir)
+		prowConfigDir := t.TempDir()
 
 		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-		if err := ioutil.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
+		if err := os.WriteFile(prowConfig, []byte(tc.prowConfig), 0666); err != nil {
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
@@ -7886,6 +7907,92 @@ func TestValidatePostsubmits(t *testing.T) {
 	}
 }
 
+func TestValidatePeriodics(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		periodics     []Periodic
+		expected      []Periodic
+		expectedError string
+	}{
+		{
+			name: "Duplicate jobname causes error",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "6h"},
+				{JobBase: JobBase{Name: "a"}, Interval: "12h"},
+			},
+			expectedError: "duplicated periodic job: a",
+		},
+		{
+			name: "Mutually exclusive settings: cron, interval, and minimal_interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "6h", MinimumInterval: "6h"},
+			},
+			expectedError: "cron, interval, and minimum_interval are mutually exclusive in periodic a",
+		},
+		{
+			name: "Required settings: cron, interval, or minimal_interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}},
+			},
+			expectedError: "at least one of cron, interval, or minimum_interval must be set in periodic a",
+		},
+		{
+			name: "Invalid cron string",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Cron: "hello"},
+			},
+			expectedError: "invalid cron string hello in periodic a: Expected 5 or 6 fields, found 1: hello",
+		},
+		{
+			name: "Invalid interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "hello"},
+			},
+			expectedError: "cannot parse duration for a: time: invalid duration \"hello\"",
+		},
+		{
+			name: "Invalid minimum_interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, MinimumInterval: "hello"},
+			},
+			expectedError: "cannot parse duration for a: time: invalid duration \"hello\"",
+		},
+		{
+			name: "Sets interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "10ns"},
+			},
+			expected: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "10ns", interval: time.Duration(10)},
+			},
+		},
+		{
+			name: "Sets minimum_interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, MinimumInterval: "10ns"},
+			},
+			expected: []Periodic{
+				{JobBase: JobBase{Name: "a"}, MinimumInterval: "10ns", minimum_interval: time.Duration(10)},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := Config{}.validatePeriodics(tc.periodics)
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if len(tc.expected) > 0 && !reflect.DeepEqual(tc.periodics, tc.expected) {
+			t.Errorf("expected '%v', got '%v'", tc.expected, tc.periodics)
+		}
+		if tc.expectedError != "" && errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
+	}
+}
+
 func TestValidateStorageBucket(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -7894,10 +8001,10 @@ func TestValidateStorageBucket(t *testing.T) {
 		expectedErr string
 	}{
 		{
-			name:        "unspecified config means validation",
+			name:        "unspecified config means no validation",
 			yaml:        ``,
 			bucket:      "who-knows",
-			expectedErr: "bucket \"who-knows\" not in allowed list",
+			expectedErr: "",
 		},
 		{
 			name: "validation disabled",
@@ -7975,7 +8082,7 @@ func loadConfigYaml(prowConfigYaml string, t *testing.T, supplementalProwConfigs
 	prowConfigDir := t.TempDir()
 
 	prowConfig := filepath.Join(prowConfigDir, "config.yaml")
-	if err := ioutil.WriteFile(prowConfig, []byte(prowConfigYaml), 0666); err != nil {
+	if err := os.WriteFile(prowConfig, []byte(prowConfigYaml), 0666); err != nil {
 		t.Fatalf("fail to write prow config: %v", err)
 	}
 
@@ -7989,7 +8096,7 @@ func loadConfigYaml(prowConfigYaml string, t *testing.T, supplementalProwConfigs
 
 		// use a random prefix for the file to make sure that the loading correctly loads all supplemental configs with the
 		// right suffix.
-		if err := ioutil.WriteFile(filepath.Join(dir, strconv.Itoa(time.Now().Nanosecond())+"_prowconfig.yaml"), []byte(cfg), 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(dir, strconv.Itoa(time.Now().Nanosecond())+"_prowconfig.yaml"), []byte(cfg), 0644); err != nil {
 			t.Fatalf("failed to write supplemental prow config: %v", err)
 		}
 	}
@@ -8225,7 +8332,106 @@ tide:
     - another/repo
   status_update_period: 1m0s
   sync_period: 1m0s
-`},
+`,
+		},
+		{
+			name:       "Additional slack reporter config gets merged in",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+slack_reporter_configs:
+  my-org:
+    channel: '#channel'
+    job_states_to_report:
+    - failure
+    - error
+    job_types_to_report:
+    - periodic
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+  my-org/my-repo:
+    channel: '#other-channel'
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+`,
+			},
+			expectedProwConfig: `branch-protection: {}
+config_version_sha: abc
+deck:
+  spyglass:
+    gcs_browser_prefixes:
+      '*': ""
+    gcs_browser_prefixes_by_bucket:
+      '*': ""
+    size_limit: 100000000
+  tide_update_period: 10s
+default_job_timeout: 24h0m0s
+gerrit:
+  ratelimit: 5
+  tick_interval: 1m0s
+github:
+  link_url: https://github.com
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+horologium: {}
+in_repo_config:
+  allowed_clusters:
+    '*':
+    - default
+log_level: info
+managed_webhooks:
+  auto_accept_invitation: false
+  respect_legacy_global_token: false
+plank:
+  max_goroutines: 20
+  pod_pending_timeout: 10m0s
+  pod_running_timeout: 48h0m0s
+  pod_unscheduled_timeout: 5m0s
+pod_namespace: default
+prowjob_namespace: default
+push_gateway:
+  interval: 1m0s
+  serve_metrics: false
+sinker:
+  max_pod_age: 24h0m0s
+  max_prowjob_age: 168h0m0s
+  resync_period: 1h0m0s
+  terminated_pod_ttl: 24h0m0s
+slack_reporter_configs:
+  my-org:
+    channel: '#channel'
+    job_states_to_report:
+    - failure
+    - error
+    job_types_to_report:
+    - periodic
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+  my-org/my-repo:
+    channel: '#other-channel'
+    report_template: Job {{.Spec.Job}} ended with state {{.Status.State}}.
+status_error_link: https://github.com/kubernetes/test-infra/issues
+tide:
+  context_options: {}
+  max_goroutines: 20
+  status_update_period: 1m0s
+  sync_period: 1m0s
+`,
+		},
+		{
+			name:       "Additional slack reporter config with duplication errors",
+			prowConfig: "config_version_sha: abc",
+			supplementalProwConfigs: []string{
+				`
+slack_reporter_configs:
+  my-org:
+    channel: '#channel'`,
+				`
+slack_reporter_configs:
+  my-org:
+    channel: '#other-channel'`,
+			},
+			expectedErrorSubstr: "config for org or repo my-org passed more than once",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -8398,6 +8604,7 @@ func TestHasConfigFor(t *testing.T) {
 			name: "Any non-empty config with empty branchprotection and Tide properties is considered global",
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.BranchProtection = BranchProtection{}
+				fuzzedConfig.SlackReporterConfigs = SlackReporterConfigs{}
 				fuzzedConfig.Tide.MergeType = nil
 				fuzzedConfig.Tide.Queries = nil
 				return fuzzedConfig, true, nil, nil
@@ -8435,7 +8642,7 @@ func TestHasConfigFor(t *testing.T) {
 			name: "Any config that is empty except for tide.merge_method is considered to be for those orgs or repos",
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				expectOrgs, expectRepos = sets.String{}, sets.String{}
-				result := &ProwConfig{Tide: Tide{MergeType: fuzzedConfig.Tide.MergeType}}
+				result := &ProwConfig{Tide: Tide{TideGitHubConfig: TideGitHubConfig{MergeType: fuzzedConfig.Tide.MergeType}}}
 				for orgOrRepo := range result.Tide.MergeType {
 					if strings.Contains(orgOrRepo, "/") {
 						expectRepos.Insert(orgOrRepo)
@@ -8451,7 +8658,7 @@ func TestHasConfigFor(t *testing.T) {
 			name: "Any config that is empty except for tide.queries is considered to be for those orgs or repos",
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				expectOrgs, expectRepos = sets.String{}, sets.String{}
-				result := &ProwConfig{Tide: Tide{Queries: fuzzedConfig.Tide.Queries}}
+				result := &ProwConfig{Tide: Tide{TideGitHubConfig: TideGitHubConfig{Queries: fuzzedConfig.Tide.Queries}}}
 				for _, query := range result.Tide.Queries {
 					expectOrgs.Insert(query.Orgs...)
 					expectRepos.Insert(query.Repos...)
@@ -8481,6 +8688,7 @@ func TestHasConfigFor(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			for i := 0; i < 100; i++ {
 				fuzzedConfig := &ProwConfig{}
+				fuzzedConfig.SlackReporterConfigs = SlackReporterConfigs{}
 				fuzzer.Fuzz(fuzzedConfig)
 
 				fuzzedAndManipulatedConfig, expectIsGlobal, expectOrgs, expectRepos := tc.resultGenerator(fuzzedConfig)
@@ -8579,13 +8787,19 @@ func TestProwConfigMergingProperties(t *testing.T) {
 		{
 			name: "Tide merge method",
 			makeMergeable: func(pc *ProwConfig) {
-				*pc = ProwConfig{Tide: Tide{MergeType: pc.Tide.MergeType}}
+				*pc = ProwConfig{Tide: Tide{TideGitHubConfig: TideGitHubConfig{MergeType: pc.Tide.MergeType}}}
 			},
 		},
 		{
 			name: "Tide queries",
 			makeMergeable: func(pc *ProwConfig) {
-				*pc = ProwConfig{Tide: Tide{Queries: pc.Tide.Queries}}
+				*pc = ProwConfig{Tide: Tide{TideGitHubConfig: TideGitHubConfig{Queries: pc.Tide.Queries}}}
+			},
+		},
+		{
+			name: "SlackReporter configurations",
+			makeMergeable: func(pc *ProwConfig) {
+				*pc = ProwConfig{SlackReporterConfigs: pc.SlackReporterConfigs}
 			},
 		},
 	}
@@ -8670,6 +8884,11 @@ func TestProwConfigMergingProperties(t *testing.T) {
 				}
 				i++
 			},
+			func(config *SlackReporterConfigs, c fuzz.Continue) {
+				for _, reporter := range *config {
+					c.Fuzz(reporter)
+				}
+			},
 		)
 
 	// Do not parallelize, the PRNG used by the fuzzer is not threadsafe
@@ -8681,6 +8900,7 @@ func TestProwConfigMergingProperties(t *testing.T) {
 
 					for i := 0; i < 100; i++ {
 						fuzzedConfig := &ProwConfig{}
+						fuzzedConfig.SlackReporterConfigs = map[string]SlackReporter{}
 						fuzzer.Fuzz(fuzzedConfig)
 
 						tc.makeMergeable(fuzzedConfig)
@@ -8867,14 +9087,14 @@ func TestSplitRepoName(t *testing.T) {
 		{
 			name:     "ref name with http://",
 			full:     "http://orgA/repoB",
-			wantOrg:  "orgA",
+			wantOrg:  "http://orgA",
 			wantRepo: "repoB",
 			wantErr:  false,
 		},
 		{
 			name:     "ref name with https://",
 			full:     "https://orgA/repoB",
-			wantOrg:  "orgA",
+			wantOrg:  "https://orgA",
 			wantRepo: "repoB",
 			wantErr:  false,
 		},

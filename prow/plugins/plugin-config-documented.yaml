@@ -34,7 +34,7 @@ blockades:
     blockregexps:
       - ""
 
-    # BranchRegexp is the regular expression for branches that the the blockade applies to.
+    # BranchRegexp is the regular expression for branches that the blockade applies to.
     # If BranchRegexp is not specified, the blockade applies to all branches by default.
     # Compiles into BranchRe during config load.
     branchregexp: ""
@@ -56,6 +56,12 @@ blunderbuss:
     # insufficient reviewers are available. If ExcludeApprovers is true,
     # approvers will never be considered as reviewers.
     exclude_approvers: true
+
+    # IgnoreAuthors skips requesting reviewers for specified users.
+    # This is useful when a bot user or admin opens a PR that will be
+    # merged regardless of approvals.
+    ignore_authors:
+      - ""
 
     # IgnoreDrafts instructs the plugin to ignore assigning reviewers
     # to the PR that is in Draft state. Default it's false.
@@ -401,6 +407,15 @@ config_updater:
             use_full_path_as_key: true
 dco:
     "":
+        # ContributingBranch allows setting a custom branch where to find CONTRIBUTING.md
+        contributing_branch: ' '
+
+        # ContributingPath is used to override the default path to CONTRIBUTING.md
+        contributing_path: ' '
+
+        # ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
+        contributing_repo: ' '
+
         # SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
         skip_dco_check_for_collaborators: true
 

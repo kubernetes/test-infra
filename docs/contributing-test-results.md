@@ -9,10 +9,10 @@ The process is as follows:
   - The approver will help create the GCS bucket accordingly.
   - If you are using your personal GCS bucket, then you can skip this step.
 - Make sure the GCS bucket is [world-readable](https://cloud.google.com/storage/docs/access-control/making-data-public)
-  - If the GCS bucket is created by a approver, then you can skip this step.
+  - If the GCS bucket is created by an approver, then you can skip this step.
 - Run e2e tests (we recommend using [kubetest](/kubetest/README.md))
 - Store test results in accordance with [Gubernator's GCS Layout](/gubernator/README.md#gcs-layout)
-  - Unfortunately this part is currently left as an exercise to the reader. We use
+  - Unfortunately, this part is currently left as an exercise to the reader. We use
     [bootstrap](/jenkins/bootstrap.py) to facilitate this and are in the midst of
     rewriting it to better support external usage.
 - Add the GCS bucket info to [buckets.yaml](/kettle/buckets.yaml) via a PR (use the

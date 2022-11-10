@@ -68,6 +68,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 			MaxReviewerCount:      3,
 			ExcludeApprovers:      true,
 			UseStatusAvailability: true,
+			IgnoreAuthors:         []string{},
 		},
 	})
 	if err != nil {
@@ -150,6 +151,12 @@ func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry
 	if pr.Draft && config.IgnoreDrafts {
 		// ignore Draft PR when IgnoreDrafts is true
 		return nil
+	}
+	// Ignore PRs submitted by users matching logins set in IgnoreAuthors
+	for _, user := range config.IgnoreAuthors {
+		if user == pr.User.Login {
+			return nil
+		}
 	}
 	return handle(
 		ghc,

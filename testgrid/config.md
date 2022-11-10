@@ -275,10 +275,8 @@ test_groups:
   gcs_prefix:
   kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
   - configuration_value: Commit
-  - configuration_value: infra-commit
+  - configuration_value: my_custom_key
 ```
 
 ### Email alerts

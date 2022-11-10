@@ -19,12 +19,12 @@ package secret
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 // loadSingleSecret reads and returns the value of a single file.
 func loadSingleSecret(path string) ([]byte, error) {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %w", path, err)
 	}

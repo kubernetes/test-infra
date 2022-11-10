@@ -18,7 +18,6 @@ package jira
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -89,6 +88,11 @@ func TestRegex(t *testing.T) {
 			name:  "Trailing special characters, no match",
 			input: "rehearse-15676-pull",
 		},
+		{
+			name:     "Included in markdown link",
+			input:    "[Jira Bug ABC-123](https://my-jira.com/browse/ABC-123)",
+			expected: []string{"ABC-123", "ABC-123"},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -99,26 +103,6 @@ func TestRegex(t *testing.T) {
 			}
 		})
 	}
-}
-
-type fakeGitHubClient struct {
-	editedComments map[string]string
-}
-
-func (f *fakeGitHubClient) EditComment(org, repo string, id int, body string) error {
-	if f.editedComments == nil {
-		f.editedComments = map[string]string{}
-	}
-	f.editedComments[fmt.Sprintf("%s/%s:%d", org, repo, id)] = body
-	return nil
-}
-
-func (f *fakeGitHubClient) GetIssue(org, repo string, number int) (*github.Issue, error) {
-	return &github.Issue{}, nil
-}
-
-func (f *fakeGitHubClient) EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error) {
-	return issue, nil
 }
 
 func TestHandle(t *testing.T) {
@@ -271,7 +255,7 @@ func TestHandle(t *testing.T) {
 			},
 			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
-			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "Some issue"}}}},
+			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "org/repo#3: Some issue"}}}},
 		},
 		{
 			name: "Link exists but title is different, replacing it",
@@ -317,6 +301,18 @@ func TestHandle(t *testing.T) {
 			projectCache:   &threadsafeSet{data: sets.NewString("enterprise")},
 			cfg:            &plugins.Jira{DisabledJiraProjects: []string{"Enterprise"}},
 			existingIssues: []jira.Issue{{ID: "ENTERPRISE-4"}},
+		},
+		{
+			name: "Valid issue in disabled project, multiple references, with markdown link, case insensitive matching, nothing to do",
+			event: github.GenericCommentEvent{
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "ABC-123: Fixes Some issue",
+				Body:       "Some text and also [ABC-123](https://my-jira.com/browse/ABC-123)",
+				Repo:       github.Repo{FullName: "org/repo"},
+				Number:     3,
+			},
+			projectCache: &threadsafeSet{data: sets.NewString("abc")},
+			cfg:          &plugins.Jira{DisabledJiraProjects: []string{"abc"}},
 		},
 		{
 			name: "Project 404 gets served from cache, nothing happens",
@@ -519,6 +515,45 @@ func TestProjectCachingJiraClient(t *testing.T) {
 			_, err := cachingClient.GetIssue(tc.issueToRequest)
 			if diff := cmp.Diff(tc.expectedError, err, cmp.Exporter(func(_ reflect.Type) bool { return true })); diff != "" {
 				t.Fatalf("expected error differs from expected: %s", diff)
+			}
+		})
+	}
+}
+
+func TestFilterOutDisabledJiraProjects(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name           string
+		candidates     []string
+		jiraConfig     *plugins.Jira
+		expectedOutput []string
+	}{{
+		name:           "empty jira config",
+		candidates:     []string{"ABC-123", "DEF-567"},
+		jiraConfig:     nil,
+		expectedOutput: []string{"ABC-123", "DEF-567"},
+	}, {
+		name:           "upper case disabled list",
+		candidates:     []string{"ABC-123", "DEF-567"},
+		jiraConfig:     &plugins.Jira{DisabledJiraProjects: []string{"ABC"}},
+		expectedOutput: []string{"DEF-567"},
+	}, {
+		name:           "lower case disabled list",
+		candidates:     []string{"ABC-123", "DEF-567"},
+		jiraConfig:     &plugins.Jira{DisabledJiraProjects: []string{"abc"}},
+		expectedOutput: []string{"DEF-567"},
+	}, {
+		name:           "multiple disabled projects",
+		candidates:     []string{"ABC-123", "DEF-567"},
+		jiraConfig:     &plugins.Jira{DisabledJiraProjects: []string{"abc", "def"}},
+		expectedOutput: []string{},
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			output := filterOutDisabledJiraProjects(tc.candidates, tc.jiraConfig)
+			if diff := cmp.Diff(tc.expectedOutput, output); diff != "" {
+				t.Fatalf("actual output differes from expected output: %s", diff)
 			}
 		})
 	}

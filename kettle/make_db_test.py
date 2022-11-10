@@ -150,7 +150,7 @@ class MainTest(unittest.TestCase):
             expected = self.get_expected_builds()
         if db is None:
             db = model.Database(':memory:')
-        make_db.main(db, {self.JOBS_DIR: {}}, threads, True, sys.maxsize, client)
+        make_db.main(db, {self.JOBS_DIR: {}}, threads, True, sys.maxsize, False, client)
 
         result = {path: (started, finished, db.test_results_for_build(path))
                   for _rowid, path, started, finished in db.get_builds()}

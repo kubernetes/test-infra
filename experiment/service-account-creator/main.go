@@ -152,7 +152,7 @@ func run(o options) error {
 			logrus.WithField("serviceAccount", user).Warn("Cannot parse prefix and project from service account")
 			return fmt.Errorf("validate account pre-existence: %w", err)
 		}
-		if cerr := create(o.serviceAccountProject, o.serviceAccountPrefix); err != nil {
+		if cerr := create(o.serviceAccountProject, o.serviceAccountPrefix); cerr != nil {
 			return fmt.Errorf("create account: %w", cerr)
 		}
 	}

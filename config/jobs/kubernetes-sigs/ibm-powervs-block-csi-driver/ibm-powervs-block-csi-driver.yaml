@@ -10,9 +10,12 @@ presubmits:
        testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
        testgrid-tab-name: build
        description: Build test in ibm-powervs-block-csi-driver repo.
+     branches:
+      # The script this job runs is not in all branches.
+      - ^main$
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
          command:
          - runner.sh
          args:
@@ -31,9 +34,12 @@ presubmits:
        testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
        testgrid-tab-name: image-build
        description: Build image test in ibm-powervs-block-csi-driver repo.
+     branches:
+      # The script this job runs is not in all branches.
+      - ^main$
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
          command:
          - runner.sh
          args:
@@ -50,9 +56,12 @@ presubmits:
        testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
        testgrid-tab-name: unit
        description: Unit tests in ibm-powervs-block-csi-driver repo.
+     branches:
+      # The script this job runs is not in all branches.
+      - ^main$
      spec:
        containers:
-       - image: golang:1.17
+       - image: golang:1.19
          command:
          - make
          args:
@@ -66,9 +75,12 @@ presubmits:
        testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
        testgrid-tab-name: verify
        description: ibm-powervs-block-csi-driver basic code verification.
+     branches:
+      # The script this job runs is not in all branches.
+      - ^main$
      spec:
        containers:
-       - image: golang:1.17
+       - image: golang:1.19
          command:
          - make
          args:

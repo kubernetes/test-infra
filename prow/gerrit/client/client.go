@@ -19,10 +19,12 @@ limitations under the License.
 package client
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -33,22 +35,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/version"
 )
 
 const (
 	// CodeReview is the default (soon to be removed) gerrit code review label
 	CodeReview = "Code-Review"
-
-	// GerritID identifies a gerrit change
-	GerritID = "prow.k8s.io/gerrit-id"
-	// GerritInstance is the gerrit host url
-	GerritInstance = "prow.k8s.io/gerrit-instance"
-	// GerritRevision is the SHA of current patchset from a gerrit change
-	GerritRevision = "prow.k8s.io/gerrit-revision"
-	// GerritPatchset is the numeric ID of the current patchset
-	GerritPatchset = "prow.k8s.io/gerrit-patchset"
-	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
-	GerritReportLabel = "prow.k8s.io/gerrit-report-label"
 
 	// Merged status indicates a Gerrit change has been merged
 	Merged = "MERGED"
@@ -83,32 +77,6 @@ func init() {
 	prometheus.MustRegister(clientMetrics.queryResults)
 }
 
-// ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
-type ProjectsFlag map[string][]string
-
-func (p ProjectsFlag) String() string {
-	var hosts []string
-	for host, repos := range p {
-		hosts = append(hosts, host+"="+strings.Join(repos, ","))
-	}
-	return strings.Join(hosts, " ")
-}
-
-// Set populates ProjectsFlag upon flag.Parse()
-func (p ProjectsFlag) Set(value string) error {
-	parts := strings.SplitN(value, "=", 2)
-	if len(parts) != 2 {
-		return fmt.Errorf("%s not in the form of host=repo-a,repo-b,etc", value)
-	}
-	host := parts[0]
-	if _, ok := p[host]; ok {
-		return fmt.Errorf("duplicate host: %s", host)
-	}
-	repos := strings.Split(parts[1], ",")
-	p[host] = repos
-	return nil
-}
-
 type gerritAuthentication interface {
 	SetCookieAuth(name, value string)
 }
@@ -123,6 +91,8 @@ type gerritChange interface {
 	SetReview(changeID, revisionID string, input *gerrit.ReviewInput) (*gerrit.ReviewResult, *gerrit.Response, error)
 	ListChangeComments(changeID string) (*map[string][]gerrit.CommentInfo, *gerrit.Response, error)
 	GetChange(changeId string, opt *gerrit.ChangeOptions) (*ChangeInfo, *gerrit.Response, error)
+	SubmitChange(id string, opt *gerrit.SubmitInput) (*ChangeInfo, *gerrit.Response, error)
+	GetRelatedChanges(changeID string, revisionID string) (*gerrit.RelatedChangesInfo, *gerrit.Response, error)
 }
 
 type gerritProjects interface {
@@ -132,7 +102,7 @@ type gerritProjects interface {
 // gerritInstanceHandler holds all actual gerrit handlers
 type gerritInstanceHandler struct {
 	instance string
-	projects []string
+	projects map[string]*config.GerritQueryFilter
 
 	authService    gerritAuthentication
 	accountService gerritAccount
@@ -149,6 +119,7 @@ type Client struct {
 	accounts map[string]*gerrit.AccountInfo
 
 	authentication func() (string, error)
+	previousToken  string
 	lock           sync.RWMutex
 }
 
@@ -175,14 +146,28 @@ func (l LastSyncState) DeepCopy() LastSyncState {
 	return result
 }
 
+type roundTripperWithHeader struct {
+	upstream http.RoundTripper
+}
+
+func (rt *roundTripperWithHeader) RoundTrip(r *http.Request) (*http.Response, error) {
+	r.Header.Add("user-agent", "prow")
+	// Also include component name
+	r.Header.Add("user-agent", "prow/"+version.Name)
+	return rt.upstream.RoundTrip(r)
+}
+
 // NewClient returns a new gerrit client
-func NewClient(instances map[string][]string) (*Client, error) {
+func NewClient(instances map[string]map[string]*config.GerritQueryFilter) (*Client, error) {
 	c := &Client{
 		handlers: map[string]*gerritInstanceHandler{},
 		accounts: map[string]*gerrit.AccountInfo{},
 	}
 	for instance := range instances {
-		gc, err := gerrit.NewClient(instance, nil)
+		httpClient := http.Client{
+			Transport: &roundTripperWithHeader{upstream: http.DefaultTransport},
+		}
+		gc, err := gerrit.NewClient(instance, &httpClient)
 		if err != nil {
 			return nil, err
 		}
@@ -201,7 +186,43 @@ func NewClient(instances map[string][]string) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) authenticateOnce(previousToken string) string {
+func (c *Client) ApplyGlobalConfig(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, lastSyncTracker *SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
+	c.applyGlobalConfigOnce(orgRepoConfigGetter, lastSyncTracker, cookiefilePath, tokenPathOverride, additionalFunc)
+
+	go func() {
+		for {
+			c.applyGlobalConfigOnce(orgRepoConfigGetter, lastSyncTracker, cookiefilePath, tokenPathOverride, additionalFunc)
+			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
+			time.Sleep(time.Second)
+		}
+	}()
+}
+
+func (c *Client) applyGlobalConfigOnce(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, lastSyncTracker *SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
+	orgReposConfig := orgRepoConfigGetter()
+	if orgReposConfig == nil {
+		return
+	}
+	// Use globally defined gerrit repos if present
+	if err := c.UpdateClients(orgReposConfig.AllRepos()); err != nil {
+		logrus.WithError(err).Error("Updating clients.")
+	}
+	if lastSyncTracker != nil {
+		if err := lastSyncTracker.update(orgReposConfig.AllRepos()); err != nil {
+			logrus.WithError(err).Error("Syncing states.")
+		}
+	}
+
+	if additionalFunc != nil {
+		additionalFunc()
+	}
+
+	// Authenticate creates a goroutine for rotating token secrets when called the first
+	// time, afterwards it only authenticate once.
+	c.Authenticate(cookiefilePath, tokenPathOverride)
+}
+
+func (c *Client) authenticateOnce() {
 	c.lock.RLock()
 	auth := c.authentication
 	c.lock.RUnlock()
@@ -211,19 +232,19 @@ func (c *Client) authenticateOnce(previousToken string) string {
 		logrus.WithError(err).Error("Failed to read gerrit auth token")
 	}
 
-	if current == previousToken {
-		return current
+	if current == c.previousToken {
+		return
 	}
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	logrus.Info("New gerrit token, updating handler authentication...")
+	c.previousToken = current
 
 	// update auth token for each instance
 	for _, handler := range c.handlers {
 		handler.authService.SetCookieAuth("o", current)
 	}
-	return current
 }
 
 // Authenticate client calls using the specified file.
@@ -241,7 +262,7 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 		}
 		auth = func() (string, error) {
 			// TODO(fejta): listen for changes
-			raw, err := ioutil.ReadFile(cookiefilePath)
+			raw, err := os.ReadFile(cookiefilePath)
 			if err != nil {
 				return "", fmt.Errorf("read cookie: %w", err)
 			}
@@ -251,7 +272,7 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 		}
 	case tokenPath != "":
 		auth = func() (string, error) {
-			raw, err := ioutil.ReadFile(tokenPath)
+			raw, err := os.ReadFile(tokenPath)
 			if err != nil {
 				return "", fmt.Errorf("read token: %w", err)
 			}
@@ -264,12 +285,11 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 	c.lock.Lock()
 	was, c.authentication = c.authentication, auth
 	c.lock.Unlock()
-	logrus.Info("Authenticating gerrit requests...")
-	previousToken := c.authenticateOnce("") // Ensure requests immediately authenticated
+	c.authenticateOnce() // Ensure requests immediately authenticated
 	if was == nil {
 		go func() {
 			for {
-				previousToken = c.authenticateOnce(previousToken)
+				c.authenticateOnce()
 				time.Sleep(time.Minute)
 			}
 		}()
@@ -277,7 +297,7 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 }
 
 // UpdateClients update gerrit clients with new instances map
-func (c *Client) UpdateClients(instances map[string][]string) error {
+func (c *Client) UpdateClients(instances map[string]map[string]*config.GerritQueryFilter) error {
 	// Recording in newHandlers, so that deleted instances can be handled.
 	newHandlers := make(map[string]*gerritInstanceHandler)
 	var errs []error
@@ -343,7 +363,36 @@ func (c *Client) QueryChangesForInstance(instance string, lastState LastSyncStat
 	return h.queryAllChanges(lastStateForInstance, rateLimit)
 }
 
-func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
+// QueryChangesForProject queries change for a project.
+//
+// Important: this method does not update LastSyncState as it is per instance
+// based. It doesn't make sense to update the state as this method has no idea
+// whether all other projects have been queries or not yet. So caller of this
+// method is responsible for making sure that LastSyncState is up-to-date, if
+// the lastUpdate time is used by caller.
+func (c *Client) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]ChangeInfo, error) {
+	log := logrus.WithContext(context.Background()).WithField("instance", instance)
+
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		return []ChangeInfo{}, fmt.Errorf("instance handler for %q not found, it might not have been initialized yet", instance)
+	}
+
+	queryFilters, ok := h.projects[project]
+	if !ok {
+		return []ChangeInfo{}, fmt.Errorf("project %q from instance %q not registered in gerrit handler, it might not have been initialized yet", project, instance)
+	}
+
+	changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, append(queryStringsFromQueryFilter(queryFilters), additionalFilters...)...)
+	if err != nil {
+		return []ChangeInfo{}, fmt.Errorf("failed to query changes for project %q of %q instance: %v", project, instance, err)
+	}
+	return changes, nil
+}
+
+func (c *Client) GetChange(instance, id string, addtionalFields ...string) (*ChangeInfo, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	h, ok := c.handlers[instance]
@@ -351,9 +400,25 @@ func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
 		return nil, fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	info, resp, err := h.changeService.GetChange(id, nil)
+	info, resp, err := h.changeService.GetChange(id, &gerrit.ChangeOptions{AdditionalFields: addtionalFields})
 	if err != nil {
 		return nil, fmt.Errorf("error getting current change: %w", responseBodyError(err, resp))
+	}
+
+	return info, nil
+}
+
+func (c *Client) SubmitChange(instance, id string, wait bool) (*ChangeInfo, error) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		return nil, fmt.Errorf("not activated gerrit instance: %s", instance)
+	}
+
+	info, resp, err := h.changeService.SubmitChange(id, &gerrit.SubmitInput{WaitForMerge: wait})
+	if err != nil {
+		return nil, fmt.Errorf("error submitting current change: %w", responseBodyError(err, resp))
 	}
 
 	return info, nil
@@ -384,7 +449,7 @@ func responseBodyError(err error, resp *gerrit.Response) error {
 		return err
 	}
 	defer resp.Body.Close()
-	b, _ := ioutil.ReadAll(resp.Body) // Ignore the error since this is best effort.
+	b, _ := io.ReadAll(resp.Body) // Ignore the error since this is best effort.
 	return fmt.Errorf("%w, response body: %q", err, string(b))
 }
 
@@ -451,14 +516,14 @@ func (c *Client) Account(instance string) (*gerrit.AccountInfo, error) {
 func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, rateLimit int) []gerrit.ChangeInfo {
 	result := []gerrit.ChangeInfo{}
 	timeNow := time.Now()
-	for _, project := range h.projects {
+	for project, filters := range h.projects {
 		log := h.log.WithField("repo", project)
 		lastUpdate, ok := lastState[project]
 		if !ok {
 			lastUpdate = timeNow
 			log.WithField("now", timeNow).Warn("lastState not found, defaulting to now")
 		}
-		changes, err := h.queryChangesForProject(log, project, lastUpdate, rateLimit)
+		changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, queryStringsFromQueryFilter(filters)...)
 		if err != nil {
 			clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultError).Inc()
 			// don't halt on error from one project, log & continue
@@ -507,11 +572,36 @@ func (h *gerritInstanceHandler) injectPatchsetMessages(change *gerrit.ChangeInfo
 	return nil
 }
 
-func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int) ([]gerrit.ChangeInfo, error) {
+func queryStringsFromQueryFilter(filters *config.GerritQueryFilter) []string {
+	if filters == nil {
+		return nil
+	}
+
+	var res []string
+
+	var branchFilter []string
+	for _, br := range filters.Branches {
+		branchFilter = append(branchFilter, fmt.Sprintf("branch:%s", br))
+	}
+	if len(branchFilter) > 0 {
+		res = append(res, fmt.Sprintf("(%s)", strings.Join(branchFilter, "+OR+")))
+	}
+	var excludedBranchFilter []string
+	for _, br := range filters.ExcludedBranches {
+		excludedBranchFilter = append(excludedBranchFilter, fmt.Sprintf("-branch:%s", br))
+	}
+	if len(excludedBranchFilter) > 0 {
+		res = append(res, fmt.Sprintf("(%s)", strings.Join(excludedBranchFilter, "+AND+")))
+	}
+
+	return res
+}
+
+func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]gerrit.ChangeInfo, error) {
 	var pending []gerrit.ChangeInfo
 
 	var opt gerrit.QueryChangeOptions
-	opt.Query = append(opt.Query, "project:"+project)
+	opt.Query = append(opt.Query, strings.Join(append(additionalFilters, "project:"+project), "+"))
 	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES"}
 
 	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
@@ -613,4 +703,43 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 			}
 		}
 	}
+}
+
+// ChangedFilesProvider lists (in lexicographic order) the files changed as part of a Gerrit patchset.
+// It includes the original paths of renamed files.
+func ChangedFilesProvider(changeInfo *ChangeInfo) config.ChangedFilesProvider {
+	return func() ([]string, error) {
+		if changeInfo == nil {
+			return nil, fmt.Errorf("programmer error! The passed '*ChangeInfo' was nil which shouldn't ever happen")
+		}
+		changed := sets.NewString()
+		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
+		for file, info := range revision.Files {
+			changed.Insert(file)
+			// If the file is renamed (R) or copied (C) the old file path is included.
+			// We care about the old path in the rename case, but not the copy case.
+			if info.Status == "R" {
+				changed.Insert(info.OldPath)
+			}
+		}
+		return changed.List(), nil
+	}
+}
+
+// HasRelatedChanges determines if the specified change is part of a chain.
+// In other words, it determines if this change depends on any other changes or if any other changes depend on this change.
+func (c *Client) HasRelatedChanges(instance, id, revision string) (bool, error) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		return false, fmt.Errorf("not activated gerrit instance: %s", instance)
+	}
+
+	info, resp, err := h.changeService.GetRelatedChanges(id, revision)
+	if err != nil {
+		return false, fmt.Errorf("error getting related changes: %w", responseBodyError(err, resp))
+	}
+
+	return len(info.Changes) > 0, nil
 }

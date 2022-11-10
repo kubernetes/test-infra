@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
@@ -105,7 +104,7 @@ func TestAppsAuth(t *testing.T) {
 			},
 			responses: map[string]*http.Response{"/app": {
 				StatusCode: 401,
-				Body:       ioutil.NopCloser(&bytes.Buffer{}),
+				Body:       io.NopCloser(&bytes.Buffer{}),
 			}},
 			verifyRequests: func(r []*http.Request) error {
 				if n := len(r); n != 1 {
@@ -122,7 +121,7 @@ func TestAppsAuth(t *testing.T) {
 		},
 		{
 			name:                "App installation auth success, everything served from cache",
-			cachedAppSlug:       utilpointer.StringPtr("ci-app"),
+			cachedAppSlug:       utilpointer.String("ci-app"),
 			cachedInstallations: map[string]AppInstallation{"org": {ID: 1}},
 			cachedTokens:        map[int64]*AppInstallationToken{1: {Token: "the-token", ExpiresAt: time.Now().Add(time.Hour)}},
 			doRequest: func(c Client) error {
@@ -149,7 +148,7 @@ func TestAppsAuth(t *testing.T) {
 		},
 		{
 			name:                "App installation auth success, new token is requested",
-			cachedAppSlug:       utilpointer.StringPtr("ci-app"),
+			cachedAppSlug:       utilpointer.String("ci-app"),
 			cachedInstallations: map[string]AppInstallation{"org": {ID: 1}},
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("org")
@@ -184,7 +183,7 @@ func TestAppsAuth(t *testing.T) {
 		},
 		{
 			name:          "App installation auth success, installations and token is requsted",
-			cachedAppSlug: utilpointer.StringPtr("ci-app"),
+			cachedAppSlug: utilpointer.String("ci-app"),
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("org")
 				return err
@@ -345,7 +344,7 @@ func TestAppsAuth(t *testing.T) {
 		},
 		{
 			name:          "App installation request has no installation, failure",
-			cachedAppSlug: utilpointer.StringPtr("ci-app"),
+			cachedAppSlug: utilpointer.String("ci-app"),
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("other-org")
 				expectedErrMsgSubstr := "failed to get installation id for org other-org: the github app is not installed in organization other-org"
@@ -369,6 +368,32 @@ func TestAppsAuth(t *testing.T) {
 					return fmt.Errorf("expected X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER header %q to have value ci-app", val)
 				}
 
+				return nil
+			},
+		},
+		{
+			name:                "Check app installation for repo uses JWT",
+			cachedAppSlug:       utilpointer.String("ci-app"),
+			cachedTokens:        map[int64]*AppInstallationToken{1: {Token: "the-token", ExpiresAt: time.Now().Add(time.Hour)}},
+			cachedInstallations: map[string]AppInstallation{"kuber": {ID: 1}},
+			doRequest: func(c Client) error {
+				_, err := c.IsAppInstalled("kuber", "k8.s-repo")
+				return err
+			},
+			responses: map[string]*http.Response{"/repos/kuber/k8.s-repo/installation": {
+				StatusCode: 200,
+				Body:       serializeOrDie(AppInstallation{}),
+			}},
+			verifyRequests: func(r []*http.Request) error {
+				if n := len(r); n != 1 {
+					return fmt.Errorf("expected exactly one request, got %d", n)
+				}
+				if val := r[0].Header.Get("Authorization"); !strings.HasPrefix(val, "Bearer ") || val == "Bearer the-token" {
+					return fmt.Errorf("expected the Authorization header %q to start with 'Bearer ', and to be a JWT", val)
+				}
+				if val := r[0].Header.Get("X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"); val != "ci-app" {
+					return fmt.Errorf("expected X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER header %q to have value ci-app", val)
+				}
 				return nil
 			},
 		},
@@ -495,5 +520,5 @@ func serializeOrDie(in interface{}) io.ReadCloser {
 	if err != nil {
 		panic(fmt.Sprintf("Serialization failed: %v", err))
 	}
-	return ioutil.NopCloser(bytes.NewBuffer(rawData))
+	return io.NopCloser(bytes.NewBuffer(rawData))
 }

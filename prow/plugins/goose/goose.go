@@ -21,9 +21,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -87,11 +87,10 @@ type gaggle interface {
 }
 
 type realGaggle struct {
-	url     string
-	lock    sync.RWMutex
-	update  time.Time
-	key     string
-	keyPath string
+	url    string
+	lock   sync.RWMutex
+	update time.Time
+	key    string
 }
 
 func (g *realGaggle) setKey(keyPath string, log *logrus.Entry) {
@@ -105,7 +104,7 @@ func (g *realGaggle) setKey(keyPath string, log *logrus.Entry) {
 		g.key = ""
 		return
 	}
-	b, err := ioutil.ReadFile(keyPath)
+	b, err := os.ReadFile(keyPath)
 	if err == nil {
 		g.key = strings.TrimSpace(string(b))
 		return

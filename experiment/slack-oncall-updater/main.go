@@ -20,9 +20,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -104,7 +104,7 @@ func updateGroupMembership(token, groupID, userID string) error {
 }
 
 func getTokenFromPath(path string) (string, error) {
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("couldn't open file: %w", err)
 	}

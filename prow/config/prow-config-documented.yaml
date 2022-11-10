@@ -89,7 +89,7 @@ branch-protection:
                                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                                 dismiss_stale_reviews: false
 
-                                # Restrictions appends users/teams that are allowed to merge
+                                # DismissalRestrictions appends users/teams that are allowed to merge
                                 dismissal_restrictions:
                                     teams:
                                       - ""
@@ -113,6 +113,8 @@ branch-protection:
 
                             # Restrictions limits who can merge
                             restrictions:
+                                apps:
+                                  - ""
                                 teams:
                                   - ""
                                 users:
@@ -145,7 +147,7 @@ branch-protection:
                         # DismissStale overrides whether new commits automatically dismiss old reviews if set
                         dismiss_stale_reviews: false
 
-                        # Restrictions appends users/teams that are allowed to merge
+                        # DismissalRestrictions appends users/teams that are allowed to merge
                         dismissal_restrictions:
                             teams:
                               - ""
@@ -169,6 +171,8 @@ branch-protection:
 
                     # Restrictions limits who can merge
                     restrictions:
+                        apps:
+                          - ""
                         teams:
                           - ""
                         users:
@@ -185,7 +189,7 @@ branch-protection:
                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                 dismiss_stale_reviews: false
 
-                # Restrictions appends users/teams that are allowed to merge
+                # DismissalRestrictions appends users/teams that are allowed to merge
                 dismissal_restrictions:
                     teams:
                       - ""
@@ -209,6 +213,8 @@ branch-protection:
 
             # Restrictions limits who can merge
             restrictions:
+                apps:
+                  - ""
                 teams:
                   - ""
                 users:
@@ -237,7 +243,7 @@ branch-protection:
         # DismissStale overrides whether new commits automatically dismiss old reviews if set
         dismiss_stale_reviews: false
 
-        # Restrictions appends users/teams that are allowed to merge
+        # DismissalRestrictions appends users/teams that are allowed to merge
         dismissal_restrictions:
             teams:
               - ""
@@ -261,6 +267,8 @@ branch-protection:
 
     # Restrictions limits who can merge
     restrictions:
+        apps:
+          - ""
         teams:
           - ""
         users:
@@ -388,7 +396,7 @@ deck:
     # SkipStoragePathValidation skips validation that restricts artifact requests to specific buckets.
     # By default, buckets listed in the GCSConfiguration are automatically allowed.
     # Additional locations can be allowed via `AdditionalAllowedBuckets` fields.
-    # When unspecified (nil), it defaults to true (until ~Jan 2021).
+    # When unspecified (nil), it defaults to false
     skip_storage_path_validation: false
 
     # Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck.
@@ -664,6 +672,12 @@ plank:
             # a git http.cookiefile, which should be used during the cloning process.
             cookiefile_secret: ""
 
+            # DefaultMemoryRequest is the default requested memory on a test container.
+            # If SetLimitEqualsMemoryRequest is also true then the Limit will also be
+            # set the same as this request. Could be overridden by memory request
+            # defined explicitly on prowjob.
+            default_memory_request: "0"
+
             # DefaultServiceAccountName is the name of the Kubernetes service account
             # that should be used by the pod if one is not specified in the podspec.
             default_service_account_name: ""
@@ -771,6 +785,9 @@ plank:
             # S3CredentialsSecret is the name of the Kubernetes secret
             # that holds blob storage push credentials.
             s3_credentials_secret: ""
+
+            # SetLimitEqualsMemoryRequest sets memory limit equal to request.
+            set_limit_equals_memory_request: false
 
             # SkipCloning determines if we should clone source code in the
             # initcontainers for jobs that specify refs
@@ -861,6 +878,12 @@ plank:
             # a git http.cookiefile, which should be used during the cloning process.
             cookiefile_secret: ""
 
+            # DefaultMemoryRequest is the default requested memory on a test container.
+            # If SetLimitEqualsMemoryRequest is also true then the Limit will also be
+            # set the same as this request. Could be overridden by memory request
+            # defined explicitly on prowjob.
+            default_memory_request: "0"
+
             # DefaultServiceAccountName is the name of the Kubernetes service account
             # that should be used by the pod if one is not specified in the podspec.
             default_service_account_name: ""
@@ -968,6 +991,9 @@ plank:
             # S3CredentialsSecret is the name of the Kubernetes secret
             # that holds blob storage push credentials.
             s3_credentials_secret: ""
+
+            # SetLimitEqualsMemoryRequest sets memory limit equal to request.
+            set_limit_equals_memory_request: false
 
             # SkipCloning determines if we should clone source code in the
             # initcontainers for jobs that specify refs
@@ -1229,6 +1255,18 @@ tide:
     # creates. The default is to only mention the one to which we are closest (Calculated
     # by total number of requirements - fulfilled number of requirements).
     display_all_tide_queries_in_status: true
+    gerrit:
+        queries:
+          - filters:
+                branches:
+                  - ""
+                excluded_branches:
+                  - ""
+                opt_in_by_default: true
+            opt_out_help: true
+            org: ' '
+            repos:
+              - ""
 
     # A key/value pair of an org/repo as the key and Go template to override
     # the default merge commit title and/or message. Template is passed the

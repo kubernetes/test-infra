@@ -18,11 +18,11 @@ package util
 
 import (
 	"fmt"
-	"golang.org/x/tools/cover"
 	"io"
-	"io/ioutil"
-	"k8s.io/test-infra/gopherage/pkg/cov"
 	"os"
+
+	"golang.org/x/tools/cover"
+	"k8s.io/test-infra/gopherage/pkg/cov"
 )
 
 // DumpProfile dumps the profile to the given file destination.
@@ -54,7 +54,7 @@ func LoadProfile(origin string) ([]*cover.Profile, error) {
 		// Annoyingly, ParseProfiles only accepts a filename, so we have to write the bytes to disk
 		// so it can read them back.
 		// We could probably also just give it /dev/stdin, but that'll break on Windows.
-		tf, err := ioutil.TempFile("", "")
+		tf, err := os.CreateTemp("", "")
 		if err != nil {
 			return nil, fmt.Errorf("failed to create temp file: %w", err)
 		}

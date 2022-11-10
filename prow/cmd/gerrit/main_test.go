@@ -25,7 +25,6 @@ import (
 
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
-	"k8s.io/test-infra/prow/gerrit/client"
 )
 
 func TestFlags(t *testing.T) {
@@ -85,32 +84,26 @@ func TestFlags(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				projects:           client.ProjectsFlag{},
-				projectsOptOutHelp: client.ProjectsFlag{},
-				lastSyncFallback:   "gs://path",
+				lastSyncFallback: "gs://path",
 				config: configflagutil.ConfigOptions{
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
-				dryRun:                  false,
-				instrumentationOptions:  flagutil.DefaultInstrumentationOptions(),
-				inRepoConfigCacheSize:   100,
-				inRepoConfigCacheCopies: 1,
-				changeWorkerPoolSize:    1,
+				dryRun:                 false,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
+				changeWorkerPoolSize:   1,
 			}
-			expected.projects.Set("foo=bar,baz")
-			expected.projectsOptOutHelp.Set("foo=bar")
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
 			argMap := map[string]string{
-				"--gerrit-projects":              "foo=bar,baz",
-				"--gerrit-projects-opt-out-help": "foo=bar",
-				"--last-sync-fallback":           "gs://path",
-				"--config-path":                  "yo",
-				"--dry-run":                      "false",
+				"--last-sync-fallback": "gs://path",
+				"--config-path":        "yo",
+				"--dry-run":            "false",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v

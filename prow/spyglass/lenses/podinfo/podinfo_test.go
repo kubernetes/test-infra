@@ -18,7 +18,7 @@ package podinfo
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -119,7 +119,7 @@ func TestBody(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			logHook.Reset()
 			wantFile := path.Join("testdata", "test_"+tc.name+".html")
-			wantBytes, err := ioutil.ReadFile(wantFile)
+			wantBytes, err := os.ReadFile(wantFile)
 			if err != nil {
 				t.Fatalf("Failed reading output file %s: %v", wantFile, err)
 			}

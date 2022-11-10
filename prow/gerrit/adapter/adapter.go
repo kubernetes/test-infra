@@ -19,7 +19,6 @@ package adapter
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -38,8 +37,9 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
-	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -89,32 +89,31 @@ type prowJobClient interface {
 }
 
 type gerritClient interface {
+	ApplyGlobalConfig(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func())
+	Authenticate(cookiefilePath, tokenPath string)
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	QueryChangesForInstance(instance string, lastState client.LastSyncState, rateLimit int) []client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 	Account(instance string) (*gerrit.AccountInfo, error)
+	HasRelatedChanges(instance, id, revision string) (bool, error)
 }
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config               config.Getter
-	prowJobClient        prowJobClient
-	gc                   gerritClient
-	tracker              LastSyncTracker
-	projectsOptOutHelp   map[string]sets.String
-	lock                 sync.RWMutex
-	cookieFilePath       string
-	cacheSize            int
-	cacheCopies          int
-	configAgent          *config.Agent
-	repoCacheMap         map[string]*config.InRepoConfigCacheHandler
-	inRepoConfigFailures map[string]bool
-	instancesWithWorker  map[string]bool
-	repoCacheMapMux      sync.Mutex
-	latestMux            sync.Mutex
-	workerPoolSize       int
-	cacheDirBase         string
+	config                   config.Getter
+	prowJobClient            prowJobClient
+	gc                       gerritClient
+	tracker                  LastSyncTracker
+	projectsOptOutHelp       map[string]sets.String
+	lock                     sync.RWMutex
+	cookieFilePath           string
+	configAgent              *config.Agent
+	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler
+	inRepoConfigFailures     map[string]bool
+	instancesWithWorker      map[string]bool
+	latestMux                sync.Mutex
+	workerPoolSize           int
 }
 
 type LastSyncTracker interface {
@@ -124,119 +123,61 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback, cacheDirBase string, cacheSize, cacheCopies, workerPoolSize int) *Controller {
+	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCacheHandler *config.InRepoConfigCacheHandler) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
 	if cfg().Gerrit.OrgReposConfig != nil {
 		projectsOptOutHelpMap = cfg().Gerrit.OrgReposConfig.OptOutHelpRepos()
-	} else {
-		for i, p := range projectsOptOutHelp {
-			projectsOptOutHelpMap[i] = sets.NewString(p...)
-		}
 	}
-	lastSyncTracker := &syncTime{
-		path:   lastSyncFallback,
-		ctx:    ctx,
-		opener: op,
-	}
-	if err := lastSyncTracker.init(projects); err != nil {
+	lastSyncTracker := client.NewSyncTime(lastSyncFallback, op, ctx)
+
+	if err := lastSyncTracker.Init(cfg().Gerrit.OrgReposConfig.AllRepos()); err != nil {
 		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
 	}
-	gerritClient, err := client.NewClient(projects)
+	gerritClient, err := client.NewClient(nil)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 	c := &Controller{
-		prowJobClient:        prowJobClient,
-		config:               cfg,
-		gc:                   gerritClient,
-		tracker:              lastSyncTracker,
-		projectsOptOutHelp:   projectsOptOutHelpMap,
-		cookieFilePath:       cookiefilePath,
-		cacheSize:            cacheSize,
-		cacheCopies:          cacheCopies,
-		configAgent:          ca,
-		repoCacheMap:         map[string]*config.InRepoConfigCacheHandler{},
-		inRepoConfigFailures: map[string]bool{},
-		instancesWithWorker:  make(map[string]bool),
-		workerPoolSize:       workerPoolSize,
-		cacheDirBase:         cacheDirBase,
+		prowJobClient:            prowJobClient,
+		config:                   cfg,
+		gc:                       gerritClient,
+		tracker:                  lastSyncTracker,
+		projectsOptOutHelp:       projectsOptOutHelpMap,
+		cookieFilePath:           cookiefilePath,
+		configAgent:              ca,
+		inRepoConfigCacheHandler: inRepoConfigCacheHandler,
+		inRepoConfigFailures:     map[string]bool{},
+		instancesWithWorker:      make(map[string]bool),
+		workerPoolSize:           workerPoolSize,
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
 	// it will completely override previously configured gerrit hosts and projects.
 	// it will also by the way authenticate gerrit
-	c.applyGlobalConfig(cfg, gerritClient, lastSyncTracker, cookiefilePath, tokenPathOverride)
+	orgRepoConfigGetter := func() *config.GerritOrgRepoConfigs {
+		return cfg().Gerrit.OrgReposConfig
+	}
+	c.gc.ApplyGlobalConfig(orgRepoConfigGetter, lastSyncTracker, cookiefilePath, tokenPathOverride, func() {
+		orgReposConfig := orgRepoConfigGetter()
+		if orgReposConfig == nil {
+			return
+		}
+		c.lock.Lock()
+		// Updates a map, lock to make sure it's thread safe.
+		c.projectsOptOutHelp = orgReposConfig.OptOutHelpRepos()
+		c.lock.Unlock()
+	})
 
 	// Authenticate creates a goroutine for rotating token secrets when called the first
 	// time, afterwards it only authenticate once.
 	// applyGlobalConfig calls authenticate only when global gerrit config presents,
 	// call it here is required for cases where gerrit repos are defined as command
 	// line arg(which is going to be deprecated).
-	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
+	c.gc.Authenticate(cookiefilePath, tokenPathOverride)
 
 	return c
-}
-
-func (c *Controller) applyGlobalConfig(cfg config.Getter, gerritClient *client.Client, lastSyncTracker *syncTime, cookiefilePath, tokenPathOverride string) {
-	c.applyGlobalConfigOnce(cfg, gerritClient, lastSyncTracker, cookiefilePath, tokenPathOverride)
-
-	go func() {
-		for {
-			c.applyGlobalConfigOnce(cfg, gerritClient, lastSyncTracker, cookiefilePath, tokenPathOverride)
-			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
-			time.Sleep(time.Second)
-		}
-	}()
-}
-
-func (c *Controller) applyGlobalConfigOnce(cfg config.Getter, gerritClient *client.Client, lastSyncTracker *syncTime, cookiefilePath, tokenPathOverride string) {
-	orgReposConfig := cfg().Gerrit.OrgReposConfig
-	if orgReposConfig == nil {
-		return
-	}
-	// Use globally defined gerrit repos if present
-	if err := gerritClient.UpdateClients(orgReposConfig.AllRepos()); err != nil {
-		logrus.WithError(err).Error("Updating clients.")
-	}
-	if err := lastSyncTracker.update(orgReposConfig.AllRepos()); err != nil {
-		logrus.WithError(err).Error("Syncing states.")
-	}
-
-	c.lock.Lock()
-	// Updates a map, lock to make sure it's thread safe.
-	c.projectsOptOutHelp = orgReposConfig.OptOutHelpRepos()
-	c.lock.Unlock()
-	// Authenticate creates a goroutine for rotating token secrets when called the first
-	// time, afterwards it only authenticate once.
-	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
-}
-
-// Helper function to create the cache used for InRepoConfig. Currently only attempts to create cache and returns nil if failed.
-func createCache(cloneURI *url.URL, cookieFilePath, cacheDirBase string, cacheSize, cacheCopies int, configAgent *config.Agent) (cache *config.InRepoConfigCacheHandler, err error) {
-	opts := git.ClientFactoryOpts{
-		CloneURI:       cloneURI.String(),
-		Host:           cloneURI.Host,
-		CookieFilePath: cookieFilePath,
-		CacheDirBase:   &cacheDirBase,
-	}
-	gc, err := git.NewClientFactory(opts.Apply)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
-	}
-	// Initialize cache for fetching Presubmit and Postsubmit information. If
-	// the cache cannot be initialized, exit with an error.
-	cache, err = config.NewInRepoConfigCacheHandler(
-		cacheSize,
-		configAgent,
-		config.NewInRepoConfigGitCache(gc),
-		cacheCopies)
-	// If we cannot initialize the cache, exit with an error.
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", cacheSize, err)
-	}
-	return cache, nil
 }
 
 type Change struct {
@@ -256,26 +197,8 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 			"revision": change.CurrentRevision,
 		})
 
-		cloneURI, err := makeCloneURI(instance, change.Project)
-		if err != nil {
-			log.WithError(err).Error("makeCloneURI.")
-		}
-
-		c.repoCacheMapMux.Lock()
-		cache, ok := c.repoCacheMap[cloneURI.String()]
-		if !ok {
-			if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheDirBase, c.cacheSize, c.cacheCopies, c.configAgent); err != nil {
-				c.repoCacheMapMux.Unlock()
-				wg.Done()
-				log.WithError(err).Error("create repo cache.")
-				continue
-			}
-			c.repoCacheMap[cloneURI.String()] = cache
-		}
-		c.repoCacheMapMux.Unlock()
-
 		result := client.ResultSuccess
-		if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {
+		if err := c.processChange(log, instance, change); err != nil {
 			result = client.ResultError
 			log.WithError(err).Info("Failed to process change")
 		}
@@ -296,6 +219,7 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 // and creates prowjobs according to specs
 func (c *Controller) Sync() {
 	processSingleInstance := func(instance string) {
+		// Assumes the passed in instance was already normalized with https:// prefix.
 		log := logrus.WithField("host", instance)
 		syncTime := c.tracker.Current()
 		latest := syncTime.DeepCopy()
@@ -350,65 +274,71 @@ func (c *Controller) Sync() {
 	}
 }
 
-func makeCloneURI(instance, project string) (*url.URL, error) {
-	u, err := url.Parse(instance)
-	if err != nil {
-		return nil, fmt.Errorf("instance %s is not a url: %w", instance, err)
-	}
-	if u.Host == "" {
-		return nil, errors.New("instance does not set host")
-	}
-	if u.Path != "" {
-		return nil, errors.New("instance cannot set path (this is set by project)")
-	}
-	u.Path = project
-	return u, nil
-}
+// CreateRefs creates refs for a presubmit job from given changes.
+//
+// Passed in instance must contain https:// prefix.
+func CreateRefs(instance, project, branch, baseSHA string, changes ...client.ChangeInfo) (prowapi.Refs, error) {
+	var refs prowapi.Refs
+	cloneURI := source.CloneURIFromOrgRepo(instance, project)
 
-// listChangedFiles lists (in lexicographic order) the files changed as part of a Gerrit patchset
-func listChangedFiles(changeInfo client.ChangeInfo) config.ChangedFilesProvider {
-	return func() ([]string, error) {
-		var changed []string
-		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
-		for file := range revision.Files {
-			changed = append(changed, file)
-		}
-		return changed, nil
-	}
-}
-
-func createRefs(reviewHost string, change client.ChangeInfo, cloneURI *url.URL, baseSHA string) (prowapi.Refs, error) {
-	rev, ok := change.Revisions[change.CurrentRevision]
-	if !ok {
-		return prowapi.Refs{}, fmt.Errorf("cannot find current revision for change %v", change.ID)
-	}
 	var codeHost string // Something like https://android.googlesource.com
-	parts := strings.SplitN(reviewHost, ".", 2)
+	parts := strings.SplitN(instance, ".", 2)
 	codeHost = strings.TrimSuffix(parts[0], "-review")
 	if len(parts) > 1 {
 		codeHost += "." + parts[1]
 	}
-	refs := prowapi.Refs{
-		Org:      cloneURI.Host,  // Something like android-review.googlesource.com
-		Repo:     change.Project, // Something like platform/build
-		BaseRef:  change.Branch,
+	refs = prowapi.Refs{
+		Org:      instance, // Something like android-review.googlesource.com
+		Repo:     project,  // Something like platform/build
+		BaseRef:  branch,
 		BaseSHA:  baseSHA,
-		CloneURI: cloneURI.String(), // Something like https://android-review.googlesource.com/platform/build
-		RepoLink: fmt.Sprintf("%s/%s", codeHost, change.Project),
-		BaseLink: fmt.Sprintf("%s/%s/+/%s", codeHost, change.Project, baseSHA),
-		Pulls: []prowapi.Pull{
-			{
-				Number:     change.Number,
-				Author:     rev.Commit.Author.Name,
-				SHA:        change.CurrentRevision,
-				Ref:        rev.Ref,
-				Link:       fmt.Sprintf("%s/c/%s/+/%d", reviewHost, change.Project, change.Number),
-				CommitLink: fmt.Sprintf("%s/%s/+/%s", codeHost, change.Project, change.CurrentRevision),
-				AuthorLink: fmt.Sprintf("%s/q/%s", reviewHost, rev.Commit.Author.Email),
-			},
-		},
+		CloneURI: cloneURI, // Something like https://android-review.googlesource.com/platform/build
+		RepoLink: fmt.Sprintf("%s/%s", codeHost, project),
+		BaseLink: fmt.Sprintf("%s/%s/+/%s", codeHost, project, baseSHA),
+	}
+	for _, change := range changes {
+		rev, ok := change.Revisions[change.CurrentRevision]
+		if !ok {
+			return prowapi.Refs{}, fmt.Errorf("cannot find current revision for change %v", change.ID)
+		}
+		refs.Pulls = append(refs.Pulls, prowapi.Pull{
+			Number:     change.Number,
+			Author:     rev.Commit.Author.Name,
+			SHA:        change.CurrentRevision,
+			Ref:        rev.Ref,
+			Link:       fmt.Sprintf("%s/c/%s/+/%d", instance, change.Project, change.Number),
+			CommitLink: fmt.Sprintf("%s/%s/+/%s", codeHost, change.Project, change.CurrentRevision),
+			AuthorLink: fmt.Sprintf("%s/q/%s", instance, rev.Commit.Author.Email),
+		})
 	}
 	return refs, nil
+}
+
+func LabelsAndAnnotations(instance string, jobLabels, jobAnnotations map[string]string, changes ...client.ChangeInfo) (labels, annotations map[string]string) {
+	labels, annotations = make(map[string]string), make(map[string]string)
+	for k, v := range jobLabels {
+		labels[k] = v
+	}
+	for k, v := range jobAnnotations {
+		annotations[k] = v
+	}
+	annotations[kube.GerritInstance] = instance
+
+	// Labels required for Crier reporting back to Gerrit, batch jobs are not
+	// expected to report so only add when there is a single change.
+	if len(changes) == 1 {
+		change := changes[0]
+		labels[kube.GerritRevision] = change.CurrentRevision
+		labels[kube.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
+		if _, ok := labels[kube.GerritReportLabel]; !ok {
+			logrus.Debug("Job uses default value of 'Code-Review' for 'prow.k8s.io/gerrit-report-label' label. This default will removed in March 2022.")
+			labels[kube.GerritReportLabel] = client.CodeReview
+		}
+
+		annotations[kube.GerritID] = change.ID
+	}
+
+	return
 }
 
 // failedJobs find jobs currently reported as failing (used for retesting).
@@ -471,9 +401,9 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 }
 
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
-func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL, cache *config.InRepoConfigCacheHandler) error {
+func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
+	cloneURI := source.CloneURIFromOrgRepo(instance, change.Project)
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
-	trimmedHostPath := cloneURI.Host + "/" + cloneURI.Path
 	if err != nil {
 		return fmt.Errorf("GetBranchRevision: %w", err)
 	}
@@ -485,59 +415,123 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	var triggeredJobs []triggeredJob
 	triggerTimes := map[string]time.Time{}
 
-	refs, err := createRefs(instance, change, cloneURI, baseSHA)
+	refs, err := CreateRefs(instance, change.Project, change.Branch, baseSHA, change)
 	if err != nil {
 		return fmt.Errorf("createRefs from %s at %s: %w", cloneURI, baseSHA, err)
 	}
 
 	type jobSpec struct {
-		spec   prowapi.ProwJobSpec
-		labels map[string]string
+		spec        prowapi.ProwJobSpec
+		labels      map[string]string
+		annotations map[string]string
 	}
-
 	var jobSpecs []jobSpec
-
-	changedFiles := listChangedFiles(change)
+	baseSHAGetter := func() (string, error) { return baseSHA, nil }
+	var hasRelatedChanges *bool
+	// This headSHAGetter will return the empty string instead of the head SHA in cases where we can be certain that change does not
+	// modify inrepoconfig. This allows multiple changes to share a ProwYAML cache entry so long as they don't touch inrepo config themselves.
+	headSHAGetter := func() (string, error) {
+		changes, err := client.ChangedFilesProvider(&change)()
+		if err != nil {
+			// This is a best effort optimization, log the error, but just use CurrentRevision in this case.
+			logger.WithError(err).Info("Failed to get changed files for the purpose of prowYAML cache optimization. Skipping optimization.")
+			return change.CurrentRevision, nil
+		}
+		if config.ContainsInRepoConfigPath(changes) {
+			return change.CurrentRevision, nil
+		}
+		if hasRelatedChanges == nil {
+			if res, err := c.gc.HasRelatedChanges(instance, change.ChangeID, change.CurrentRevision); err != nil {
+				logger.WithError(err).Info("Failed to get related changes for the purpose of prowYAML cache optimization. Skipping optimization.")
+				return change.CurrentRevision, nil
+			} else {
+				hasRelatedChanges = &res
+			}
+		}
+		if *hasRelatedChanges {
+			// If the change is part of a chain the commit may include files not identified by the API.
+			// So we can't easily check if the change includes inrepo config file changes.
+			return change.CurrentRevision, nil
+		}
+		// If we know the change doesn't touch the inrepo config itself, we don't need to check out the head commits.
+		// This is particularly useful because it lets multiple changes share a ProwYAML cache entry so long as they don't touch inrepo config themselves.
+		return "", nil
+	}
 
 	switch change.Status {
 	case client.Merged:
 		var postsubmits []config.Postsubmit
+		// Gerrit server might be unavailable intermittently, retry inrepoconfig
+		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
 			}
 		}
-		if err := c.handleInRepoConfigError(err, instance, change); err != nil {
-			return err
+		// Postsubmit jobs are triggered only once. Still try to fall back on
+		// static jobs if failed to retrieve inrepoconfig jobs.
+		if err != nil {
+			// Reports error back to Gerrit. handleInRepoConfigError is
+			// responsible for not sending the same message again and again on
+			// the same commit.
+			if postErr := c.handleInRepoConfigError(err, instance, change); postErr != nil {
+				logger.WithError(postErr).Error("Failed reporting inrepoconfig processing error back to Gerrit.")
+			}
+			// Static postsubmit jobs are included as part of output from
+			// inRepoConfigCacheHandler.GetPostsubmits, fallback to static only
+			// when inrepoconfig failed.
+			postsubmits = append(postsubmits, c.config().GetPostsubmitsStatic(cloneURI)...)
 		}
-		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
+
 		for _, postsubmit := range postsubmits {
-			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
+			if shouldRun, err := postsubmit.ShouldRun(change.Branch, client.ChangedFilesProvider(&change)); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
 			} else if shouldRun {
 				if change.Submitted != nil {
 					triggerTimes[postsubmit.Name] = change.Submitted.Time
 				}
 				jobSpecs = append(jobSpecs, jobSpec{
-					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
-					labels: postsubmit.Labels,
+					spec:        pjutil.PostsubmitSpec(postsubmit, refs),
+					labels:      postsubmit.Labels,
+					annotations: postsubmit.Annotations,
 				})
 			}
 		}
 	case client.New:
 		var presubmits []config.Presubmit
+		// Gerrit server might be unavailable intermittently, retry inrepoconfig
+		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = cache.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			if err == nil {
 				break
 			}
 		}
-		if err := c.handleInRepoConfigError(err, instance, change); err != nil {
+		if err != nil {
+			// Reports error back to Gerrit. handleInRepoConfigError is
+			// responsible for not sending the same message again and again on
+			// the same commit.
+			if postErr := c.handleInRepoConfigError(err, instance, change); postErr != nil {
+				logger.WithError(postErr).Error("Failed reporting inrepoconfig processing error back to Gerrit.")
+			}
+			// There is no need to keep going when failed to get inrepoconfig
+			// jobs.
+			// Imagining the scenario that:
+			// - Commit #abc triggered static job job-A, inrepoconfig jobs job-B
+			// and job-C
+			// - Both job-B and job-C failed
+			// - Commit #def was pushed. Inrepoconfig failed, falling back to
+			// trigger static job job-A.
+			// - job-A passed.
+			// - Prow would make decision on the result of job-A and ignore the
+			// rest. (Yes this is a Prow bug, which should not be a problem when
+			// each prowjob is reported to an individual Gerrit Check).
+			// So long story short: kicking off partial prowjobs is worse than
+			// kicking off nothing.
 			return err
 		}
-		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
 
 		account, err := c.gc.Account(instance)
 		if err != nil {
@@ -568,7 +562,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				triggerTimes: triggerTimes,
 			})
 		}
-		toTrigger, err := pjutil.FilterPresubmits(pjutil.NewAggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
+		toTrigger, err := pjutil.FilterPresubmits(pjutil.NewAggregateFilter(filters), client.ChangedFilesProvider(&change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("filter presubmits: %w", err)
 		}
@@ -582,11 +576,11 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			optedOut := isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project)
 			c.lock.RUnlock()
 			if needsHelp && !optedOut {
-				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
+				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(client.ChangedFilesProvider(&change), change.Branch, presubmits, logger.WithField("help", true))
 				if err != nil {
 					return err
 				}
-				message := pjutil.HelpMessage(cloneURI.Host, change.Project, change.Branch, note, runWithTestAllNames, optionalJobsCommands, requiredJobsCommands)
+				message := pjutil.HelpMessage(instance, change.Project, change.Branch, note, runWithTestAllNames, optionalJobsCommands, requiredJobsCommands)
 				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 					return err
 				}
@@ -598,29 +592,15 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 		for _, presubmit := range toTrigger {
 			jobSpecs = append(jobSpecs, jobSpec{
-				spec:   pjutil.PresubmitSpec(presubmit, refs),
-				labels: presubmit.Labels,
+				spec:        pjutil.PresubmitSpec(presubmit, refs),
+				labels:      presubmit.Labels,
+				annotations: presubmit.Annotations,
 			})
 		}
 	}
 
-	annotations := map[string]string{
-		client.GerritID:       change.ID,
-		client.GerritInstance: instance,
-	}
-
 	for _, jSpec := range jobSpecs {
-		labels := make(map[string]string)
-		for k, v := range jSpec.labels {
-			labels[k] = v
-		}
-		labels[client.GerritRevision] = change.CurrentRevision
-		labels[client.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
-
-		if _, ok := labels[client.GerritReportLabel]; !ok {
-			logger.WithField("job", jSpec.spec.Job).Debug("Job uses default value of 'Code-Review' for 'prow.k8s.io/gerrit-report-label' label. This default will removed in March 2022.")
-			labels[client.GerritReportLabel] = client.CodeReview
-		}
+		labels, annotations := LabelsAndAnnotations(instance, jSpec.labels, jSpec.annotations, change)
 
 		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
 		logger := logger.WithField("prowjob", pj.Name)

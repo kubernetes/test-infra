@@ -13,13 +13,13 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list-master: "true"
+      preset-windows-repo-list: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         command:
         - runner.sh
         - kubetest

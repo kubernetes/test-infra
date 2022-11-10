@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -43,7 +42,7 @@ func TestCopy(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			src := path.Join(srcDir, tc.name)
-			ioutil.WriteFile(src, []byte(tc.name+"\nsome\nother\ncontent"), tc.fileMode)
+			os.WriteFile(src, []byte(tc.name+"\nsome\nother\ncontent"), tc.fileMode)
 
 			// One level down, for exercising dir creation logic
 			dst := path.Join(srcDir, "dst", tc.name)
@@ -59,7 +58,7 @@ func TestCopy(t *testing.T) {
 				t.Errorf("File mode mismatch. Want: %s, got: %s", want, got)
 			}
 
-			gotContent, err := ioutil.ReadFile(dst)
+			gotContent, err := os.ReadFile(dst)
 			if err != nil {
 				t.Fatalf("Failed read %q: %v", dst, err)
 			}

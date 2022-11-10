@@ -4,16 +4,13 @@ aliases:
   - chaodaiG
   - chases2
   - cjwagner
-  - fejta
   - listx
   - michelle192837
   - mpherman2
 
   # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
   build-admins:
-  # TODO: add juanfescobar after https://github.com/kubernetes/org/issues/3193
-    - BenTheElder
-    - juanfescobar
+    - BenjaminKazemi
     - MushuEE
     - spiffxp
 
@@ -119,7 +116,10 @@ aliases:
   sig-testing-leads:
     - BenTheElder
     - alvaroaleman
+    - aojea
     - cjwagner
+    - michelle192837
+    - pohly
     - spiffxp
     - stevekuznetsov
   sig-ui-leads:
@@ -182,12 +182,12 @@ aliases:
     - tabbysable
     - tallclair
   committee-steering:
+    - bentheelder
     - cblecker
-    - dims
     - justaugustus
-    - liggitt
     - mrbobbytables
     - parispittman
+    - palnabarun
     - tpepper
 ## BEGIN CUSTOM CONTENT
   provider-aws:
@@ -265,9 +265,11 @@ aliases:
   controller-runtime-admins:
   - vincepri
   - mengqiy
+  - joelanford
 
   controller-runtime-maintainers:
   - vincepri
+  - joelanford
 
   controller-runtime-approvers:
   - gerred
@@ -286,6 +288,7 @@ aliases:
   - camilamacedo86
   - mengqiy
   - estroz
+  - joelanford
 
   kubebuilder-reviewers:
   - alexeldeib

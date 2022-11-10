@@ -1,17 +1,18 @@
 periodics:
 - name: periodic-cluster-api-test-release-1-1
-  interval: 4h
+  interval: 24h
   decorate: true
-  labels:
-    preset-service-account: "true"
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
     base_ref: release-1.1
     path_alias: sigs.k8s.io/cluster-api
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.23
       command:
       - "./scripts/ci-test.sh"
       resources:
@@ -23,8 +24,10 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-upgrade-v0-3-to-release-1-1
-  interval: 4h
+  interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -38,8 +41,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.23
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -65,8 +69,10 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-upgrade-v1-0-to-release-1-1
-  interval: 4h
+  interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -80,8 +86,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.23
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -107,8 +114,10 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-release-1-1
-  interval: 4h
+  interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -122,8 +131,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.23
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -142,8 +152,10 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-release-1-1
-  interval: 4h
+  interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -157,8 +169,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.23
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"

@@ -19,6 +19,7 @@ package clone
 import (
 	"strings"
 	"testing"
+	"time"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -110,6 +111,20 @@ func TestFormatRecord(t *testing.T) {
 				},
 			},
 			require: []string{"42", "food", "13"},
+		},
+		{
+			name: "include durations when present",
+			r: Record{
+				Commands: []Command{
+					{
+						Command:  "rm /something",
+						Output:   "barf",
+						Duration: time.Second * 23,
+					},
+				},
+				Duration: time.Second * 12,
+			},
+			require: []string{"12s", "23s"},
 		},
 	}
 

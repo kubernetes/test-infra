@@ -20,10 +20,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
-	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
 func TestSpecToStarted(t *testing.T) {
@@ -31,7 +31,7 @@ func TestSpecToStarted(t *testing.T) {
 		name         string
 		spec         downwardapi.JobSpec
 		cloneRecords []clone.Record
-		expected     gcs.Started
+		expected     metadata.Started
 	}{
 		{
 			name: "Refs with Pull",
@@ -49,7 +49,7 @@ func TestSpecToStarted(t *testing.T) {
 					},
 				},
 			},
-			expected: gcs.Started{
+			expected: metadata.Started{
 				Pull:                  "123",
 				DeprecatedRepoVersion: "abcd1234",
 				RepoCommit:            "abcd1234",
@@ -67,7 +67,7 @@ func TestSpecToStarted(t *testing.T) {
 					BaseRef: "master",
 				},
 			},
-			expected: gcs.Started{
+			expected: metadata.Started{
 				DeprecatedRepoVersion: "master",
 				RepoCommit:            "master",
 				Repos: map[string]string{
@@ -92,7 +92,7 @@ func TestSpecToStarted(t *testing.T) {
 					},
 				},
 			},
-			expected: gcs.Started{
+			expected: metadata.Started{
 				DeprecatedRepoVersion: "deadbeef",
 				RepoCommit:            "deadbeef",
 				Repos: map[string]string{
@@ -125,7 +125,7 @@ func TestSpecToStarted(t *testing.T) {
 				},
 				FinalSHA: "aaaaaaaa",
 			}},
-			expected: gcs.Started{
+			expected: metadata.Started{
 				DeprecatedRepoVersion: "aaaaaaaa",
 				RepoCommit:            "aaaaaaaa",
 				Repos: map[string]string{
@@ -153,7 +153,7 @@ func TestSpecToStarted(t *testing.T) {
 				},
 				FinalSHA: "aaaaaaaa",
 			}},
-			expected: gcs.Started{
+			expected: metadata.Started{
 				DeprecatedRepoVersion: "aaaaaaaa",
 				RepoCommit:            "aaaaaaaa",
 				Repos: map[string]string{
@@ -164,7 +164,7 @@ func TestSpecToStarted(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, expected := specToStarted(&test.spec, test.cloneRecords), test.expected
+		actual, expected := downwardapi.SpecToStarted(&test.spec, test.cloneRecords), test.expected
 		expected.Timestamp = actual.Timestamp
 		if !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: got started: %#v, but expected: %#v", test.name, actual, expected)

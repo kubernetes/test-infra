@@ -14,14 +14,14 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.24
           command:
             - runner.sh
           args:
             - ./hack/e2e.sh
           env:
             - name: GINKGO_SKIP
-              value: "\\[Conformance\\] \\[clusterctl-Upgrade\\]"
+              value: "\\[Conformance\\] \\[clusterctl-Upgrade\\] \\[specialized-infra\\]"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -52,7 +52,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.24
           command:
             - runner.sh
           args:
@@ -90,7 +90,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220729-07f065e00e-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.24
           command:
             - runner.sh
           args:

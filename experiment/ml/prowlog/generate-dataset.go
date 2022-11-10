@@ -28,7 +28,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -753,11 +752,11 @@ func (bc *buildCache) open(ctx context.Context, client gcs.ConditionalClient, pa
 		if bc.archivePath == "" {
 			return r, nil, nil
 		}
-		buf, err := ioutil.ReadAll(r)
+		buf, err := io.ReadAll(r)
 		if err != nil {
 			return nil, nil, fmt.Errorf("read: %v", err)
 		}
-		f = ioutil.NopCloser(bytes.NewBuffer(buf))
+		f = io.NopCloser(bytes.NewBuffer(buf))
 		when = &attrs.LastModified
 		if err := bc.initAdditional(); err != nil {
 			return nil, nil, fmt.Errorf("init additional: %v", err)

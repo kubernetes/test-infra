@@ -1,8 +1,10 @@
 periodics:
 - name: ci-k8sio-audit
-  interval: 2h
+  interval: 3h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
+  decoration_config:
+    timeout: 3h
   max_concurrency: 1
   extra_refs:
   - org: kubernetes

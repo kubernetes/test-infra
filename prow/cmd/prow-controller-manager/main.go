@@ -51,11 +51,9 @@ var allControllers = sets.NewString(plank.ControllerName)
 type options struct {
 	totURL string
 
-	config                  configflagutil.ConfigOptions
-	buildCluster            string
-	selector                string
-	leaderElectionNamespace string
-	enabledControllers      prowflagutil.Strings
+	config             configflagutil.ConfigOptions
+	selector           string
+	enabledControllers prowflagutil.Strings
 
 	dryRun                 bool
 	kubernetes             prowflagutil.KubernetesOptions

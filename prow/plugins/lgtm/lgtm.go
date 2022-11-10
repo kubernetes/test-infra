@@ -135,7 +135,7 @@ type githubClient interface {
 	GetSingleCommit(org, repo, SHA string) (github.RepositoryCommit, error)
 	IsMember(org, user string) (bool, error)
 	ListTeams(org string) ([]github.Team, error)
-	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 	RequestReview(org, repo string, number int, logins []string) error
 }
 
@@ -385,7 +385,7 @@ func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lg
 	}
 	for _, teamInOrg := range teams {
 		if teamInOrg.Name == lgtm.StickyLgtmTeam {
-			members, err := gc.ListTeamMembers(org, teamInOrg.ID, github.RoleAll)
+			members, err := gc.ListTeamMembersBySlug(org, teamInOrg.Slug, github.RoleAll)
 			if err != nil {
 				log.WithError(err).Errorf("Failed to list members in %s:%s.", org, teamInOrg.Name)
 				return false

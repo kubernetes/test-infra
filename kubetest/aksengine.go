@@ -23,7 +23,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -222,7 +222,7 @@ func (c *aksEngineDeployer) SetCustomCloudProfileEnvironment() error {
 			return fmt.Errorf("%s . apimodel invalid: failed to retrieve Azure Stack endpoints from %s", err, metadataURL)
 		}
 
-		body, err := ioutil.ReadAll(endpointsresp.Body)
+		body, err := io.ReadAll(endpointsresp.Body)
 		if err != nil {
 			return fmt.Errorf("%s . apimodel invalid: failed to read the response from %s", err, metadataURL)
 		}
@@ -258,14 +258,14 @@ func (c *aksEngineDeployer) SetCustomCloudProfileEnvironment() error {
 		environmentJSON = string(bytes)
 
 		// Create and update the file.
-		tmpFile, err := ioutil.TempFile("", "azurestackcloud.json")
+		tmpFile, err := os.CreateTemp("", "azurestackcloud.json")
 		tmpFileName := tmpFile.Name()
 		if err != nil {
 			return err
 		}
 
 		// Build content for the file
-		if err = ioutil.WriteFile(tmpFileName, []byte(environmentJSON), os.ModeAppend); err != nil {
+		if err = os.WriteFile(tmpFileName, []byte(environmentJSON), os.ModeAppend); err != nil {
 			return err
 		}
 
@@ -357,7 +357,7 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		return nil, fmt.Errorf("error creating Azure K8S cluster: %w", err)
 	}
 
-	sshKey, err := ioutil.ReadFile(*aksSSHPublicKeyPath)
+	sshKey, err := os.ReadFile(*aksSSHPublicKeyPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			sshKey = []byte{}
@@ -366,7 +366,7 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		}
 	}
 
-	outputDir, err := ioutil.TempDir(os.Getenv("HOME"), "tmp")
+	outputDir, err := os.MkdirTemp(os.Getenv("HOME"), "tmp")
 	if err != nil {
 		return nil, fmt.Errorf("error creating tempdir: %w", err)
 	}
@@ -463,7 +463,7 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 	v := AKSEngineAPIModel{}
 	if c.apiModelPath != "" {
 		// template already exists, read it
-		template, err := ioutil.ReadFile(path.Join(c.outputDir, "kubernetes.json"))
+		template, err := os.ReadFile(path.Join(c.outputDir, "kubernetes.json"))
 		if err != nil {
 			return fmt.Errorf("error reading ApiModel template file: %v.", err)
 		}
@@ -613,7 +613,7 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 
 	apiModel, _ := json.MarshalIndent(v, "", "    ")
 	c.apiModelPath = path.Join(c.outputDir, "kubernetes.json")
-	err = ioutil.WriteFile(c.apiModelPath, apiModel, 0644)
+	err = os.WriteFile(c.apiModelPath, apiModel, 0644)
 	if err != nil {
 		return fmt.Errorf("cannot write apimodel to file: %w", err)
 	}
@@ -690,7 +690,7 @@ func (c *aksEngineDeployer) generateARMTemplates() error {
 
 func (c *aksEngineDeployer) loadARMTemplates() error {
 	var err error
-	template, err := ioutil.ReadFile(path.Join(c.outputDir, "azuredeploy.json"))
+	template, err := os.ReadFile(path.Join(c.outputDir, "azuredeploy.json"))
 	if err != nil {
 		return fmt.Errorf("error reading ARM template file: %v.", err)
 	}
@@ -699,7 +699,7 @@ func (c *aksEngineDeployer) loadARMTemplates() error {
 	if err != nil {
 		return fmt.Errorf("error unmarshall template %w", err)
 	}
-	parameters, err := ioutil.ReadFile(path.Join(c.outputDir, "azuredeploy.parameters.json"))
+	parameters, err := os.ReadFile(path.Join(c.outputDir, "azuredeploy.parameters.json"))
 	if err != nil {
 		return fmt.Errorf("error reading ARM parameters file: %w", err)
 	}
@@ -743,7 +743,7 @@ func (c *aksEngineDeployer) getAzureClient(ctx context.Context) error {
 
 func (c *aksEngineDeployer) createCluster() error {
 	var err error
-	kubecfgDir, _ := ioutil.ReadDir(path.Join(c.outputDir, "kubeconfig"))
+	kubecfgDir, _ := os.ReadDir(path.Join(c.outputDir, "kubeconfig"))
 	kubecfg := path.Join(c.outputDir, "kubeconfig", kubecfgDir[0].Name())
 	log.Printf("Setting kubeconfig env variable: kubeconfig path: %v.", kubecfg)
 	os.Setenv("KUBECONFIG", kubecfg)
@@ -791,7 +791,7 @@ func (c *aksEngineDeployer) dockerLogin() error {
 		log.Println("Attempting Docker login with docker cred.")
 		username = os.Getenv("DOCKER_USERNAME")
 		passwordFile := os.Getenv("DOCKER_PASSWORD_FILE")
-		password, err := ioutil.ReadFile(passwordFile)
+		password, err := os.ReadFile(passwordFile)
 		if err != nil {
 			return fmt.Errorf("error reading docker password file %v: %w", passwordFile, err)
 		}
@@ -878,7 +878,7 @@ func (c *aksEngineDeployer) buildAzureCloudComponents() error {
 	}
 
 	cmd := exec.Command("make", "-C", util.K8sSigs("cloud-provider-azure"), "image", "push")
-	cmd.Stdout = ioutil.Discard
+	cmd.Stdout = io.Discard
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
@@ -901,7 +901,7 @@ func (c *aksEngineDeployer) buildHyperkube() error {
 	if _, err := os.Stat(util.K8s("kubernetes", "cmd", "hyperkube")); err == nil {
 		// cmd/hyperkube binary still exists in repo
 		cmd := exec.Command("make", "-C", util.K8s("kubernetes"), "WHAT=cmd/hyperkube")
-		cmd.Stdout = ioutil.Discard
+		cmd.Stdout = io.Discard
 		if err := control.FinishRunning(cmd); err != nil {
 			return err
 		}
@@ -912,7 +912,7 @@ func (c *aksEngineDeployer) buildHyperkube() error {
 	}
 
 	log.Println("Pushing hyperkube.")
-	pushCmd.Stdout = ioutil.Discard
+	pushCmd.Stdout = io.Discard
 	if err := control.FinishRunning(pushCmd); err != nil {
 		return err
 	}
@@ -985,7 +985,7 @@ func (c *aksEngineDeployer) buildWinZip() error {
 	}
 	// the build script for the windows binaries will produce a lot of output. Capture it here.
 	cmd := exec.Command(buildScriptPath, "-u", zipName, "-z", buildFolder)
-	cmd.Stdout = ioutil.Discard
+	cmd.Stdout = io.Discard
 	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}

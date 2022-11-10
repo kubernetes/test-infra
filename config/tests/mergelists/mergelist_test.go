@@ -18,7 +18,7 @@ package mergelist_test
 
 import (
 	"flag"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -32,7 +32,7 @@ func TestMergelist(t *testing.T) {
 
 	for _, filename := range files {
 		t.Run(filename, func(t *testing.T) {
-			file, err := ioutil.ReadFile(filename)
+			file, err := os.ReadFile(filename)
 			if err != nil {
 				t.Errorf("Can't read file: %v", err)
 			}

@@ -19,11 +19,11 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
@@ -54,7 +54,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 		{
 			name: "Basic happy path (presubmits)",
 			baseContent: map[string][]byte{
-				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow.yaml": []byte(`presubmits: [{"name": "hans", "annotations": {"foo.bar": "foobar"}, "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
@@ -62,6 +62,9 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				}
+				if diff := cmp.Diff(p.Presubmits[0].Annotations, map[string]string{"foo.bar": "foobar"}); diff != "" {
+					return errors.New(diff)
 				}
 				return nil
 			},
@@ -660,7 +663,7 @@ func testDefaultProwYAMLGetter_RejectsJustOrg(clients localgit.Clients, t *testi
 		t.Fatalf("Making fake repo: %v", err)
 	}
 	expectedErrMsg := `didn't get two results when splitting repo identifier "my-repo"`
-	if _, err := prowYAMLGetterWithDefaults(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
+	if _, err := prowYAMLGetterWithDefaults(&Config{}, gc, identifier, "", ""); err == nil || err.Error() != expectedErrMsg {
 		t.Errorf("Error %v does not have expected message %s", err, expectedErrMsg)
 	}
 }
@@ -800,7 +803,7 @@ func TestInRepoConfigClean(t *testing.T) {
 	clonedRepo := casted.cache["org/repo"]
 	dir := clonedRepo.RepoClient.Directory()
 	f := path.Join(dir, "new-file")
-	if err := ioutil.WriteFile(f, []byte("something"), 0644); err != nil {
+	if err := os.WriteFile(f, []byte("something"), 0644); err != nil {
 		t.Fatal(err)
 	}
 

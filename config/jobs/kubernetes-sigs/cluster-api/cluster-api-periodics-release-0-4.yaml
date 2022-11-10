@@ -1,15 +1,16 @@
 periodics:
 - name: periodic-cluster-api-test-release-0-4
-  interval: 12h
+  interval: 48h
   decorate: true
-  labels:
-    preset-service-account: "true"
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
     base_ref: release-0.4
     path_alias: sigs.k8s.io/cluster-api
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
       command:
@@ -23,8 +24,10 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-release-0-4
-  interval: 12h
+  interval: 48h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -38,6 +41,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         args:
@@ -58,8 +62,10 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-release-0-4
-  interval: 12h
+  interval: 48h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -73,6 +79,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
       args:
@@ -97,14 +104,17 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-verify-book-links-release-0-4
-  interval: 24h
+  interval: 168h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
     base_ref: release-0.4
     path_alias: sigs.k8s.io/cluster-api
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
       command:
@@ -117,13 +127,6 @@ periodics:
           secretKeyRef:
             name: cluster-lifecycle-github-token
             key: cluster-lifecycle-github-token
-  volumes:
-  - name: cluster-lifecycle-github-token
-    secret:
-      secretName: cluster-lifecycle-github-token
-      items:
-      - key: cluster-lifecycle-github-token
-        path: cluster-lifecycle-github-token
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
     testgrid-tab-name: capi-verify-book-links-release-0-4

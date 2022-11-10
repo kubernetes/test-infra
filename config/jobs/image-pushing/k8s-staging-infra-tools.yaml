@@ -1,5 +1,5 @@
 postsubmits:
-  kubernetes-sigs/oci-proxy:
+  kubernetes/registry.k8s.io:
   # TODO(bentheelder): rerun_auth_config (let a github team re-run these, I probably need to join a team...)
   - name: post-oci-proxy-push-images
     cluster: k8s-infra-prow-build-trusted
@@ -11,7 +11,27 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+          - /run.sh
+          args:
+          # this is the project GCB will run in, which is the same as the GCR
+          # images are pushed to.
+          - --project=k8s-staging-infra-tools
+          - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+          - .
+  kubernetes-sigs/porche:
+  - name: post-porche-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+        testgrid-dashboards: sig-k8s-infra-gcb
+    decorate: true
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
           - /run.sh
           args:
@@ -32,7 +52,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
             command:
               - /run.sh
             args:
@@ -53,7 +73,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
             command:
               - /run.sh
             args:
@@ -68,12 +88,13 @@ postsubmits:
         testgrid-alert-email: public-log-asn-matcher@ii.coop
         description: Builds the public-log-asn-matcher image for generating data that is used for reviewing Kubernetes Public artifact traffic in DataStudio.
       decorate: true
+      run_if_changed: "^images/public-log-asn-matcher/"
       branches:
         - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
             command:
               - /run.sh
             args:
@@ -94,7 +115,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
             command:
               - /run.sh
             args:

@@ -62,6 +62,7 @@ approve:
   - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
+  - kubernetes-sigs/aws-ebs-csi-driver
   require_self_approval: true
   lgtm_acts_as_approve: false
 - repos:
@@ -157,6 +158,47 @@ label:
           - pushkarj
         # This label is used to filter/tag CVEs announced by SRC
         label: official-cve-feed
+    kubernetes/enhancements:
+      # Restrict setting of tracked/* labels to the enhancements team.
+      - label: tracked/no
+        allowed_teams:
+        - release-team-enhancements
+        - release-team-leads
+      - label: tracked/yes
+        allowed_teams:
+        - release-team-enhancements
+        - release-team-leads
+      - label: tracked/out-of-tree
+        allowed_teams:
+        - release-team-enhancements
+        - release-team-leads
+      # Restrict setting of 'lead-opted-in' label to SIG leads.
+      - label: lead-opted-in
+        allowed_teams:
+        - release-team-enhancements
+        - release-team-leads
+        - sig-api-machinery-leads
+        - sig-apps-leads
+        - sig-architecture-leads
+        - sig-auth-leads
+        - sig-autoscaling-leads
+        - sig-cli-leads
+        - sig-cloud-provider-leads
+        - sig-cluster-lifecycle-leads
+        - sig-contributor-experience-leads
+        - sig-docs-leads
+        - sig-instrumentation-leads
+        - sig-k8s-infra-leads
+        - sig-multicluster-leads
+        - sig-network-leads
+        - sig-node-leads
+        - sig-release-leads
+        - sig-scalability-leads
+        - sig-scheduling-leads
+        - sig-security-leads
+        - sig-storage-leads
+        - sig-testing-leads
+        - sig-windows-leads
 
 lgtm:
 - repos:
@@ -330,6 +372,12 @@ slack:
     exempt_users:
     - k8s-publishing-bot
   - repos:
+    - kubernetes/kms
+    channels:
+    - sig-auth-kms-dev
+    exempt_users:
+    - k8s-publishing-bot
+  - repos:
     - kubernetes/kubernetes
     channels:
     - github-management
@@ -384,25 +432,26 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.25
+    master: v1.26
   kubernetes/kubernetes:
-    master: v1.25
+    master: v1.26
+    release-1.25: v1.25
     release-1.24: v1.24
     release-1.23: v1.23
     release-1.22: v1.22
-    release-1.21: v1.21
   kubernetes/org:
     main: v1.25
   kubernetes/release:
-    master: v1.25
+    master: v1.26
   kubernetes/sig-release:
-    master: v1.25
+    master: v1.26
   kubernetes/test-infra:
-    master: v1.25
+    master: v1.26
   kubernetes/k8s.io:
     main: v1.25
   kubernetes/kops:
-    master: v1.25
+    master: v1.26
+    release-1.25: v1.25
     release-1.24: v1.24
     release-1.23: v1.23
     release-1.22: v1.22
@@ -425,9 +474,9 @@ milestone_applier:
     release-0.7: v0.7.x
     release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.5
+    main: v1.6
+    release-1.5: v1.5
     release-1.4: v1.4
-    release-1.3: v1.3
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -437,17 +486,14 @@ milestone_applier:
     release-1.0: v1.0.0
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-vsphere:
+    main: v1.5
+    release-1.4: v1.4
+    release-1.3: v1.3
   kubernetes-sigs/boskos:
     master: v1.23
-  kubernetes-sigs/controller-runtime:
-    master: v0.10.x
-    release-0.9: v0.9.x
-    release-0.8: v0.8.x
-    release-0.7: v0.7.x
-    release-0.6: v0.6.x
-    release-0.5: v0.5.x
   kubernetes/website:
-    dev-1.24: 1.24
+    dev-1.26: 1.26
 
 repo_milestone:
   # Default maintainer
@@ -455,67 +501,51 @@ repo_milestone:
     # You can curl the following endpoint in order to determine the github ID of your team
     # responsible for maintaining the milestones. You may need to specify the page number.
     # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams?page=N"
-    maintainers_id: 2460384
     maintainers_team: milestone-maintainers
     maintainers_friendly_name: Milestone Maintainers Team
   kubernetes-sigs/controller-runtime:
-    maintainers_id: 2785806
     maintainers_team: controller-runtime-maintainers
     maintainers_friendly_name: Controller Runtime Maintainers
   kubernetes-sigs/cluster-api:
-    maintainers_id: 3058957
     maintainers_team: cluster-api-maintainers
     maintainers_friendly_name: Cluster API Maintainers
   kubernetes-sigs/cluster-api-provider-aws:
-    maintainers_id: 2830895
     maintainers_team: cluster-api-provider-aws-maintainers
     maintainers_friendly_name: Cluster API Provider AWS Maintainers
   kubernetes-sigs/cluster-api-provider-azure:
-    maintainers_id: 3063852
     maintainers_team: cluster-api-provider-azure-maintainers
     maintainers_friendly_name: Cluster API Provider Azure Maintainers
   kubernetes-sigs/cluster-api-provider-digitalocean:
-    maintainers_id: 2978501
     maintainers_team: cluster-api-provider-digitalocean-maintainers
     maintainers_friendly_name: Cluster API Provider DigitalOcean Maintainers
   kubernetes-sigs/cluster-api-provider-gcp:
-    maintainers_id: 2829767
     maintainers_team: cluster-api-provider-gcp-maintainers
     maintainers_friendly_name: Cluster API Provider GCP Maintainers
   kubernetes-sigs/cluster-api-provider-nested:
-    maintainers_id: 4158805
     maintainers_team: cluster-api-provider-nested-maintainers
     maintainers_friendly_name: Cluster API Provider Nested Maintainers
   kubernetes-sigs/cluster-api-provider-vsphere:
-    maintainers_id: 2850058
     maintainers_team: cluster-api-provider-vsphere-maintainers
     maintainers_friendly_name: Cluster API Provider vSphere Maintainers
   kubernetes/community:
-    maintainers_id: 3169231
     maintainers_team: community-milestone-maintainers
     maintainers_friendly_name: Community Milestone Maintainers
   kubernetes/kops:
-    maintainers_id: 2060651
     maintainers_team: kops-maintainers
     maintainers_friendly_name: Kops Maintainers
   kubernetes/ingress-nginx:
-    maintainers_id: 2179129
     maintainers_team: ingress-nginx-maintainers
     maintainers_friendly_name: Ingress Nginx Maintainers
   kubernetes/org:
-    maintainers_id: 2842373
     maintainers_team: owners
     maintainers_friendly_name: GitHub Admin Team
   kubernetes/website:
-    maintainers_id: 3175912
     maintainers_team: website-milestone-maintainers
     maintainers_friendly_name: Website milestone maintainers
   kubernetes/kubeadm:
-    maintainers_id: 2195382
     maintainers_team: kubeadm-maintainers
     maintainers_friendly_name: Kubeadm maintainers
   kubernetes-sigs/kubebuilder:
-    maintainers_id: 2688053
     maintainers_team: kubebuilder-maintainers
     maintainers_friendly_name: Kubebuilder Maintainers
 
@@ -773,7 +803,7 @@ require_matching_label:
   org: kubernetes-sigs
   repo: cluster-api
   issues: true
-  prs: true
+  prs: false
   regexp: ^triage/accepted$
   missing_comment: |
     This issue is currently awaiting triage.
@@ -785,7 +815,7 @@ require_matching_label:
   org: kubernetes-sigs
   repo: cluster-api-provider-aws
   issues: true
-  prs: true
+  prs: false
   regexp: ^triage/accepted$
   missing_comment: |
     This issue is currently awaiting triage.
@@ -940,6 +970,7 @@ plugins:
   kubernetes/k8s.io:
     plugins:
     - milestone
+    - override
 
   kubernetes/kops:
     plugins:
@@ -1199,6 +1230,11 @@ plugins:
     - milestone
     - override
 
+  kubernetes-sigs/cluster-api-provider-vsphere:
+    plugins:
+    - milestone
+    - override
+
   kubernetes-sigs/image-builder:
     plugins:
     - mergecommitblocker
@@ -1350,6 +1386,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/cluster-api-provider-openstack:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-provider-vsphere:
   - name: cherrypicker
     events:
     - issue_comment

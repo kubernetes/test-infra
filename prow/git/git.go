@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -87,7 +86,7 @@ func NewClientWithHost(host string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	t, err := ioutil.TempDir("", "git")
+	t, err := os.MkdirTemp("", "git")
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +190,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
 	}
-	t, err := ioutil.TempDir("", "git")
+	t, err := os.MkdirTemp("", "git")
 	if err != nil {
 		return nil, err
 	}

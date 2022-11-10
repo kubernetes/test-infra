@@ -21,7 +21,6 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -106,7 +105,7 @@ func (o *Options) createRecords() []clone.Record {
 	// Print md5 sum of cookiefile for debugging purpose
 	if len(o.CookiePath) > 0 {
 		l := logrus.WithField("http-cookiefile", o.CookiePath)
-		f, err := ioutil.ReadFile(o.CookiePath)
+		f, err := os.ReadFile(o.CookiePath)
 		if err != nil {
 			l.WithError(err).Warn("Cannot read http cookiefile")
 		} else {
@@ -167,7 +166,7 @@ func (o Options) Run() error {
 		return fmt.Errorf("marshal clone records: %w", err)
 	}
 
-	if err := ioutil.WriteFile(o.Log, logData, 0755); err != nil {
+	if err := os.WriteFile(o.Log, logData, 0755); err != nil {
 		return fmt.Errorf("write clone records: %w", err)
 	}
 

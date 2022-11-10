@@ -25,7 +25,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -249,7 +248,7 @@ func TestHandleLog(t *testing.T) {
 			} else {
 				resp := rr.Result()
 				defer resp.Body.Close()
-				if body, err := ioutil.ReadAll(resp.Body); err != nil {
+				if body, err := io.ReadAll(resp.Body); err != nil {
 					t.Errorf("Error reading response body: %v", err)
 				} else if string(body) != "hello" {
 					t.Errorf("Unexpected body: got %s.", string(body))
@@ -321,7 +320,7 @@ func TestHandleProwJobs(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -390,7 +389,7 @@ func TestProwJob(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -431,8 +430,10 @@ func TestTide(t *testing.T) {
 	ca.Set(&config.Config{
 		ProwConfig: config.ProwConfig{
 			Tide: config.Tide{
-				Queries: []config.TideQuery{
-					{Repos: []string{"prowapi.netes/test-infra"}},
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: []config.TideQuery{
+						{Repos: []string{"prowapi.netes/test-infra"}},
+					},
 				},
 			},
 		},
@@ -466,7 +467,7 @@ func TestTide(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -529,7 +530,7 @@ func TestTideHistory(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -575,7 +576,7 @@ func TestHelp(t *testing.T) {
 		}
 		resp := rr.Result()
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("Error reading response body: %v", err)
 		}
@@ -674,6 +675,8 @@ func Test_gatherOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
@@ -756,8 +759,10 @@ func TestHandleConfig(t *testing.T) {
 				},
 			},
 			Tide: config.Tide{
-				Queries: []config.TideQuery{
-					{Repos: []string{"prowapi.netes/test-infra"}},
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: []config.TideQuery{
+						{Repos: []string{"prowapi.netes/test-infra"}},
+					},
 				},
 			},
 		},
@@ -780,7 +785,7 @@ func TestHandleConfig(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -822,7 +827,7 @@ func TestHandlePluginConfig(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -983,6 +988,99 @@ func TestHandleGitHubLink(t *testing.T) {
 	expected := fmt.Sprintf("https://%s/%s/%s", ghoptions.Host, org, repo)
 	if expected != actual {
 		t.Fatalf("%v", actual)
+	}
+}
+
+func TestHandleGitProviderLink(t *testing.T) {
+	tests := []struct {
+		name  string
+		query string
+		want  string
+	}{
+		{
+			name:  "github-commit",
+			query: "target=commit&repo=bar&commit=abc123",
+			want:  "https://github.mycompany.com/bar/commit/abc123",
+		},
+		{
+			name:  "github-branch",
+			query: "target=branch&repo=bar&branch=main",
+			want:  "https://github.mycompany.com/bar/tree/main",
+		},
+		{
+			name:  "github-pr",
+			query: "target=pr&repo=bar&number=2",
+			want:  "https://github.mycompany.com/bar/pull/2",
+		},
+		{
+			name:  "github-pr-with-quote",
+			query: "target=pr&repo='bar'&number=2",
+			want:  "https://github.mycompany.com/bar/pull/2",
+		},
+		{
+			name:  "github-author",
+			query: "target=author&author=chaodaiG",
+			want:  "https://github.mycompany.com/chaodaiG",
+		},
+		{
+			name:  "github-author-withquote",
+			query: "target=author&repo='bar'&author=chaodaiG",
+			want:  "https://github.mycompany.com/chaodaiG",
+		},
+		{
+			name:  "github-invalid",
+			query: "target=invalid&repo=bar&commit=abc123",
+			want:  "/",
+		},
+		{
+			name:  "gerrit-commit",
+			query: "target=commit&repo='https://foo-review.abc/bar'&commit=abc123",
+			want:  "https://foo.abc/bar/+/abc123",
+		},
+		{
+			name:  "gerrit-commit",
+			query: "target=prcommit&repo='https://foo-review.abc/bar'&commit=abc123",
+			want:  "https://foo.abc/bar/+/abc123",
+		},
+		{
+			name:  "gerrit-branch",
+			query: "target=branch&repo='https://foo-review.abc/bar'&branch=main",
+			want:  "https://foo.abc/bar/+/refs/heads/main",
+		},
+		{
+			name:  "gerrit-pr",
+			query: "target=pr&repo='https://foo-review.abc/bar'&number=2",
+			want:  "https://foo-review.abc/c/bar/+/2",
+		},
+		{
+			name:  "gerrit-invalid",
+			query: "target=invalid&repo='https://foo-review.abc/bar'&commit=abc123",
+			want:  "/",
+		},
+	}
+
+	ghoptions := flagutil.GitHubOptions{Host: "github.mycompany.com"}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			url := fmt.Sprintf("/git-provider-link?%s", tc.query)
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
+
+			handler := HandleGitProviderLink(ghoptions.Host, true)
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+			if rr.Code != http.StatusFound {
+				t.Fatalf("Bad error code: %d", rr.Code)
+			}
+			resp := rr.Result()
+			defer resp.Body.Close()
+			if want, got := tc.want, resp.Header.Get("Location"); want != got {
+				t.Fatalf("Wrong URL. Want: %s, got: %s", want, got)
+			}
+		})
 	}
 }
 
