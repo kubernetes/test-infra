@@ -231,18 +231,32 @@ type ProwJobSpec struct {
 	JobQueueName string `json:"job_queue_name,omitempty"`
 }
 
-func (pjs ProwJobSpec) GetPipelineRunSpec() *pipelinev1beta1.PipelineRunSpec {
-	if pjs.TektonPipelineRunSpec != nil {
-		return pjs.TektonPipelineRunSpec.V1Beta1
+func (pjs ProwJobSpec) HasPipelineRunSpec() bool {
+	if pjs.TektonPipelineRunSpec != nil && pjs.TektonPipelineRunSpec.V1Beta1 != nil {
+		return true
 	}
 	if pjs.PipelineRunSpec != nil {
-		var spec pipelinev1beta1.PipelineRunSpec
-		// TODO(eddycharly) error management
-		if err := pjs.PipelineRunSpec.ConvertTo(context.TODO(), &spec); err == nil {
-			return &spec
-		}
+		return true
 	}
-	return nil
+	return false
+}
+
+func (pjs ProwJobSpec) GetPipelineRunSpec() (*pipelinev1beta1.PipelineRunSpec, error) {
+	var found *pipelinev1beta1.PipelineRunSpec
+	if pjs.TektonPipelineRunSpec != nil {
+		found = pjs.TektonPipelineRunSpec.V1Beta1
+	}
+	if found == nil && pjs.PipelineRunSpec != nil {
+		var spec pipelinev1beta1.PipelineRunSpec
+		if err := pjs.PipelineRunSpec.ConvertTo(context.TODO(), &spec); err != nil {
+			return nil, err
+		}
+		found = &spec
+	}
+	if found == nil {
+		return nil, errors.New("pipeline run spec not found")
+	}
+	return found, nil
 }
 
 type GitHubTeamSlug struct {

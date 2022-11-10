@@ -18,6 +18,7 @@ package config
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -152,18 +153,32 @@ func (jb JobBase) GetAnnotations() map[string]string {
 	return jb.Annotations
 }
 
-func (jb JobBase) GetPipelineRunSpec() *pipelinev1beta1.PipelineRunSpec {
-	if jb.TektonPipelineRunSpec != nil {
-		return jb.TektonPipelineRunSpec.V1Beta1
+func (jb JobBase) HasPipelineRunSpec() bool {
+	if jb.TektonPipelineRunSpec != nil && jb.TektonPipelineRunSpec.V1Beta1 != nil {
+		return true
 	}
 	if jb.PipelineRunSpec != nil {
-		var spec pipelinev1beta1.PipelineRunSpec
-		// TODO(eddycharly) error management
-		if err := jb.PipelineRunSpec.ConvertTo(context.TODO(), &spec); err == nil {
-			return &spec
-		}
+		return true
 	}
-	return nil
+	return false
+}
+
+func (jb JobBase) GetPipelineRunSpec() (*pipelinev1beta1.PipelineRunSpec, error) {
+	var found *pipelinev1beta1.PipelineRunSpec
+	if jb.TektonPipelineRunSpec != nil {
+		found = jb.TektonPipelineRunSpec.V1Beta1
+	}
+	if found == nil && jb.PipelineRunSpec != nil {
+		var spec pipelinev1beta1.PipelineRunSpec
+		if err := jb.PipelineRunSpec.ConvertTo(context.TODO(), &spec); err != nil {
+			return nil, err
+		}
+		found = &spec
+	}
+	if found == nil {
+		return nil, errors.New("pipeline run spec not found")
+	}
+	return found, nil
 }
 
 // +k8s:deepcopy-gen=true

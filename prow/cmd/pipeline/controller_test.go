@@ -1066,9 +1066,13 @@ func TestMakeResources(t *testing.T) {
 			if err != nil {
 				t.Errorf("failed to marshal job spec: %v", err)
 			}
+			pipelineRunSpec, err := pj.Spec.GetPipelineRunSpec()
+			if err != nil {
+				t.Errorf("failed to get pipeline run spec: %v", err)
+			}
 			expectedRun := pipelinev1beta1.PipelineRun{
 				ObjectMeta: pipelineMeta(pj.Name, pj),
-				Spec:       *pj.Spec.GetPipelineRunSpec(),
+				Spec:       *pipelineRunSpec,
 			}
 			expectedRun.Spec.Params = []pipelinev1alpha1.Param{
 				{

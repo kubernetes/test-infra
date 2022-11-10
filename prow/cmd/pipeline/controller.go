@@ -416,7 +416,7 @@ func reconcile(c reconciler, key string) error {
 	case finalState(pj.Status.State):
 		logrus.Infof("Observed finished: %s", key)
 		return nil
-	case wantPipelineRun && pj.Spec.GetPipelineRunSpec() == nil:
+	case wantPipelineRun && !pj.Spec.HasPipelineRunSpec():
 		return fmt.Errorf("nil PipelineRunSpec in ProwJob/%s", key)
 	case wantPipelineRun && !havePipelineRun:
 		id, url, err := c.pipelineID(*newpj)
@@ -593,7 +593,10 @@ func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.Prow
 // so that we don't have to take care of potentially dangling created pipeline resources.
 func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1beta1.PipelineRun, error) {
 	// First validate.
-	spec := pj.Spec.GetPipelineRunSpec()
+	spec, err := pj.Spec.GetPipelineRunSpec()
+	if err != nil {
+		return nil, err
+	}
 	if spec == nil {
 		return nil, errors.New("no PipelineSpec defined")
 	}
