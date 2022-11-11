@@ -479,7 +479,6 @@ def generate_misc():
         # A special test for IPv6 using Calico CNI with private topology
         build_test(name_override="kops-aws-cni-calico-ipv6-private",
                    cloud="aws",
-                   distro="deb11",
                    networking="calico",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
