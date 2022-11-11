@@ -101,7 +101,7 @@ def build_test(cloud='aws',
     suffix = ""
     if cloud and cloud != "aws":
         suffix += "-" + cloud
-    if networking and networking != "kubenet":
+    if networking:
         suffix += "-" + networking
     if distro:
         suffix += "-" + distro
