@@ -21,7 +21,7 @@ presets:
           hostNetwork: true
           containers:
             # HEAD is used unless otherwised specified by each individual job.
-          - image: gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+          - image: gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
             livenessProbe:
               httpGet:
                 path: /healthz
@@ -150,7 +150,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
@@ -182,7 +182,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
@@ -219,7 +219,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
       - --extract=ci/latest
       - --gcp-project=k8s-ingress-e2e-scale-backup
       - --gcp-zone=us-west1-b
