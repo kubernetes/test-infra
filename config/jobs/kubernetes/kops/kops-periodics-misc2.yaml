@@ -303,6 +303,7 @@ periodics:
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
+          --skip-regex="SSH should SSH to all nodes and run commands" \
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -567,6 +568,7 @@ periodics:
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
+          --skip-regex="SSH should SSH to all nodes and run commands" \
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH

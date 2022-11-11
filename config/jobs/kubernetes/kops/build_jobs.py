@@ -486,6 +486,7 @@ def generate_misc():
                                 '--bastion',
                                 '--zones=us-west-2a',
                                 ],
+                   skip_regex="SSH should SSH to all nodes and run commands",
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 using Cilium CNI
         build_test(name_override="kops-aws-cni-cilium-ipv6",
@@ -525,6 +526,7 @@ def generate_misc():
                    extra_flags=['--topology=private',
                                 '--bastion',
                                 ],
+                   skip_regex="SSH should SSH to all nodes and run commands",
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-grid-scenario-terraform",
