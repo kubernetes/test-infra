@@ -1629,8 +1629,6 @@ presubmits:
           - --gcp-node-image=gci
           - --gcp-nodes=1
           - --provider=gce
-          - --runtime-config=api/all=true
-          - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-inplace-pod-resize-containerd-main-v2
           - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\]
           - --timeout=150m
         resources:
