@@ -1580,3 +1580,55 @@ presubmits:
           limits:
             cpu: 4
             memory: 6Gi
+
+  #TODO(vinaykul,InPlacePodVerticalScaling): Remove this job once we have updated to a COS OS with containerd >= 1.6.9
+  #     Until then, this job complements pull-kubernetes-e2e-gce-alpha-features by running inplace pod resize e2e tests
+  #     full-spectrum against containerd/main which has the necessary CRI support.
+  - name: pull-kubernetes-e2e-inplace-pod-resize-containerd-main-v2
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_report: false
+    run_if_changed: '^(pkg\/kubelet\/kuberuntime\/|test\/e2e\/node/)'
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-gce-cluster-e2e-inplace-pod-resize-containerd-main-v2
+      description: Executes inplace pod resize e2e tests with containerd/main and cgroupv2
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221107-33c989e684-master
+        args:
+          - --repo=github.com/containerd/containerd=main
+          - --root=/go/src
+          - "--job=$(JOB_NAME)"
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--timeout=180"
+          - --scenario=kubernetes_e2e
+          - -- # end bootstrap args, scenario args below
+          - --check-leaked-resources
+          - --cluster=
+          - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
+          - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+          - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+          - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
+          - --extract=local
+          - --gcp-zone=us-west1-b
+          - --gcp-node-image=gci
+          - --gcp-nodes=1
+          - --provider=gce
+          - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\]
+          - --timeout=150m
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
