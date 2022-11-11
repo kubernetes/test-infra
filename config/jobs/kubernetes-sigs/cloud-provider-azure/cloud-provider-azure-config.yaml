@@ -251,6 +251,8 @@ presubmits:
               value: "!Serial && !Slow && !PLS && !Multi-Nodepool"
             - name: CLUSTER_PROVISIONING_TOOL
               value: "capz"
+            - name: ENABLE_VMSS_FLEX
+              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
