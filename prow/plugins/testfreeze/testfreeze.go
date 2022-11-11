@@ -45,18 +45,13 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequestEvent, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
-	pluginHelp := &pluginhelp.PluginHelp{
+func helpProvider(*plugins.Configuration, []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
+	return &pluginhelp.PluginHelp{
 		Description: fmt.Sprintf(
 			"The %s plugin adds additional documentation about cherry-picks during the Test Freeze period.",
 			PluginName,
 		),
-	}
-	pluginHelp.AddCommand(pluginhelp.Command{
-		Featured:  false,
-		WhoCanUse: "Anyone",
-	})
-	return pluginHelp, nil
+	}, nil
 }
 
 func handlePullRequestEvent(p plugins.Agent, e github.PullRequestEvent) error {
