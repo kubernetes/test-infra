@@ -17,7 +17,7 @@ presets:
   - name: NON_MASQUERADE_CIDR
     value: 0.0.0.0/0
   - name: KUBELET_TEST_ARGS
-    value: "--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd"
+    value: --runtime-cgroups=/system.slice/containerd.service
 - labels:
     preset-e2e-containerd-image-load: "true"
   env:
