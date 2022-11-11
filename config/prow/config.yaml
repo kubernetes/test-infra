@@ -798,6 +798,8 @@ tide:
     kubernetes-sigs/service-catalog: squash
     kubernetes-sigs/go-open-service-broker-client: squash
     kubernetes-sigs/minibroker: squash
+    kubernetes-sigs/node-feature-discovery: squash
+    kubernetes-sigs/node-feature-discovery-operator: squash
     kubernetes-sigs/vsphere-csi-driver: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
