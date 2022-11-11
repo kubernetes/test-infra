@@ -44,7 +44,7 @@ loader = jinja2.FileSystemLoader(searchpath="./templates")
 # Returns a string representing the periodic prow job and the number of job invocations per week
 def build_test(cloud='aws',
                distro='u2204',
-               networking='kubenet',
+               networking='cilium',
                container_runtime='containerd',
                irsa=True,
                k8s_version='ci',
@@ -232,7 +232,7 @@ def build_test(cloud='aws',
 def presubmit_test(branch='master',
                    cloud='aws',
                    distro='u2004',
-                   networking='kubenet',
+                   networking='cilium',
                    container_runtime='containerd',
                    irsa=True,
                    k8s_version='stable',
@@ -737,7 +737,7 @@ def generate_distros():
             ]
         results.append(
             build_test(distro=distro_short,
-                       networking='kubenet',
+                       networking='cilium',
                        k8s_version='stable',
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-{distro}",
