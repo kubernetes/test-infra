@@ -456,8 +456,8 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=['kops-misc']),
 
-        # A special test for IPv6 using Calico CNI on Ubuntu 22.04
-        build_test(name_override="kops-aws-cni-calico-ipv6-u2204",
+        # A special test for IPv6 using Calico CNI
+        build_test(name_override="kops-aws-cni-calico-ipv6",
                    cloud="aws",
                    distro="u2204",
                    networking="calico",
@@ -466,8 +466,8 @@ def generate_misc():
                                 '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
-        # A special test for IPv6 using Calico CNI
-        build_test(name_override="kops-aws-cni-calico-ipv6",
+        # A special test for IPv6 using Calico CNI on Debian 11
+        build_test(name_override="kops-aws-cni-calico-ipv6-deb11",
                    cloud="aws",
                    distro="deb11",
                    networking="calico",
@@ -490,7 +490,6 @@ def generate_misc():
         # A special test for IPv6 using Cilium CNI
         build_test(name_override="kops-aws-cni-cilium-ipv6",
                    cloud="aws",
-                   distro="deb11",
                    networking="cilium",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
@@ -1003,7 +1002,6 @@ def generate_presubmits_network_plugins():
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
                     tab_name=f"e2e-{plugin}-ipv6",
-                    distro="deb11",
                     networking=networking_arg,
                     extra_flags=['--ipv6',
                                  '--zones=us-west-2a',
