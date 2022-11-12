@@ -491,7 +491,27 @@ def generate_misc():
                                 '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
-
+        # A special test for IPv6 on Flatcar
+        build_test(name_override="kops-aws-ipv6-flatcar",
+                   cloud="aws",
+                   distro="flatcar",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--bastion',
+                                ],
+                   extra_dashboards=['kops-distros', 'kops-ipv6']),
+        # A special test for IPv6 using Calico on Flatcar
+        build_test(name_override="kops-aws-cni-calico-ipv6-flatcar",
+                   cloud="aws",
+                   distro="flatcar",
+                   networking="calico",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--bastion',
+                                ],
+                   extra_dashboards=['kops-distros', 'kops-network-plugins', 'kops-ipv6']),
 
         # A special test for disabling IRSA
         build_test(name_override="kops-grid-scenario-no-irsa",
