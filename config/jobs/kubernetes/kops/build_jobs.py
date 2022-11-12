@@ -459,7 +459,7 @@ def generate_misc():
         # A special test for IPv6 using Calico CNI
         build_test(name_override="kops-aws-cni-calico-ipv6",
                    cloud="aws",
-                   distro="u2204",
+                   distro="u2204arm64",
                    networking="calico",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
@@ -483,6 +483,7 @@ def generate_misc():
         # A special test for IPv6 using Cilium CNI
         build_test(name_override="kops-aws-cni-cilium-ipv6",
                    cloud="aws",
+                   distro="u2204arm64",
                    networking="cilium",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
@@ -516,6 +517,7 @@ def generate_misc():
         # A special test for disabling IRSA
         build_test(name_override="kops-grid-scenario-no-irsa",
                    cloud="aws",
+                   distro="u2204arm64",
                    runs_per_day=3,
                    irsa=False,
                    extra_flags=['--api-loadbalancer-type=public',
@@ -524,6 +526,7 @@ def generate_misc():
 
         # A special test for warm pool
         build_test(name_override="kops-warm-pool",
+                   distro="u2204arm64",
                    runs_per_day=3,
                    networking="cilium",
                    extra_flags=['--api-loadbalancer-type=public',
@@ -534,6 +537,7 @@ def generate_misc():
         # A special test for private topology
         build_test(name_override="kops-aws-private",
                    cloud="aws",
+                   distro="u2204arm64",
                    runs_per_day=3,
                    networking="calico",
                    extra_flags=['--topology=private',
@@ -542,12 +546,14 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-grid-scenario-terraform",
+                   distro="u2204arm64",
                    terraform_version="1.0.5",
                    extra_flags=["--zones=us-west-1a"],
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-misc-ha-euwest1",
                    k8s_version="stable",
+                   distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -602,6 +608,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-updown",
                    k8s_version="stable",
+                   distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
                    kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
@@ -662,6 +669,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-external-dns",
                    cloud="aws",
+                   distro="u2204arm64",
                    networking="cilium",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -672,12 +680,14 @@ def generate_misc():
 
         build_test(name_override="kops-aws-apiserver-nodes",
                    cloud="aws",
+                   distro="u2204arm64",
                    runs_per_day=3,
                    template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl", # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc'],
                    feature_flags=['APIServerNodes']),
 
         build_test(name_override="kops-aws-misc-karpenter",
+                   distro="u2204arm64",
                    networking="cilium",
                    kops_channel="alpha",
                    runs_per_day=1,
