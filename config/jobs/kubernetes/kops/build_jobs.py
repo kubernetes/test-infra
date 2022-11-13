@@ -79,7 +79,7 @@ def build_test(cloud='aws',
         return None
     if container_runtime == 'docker' and k8s_version not in ('1.21', '1.22', '1.23'):
         return None
-    if networking == 'kopeio' and distro in ('flatcar'):
+    if networking == 'kopeio' and distro in ('flatcar', 'flatcararm64'):
         return None
 
     # Won't backport the rp_filter fixes to kops 1.23
@@ -96,7 +96,7 @@ def build_test(cloud='aws',
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
 
-    validation_wait = '20m' if distro == 'flatcar' else None
+    validation_wait = '20m' if distro in ('flatcar', 'flatcararm64') else None
 
     suffix = ""
     if cloud and cloud != "aws":
@@ -497,22 +497,24 @@ def generate_misc():
         # A special test for IPv6 on Flatcar
         build_test(name_override="kops-aws-ipv6-flatcar",
                    cloud="aws",
-                   distro="flatcar",
+                   distro="flatcararm64",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
                                 '--topology=private',
                                 '--bastion',
+                                "--master-size=c7g.large",
                                 ],
                    extra_dashboards=['kops-distros', 'kops-ipv6']),
         # A special test for IPv6 using Calico on Flatcar
         build_test(name_override="kops-aws-cni-calico-ipv6-flatcar",
                    cloud="aws",
-                   distro="flatcar",
+                   distro="flatcararm64",
                    networking="calico",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
                                 '--topology=private',
                                 '--bastion',
+                                "--master-size=c7g.large",
                                 ],
                    extra_dashboards=['kops-distros', 'kops-network-plugins', 'kops-ipv6']),
 
