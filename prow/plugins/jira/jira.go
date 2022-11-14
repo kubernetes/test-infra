@@ -223,7 +223,8 @@ func insertLinksIntoLine(line string, issueNames []string, jiraBaseURL string) s
 // replaceStringIfNeeded replaces a string if it is not prefixed by:
 // * `[` which we use as heuristic for "Already replaced",
 // * `/` which we use as heuristic for "Part of a link in a previous replacement",
-// * ``` (backtick) which we use as heuristic for "Inline code".
+// * ``` (backtick) which we use as heuristic for "Inline code",
+// * `-` (dash) to prevent replacing a substring that accidentally matches a JIRA issue.
 // If golang would support back-references in regex replacements, this would have been a lot
 // simpler.
 func replaceStringIfNeeded(text, old, new string) string {
@@ -253,7 +254,7 @@ func replaceStringIfNeeded(text, old, new string) string {
 	startingIdx = 0
 	for _, idx := range allOldIdx {
 		result += text[startingIdx:idx]
-		if idx == 0 || (text[idx-1] != '[' && text[idx-1] != '/') && text[idx-1] != '`' {
+		if idx == 0 || (text[idx-1] != '[' && text[idx-1] != '/') && text[idx-1] != '`' && text[idx-1] != '-' {
 			result += new
 		} else {
 			result += old
