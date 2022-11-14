@@ -54,6 +54,7 @@ presets:
             - --log_file=/var/log/glbc.log
             - --enable-finalizer-add
             - --enable-finalizer-remove
+            - --enable-endpoint-slices
             - --default-backend-service=kube-system/default-http-backend
             - --kubeconfig=/etc/srv/kubernetes/l7-lb-controller/kubeconfig
             - --sync-period=600s
