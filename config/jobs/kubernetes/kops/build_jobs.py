@@ -465,7 +465,6 @@ def generate_misc():
                    extra_flags=['--ipv6',
                                 '--topology=private',
                                 '--bastion',
-                                "--master-size=c7g.large",
                                 '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
@@ -490,7 +489,6 @@ def generate_misc():
                    extra_flags=['--ipv6',
                                 '--topology=private',
                                 '--bastion',
-                                "--master-size=c7g.large",
                                 '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
@@ -502,7 +500,6 @@ def generate_misc():
                    extra_flags=['--ipv6',
                                 '--topology=private',
                                 '--bastion',
-                                "--master-size=c7g.large",
                                 ],
                    extra_dashboards=['kops-distros', 'kops-ipv6']),
         # A special test for IPv6 using Calico on Flatcar
@@ -514,7 +511,6 @@ def generate_misc():
                    extra_flags=['--ipv6',
                                 '--topology=private',
                                 '--bastion',
-                                "--master-size=c7g.large",
                                 ],
                    extra_dashboards=['kops-distros', 'kops-network-plugins', 'kops-ipv6']),
 
@@ -525,7 +521,6 @@ def generate_misc():
                    runs_per_day=3,
                    irsa=False,
                    extra_flags=['--api-loadbalancer-type=public',
-                                "--master-size=c7g.large",
                                 ],
                    extra_dashboards=['kops-misc']),
 
@@ -535,7 +530,6 @@ def generate_misc():
                    runs_per_day=3,
                    networking="cilium",
                    extra_flags=['--api-loadbalancer-type=public',
-                                "--master-size=c7g.large",
                                 '--override=cluster.spec.warmPool.minSize=1'
                                 ],
                    extra_dashboards=['kops-misc']),
@@ -546,8 +540,7 @@ def generate_misc():
                    distro="u2204arm64",
                    runs_per_day=3,
                    networking="calico",
-                   extra_flags=["--master-size=c7g.large",
-                                '--topology=private',
+                   extra_flags=['--topology=private',
                                 '--bastion',
                                 ],
                    extra_dashboards=['kops-misc']),
@@ -556,7 +549,6 @@ def generate_misc():
                    distro="u2204arm64",
                    terraform_version="1.0.5",
                    extra_flags=[
-                       "--master-size=c7g.large",
                        "--zones=us-west-1a",
                    ],
                    extra_dashboards=['kops-misc']),
@@ -569,7 +561,6 @@ def generate_misc():
                    runs_per_day=3,
                    extra_flags=[
                        "--master-count=3",
-                       "--master-size=c7g.large",
                        "--zones=eu-west-1a,eu-west-1b,eu-west-1c"
                    ],
                    extra_dashboards=["kops-misc"]),
@@ -628,8 +619,6 @@ def generate_misc():
                    kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
                    publish_version_marker="gs://kops-ci/bin/latest-ci-updown-green.txt",
                    runs_per_day=24,
-                   extra_flags=["--node-size=c7g.large",
-                                "--master-size=c7g.large"],
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
                    extra_dashboards=["kops-misc"]),
 
@@ -688,7 +677,6 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=[
-                       "--master-size=c7g.large",
                        "--override=cluster.spec.externalDNS.provider=external-dns",
                    ],
                    extra_dashboards=['kops-misc']),
@@ -698,9 +686,6 @@ def generate_misc():
                    distro="u2204arm64",
                    runs_per_day=3,
                    template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl", # pylint: disable=line-too-long
-                   extra_flags=[
-                       "--master-size=c7g.large",
-                   ],
                    extra_dashboards=['kops-misc'],
                    feature_flags=['APIServerNodes']),
 
@@ -710,7 +695,6 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=1,
                    extra_flags=[
-                       "--master-size=c7g.large",
                        "--instance-manager=karpenter",
                    ],
                    feature_flags=['Karpenter'],
