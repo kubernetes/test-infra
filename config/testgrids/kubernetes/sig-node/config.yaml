@@ -33,22 +33,6 @@ dashboards:
       base_options: width=10
 
 - name: sig-node-cri-o
-  dashboard_tab:
-    - name: crio-e2e-fedora
-      test_group_name: test_pull_request_crio_e2e_fedora
-      open_test_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
-      results_url_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
-      base_options: width=10
-    - name: crio-e2e-rhel
-      test_group_name: test_pull_request_crio_e2e_rhel
-      open_test_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
-      results_url_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
-      base_options: width=10
-
 - name: sig-node-cri-tools
 - name: sig-node-node-feature-discovery
 - name: sig-node-kernel-module-management

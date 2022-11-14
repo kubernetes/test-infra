@@ -57,12 +57,6 @@ test_groups:
   num_columns_recent: 3
   num_failures_to_alert: 1
 
-# CRI-O
-- name: test_pull_request_crio_e2e_fedora
-  gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_fedora
-- name: test_pull_request_crio_e2e_rhel
-  gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
-
 #
 # Start dashboards
 #
