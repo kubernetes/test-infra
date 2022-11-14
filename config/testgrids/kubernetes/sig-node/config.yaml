@@ -6,6 +6,7 @@ dashboard_groups:
     - sig-node-containerd
     - sig-node-cri-o
     - sig-node-cos
+    - sig-node-dynamic-resource-allocation
     - sig-node-presubmits
     # These dashboards are for out-of-tree SIG Node projects
     - sig-node-cadvisor
@@ -62,5 +63,11 @@ dashboards:
     base_options: width=10
 
 - name: sig-node-cos
+- name: sig-node-dynamic-resource-allocation
+  dashboard_tab:
+  - name: pull-kind-dra
+    test_group_name: pull-kubernetes-kind-dra
+    alert_options:
+      alert_mail_to_addresses: patrick.ohly@intel.com
 - name: sig-node-presubmits
 - name: sig-node-image-pushes

@@ -1,0 +1,40 @@
+periodics:
+  # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
+  # on a kind cluster with containerd updated to a version with CDI support.
+  - name: ci-kind-dra
+    interval: 6h
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation
+      testgrid-tab-name: ci-kind-dra
+      testgrid-alert-email: patrick.ohly@intel.com
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220928-cd48f52a16-master
+        command:
+        - runner.sh
+        args:
+        - /bin/sh
+        - -xc
+        - >
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test" &&
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
+          test/e2e/dra/kind-build-image.sh dra/node:latest &&
+          kind create cluster --config test/e2e/dra/kind.yaml --image dra/node:latest &&
+          trap 'kind export logs "${ARTIFACTS}/kind"' EXIT &&
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus=DynamicResourceAllocation
+
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
