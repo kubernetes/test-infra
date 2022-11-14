@@ -3,7 +3,7 @@
 presubmits:
   kubernetes/kops:
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-ci
     branches:
     - master
@@ -34,7 +34,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -62,7 +62,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
@@ -71,7 +71,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-containerd-ci
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-ci-ha
     branches:
     - master
@@ -102,7 +102,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -130,7 +130,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
@@ -139,7 +139,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-containerd-ci-ha
 
-# {"cloud": "aws", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "docker", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-docker
     branches:
     - master
@@ -170,7 +170,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=cilium --container-runtime=docker --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=cilium --container-runtime=docker --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -195,7 +195,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: docker
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -204,7 +204,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-docker
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico
     branches:
     - master
@@ -235,7 +235,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -260,7 +260,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -269,7 +269,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-calico
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-gce-cilium
     branches:
     - master
@@ -323,7 +323,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --gce-service-account=default
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -332,7 +332,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-cilium
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-gce
     branches:
     - master
@@ -386,7 +386,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --gce-service-account=default
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -395,7 +395,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-gce-long-cluster-name
     branches:
     - master
@@ -449,7 +449,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --gce-service-account=default
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
@@ -458,7 +458,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-long-name
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--gce-service-account=default", "k8s_version": "ci", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-k8s-gce-ci
     branches:
     - master
@@ -514,7 +514,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --gce-service-account=default
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
@@ -523,7 +523,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-gce-ci
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--gce-service-account=default", "feature_flags": "GoogleCloudBucketACL", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--gce-service-account=default", "feature_flags": "GoogleCloudBucketACL", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd
     branches:
     - master
@@ -578,7 +578,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --gce-service-account=default
       test.kops.k8s.io/feature_flags: GoogleCloudBucketACL
       test.kops.k8s.io/k8s_version: stable
@@ -944,7 +944,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-external-dns
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "APIServerNodes", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "APIServerNodes", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-apiserver-nodes
     branches:
     - master
@@ -975,7 +975,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=cilium --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=cilium --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=APIServerNodes \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
@@ -1002,7 +1002,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/feature_flags: APIServerNodes
       test.kops.k8s.io/k8s_version: stable
@@ -1012,7 +1012,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-apiserver-nodes
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "APIServerNodes", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "APIServerNodes", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-apiserver-nodes-dns-none
     branches:
     - master
@@ -1043,7 +1043,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=cilium --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=cilium --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=APIServerNodes \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
@@ -1070,7 +1070,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/feature_flags: APIServerNodes
       test.kops.k8s.io/k8s_version: stable
@@ -1275,7 +1275,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-nlb
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-latest-e2e-aws-k8s-1-24
     branches:
     - master
@@ -1306,7 +1306,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1331,7 +1331,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: '1.24'
       test.kops.k8s.io/kops_channel: alpha
@@ -1340,7 +1340,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-1-24
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.23", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.23", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-latest-e2e-aws-k8s-1-23
     branches:
     - master
@@ -1371,7 +1371,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1396,7 +1396,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: '1.23'
       test.kops.k8s.io/kops_channel: alpha
@@ -1405,7 +1405,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-1-23
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.22", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.22", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-latest-e2e-aws-k8s-1-22
     branches:
     - master
@@ -1436,7 +1436,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1461,7 +1461,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: '1.22'
       test.kops.k8s.io/kops_channel: alpha
@@ -1470,7 +1470,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-aws-1-22
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.25", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.25", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-25
     branches:
     - release-1.25
@@ -1501,7 +1501,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1526,7 +1526,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: '1.25'
       test.kops.k8s.io/kops_channel: alpha
@@ -1535,7 +1535,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-1-25
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.24", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-24
     branches:
     - release-1.24
@@ -1566,7 +1566,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1591,7 +1591,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: '1.24'
       test.kops.k8s.io/kops_channel: alpha
@@ -1600,7 +1600,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-1-24
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.23", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.23", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-23
     branches:
     - release-1.23
@@ -1633,7 +1633,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -1658,7 +1658,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: '1.23'
       test.kops.k8s.io/kops_channel: alpha
@@ -1667,7 +1667,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-1-23
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.22", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.22", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-k8s-aws-calico-1-22
     branches:
     - release-1.22
@@ -1700,7 +1700,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -1725,7 +1725,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/k8s_version: '1.22'
       test.kops.k8s.io/kops_channel: alpha
@@ -1734,7 +1734,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-1-22
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-karpenter
     branches:
     - master
@@ -1766,7 +1766,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221018' --channel=alpha --networking=cilium --container-runtime=containerd --instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20221101.1' --channel=alpha --networking=cilium --container-runtime=containerd --instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=Karpenter \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
@@ -1793,7 +1793,7 @@ presubmits:
     annotations:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
+      test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/extra_flags: --instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/feature_flags: Karpenter
       test.kops.k8s.io/k8s_version: stable

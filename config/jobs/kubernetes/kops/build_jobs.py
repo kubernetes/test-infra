@@ -231,7 +231,7 @@ def build_test(cloud='aws',
 # Returns a string representing a presubmit prow job YAML
 def presubmit_test(branch='master',
                    cloud='aws',
-                   distro='u2004',
+                   distro='u2204',
                    networking='cilium',
                    container_runtime='containerd',
                    irsa=True,
