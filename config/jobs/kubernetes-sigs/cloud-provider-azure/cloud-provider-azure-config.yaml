@@ -705,9 +705,9 @@ periodics:
       base_ref: vmss-flex-cloudprovider
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
-    - org: kubernetes-sigs
+    - org: zmyzheng
       repo: cloud-provider-azure
-      base_ref: master
+      base_ref: vmssflex-cache-update
       path_alias: sigs.k8s.io/cloud-provider-azure
       workdir: false
   spec:
