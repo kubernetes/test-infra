@@ -1640,3 +1640,48 @@ presubmits:
             memory: 6Gi
         securityContext:
           privileged: true
+  - name: pull-kubernetes-node-kubelet-serial-pod-disruption-conditions
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+      - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-gce-e2e-pod-disruption-conditions
+      description: Executes pod disruption conditions e2e node tests
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+     containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221024-d0c013ee2d-master
+          resources:
+            limits:
+              cpu: 2
+              memory: 2Gi
+            requests:
+              cpu: 2
+              memory: 2Gi
+          args:
+            - --root=/go/src
+            - "--job=$(JOB_NAME)"
+            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+            - "--upload=gs://kubernetes-jenkins/pr-logs"
+            - --service-account=/etc/service-account/service-account.json
+            - --timeout=240
+            - --scenario=kubernetes_e2e
+            - --
+            - --deployment=node
+            - --gcp-zone=us-west1-b
+            - --node-test-args=--feature-gates=PodDisruptionConditions=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+
+            - --node-tests=true
+            - --provider=gce
+            - --test_args=--nodes=1 --timeout=180m --skip="" --focus="\[NodeFeature:PodDisruptionConditions\]"
+            - --timeout=180m
+          env:
+            - name: GOPATH
+              value: /go
