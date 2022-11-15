@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gangway
+  namespace: default
+  labels:
+    app: gangway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gangway
+  template:
+    metadata:
+      labels:
+        app: gangway
+    spec:
+      terminationGracePeriodSeconds: 1
+      serviceAccountName: gangway
+      containers:
+      - name: gangway
+        image: localhost:5001/gangway
+        args:
+        - --config-path=/etc/config/config.yaml
+        - --job-config-path=/etc/job-config
+        - --grace-period=110s
+        # This cookie file is only here to trigger the creation of a
+        # Gerrit-flavored Git client factory. So this makes this gangway deployment
+        # "tied" to Gerrit.
+        #
+        # TODO (listx): Allow gangway to be deployed with access to multiple
+        # GitHub/Gerrit credentials (and make it know which one to use based on
+        # the org/repo name). We can't simply deploy a 2nd gangway deployment
+        # configured with GitHub creds to test that codepath because currently
+        # gangway will always choose one or the other.
+        - --cookiefile=/etc/cookies/cookies
+        - --dry-run=false
+        ports:
+        - name: grpc
+          containerPort: 32000
+        - name: http
+          containerPort: 80
+        - name: metrics
+          containerPort: 9090
+        volumeMounts:
+        - name: cookies
+          mountPath: /etc/cookies
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
+          readOnly: true
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+        env:
+        # When cloning from an inrepoconfig repo, don't bother verifying certs.
+        # This allows us to use "https://..." addresses to fakegitserver.
+        - name: GIT_SSL_NO_VERIFY
+          value: "1"
+      volumes:
+      - name: cookies
+        secret:
+          defaultMode: 420
+          secretName: http-cookiefile
+      - name: config
+        configMap:
+          name: config
+      - name: job-config
+        configMap:
+          name: job-config
+      tolerations:
+      - key: "prowcomponent"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gangway
+  namespace: default
+spec:
+  selector:
+    app: gangway
+  ports:
+  - port: 32000
+    targetPort: 32000
+    nodePort: 32000
+    protocol: TCP
+    name: grpc
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  type: NodePort
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gangway
+  namespace: default
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gangway
+rules:
+  - apiGroups:
+      - prow.k8s.io
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - get
+      - list
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gangway
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gangway
+subjects:
+- kind: ServiceAccount
+  name: gangway
