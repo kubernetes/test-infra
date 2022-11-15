@@ -656,7 +656,7 @@ presubmits:
       testgrid-tab-name: e2e-ccm
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-e2e-kops-aws-load-balancer-controller
+  - name: pull-kops-e2e-aws-load-balancer-controller
     branches:
     - master
     always_run: false
@@ -691,7 +691,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-c4347fd6f3-7640b.test-cncf-aws.k8s.io"
+          value: "e2e-93386f3fd4-07e7d.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -712,7 +712,7 @@ presubmits:
       testgrid-tab-name: pull-kops-e2e-aws-load-balancer-controller
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-e2e-kops-addon-resource-tracking
+  - name: pull-kops-e2e-addon-resource-tracking
     branches:
     - master
     always_run: false
@@ -747,7 +747,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-8f6cf1d295-e5e21.test-cncf-aws.k8s.io"
+          value: "e2e-4422271282-77011.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -768,7 +768,7 @@ presubmits:
       testgrid-tab-name: pull-kops-e2e-aws-addon-resource-tracking
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-e2e-kops-metrics-server
+  - name: pull-kops-e2e-metrics-server
     branches:
     - master
     always_run: false
@@ -803,7 +803,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-95474fc263-53919.test-cncf-aws.k8s.io"
+          value: "e2e-12ade267b4-0e701.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -824,7 +824,7 @@ presubmits:
       testgrid-tab-name: pull-kops-e2e-aws-metrics-server
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-e2e-kops-pod-identity-webhook
+  - name: pull-kops-e2e-pod-identity-webhook
     branches:
     - master
     always_run: false
@@ -859,7 +859,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-ec296c1038-50e1a.test-cncf-aws.k8s.io"
+          value: "e2e-8851f75f16-e46fe.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
