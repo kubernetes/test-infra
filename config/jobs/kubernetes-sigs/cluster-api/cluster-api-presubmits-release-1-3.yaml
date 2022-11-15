@@ -1,14 +1,13 @@
 presubmits:
   kubernetes-sigs/cluster-api:
-  - name: pull-cluster-api-build-main
+  - name: pull-cluster-api-build-release-1-3
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -17,9 +16,9 @@ presubmits:
         - runner.sh
         - ./scripts/ci-build.sh
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-build-main
-  - name: pull-cluster-api-apidiff-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-build-release-1-3
+  - name: pull-cluster-api-apidiff-release-1-3
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -27,8 +26,7 @@ presubmits:
     always_run: true
     optional: true
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -37,9 +35,9 @@ presubmits:
         - ./scripts/ci-apidiff.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-apidiff-main
-  - name: pull-cluster-api-verify-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-apidiff-release-1-3
+  - name: pull-cluster-api-verify-release-1-3
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -48,8 +46,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -63,17 +60,16 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-verify-main
-  - name: pull-cluster-api-test-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-verify-release-1-3
+  - name: pull-cluster-api-test-release-1-3
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -85,17 +81,16 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-test-main
-  - name: pull-cluster-api-test-mink8s-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-test-release-1-3
+  - name: pull-cluster-api-test-mink8s-release-1-3
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -115,9 +110,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-test-mink8s-main
-  - name: pull-cluster-api-e2e-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-test-mink8s-release-1-3
+  - name: pull-cluster-api-e2e-release-1-3
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -125,8 +120,7 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
@@ -146,9 +140,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main
-  - name: pull-cluster-api-e2e-informing-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-e2e-release-1-3
+  - name: pull-cluster-api-e2e-informing-release-1-3
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -157,8 +151,7 @@ presubmits:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
@@ -180,9 +173,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-informing-main
-  - name: pull-cluster-api-e2e-informing-ipv6-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-e2e-informing-release-1-3
+  - name: pull-cluster-api-e2e-informing-ipv6-release-1-3
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -191,8 +184,7 @@ presubmits:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
@@ -217,9 +209,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-informing-ipv6-main
-  - name: pull-cluster-api-e2e-full-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-e2e-informing-ipv6-release-1-3
+  - name: pull-cluster-api-e2e-full-release-1-3
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -229,8 +221,7 @@ presubmits:
     optional: true
     always_run: false
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
     spec:
       serviceAccountName: prowjob-default-sa
@@ -252,9 +243,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-full-main
-  - name: pull-cluster-api-e2e-workload-upgrade-1-25-latest-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-e2e-full-release-1-3
+  - name: pull-cluster-api-e2e-workload-upgrade-1-25-latest-release-1-3
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -264,8 +255,7 @@ presubmits:
     optional: true
     always_run: false
     branches:
-    # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
     extra_refs:
     - org: kubernetes
@@ -297,5 +287,5 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-1-25-latest
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
+      testgrid-tab-name: capi-pr-e2e-release-1-3-1-25-latest
