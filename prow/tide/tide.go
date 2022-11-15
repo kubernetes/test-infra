@@ -457,7 +457,7 @@ func contextsToStrings(contexts []Context) []string {
 	for _, c := range contexts {
 		names = append(names, string(c.Context))
 	}
-        // Sorting names improves readability of logs and simplifies unit tests.
+	// Sorting names improves readability of logs and simplifies unit tests.
 	sort.Strings(names)
 	return names
 }
@@ -858,7 +858,13 @@ func pickHighestPriorityPR(log *logrus.Entry, prs []CodeReviewCommon, cc map[int
 
 // accumulateBatch looks at existing batch ProwJobs and, if applicable, returns:
 // * A list of PRs that are part of a batch test that finished successfully
-// * A list of PRs that are part of a batch test that hasn't finished yet but didn't have any failures so far
+// * A list of PRs that are part of a batch test that hasn't finished yet but
+// didn't have any failures so far
+//
+// jobs that are configured as `run_before_merge` are required to be returned as
+// successBatch, it's possible that these jobs haven't run yet, and in the case
+// we should consider this batch as failed so that takeAction can trigger a new
+// batch.
 func (c *syncController) accumulateBatch(sp subpool) (successBatch []CodeReviewCommon, pendingBatch []CodeReviewCommon) {
 	sp.log.Debug("accumulating PRs for batch testing")
 	prNums := make(map[int]CodeReviewCommon)
@@ -915,6 +921,9 @@ func (c *syncController) accumulateBatch(sp subpool) (successBatch []CodeReviewC
 			continue
 		}
 
+		// presubmitsForBatch includes jobs that are `run_before_merge`, the
+		// jobs are not triggered before entering tide pool, and will need to be
+		// handled below.
 		requiredPresubmits, err := c.presubmitsForBatch(state.prs, sp.org, sp.repo, sp.sha, sp.branch)
 		if err != nil {
 			sp.log.WithError(err).Error("Error getting presubmits for batch")
@@ -923,7 +932,14 @@ func (c *syncController) accumulateBatch(sp subpool) (successBatch []CodeReviewC
 
 		overallState := successState
 		for _, p := range requiredPresubmits {
-			if s, ok := state.jobStates[p.Context]; !ok || s == failureState {
+			if s, ok := state.jobStates[p.Context]; !ok {
+				// This could happen to jobs configured as `run_before_merge` as
+				// these jobs are triggered only by tide. There is no need to
+				// handle it differently as a new batch is expected in both cases.
+				overallState = failureState
+				sp.log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s is missing", p.Context)
+				break
+			} else if s == failureState {
 				overallState = failureState
 				sp.log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s is not passing", p.Context)
 				break
@@ -1143,6 +1159,8 @@ func (c *syncController) pickBatch(sp subpool, cc map[int]contextChecker, newBat
 		}
 	}
 
+	// presubmitsForBatch returns jobs that should run via trigger, as well as
+	// jobs that are `run_before_merge`.
 	presubmits, err := c.presubmitsForBatch(res, sp.org, sp.repo, sp.sha, sp.branch)
 	if err != nil {
 		return nil, nil, err
@@ -1567,6 +1585,9 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 
 // presubmitsForBatch filters presubmit jobs from a repo based on the PRs in the
 // pool.
+//
+// Aside from jobs that should run based on triggers, jobs that are configured
+// as `run_before_merge` are also returned.
 func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
 	log := c.logger.WithFields(logrus.Fields{"repo": repo, "org": org, "base-sha": baseSHA, "base-branch": baseBranch})
 
@@ -1587,7 +1608,7 @@ func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, b
 			continue
 		}
 
-		shouldRun, err := ps.ShouldRun(baseBranch, c.changedFiles.batchChanges(prs), false, false)
+		shouldRun, err := ps.ShouldRun(baseBranch, c.changedFiles.batchChanges(prs), ps.RunBeforeMerge, false)
 		if err != nil {
 			return nil, err
 		}
