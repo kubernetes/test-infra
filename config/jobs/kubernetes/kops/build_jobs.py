@@ -816,8 +816,12 @@ def generate_network_plugins():
         k8s_version = 'stable'
         if plugin == 'weave':
             k8s_version = '1.22'
+        distro = 'u2204'
+        if plugin == 'amazon-vpc':
+            distro = 'u2004'
         results.append(
             build_test(
+                distro=distro,
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
@@ -1005,7 +1009,9 @@ def generate_presubmits_network_plugins():
         k8s_version = 'stable'
         networking_arg = plugin
         optional = False
+        distro = 'u2204'
         if plugin == 'amazonvpc':
+            distro = 'u2004'
             optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
@@ -1013,6 +1019,7 @@ def generate_presubmits_network_plugins():
             k8s_version = '1.22'
         results.append(
             presubmit_test(
+                distro=distro,
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
