@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/andygrunwald/go-jira"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"

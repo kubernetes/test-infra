@@ -254,7 +254,7 @@ func replaceStringIfNeeded(text, old, new string) string {
 	startingIdx = 0
 	for _, idx := range allOldIdx {
 		result += text[startingIdx:idx]
-		if idx == 0 || (text[idx-1] != '[' && text[idx-1] != '/') && text[idx-1] != '`' && text[idx-1] != '-' {
+		if idx == 0 || strings.Contains("[/`-", string(text[idx-1])) {
 			result += new
 		} else {
 			result += old
