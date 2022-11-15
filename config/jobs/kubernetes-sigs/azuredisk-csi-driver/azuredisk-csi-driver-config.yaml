@@ -838,3 +838,48 @@ presubmits:
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz
       description: "Run E2E tests on a capz cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-e2e-capz-vmssflex
+    decorate: true
+    always_run: false
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: jackfrancis
+        repo: cluster-api-provider-azure
+        base_ref: vmss-flex-cloudprovider
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D2s_v3"
+            - name: DISABLE_ZONE
+              value: "true"
+            - name: TEST_VMSS_FLEX
+              value: "true"
+            - name: CLUSTER_TEMPLATE
+              value: https://raw.githubusercontent.com/jackfrancis/cluster-api-provider-azure/vmss-flex-cloudprovider/templates/cluster-template-external-cloud-provider-machinepool.yaml
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver
+      testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-vmssflex
+      description: "Run E2E tests on a capz cluster with vmssflex nodes for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
