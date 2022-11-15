@@ -328,6 +328,11 @@ branch-protection:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
+        dynamic-resource-allocation:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         enhancements:
           restrictions: # only allow admins
             users: []
