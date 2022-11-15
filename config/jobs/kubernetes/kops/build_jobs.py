@@ -1150,7 +1150,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-e2e-kops-aws-load-balancer-controller",
+            name="pull-kops-e2e-aws-load-balancer-controller",
             cloud="aws",
             distro="u2004",
             networking="calico",
@@ -1159,7 +1159,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-e2e-kops-addon-resource-tracking",
+            name="pull-kops-e2e-addon-resource-tracking",
             cloud="aws",
             distro="u2004",
             networking="calico",
@@ -1168,7 +1168,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-e2e-kops-metrics-server",
+            name="pull-kops-e2e-metrics-server",
             cloud="aws",
             distro="u2004",
             networking="calico",
@@ -1177,7 +1177,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-e2e-kops-pod-identity-webhook",
+            name="pull-kops-e2e-pod-identity-webhook",
             cloud="aws",
             distro="u2004",
             networking="calico",
