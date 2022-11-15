@@ -876,6 +876,14 @@ presubmits:
               value: "true"
             - name: TEST_VMSS_FLEX
               value: "true"
+            - name: CONTROL_PLANE_MACHINE_COUNT
+              value: "1"
+            - name: KUBERNETES_VERSION
+              value: "latest"
+            - name: AZURE_LOADBALANCER_SKU
+              value: "Standard"
+            - name: CLUSTER_PROVISIONING_TOOL
+              value: "capz"
             - name: CLUSTER_TEMPLATE
               value: https://raw.githubusercontent.com/jackfrancis/cluster-api-provider-azure/vmss-flex-cloudprovider/templates/cluster-template-external-cloud-provider-machinepool.yaml
     annotations:
