@@ -1,0 +1,8 @@
+CONTAINERD_TEST: 'true'
+CONTAINERD_LOG_LEVEL: 'debug'
+CONTAINERD_DEPLOY_PATH: 'cri-containerd-staging'
+CONTAINERD_PKG_PREFIX: 'containerd-cni'
+
+CONTAINERD_EXTRA_RUNTIME_HANDLER: 'test-handler'
+CONTAINERD_EXTRA_RUNTIME_OPTIONS: |
+  BinaryName = "/home/containerd/usr/local/sbin/runc"
