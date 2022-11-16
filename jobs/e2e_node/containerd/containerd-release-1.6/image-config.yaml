@@ -1,7 +1,7 @@
 images:
   ubuntu:
-    image: ubuntu-gke-2204-1-24-v20220623
-    project: ubuntu-os-gke-cloud
+    image_family: ubuntu-2204-lts
+    project: ubuntu-os-cloud
     metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.6/env"
   cos-stable:
     image_family: cos-stable
