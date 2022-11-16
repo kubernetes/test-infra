@@ -435,6 +435,7 @@ milestone_applier:
     master: v1.26
   kubernetes/kubernetes:
     master: v1.26
+    release-1.26: v1.26
     release-1.25: v1.25
     release-1.24: v1.24
     release-1.23: v1.23
