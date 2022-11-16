@@ -556,7 +556,7 @@ periodics:
       - name: FOCUS
         value: \[sig-network\]|\[Conformance\]
       - name: SKIP
-        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|ProxyTerminatingEndpoints)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+        value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS|ProxyTerminatingEndpoints)\]|Internet.connection|upstream.nameserver|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
       command:
         - wrapper.sh
         - bash
