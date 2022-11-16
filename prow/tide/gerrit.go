@@ -328,6 +328,12 @@ func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, _ *threadS
 
 // GetTideContextPolicy gets context policy defined by users + requirements from
 // prow jobs.
+// * Required job: has label "prow.k8s.io/gerrit-report-label", and the value of
+// this label is a required Gerrit Label, and trigger condition is met.
+// * Required when present: has label "prow.k8s.io/gerrit-report-label", and the
+// value of this label is a required Gerrit Label, trigger condition is not met,
+// and `run_before_merge` is true.
+// * Optional: others.
 func (p *GerritProvider) GetTideContextPolicy(org, repo, branch string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
 	pr := crc.Gerrit
 	if pr == nil {
@@ -369,7 +375,7 @@ func (p *GerritProvider) GetTideContextPolicy(org, repo, branch string, baseSHAG
 		var isJobRequiredWhenPresent bool
 
 		if pj.RunBeforeMerge {
-			isJobRequired = true
+			isJobRequiredWhenPresent = true
 		}
 		if val, ok := pj.Labels[kube.GerritReportLabel]; ok && requireLabels.Has(val) {
 			if pj.TriggersConditionally() {
