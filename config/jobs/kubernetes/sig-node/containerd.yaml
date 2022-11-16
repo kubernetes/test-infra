@@ -581,35 +581,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-flaky
-- interval: 2h
-  name: ci-cri-containerd-e2e-cos-gce-ingress
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-containerd: "true"
-    preset-e2e-containerd-image-load: "true"
-  spec:
-    containers:
-    - args:
-      - --repo=github.com/containerd/containerd=main
-      - --timeout=340
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
-      - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-project-type=ingress-project
-      - --gcp-zone=asia-southeast1-a
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
-      - --timeout=320m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
-  annotations:
-    testgrid-dashboards: sig-network-gce, sig-node-cos
-    testgrid-tab-name: e2e-cos-ingress
-    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-ip-alias
   labels:
