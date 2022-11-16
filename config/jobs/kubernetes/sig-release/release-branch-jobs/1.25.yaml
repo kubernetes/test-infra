@@ -33,14 +33,14 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-cron: 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *
+    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.25-blocking, google-gce
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.25
   cluster: k8s-infra-prow-build
-  cron: 0 0-23/2 * * *
+  cron: 0 3-23/6 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
@@ -75,7 +75,7 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com,patrick.ohly@intel.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
     testgrid-num-columns-recent: "6"
@@ -89,7 +89,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -155,7 +155,7 @@ periodics:
       - --allow-dup
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-stable1
+      - --extra-version-markers=k8s-stable2
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
       name: ""
@@ -169,13 +169,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 9 * * *, 0 15 * * *, 0 21 * * *
+    fork-per-release-cron: 0 15 * * *, 0 21 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.25-500
   cluster: k8s-infra-prow-build
-  cron: 0 3 * * *
+  cron: 0 9 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -245,14 +245,14 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.25'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
+    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.25-blocking, sig-scalability-gce, google-gce,
       google-gci
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.25-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 */6 * * *
+  cron: 0 0/12 * * *
   decorate: true
   decoration_config:
     timeout: 2h20m0s
@@ -329,7 +329,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.25-blocking
     testgrid-tab-name: integration-1.25
@@ -398,7 +398,7 @@ periodics:
     securityContext:
       runAsUser: 2000
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
       release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.25-blocking
@@ -443,7 +443,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.25-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -457,7 +457,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -489,7 +489,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.25-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -503,7 +503,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -554,6 +554,7 @@ presubmits:
     max_concurrency: 12
     name: pull-kubernetes-e2e-kops-aws
     optional: true
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -603,6 +604,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -648,6 +650,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-canary
+    run_before_merge: false
     skip_report: true
     spec:
       containers:
@@ -697,6 +700,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-ubuntu-containerd
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -751,6 +755,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -807,6 +812,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-ubuntu-containerd-serial
     optional: true
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -863,6 +869,7 @@ presubmits:
     max_concurrency: 5
     name: pull-kubernetes-e2e-gce-device-plugin-gpu
     optional: true
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -905,6 +912,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-verify-govet-levee
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -948,6 +956,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-e2e-containerd-gce
     optional: true
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -987,6 +996,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-node-e2e-containerd
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1036,6 +1046,7 @@ presubmits:
     name: pull-kubernetes-node-e2e-containerd-kubetest2
     optional: true
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1090,6 +1101,7 @@ presubmits:
     max_concurrency: 12
     name: pull-kubernetes-e2e-gce-100-performance
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1172,6 +1184,7 @@ presubmits:
     name: pull-kubernetes-kubemark-e2e-gce-big
     optional: true
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1251,6 +1264,7 @@ presubmits:
     max_concurrency: 1
     name: pull-kubernetes-kubemark-e2e-gce-scale
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1312,6 +1326,7 @@ presubmits:
     name: pull-kubernetes-conformance-kind-ipv6-parallel
     optional: true
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     run_if_changed: ^test/
     spec:
       containers:
@@ -1350,6 +1365,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-dependencies
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1372,17 +1388,18 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: false
-    branches:
-    - release-1.25
     annotations:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
+    branches:
+    - release-1.25
     cluster: k8s-infra-prow-build
     context: pull-kubernetes-files-remake
     decorate: true
     name: pull-kubernetes-files-remake
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     run_if_changed: Makefile.generated_files|make-rules
     spec:
       containers:
@@ -1413,6 +1430,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-integration
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1444,6 +1462,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     name: pull-kubernetes-e2e-kind
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - command:
@@ -1484,6 +1503,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     name: pull-kubernetes-e2e-kind-ipv6
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - command:
@@ -1528,6 +1548,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     name: pull-kubernetes-conformance-kind-ga-only-parallel
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - command:
@@ -1562,6 +1583,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-unit
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - command:
@@ -1586,6 +1608,7 @@ presubmits:
     decorate: true
     name: pull-kubernetes-typecheck
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1615,6 +1638,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-update
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1655,6 +1679,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-verify
     path_alias: k8s.io/kubernetes
+    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1705,6 +1730,7 @@ presubmits:
     max_concurrency: 3
     name: pull-perf-tests-clusterloader2
     path_alias: k8s.io/perf-tests
+    run_before_merge: false
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
@@ -1773,6 +1799,7 @@ presubmits:
     max_concurrency: 3
     name: pull-perf-tests-clusterloader2-kubemark
     path_alias: k8s.io/perf-tests
+    run_before_merge: false
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
