@@ -80,6 +80,7 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz
       description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
+  # pull-cloud-provider-azure-e2e-ccm-vmssflex-capz runs Azure specific e2e tests on vmssflex.
   - name: pull-cloud-provider-azure-e2e-ccm-vmssflex-capz
     skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
