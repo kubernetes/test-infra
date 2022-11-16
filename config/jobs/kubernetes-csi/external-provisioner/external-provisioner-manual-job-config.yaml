@@ -2,7 +2,7 @@
 
 presubmits:
   kubernetes-csi/external-provisioner:
-  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-24
+  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-25
     always_run: true
     optional: false
     decorate: true
@@ -14,7 +14,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: distributed-on-kubernetes-1-24
+      testgrid-tab-name: distributed-on-kubernetes-1-25
       description: Kubernetes-CSI pull job in repo external-provisioner for distributed provisioning, with CSIStorageCapacity
     spec:
       containers:
@@ -26,13 +26,13 @@ presubmits:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.24.0"
+          value: "1.25.0"
         - name: CSI_PROW_USE_BAZEL
           value: "true"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.9.0"
         - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
+          value: "v6.1.0"
         - name: CSI_PROW_TESTS
           # sanity intentionally not included: it needs special
           # support for CSI_PROW_SANITY_POD as a shell command
@@ -80,9 +80,9 @@ presubmits:
         - name: CSI_PROW_USE_BAZEL
           value: "true"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.9.0"
         - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
+          value: "v6.1.0"
         - name: CSI_PROW_TESTS
           # sanity intentionally not included: it needs special
           # support for CSI_PROW_SANITY_POD as a shell command

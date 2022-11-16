@@ -24,26 +24,26 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.22
 1.23
 1.24
+1.25
 "
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.22
 1.23
 1.24
+1.25
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version="1.24"
+experimental_k8s_version="1.25"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.23" # TODO: bump to 1.24 after testing a pull job
+latest_stable_k8s_version="1.24" # TODO: bump to 1.25 after testing a pull job
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.8.0"
+hostpath_driver_version="v1.9.0"
 
 # We need this image because it has Docker in Docker and go.
 dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master"
@@ -329,8 +329,8 @@ snapshotter_version() {
         #
         # Additional jobs could be created to cover version
         # skew, if desired.
-        if [ "$kubernetes" == "latest" ] || [ "$kubernetes" == "master" ] || version_gt "$kubernetes" 1.19; then
-            echo '"v4.0.0"'
+        if [ "$kubernetes" == "latest" ] || [ "$kubernetes" == "master" ] || version_gt "$kubernetes" 1.20; then
+            echo '"v6.1.0"'
         else
             echo '"v3.0.3"'
         fi
