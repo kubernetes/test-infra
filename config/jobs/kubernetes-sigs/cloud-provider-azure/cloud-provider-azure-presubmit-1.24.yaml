@@ -50,7 +50,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.24
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
