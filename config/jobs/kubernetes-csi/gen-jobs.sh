@@ -324,16 +324,7 @@ snapshotter_version() {
         # stable release.
         echo '"master"'
     else
-        # All other jobs test against the latest supported, stable snapshotter
-        # release for that Kubernetes release.
-        #
-        # Additional jobs could be created to cover version
-        # skew, if desired.
-        if [ "$kubernetes" == "latest" ] || [ "$kubernetes" == "master" ] || version_gt "$kubernetes" 1.20; then
-            echo '"v6.1.0"'
-        else
-            echo '"v3.0.3"'
-        fi
+        echo '"v6.1.0"'
     fi
 }
 
