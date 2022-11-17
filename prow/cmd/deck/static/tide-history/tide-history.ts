@@ -26,13 +26,13 @@ interface Options {
 
 function repoBranchFromPoolKey(poolKey: string): [string, string] {
   // poolKey is in the formatted as `<org>/<repo>:branch`, for example:
-    // - GitHub: `foo/bar:main` # repo: bar
-    // - Gerrit: `https://foo/bar/baz:main` # repo: bar/baz
-    const match = RegExp('(((https|http)://[^/]*/)?.*?):(.*)').exec(poolKey);
-    if (!match) {
-      return ["", ""];
-    }
-    return [match[1], match[4]];
+  // - GitHub: `foo/bar:main` # repo: bar
+  // - Gerrit: `https://foo/bar/baz:main` # repo: bar/baz
+  const match = RegExp('(((https|http)://[^/]*/)?.*?):(.*)').exec(poolKey);
+  if (!match) {
+    return ["", ""];
+  }
+  return [match[1], match[4]];
 }
 
 function optionsForRepoBranch(repo: string, branch: string): Options {
