@@ -855,6 +855,11 @@ presubmits:
         base_ref: vmss-flex-cloudprovider
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
@@ -870,6 +875,8 @@ presubmits:
           securityContext:
             privileged: true
           env:
+            - name: TEST_CCM
+              value: "true"
             - name: NODE_MACHINE_TYPE
               value: "Standard_D2s_v3"
             - name: DISABLE_ZONE
@@ -886,6 +893,16 @@ presubmits:
               value: "capz"
             - name: CLUSTER_TEMPLATE
               value: https://raw.githubusercontent.com/jackfrancis/cluster-api-provider-azure/vmss-flex-cloudprovider/templates/cluster-template-external-cloud-provider-machinepool.yaml
+            - name: CUSTOM_CLOUD_PROVIDER_CONFIG
+              value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
+            - name: ENABLE_VMSS_FLEX
+              value: "true"
+            - name: ENABLE_MULTI_SLB
+              value: "false"
+            - name: PUT_VMSS_VM_BATCH_SIZE
+              value: "0"
+            - name: LB_BACKEND_POOL_CONFIG_TYPE
+              value: ""
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-vmssflex
