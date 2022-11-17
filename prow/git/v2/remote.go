@@ -147,7 +147,7 @@ func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 	}
 }
 
-// gerritResolverFactory is meant to be used by Gerrit only. It's so diffrent
+// gerritResolverFactory is meant to be used by Gerrit only. It's so different
 // from GitHub that there is no way any of the remotes logic can be shared
 // between these two providers. The resulting CentralRemote and PublishRemote
 // are both the clone URI.
