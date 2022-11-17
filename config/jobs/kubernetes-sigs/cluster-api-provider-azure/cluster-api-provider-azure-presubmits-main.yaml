@@ -422,6 +422,8 @@ presubmits:
     decorate: true
     optional: true
     always_run: false
+    decoration_config:
+      timeout: 4h
     branches:
     - ^main$
     path_alias: sigs.k8s.io/cluster-api-provider-azure
