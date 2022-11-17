@@ -43,6 +43,7 @@ def get_args():
     parser.add_argument(
         '--skip',
         default=[
+            '_bin',
             'external/bazel_tools',
             '.git',
             'node_modules',
