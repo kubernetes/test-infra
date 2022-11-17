@@ -129,6 +129,16 @@ presubmits:
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL
               value: "capz"
+            - name: CUSTOM_CLOUD_PROVIDER_CONFIG
+              value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
+            - name: ENABLE_VMSS_FLEX
+              value: "true"
+            - name: ENABLE_MULTI_SLB
+              value: "false"
+            - name: PUT_VMSS_VM_BATCH_SIZE
+              value: "0"
+            - name: LB_BACKEND_POOL_CONFIG_TYPE
+              value: ""
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmssflex-capz
