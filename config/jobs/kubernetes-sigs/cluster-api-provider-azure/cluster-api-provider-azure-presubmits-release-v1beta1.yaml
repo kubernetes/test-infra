@@ -379,7 +379,7 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     always_run: false
-    optional: true
+    optional: false
     decorate: true
     decoration_config:
       timeout: 4h
