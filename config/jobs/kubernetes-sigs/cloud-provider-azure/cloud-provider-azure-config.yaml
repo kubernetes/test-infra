@@ -30,7 +30,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-capz runs Azure specific e2e tests on vmss.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^pkg/azureclients/v2/|^kubetest2-aks/$"
     decorate: true
     decoration_config:
       timeout: 4h
@@ -82,7 +82,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmssflex-capz runs Azure specific e2e tests on vmssflex.
   - name: pull-cloud-provider-azure-e2e-ccm-vmssflex-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^pkg/azureclients/v2/|^kubetest2-aks/$"
     decorate: true
     decoration_config:
       timeout: 4h
@@ -146,7 +146,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-capz runs kubernetes conformance tests.
   - name: pull-cloud-provider-azure-e2e-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^pkg/azureclients/v2/|^kubetest2-aks/$"
     decorate: true
     decoration_config:
       timeout: 5h
@@ -206,7 +206,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-capz runs Azure specific e2e tests.
   - name: pull-cloud-provider-azure-e2e-ccm-capz
-    skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^pkg/azureclients/v2/|^kubetest2-aks/$"
     decorate: true
     decoration_config:
       timeout: 4h
@@ -258,7 +258,7 @@ presubmits:
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
     always_run: false
     optional: true
-    skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^pkg/azureclients/v2/|^kubetest2-aks/$"
     decorate: true
     decoration_config:
       timeout: 3h
