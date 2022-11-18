@@ -58,7 +58,7 @@ presubmits:
         - verify
 
   - name: pull-ibm-vpc-block-csi-driver-sanity
-    always_run: true
+    always_run: false
     decorate: true
     skip_branches:
     - gh-pages
