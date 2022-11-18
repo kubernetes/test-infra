@@ -759,6 +759,33 @@ periodics:
     testgrid-tab-name: gencred-refresh-kubeconfig
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs gencred to refresh generated kubeconfigs.
+# Legacy job for rotating the default sa json key used for legacy prowjobs that
+# can't migrate to use workload identity yet. This json key expires every 90
+# days, so rotating every 15 days should be safe as it allows 5 failures.
+# GCP only allows up to 9 keys for a sa, so deleting old ones on the fly as well.
+- cron: "30 1 1,15 * *"  # At 01:30 on day-of-month 1 and 15.
+  name: ci-test-infra-rotate-legacy-default-build-sa-json-key
+  cluster: test-infra-trusted
+  decorate: true
+  spec:
+    serviceAccountName: legacy-sa-json-key-rotator
+    containers:
+    - name: gcloud
+      image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+      command:
+      - bash
+        - -c
+        -
+            temp_file="$(mktemp)"
+            && gcloud iam service-accounts keys create "${temp_file}" --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com --key-file-type=json
+            && gcloud secrets versions add default-k8s-build-cluster-service-account-key --data-file=${temp_file} --project=k8s-prow-builds
+            && for key_id in $(gcloud iam service-accounts keys list --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com --managed-by=user --created-before=$(date +%Y-%m-%d -d "90 days ago") --format="value(KEY_ID)"); do gcloud iam service-accounts keys delete "$key_id" -q --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com;done
+  annotations:
+    testgrid-num-failures-to-alert: '3'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: rotate-legacy-default-build-sa-json-key
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Rotate legacy build cluster service account json key.
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
 # Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
