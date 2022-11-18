@@ -875,8 +875,6 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: TEST_CCM
-              value: "true"
             - name: NODE_MACHINE_TYPE
               value: "Standard_D2s_v3"
             - name: DISABLE_ZONE
