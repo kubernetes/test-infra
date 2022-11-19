@@ -626,7 +626,7 @@ def generate_misc():
                    cloud="aws",
                    networking="cilium",
                    kops_channel="alpha",
-                   runs_per_day=1,
+                   runs_per_day=3,
                    scenario="aws-lb-controller",
                    extra_dashboards=['kops-misc']),
 
