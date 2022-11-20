@@ -730,8 +730,8 @@ periodics:
     testgrid-tab-name: kops-scenario-terraform
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-misc-ha-euwest1
-  cron: '24 1-23/8 * * *'
+- name: e2e-kops-aws-ha-euwest1
+  cron: '10 5-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -791,11 +791,11 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-misc-ha-euwest1
+    testgrid-tab-name: kops-aws-ha-euwest1
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-misc-arm64-release
-  cron: '54 4-23/8 * * *'
+- name: e2e-kops-aws-arm64-release
+  cron: '44 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -855,11 +855,11 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-latest, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-misc-arm64-release
+    testgrid-tab-name: kops-aws-arm64-release
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-misc-arm64-ci
-  cron: '30 2-23/8 * * *'
+- name: e2e-kops-aws-arm64-ci
+  cron: '59 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -921,11 +921,11 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-misc-arm64-ci
+    testgrid-tab-name: kops-aws-arm64-ci
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-misc-arm64-conformance
-  cron: '31 0-23/8 * * *'
+- name: e2e-kops-aws-arm64-conformance
+  cron: '5 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -989,11 +989,11 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-misc-arm64-conformance
+    testgrid-tab-name: kops-aws-arm64-conformance
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--node-size=c5.large --master-size=c5.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
-- name: e2e-kops-aws-misc-amd64-conformance
-  cron: '24 3-23/8 * * *'
+- name: e2e-kops-aws-amd64-conformance
+  cron: '18 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1057,11 +1057,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-misc-amd64-conformance
+    testgrid-tab-name: kops-aws-amd64-conformance
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-misc-updown
-  cron: '16 0-23/1 * * *'
+- name: e2e-kops-aws-updown
+  cron: '13 0-23/1 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1123,7 +1123,7 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '11'
-    testgrid-tab-name: kops-aws-misc-updown
+    testgrid-tab-name: kops-aws-updown
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-aws-load-balancer-controller
@@ -1543,8 +1543,8 @@ periodics:
     testgrid-tab-name: kops-aws-apiserver-nodes
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
-- name: e2e-kops-aws-misc-karpenter
-  cron: '32 0-23/24 * * *'
+- name: e2e-kops-aws-karpenter
+  cron: '14 16-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -1609,4 +1609,4 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-misc-karpenter
+    testgrid-tab-name: kops-aws-karpenter

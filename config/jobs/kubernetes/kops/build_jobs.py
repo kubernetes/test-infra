@@ -553,7 +553,7 @@ def generate_misc():
                    ],
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-aws-misc-ha-euwest1",
+        build_test(name_override="kops-aws-ha-euwest1",
                    k8s_version="stable",
                    distro="u2204arm64",
                    networking="calico",
@@ -565,7 +565,7 @@ def generate_misc():
                    ],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-release",
+        build_test(name_override="kops-aws-arm64-release",
                    k8s_version="latest",
                    distro="u2204arm64",
                    networking="calico",
@@ -576,7 +576,7 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-ci",
+        build_test(name_override="kops-aws-arm64-ci",
                    k8s_version="ci",
                    distro="u2204arm64",
                    networking="calico",
@@ -587,7 +587,7 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-conformance",
+        build_test(name_override="kops-aws-arm64-conformance",
                    k8s_version="ci",
                    distro="u2204arm64",
                    networking="calico",
@@ -600,7 +600,7 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-amd64-conformance",
+        build_test(name_override="kops-aws-amd64-conformance",
                    k8s_version="ci",
                    distro='u2204',
                    kops_channel="alpha",
@@ -611,7 +611,7 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-updown",
+        build_test(name_override="kops-aws-updown",
                    k8s_version="stable",
                    distro="u2204arm64",
                    networking="calico",
@@ -682,7 +682,7 @@ def generate_misc():
                    extra_dashboards=['kops-misc'],
                    feature_flags=['APIServerNodes']),
 
-        build_test(name_override="kops-aws-misc-karpenter",
+        build_test(name_override="kops-aws-karpenter",
                    distro="u2204arm64",
                    networking="cilium",
                    kops_channel="alpha",
