@@ -1,33 +1,5 @@
 presubmits:
   kubernetes/kops:
-  - name: pull-kops-bazel-build
-    branches:
-    - release-1.22
-    - release-1.23
-    always_run: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    decorate: true
-    decoration_config:
-      timeout: 45m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "bazel-version-dist"
-        resources:
-          requests:
-            memory: "2Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: bazel-build
   - name: pull-kops-build
     skip_branches:
     - release-1.23
@@ -54,34 +26,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: build
-  - name: pull-kops-bazel-test
-    branches:
-    - release-1.22
-    - release-1.23
-    always_run: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "bazel-test"
-        resources:
-          requests:
-            memory: "2Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: bazel-test
   - name: pull-kops-test
     skip_branches:
     - release-1.23
@@ -250,48 +194,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gomod
-  - name: pull-kops-verify-gomod-1-20
-    branches:
-    - release-1.20
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.20
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify-gomod"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: verify-gomod-1.20
-  - name: pull-kops-verify-gomod-1-19
-    branches:
-    - release-1.19
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.19
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify-gomod"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: verify-gomod-1.19
   - name: pull-kops-verify-boilerplate
     always_run: true
     labels:
