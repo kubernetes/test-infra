@@ -463,6 +463,14 @@ def generate_misc():
                    networking="calico",
                    runs_per_day=3,
                    extra_dashboards=['kops-network-plugins']),
+        # A special test for Calico CNI on Flatcar
+        build_test(name_override="kops-aws-cni-calico-flatcar",
+                   cloud="aws",
+                   distro="flatcararm64",
+                   networking="calico",
+                   runs_per_day=3,
+                   extra_dashboards=['kops-distros', 'kops-network-plugins']),
+
         # A special test for IPv6 using Calico CNI
         build_test(name_override="kops-aws-cni-calico-ipv6",
                    cloud="aws",
