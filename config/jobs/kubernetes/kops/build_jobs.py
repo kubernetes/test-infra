@@ -552,6 +552,16 @@ def generate_misc():
                        "--zones=us-west-1a",
                    ],
                    extra_dashboards=['kops-misc']),
+        build_test(name_override="kops-scenario-ipv6-terraform",
+                   distro="u2204arm64",
+                   terraform_version="1.0.5",
+                   extra_flags=[
+                       '--ipv6',
+                       '--topology=private',
+                       '--bastion',
+                       "--zones=us-west-1a",
+                   ],
+                   extra_dashboards=['kops-misc', 'kops-ipv6']),
 
         build_test(name_override="kops-aws-ha-euwest1",
                    distro="u2204arm64",
@@ -691,6 +701,21 @@ def generate_misc():
                    ],
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc"],
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes'), # pylint: disable=line-too-long
+
+        build_test(name_override="kops-aws-ipv6-karpenter",
+                   distro="u2204arm64",
+                   networking="cilium",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   extra_flags=[
+                       "--instance-manager=karpenter",
+                       '--ipv6',
+                       '--topology=private',
+                       '--bastion',
+                   ],
+                   feature_flags=['Karpenter'],
+                   extra_dashboards=["kops-misc", "kops-ipv6"],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes'), # pylint: disable=line-too-long
     ]
     return results
