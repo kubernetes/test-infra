@@ -318,7 +318,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2004arm64, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-ubuntu2004arm64
 
@@ -446,7 +446,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-ubuntu2204arm64
 

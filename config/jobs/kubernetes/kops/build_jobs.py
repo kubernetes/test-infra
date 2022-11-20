@@ -197,7 +197,7 @@ def build_test(cloud='aws',
 
     dashboards = [
         'sig-cluster-lifecycle-kops',
-        f"kops-distro-{distro}",
+        f"kops-distro-{distro.removesuffix('arm64')}",
         f"kops-k8s-{k8s_version or 'latest'}",
         f"kops-{kops_version or 'latest'}",
     ]
