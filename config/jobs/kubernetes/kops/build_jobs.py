@@ -197,7 +197,7 @@ def build_test(cloud='aws',
 
     dashboards = [
         'sig-cluster-lifecycle-kops',
-        f"kops-distro-{distro}",
+        f"kops-distro-{distro.removesuffix('arm64')}",
         f"kops-k8s-{k8s_version or 'latest'}",
         f"kops-{kops_version or 'latest'}",
     ]
@@ -440,7 +440,7 @@ def generate_grid():
 def generate_misc():
     results = [
         # A one-off scenario testing the k8s.gcr.io mirror
-        build_test(name_override="kops-grid-scenario-gcr-mirror",
+        build_test(name_override="kops-scenario-gcr-mirror",
                    runs_per_day=24,
                    cloud="aws",
                    # Latest runs with a staging AWS CCM, not available in registry.k8s.io
@@ -448,7 +448,7 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
 
         # A one-off scenario testing arm64
-        build_test(name_override="kops-grid-scenario-arm64",
+        build_test(name_override="kops-scenario-arm64",
                    cloud="aws",
                    distro="u2204arm64",
                    extra_flags=["--zones=eu-central-1a",
@@ -515,7 +515,7 @@ def generate_misc():
                    extra_dashboards=['kops-distros', 'kops-network-plugins', 'kops-ipv6']),
 
         # A special test for disabling IRSA
-        build_test(name_override="kops-grid-scenario-no-irsa",
+        build_test(name_override="kops-scenario-no-irsa",
                    cloud="aws",
                    distro="u2204arm64",
                    runs_per_day=3,
@@ -545,16 +545,25 @@ def generate_misc():
                                 ],
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-grid-scenario-terraform",
+        build_test(name_override="kops-scenario-terraform",
                    distro="u2204arm64",
                    terraform_version="1.0.5",
                    extra_flags=[
                        "--zones=us-west-1a",
                    ],
                    extra_dashboards=['kops-misc']),
+        build_test(name_override="kops-scenario-ipv6-terraform",
+                   distro="u2204arm64",
+                   terraform_version="1.0.5",
+                   extra_flags=[
+                       '--ipv6',
+                       '--topology=private',
+                       '--bastion',
+                       "--zones=us-west-1a",
+                   ],
+                   extra_dashboards=['kops-misc', 'kops-ipv6']),
 
-        build_test(name_override="kops-aws-misc-ha-euwest1",
-                   k8s_version="stable",
+        build_test(name_override="kops-aws-ha-euwest1",
                    distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
@@ -565,7 +574,7 @@ def generate_misc():
                    ],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-release",
+        build_test(name_override="kops-aws-arm64-release",
                    k8s_version="latest",
                    distro="u2204arm64",
                    networking="calico",
@@ -576,7 +585,7 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-ci",
+        build_test(name_override="kops-aws-arm64-ci",
                    k8s_version="ci",
                    distro="u2204arm64",
                    networking="calico",
@@ -587,7 +596,7 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-conformance",
+        build_test(name_override="kops-aws-arm64-conformance",
                    k8s_version="ci",
                    distro="u2204arm64",
                    networking="calico",
@@ -600,7 +609,7 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-amd64-conformance",
+        build_test(name_override="kops-aws-amd64-conformance",
                    k8s_version="ci",
                    distro='u2204',
                    kops_channel="alpha",
@@ -611,7 +620,7 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-updown",
+        build_test(name_override="kops-aws-updown",
                    k8s_version="stable",
                    distro="u2204arm64",
                    networking="calico",
@@ -682,7 +691,7 @@ def generate_misc():
                    extra_dashboards=['kops-misc'],
                    feature_flags=['APIServerNodes']),
 
-        build_test(name_override="kops-aws-misc-karpenter",
+        build_test(name_override="kops-aws-karpenter",
                    distro="u2204arm64",
                    networking="cilium",
                    kops_channel="alpha",
@@ -692,6 +701,21 @@ def generate_misc():
                    ],
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc"],
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes'), # pylint: disable=line-too-long
+
+        build_test(name_override="kops-aws-ipv6-karpenter",
+                   distro="u2204arm64",
+                   networking="cilium",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   extra_flags=[
+                       "--instance-manager=karpenter",
+                       '--ipv6',
+                       '--topology=private',
+                       '--bastion',
+                   ],
+                   feature_flags=['Karpenter'],
+                   extra_dashboards=["kops-misc", "kops-ipv6"],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes'), # pylint: disable=line-too-long
     ]
     return results
