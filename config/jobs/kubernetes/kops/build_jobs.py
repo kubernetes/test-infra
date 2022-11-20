@@ -554,7 +554,6 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-ha-euwest1",
-                   k8s_version="stable",
                    distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
