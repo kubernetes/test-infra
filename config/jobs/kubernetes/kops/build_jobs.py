@@ -456,6 +456,13 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=['kops-misc']),
 
+        # A special test for Calico CNI on Debian 11
+        build_test(name_override="kops-aws-cni-calico-deb11",
+                   cloud="aws",
+                   distro="deb11",
+                   networking="calico",
+                   runs_per_day=3,
+                   extra_dashboards=['kops-network-plugins']),
         # A special test for IPv6 using Calico CNI
         build_test(name_override="kops-aws-cni-calico-ipv6",
                    cloud="aws",
@@ -473,6 +480,18 @@ def generate_misc():
                    cloud="aws",
                    distro="deb11",
                    networking="calico",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--bastion',
+                                '--zones=us-west-2a',
+                                ],
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
+        # A special test for IPv6 using Cilium CNI on Debian 11
+        build_test(name_override="kops-aws-ipv6-deb11",
+                   cloud="aws",
+                   distro="deb11",
+                   networking="cilium",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
                                 '--topology=private',
