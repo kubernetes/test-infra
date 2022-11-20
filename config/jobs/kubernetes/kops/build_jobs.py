@@ -440,7 +440,7 @@ def generate_grid():
 def generate_misc():
     results = [
         # A one-off scenario testing the k8s.gcr.io mirror
-        build_test(name_override="kops-grid-scenario-gcr-mirror",
+        build_test(name_override="kops-scenario-gcr-mirror",
                    runs_per_day=24,
                    cloud="aws",
                    # Latest runs with a staging AWS CCM, not available in registry.k8s.io
@@ -448,7 +448,7 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
 
         # A one-off scenario testing arm64
-        build_test(name_override="kops-grid-scenario-arm64",
+        build_test(name_override="kops-scenario-arm64",
                    cloud="aws",
                    distro="u2204arm64",
                    extra_flags=["--zones=eu-central-1a",
@@ -515,7 +515,7 @@ def generate_misc():
                    extra_dashboards=['kops-distros', 'kops-network-plugins', 'kops-ipv6']),
 
         # A special test for disabling IRSA
-        build_test(name_override="kops-grid-scenario-no-irsa",
+        build_test(name_override="kops-scenario-no-irsa",
                    cloud="aws",
                    distro="u2204arm64",
                    runs_per_day=3,
@@ -545,7 +545,7 @@ def generate_misc():
                                 ],
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-grid-scenario-terraform",
+        build_test(name_override="kops-scenario-terraform",
                    distro="u2204arm64",
                    terraform_version="1.0.5",
                    extra_flags=[

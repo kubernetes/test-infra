@@ -3,8 +3,8 @@
 periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.23", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
-- name: e2e-kops-grid-scenario-gcr-mirror
-  cron: '6 0-23/1 * * *'
+- name: e2e-kops-scenario-gcr-mirror
+  cron: '11 0-23/1 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -64,11 +64,11 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.23, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '11'
-    testgrid-tab-name: kops-grid-scenario-gcr-mirror
+    testgrid-tab-name: kops-scenario-gcr-mirror
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
-- name: e2e-kops-grid-scenario-arm64
-  cron: '33 16 * * *'
+- name: e2e-kops-scenario-arm64
+  cron: '2 17 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -130,7 +130,7 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-scenario-arm64
+    testgrid-tab-name: kops-scenario-arm64
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--ipv6 --topology=private --bastion --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-cni-calico-ipv6
@@ -465,8 +465,8 @@ periodics:
     testgrid-tab-name: kops-aws-cni-calico-ipv6-flatcar
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--api-loadbalancer-type=public", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
-- name: e2e-kops-grid-scenario-no-irsa
-  cron: '25 3-23/8 * * *'
+- name: e2e-kops-scenario-no-irsa
+  cron: '37 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -528,7 +528,7 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-scenario-no-irsa
+    testgrid-tab-name: kops-scenario-no-irsa
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--api-loadbalancer-type=public --override=cluster.spec.warmPool.minSize=1 --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-warm-pool
@@ -663,8 +663,8 @@ periodics:
     testgrid-tab-name: kops-aws-private
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--zones=us-west-1a --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
-- name: e2e-kops-grid-scenario-terraform
-  cron: '14 4 * * *'
+- name: e2e-kops-scenario-terraform
+  cron: '5 13 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -727,7 +727,7 @@ periodics:
     test.kops.k8s.io/networking: cilium
     testgrid-dashboards: google-aws, kops-distro-u2204arm64, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-scenario-terraform
+    testgrid-tab-name: kops-scenario-terraform
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-misc-ha-euwest1
