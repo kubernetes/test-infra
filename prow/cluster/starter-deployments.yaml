@@ -1,0 +1,540 @@
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: deck
+    name: deck
+    namespace: default
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 2
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: deck
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: deck
+      spec:
+        containers:
+        - args:
+          - --config-path=/etc/config/config.yaml
+          - --plugin-config=/etc/plugins/plugins.yaml
+          - --tide-url=http://tide/
+          - --hook-url=http://hook:8888/plugin-help
+          - --github-token-path=/etc/github/oauth
+          - --plugin-config=/etc/plugins/plugins.yaml
+          - --rerun-creates-job=true
+          - --cookie-secret=/etc/cookie/secret
+          - --job-config-path=/etc/job-config
+          image: gcr.io/k8s-prow/deck:v20200714-1215e87acc
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: deck
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz/ready
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 600
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/cookie
+            name: cookie-secret
+            readOnly: true
+          - mountPath: /etc/config
+            name: config
+            readOnly: true
+          - mountPath: /etc/job-config
+            name: job-config
+            readOnly: true
+          - mountPath: /etc/github
+            name: oauth
+            readOnly: true
+          - mountPath: /etc/plugins
+            name: plugins
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: deck
+        serviceAccountName: deck
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: config
+          name: config
+        - name: oauth
+          secret:
+            defaultMode: 420
+            secretName: oauth-token
+        - configMap:
+            defaultMode: 420
+            name: plugins
+          name: plugins
+        - configMap:
+            defaultMode: 420
+            name: job-config
+          name: job-config
+        - name: cookie-secret
+          secret:
+            defaultMode: 420
+            secretName: cookie
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: hook
+    name: hook
+    namespace: default
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 2
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: hook
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: hook
+      spec:
+        containers:
+        - args:
+          - --dry-run=false
+          - --config-path=/etc/config/config.yaml
+          - --job-config-path=/etc/job-config
+          image: gcr.io/k8s-prow/hook:v20200714-1215e87acc
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: hook
+          ports:
+          - containerPort: 8888
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz/ready
+              port: 8081
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 600
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/webhook
+            name: hmac
+            readOnly: true
+          - mountPath: /etc/github
+            name: oauth
+            readOnly: true
+          - mountPath: /etc/config
+            name: config
+            readOnly: true
+          - mountPath: /etc/plugins
+            name: plugins
+            readOnly: true
+          - mountPath: /etc/job-config
+            name: job-config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: hook
+        serviceAccountName: hook
+        terminationGracePeriodSeconds: 180
+        volumes:
+        - name: hmac
+          secret:
+            defaultMode: 420
+            secretName: hmac-token
+        - name: oauth
+          secret:
+            defaultMode: 420
+            secretName: oauth-token
+        - configMap:
+            defaultMode: 420
+            name: config
+          name: config
+        - configMap:
+            defaultMode: 420
+            name: plugins
+          name: plugins
+        - configMap:
+            defaultMode: 420
+            name: job-config
+          name: job-config
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: horologium
+    name: horologium
+    namespace: default
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: horologium
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: horologium
+      spec:
+        containers:
+        - args:
+          - --dry-run=false
+          - --config-path=/etc/config/config.yaml
+          - --job-config-path=/etc/job-config
+          image: gcr.io/k8s-prow/horologium:v20200714-1215e87acc
+          imagePullPolicy: IfNotPresent
+          name: horologium
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/config
+            name: config
+            readOnly: true
+          - mountPath: /etc/job-config
+            name: job-config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: horologium
+        serviceAccountName: horologium
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: config
+          name: config
+        - configMap:
+            defaultMode: 420
+            name: job-config
+          name: job-config
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: plank
+    name: plank
+    namespace: default
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: plank
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: plank
+      spec:
+        containers:
+        - args:
+          - --dry-run=false
+          - --config-path=/etc/config/config.yaml
+          - --job-config-path=/etc/job-config
+          - --github-token-path=/etc/github/oauth
+          image: gcr.io/k8s-prow/plank:v20200714-1215e87acc
+          imagePullPolicy: IfNotPresent
+          name: plank
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/github
+            name: oauth
+            readOnly: true
+          - mountPath: /etc/config
+            name: config
+            readOnly: true
+          - mountPath: /etc/job-config
+            name: job-config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: plank
+        serviceAccountName: plank
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: oauth
+          secret:
+            defaultMode: 420
+            secretName: oauth-token
+        - configMap:
+            defaultMode: 420
+            name: config
+          name: config
+        - configMap:
+            defaultMode: 420
+            name: job-config
+          name: job-config
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: sinker
+    name: sinker
+    namespace: default
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: sinker
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: sinker
+      spec:
+        containers:
+        - args:
+          - --config-path=/etc/config/config.yaml
+          - --job-config-path=/etc/job-config
+          image: gcr.io/k8s-prow/sinker:v20200714-1215e87acc
+          imagePullPolicy: IfNotPresent
+          name: sinker
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/config
+            name: config
+            readOnly: true
+          - mountPath: /etc/job-config
+            name: job-config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: sinker
+        serviceAccountName: sinker
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: config
+          name: config
+        - configMap:
+            defaultMode: 420
+            name: job-config
+          name: job-config
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: statusreconciler
+    name: statusreconciler
+    namespace: default
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: statusreconciler
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: statusreconciler
+      spec:
+        containers:
+        - args:
+          - --dry-run=false
+          - --continue-on-error=true
+          - --plugin-config=/etc/plugins/plugins.yaml
+          - --config-path=/etc/config/config.yaml
+          - --github-token-path=/etc/github/oauth
+          - --job-config-path=/etc/job-config
+          image: gcr.io/k8s-prow/status-reconciler:v20200714-1215e87acc
+          imagePullPolicy: IfNotPresent
+          name: statusreconciler
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/github
+            name: oauth
+            readOnly: true
+          - mountPath: /etc/config
+            name: config
+            readOnly: true
+          - mountPath: /etc/plugins
+            name: plugins
+            readOnly: true
+          - mountPath: /etc/job-config
+            name: job-config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: statusreconciler
+        serviceAccountName: statusreconciler
+        terminationGracePeriodSeconds: 180
+        volumes:
+        - name: oauth
+          secret:
+            defaultMode: 420
+            secretName: oauth-token
+        - configMap:
+            defaultMode: 420
+            name: config
+          name: config
+        - configMap:
+            defaultMode: 420
+            name: plugins
+          name: plugins
+        - configMap:
+            defaultMode: 420
+            name: job-config
+          name: job-config
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: tide
+    name: tide
+    namespace: default
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: tide
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: tide
+      spec:
+        containers:
+        - args:
+          - --dry-run=false
+          - --config-path=/etc/config/config.yaml
+          - --job-config-path=/etc/job-config
+          image: gcr.io/k8s-prow/tide:v20200714-1215e87acc
+          imagePullPolicy: IfNotPresent
+          name: tide
+          ports:
+          - containerPort: 8888
+            name: http
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/github
+            name: oauth
+            readOnly: true
+          - mountPath: /etc/config
+            name: config
+            readOnly: true
+          - mountPath: /etc/job-config
+            name: job-config
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: tide
+        serviceAccountName: tide
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: oauth
+          secret:
+            defaultMode: 420
+            secretName: oauth-token
+        - configMap:
+            defaultMode: 420
+            name: config
+          name: config
+        - configMap:
+            defaultMode: 420
+            name: job-config
+          name: job-config
+kind: List
+metadata:
+  resourceVersion: ""
