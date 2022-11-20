@@ -382,8 +382,8 @@ k8s_versions = [
 
 kops_versions = [
     None, # maps to latest
-    "1.23",
-    "1.24"
+    "1.24",
+    "1.25"
 ]
 
 container_runtimes = [
