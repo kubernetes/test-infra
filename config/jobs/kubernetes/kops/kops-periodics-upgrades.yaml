@@ -1219,7 +1219,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "1.23"
+        value: "v1.23.4"
       - name: K8S_VERSION_A
         value: "v1.22.4"
       - name: KOPS_VERSION_B
@@ -1283,7 +1283,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "1.23"
+        value: "v1.23.4"
       - name: K8S_VERSION_A
         value: "v1.22.4"
       - name: KOPS_VERSION_B
@@ -1353,7 +1353,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "1.23"
+        value: "v1.23.4"
       - name: K8S_VERSION_A
         value: "v1.23.0"
       - name: KOPS_VERSION_B
@@ -1417,7 +1417,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "1.23"
+        value: "v1.23.4"
       - name: K8S_VERSION_A
         value: "v1.23.0"
       - name: KOPS_VERSION_B
