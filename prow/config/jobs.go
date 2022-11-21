@@ -175,7 +175,7 @@ type Presubmit struct {
 	// Brancher matches.
 	// This is used when a prowjob is so expensive that it's not ideal to run on
 	// every single push from all PRs.
-	RunBeforeMerge bool `json:"run_before_merge"`
+	RunBeforeMerge bool `json:"run_before_merge,omitempty"`
 
 	Brancher
 
