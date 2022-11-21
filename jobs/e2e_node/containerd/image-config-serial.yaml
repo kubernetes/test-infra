@@ -1,11 +1,11 @@
 images:
   ubuntu:
-    image_family: pipeline-1-24
-    project: ubuntu-os-gke-cloud
+    image_family: ubuntu-2204-lts
+    project: ubuntu-os-cloud
     machine: n1-standard-2 # These tests need a lot of memory
     metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config.toml"
   cos-stable2:
-    image_family: cos-93-lts # deprecated after October 2023 (https://cloud.google.com/container-optimized-os/docs/release-notes)
+    image_family: cos-stable
     project: cos-cloud
     machine: n1-standard-2 # These tests need a lot of memory
     metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config.toml"
@@ -14,7 +14,7 @@ images:
         - type: nvidia-tesla-k80
           count: 2
   cos-stable1:
-    image_family: cos-89-lts # deprecated after March 2023 (https://cloud.google.com/container-optimized-os/docs/release-notes)
+    image_family: cos-stable
     project: cos-cloud
     machine: n1-standard-2 # These tests need a lot of memory
     metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config.toml"
