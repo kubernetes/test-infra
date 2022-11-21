@@ -7,7 +7,6 @@ presubmits:
     - ^master$
     - ^release-cd$
     - ^release-efix$
-    - ^release-eus$
     - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
@@ -28,7 +27,6 @@ presubmits:
     branches:
     - ^master$
     - ^release-efix$
-    - ^release-eus$
     - ^release-future$
     - ^release-ltsr$
     decorate: true
@@ -51,7 +49,6 @@ presubmits:
     branches:
     - ^master$
     - ^release-efix$
-    - ^release-eus$
     - ^release-future$
     - ^release-ltsr$
     decorate: true
@@ -76,7 +73,6 @@ presubmits:
     branches:
     - ^master$
     - ^release-efix$
-    - ^release-eus$
     - ^release-future$
     - ^release-ltsr$
     decorate: true
@@ -101,7 +97,6 @@ presubmits:
     branches:
     - ^master$
     - ^release-efix$
-    - ^release-eus$
     - ^release-future$
     - ^release-ltsr$
     decorate: true
@@ -127,7 +122,6 @@ postsubmits:
     branches:
     - ^master$
     - ^release-efix$
-    - ^release-eus$
     - ^release-future$
     - ^release-ltsr$
     decorate: true
@@ -149,7 +143,6 @@ postsubmits:
     branches:
     - ^master$
     - ^release-efix$
-    - ^release-eus$
     - ^release-future$
     - ^release-ltsr$
     decorate: true
@@ -171,7 +164,6 @@ postsubmits:
     branches:
     - ^master$
     - ^release-efix$
-    - ^release-eus$
     - ^release-future$
     - ^release-ltsr$
     decorate: true
@@ -193,7 +185,6 @@ postsubmits:
     branches:
     - ^master$
     - ^release-efix$
-    - ^release-eus$
     - ^release-future$
     - ^release-ltsr$
     decorate: true
