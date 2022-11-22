@@ -61,6 +61,14 @@ func TestUpdateGenericVersionMarker(t *testing.T) {
 			want: "--extra-version-markers=k8s-stable3",
 		},
 		{
+			name: "k8s-stable3",
+			args: args{
+				s:      "--extra-version-markers=k8s-stable3",
+				marker: markerStableTwo,
+			},
+			want: "--extra-version-markers=k8s-stable4",
+		},
+		{
 			name: "noReplace",
 			args: args{
 				s:      "no-replace",
