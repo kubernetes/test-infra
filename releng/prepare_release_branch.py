@@ -33,6 +33,8 @@ BRANCH_JOB_DIR = "../config/jobs/kubernetes/sig-release/release-branch-jobs"
 max_config_count = 4
 min_config_count = 3
 
+suffixes = ['beta', 'stable1', 'stable2', 'stable3']
+
 class ToolError(Exception):
     pass
 
@@ -83,7 +85,6 @@ def delete_stale_branch(branch_path, current_version):
 
 def rotate_files(rotator_bin, branch_path, current_version):
     print("Rotating files...")
-    suffixes = ['beta', 'stable1', 'stable2', 'stable3']
     for i in range(0, 3):
         filename = '%d.%d.yaml' % (current_version[0], current_version[1] - i)
         from_suffix = suffixes[i]
@@ -112,7 +113,6 @@ def update_generated_config(path, latest_version):
         config = yaml.round_trip_load(f)
 
     v = latest_version
-    suffixes = ['beta', 'stable1', 'stable2', 'stable3']
     for i, s in enumerate(suffixes):
         vs = "%d.%d" % (v[0], v[1] + 1 - i)
         markers = config['k8sVersions'][s]
