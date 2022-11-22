@@ -30,7 +30,7 @@ TEST_CONFIG_YAML = "test_config.yaml"
 JOB_CONFIG = "../config/jobs"
 BRANCH_JOB_DIR = "../config/jobs/kubernetes/sig-release/release-branch-jobs"
 
-max_config_count = 4
+max_config_count = 5
 min_config_count = 3
 
 suffixes = ['beta', 'stable1', 'stable2', 'stable3']
