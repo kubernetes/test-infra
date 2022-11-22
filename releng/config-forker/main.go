@@ -130,6 +130,10 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 					c.Args = fixBootstrapArgs(c.Args, version)
 				}
 				var err error
+				c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+				if err != nil {
+					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
+				}
 				c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 				if err != nil {
 					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
