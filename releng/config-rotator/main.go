@@ -76,12 +76,12 @@ func updateJobBase(j *config.JobBase, old, new string) {
 	for i := range j.Spec.Containers {
 		c := &j.Spec.Containers[i]
 		for j := range c.Args {
-			c.Args[j] = updateString(c.Args[j], old, new)
 			c.Args[j] = updateGenericVersionMarker(c.Args[j])
+			c.Args[j] = updateString(c.Args[j], old, new)
 		}
 		for j := range c.Command {
-			c.Command[j] = updateString(c.Command[j], old, new)
 			c.Command[j] = updateGenericVersionMarker(c.Command[j])
+			c.Command[j] = updateString(c.Command[j], old, new)
 		}
 	}
 }
