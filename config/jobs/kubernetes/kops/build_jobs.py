@@ -615,6 +615,7 @@ def generate_misc():
         build_test(name_override="kops-aws-amd64-conformance",
                    k8s_version="ci",
                    distro='u2204',
+                   networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=["--node-size=c5.large",
