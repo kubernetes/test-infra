@@ -85,7 +85,7 @@ def delete_stale_branch(branch_path, current_version):
 
 def rotate_files(rotator_bin, branch_path, current_version):
     print("Rotating files...")
-    for i in range(0, 3):
+    for i in range(max_config_count - 1):
         filename = '%d.%d.yaml' % (current_version[0], current_version[1] - i)
         from_suffix = suffixes[i]
         to_suffix = suffixes[i+1]
@@ -154,7 +154,7 @@ def main():
     print("Current version: %d.%d" % (version[0], version[1]))
 
     files = get_config_files(branch_job_dir_abs)
-    if len(files) == 4:
+    if len(files) > max_config_count:
         print("There should be a maximum of %s release branch configs." % max_config_count)
         print("Deleting the oldest config before rotation...")
 
