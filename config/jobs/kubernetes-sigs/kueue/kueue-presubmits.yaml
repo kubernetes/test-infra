@@ -42,6 +42,9 @@ presubmits:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-kueue-test-e2e-main
       description: "Run kueue end to end tests"
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
