@@ -731,7 +731,6 @@ presubmits:
     max_concurrency: 12
     name: pull-kubernetes-e2e-kops-aws
     optional: true
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -781,7 +780,6 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -827,7 +825,6 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-canary
-    run_before_merge: false
     skip_report: true
     spec:
       containers:
@@ -878,7 +875,6 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-ubuntu
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -927,7 +923,6 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-ubuntu-containerd
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -983,7 +978,6 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1041,7 +1035,6 @@ presubmits:
     max_concurrency: 5
     name: pull-kubernetes-e2e-gce-device-plugin-gpu
     optional: true
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1084,7 +1077,6 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-verify-govet-levee
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1138,7 +1130,6 @@ presubmits:
     name: pull-kubernetes-node-e2e-podutil
     optional: true
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1182,7 +1173,6 @@ presubmits:
     name: pull-kubernetes-node-e2e-kubetest2
     optional: true
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1220,7 +1210,6 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-e2e-containerd-gce
     optional: true
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1261,7 +1250,6 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-node-e2e-containerd
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1311,7 +1299,6 @@ presubmits:
     name: pull-kubernetes-node-e2e-containerd-kubetest2
     optional: true
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1366,7 +1353,6 @@ presubmits:
     max_concurrency: 12
     name: pull-kubernetes-e2e-gce-100-performance
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1439,7 +1425,6 @@ presubmits:
     name: pull-kubernetes-kubemark-e2e-gce-big
     optional: true
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1504,7 +1489,6 @@ presubmits:
     name: pull-kubernetes-conformance-kind-ipv6-parallel
     optional: true
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     run_if_changed: ^test/
     spec:
       containers:
@@ -1540,7 +1524,6 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-dependencies
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1570,7 +1553,6 @@ presubmits:
     decorate: true
     name: pull-kubernetes-files-remake
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     run_if_changed: Makefile.generated_files|make-rules
     spec:
       containers:
@@ -1601,7 +1583,6 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-integration
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1633,7 +1614,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     name: pull-kubernetes-e2e-kind
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - command:
@@ -1674,7 +1654,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     name: pull-kubernetes-e2e-kind-ipv6
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - command:
@@ -1719,7 +1698,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
     name: pull-kubernetes-conformance-kind-ga-only-parallel
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - command:
@@ -1754,7 +1732,6 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-unit
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - command:
@@ -1779,7 +1756,6 @@ presubmits:
     decorate: true
     name: pull-kubernetes-typecheck
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
@@ -1809,7 +1785,6 @@ presubmits:
       preset-service-account: "true"
     name: pull-kubernetes-verify
     path_alias: k8s.io/kubernetes
-    run_before_merge: false
     spec:
       containers:
       - args:
