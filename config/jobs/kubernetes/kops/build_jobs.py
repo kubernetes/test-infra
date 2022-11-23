@@ -242,6 +242,7 @@ def presubmit_test(branch='master',
                    feature_flags=(),
                    extra_flags=None,
                    extra_dashboards=None,
+                   terraform_version=None,
                    test_parallelism=25,
                    test_timeout_minutes=60,
                    skip_regex='',
@@ -301,6 +302,7 @@ def presubmit_test(branch='master',
         marker=marker,
         skip_regex=skip_regex,
         kops_feature_flags=','.join(feature_flags),
+        terraform_version=terraform_version,
         test_package_bucket=test_package_bucket,
         test_package_dir=test_package_dir,
         focus_regex=focus_regex,
@@ -1262,6 +1264,23 @@ def generate_presubmits_e2e():
             extra_flags=[
                 "--api-loadbalancer-type=public",
                 "--api-loadbalancer-class=network"
+            ],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-terraform",
+            cloud="aws",
+            distro="u2204arm64",
+            terraform_version="1.0.5",
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-ipv6-terraform",
+            cloud="aws",
+            distro="u2204arm64",
+            terraform_version="1.0.5",
+            extra_flags=[
+                '--ipv6',
+                '--bastion',
             ],
         ),
 
