@@ -1034,14 +1034,18 @@ def generate_presubmits_network_plugins():
         k8s_version = 'stable'
         networking_arg = plugin
         optional = False
-        distro = 'u2204'
+        distro = 'u2204arm64'
         if plugin == 'amazonvpc':
             distro = 'u2004'
             optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
         if plugin == 'weave':
+            distro = 'u2204'
             k8s_version = '1.22'
+        extra_flags = ['--node-size=t3.large']
+        if 'arm64' in distro:
+            extra_flags = ["--node-size=t6g.large"]
         results.append(
             presubmit_test(
                 distro=distro,
@@ -1050,7 +1054,7 @@ def generate_presubmits_network_plugins():
                 name=f"pull-kops-e2e-cni-{plugin}",
                 tab_name=f"e2e-{plugin}",
                 networking=networking_arg,
-                extra_flags=['--node-size=t3.large'],
+                extra_flags=extra_flags,
                 run_if_changed=run_if_changed,
                 optional=optional,
             )
@@ -1063,6 +1067,7 @@ def generate_presubmits_network_plugins():
             results.append(
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
+                    distro=distro,
                     tab_name=f"e2e-{plugin}-ipv6",
                     networking=networking_arg,
                     extra_flags=['--ipv6',
@@ -1082,6 +1087,7 @@ def generate_presubmits_network_plugins():
 def generate_presubmits_e2e():
     jobs = [
         presubmit_test(
+            distro='u2204arm64',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci',
@@ -1091,6 +1097,7 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
         ),
         presubmit_test(
+            distro='u2204arm64',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci-ha',
@@ -1105,6 +1112,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             container_runtime='docker',
+            distro='u2204arm64',
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-docker',
@@ -1112,6 +1120,7 @@ def generate_presubmits_e2e():
             always_run=False,
         ),
         presubmit_test(
+            distro='u2204arm64',
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-calico',
@@ -1253,7 +1262,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-dns-none",
             cloud="aws",
-            distro="u2204",
+            distro="u2204arm64",
             networking="calico",
             extra_flags=["--dns=none"],
         ),
@@ -1261,7 +1270,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-nlb",
             cloud="aws",
-            distro="u2204",
+            distro="u2204arm64",
             networking="calico",
             extra_flags=[
                 "--api-loadbalancer-type=public",
@@ -1353,6 +1362,7 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            distro='u2204arm64',
             name="pull-kops-e2e-aws-karpenter",
             run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
