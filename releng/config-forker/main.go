@@ -62,6 +62,10 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 					c.Env = fixEnvVars(c.Env, version)
 					c.Image = fixImage(c.Image, version)
 					var err error
+					c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+					if err != nil {
+						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
+					}
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
@@ -92,6 +96,10 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 					c.Env = fixEnvVars(c.Env, version)
 					c.Image = fixImage(c.Image, version)
 					var err error
+					c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+					if err != nil {
+						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
+					}
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
