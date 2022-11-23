@@ -40,7 +40,6 @@ periodics:
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.23
   cluster: k8s-infra-prow-build
-  cron: 0 8-23/24 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
@@ -284,7 +283,7 @@ periodics:
       - --allow-dup
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-stable3
+      - --extra-version-markers=k8s-stable4
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
       name: ""
@@ -304,7 +303,6 @@ periodics:
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.23-500
   cluster: k8s-infra-prow-build
-  cron: 0 21 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -380,7 +378,6 @@ periodics:
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.23-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 8-20/12 * * *
   decorate: true
   decoration_config:
     timeout: 2h20m0s
