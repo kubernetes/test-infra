@@ -2001,9 +2001,15 @@ func TestMaxConcurency(t *testing.T) {
 			ExpectedResult: true,
 		},
 		{
-			Name:                  "Job queue concurency 0 always runs",
+			Name:                  "Job queue concurency 0 never runs",
 			ProwJob:               prowapi.ProwJob{Spec: prowapi.ProwJobSpec{JobQueueName: "queue"}},
 			JobQueueConcurrencies: map[string]int{"queue": 0},
+			ExpectedResult:        false,
+		},
+		{
+			Name:                  "Job queue concurency -1 always runs",
+			ProwJob:               prowapi.ProwJob{Spec: prowapi.ProwJobSpec{JobQueueName: "queue"}},
+			JobQueueConcurrencies: map[string]int{"queue": -1},
 			ExpectedResult:        true,
 		},
 		{
