@@ -1047,7 +1047,7 @@ def generate_presubmits_network_plugins():
             k8s_version = '1.22'
         extra_flags = ['--node-size=t3.large']
         if 'arm64' in distro:
-            extra_flags = ["--node-size=t6g.large"]
+            extra_flags = ["--node-size=t4g.large"]
         results.append(
             presubmit_test(
                 distro=distro,
