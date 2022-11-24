@@ -456,6 +456,7 @@ def generate_misc():
         build_test(name_override="kops-scenario-arm64",
                    cloud="aws",
                    distro="u2204arm64",
+                   runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
@@ -555,6 +556,7 @@ def generate_misc():
 
         build_test(name_override="kops-scenario-terraform",
                    distro="u2204arm64",
+                   runs_per_day=1,
                    terraform_version="1.0.5",
                    extra_flags=[
                        "--zones=us-west-1a",
@@ -562,6 +564,7 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
         build_test(name_override="kops-scenario-ipv6-terraform",
                    distro="u2204arm64",
+                   runs_per_day=1,
                    terraform_version="1.0.5",
                    extra_flags=[
                        '--ipv6',
