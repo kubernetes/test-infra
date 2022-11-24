@@ -726,6 +726,33 @@ def generate_misc():
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc", "kops-ipv6"],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic'), # pylint: disable=line-too-long
+
+        # [sig-storage, @jsafrane] A one-off scenario testing SELinux features, because kops
+        # is the only way how to get Kubernetes on a Linux with SELinux in enforcing mode in CI.
+        # Test the latest kops and CI build of Kubernetes (=almost master).
+        build_test(name_override="kops-aws-selinux",
+                   # RHEL8 VM image is enforcing SELinux by default.
+                   distro="rhel8",
+                   networking="cilium",
+                   k8s_version="ci",
+                   kops_channel="alpha",
+                   feature_flags=['SELinuxMount'],
+                   extra_flags=["--kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod"], # pylint: disable=line-too-long
+                   focus_regex=r"\[Feature:SELinux\]",
+                   # Skip:
+                   # - Feature:Volumes: skips iSCSI and Ceph tests, they don't have client tools
+                   #   installed on nodes.
+                   # - Driver: nfs: NFS does not have client tools installed on nodes.
+                   # - Driver: local: this is optimization only, the volume plugin does not
+                   #   support SELinux and there are several subvariants of local volumes
+                   #   that multiply nr. of tests.
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]",
+                   # [Serial] and [Disruptive] are intentionally not skipped, therefore run
+                   # everything as serial.
+                   test_parallelism=1,
+                   # Serial and Disruptive tests can be slow.
+                   test_timeout_minutes=120,
+                   runs_per_day=3),
     ]
     return results
 
