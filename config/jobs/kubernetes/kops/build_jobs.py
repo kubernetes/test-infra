@@ -1174,9 +1174,9 @@ def generate_presubmits_e2e():
             cloud='gce',
             k8s_version='stable',
             kops_channel='alpha',
-            name='pull-kops-e2e-k8s-gce',
-            networking='cilium',
-            tab_name='e2e-gce',
+            name='pull-kops-e2e-k8s-gce-cilium-etcd',
+            networking='cilium-etcd',
+            tab_name='e2e-gce-cilium-etcd',
             always_run=False,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
