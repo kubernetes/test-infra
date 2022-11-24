@@ -10,10 +10,10 @@ This document attempts to be a step-by-step, copy-pastable guide to the use
 of prow jobs for the Kubernetes project. It may fall out of date. For more
 info, it was sourced from the following:
 
-- [ProwJob docs](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/jobs/)
-- [Life of a Prow Job](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/life_of_a_prow_job/)
-- [Pod Utilities](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/pod-utilities/)
-- [How to Test a Prow Job](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/build_test_update/#how-to-test-a-prowjob)
+- [ProwJob docs](https://docs.prow.k8s.io/docs/jobs/)
+- [Life of a Prow Job](https://docs.prow.k8s.io/docs/life-of-a-prow-job/)
+- [Pod Utilities](https://docs.prow.k8s.io/docs/components/pod-utilities/)
+- [How to Test a Prow Job](https://docs.prow.k8s.io/docs/build-test-update/#how-to-test-a-prowjob)
 
 ### Job Types
 
@@ -23,7 +23,7 @@ There are three types of prow jobs:
 - **Postsubmits** run after merging code
 - **Periodics** run on a periodic basis
 
-Please see [ProwJob docs](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/jobs/) for more info
+Please see [ProwJob docs](https://docs.prow.k8s.io/docs/jobs/) for more info
 
 ### Job Images
 
@@ -49,7 +49,7 @@ eg:
 
 ## Job Presets
 
-Prow supports [Presets](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/jobs/#presets) to define and patch in common
+Prow supports [Presets](https://docs.prow.k8s.io/docs/jobs/#presets) to define and patch in common
 env vars and volumes used for credentials or common job config. Some are
 defined centrally in [`config/prow/config.yaml`], while others can be defined in
 files here. eg:
@@ -70,7 +70,7 @@ where the jobs are executed, by using the [same mechanism of
 podspec](https://kubernetes.io/docs/concepts/configuration/secret/#using-a-secret).
 The secrets used in prow jobs can be source controlled and synced from any major
 secret manager provider, such as google secret manager, see
-[prow_secret](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/prow_secrets/) for instructions.
+[prow_secret](https://docs.prow.k8s.io/docs/prow-secrets/) for instructions.
 
 ## Job Examples
 
@@ -148,7 +148,7 @@ periodics:
     - For kubernetes/kubernetes we prefer `kubernetes/sig-foo/filename.yaml`
     - Ensure `filename.yaml` is unique across the config subdir; prow uses this as a key in its configmap
 1. Ensure an [`OWNERS`](https://go.k8s.io/owners) file exists in the directory for job, and has appropriate approvers/reviewers
-1. Write or edit the job config (please see [How to configure new jobs](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/jobs/#how-to-configure-new-jobs))
+1. Write or edit the job config (please see [How to configure new jobs](https://docs.prow.k8s.io/docs/jobs/#how-to-configure-new-jobs))
 1. Ensure the job is configured to display its results in [testgrid.k8s.io]
     - The simple way: add [testgrid annotations]
     - Please see the testgrid [documentation](/testgrid/config.md) for more details on configuration options
@@ -163,7 +163,7 @@ periodics:
 
 ## Testing Jobs Locally
 
-Please try using [`phaino`](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/cmd/phaino/readme/), it will interactively
+Please try using [`phaino`](https://docs.prow.k8s.io/docs/components/cli-tools/phaino/), it will interactively
 help you run a docker command that approximates the pod that would be scheduled
 on behalf of an actual prow job.
 
@@ -175,7 +175,7 @@ own instance of prow for faster iteration. That said, an approach that people
 have used in the past with mostly-there jobs is to iterate via PRs; just
 recognize this is going to depend on review latency.
 
-For more details, please refer to [How to Test a ProwJob](https://docs.prow.k8s.io/docs/legacy-snapshot/prow/build_test_update/#how-to-test-a-prowjob)
+For more details, please refer to [How to Test a ProwJob](https://docs.prow.k8s.io/docs/build-test-update/#how-to-test-a-prowjob)
 
 ## Running a Production Job
 
