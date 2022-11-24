@@ -23,10 +23,6 @@ run_hourly = [
 ]
 
 run_daily = [
-    'kops-scenario-service-account-iam',
-    'kops-scenario-arm64',
-    'kops-scenario-serial-test-for-timeout',
-    'kops-scenario-terraform',
 ]
 
 def simple_hash(s):
