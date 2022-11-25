@@ -13,6 +13,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-cluster-api-1.3
     - sig-cluster-lifecycle-cluster-api-provider-aws
     - sig-cluster-lifecycle-cluster-api-provider-aws-1.5
+    - sig-cluster-lifecycle-cluster-api-provider-aws-1.6
     - sig-cluster-lifecycle-cluster-api-provider-azure
     - sig-cluster-lifecycle-cluster-api-provider-digitalocean
     - sig-cluster-lifecycle-cluster-api-provider-vsphere
@@ -41,6 +42,7 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api-1.2
 - name: sig-cluster-lifecycle-cluster-api-1.3
 - name: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
+- name: sig-cluster-lifecycle-cluster-api-provider-aws-1.6
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
   dashboard_tab:
     - name: periodic-test-coverage-main
