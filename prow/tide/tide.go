@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -57,6 +58,7 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 	GetRef(string, string, string) (string, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
 	Merge(string, string, int, github.MergeDetails) error
@@ -1852,6 +1854,83 @@ type PullRequest struct {
 	UpdatedAt githubql.DateTime
 }
 
+// Regexp used to compile regular expressions and use it in CommitTemplate.
+func (pr PullRequest) Regexp(pattern string) *regexp.Regexp {
+	return regexp.MustCompile(pattern)
+}
+
+// ExtractContent used to extract text content through regular expressions.
+// Engage that when the regexp contains a named group named `content`, only the part matched by the named group
+// will be returned, if not, the part matched by the entire regular expression will be returned.
+func (pr PullRequest) ExtractContent(pattern string, content string) string {
+	compile, err := regexp.Compile(pattern)
+	if err != nil {
+		panic(fmt.Errorf("failed to compile the extract content regexp: %v", err))
+	}
+
+	index := compile.SubexpIndex("content")
+	if index == -1 {
+		return compile.FindString(content)
+	} else {
+		if compile.MatchString(content) {
+			matches := compile.FindStringSubmatch(content)
+			return strings.TrimSpace(matches[index])
+		}
+		return ""
+	}
+}
+
+// NormalizeIssueNumbers is an utils method in CommitTemplate that used to extract the issue numbers in the text
+// and normalize it by a uniform format.
+func (pr PullRequest) NormalizeIssueNumbers(content string) []github.IssueNumberData {
+	currOrg := string(pr.Repository.Owner.Login)
+	currRepo := string(pr.Repository.Name)
+	return github.NormalizeIssueNumbers(content, currOrg, currRepo)
+}
+
+func (pr PullRequest) NormalizeSignedOffBy() []github.SignedAuthor {
+	commitNodes := pr.Commits.Nodes
+
+	if len(commitNodes) == 0 {
+		return []github.SignedAuthor{}
+	}
+
+	commitMessages := make([]string, 0)
+	for _, node := range commitNodes {
+		commitMessages = append(commitMessages, string(node.Commit.Message))
+	}
+
+	return github.NormalizeSignedOffBy(commitMessages)
+}
+
+func (pr PullRequest) NormalizeCoAuthorBy() []github.CoAuthor {
+	commitNodes := pr.Commits.Nodes
+	prAuthorLogin := string(pr.Author.Login)
+
+	if len(commitNodes) == 0 {
+		return []github.CoAuthor{}
+	}
+
+	authors := make([]github.CommitAuthor, 0)
+	commitMessages := make([]string, 0)
+	for _, node := range commitNodes {
+		// Convert graphql node to rest api object.
+		commitAuthor := github.CommitAuthor{}
+		commitAuthor.Name = string(node.Commit.Author.Name)
+		commitAuthor.Email = string(node.Commit.Author.Email)
+		if len(node.Commit.Author.User.Login) != 0 {
+			login := string(node.Commit.Author.User.Login)
+			commitAuthor.Login = &login
+		}
+		authors = append(authors, commitAuthor)
+
+		// Extract the commit message.
+		commitMessages = append(commitMessages, string(node.Commit.Message))
+	}
+
+	return github.NormalizeCoAuthorBy(authors, commitMessages, prAuthorLogin)
+}
+
 func (pr *PullRequest) logFields() logrus.Fields {
 	return logrus.Fields{
 		"org":    pr.Repository.Owner.Login,
@@ -1887,6 +1966,18 @@ type Commit struct {
 	Status            CommitStatus
 	OID               githubql.String `graphql:"oid"`
 	StatusCheckRollup StatusCheckRollup
+	Message           githubql.String
+	Author            Author
+}
+
+type Author struct {
+	Email githubql.String
+	Name  githubql.String
+	User  User
+}
+
+type User struct {
+	Login githubql.String
 }
 
 type CommitStatus struct {

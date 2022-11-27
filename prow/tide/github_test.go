@@ -184,6 +184,44 @@ func TestPrepareMergeDetails(t *testing.T) {
 		Title:      "my commit title",
 		Body:       "my commit body",
 	}
+	repository := struct {
+		Name          githubql.String
+		NameWithOwner githubql.String
+		Owner         struct{ Login githubql.String }
+	}{
+		Name:          "tidb",
+		NameWithOwner: "pingcap/tidb",
+		Owner: struct {
+			Login githubql.String
+		}{
+			Login: "pingcap",
+		},
+	}
+
+	commitTempalteCombineAllFunc := `
+		{{- $body := print .Body -}}
+		{{- $issueNumberLine := .ExtractContent "(?im)^Issue Number:.+" $body -}}
+		{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+		{{- range $index, $number := $numbers -}}
+			{{- if $index }}, {{ end -}}
+			{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+		{{- end -}}
+		{{- $description := .ExtractContent "(?i)\x60\x60\x60commit-message(?P<content>[\\w|\\W]+)\x60\x60\x60" $body -}}
+		{{- if $description -}}{{- "\n\n" -}}{{- end -}}
+		{{- $description -}}
+		{{- $signedAuthors := .NormalizeSignedOffBy -}}
+		{{- if $signedAuthors -}}{{- "\n\n" -}}{{- end -}}
+		{{- range $index, $author := $signedAuthors -}}
+			{{- if $index -}}{{- "\n" -}}{{- end -}}
+			{{- "Signed-off-by:" }} {{ .Name }} <{{- .Email -}}>
+		{{- end -}}
+		{{- $coAuthors := .NormalizeCoAuthorBy -}}
+		{{- if $coAuthors -}}{{- "\n\n" -}}{{- end -}}
+		{{- range $index, $author := $coAuthors -}}
+			{{- if $index -}}{{- "\n" -}}{{- end -}}
+			{{- "Co-authored-by:" }} {{ .Name }} <{{- .Email -}}>
+		{{- end -}}
+	`
 
 	testCases := []struct {
 		name        string
@@ -251,6 +289,698 @@ func TestPrepareMergeDetails(t *testing.T) {
 		expected: github.MergeDetails{
 			SHA:         "SHA",
 			MergeMethod: "merge",
+		},
+	}, {
+		name: "Commit template uses Regexp function",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $pattern := .Regexp "(?im)Issue Number:\\s*((,\\s*)?(ref|close[sd]?|resolve[sd]?|fix(e[sd])?)\\s*#(?P<issue_number>[1-9]\\d*))+" -}}
+					{{- $body := print .Body -}}
+					{{- $pattern.FindString $body -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Title:      "my commit title",
+			Body:       "\r\nIssue Number: close #2, ref #3\r\n",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "Issue Number: close #2, ref #3",
+		},
+	}, {
+		name: "Commit template uses NormalizeIssueNumbers function",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $body := print .Body -}}
+					{{- $numbers := .NormalizeIssueNumbers $body -}}
+					{{- range $index, $number := $numbers -}}
+					{{- if $index }}, {{ end -}}
+					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "close #1\r\nIssue Number: close #2, ref #3\r\nref #4",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "close pingcap/tidb#1, close pingcap/tidb#2, ref pingcap/tidb#3, ref pingcap/tidb#4",
+		},
+	}, {
+		name: "Commit template uses Regexp and NormalizeIssueNumbers function",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
+					{{- $body := print .Body -}}
+					{{- $issueNumberLine := $pattern.FindString $body -}}
+					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- range $index, $number := $numbers -}}
+					{{- if $index }}, {{ end -}}
+					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "close #1\r\nIssue Number: close #2, ref #3\r\nref #4",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "close pingcap/tidb#2, ref pingcap/tidb#3",
+		},
+	}, {
+		name: "Commit template uses NormalizeIssueNumbers to handle issue link",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
+					{{- $body := print .Body -}}
+					{{- $issueNumberLine := $pattern.FindString $body -}}
+					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- range $index, $number := $numbers -}}
+					{{- if $index }}, {{ end -}}
+					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "close #1\r\nIssue Number: close #2, ref https://github.com/pingcap/tidb/issues/3\r\nref #4",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "close pingcap/tidb#2, ref pingcap/tidb#3",
+		},
+	}, {
+		name: "Commit template uses NormalizeIssueNumbers to handle cross-repository linked issue",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
+					{{- $body := print .Body -}}
+					{{- $issueNumberLine := $pattern.FindString $body -}}
+					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- range $index, $number := $numbers -}}
+					{{- if $index }}, {{ end -}}
+					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "close #1\r\nIssue Number: close #2, ref https://github.com/tikv/tikv/issues/3\r\nref #4",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "close pingcap/tidb#2, ref tikv/tikv#3",
+		},
+	}, {
+		name: "Commit template uses NormalizeIssueNumbers to handle issue number with full prefix",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
+					{{- $body := print .Body -}}
+					{{- $issueNumberLine := $pattern.FindString $body -}}
+					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- range $index, $number := $numbers -}}
+					{{- if $index }}, {{ end -}}
+					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "close #1\r\nIssue Number: close #2, ref pingcap/tidb#3\r\nref #4",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "close pingcap/tidb#2, ref pingcap/tidb#3",
+		},
+	}, {
+		name: "Commit template uses NormalizeIssueNumbers to handle cross-repository issue number with full prefix",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
+					{{- $body := print .Body -}}
+					{{- $issueNumberLine := $pattern.FindString $body -}}
+					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- range $index, $number := $numbers -}}
+					{{- if $index }}, {{ end -}}
+					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "close #1\r\nIssue Number: close #2, ref tikv/tikv#3\r\nref #4",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "close pingcap/tidb#2, ref tikv/tikv#3",
+		},
+	}, {
+		name: "Commit template uses NormalizeIssueNumbers with template shorten issue number prefix",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- /* convert graphql.String to string type */ -}}
+					{{- $body := print .Body -}}
+					{{- $org := print .Repository.Owner.Login -}}
+					{{- $repo := print .Repository.Name -}}
+					{{- $pattern := .Regexp "(?im)^Issue Number:.+" -}}
+					{{- $issueNumberLine := $pattern.FindString $body -}}
+					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- if $numbers -}}
+						{{- range $index, $number := $numbers -}}
+							{{- if $index }}, {{ end -}}
+							{{- /* simplify issue number prefix */ -}}
+							{{- if and (eq .Org $org) (eq .Repo $repo) -}}
+								{{- .AssociatePrefix }} #{{ .Number -}}
+							{{- else -}}
+								{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+							{{- end -}}
+						{{- end -}}
+					{{- else -}}
+						{{- " " -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "\r\nIssue Number: close #1, close pingcap/tidb#2, ref tikv/tikv#3, ref pingcap/tiflow#4\r\n",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "close #1, close #2, ref tikv/tikv#3, ref pingcap/tiflow#4",
+		},
+	}, {
+		name: "Commit template uses NormalizeIssueNumbers to handle unrelated content",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $pattern := .Regexp "(?im)^Issue Number:.+" -}}
+					{{- $body := print .Body -}}
+					{{- $issueNumberLine := $pattern.FindString $body -}}
+					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- if $numbers -}}
+						{{- range $index, $number := $numbers -}}
+							{{- if $index }}, {{ end -}}
+							{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
+						{{- end -}}
+					{{- else -}}
+						{{- " " -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "foo",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: " ",
+		},
+	}, {
+		name: "Commit template uses NormalizeSignedOffBy func",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $signedAuthors := .NormalizeSignedOffBy -}}
+					{{- range $index, $author := $signedAuthors -}}
+					{{- "Signed-off-by:" }} {{ .Name }} <{{- .Email -}}>{{- "\n" -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "foo",
+			Commits: struct{ Nodes []struct{ Commit Commit } }{
+				Nodes: []struct{ Commit Commit }{
+					{
+						Commit: Commit{
+							Message: "commit message headline 1\n\nSigned-off-by: foo <foo.bar@gmail.com>",
+						},
+					},
+					{
+						Commit: Commit{
+							Message: "commit message headline 2\n\nSigned-off-by: foo <foo.bar@gmail.com>",
+						},
+					},
+				},
+			},
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "Signed-off-by: foo <foo.bar@gmail.com>\n",
+		},
+	}, {
+		name: "Commit template uses NormalizeCoAuthorBy func",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $coAuthors := .NormalizeCoAuthorBy -}}
+					{{- range $index, $author := $coAuthors -}}
+					{{- "Co-authored-by:" }} {{ .Name }} <{{- .Email -}}>{{- "\n" -}}
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "foo",
+			Author: User{
+				Login: "foo",
+			},
+			Commits: struct{ Nodes []struct{ Commit Commit } }{
+				Nodes: []struct{ Commit Commit }{
+					{
+						Commit: Commit{
+							Message: "commit message headline 1\n\nSigned-off-by: foo <foo.bar@gmail.com>",
+							Author: Author{
+								Email: "foo.bar@gmail.com",
+								Name:  "foo",
+								User: User{
+									Login: "foo",
+								},
+							},
+						},
+					},
+					{
+						Commit: Commit{
+							Message: "commit message headline 2\n\nSigned-off-by: zhangsan <zhangsan@gmail.com>",
+							Author: Author{
+								Email: "zhangsan@gmail.com",
+								Name:  "zhangsan",
+								User: User{
+									Login: "zhangsan",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "Co-authored-by: zhangsan <zhangsan@gmail.com>\n",
+		},
+	}, {
+		name: "Commit template uses NormalizeSignedOffBy and NormalizeCoAuthorBy func",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $signedAuthors := .NormalizeSignedOffBy -}}
+					{{- range $index, $author := $signedAuthors -}}
+						{{- if $index -}}{{- "\n" -}}{{- end -}}
+						{{- "Signed-off-by:" }} {{ .Name }} <{{- .Email -}}>
+					{{- end -}}
+					{{- "\n" -}}
+					{{- $coAuthors := .NormalizeCoAuthorBy -}}
+					{{- range $index, $author := $coAuthors -}}
+						{{- if $index -}}{{- "\n" -}}{{- end -}}
+						{{- "Co-authored-by:" }} {{ .Name }} <{{- .Email -}}>
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "foo",
+			Author: User{
+				Login: "foo",
+			},
+			Commits: struct{ Nodes []struct{ Commit Commit } }{
+				Nodes: []struct{ Commit Commit }{
+					{
+						Commit: Commit{
+							Message: "commit message headline 1\n\nSigned-off-by: foo <foo.bar@gmail.com>",
+							Author: Author{
+								Email: "foo.bar@gmail.com",
+								Name:  "foo",
+								User: User{
+									Login: "foo",
+								},
+							},
+						},
+					},
+					{
+						Commit: Commit{
+							Message: "commit message headline 2\n\nSigned-off-by: zhangsan <zhangsan@gmail.com>",
+							Author: Author{
+								Email: "zhangsan@gmail.com",
+								Name:  "zhangsan",
+								User: User{
+									Login: "zhangsan",
+								},
+							},
+						},
+					},
+					{
+						Commit: Commit{
+							Message: "commit message headline 3\n\nSigned-off-by: wangwu <wangwu@gmail.com>",
+							Author: Author{
+								Email: "wangwu@gmail.com",
+								Name:  "wangwu",
+								User: User{
+									Login: "wangwu",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "Signed-off-by: foo <foo.bar@gmail.com>\nSigned-off-by: zhangsan <zhangsan@gmail.com>\nSigned-off-by: wangwu <wangwu@gmail.com>\nCo-authored-by: zhangsan <zhangsan@gmail.com>\nCo-authored-by: wangwu <wangwu@gmail.com>",
+		},
+	}, {
+		name: "Commit template uses NormalizeSignedOffBy and NormalizeCoAuthorBy func to handle non-signed commit",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $signedAuthors := .NormalizeSignedOffBy -}}
+					{{- range $index, $author := $signedAuthors -}}
+						{{- if $index -}}{{- "\n" -}}{{- end -}}
+						{{- "Signed-off-by:" }} {{ .Name }} <{{- .Email -}}>
+					{{- end -}}
+					{{- $coAuthors := .NormalizeCoAuthorBy -}}
+					{{- if $coAuthors -}}{{- "\n" -}}{{- end -}}
+					{{- range $index, $author := $coAuthors -}}
+						{{- if $index -}}{{- "\n" -}}{{- end -}}
+						{{- "Co-authored-by:" }} {{ .Name }} <{{- .Email -}}>
+					{{- end -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "foo",
+			Author: User{
+				Login: "zhangsan",
+			},
+			Commits: struct{ Nodes []struct{ Commit Commit } }{
+				Nodes: []struct{ Commit Commit }{
+					{
+						Commit: Commit{
+							Message: "commit message headline 1",
+							Author: Author{
+								Email: "zhangsan@gmail.com",
+								Name:  "zhangsan",
+								User: User{
+									Login: "zhangsan",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "",
+		},
+	}, {
+		name: "uses ExtractContent func with normal regexp",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $body := print .Body -}}
+					{{- .ExtractContent "(?i)Issue Number:.+" $body -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "title\r\nIssue Number: close #123, ref #456\r\nwhat's changed",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "Issue Number: close #123, ref #456\r",
+		},
+	}, {
+		name: "uses ExtractContent func with named group regexp",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body: getTemplate("CommitBody", `
+					{{- $body := print .Body -}}
+					{{- .ExtractContent "\x60\x60\x60commit-message\\r\\n(?P<content>.+)\\r\\n\x60\x60\x60" $body -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "title\r\n```commit-message\r\nwhat's changed\r\n```\r\ncomment",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "what's changed",
+		},
+	}, {
+		name: "combine all the func",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body:  getTemplate("CommitBody", commitTempalteCombineAllFunc),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "## Title\r\n\r\nIssue Number: close #123, ref tikv/tikv#456\r\n\r\nWhat's changed?\r\n\x60\x60\x60commit-message\r\none line.\ntwo line.\r\n\x60\x60\x60\r\n",
+			Author: User{
+				Login: "foo",
+			},
+			Commits: struct{ Nodes []struct{ Commit Commit } }{
+				Nodes: []struct{ Commit Commit }{
+					{
+						Commit: Commit{
+							Message: "commit message headline 1\n\nSigned-off-by: foo <foo.bar@gmail.com>",
+							Author: Author{
+								Email: "foo.bar@gmail.com",
+								Name:  "foo",
+								User: User{
+									Login: "foo",
+								},
+							},
+						},
+					},
+					{
+						Commit: Commit{
+							Message: "commit message headline 2\n\nSigned-off-by: zhangsan <zhangsan@gmail.com>",
+							Author: Author{
+								Email: "zhangsan@gmail.com",
+								Name:  "zhangsan",
+								User: User{
+									Login: "zhangsan",
+								},
+							},
+						},
+					},
+					{
+						Commit: Commit{
+							Message: "commit message headline 3\n\nSigned-off-by: wangwu <wangwu@gmail.com>",
+							Author: Author{
+								Email: "wangwu@gmail.com",
+								Name:  "wangwu",
+								User: User{
+									Login: "wangwu",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+			CommitTitle: "my commit title (#1)",
+			CommitMessage: `close pingcap/tidb#123, ref tikv/tikv#456
+	one line.
+	two line.
+	Signed-off-by: foo <foo.bar@gmail.com>
+	Signed-off-by: zhangsan <zhangsan@gmail.com>
+	Signed-off-by: wangwu <wangwu@gmail.com>
+	Co-authored-by: zhangsan <zhangsan@gmail.com>
+	Co-authored-by: wangwu <wangwu@gmail.com>`,
+		},
+	}, {
+		name: "one commit is suggested by co-author but not committed by co-author",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
+			Body:  getTemplate("CommitBody", commitTempalteCombineAllFunc),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title",
+			Body:       "## Title\r\n\r\nIssue Number: close #123, ref tikv/tikv#456\r\n\r\nWhat's changed?\r\n\x60\x60\x60commit-message\r\none line.\ntwo line.\r\n\x60\x60\x60\r\n",
+			Author: User{
+				Login: "foo",
+			},
+			Commits: struct{ Nodes []struct{ Commit Commit } }{
+				Nodes: []struct{ Commit Commit }{
+					{
+						Commit: Commit{
+							Message: "commit message headline 1\n\nSigned-off-by: foo <foo.bar@gmail.com>",
+							Author: Author{
+								Email: "foo.bar@gmail.com",
+								Name:  "foo",
+								User: User{
+									Login: "foo",
+								},
+							},
+						},
+					},
+					{
+						Commit: Commit{
+							Message: "commit message headline 2\n\nSigned-off-by: zhangsan <zhangsan@gmail.com>",
+							Author: Author{
+								Email: "zhangsan@gmail.com",
+								Name:  "zhangsan",
+								User: User{
+									Login: "zhangsan",
+								},
+							},
+						},
+					},
+					{
+						Commit: Commit{
+							Message: "commit message headline 3\n\nSigned-off-by: foo <foo.bar@gmail.com>n\nCo-authored-by: wangwu <wangwu@gmail.com>",
+							Author: Author{
+								Email: "foo.bar@gmail.com",
+								Name:  "foo",
+								User: User{
+									Login: "foo",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:         "SHA",
+			MergeMethod: "merge",
+			CommitTitle: "my commit title (#1)",
+			CommitMessage: `close pingcap/tidb#123, ref tikv/tikv#456
+	one line.
+	two line.
+	Signed-off-by: foo <foo.bar@gmail.com>
+	Signed-off-by: zhangsan <zhangsan@gmail.com>
+	Co-authored-by: zhangsan <zhangsan@gmail.com>
+	Co-authored-by: wangwu <wangwu@gmail.com>`,
 		},
 	}}
 

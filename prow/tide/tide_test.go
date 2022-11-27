@@ -814,6 +814,20 @@ func (f *fgc) GetPullRequestChanges(org, repo string, number int) ([]github.Pull
 		nil
 }
 
+func (f *fgc) ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error) {
+	if number != 100 {
+		return nil, nil
+	}
+	return []github.RepositoryCommit{
+		{
+			SHA: "sha",
+			Commit: github.GitCommit{
+				Message: "This is my commit message\n\nSigned-off-by: Random J Developer <random@developer.example.org>",
+			},
+		},
+	}, nil
+}
+
 // TestDividePool ensures that subpools returned by dividePool satisfy a few
 // important invariants.
 func TestDividePool(t *testing.T) {
