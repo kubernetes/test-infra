@@ -22,7 +22,7 @@ presubmits:
   - name: pull-kubebuilder-e2e-k8s-1-25-0
     decorate: true
     always_run: true
-    optional: true
+    optional: false
     path_alias: sigs.k8s.io/kubebuilder
     branches:
       - ^master$
