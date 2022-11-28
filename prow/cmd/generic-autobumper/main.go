@@ -95,7 +95,10 @@ func (c *client) Changes() []func(context.Context) (string, error) {
 
 // PRTitleBody returns the body of the PR, this function runs after each commit
 func (c *client) PRTitleBody() (string, string, error) {
-	return makeCommitSummary(c.o.Prefixes, c.versions), generatePRBody(c.images, c.o.Prefixes) + getAssignment(c.o.OncallAddress, c.o.OncallGroup, c.o.SkipOncallAssignment, c.o.SelfAssign) + "\n", nil
+	body := generatePRBody(c.images, c.o.Prefixes) +
+		getAssignment(c.o.OncallAddress, c.o.OncallGroup, c.o.SkipOncallAssignment, c.o.SelfAssign) + "\n" +
+		c.o.AdditionalPRBody + "\n"
+	return makeCommitSummary(c.o.Prefixes, c.versions), body, nil
 }
 
 func generatePRBody(images map[string]string, prefixes []prefix) (body string) {
@@ -139,6 +142,8 @@ type options struct {
 	// * "" (empty) -- uses no auth token
 	// * "google" -- uses Google's "Application Default Credentials" as defined on https://pkg.go.dev/golang.org/x/oauth2/google#hdr-Credentials.
 	ImageRegistryAuth string `yaml:"imageRegistryAuth"`
+	// AdditionalPRBody allows for generic, additional content in the body of the PR
+	AdditionalPRBody string `yaml:"additionalPRBody"`
 }
 
 // prefix is the information needed for each prefix being bumped.
