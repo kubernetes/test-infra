@@ -52,7 +52,8 @@ presubmits:
         - runner.sh
         args:
         - make
-        - test-e2e-kind
+        - kind-image-build
+        - test-e2e
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
