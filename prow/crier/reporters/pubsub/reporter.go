@@ -97,7 +97,7 @@ func (c *Client) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowapi.Pr
 
 // Report takes a prowjob, and generate a pubsub ReportMessage and publish to specific Pub/Sub topic
 // based on Pub/Sub related labels if they exist in this prowjob
-func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
+func (c *Client) Report(ctx context.Context, l *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -111,11 +111,14 @@ func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJo
 		logrus.WithError(client.Close()).Debug("Closed pubsub client.")
 	}()
 
+	l = l.WithFields(logrus.Fields{"project": message.Project, "topic": message.Topic, "run-id": message.RunID, "status": pj.Status.State})
+	l.Debug("Reporting prowjob status to pubsub.")
 	topic := client.Topic(message.Topic)
 	defer topic.Stop() // Sends remaining messages then stops goroutines.
 
 	d, err := json.Marshal(message)
 	if err != nil {
+		l.WithError(err).Debug("Failed marshalling pubsub message.")
 		return nil, nil, fmt.Errorf("could not marshal pubsub report: %w", err)
 	}
 
@@ -133,9 +136,11 @@ func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJo
 		// error in this case so that we can avoid logging on error level.
 		topicExist, existErr := topic.Exists(ctx)
 		if existErr == nil && !topicExist {
+			l.Debug("Pubsub topic doesn't exist.")
 			return nil, nil, criercommonlib.UserError(wrappedError)
 		}
 
+		l.WithError(err).Debug("Failed sending pubsub message.")
 		return nil, nil, wrappedError
 	}
 
