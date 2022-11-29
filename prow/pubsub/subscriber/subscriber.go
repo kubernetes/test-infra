@@ -370,7 +370,9 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		"pubsub-subscription": subscription,
 		"pubsub-id":           msg.getID()})
 	s.Metrics.MessageCounter.With(prometheus.Labels{subscriptionLabel: subscription}).Inc()
-	l.Info("Received message")
+	// TODO(chaodaiG): logging payload for debugging purpose, remove once the
+	// bug is fixed.
+	l.WithField("payload", string(msg.getPayload())).Debug("Received message")
 	eType, err := extractFromAttribute(msg.getAttributes(), ProwEventType)
 	if err != nil {
 		l.WithError(err).Error("failed to read message")
