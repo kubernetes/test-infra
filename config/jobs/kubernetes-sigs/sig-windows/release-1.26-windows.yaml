@@ -1,5 +1,5 @@
 presets:
-  - labels:
+- labels:
     preset-capz-windows-common-126: "true"
   env:
   - name: "KUBERNETES_VERSION"
@@ -25,11 +25,10 @@ periodics:
     preset-azure-cred-only: "true"
     preset-capz-containerd-latest: "true"
     preset-capz-windows-2019: "true"
-    preset-capz-windows-common-main: "true"
+    preset-capz-windows-common-126: "true"
     preset-capz-windows-parallel: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-capz-windows-common-126: "true"
   spec:
     containers:
     - command:
