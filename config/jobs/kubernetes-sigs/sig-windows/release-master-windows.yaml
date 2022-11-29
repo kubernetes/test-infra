@@ -119,20 +119,25 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-capz-windows-common-main: "true"
-    preset-capz-windows-2019: "true"
     preset-capz-containerd-latest: "true"
     preset-capz-serial-slow: "true"
+    preset-capz-gmsa-setup: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
+    workdir: true
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
         command:
           - "runner.sh"
-          - "./scripts/ci-conformance.sh"
+          - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
         resources:
@@ -166,12 +171,17 @@ periodics:
     repo: cluster-api-provider-azure
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
+    workdir: true
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
         command:
           - "runner.sh"
-          - "./scripts/ci-conformance.sh"
+          - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
         resources:
@@ -196,7 +206,6 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-windows-private-registry-cred: "true"
     preset-capz-windows-common-main: "true"
     preset-capz-containerd-latest: "true"
   extra_refs:
@@ -207,7 +216,7 @@ periodics:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
     workdir: true
   spec:
     containers:
@@ -237,7 +246,6 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-windows-private-registry-cred: "true"
     preset-capz-windows-common-main: "true"
     preset-capz-containerd-latest: "true"
     preset-capz-serial-slow: "true"
@@ -250,7 +258,7 @@ periodics:
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
-    path_alias: k8s.io/windows-testing
+    path_alias: sigs.k8s.io/windows-testing
     workdir: true
   spec:
     containers:
@@ -288,7 +296,6 @@ periodics:
     preset-capz-windows-common-main: "true"
     preset-capz-containerd-latest: "true"
     preset-capz-serial-slow: "true"
-    preset-capz-gmsa-setup: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
