@@ -1445,6 +1445,46 @@ plugins:
     - milestone
     - milestonestatus
 
+  kubernetes-sigs/custom-metrics-apiserver:
+    plugins:
+    - require-matching-label
+
+  kubernetes-sigs/instrumentation-addons:
+    plugins:
+    - require-matching-label
+
+  kubernetes-sigs/instrumentation-tools:
+    plugins:
+    - require-matching-label
+
+  kubernetes/klog:
+    plugins:
+    - require-matching-label
+
+  kubernetes/kube-state-metrics:
+    plugins:
+    - require-matching-label
+
+  kubernetes/metrics:
+    plugins:
+    - require-matching-label
+
+  kubernetes-sigs/metrics-server:
+    plugins:
+    - require-matching-label
+
+  kubernetes-sigs/prometheus-adapter:
+    plugins:
+    - require-matching-label
+
+  kubernetes-sigs/logtools:
+    plugins:
+    - require-matching-label
+
+  kubernetes-sigs/usage-metrics-collector:
+    plugins:
+    - require-matching-label
+
 external_plugins:
   kubernetes:
   - name: needs-rebase
