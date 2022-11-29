@@ -25,7 +25,6 @@ periodics:
             cpu: 2
             memory: "4Gi"
   annotations:
-    fork-per-release: "true"
 #   testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-signal
     testgrid-tab-name: windows-unit-master
