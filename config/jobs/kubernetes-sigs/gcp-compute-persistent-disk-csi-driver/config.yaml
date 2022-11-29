@@ -111,6 +111,11 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-k8s-integration.sh"
+        env:
+        - name: GCE_PD_OVERLAY_NAME
+          value: "dev"
+        - name: GCE_PD_DO_DRIVER_BUILD
+          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
