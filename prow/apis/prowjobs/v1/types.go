@@ -217,7 +217,7 @@ type ProwJobSpec struct {
 	// JobQueueName is an optional field with name of a queue defining
 	// max concurrency. When several jobs from the same queue try to run
 	// at the same time, the number of them that is actually started is
-	// limited by JobQueueConcurrencies (part of Plank's config). If
+	// limited by JobQueueCapacities (part of Plank's config). If
 	// this field is left undefined inifinite concurrency is assumed.
 	// This behaviour may be superseded by MaxConcurrency field, if it
 	// is set to a constraining value.

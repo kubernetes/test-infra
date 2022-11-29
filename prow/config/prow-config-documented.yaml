@@ -1033,7 +1033,7 @@ plank:
                 # sidecar is the pull spec used for the sidecar utility
                 sidecar: ' '
 
-    # JobQueueConcurrencies is an optional field used to define job queue max concurrency.
+    # JobQueueCapacities is an optional field used to define job queue max concurrency.
     # Each job can be assigned to a specific queue which has its own max concurrency,
     # independent from the job's name. Setting the concurrency to 0 will block any job
     # from being triggered. Setting the concurrency to a negative value will remove the
