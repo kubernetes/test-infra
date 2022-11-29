@@ -60,6 +60,7 @@ periodics:
   tags:
   - "perfDashPrefix: golang-tip-k8s-1-23"
   - "perfDashJobType: performance"
+  - "perfDashBuildsCount: 500"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
