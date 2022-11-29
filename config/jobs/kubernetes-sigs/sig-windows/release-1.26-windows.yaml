@@ -44,5 +44,5 @@ periodics:
         privileged: true
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-release-1.26-informing, sig-windows-signal
+    testgrid-dashboards: sig-release-1.26-informing, sig-windows-signal,  sig-windows-1.26-release
     testgrid-tab-name: capz-windows-containerd-1.26
