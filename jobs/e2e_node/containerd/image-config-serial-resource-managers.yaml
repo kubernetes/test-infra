@@ -7,10 +7,10 @@ images:
     project: ubuntu-os-cloud
     # Using `n1-standard-4` to enable CPU manager node e2e tests.
     machine: n1-standard-4
-    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config.toml"
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config-systemd.toml"
   cos-stable1:
     image_family: cos-stable
     project: cos-cloud
-    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config.toml"
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config-systemd.toml"
     # Using `n1-standard-4` to enable CPU manager node e2e tests.
     machine: n1-standard-4
