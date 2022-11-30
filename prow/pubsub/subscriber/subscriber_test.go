@@ -18,6 +18,7 @@ package subscriber
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -553,12 +554,11 @@ func TestHandlePeriodicJob(t *testing.T) {
 				ConfigAgent:   ca,
 				Reporter:      &fr,
 			}
-			m, err := tc.pe.ToMessage()
+			m, err := json.Marshal(tc.pe)
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
-			m.ID = "id"
-			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, "", PeriodicProwJobEvent, tc.allowedClusters)
+			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, m, "", PeriodicProwJobEvent, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())

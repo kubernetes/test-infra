@@ -366,14 +366,21 @@ func extractFromAttribute(attrs map[string]string, key string) (string, error) {
 }
 
 func (s *Subscriber) handleMessage(msg messageInterface, subscription string, allowedClusters []string) error {
+	// Observed message payload drifts to the payload from another pubsub
+	// message and couldn't figure out why. Extracts the values ahead of time
+	// and hopefully could mitigate this issue for now.
+	// TODO(chaodaiG): remove these once figured out the root cause of data race.
+	msgID := msg.getID()
+	msgPayload := msg.getPayload()
+	msgAttributes := msg.getAttributes()
+
 	l := logrus.WithFields(logrus.Fields{
 		"pubsub-subscription": subscription,
-		"pubsub-id":           msg.getID()})
+		"pubsub-id":           msgID})
 	s.Metrics.MessageCounter.With(prometheus.Labels{subscriptionLabel: subscription}).Inc()
-	// TODO(chaodaiG): logging payload for debugging purpose, remove once the
-	// bug is fixed.
-	l.WithField("payload", string(msg.getPayload())).Debug("Received message")
-	eType, err := extractFromAttribute(msg.getAttributes(), ProwEventType)
+
+	l.WithField("payload", string(msgPayload)).Debug("Received message")
+	eType, err := extractFromAttribute(msgAttributes, ProwEventType)
 	if err != nil {
 		l.WithError(err).Error("failed to read message")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
@@ -399,7 +406,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		}).Inc()
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
-	if err = s.handleProwJob(l, jh, msg, subscription, eType, allowedClusters); err != nil {
+	if err = s.handleProwJob(l, jh, msgPayload, subscription, eType, allowedClusters); err != nil {
 		l.WithError(err).Info("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
@@ -409,6 +416,9 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 			errorTypeLabel: "failed-handle-prowjob",
 		}).Inc()
 	}
+
+	// TODO(chaodaiG): debugging purpose, remove once done debugging.
+	l.WithField("payload", string(msg.getPayload())).WithField("post-id", msg.getID()).Debug("Finished handling message")
 	return err
 }
 
@@ -444,12 +454,12 @@ func tryGetCloneURIAndHost(pe ProwJobEvent) (cloneURI, host string) {
 	return orgRepo, org
 }
 
-func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription, eType string, allowedClusters []string) error {
+func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []byte, subscription, eType string, allowedClusters []string) error {
 
 	var pe ProwJobEvent
 	var prowJob prowapi.ProwJob
 
-	if err := pe.FromPayload(msg.getPayload()); err != nil {
+	if err := pe.FromPayload(msgPayload); err != nil {
 		return err
 	}
 
