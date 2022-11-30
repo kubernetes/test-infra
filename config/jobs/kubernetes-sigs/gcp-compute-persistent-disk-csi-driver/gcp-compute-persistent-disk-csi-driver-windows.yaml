@@ -76,6 +76,10 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
+        - name: GCE_PD_OVERLAY_NAME
+          value: "dev"
+        - name: GCE_PD_DO_DRIVER_BUILD
+          value: "true"
         securityContext:
           privileged: true
         resources:
