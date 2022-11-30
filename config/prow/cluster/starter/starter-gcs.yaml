@@ -100,10 +100,10 @@ data:
             path_strategy: explicit
           gcs_credentials_secret: gcs-credentials
           utility_images:
-            clonerefs: gcr.io/k8s-prow/clonerefs:v20221129-f31ea794ef
-            entrypoint: gcr.io/k8s-prow/entrypoint:v20221129-f31ea794ef
-            initupload: gcr.io/k8s-prow/initupload:v20221129-f31ea794ef
-            sidecar: gcr.io/k8s-prow/sidecar:v20221129-f31ea794ef
+            clonerefs: gcr.io/k8s-prow/clonerefs:v20221130-091b4b6d0e
+            entrypoint: gcr.io/k8s-prow/entrypoint:v20221130-091b4b6d0e
+            initupload: gcr.io/k8s-prow/initupload:v20221130-091b4b6d0e
+            sidecar: gcr.io/k8s-prow/sidecar:v20221130-091b4b6d0e
 
     tide:
       queries:
@@ -154,7 +154,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/hook:v20221130-091b4b6d0e
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -244,7 +244,7 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/sinker:v20221130-091b4b6d0e
         args:
         - --config-path=/etc/config/config.yaml
         - --dry-run=false
@@ -283,7 +283,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/deck:v20221130-091b4b6d0e
         args:
         - --config-path=/etc/config/config.yaml
         - --plugin-config=/etc/plugins/plugins.yaml
@@ -380,7 +380,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/horologium:v20221130-091b4b6d0e
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -415,7 +415,7 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/tide:v20221130-091b4b6d0e
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
@@ -526,7 +526,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/status-reconciler:v20221130-091b4b6d0e
         args:
         - --dry-run=false
         - --continue-on-error=true
@@ -918,7 +918,7 @@ spec:
     spec:
       containers:
       - name: ghproxy
-        image: gcr.io/k8s-prow/ghproxy:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/ghproxy:v20221130-091b4b6d0e
         args:
         - --cache-dir=/cache
         - --cache-sizeGB=99
@@ -987,7 +987,7 @@ spec:
             secretKeyRef:
               name: github-token
               key: appid
-        image: gcr.io/k8s-prow/prow-controller-manager:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/prow-controller-manager:v20221130-091b4b6d0e
         volumeMounts:
         - name: github-token
           mountPath: /etc/github
@@ -1122,7 +1122,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20221129-f31ea794ef
+        image: gcr.io/k8s-prow/crier:v20221130-091b4b6d0e
         args:
         - --blob-storage-workers=10
         - --config-path=/etc/config/config.yaml
