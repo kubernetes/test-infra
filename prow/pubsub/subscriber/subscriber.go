@@ -459,10 +459,12 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 	var pe ProwJobEvent
 	var prowJob prowapi.ProwJob
 
+	l.WithField("raw-payload", string(msgPayload)).Debug("Raw payload passed in handleProwJob.")
 	if err := pe.FromPayload(msgPayload); err != nil {
 		return err
 	}
 
+	l.WithField("prowjob-event", pe).Debug("ProwjobEvent unmarshalled.")
 	reportProwJob := func(pj *prowapi.ProwJob, state v1.ProwJobState, err error) {
 		pj.Status.State = state
 		pj.Status.Description = "Successfully triggered prowjob."
@@ -500,6 +502,8 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 		return fmt.Errorf("failed getting prowjob spec") // This should not happen
 	}
 
+	l.WithField("prowjob-event", pe).WithField("annotations", annotations).Debug("ProwjobEvent and annotations after getProwJobSpec.")
+
 	// deny job that runs on not allowed cluster
 	var clusterIsAllowed bool
 	for _, allowedCluster := range allowedClusters {
@@ -531,6 +535,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 		annotations[k] = v
 	}
 
+	l.WithField("prowjob-event", pe).WithField("annotations", annotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before pjutil.NewProwJob.")
 	// Adds annotations
 	prowJob = pjutil.NewProwJob(*prowJobSpec, labels, annotations)
 	// Adds / Updates Environments to containers
@@ -543,14 +548,16 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 		}
 	}
 
+	l.WithField("prowjob-event", pe).WithField("annotations", annotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before creating prowjob.")
 	if _, err := s.ProwJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
 		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
 	l.WithFields(logrus.Fields{
-		"job":  pe.Name,
-		"name": prowJob.Name,
+		"job":                 pe.Name,
+		"name":                prowJob.Name,
+		"prowjob-annotations": prowJob.Annotations,
 	}).Info("Job created.")
 	reportProwJobTriggered(&prowJob)
 	return nil
