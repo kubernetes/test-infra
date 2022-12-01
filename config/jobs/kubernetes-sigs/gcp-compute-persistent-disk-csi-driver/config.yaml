@@ -25,7 +25,7 @@ presubmits:
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-e2e
       description: Kubernetes e2e tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
-    always_run: true
+    always_run: false
     labels:
       preset-service-account: "true"
     spec:
