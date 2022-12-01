@@ -658,7 +658,6 @@ tide:
     - kubernetes/component-helpers
     - kubernetes/controller-manager
     - kubernetes/cri-api
-    - kubernetes/csi-api
     - kubernetes/csi-translation-lib
     - kubernetes/kube-aggregator
     - kubernetes/kube-controller-manager
