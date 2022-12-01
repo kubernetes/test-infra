@@ -1610,6 +1610,10 @@ func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, b
 
 	var result []config.Presubmit
 	for _, ps := range presubmits {
+		// PR is required only by Gerrit, the required "label" will be extracted
+		// from a PR. Assuming the submission requirement for a given label is
+		// consistent across all PRs from the same repo at a given time point,
+		// which should be a safe assumption.
 		if !c.provider.jobIsRequiredByTide(&ps, &prs[0]) {
 			continue
 		}
