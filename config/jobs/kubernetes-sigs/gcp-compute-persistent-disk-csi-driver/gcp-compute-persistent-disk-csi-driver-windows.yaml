@@ -63,9 +63,9 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
         args:
-        - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
         - "--timeout=180" # Minutes (120m runs consistently time out)
         - "--scenario=execute"
