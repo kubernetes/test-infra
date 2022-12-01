@@ -502,7 +502,26 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 		return fmt.Errorf("failed getting prowjob spec") // This should not happen
 	}
 
-	l.WithField("prowjob-event", pe).WithField("annotations", annotations).Debug("ProwjobEvent and annotations after getProwJobSpec.")
+	// Copy labels and annotations instead of modifying them, they are pointers
+	// to the static prowjobs labels and annotations.
+	combinedLabels := make(map[string]string)
+	combinedAnnotations := make(map[string]string)
+	for k, v := range labels {
+		combinedLabels[k] = v
+	}
+	for k, v := range annotations {
+		combinedAnnotations[k] = v
+	}
+
+	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).Debug("ProwjobEvent and annotations after getProwJobSpec.")
+
+	// Adds / Updates Labels from prow job event
+	for k, v := range pe.Labels {
+		combinedLabels[k] = v
+	}
+	for k, v := range pe.Annotations {
+		combinedAnnotations[k] = v
+	}
 
 	// deny job that runs on not allowed cluster
 	var clusterIsAllowed bool
@@ -521,23 +540,9 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 		return err
 	}
 
-	// Adds / Updates Labels from prow job event
-	if labels == nil { // Could be nil if the job doesn't have label
-		labels = make(map[string]string)
-	}
-	for k, v := range pe.Labels {
-		labels[k] = v
-	}
-	if annotations == nil {
-		annotations = make(map[string]string)
-	}
-	for k, v := range pe.Annotations {
-		annotations[k] = v
-	}
-
-	l.WithField("prowjob-event", pe).WithField("annotations", annotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before pjutil.NewProwJob.")
+	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before pjutil.NewProwJob.")
 	// Adds annotations
-	prowJob = pjutil.NewProwJob(*prowJobSpec, labels, annotations)
+	prowJob = pjutil.NewProwJob(*prowJobSpec, combinedLabels, combinedAnnotations)
 	// Adds / Updates Environments to containers
 	if prowJob.Spec.PodSpec != nil {
 		for i, c := range prowJob.Spec.PodSpec.Containers {
@@ -548,7 +553,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 		}
 	}
 
-	l.WithField("prowjob-event", pe).WithField("annotations", annotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before creating prowjob.")
+	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before creating prowjob.")
 	if _, err := s.ProwJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
 		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
 		reportProwJobFailure(&prowJob, err)
