@@ -127,7 +127,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20221130-8653528407
+    - image: gcr.io/k8s-prow/generic-autobumper:v20221201-5f3a3ac62d
       command:
       - generic-autobumper
       args:
@@ -166,7 +166,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20221130-8653528407
+    - image: gcr.io/k8s-prow/generic-autobumper:v20221201-5f3a3ac62d
       command:
       - generic-autobumper
       args:
