@@ -251,6 +251,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
+    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh'
     decorate: true
     decoration_config:
       timeout: 4h
@@ -284,6 +285,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh'
     decoration_config:
       timeout: 4h
     max_concurrency: 5
@@ -316,6 +318,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
+    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh'
     decorate: true
     decoration_config:
       timeout: 4h
