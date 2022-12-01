@@ -481,3 +481,23 @@ func (p *GerritProvider) labelsAndAnnotations(instance string, jobLabels, jobAnn
 	labels, annotations = gerritadaptor.LabelsAndAnnotations(instance, jobLabels, jobAnnotations, changes...)
 	return
 }
+
+func (p *GerritProvider) jobIsRequiredByTide(ps *config.Presubmit, crc *CodeReviewCommon) bool {
+	if ps.RunBeforeMerge {
+		return true
+	}
+
+	pr := crc.Gerrit
+	requireLabels := sets.NewString()
+	for l, info := range pr.Labels {
+		if !info.Optional {
+			requireLabels.Insert(l)
+		}
+	}
+
+	val, ok := ps.Labels[kube.GerritReportLabel]
+	if !ok {
+		return false
+	}
+	return requireLabels.Has(val)
+}

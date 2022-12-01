@@ -249,4 +249,8 @@ type provider interface {
 
 	refsForJob(sp subpool, prs []CodeReviewCommon) (prowapi.Refs, error)
 	labelsAndAnnotations(instance string, jobLabels, jobAnnotations map[string]string, changes ...CodeReviewCommon) (labels, annotations map[string]string)
+
+	// jobIsRequiredByTide is defined by each provider for figuring out whether
+	// a job is required by Tide or not.
+	jobIsRequiredByTide(ps *config.Presubmit, pr *CodeReviewCommon) bool
 }
