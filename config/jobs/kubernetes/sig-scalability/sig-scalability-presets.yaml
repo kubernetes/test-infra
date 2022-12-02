@@ -165,7 +165,8 @@ presets:
   - name: KUBEPROXY_TEST_ARGS
     # TODO(#74011): Remove metrics-bind-address if the default is set.
     # FeatureGate added in #110268 v1.26
-    value: "--profiling --metrics-bind-address=0.0.0.0 --feature-gates=MinimizeIPTablesRestore=true"
+    # TODO(#114229): Use default kube-proxy minSyncPeriod of 1s, remove when last supported version is v1.27
+    value: "--profiling --metrics-bind-address=0.0.0.0 --iptables-min-sync-period=1s --feature-gates=MinimizeIPTablesRestore=true"
   - name: SCHEDULER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity.
