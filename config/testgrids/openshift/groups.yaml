@@ -20,7 +20,6 @@ dashboard_groups:
   - redhat-openshift-ocp-release-4.3-blocking
   - redhat-openshift-ocp-release-4.3-informing
   - redhat-openshift-ocp-release-4.4-blocking
-  - redhat-openshift-ocp-release-4.4-broken
   - redhat-openshift-ocp-release-4.4-informing
   - redhat-openshift-ocp-release-4.5-blocking
   - redhat-openshift-ocp-release-4.5-broken
