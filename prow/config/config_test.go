@@ -36,6 +36,7 @@ import (
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -7599,6 +7600,131 @@ func TestInRepoConfigAllowsCluster(t *testing.T) {
 
 			if actual := cfg.InRepoConfigAllowsCluster(clusterName, tc.repoIdentifier); actual != tc.expectedResult {
 				t.Errorf("expected result %t, got result %t", tc.expectedResult, actual)
+			}
+		})
+	}
+}
+
+func TestMergeDefaultDecorationConfig(t *testing.T) {
+	ptrBool := func(b bool) *bool {
+		return &b
+	}
+	ptrStr := func(s string) *string {
+		return &s
+	}
+	ptrRes := func(res resource.Quantity) *resource.Quantity {
+		return &res
+	}
+	const repo = "org/repo"
+	const cluster = "default"
+
+	tests := []struct {
+		name   string
+		p      Plank
+		jobDC  *prowapi.DecorationConfig
+		wantDC *prowapi.DecorationConfig
+	}{
+		{
+			name: "base",
+			p: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+				{
+					OrgRepo: "*",
+					Cluster: "*",
+					Config: &prowapi.DecorationConfig{
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							MediaTypes: map[string]string{"text": "text"},
+						},
+						GCSCredentialsSecret: pStr("service-account-secret"),
+					},
+				},
+				{
+					OrgRepo: repo,
+					Cluster: "*",
+					Config: &prowapi.DecorationConfig{
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							MediaTypes: map[string]string{"text": "text2"},
+						},
+					},
+				},
+				{
+					OrgRepo: "*",
+					Cluster: cluster,
+					Config: &prowapi.DecorationConfig{
+						DefaultServiceAccountName:   pStr("service-account-name"),
+						GCSCredentialsSecret:        pStr(""),
+						SetLimitEqualsMemoryRequest: ptrBool(true),
+						DefaultMemoryRequest:        ptrRes(resource.MustParse("8Gi")),
+					},
+				},
+			}},
+			jobDC: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket: "special-bucket",
+				},
+			},
+			wantDC: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:     "special-bucket",
+					MediaTypes: map[string]string{"text": "text"},
+				},
+				GCSCredentialsSecret:        ptrStr(""),
+				DefaultServiceAccountName:   ptrStr("service-account-name"),
+				SetLimitEqualsMemoryRequest: ptrBool(true),
+				DefaultMemoryRequest:        ptrRes(resource.MustParse("8Gi")),
+			},
+		},
+		{
+			name: "job-has-no-dc",
+			p: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{
+				{
+					OrgRepo: "*",
+					Cluster: "*",
+					Config: &prowapi.DecorationConfig{
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							MediaTypes: map[string]string{"text": "text"},
+						},
+						GCSCredentialsSecret: pStr("service-account-secret"),
+					},
+				},
+				{
+					OrgRepo: repo,
+					Cluster: "*",
+					Config: &prowapi.DecorationConfig{
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							MediaTypes: map[string]string{"text": "text2"},
+						},
+					},
+				},
+				{
+					OrgRepo: "*",
+					Cluster: cluster,
+					Config: &prowapi.DecorationConfig{
+						DefaultServiceAccountName:   pStr("service-account-name"),
+						GCSCredentialsSecret:        pStr(""),
+						SetLimitEqualsMemoryRequest: ptrBool(true),
+						DefaultMemoryRequest:        ptrRes(resource.MustParse("8Gi")),
+					},
+				},
+			}},
+			jobDC: nil,
+			wantDC: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					MediaTypes: map[string]string{"text": "text"},
+				},
+				GCSCredentialsSecret:        ptrStr(""),
+				DefaultServiceAccountName:   ptrStr("service-account-name"),
+				SetLimitEqualsMemoryRequest: ptrBool(true),
+				DefaultMemoryRequest:        ptrRes(resource.MustParse("8Gi")),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			gotDC := tc.p.mergeDefaultDecorationConfig(repo, cluster, tc.jobDC)
+			if diff := cmp.Diff(tc.wantDC, gotDC); diff != "" {
+				t.Errorf("Job Decoration Config mismatch. Want(-), got(+):\n%s", diff)
 			}
 		})
 	}
