@@ -1607,6 +1607,7 @@ presubmits:
       containers:
       - args:
         - --root=/go/src
+        - --job=$(JOB_NAME)
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --repo=github.com/containerd/containerd=main
