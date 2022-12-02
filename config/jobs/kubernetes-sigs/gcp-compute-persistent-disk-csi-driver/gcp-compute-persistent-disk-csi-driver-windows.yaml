@@ -23,7 +23,7 @@ periodics:
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
-      - "--timeout=180" # Minutes (120m runs consistently time out)
+      - "--timeout=360" # Minutes (120m runs consistently time out)
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
       - "test/run-windows-k8s-integration.sh"
