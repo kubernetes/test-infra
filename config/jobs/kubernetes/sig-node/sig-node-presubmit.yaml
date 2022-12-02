@@ -1605,34 +1605,34 @@ presubmits:
       description: Executes inplace pod resize e2e tests with containerd/main and cgroupv2
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-master
-        args:
-          - "--job=$(JOB_NAME)"
-          - --root=/go/src
-          - --repo=github.com/containerd/containerd=main
-          - --repo=k8s.io/kubernetes=$(PULL_REFS)
-          - --repo=k8s.io/release
-          - --upload=gs://kubernetes-jenkins/pr-logs
-          - --service-account=/etc/service-account/service-account.json
-          - --timeout=180
-          - --scenario=kubernetes_e2e
-          - -- # end bootstrap args, scenario args below
-          - --ginkgo-parallel=1
-          - --build=quick
-          - --cluster=
-          - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
-          - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
-          - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
-          - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
-          - --extract=local
-          - --gcp-node-image=gci
-          - --gcp-zone=us-west1-b
-          - --provider=gce
-          - --gcp-nodes=1
-          - --runtime-config=api/all=true
-          - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-inplace-pod-resize-containerd-main-v2
-          - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\]
-          - --timeout=150m
+      - args:
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --repo=github.com/containerd/containerd=main
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=180
+        - --scenario=kubernetes_e2e
+        - -- # end bootstrap args, scenario args below
+        - --ginkgo-parallel=1
+        - --build=quick
+        - --cluster=
+        - --env=KUBE_FEATURE_GATES=InPlacePodVerticalScaling=true
+        - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+        - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+        - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --gcp-nodes=1
+        - --runtime-config=api/all=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-inplace-pod-resize-containerd-main-v2
+        - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\]
+        - --timeout=150m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
         resources:
           limits:
             cpu: 4
