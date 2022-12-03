@@ -1094,8 +1094,6 @@ def generate_presubmits_network_plugins():
         if plugin in supports_ipv6:
             if plugin == 'amazonvpc':
                 run_if_changed = None
-            if plugin == 'cilium':
-                optional = True
             results.append(
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
