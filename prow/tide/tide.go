@@ -22,6 +22,7 @@ package tide
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -1557,7 +1558,7 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 		log.WithField("num_possible_presubmit", len(presubmitsForPull)).Debug("Found possible presubmits")
 
 		for _, ps := range presubmitsForPull {
-			if !ps.ContextRequired() {
+			if !c.provider.jobIsRequiredByTide(&ps, &pr) {
 				continue
 			}
 
@@ -1591,6 +1592,11 @@ func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubm
 func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
 	log := c.logger.WithFields(logrus.Fields{"repo": repo, "org": org, "base-sha": baseSHA, "base-branch": baseBranch})
 
+	if len(prs) == 0 {
+		log.Debug("No PRs, skip looking for presubmits for batch.")
+		return nil, errors.New("no PRs are provided")
+	}
+
 	var headRefGetters []config.RefGetter
 	for _, pr := range prs {
 		headRefGetters = append(headRefGetters, refGetterFactory(pr.HeadRefOID))
@@ -1604,7 +1610,11 @@ func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, b
 
 	var result []config.Presubmit
 	for _, ps := range presubmits {
-		if !ps.ContextRequired() {
+		// PR is required only by Gerrit, the required "label" will be extracted
+		// from a PR. Assuming the submission requirement for a given label is
+		// consistent across all PRs from the same repo at a given time point,
+		// which should be a safe assumption.
+		if !c.provider.jobIsRequiredByTide(&ps, &prs[0]) {
 			continue
 		}
 
