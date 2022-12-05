@@ -6,6 +6,8 @@ plank:
     '*': https://prow.k8s.io/view/
   pod_pending_timeout: 15m
   pod_unscheduled_timeout: 5m
+  job_queue_capacities:
+    'k8sio-image-promo': 1
   default_decoration_config_entries:
   - config:
       timeout: 2h
