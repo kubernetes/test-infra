@@ -17,7 +17,7 @@ presets:
       - key: win-soak-test
         path: win-soak-test.kubeconfig
 presubmits:
-  kubernetes/perf-tests:
+  kubernetes/test-infra:
   - name: soak-tests-capz-windows-2019
     decorate: true
     always_run: false
@@ -25,35 +25,30 @@ presubmits:
     decoration_config:
       timeout: 8h
     path_alias: k8s.io/perf-tests
+    cluster: win-soak-test
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-win-soak-test-creds: "true"
     extra_refs:
-      # This needs to be uncommented when we switch to periodic job.
-      # - org: kubernetes
-      #   repo: perf-tests
-      #   base_ref: "main"
-      #   path_alias: "k8s.io/perf-tests"
-      - org: kubernetes-sigs
-        repo: cluster-api-provider-azure
-        base_ref: release-1.6
-        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: "main"
+        path_alias: "k8s.io/perf-tests"
         workdir: true
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
           command:
-            - runner.sh
-            - ./scripts/ci-entrypoint.sh
+            - ./run-e2e.sh
           args:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/k8s.io/perf-tests/ &&
-              ./run-e2e.sh cluster-loader2
+              cluster-loader2
               --testconfig=testing/windows-tests/config.yaml
               --provider=aks
               --report-dir=${ARTIFACTS}
@@ -61,19 +56,6 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            # CAPZ variables
-            - name: NODE_MACHINE_TYPE
-              value: "Standard_D4s_v3"
-            - name: TEST_WINDOWS
-              value: "true"
-            - name: KUBERNETES_VERSION
-              value: "v1.25.3"
-            - name: WINDOWS_WORKER_MACHINE_COUNT
-              value: "1"
-            - name: WORKER_MACHINE_COUNT
-              value: "0" # Don't create linux worker nodes
-            - name: CL2_POD_COUNT
-              value: "10"
             # clusterloader2 variables
             - name: ENABLE_PROMETHEUS_SERVER
               value: "true"
@@ -85,15 +67,8 @@ presubmits:
               value: "true"
             - name: CL2_PROMETHEUS_TOLERATE_MASTER
               value: "true"
-            # azuredisk variables - required for Prometheus PVC
-            - name: DEPLOY_AZURE_CSI_DRIVER
-              value: "true"
-            - name: AZUREDISK_CSI_DRIVER_VERSION
-              value: "master"
-            - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
-              value: "kubernetes.io/azure-disk"
-            - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
-              value: "StandardSSD_LRS"
+            - name: CL2_POD_COUNT
+              value: "10"
     annotations:
       testgrid-dashboards: sig-windows-soak-tests
       testgrid-tab-name: soak-tests-capz-windows-2019
@@ -103,8 +78,6 @@ periodics:
   - name: delete-win-soak-test-cluster
     cron: "0 0 * * SUN"
     decorate: true
-    always_run: true
-    optional: true
     decoration_config:
       timeout: 8h
     labels:
@@ -136,8 +109,6 @@ periodics:
   - name: build-win-soak-test-cluster
     cron: "0 1 * * SUN"
     decorate: true
-    always_run: true
-    optional: true
     decoration_config:
       timeout: 8h
     labels:
