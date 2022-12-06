@@ -35,6 +35,10 @@ postsubmits:
     # into a case where an older manifest PR merge gets run last (after a newer
     # one).
     max_concurrency: 1
+    # Run only 1 of image promotion postsubmit and periodic at the same time.
+    # This is an important step to ensure that we avoid issues of running promotion
+    # twice in parallel, such as double signing images.
+    job_queue_name: "k8sio-image-promo"
     branches:
     - ^main$
     spec:
@@ -128,6 +132,10 @@ periodics:
 - interval: 1h
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
+  # Run only 1 of image promotion postsubmit and periodic at the same time.
+  # This is an important step to ensure that we avoid issues of running promotion
+  # twice in parallel, such as double signing images.
+  job_queue_name: "k8sio-image-promo"
   # This name is the "job name", passed in as "--job=NAME" for mkpj.
   name: ci-k8sio-image-promo
   # Enable Pod Utilities.
