@@ -17,11 +17,16 @@ limitations under the License.
 package cache
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 
+	stdio "io"
+
 	"github.com/hashicorp/golang-lru/simplelru"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/io"
 )
 
 // Overview
@@ -40,6 +45,9 @@ import (
 type LRUCache struct {
 	*sync.Mutex
 	*simplelru.LRU
+
+	path   string
+	opener io.Opener
 }
 
 // ValConstructor is used to construct a value. The assumption is that this
@@ -86,13 +94,13 @@ func (p *Promise) resolve() {
 }
 
 // NewLRUCache returns a new LRUCache with a given size (number of elements).
-func NewLRUCache(size int) (*LRUCache, error) {
+func NewLRUCache(size int, path string, opener io.Opener) (*LRUCache, error) {
 	cache, err := simplelru.NewLRU(size, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return &LRUCache{&sync.Mutex{}, cache}, nil
+	return &LRUCache{&sync.Mutex{}, cache, path, opener}, nil
 }
 
 // GetOrAdd tries to use a cache if it is available to get a Value. It is
@@ -217,4 +225,73 @@ func (lruCache *LRUCache) GetOrAdd(
 	}
 
 	return promise.val, ok, promise.err
+}
+
+func (lc *LRUCache) Load(ctx context.Context) error {
+	if lc.path == "" {
+		return nil
+	}
+
+	reader, err := lc.opener.Reader(ctx, lc.path)
+	if err != nil {
+		if io.IsNotExist(err) {
+			// Nothing to load, it's fine.
+			return nil
+		}
+		return fmt.Errorf("open %s: %v", lc.path, err)
+	}
+
+	defer reader.Close()
+	content, err := stdio.ReadAll(reader)
+	if err != nil {
+		return fmt.Errorf("error reading file: %v", err)
+	}
+
+	lc.Mutex.Lock()
+	defer lc.Mutex.Unlock()
+
+	vals := make(map[interface{}]interface{})
+	if err := json.Unmarshal(content, &vals); err != nil {
+		return fmt.Errorf("unmarshal existing content: %v", err)
+	}
+
+	for k, v := range vals {
+		lc.LRU.Add(k, v)
+	}
+	return nil
+}
+
+func (lc *LRUCache) Flush(ctx context.Context) error {
+	if lc.path == "" {
+		return nil
+	}
+
+	lc.Mutex.Lock()
+	defer lc.Mutex.Unlock()
+
+	vals := make(map[interface{}]interface{})
+	for _, k := range lc.LRU.Keys() {
+		itf, _ := lc.LRU.Get(k)
+		prom, _ := itf.(*Promise)
+		select {
+		case <-prom.valConstructionPending: // Only get resolved
+			vals[k] = prom.val
+		}
+	}
+
+	content, err := json.Marshal(vals)
+	if err != nil {
+		return fmt.Errorf("marshal vals: %v", err)
+	}
+	writer, err := lc.opener.Writer(ctx, lc.path)
+	if err != nil {
+		return fmt.Errorf("cannot open state writer: %v", err)
+	}
+	if _, err = writer.Write(content); err != nil {
+		return fmt.Errorf("cannot write: %v", err)
+	}
+	if err = writer.Close(); err != nil {
+		logrus.WithError(err).Warn("Failed to close written state")
+	}
+	return nil
 }

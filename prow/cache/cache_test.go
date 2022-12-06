@@ -47,7 +47,7 @@ func TestGetOrAddSimple(t *testing.T) {
 		}
 	}
 
-	simpleCache, err := NewLRUCache(2)
+	simpleCache, err := NewLRUCache(2, "", nil)
 	if err != nil {
 		t.Error("could not initialize simpleCache")
 	}
@@ -241,7 +241,7 @@ func TestGetOrAddBurst(t *testing.T) {
 		}
 	}
 
-	lruCache, err := NewLRUCache(1000)
+	lruCache, err := NewLRUCache(1000, "", nil)
 	if err != nil {
 		t.Error("could not initialize lruCache")
 	}

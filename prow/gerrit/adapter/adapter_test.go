@@ -468,7 +468,9 @@ func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCacheHandle
 		10,
 		ca,
 		config.NewInRepoConfigGitCache(cf),
-		1)
+		1,
+		"",
+		nil)
 	if err != nil {
 		t.Errorf("error creating cache: %v", err)
 	}

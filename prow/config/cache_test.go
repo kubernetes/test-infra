@@ -47,7 +47,7 @@ func TestNewInRepoConfigCacheHandler(t *testing.T) {
 
 		fca := &fakeConfigAgent{}
 		cf := &testClientFactory{}
-		cache, err := NewInRepoConfigCacheHandler(invalid, fca, cf, 1)
+		cache, err := NewInRepoConfigCacheHandler(invalid, fca, cf, 1, "", nil)
 
 		if err == nil {
 			t.Fatal("Expected non-nil error, got nil")
@@ -68,7 +68,7 @@ func TestNewInRepoConfigCacheHandler(t *testing.T) {
 
 		fca := &fakeConfigAgent{}
 		cf := &testClientFactory{}
-		cache, err := NewInRepoConfigCacheHandler(valid, fca, cf, 1)
+		cache, err := NewInRepoConfigCacheHandler(valid, fca, cf, 1, "", nil)
 
 		if err != nil {
 			t.Errorf("Expected error 'nil' got '%v'", err.Error())
@@ -87,7 +87,7 @@ func TestNewInRepoConfigCache(t *testing.T) {
 
 		fca := &fakeConfigAgent{}
 		cf := &testClientFactory{}
-		cache, err := NewInRepoConfigCache(invalid, fca, cf)
+		cache, err := NewInRepoConfigCache(invalid, fca, cf, "", nil)
 
 		if err == nil {
 			t.Fatal("Expected non-nil error, got nil")
@@ -108,7 +108,7 @@ func TestNewInRepoConfigCache(t *testing.T) {
 
 		fca := &fakeConfigAgent{}
 		cf := &testClientFactory{}
-		cache, err := NewInRepoConfigCache(valid, fca, cf)
+		cache, err := NewInRepoConfigCache(valid, fca, cf, "", nil)
 
 		if err != nil {
 			t.Errorf("Expected error 'nil' got '%v'", err.Error())
@@ -409,7 +409,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 				},
 			}
 			cf := &testClientFactory{}
-			cache, err := NewInRepoConfigCache(1, fca, cf)
+			cache, err := NewInRepoConfigCache(1, fca, cf, "", nil)
 			if err != nil {
 				t.Fatal("could not initialize cache")
 			}
@@ -827,7 +827,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			cf := &testClientFactory{}
 
 			// Initialize cache. Notice that it relies on a snapshot of the Config with configBefore.
-			cache, err := NewInRepoConfigCacheHandler(10, fca, cf, 10)
+			cache, err := NewInRepoConfigCacheHandler(10, fca, cf, 10, "", nil)
 			if err != nil {
 				t1.Fatal("could not initialize cache")
 			}

@@ -129,7 +129,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating git client.")
 	}
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, ca, gitClient, o.config.InRepoConfigCacheCopies)
+	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, ca, gitClient, o.config.InRepoConfigCacheCopies, "", nil)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}

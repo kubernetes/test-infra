@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,6 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/cache"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/io"
 )
 
 // Overview
@@ -77,7 +79,9 @@ type InRepoConfigCacheHandler struct {
 func NewInRepoConfigCacheHandler(size int,
 	configAgent prowConfigAgentClient,
 	gitClientFactory git.ClientFactory,
-	count int) (*InRepoConfigCacheHandler, error) {
+	count int,
+	path string,
+	opener io.Opener) (*InRepoConfigCacheHandler, error) {
 
 	c := &InRepoConfigCacheHandler{
 		presubmitChan:  make(chan InrepoconfigPresubmitRequest),
@@ -85,8 +89,16 @@ func NewInRepoConfigCacheHandler(size int,
 	}
 
 	for i := 0; i < count; i++ {
-		cacheClient, err := NewInRepoConfigCache(size, configAgent, NewInRepoConfigGitCache(gitClientFactory))
+		// Using the same cache path means that only 1 out of count caches are
+		// written and read from the disk. This is suboptimal but should be
+		// acceptable in the short run. Consider a better approach:
+		// - each cache use different path
+		// - concatenate results before flushing
+		cacheClient, err := NewInRepoConfigCache(size, configAgent, NewInRepoConfigGitCache(gitClientFactory), path, opener)
 		if err != nil {
+			return nil, err
+		}
+		if err := cacheClient.Load(context.Background()); err != nil {
 			return nil, err
 		}
 		go cacheClient.handlePresubmit(c.presubmitChan)
@@ -101,13 +113,15 @@ func NewInRepoConfigCacheHandler(size int,
 func NewInRepoConfigCache(
 	size int,
 	configAgent prowConfigAgentClient,
-	gitClientFactory git.ClientFactory) (*InRepoConfigCache, error) {
+	gitClientFactory git.ClientFactory,
+	path string,
+	opener io.Opener) (*InRepoConfigCache, error) {
 
 	if gitClientFactory == nil {
 		return nil, fmt.Errorf("InRepoConfigCache requires a non-nil gitClientFactory")
 	}
 
-	lruCache, err := cache.NewLRUCache(size)
+	lruCache, err := cache.NewLRUCache(size, path, opener)
 	if err != nil {
 		return nil, err
 	}

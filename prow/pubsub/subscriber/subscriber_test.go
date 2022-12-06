@@ -303,7 +303,7 @@ func TestHandleMessage(t *testing.T) {
 			ca.Set(tc.config)
 			fr := fakeReporter{}
 			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true)
-			cacheHandler, _ := config.NewInRepoConfigCacheHandler(100, ca, gitClient, 1)
+			cacheHandler, _ := config.NewInRepoConfigCacheHandler(100, ca, gitClient, 1, "", nil)
 			s := Subscriber{
 				Metrics:                  NewMetrics(),
 				ProwJobClient:            fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
