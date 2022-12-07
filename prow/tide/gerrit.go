@@ -455,7 +455,7 @@ func (p *GerritProvider) GetPresubmits(identifier string, baseSHAGetter config.R
 
 func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {
 	// "CURRENT_FILES" lists all changed files from current revision, which is
-	// what we want, "CURRENT_REVISION" is required for "CURRENT_FILES"
+	// what we want, "CURRENT_REVISION" is required for "CURRENT_FILES".
 	// according to
 	// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes.
 	change, err := p.gc.GetChange(org, strconv.Itoa(number), "CURRENT_FILES", "CURRENT_REVISION")
