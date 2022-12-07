@@ -416,10 +416,6 @@ func (gi *GitHubProvider) labelsAndAnnotations(instance string, jobLabels, jobAn
 	return
 }
 
-func (gi *GitHubProvider) jobIsRequiredByTide(ps *config.Presubmit, pr *CodeReviewCommon) bool {
-	return ps.ContextRequired() || ps.RunBeforeMerge
-}
-
 // dateToken generates a GitHub search query token for the specified date range.
 // See: https://help.github.com/articles/understanding-the-search-syntax/#query-for-dates
 func dateToken(start, end time.Time) string {
