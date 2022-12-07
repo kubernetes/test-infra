@@ -2070,7 +2070,7 @@ presubmits:
       testgrid-tab-name: pull-kops-e2e-aws-upgrade-k120-kolatest-to-k121-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest-many-addons
+  - name: pull-kops-e2e-aws-upgrade-125-ko125-to-klatest-kolatest-many-addons
     branches:
     - master
     run_if_changed: '^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)'
@@ -2104,9 +2104,9 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         - name: KOPS_VERSION_A
-          value: "1.23"
+          value: "1.25"
         - name: K8S_VERSION_A
-          value: "v1.24.0"
+          value: "v1.25.0"
         - name: KOPS_VERSION_B
           value: "latest"
         - name: K8S_VERSION_B
@@ -2120,7 +2120,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-17168246d5-a5cb0.test-cncf-aws.k8s.io"
+          value: "e2e-64c18a76eb-2f540.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -2138,4 +2138,4 @@ presubmits:
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest-many-addons
+      testgrid-tab-name: pull-kops-e2e-aws-upgrade-125-ko125-to-klatest-kolatest-many-addons
