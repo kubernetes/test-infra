@@ -1441,6 +1441,7 @@ def generate_presubmits_e2e():
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
+            run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "1.23",

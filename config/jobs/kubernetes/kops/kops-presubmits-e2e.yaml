@@ -2073,6 +2073,7 @@ presubmits:
   - name: pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest-many-addons
     branches:
     - master
+    run_if_changed: '^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)'
     always_run: false
     optional: true
     skip_report: false
