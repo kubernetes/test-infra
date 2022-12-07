@@ -468,6 +468,7 @@ presubmits:
   - name: pull-kops-e2e-cni-cilium-etcd
     branches:
     - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
     always_run: false
     optional: false
     skip_report: false
@@ -533,6 +534,7 @@ presubmits:
   - name: pull-kops-e2e-cni-cilium-eni
     branches:
     - master
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
     always_run: false
     optional: false
     skip_report: false
