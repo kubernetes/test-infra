@@ -1,4 +1,4 @@
-# git image
+# git-gke-gcloud-auth image
 
 Use this image when you want to use `git`, `gke-gcloud-auth-plugin` and `alpine` as base in a job.
 
