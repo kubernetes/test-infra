@@ -212,6 +212,17 @@ func getOrgRepo(url string) (string, string, error) {
 		return "", "", fmt.Errorf("url %q has an empty org", url)
 	}
 
+	// Special-case GitHub. This is due to legacy reasons --- originally we only
+	// had GitHub and so did not even encode the leading prefix starting with
+	// "https://..."; e.g., for "https://github.com/myorg/myrepo", the org and
+	// repo were just "myorg" and "myrepo". But then Gerrit support came along
+	// and we needed to namespace Gerrit repos from GitHub ones, and the way we
+	// did this is to encode the leading URL bit for Gerrit repos. See
+	// TestGetOrgRepo for expected behavior.
+	gitHubPrefix := "https://github.com/"
+
+	org = strings.TrimPrefix(org, gitHubPrefix)
+
 	return org, repo, nil
 }
 
@@ -407,7 +418,6 @@ func (gw *Gangway) FetchJobStruct(req *CreateJobExecutionRequest) (*JobStruct, e
 	case JobExecutionType_POSTSUBMIT:
 		fallthrough
 	case JobExecutionType_PRESUBMIT:
-		// FIXME: Need to strip the leading "https://github.com/" for GitHub, and add an integration test.
 		org, repo, err := getOrgRepo(gitRefs.GetBase().GetUrl())
 		if err != nil {
 			return nil, err
