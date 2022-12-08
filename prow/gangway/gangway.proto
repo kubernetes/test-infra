@@ -35,25 +35,10 @@ service Prow {
 }
 
 message CreateJobExecutionRequest {
-  JobDefinition job_definition = 1;
-  // The source code to clone. Typically this is your repo that you want to test
-  // (for presubmits) or the repo whose master/main branch has changed (for
-  // postsubmits).
-  GitReferenceDynamic base_repo = 2;
-  // Extra source code repositories to clone. This is typically used for
-  // periodics that are not tied to any particular repo, but can be defined for
-  // presubmits or postsubmits as well.
-  //
-  // Currently periodics can define an `extraRefs` YAML array that is almost the
-  // same thing (minus the ability to define additional modifications to it, as
-  // per the definition of GitRerefenceDynamic).
-  //
-  // The `extra_repos` here will only take precedence if defined.
-  repeated GitReferenceDynamic extra_repos = 4;
-  // These pod-spec options are used to further customize the execution
-  // environment. These are critical for some components (e.g., identifying that
-  // this pod is tied to a Gerrit change).
-  PodSpecOptions pod_spec_options = 5;
+  string job_name = 1;
+  JobExecutionType job_execution_type = 2;
+  GitReferenceDynamic git_refs = 3;
+  PodSpecOptions pod_spec_options = 4;
 }
 
 message PodSpecOptions {
@@ -86,14 +71,6 @@ message JobExecution {
   google.protobuf.Timestamp create_time = 6;
   google.protobuf.Timestamp update_time = 7;
   string updated_by = 8;
-}
-
-/* JobDefinition uniquely defines a single Prow Job from the vast sea of
- * possible candidates. */
-message JobDefinition {
-  string name = 1;
-  JobExecutionType execution_type = 2;
-  GitReferenceDynamic inrepoconfig_source = 3;
 }
 
 /* The Prow codebase currently uses the word "Prow Job" to mean both the

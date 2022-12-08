@@ -89,30 +89,10 @@ presubmits:
 				"x-endpoint-api-consumer-type", "PROJECT",
 				"x-endpoint-api-consumer-number", "123"},
 			msg: &gangway.CreateJobExecutionRequest{
-				JobDefinition: &gangway.JobDefinition{
-					Name:          "trigger-inrepoconfig-presubmit-via-gangway1",
-					ExecutionType: gangway.JobExecutionType_PRESUBMIT,
-					// Define where the job definition lives from inrepoconfig.
-					InrepoconfigSource: &gangway.GitReferenceDynamic{
-						Base: &gangway.GitReferenceStatic{
-							Url:    "https://fakegitserver.default/repo/some/org/gangway-test-repo-1",
-							Commit: "f1267354a7bbc5ce7d0458cdf4d0d36e8d35d8b3",
-							Ref:    "master",
-						},
-						RefsToMerge: []*gangway.GitReferenceStatic{
-							{
-								Url:    "https://fakegitserver.default/repo/some/org/gangway-test-repo-1",
-								Commit: "458b96a96a74689447530035f5a71c426bacb505",
-								Ref:    "refs/changes/00/123/1",
-							},
-						},
-					},
-				},
-				// Define which refs will be cloned and merged before running
-				// the job. This is traditionally the same as the
-				// InrepoconfigSource but there could be use cases where this
-				// 1:1 mapping is not desirable.
-				BaseRepo: &gangway.GitReferenceDynamic{
+				JobName:          "trigger-inrepoconfig-presubmit-via-gangway1",
+				JobExecutionType: gangway.JobExecutionType_PRESUBMIT,
+				// Define where the job definition lives from inrepoconfig.
+				GitRefs: &gangway.GitReferenceDynamic{
 					Base: &gangway.GitReferenceStatic{
 						Url:    "https://fakegitserver.default/repo/some/org/gangway-test-repo-1",
 						Commit: "f1267354a7bbc5ce7d0458cdf4d0d36e8d35d8b3",
@@ -126,7 +106,6 @@ presubmits:
 						},
 					},
 				},
-				ExtraRepos: []*gangway.GitReferenceDynamic{},
 				PodSpecOptions: &gangway.PodSpecOptions{
 					Envs: map[string]string{
 						"FOO_VAR": "value-of-foo-var",
