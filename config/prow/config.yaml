@@ -583,10 +583,12 @@ branch-protection:
         kernel-module-management:
           required_status_checks:
             contexts:
+              - Build the KMMO container image
               - Prebuilt kernel module
               - Prebuilt kernel module - two nodes
               - In-cluster build
               - Container image CRD variable
+              - Test and upload to Codecov
         kube-batch:
           required_status_checks:
             contexts:
