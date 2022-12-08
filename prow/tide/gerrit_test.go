@@ -766,7 +766,7 @@ func TestGetTideContextPolicy(t *testing.T) {
 		wantErr    error
 	}{
 		{
-			name: "normal",
+			name: "base",
 			pr: gerrit.ChangeInfo{
 				Project:         "bar1",
 				Branch:          "main",
@@ -789,14 +789,10 @@ func TestGetTideContextPolicy(t *testing.T) {
 					},
 				},
 			},
-			want: &config.TideContextPolicy{
-				RequiredContexts:          []string{},
-				RequiredIfPresentContexts: []string{"job-1"},
-				OptionalContexts:          []string{},
-			},
+			want: &gerritContextChecker{},
 		},
 		{
-			name: "required",
+			name: "no-job",
 			pr: gerrit.ChangeInfo{
 				Project:         "bar1",
 				Branch:          "main",
@@ -808,54 +804,9 @@ func TestGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			presubmits: map[string][]config.Presubmit{
-				"https://foo1/bar1": {
-					{
-						Reporter: config.Reporter{Context: "job-1"},
-						JobBase: config.JobBase{
-							Labels: map[string]string{
-								"prow.k8s.io/gerrit-report-label": "Verified",
-							},
-						},
-						AlwaysRun: true,
-					},
-				},
+				"https://foo1/bar1": {},
 			},
-			want: &config.TideContextPolicy{
-				RequiredContexts:          []string{"job-1"},
-				RequiredIfPresentContexts: []string{},
-				OptionalContexts:          []string{},
-			},
-		},
-		{
-			name: "optional",
-			pr: gerrit.ChangeInfo{
-				Project:         "bar1",
-				Branch:          "main",
-				CurrentRevision: "abc123",
-				Labels: map[string]gerrit.LabelInfo{
-					"Verified": {
-						Optional: false,
-					},
-				},
-			},
-			presubmits: map[string][]config.Presubmit{
-				"https://foo1/bar1": {
-					{
-						Reporter: config.Reporter{Context: "job-1"},
-						JobBase: config.JobBase{
-							Labels: map[string]string{
-								"prow.k8s.io/gerrit-report-label": "Optional",
-							},
-						},
-						AlwaysRun: true,
-					},
-				},
-			},
-			want: &config.TideContextPolicy{
-				RequiredContexts:          []string{},
-				RequiredIfPresentContexts: []string{},
-				OptionalContexts:          []string{"job-1"},
-			},
+			want: &gerritContextChecker{},
 		},
 	}
 
