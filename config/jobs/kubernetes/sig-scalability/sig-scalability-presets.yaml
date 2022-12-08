@@ -304,8 +304,6 @@ presets:
   # increase throughput in master components and Kubelet.
   - name: ETCD_EXTRA_ARGS
     value: "--enable-pprof"
-  - name: APISERVER_TEST_ARGS
-    value: "--profiling --contention-profiling"
   - name: CONTROLLER_MANAGER_TEST_ARGS
     value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   # Bump max pods per node in Kubelet, because there are more than 10

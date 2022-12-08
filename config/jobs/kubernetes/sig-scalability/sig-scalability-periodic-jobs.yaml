@@ -171,7 +171,7 @@ periodics:
       - --kubemark-nodes=100
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
-      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -257,7 +257,7 @@ periodics:
       - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
-      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -324,7 +324,7 @@ periodics:
       - --kubemark-nodes=100
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
-      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
@@ -406,7 +406,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=500
       - --metadata-sources=cl2-metadata.json
-      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --provider=gce
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
@@ -488,7 +488,7 @@ periodics:
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
-      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -649,7 +649,7 @@ periodics:
       - --kubemark-nodes=600
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
-      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -952,7 +952,7 @@ periodics:
       - --cluster=benchmark-small
       # Eliminate test flakiness
       - --env=ALLOWED_NOTREADY_NODES=1
-      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=1000 --max-mutating-requests-inflight=0
+      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=1000 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --env=CL2_BENCHMARK_INFLIGHT=1
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps/benchmark-config-map-0?resourceVersion=0
       - --extract=ci/latest
