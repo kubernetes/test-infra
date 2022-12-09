@@ -870,6 +870,8 @@ def generate_network_plugins():
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
         k8s_version = 'stable'
+        if plugin == 'canal':
+            k8s_version = '1.25'
         if plugin == 'weave':
             k8s_version = '1.22'
         distro = 'u2204'
@@ -1071,6 +1073,8 @@ def generate_presubmits_network_plugins():
         if plugin == 'amazonvpc':
             distro = 'u2004'
             optional = True
+        if plugin == 'canal':
+            k8s_version = '1.25'
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
         if plugin == 'weave':
