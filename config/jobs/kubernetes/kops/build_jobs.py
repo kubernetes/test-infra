@@ -377,10 +377,10 @@ distro_options = [
 ]
 
 k8s_versions = [
-    "1.22",
     "1.23",
     "1.24",
-    "1.25"
+    "1.25",
+    "1.26",
 ]
 
 kops_versions = [
@@ -920,11 +920,12 @@ def generate_upgrades():
         ((kops24, 'v1.24.0'), ('latest', 'v1.24.0')),
         # 1.25 upgrade to latest
         ((kops25, 'v1.20.6'), ('latest', 'v1.21.7')),
-        ((kops25, 'v1.23.1'), ('latest', 'v1.24.0')),
         ((kops25, 'v1.24.0'), ('latest', 'v1.24.0')),
         ((kops25, 'v1.24.0'), ('latest', 'v1.25.0')),
+        ((kops25, 'v1.25.0'), ('latest', 'v1.26.0')),
         # we should have an upgrade test for every supported K8s version
-        (('latest', 'v1.25.0'), ('latest', 'latest')),
+        (('latest', 'v1.26.0'), ('latest', 'latest')),
+        (('latest', 'v1.25.0'), ('latest', 'v1.26.0')),
         (('latest', 'v1.24.0'), ('latest', 'v1.25.0')),
         (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
@@ -1006,7 +1007,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.25', '1.24', '1.23', '1.22', '1.21']:
+    for version in ['1.26', '1.25', '1.24', '1.23', '1.22', '1.21']:
         results.append(
             build_test(
                 k8s_version=version,
