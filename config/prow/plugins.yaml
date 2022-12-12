@@ -88,6 +88,7 @@ approve:
   - kubernetes-sigs/boskos
   - kubernetes-sigs/cluster-api-provider-digitalocean
   - kubernetes-sigs/cluster-api-provider-gcp
+  - kubernetes-sigs/cri-tools
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
   - kubernetes-sigs/promo-tools
@@ -209,6 +210,7 @@ lgtm:
   - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/cluster-api-provider-digitalocean
   - kubernetes-sigs/cluster-api-provider-gcp
+  - kubernetes-sigs/cri-tools
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
   - kubernetes-sigs/etcdadm
