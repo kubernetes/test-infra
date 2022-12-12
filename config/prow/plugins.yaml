@@ -101,6 +101,7 @@ approve:
   - kubernetes-sigs/release-utils
   - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/slack-infra
+  - kubernetes-sigs/tejolote
   - kubernetes-sigs/zeitgeist
   - kubernetes/community
   - kubernetes/k8s.io
@@ -221,6 +222,7 @@ lgtm:
   - kubernetes-sigs/release-sdk
   - kubernetes-sigs/release-utils
   - kubernetes-sigs/security-profiles-operator
+  - kubernetes-sigs/tejolote
   - kubernetes-sigs/zeitgeist
   - kubernetes/cloud-provider-aws
   - kubernetes/k8s.io
