@@ -21,6 +21,8 @@ postsubmits:
         env:
         - name: "BOSKOS_HOST"
           value: "boskos.test-pods.svc.cluster.local"
+        - name: E2E_GINKGO_FOCUS
+          value: "\\[PR-Blocking\\]"
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
