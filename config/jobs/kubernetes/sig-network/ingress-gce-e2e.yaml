@@ -203,32 +203,3 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: ingress-gce-e2e-canary
     description: Duplicate of ci-ingress-gce-e2e pinned to a k8s-infra community-owned project
-
-- name: ci-ingress-gce-e2e-scale
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-ingress-master-yaml: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
-      args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
-      - --extract=ci/latest
-      - --gcp-project=k8s-ingress-e2e-scale-backup
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=1
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:IngressScale\]
-      - --timeout=320m
-  annotations:
-    testgrid-dashboards: sig-network-ingress-gce-e2e
-    testgrid-tab-name: ingress-gce-e2e-scale
-    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
