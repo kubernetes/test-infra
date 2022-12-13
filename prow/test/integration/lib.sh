@@ -133,6 +133,8 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   prow_controller_manager_rbac.yaml
   prow_controller_manager_service.yaml
   prow_controller_manager_deployment.yaml
+  sinker_rbac.yaml
+  sinker_service.yaml
   sinker.yaml
 
   WAIT_fakegerritserver
