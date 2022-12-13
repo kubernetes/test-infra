@@ -14,7 +14,7 @@
 
 ARG GO_VERSION
 
-FROM multiarch/qemu-user-static:5.2.0-2 as qemu-image
+FROM multiarch/qemu-user-static:7.1.0-2 as qemu-image
 
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine
@@ -45,7 +45,7 @@ RUN gcloud config set core/disable_usage_reporting true && \
 # Install docker Buildx for fast docker builds
 ENV HOME=/root
 RUN mkdir -p  $HOME/.docker/cli-plugins \
-    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.8.0/buildx-v0.8.0.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
+    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.9.1/buildx-v0.9.1.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
     && chmod a+x $HOME/.docker/cli-plugins/docker-buildx
 
 # Copy qemu static binaries.
