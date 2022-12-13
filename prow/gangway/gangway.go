@@ -61,14 +61,6 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = validateHeaders(md)
-	if err != nil {
-		logrus.WithError(err).Error("could not validate request HTTP headers")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	enableDecoratedLogger(md)
-
 	// Validate request fields.
 	if err := req.Validate(); err != nil {
 		logrus.WithError(err).Error("could not validate request fields")
@@ -82,16 +74,35 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 	// Also see FireBase's PushID for comparison:
 	// https://firebase.blog/posts/2015/02/the-2120-ways-to-ensure-unique_68.
 
-	// FIXME (listx) Look up project ID from metadata. Then look up central
-	// *prow* (cluster) configuration to see what sort of Prow Jobs this project
-	// is allowed to trigger. Use the projectID from the request metadata.
-	// _projectID := md.Get(HEADER_API_CONSUMER_ID)[0]
-	// allowedJobCategories := ...
+	// Identify the client from the request metadata.
+	mainConfig := gw.ConfigAgent.Config()
+	allowedAPIClient, err := IdentifyAllowedClient(mainConfig, md)
+	if err != nil {
+		logrus.WithError(err).Error("could not find client in allowlist")
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
-	// Fetch the job definition. We can use most of the existing code in
-	// Sub for this. The key is to translate the existing JobDefinition data
-	// from the request into something that the codebase understands (e.g.,
-	// "pulls" instead of "refsToMerge").
+	enableDecoratedLogger(allowedAPIClient, md)
+
+	// At this point we know that this request is authorized (the request has
+	// GCP-specific headers, and the headers point to an allowlisted client ID).
+	// Now we need to check whether this authenticated API client has
+	// authorization to trigger the requested Prow Job.
+	authorized, err := ClientAuthorized(allowedAPIClient, mainConfig, req)
+	if err != nil {
+		logrus.WithError(err).Error("failed to determine client authorization")
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if !authorized {
+		logrus.Error("client is not authorized to execute the given job")
+		return nil, status.Error(codes.PermissionDenied, "client is not authorized to execute the given job")
+	}
+
+	// Fetch the job definition. We can use most of the existing code in Sub for
+	// this. The key is to translate the existing data from the request into
+	// something that the codebase understands (e.g., "pulls" instead of
+	// "refsToMerge").
 
 	jobStruct, err := gw.FetchJobStruct(req)
 	if err != nil {
@@ -224,6 +235,86 @@ func getOrgRepo(url string) (string, string, error) {
 	org = strings.TrimPrefix(org, gitHubPrefix)
 
 	return org, repo, nil
+}
+
+// IdentifyAllowedClient looks at the HTTP request headers (metadata) and tries
+// to match it up with an allowlisted Client already defined in the main Config.
+//
+// Each supported client.Type has custom logic around the HTTP metadata headers
+// to know what kind of headers to look for. Different cloud vendors will have
+// different HTTP metdata headers, although technically nothing stops users from
+// injecting these headers manually on their own.
+func IdentifyAllowedClient(c *config.Config, md *metadata.MD) (*config.AllowedAPIClient, error) {
+	if md == nil {
+		return nil, errors.New("metadata cannot be nil")
+	}
+
+	if c == nil {
+		return nil, errors.New("config cannot be nil")
+	}
+
+	for _, client := range c.AllowedAPIClients {
+		switch client.Type {
+		case "GCP_PROJECT":
+			// First check that the expected headers even exist (and are formatted correctly).
+			err := assertRequiredHeaders(md, []string{"x-endpoint-api-consumer-type", "x-endpoint-api-consumer-number"})
+			if err != nil {
+				return nil, err
+			}
+
+			v := md.Get("x-endpoint-api-consumer-type")[0]
+			if v != "PROJECT" {
+				return nil, fmt.Errorf("unsupported GCP API consumer type: %q", v)
+			}
+			v = md.Get("x-endpoint-api-consumer-number")[0]
+
+			// Now check whether we can find the same information in the Config's allowlist.
+			if client.ID == v {
+				return client, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("could not find allowed client from %v", md)
+}
+
+// ClientAuthorized checks whether or not a client can run a Prow job based on
+// the job's identifier (is this client allowed to run jobs meant for the given
+// identifier?). This needs to traverse the config to determine whether the
+// allowlist (allowed_api_clients) allows it.
+func ClientAuthorized(allowedAPIClient *config.AllowedAPIClient, c *config.Config, req *CreateJobExecutionRequest) (bool, error) {
+	switch req.GetJobExecutionType() {
+	// Skip job authorization for Periodic jobs, because they are not associated with any repo.
+	case JobExecutionType_PERIODIC:
+		return true, nil
+	case JobExecutionType_POSTSUBMIT:
+		fallthrough
+	case JobExecutionType_PRESUBMIT:
+		gitRefs := req.GetGitRefs()
+		requestedOrg, requestedRepo, err := getOrgRepo(gitRefs.GetBase().GetUrl())
+		if err != nil {
+			return false, err
+		}
+		requestedOrgRepo := fmt.Sprintf("%s/%s", requestedOrg, requestedRepo)
+
+		for _, job_subset := range allowedAPIClient.AllowedJobSubsets {
+			// Need to check if identifier falls under the job_subset.Org +
+			// job_subset.Repo.
+			allowedOrgRepo := fmt.Sprintf("%s/%s", job_subset.Org, job_subset.Repo)
+
+			if requestedOrgRepo == allowedOrgRepo {
+				return true, nil
+			}
+
+			// Allow wildcard for repos.
+			if job_subset.Repo == "*" {
+				if job_subset.Org == requestedOrg {
+					return true, nil
+				}
+			}
+		}
+	}
+	return false, nil
 }
 
 func MkRefs(grd *GitReferenceDynamic) (*prowcrd.Refs, error) {
@@ -498,16 +589,16 @@ func getHttpRequestHeaders(ctx context.Context) (error, *metadata.MD) {
 }
 
 // assertRequiredHeaders checks that some required headers exist in the given
-// metadata. In particular, it must have the special headers
-// "x-endpoint-api-consumer-type" and "x-endpoint-api-consumer-number". These
-// headers allow us to identify the caller's associated GCP Project, which we
-// need in order to filter out only those Prow Jobs that this project is allowed
-// to create. Otherwise, any caller could trigger any Prow Job, which is far
-// from ideal from a security standpoint.
+// metadata. In particular, for GCP (GKE) Prow installations it must have the
+// special headers "x-endpoint-api-consumer-type" and
+// "x-endpoint-api-consumer-number". These headers allow us to identify the
+// caller's associated GCP Project, which we need in order to filter out only
+// those Prow Jobs that this project is allowed to create. Otherwise, any caller
+// could trigger any Prow Job, which is far from ideal from a security
+// standpoint.
 //
-// FIXME: Move out these GCP-specific bits to a parameter or config to be read
-// in at runtime. We do not want to bake in cloud-vendor-specific things into
-// this code.
+// Gangway could be configured with a different cloud vendor and thus have
+// differently-named headers.
 func assertRequiredHeaders(md *metadata.MD, headers []string) error {
 	for _, header := range headers {
 		values := md.Get(header)
@@ -518,59 +609,42 @@ func assertRequiredHeaders(md *metadata.MD, headers []string) error {
 	return nil
 }
 
-// validateHeaders checks that the metadata headers make sense semantically.
-func validateHeaders(md *metadata.MD) error {
-	err := assertRequiredHeaders(md, []string{HEADER_API_CONSUMER_TYPE, HEADER_API_CONSUMER_ID})
-	if err != nil {
-		return err
-	}
-
-	v := md.Get(HEADER_API_CONSUMER_TYPE)[0]
-	if v != "PROJECT" {
-		return fmt.Errorf("unsupported %s: %q", HEADER_API_CONSUMER_TYPE, v)
-	}
-
-	v = md.Get(HEADER_API_CONSUMER_ID)[0]
-	var digitCheck = regexp.MustCompile(`^[0-9]+$`)
-	if !digitCheck.MatchString(v) {
-		return fmt.Errorf("unsupported %s (not a number): %q", HEADER_API_CONSUMER_ID, v)
-	}
-
-	return nil
-}
-
-// enableDecoratedLogger turns on a new logger that captures all known (interesting)
-// HTTP headers of a gRPC request that has been crafted by ESPv2. We convert
-// these headers into log fields so that the logger can be very precise.
-func enableDecoratedLogger(md *metadata.MD) {
-	// These headers were drawn from this example:
-	// https://github.com/envoyproxy/envoy/issues/13207 (source code appears to
-	// be
-	// https://github.com/GoogleCloudPlatform/esp-v2/blob/3828042e5b3f840e17837c1a019f4014276014d8/tests/endpoints/bookstore_grpc/server/server.go).
-	// Here's an example of what these headers can look like in practice
-	// (whitespace edited for readability):
-	//
-	//     map[
-	//       :authority:[localhost:20785]
-	//       accept-encoding:[gzip]
-	//       content-type:[application/grpc]
-	//       user-agent:[Go-http-client/1.1]
-	//       x-endpoint-api-consumer-number:[123456]
-	//       x-endpoint-api-consumer-type:[PROJECT]
-	//       x-envoy-original-method:[GET]
-	//       x-envoy-original-path:[/v1/shelves/200?key=api-key]
-	//       x-forwarded-proto:[http]
-	//       x-request-id:[44770c9a-ee5f-4e36-944e-198b8d9c5196]
-	//       ]
-	knownHeaders := []string{
-		":authority",
-		"user-agent",
-		"x-endpoint-api-consumer-number",
-		"x-endpoint-api-consumer-type",
-		"x-envoy-original-method",
-		"x-envoy-original-path",
-		"x-forwarded-proto",
-		"x-request-id",
+// enableDecoratedLogger turns on a new logger that captures all known
+// (interesting) HTTP headers of a gRPC request. We convert these headers into
+// log fields so that the logger can be very precise.
+func enableDecoratedLogger(allowedAPIClient *config.AllowedAPIClient, md *metadata.MD) {
+	knownHeaders := []string{}
+	switch allowedAPIClient.Type {
+	case "GCP_PROJECT":
+		// These headers were drawn from this example:
+		// https://github.com/envoyproxy/envoy/issues/13207 (source code appears
+		// to be
+		// https://github.com/GoogleCloudPlatform/esp-v2/blob/3828042e5b3f840e17837c1a019f4014276014d8/tests/endpoints/bookstore_grpc/server/server.go).
+		// Here's an example of what these headers can look like in practice
+		// (whitespace edited for readability):
+		//
+		//     map[
+		//       :authority:[localhost:20785]
+		//       accept-encoding:[gzip]
+		//       content-type:[application/grpc]
+		//       user-agent:[Go-http-client/1.1]
+		//       x-endpoint-api-consumer-number:[123456]
+		//       x-endpoint-api-consumer-type:[PROJECT]
+		//       x-envoy-original-method:[GET]
+		//       x-envoy-original-path:[/v1/shelves/200?key=api-key]
+		//       x-forwarded-proto:[http]
+		//       x-request-id:[44770c9a-ee5f-4e36-944e-198b8d9c5196]
+		//       ]
+		knownHeaders = []string{
+			":authority",
+			"user-agent",
+			"x-endpoint-api-consumer-number",
+			"x-endpoint-api-consumer-type",
+			"x-envoy-original-method",
+			"x-envoy-original-path",
+			"x-forwarded-proto",
+			"x-request-id",
+		}
 	}
 	fields := make(map[string]interface{})
 	for _, header := range knownHeaders {

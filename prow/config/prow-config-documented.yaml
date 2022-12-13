@@ -1,3 +1,10 @@
+allowed_api_clients:
+  - allowed_job_subsets:
+      - org: ' '
+        repo: ' '
+    id: ' '
+    name: ' '
+    type: ' '
 branch-protection:
     # AllowDeletions allows deletion of the protected branch by anyone with write access to the repository.
     allow_deletions: false

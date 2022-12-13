@@ -63,28 +63,23 @@ in_repo_config:
    "fakegitserver.default/repo/org1/repo5": true
    "fakegitserver.default/repo/some/org/gangway-test-repo-1": true
 
-# FIXME: (later) add this block to enforce some basic security guarantees
-# allowed_job_invokers:
-#
-#   # Identify the cloud provider associated with a client. "GCP_PROJECT" means a GCP Project.
-# - client_type: "GCP_PROJECT"
-#   # In this case this is the GCP Project ID number.
-#   client_id: "1000"
-#   # Human-readable name for this client; used in debug logs to help make logs
-#   # easier to read for humans. It is only used for logging and is not used for
-#   # actual business logic.
-#   client_name: "wbc-well-behaved-consumer"
-#   allowed_job_categories:
-#   # All jobs for "wbc" in a fake Git-on-Borg URL. This org will have a
-#   # "foo-repo", at the full URL
-#   # "http://fakegitserver.default/repo/wbc/foo-repo". The leading "/repo" is
-#   # where fakegitserver serves all Git repositories.
-#   - org: "http://fakegitserver.default/repo/wbc"
-#     repo: "*"
-#   # Also, allow all jobs tied to a particular build cluster.
-#   - build_cluster: wbc-cluster
-# - client_type: "GCP_PROJECT"
-#   client_id: "2000"
-#   client_name: "nc-normal-consumer"
-#   allowed_job_categories:
-#   - build_cluster: nc-cluster
+# Allowlist of Prow API clients.
+allowed_api_clients:
+  # Identify the cloud provider associated with a client. "GCP_PROJECT" means a GCP Project.
+- type: "GCP_PROJECT"
+  # In this case this is the GCP Project ID number.
+  id: "123"
+  # Human-readable name for this client; used in debug logs to help make logs
+  # easier to read for humans. It is only used for logging and is not used for
+  # actual business logic.
+  name: "wbc-well-behaved-consumer"
+
+  # We don't want this client to be able to trigger *all* jobs. So instead we
+  # limit its scope to only certain jobs defined for specific subsets of jobs.
+  allowed_job_subsets:
+  # Allow all jobs for the "wbc" org in a fake Git-on-Borg URL. This org will
+  # have a "foo-repo", at the full URL
+  # "http://fakegitserver.default/repo/wbc/foo-repo". The leading "/repo" is
+  # where fakegitserver serves all Git repositories.
+  - org: "https://fakegitserver.default/repo/some/org"
+    repo: "*"

@@ -139,6 +139,7 @@ type ProwConfig struct {
 	Horologium           Horologium           `json:"horologium"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
 	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
+	AllowedAPIClients    []*AllowedAPIClient  `json:"allowed_api_clients,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -211,6 +212,18 @@ type InRepoConfig struct {
 	// a given repo. All clusters that are allowed for the specific repo, its org or
 	// globally can be used.
 	AllowedClusters map[string][]string `json:"allowed_clusters,omitempty"`
+}
+
+type AllowedAPIClient struct {
+	Type              string              `json:"type,omitempty"`
+	ID                string              `json:"id,omitempty"`
+	Name              string              `json:"name,omitempty"`
+	AllowedJobSubsets []*AllowedJobSubset `json:"allowed_job_subsets,omitempty"`
+}
+
+type AllowedJobSubset struct {
+	Org  string `json:"org,omitempty"`
+	Repo string `json:"repo,omitempty"`
 }
 
 func SplitRepoName(fullRepoName string) (string, string, error) {
