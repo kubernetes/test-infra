@@ -237,6 +237,7 @@ lgtm:
   review_acts_as_lgtm: true
 - repos:
   - kubernetes/website
+  - kubernetes-sigs/node-feature-discovery
   store_tree_hash: true
 
 blockades:
