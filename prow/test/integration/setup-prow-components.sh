@@ -280,19 +280,9 @@ function deploy_prow() {
   # enough to only redeploy those components who configurations have changed as
   # a result of newly built images (from build_prow_images()).
   pushd "${SCRIPT_ROOT}/config/prow"
-  declare -a workers
-  do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
-  workers+=($!)
-  do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
-  workers+=($!)
-  do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f - &
-  workers+=($!)
-  for worker in ${workers[@]}; do
-    if ! wait $worker; then
-      echo >&2 "kubectl apply failed"
-      return 1
-    fi
-  done
+  do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f -
+  do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f -
+  do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f -
   popd
 
   deploy_components "${fakepubsub_node_port}"
@@ -332,10 +322,10 @@ function deploy_item() {
     # randomized node port number.
     fakepubsub.yaml)
       sed "s/FAKEPUBSUB_RANDOM_NODE_PORT/${fakepubsub_node_port}/" "${SCRIPT_ROOT}"/config/prow/cluster/"${item}" |
-        do_kubectl apply --server-side=true -f - &
+        do_kubectl apply --server-side=true -f -
       ;;
     *)
-      do_kubectl apply --server-side=true -f "${SCRIPT_ROOT}"/config/prow/cluster/"${item}" &
+      do_kubectl apply --server-side=true -f "${SCRIPT_ROOT}"/config/prow/cluster/"${item}"
       ;;
   esac
 }
