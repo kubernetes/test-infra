@@ -189,7 +189,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-1-2
-  interval: 2h
+  interval: 24h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -209,7 +209,7 @@ periodics:
     serviceAccountName: prowjob-default-sa
     containers:
     # rollback temporarily to previous version to fix the tests. We need to roll forward it later again.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.24
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -237,7 +237,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-23-1-24-release-1-2
-  interval: 2h
+  interval: 24h
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -257,7 +257,7 @@ periodics:
     serviceAccountName: prowjob-default-sa
     containers:
    # rollback temporarily to previous version to fix the tests. We need to roll forward it later again.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221116-7c85504268-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.24
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
