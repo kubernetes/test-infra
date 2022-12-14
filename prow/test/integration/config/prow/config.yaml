@@ -21,6 +21,10 @@ prowjob_default_entries:
     repo: 'testRepo'
     config:
       tenant_id: 'tester'
+  - cluster: '*'
+    repo: "https://fakegitserver.default/repo/some/org/gangway-test-repo-1"
+    config:
+      tenant_id: 'well-behaved-tenant-for-gangway'
 
 gerrit:
   tick_interval: 1s
@@ -78,9 +82,4 @@ gangway:
     # We don't want this client to be able to trigger *all* jobs. So instead we
     # limit its scope to only certain jobs defined for specific subsets of jobs.
     allowed_job_subsets:
-    # Allow all jobs for the "wbc" org in a fake Git-on-Borg URL. This org will
-    # have a "foo-repo", at the full URL
-    # "http://fakegitserver.default/repo/wbc/foo-repo". The leading "/repo" is
-    # where fakegitserver serves all Git repositories.
-    - org: "https://fakegitserver.default/repo/some/org"
-      repo: "*"
+    - tenant_id: "well-behaved-tenant-for-gangway"

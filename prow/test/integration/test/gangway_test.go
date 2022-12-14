@@ -122,6 +122,29 @@ presubmits:
 this-is-from-repoTestGangway1
 `,
 		},
+		{
+			name: "mainconfig-periodic",
+			metadata: []string{
+				"x-endpoint-api-consumer-type", "PROJECT",
+				"x-endpoint-api-consumer-number", "123"},
+			msg: &gangway.CreateJobExecutionRequest{
+				JobName:          "trigger-mainconfig-periodic-via-gangway1",
+				JobExecutionType: gangway.JobExecutionType_PERIODIC,
+				PodSpecOptions: &gangway.PodSpecOptions{
+					Envs: map[string]string{
+						"FOO_VAR": "value-of-foo-var",
+					},
+					Labels: map[string]string{
+						kube.GerritRevision: "123",
+					},
+					Annotations: map[string]string{
+						"foo_annotation": "value-of-foo-annotation",
+					},
+				},
+			},
+			want: `hello from main config periodic
+`,
+		},
 	}
 
 	// Ensure that all repos are named uniquely, because otherwise they clobber

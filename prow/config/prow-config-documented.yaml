@@ -496,8 +496,7 @@ gangway:
       - # AllowedJobSubsets contains information about what kinds of Prow jobs this
         # API client is authorized to trigger.
         allowed_job_subsets:
-          - org: ' '
-            repo: ' '
+          - tenant_id: ' '
 
         # Id contains cloud-vendor-specific information that identifies an API
         # client uniquely.

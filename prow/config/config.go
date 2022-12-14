@@ -266,10 +266,10 @@ type ApiClientIdAws struct {
 	Unimplemented string `json:"unimplemented,omitempty"`
 }
 
-// FIXME: Add description of this after we switch to tenant_id.
+// AllowedJobSubset defines filters for jobs that are allowed by an
+// authenticated API client.
 type AllowedJobSubset struct {
-	Org  string `json:"org,omitempty"`
-	Repo string `json:"repo,omitempty"`
+	TenantID string `json:"tenant_id,omitempty"`
 }
 
 // IdentifyAllowedClient looks at the HTTP request headers (metadata) and tries

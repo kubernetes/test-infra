@@ -84,21 +84,6 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 
 	enableDecoratedLogger(allowedApiClient, md)
 
-	// At this point we know that this request is authorized (the request has
-	// GCP-specific headers, and the headers point to an allowlisted client ID).
-	// Now we need to check whether this authenticated API client has
-	// authorization to trigger the requested Prow Job.
-	authorized, err := ClientAuthorized(allowedApiClient, mainConfig, req)
-	if err != nil {
-		logrus.WithError(err).Error("failed to determine client authorization")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	if !authorized {
-		logrus.Error("client is not authorized to execute the given job")
-		return nil, status.Error(codes.PermissionDenied, "client is not authorized to execute the given job")
-	}
-
 	// Fetch the job definition. We can use most of the existing code in Sub for
 	// this. The key is to translate the existing data from the request into
 	// something that the codebase understands (e.g., "pulls" instead of
@@ -131,12 +116,7 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 	// Coerce jobStruct into either a Presubmit, Postsubmit, or Periodic type, based on the
 	switch jobStruct.JobExecutionType {
 	case JobExecutionType_PERIODIC:
-		periodic, ok = (*jobStruct.Job).(config.Periodic)
-		if !ok {
-			msg := "could not coerce jobStruct.Job into Periodic"
-			logrus.Error(msg)
-			return nil, status.Error(codes.Internal, msg)
-		}
+		periodic = *jobStruct.PeriodicJob
 		// We don't allow periodic jobs to clone a base repo. This is mainly
 		// because we're using the underlying pjutil.PeriodicSpec() function
 		// which doesn't take a "refs" argument.
@@ -186,6 +166,43 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 				}
 			}
 		}
+	}
+
+	// Figure out the tenantID defined for this job by looking it up in its
+	// config, or if that's missing, finding the default one specified in the
+	// main Config.
+	var jobTenantID string
+	if prowJobCR.Spec.ProwJobDefault != nil && prowJobCR.Spec.ProwJobDefault.TenantID != "" {
+		jobTenantID = prowJobCR.Spec.ProwJobDefault.TenantID
+	} else {
+		// Derive the orgRepo from the request. Postsubmits and Presubmits both
+		// require Git refs information, so we can use that to get the job's
+		// associated orgRepo. Then we can feed this orgRepo into
+		// mainConfig.GetProwJobDefault(orgRepo, '*') to get the tenantID from
+		// the main Config's "prowjob_default_entries" field.
+		switch jobStruct.JobExecutionType {
+		case JobExecutionType_POSTSUBMIT:
+			fallthrough
+		case JobExecutionType_PRESUBMIT:
+			orgRepo := fmt.Sprintf("%s/%s", refs.Org, refs.Repo)
+			jobTenantID = mainConfig.GetProwJobDefault(orgRepo, "*").TenantID
+		}
+	}
+
+	if len(jobTenantID) == 0 {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("could not determine tenant_id for job %s", prowJobCR.Name))
+	}
+	prowJobCR.Spec.ProwJobDefault.TenantID = jobTenantID
+
+	// At this point we know that this request is authorized (the request has
+	// GCP-specific headers, and the headers point to an allowlisted client ID).
+	// Now we need to check whether this authenticated API client has
+	// authorization to trigger the requested Prow Job.
+	authorized := ClientAuthorized(allowedApiClient, prowJobCR)
+
+	if !authorized {
+		logrus.Error("client is not authorized to execute the given job")
+		return nil, status.Error(codes.PermissionDenied, "client is not authorized to execute the given job")
 	}
 
 	if _, err := gw.ProwJobClient.Create(context.TODO(), &prowJobCR, metav1.CreateOptions{}); err != nil {
@@ -241,39 +258,14 @@ func getOrgRepo(url string) (string, string, error) {
 // the job's identifier (is this client allowed to run jobs meant for the given
 // identifier?). This needs to traverse the config to determine whether the
 // allowlist (allowed_api_clients) allows it.
-func ClientAuthorized(allowedApiClient *config.AllowedApiClient, c *config.Config, req *CreateJobExecutionRequest) (bool, error) {
-	switch req.GetJobExecutionType() {
-	// Skip job authorization for Periodic jobs, because they are not associated with any repo.
-	case JobExecutionType_PERIODIC:
-		return true, nil
-	case JobExecutionType_POSTSUBMIT:
-		fallthrough
-	case JobExecutionType_PRESUBMIT:
-		gitRefs := req.GetGitRefs()
-		requestedOrg, requestedRepo, err := getOrgRepo(gitRefs.GetBase().GetUrl())
-		if err != nil {
-			return false, err
-		}
-		requestedOrgRepo := fmt.Sprintf("%s/%s", requestedOrg, requestedRepo)
-
-		for _, job_subset := range allowedApiClient.AllowedJobSubsets {
-			// Need to check if identifier falls under the job_subset.Org +
-			// job_subset.Repo.
-			allowedOrgRepo := fmt.Sprintf("%s/%s", job_subset.Org, job_subset.Repo)
-
-			if requestedOrgRepo == allowedOrgRepo {
-				return true, nil
-			}
-
-			// Allow wildcard for repos.
-			if job_subset.Repo == "*" {
-				if job_subset.Org == requestedOrg {
-					return true, nil
-				}
-			}
+func ClientAuthorized(allowedApiClient *config.AllowedApiClient, prowJobCR prowcrd.ProwJob) bool {
+	pjd := prowJobCR.Spec.ProwJobDefault
+	for _, allowedJobSubset := range allowedApiClient.AllowedJobSubsets {
+		if allowedJobSubset.TenantID == pjd.TenantID {
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
 
 func MkRefs(grd *GitReferenceDynamic) (*prowcrd.Refs, error) {
@@ -323,6 +315,9 @@ func MkRefs(grd *GitReferenceDynamic) (*prowcrd.Refs, error) {
 
 type JobStruct struct {
 	Job *interface{}
+	// FIXME: Use the "union" trick for this to only make this Job be populated
+	// by either a Periodic, Postsubmit, or Presubmit.
+	PeriodicJob *config.Periodic
 	// Encode the type of the Job to coerce into (via type assertion), so that
 	// users of JobStruct know how to make sense of the Job details.
 	JobExecutionType JobExecutionType
@@ -450,11 +445,11 @@ func (gw *Gangway) FetchJobStruct(req *CreateJobExecutionRequest) (*JobStruct, e
 		for _, candidateJob := range cfg.AllPeriodics() {
 			candidateJob := candidateJob
 			if candidateJob.Name == req.GetJobName() {
-				(*jobStruct.Job) = &candidateJob
+				jobStruct.PeriodicJob = &candidateJob
 				break
 			}
 		}
-		if jobStruct.Job == nil {
+		if jobStruct.PeriodicJob == nil {
 			return nil, fmt.Errorf("failed to find associated periodic job %q", req.GetJobName())
 		}
 	case JobExecutionType_POSTSUBMIT:
