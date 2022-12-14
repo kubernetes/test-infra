@@ -95,7 +95,6 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	var ok bool
 	var periodic config.Periodic
 	var presubmit config.Presubmit
 	var postsubmit config.Postsubmit
@@ -116,26 +115,16 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 	// Coerce jobStruct into either a Presubmit, Postsubmit, or Periodic type, based on the
 	switch jobStruct.JobExecutionType {
 	case JobExecutionType_PERIODIC:
-		periodic = *jobStruct.PeriodicJob
+		periodic = *jobStruct.Periodic
 		// We don't allow periodic jobs to clone a base repo. This is mainly
 		// because we're using the underlying pjutil.PeriodicSpec() function
 		// which doesn't take a "refs" argument.
 		spec = pjutil.PeriodicSpec(periodic)
 	case JobExecutionType_POSTSUBMIT:
-		postsubmit, ok = (*jobStruct.Job).(config.Postsubmit)
-		if !ok {
-			msg := "could not coerce jobStruct.Job into Postsubmit"
-			logrus.Error(msg)
-			return nil, status.Error(codes.Internal, msg)
-		}
+		postsubmit = *jobStruct.Postsubmit
 		spec = pjutil.PostsubmitSpec(postsubmit, *refs)
 	case JobExecutionType_PRESUBMIT:
-		presubmit, ok = (*jobStruct.Job).(config.Presubmit)
-		if !ok {
-			msg := "could not coerce jobStruct.Job into Presubmit"
-			logrus.Error(msg)
-			return nil, status.Error(codes.Internal, msg)
-		}
+		presubmit = *jobStruct.Presubmit
 		spec = pjutil.PresubmitSpec(presubmit, *refs)
 	}
 
@@ -314,92 +303,12 @@ func MkRefs(grd *GitReferenceDynamic) (*prowcrd.Refs, error) {
 }
 
 type JobStruct struct {
-	Job *interface{}
-	// FIXME: Use the "union" trick for this to only make this Job be populated
-	// by either a Periodic, Postsubmit, or Presubmit.
-	PeriodicJob *config.Periodic
+	Periodic   *config.Periodic
+	Postsubmit *config.Postsubmit
+	Presubmit  *config.Presubmit
 	// Encode the type of the Job to coerce into (via type assertion), so that
 	// users of JobStruct know how to make sense of the Job details.
 	JobExecutionType JobExecutionType
-}
-
-// We have to pay the cost of code duplication for Presubmits vs Postsubmits
-// because although they are different types they behave almost the same way for
-// purposes of fetching their job definitions. Either we duplicate a lot of the
-// same business logic, or we duplicate a lot of lower-level "infra" logic. We
-// choose to do the latter here. For an approach of duplicating the business
-// logic (which is less desirable), see the code for the "subscriber" package
-// used by the Sub component, specifically getProwJobSpec().
-type presubmitFetchers struct{}
-type postsubmitFetchers struct{}
-
-type jobFetchers interface {
-	getJobsFromStaticConfig(cfg *config.Config, orgRepo string) []interface{}
-	getJobsFromInRepoConfig(cfg *config.Config, pc *config.InRepoConfigCacheHandler, orgRepo string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]interface{}, error)
-	couldRun(job interface{}, ref string) bool
-	name(job interface{}) string
-}
-
-func (jf *presubmitFetchers) getJobsFromStaticConfig(cfg *config.Config, orgRepo string) []interface{} {
-	jobs := cfg.GetPresubmitsStatic(orgRepo)
-	ret := make([]interface{}, len(jobs))
-	for i, v := range jobs {
-		ret[i] = v
-	}
-	return ret
-}
-
-func (jf *postsubmitFetchers) getJobsFromStaticConfig(cfg *config.Config, orgRepo string) []interface{} {
-	jobs := cfg.GetPostsubmitsStatic(orgRepo)
-	ret := make([]interface{}, len(jobs))
-	for i, v := range jobs {
-		ret[i] = v
-	}
-	return ret
-}
-
-func (jf *presubmitFetchers) couldRun(job interface{}, ref string) bool {
-	typedJob := job.(config.Presubmit)
-	return typedJob.CouldRun(ref)
-}
-
-func (jf *postsubmitFetchers) couldRun(job interface{}, ref string) bool {
-	typedJob := job.(config.Postsubmit)
-	return typedJob.CouldRun(ref)
-}
-
-func (jf *presubmitFetchers) name(job interface{}) string {
-	typedJob := job.(config.Presubmit)
-	return typedJob.Name
-}
-
-func (jf *postsubmitFetchers) name(job interface{}) string {
-	typedJob := job.(config.Postsubmit)
-	return typedJob.Name
-}
-
-func (jf *presubmitFetchers) getJobsFromInRepoConfig(cfg *config.Config, pc *config.InRepoConfigCacheHandler, orgRepo string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]interface{}, error) {
-	jobs, err := pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
-	if err != nil {
-		return nil, err
-	}
-	ret := make([]interface{}, len(jobs))
-	for i, v := range jobs {
-		ret[i] = v
-	}
-	return ret, nil
-}
-
-func (jf *postsubmitFetchers) getJobsFromInRepoConfig(cfg *config.Config, pc *config.InRepoConfigCacheHandler, orgRepo string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]interface{}, error) {
-	jobs, err := pc.GetPostsubmits(orgRepo, baseSHAGetter)
-	if err != nil {
-		return nil, err
-	}
-	ret := make([]interface{}, len(jobs))
-	for i, v := range jobs {
-		ret[i] = v
-	}
-	return ret, nil
 }
 
 // FetchJobStruct looks at the sea of all possible Prow Job definitions and
@@ -433,35 +342,23 @@ func (gw *Gangway) FetchJobStruct(req *CreateJobExecutionRequest) (*JobStruct, e
 	jobStruct := JobStruct{}
 	jobStruct.JobExecutionType = req.GetJobExecutionType()
 
-	cfg := gw.ConfigAgent.Config()
+	mainConfig := gw.ConfigAgent.Config()
 	pc := gw.InRepoConfigCacheHandler
-
-	var jobFetchers jobFetchers
 
 	switch jobStruct.JobExecutionType {
 	case JobExecutionType_PERIODIC:
 		// Search for the correct Periodic job from the possible candidates
 		// defined in the central repo.
-		for _, candidateJob := range cfg.AllPeriodics() {
+		for _, candidateJob := range mainConfig.AllPeriodics() {
 			candidateJob := candidateJob
 			if candidateJob.Name == req.GetJobName() {
-				jobStruct.PeriodicJob = &candidateJob
+				jobStruct.Periodic = &candidateJob
 				break
 			}
 		}
-		if jobStruct.PeriodicJob == nil {
+		if jobStruct.Periodic == nil {
 			return nil, fmt.Errorf("failed to find associated periodic job %q", req.GetJobName())
 		}
-	case JobExecutionType_POSTSUBMIT:
-		jobFetchers = &postsubmitFetchers{}
-	case JobExecutionType_PRESUBMIT:
-		jobFetchers = &presubmitFetchers{}
-	}
-
-	// Handle presubmits and postsubmits with the same fetching logic.
-	switch jobStruct.JobExecutionType {
-	case JobExecutionType_POSTSUBMIT:
-		fallthrough
 	case JobExecutionType_PRESUBMIT:
 		org, repo, err := getOrgRepo(gitRefs.GetBase().GetUrl())
 		if err != nil {
@@ -469,13 +366,8 @@ func (gw *Gangway) FetchJobStruct(req *CreateJobExecutionRequest) (*JobStruct, e
 		}
 		orgRepo := strings.Join([]string{org, repo}, "/")
 
-		var jobs []interface{}
-
-		if gitRefs == nil {
-			// The request only wanted a job defined in the static config.
-			// Fetching the statically-defined postsubmit jobs requires providing an "orgRepo" filter.
-			jobs = jobFetchers.getJobsFromStaticConfig(cfg, orgRepo)
-		} else {
+		jobs := mainConfig.GetPresubmitsStatic(orgRepo)
+		if gitRefs != nil {
 			// The request wants to execute a job defined with gitRefs. This job
 			// can be defined either statically in a central repo or from
 			// inrepoconfig.
@@ -502,34 +394,77 @@ func (gw *Gangway) FetchJobStruct(req *CreateJobExecutionRequest) (*JobStruct, e
 			if pc == nil {
 				return nil, errors.New("There is no inrepoconfig cache, but the request wanted to run a job defined from inrepoconfig")
 			} else {
-				fetched, err := jobFetchers.getJobsFromInRepoConfig(cfg, pc, orgRepo, baseSHAGetter, headSHAGetters...)
+				fetched, err := pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
 				if err != nil {
-					return nil, fmt.Errorf("Failed to get %s job from inrepoconfig", jobStruct.JobExecutionType)
+					return nil, errors.New("Failed to get presubmits")
 				} else {
 					jobs = fetched
 				}
 			}
 		}
 
-		// Search for the correct Postsubmit job.
+		// Search for the correct Presubmit job. This loops through all static
+		// and inrepoconfig jobs. It could be possible that an inrepoconfig
+		// job's name clashes with a static config job, so we guard against
+		// that here.
 		for _, candidateJob := range jobs {
 			candidateJob := candidateJob
-			// Filter out jobs that do not match the branch ("ref").
-			if !jobFetchers.couldRun(candidateJob, baseRepoRef) {
-				continue
-			}
-			if jobFetchers.name(candidateJob) == jobName {
-				if jobStruct.Job != nil {
+			if candidateJob.Name == jobName {
+				if jobStruct.Presubmit != nil {
 					return nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q; did you define the same job in the central repo and also as an inrepoconfig job?", jobName, orgRepo)
 				}
-				jobStruct.Job = &candidateJob
+				jobStruct.Presubmit = &candidateJob
+			}
+
+			// Filter out jobs that do not match the branch ("ref").
+			if jobStruct.Presubmit != nil && !jobStruct.Presubmit.CouldRun(baseRepoRef) {
+				jobStruct.Presubmit = nil
 			}
 		}
 
-		if jobStruct.Job == nil {
+		if jobStruct.Presubmit == nil {
+			return nil, fmt.Errorf("failed to find associated %s job %q from orgRepo %q", jobStruct.JobExecutionType, jobName, orgRepo)
+		}
+	case JobExecutionType_POSTSUBMIT:
+		org, repo, err := getOrgRepo(gitRefs.GetBase().GetUrl())
+		if err != nil {
+			return nil, err
+		}
+		orgRepo := strings.Join([]string{org, repo}, "/")
+
+		jobs := mainConfig.GetPostsubmitsStatic(orgRepo)
+		if gitRefs != nil {
+			if pc == nil {
+				return nil, errors.New("There is no inrepoconfig cache, but the request wanted to run a job defined from inrepoconfig")
+			} else {
+				fetched, err := pc.GetPostsubmits(orgRepo, baseSHAGetter)
+				if err != nil {
+					return nil, errors.New("Failed to get postsubmits")
+				} else {
+					jobs = fetched
+				}
+			}
+		}
+
+		for _, candidateJob := range jobs {
+			candidateJob := candidateJob
+			if candidateJob.Name == jobName {
+				if jobStruct.Postsubmit != nil {
+					return nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q; did you define the same job in the central repo and also as an inrepoconfig job?", jobName, orgRepo)
+				}
+				jobStruct.Postsubmit = &candidateJob
+			}
+
+			if jobStruct.Postsubmit != nil && !jobStruct.Postsubmit.CouldRun(baseRepoRef) {
+				jobStruct.Postsubmit = nil
+			}
+		}
+
+		if jobStruct.Postsubmit == nil {
 			return nil, fmt.Errorf("failed to find associated %s job %q from orgRepo %q", jobStruct.JobExecutionType, jobName, orgRepo)
 		}
 	}
+
 	return &jobStruct, nil
 }
 
