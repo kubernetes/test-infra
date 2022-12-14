@@ -1,6 +1,7 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
+- aojea # lead
 - BenTheElder # lead
 - spiffxp # chair
 - stevekuznetsov # chair
@@ -8,6 +9,7 @@ reviewers:
 - cjwagner # oncall, lead
 - mpherman2 # oncall
 approvers:
+- aojea # lead
 - BenTheElder # lead
 - spiffxp # chair
 - stevekuznetsov # chair
