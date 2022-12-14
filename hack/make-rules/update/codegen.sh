@@ -69,8 +69,13 @@ ensure-protoc-deps(){
 
   # Clone proto dependencies.
   if ! [[ -f "${REPO_ROOT}"/_bin/protoc/include/googleapis/google/api/annotations.proto ]]; then
+    # This SHA was retrieved on 2022-12-14.
+    GOOGLEAPIS_VERSION="d9dc42bf24866ac28c09489feb58590c838ed970"
     >/dev/null pushd "${REPO_ROOT}"/_bin/protoc/include
-    git clone --depth=1 https://github.com/googleapis/googleapis
+    curl -OL "https://github.com/googleapis/googleapis/archive/${GOOGLEAPIS_VERSION}.zip"
+    >/dev/null unzip -o ${GOOGLEAPIS_VERSION}.zip
+    mv googleapis-${GOOGLEAPIS_VERSION} googleapis
+    rm -f ${GOOGLEAPIS_VERSION}.zip
     >/dev/null popd
   fi
 }
