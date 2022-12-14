@@ -64,22 +64,23 @@ in_repo_config:
    "fakegitserver.default/repo/some/org/gangway-test-repo-1": true
 
 # Allowlist of Prow API clients.
-allowed_api_clients:
-  # Identify the cloud provider associated with a client. "GCP_PROJECT" means a GCP Project.
-- type: "GCP_PROJECT"
-  # In this case this is the GCP Project ID number.
-  id: "123"
-  # Human-readable name for this client; used in debug logs to help make logs
-  # easier to read for humans. It is only used for logging and is not used for
-  # actual business logic.
-  name: "wbc-well-behaved-consumer"
+gangway:
+  allowed_api_clients:
+  - id:
+      gcp:
+        # This translates to the expected `x-endpoint-api-consumer-type` HTTP
+        # metadata header.
+        endpoint_api_consumer_type: "PROJECT"
+        # This translates to the expected `x-endpoint-api-consumer-number` HTTP
+        # metadata header.
+        endpoint_api_consumer_number: "123"
 
-  # We don't want this client to be able to trigger *all* jobs. So instead we
-  # limit its scope to only certain jobs defined for specific subsets of jobs.
-  allowed_job_subsets:
-  # Allow all jobs for the "wbc" org in a fake Git-on-Borg URL. This org will
-  # have a "foo-repo", at the full URL
-  # "http://fakegitserver.default/repo/wbc/foo-repo". The leading "/repo" is
-  # where fakegitserver serves all Git repositories.
-  - org: "https://fakegitserver.default/repo/some/org"
-    repo: "*"
+    # We don't want this client to be able to trigger *all* jobs. So instead we
+    # limit its scope to only certain jobs defined for specific subsets of jobs.
+    allowed_job_subsets:
+    # Allow all jobs for the "wbc" org in a fake Git-on-Borg URL. This org will
+    # have a "foo-repo", at the full URL
+    # "http://fakegitserver.default/repo/wbc/foo-repo". The leading "/repo" is
+    # where fakegitserver serves all Git repositories.
+    - org: "https://fakegitserver.default/repo/some/org"
+      repo: "*"

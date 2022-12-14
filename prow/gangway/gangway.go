@@ -76,19 +76,19 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 
 	// Identify the client from the request metadata.
 	mainConfig := gw.ConfigAgent.Config()
-	allowedAPIClient, err := IdentifyAllowedClient(mainConfig, md)
+	allowedApiClient, err := mainConfig.IdentifyAllowedClient(md)
 	if err != nil {
 		logrus.WithError(err).Error("could not find client in allowlist")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	enableDecoratedLogger(allowedAPIClient, md)
+	enableDecoratedLogger(allowedApiClient, md)
 
 	// At this point we know that this request is authorized (the request has
 	// GCP-specific headers, and the headers point to an allowlisted client ID).
 	// Now we need to check whether this authenticated API client has
 	// authorization to trigger the requested Prow Job.
-	authorized, err := ClientAuthorized(allowedAPIClient, mainConfig, req)
+	authorized, err := ClientAuthorized(allowedApiClient, mainConfig, req)
 	if err != nil {
 		logrus.WithError(err).Error("failed to determine client authorization")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -237,52 +237,11 @@ func getOrgRepo(url string) (string, string, error) {
 	return org, repo, nil
 }
 
-// IdentifyAllowedClient looks at the HTTP request headers (metadata) and tries
-// to match it up with an allowlisted Client already defined in the main Config.
-//
-// Each supported client.Type has custom logic around the HTTP metadata headers
-// to know what kind of headers to look for. Different cloud vendors will have
-// different HTTP metdata headers, although technically nothing stops users from
-// injecting these headers manually on their own.
-func IdentifyAllowedClient(c *config.Config, md *metadata.MD) (*config.AllowedAPIClient, error) {
-	if md == nil {
-		return nil, errors.New("metadata cannot be nil")
-	}
-
-	if c == nil {
-		return nil, errors.New("config cannot be nil")
-	}
-
-	for _, client := range c.AllowedAPIClients {
-		switch client.Type {
-		case "GCP_PROJECT":
-			// First check that the expected headers even exist (and are formatted correctly).
-			err := assertRequiredHeaders(md, []string{"x-endpoint-api-consumer-type", "x-endpoint-api-consumer-number"})
-			if err != nil {
-				return nil, err
-			}
-
-			v := md.Get("x-endpoint-api-consumer-type")[0]
-			if v != "PROJECT" {
-				return nil, fmt.Errorf("unsupported GCP API consumer type: %q", v)
-			}
-			v = md.Get("x-endpoint-api-consumer-number")[0]
-
-			// Now check whether we can find the same information in the Config's allowlist.
-			if client.ID == v {
-				return client, nil
-			}
-		}
-	}
-
-	return nil, fmt.Errorf("could not find allowed client from %v", md)
-}
-
 // ClientAuthorized checks whether or not a client can run a Prow job based on
 // the job's identifier (is this client allowed to run jobs meant for the given
 // identifier?). This needs to traverse the config to determine whether the
 // allowlist (allowed_api_clients) allows it.
-func ClientAuthorized(allowedAPIClient *config.AllowedAPIClient, c *config.Config, req *CreateJobExecutionRequest) (bool, error) {
+func ClientAuthorized(allowedApiClient *config.AllowedApiClient, c *config.Config, req *CreateJobExecutionRequest) (bool, error) {
 	switch req.GetJobExecutionType() {
 	// Skip job authorization for Periodic jobs, because they are not associated with any repo.
 	case JobExecutionType_PERIODIC:
@@ -297,7 +256,7 @@ func ClientAuthorized(allowedAPIClient *config.AllowedAPIClient, c *config.Confi
 		}
 		requestedOrgRepo := fmt.Sprintf("%s/%s", requestedOrg, requestedRepo)
 
-		for _, job_subset := range allowedAPIClient.AllowedJobSubsets {
+		for _, job_subset := range allowedApiClient.AllowedJobSubsets {
 			// Need to check if identifier falls under the job_subset.Org +
 			// job_subset.Repo.
 			allowedOrgRepo := fmt.Sprintf("%s/%s", job_subset.Org, job_subset.Repo)
@@ -588,34 +547,12 @@ func getHttpRequestHeaders(ctx context.Context) (error, *metadata.MD) {
 	return nil, &md
 }
 
-// assertRequiredHeaders checks that some required headers exist in the given
-// metadata. In particular, for GCP (GKE) Prow installations it must have the
-// special headers "x-endpoint-api-consumer-type" and
-// "x-endpoint-api-consumer-number". These headers allow us to identify the
-// caller's associated GCP Project, which we need in order to filter out only
-// those Prow Jobs that this project is allowed to create. Otherwise, any caller
-// could trigger any Prow Job, which is far from ideal from a security
-// standpoint.
-//
-// Gangway could be configured with a different cloud vendor and thus have
-// differently-named headers.
-func assertRequiredHeaders(md *metadata.MD, headers []string) error {
-	for _, header := range headers {
-		values := md.Get(header)
-		if len(values) == 0 {
-			return fmt.Errorf("could not find required HTTP header %q", header)
-		}
-	}
-	return nil
-}
-
 // enableDecoratedLogger turns on a new logger that captures all known
 // (interesting) HTTP headers of a gRPC request. We convert these headers into
 // log fields so that the logger can be very precise.
-func enableDecoratedLogger(allowedAPIClient *config.AllowedAPIClient, md *metadata.MD) {
+func enableDecoratedLogger(allowedApiClient *config.AllowedApiClient, md *metadata.MD) {
 	knownHeaders := []string{}
-	switch allowedAPIClient.Type {
-	case "GCP_PROJECT":
+	if allowedApiClient.Id.GCP != nil {
 		// These headers were drawn from this example:
 		// https://github.com/envoyproxy/envoy/issues/13207 (source code appears
 		// to be

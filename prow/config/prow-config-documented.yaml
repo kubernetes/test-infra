@@ -1,10 +1,3 @@
-allowed_api_clients:
-  - allowed_job_subsets:
-      - org: ' '
-        repo: ' '
-    id: ' '
-    name: ' '
-    type: ' '
 branch-protection:
     # AllowDeletions allows deletion of the protected branch by anyone with write access to the repository.
     allow_deletions: false
@@ -498,6 +491,35 @@ deck:
 # DefaultJobTimeout this is default deadline for prow jobs. This value is used when
 # no timeout is configured at the job level. This value is set to 24 hours.
 default_job_timeout: 0s
+gangway:
+    allowed_api_clients:
+      - # AllowedJobSubsets contains information about what kinds of Prow jobs this
+        # API client is authorized to trigger.
+        allowed_job_subsets:
+          - org: ' '
+            repo: ' '
+
+        # Id contains cloud-vendor-specific information that identifies an API
+        # client uniquely.
+        id:
+            aws:
+                unimplemented: ' '
+            gcp:
+                # EndpointApiConsumerNumber is the expected value of the
+                # x-endpoint-api-consumer-number HTTP metadata header. Typically this
+                # encodes the GCP Project number value, which uniquely identifies a GCP
+                # Project.
+                endpoint_api_consumer_number: ' '
+
+                # EndpointApiConsumerType is the expected value of the
+                # x-endpoint-api-consumer-type HTTP metadata header. Typically this will be
+                # "PROJECT".
+                endpoint_api_consumer_type: ' '
+
+        # Name is only used for logging purposes. For example, it helps to identify
+        # configuration errors for misconfigured Gangway configuration in the main
+        # Config.
+        name: ' '
 gerrit:
     # DeckURL is the root URL of Deck. This is used to construct links to
     # job runs for a given CL.

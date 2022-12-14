@@ -41,6 +41,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	"google.golang.org/grpc/metadata"
 	"gopkg.in/robfig/cron.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -139,7 +140,7 @@ type ProwConfig struct {
 	Horologium           Horologium           `json:"horologium"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
 	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
-	AllowedAPIClients    []*AllowedAPIClient  `json:"allowed_api_clients,omitempty"`
+	Gangway              Gangway              `json:"gangway,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -214,16 +215,122 @@ type InRepoConfig struct {
 	AllowedClusters map[string][]string `json:"allowed_clusters,omitempty"`
 }
 
-type AllowedAPIClient struct {
-	Type              string              `json:"type,omitempty"`
-	ID                string              `json:"id,omitempty"`
-	Name              string              `json:"name,omitempty"`
+// Gangway contains configurations needed by the the Prow API server of the same
+// name. It encodes an allowlist of API clients and what kinds of Prow Jobs they
+// are authorized to trigger.
+type Gangway struct {
+	AllowedApiClients []*AllowedApiClient `json:"allowed_api_clients,omitempty"`
+}
+
+// AllowedApiClient encodes identifying information about an API client, and
+// what subsets of Prow Jobs it has authority to trigger.
+type AllowedApiClient struct {
+	// Name is only used for logging purposes. For example, it helps to identify
+	// configuration errors for misconfigured Gangway configuration in the main
+	// Config.
+	Name string `json:"name"`
+	// Id contains cloud-vendor-specific information that identifies an API
+	// client uniquely.
+	Id ApiClientId `json:"id"`
+	// AllowedJobSubsets contains information about what kinds of Prow jobs this
+	// API client is authorized to trigger.
 	AllowedJobSubsets []*AllowedJobSubset `json:"allowed_job_subsets,omitempty"`
 }
 
+// ApiClientCredentials is a union of different credentials provided by
+// different cloud providers.
+type ApiClientId struct {
+	GCP *ApiClientIdGcp `json:"gcp,omitempty"`
+	AWS *ApiClientIdAws `json:"aws,omitempty"`
+}
+
+// ApiClientIdGcp encodes GCP Cloud Endpoints-specific HTTP metadata header
+// information, which are expected to be populated by the ESPv2 sidecar
+// container for GKE applications (in our case, the gangway pod).
+type ApiClientIdGcp struct {
+	// EndpointApiConsumerType is the expected value of the
+	// x-endpoint-api-consumer-type HTTP metadata header. Typically this will be
+	// "PROJECT".
+	EndpointApiConsumerType string `json:"endpoint_api_consumer_type,omitempty"`
+	// EndpointApiConsumerNumber is the expected value of the
+	// x-endpoint-api-consumer-number HTTP metadata header. Typically this
+	// encodes the GCP Project number value, which uniquely identifies a GCP
+	// Project.
+	EndpointApiConsumerNumber string `json:"endpoint_api_consumer_number,omitempty"`
+}
+
+// ApiClientIdAws is not implemented. However it is still useful
+// because it allows us to write configuration validation logic that expects a
+// possibility of choosing either GCP or AWS credentials. See FIXME.
+type ApiClientIdAws struct {
+	Unimplemented string `json:"unimplemented,omitempty"`
+}
+
+// FIXME: Add description of this after we switch to tenant_id.
 type AllowedJobSubset struct {
 	Org  string `json:"org,omitempty"`
 	Repo string `json:"repo,omitempty"`
+}
+
+// IdentifyAllowedClient looks at the HTTP request headers (metadata) and tries
+// to match it up with an allowlisted Client already defined in the main Config.
+//
+// Each supported client.Type has custom logic around the HTTP metadata headers
+// to know what kind of headers to look for. Different cloud vendors will have
+// different HTTP metdata headers, although technically nothing stops users from
+// injecting these headers manually on their own.
+func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, error) {
+	if md == nil {
+		return nil, errors.New("metadata cannot be nil")
+	}
+
+	if c == nil {
+		return nil, errors.New("config cannot be nil")
+	}
+
+	for _, client := range c.Gangway.AllowedApiClients {
+		if client.Id.GCP != nil {
+			// First check that the expected headers even exist (and are formatted correctly).
+			err := assertRequiredHeaders(md, []string{"x-endpoint-api-consumer-type", "x-endpoint-api-consumer-number"})
+			if err != nil {
+				return nil, err
+			}
+
+			v := md.Get("x-endpoint-api-consumer-type")[0]
+			if client.Id.GCP.EndpointApiConsumerType != "PROJECT" {
+				return nil, fmt.Errorf("unsupported GCP API consumer type: %q", v)
+			}
+			v = md.Get("x-endpoint-api-consumer-number")[0]
+
+			// Now check whether we can find the same information in the Config's allowlist.
+			if client.Id.GCP.EndpointApiConsumerNumber == v {
+				return client, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("could not find allowed client from %v", md)
+}
+
+// assertRequiredHeaders checks that some required headers exist in the given
+// metadata. In particular, for GCP (GKE) Prow installations it must have the
+// special headers "x-endpoint-api-consumer-type" and
+// "x-endpoint-api-consumer-number". These headers allow us to identify the
+// caller's associated GCP Project, which we need in order to filter out only
+// those Prow Jobs that this project is allowed to create. Otherwise, any caller
+// could trigger any Prow Job, which is far from ideal from a security
+// standpoint.
+//
+// Gangway could be configured with a different cloud vendor and thus have
+// differently-named headers.
+func assertRequiredHeaders(md *metadata.MD, headers []string) error {
+	for _, header := range headers {
+		values := md.Get(header)
+		if len(values) == 0 {
+			return fmt.Errorf("could not find required HTTP header %q", header)
+		}
+	}
+	return nil
 }
 
 func SplitRepoName(fullRepoName string) (string, string, error) {
