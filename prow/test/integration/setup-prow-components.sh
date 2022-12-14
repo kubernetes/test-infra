@@ -303,10 +303,20 @@ function deploy_item() {
   local item
   local component
   local fakepubsub_node_port
+  local wait_for_resource_args
+  local wait_for_crd_args
   item="${1}"
   fakepubsub_node_port="${2:-30303}"
 
   case "${item}" in
+    WAIT_FOR_CRD_*)
+      wait_for_crd_args="${item#WAIT_FOR_CRD_}"
+      wait_for_crd "${wait_for_crd_args}"
+      ;;
+    WAIT_FOR_RESOURCE_*)
+      wait_for_resource_args="${item#WAIT_FOR_RESOURCE_}"
+      wait_for_resource "${wait_for_resource_args}"
+      ;;
     WAIT_*)
       component="${item#WAIT_}"
       if ! wait_for_readiness "${component}"; then
