@@ -214,35 +214,6 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 	}, nil
 }
 
-func getOrgRepo(url string) (string, string, error) {
-	urlNormalized := strings.TrimSuffix(url, "/")
-	if !strings.Contains(urlNormalized, "/") {
-		return "", "", fmt.Errorf("url %q does not contain a slash", urlNormalized)
-	}
-	parts := strings.Split(urlNormalized, "/")
-	repo := parts[len(parts)-1]
-	if repo == "" {
-		return "", "", fmt.Errorf("url %q has an empty repo", url)
-	}
-	org := strings.Join(parts[0:len(parts)-1], "/")
-	if org == "" {
-		return "", "", fmt.Errorf("url %q has an empty org", url)
-	}
-
-	// Special-case GitHub. This is due to legacy reasons --- originally we only
-	// had GitHub and so did not even encode the leading prefix starting with
-	// "https://..."; e.g., for "https://github.com/myorg/myrepo", the org and
-	// repo were just "myorg" and "myrepo". But then Gerrit support came along
-	// and we needed to namespace Gerrit repos from GitHub ones, and the way we
-	// did this is to encode the leading URL bit for Gerrit repos. See
-	// TestGetOrgRepo for expected behavior.
-	gitHubPrefix := "https://github.com/"
-
-	org = strings.TrimPrefix(org, gitHubPrefix)
-
-	return org, repo, nil
-}
-
 // ClientAuthorized checks whether or not a client can run a Prow job based on
 // the job's identifier (is this client allowed to run jobs meant for the given
 // identifier?). This needs to traverse the config to determine whether the
@@ -271,10 +242,9 @@ func MkRefs(grd *GitReferenceDynamic) (*prowcrd.Refs, error) {
 	commit := base.GetCommit()
 	ref := base.GetRef()
 
-	org, repo, err := getOrgRepo(url)
-	if err != nil {
-		return nil, err
-	}
+	orgRepo := config.NewOrgRepo(url)
+	org := orgRepo.Org
+	repo := orgRepo.Repo
 
 	// Convert GitReferenceDynamic into prowcrd.Refs.
 	refs = prowcrd.Refs{
@@ -360,11 +330,7 @@ func (gw *Gangway) FetchJobStruct(req *CreateJobExecutionRequest) (*JobStruct, e
 			return nil, fmt.Errorf("failed to find associated periodic job %q", req.GetJobName())
 		}
 	case JobExecutionType_PRESUBMIT:
-		org, repo, err := getOrgRepo(gitRefs.GetBase().GetUrl())
-		if err != nil {
-			return nil, err
-		}
-		orgRepo := strings.Join([]string{org, repo}, "/")
+		orgRepo := config.NewOrgRepo(gitRefs.GetBase().GetUrl()).String()
 
 		jobs := mainConfig.GetPresubmitsStatic(orgRepo)
 		if gitRefs != nil {
@@ -426,11 +392,7 @@ func (gw *Gangway) FetchJobStruct(req *CreateJobExecutionRequest) (*JobStruct, e
 			return nil, fmt.Errorf("failed to find associated %s job %q from orgRepo %q", jobStruct.JobExecutionType, jobName, orgRepo)
 		}
 	case JobExecutionType_POSTSUBMIT:
-		org, repo, err := getOrgRepo(gitRefs.GetBase().GetUrl())
-		if err != nil {
-			return nil, err
-		}
-		orgRepo := strings.Join([]string{org, repo}, "/")
+		orgRepo := config.NewOrgRepo(gitRefs.GetBase().GetUrl()).String()
 
 		jobs := mainConfig.GetPostsubmitsStatic(orgRepo)
 		if gitRefs != nil {
