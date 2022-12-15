@@ -236,7 +236,12 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   WAIT_FOR_RESOURCE_serviceaccounts,webhook-server,default
   WAIT_webhook-server
 
-  gangway.yaml
+  gangway_rbac.yaml
+  gangway_service.yaml
+  gangway_deployment.yaml
+  WAIT_FOR_RESOURCE_roles,gangway,default
+  WAIT_FOR_RESOURCE_rolebindings,gangway,default
+  WAIT_FOR_RESOURCE_serviceaccounts,gangway,default
   WAIT_gangway
 
   sub.yaml
