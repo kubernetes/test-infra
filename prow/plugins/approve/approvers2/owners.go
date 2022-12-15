@@ -885,9 +885,9 @@ func getGubernatorMetadata(toBeAssigned []string) string {
 }
 
 // wildcardPathMatch return true if the targetPath matches the given pattern
-// A '*' as a directory will recursively match all sub directories
+// A '**' as a directory will recursively match all sub directories
 //
-//	Example: file a/b1/b2/c.go matches the pattern a/*/c.go
+//	Example: file a/b1/b2/c.go matches the pattern a/**/c.go
 //
 // A '*' is file name matches 0 or more characters
 //
@@ -923,7 +923,7 @@ func wildcardPathMatch(pattern, targetPath string) bool {
 		return true
 	}
 
-	if patternMatch == "*" {
+	if patternMatch == "**" {
 		return wildcardPathMatch(patternRemain, targetPathRemain) || wildcardPathMatch(pattern, targetPathRemain)
 	}
 
