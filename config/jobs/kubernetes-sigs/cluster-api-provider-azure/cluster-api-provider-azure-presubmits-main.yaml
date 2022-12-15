@@ -162,6 +162,8 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 4h
     run_if_changed: '^((exp)\/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)|test\/e2e\/config|managed.*\.go|aks|^azure\/services\/agentpools\/'
     max_concurrency: 5
     labels:
