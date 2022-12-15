@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/url"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -30,12 +31,11 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-
 	"k8s.io/test-infra/prow/pkg/layeredsets"
-	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
+	ownersFileName = "OWNERS"
 	// ApprovalNotificationName defines the name used in the title for the approval notifications.
 	ApprovalNotificationName = "ApprovalNotifier"
 )
@@ -46,8 +46,6 @@ type Repo interface {
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
-	IsAutoApproveUnownedSubfolders(directory string) bool
-	Filenames() ownersconfig.Filenames
 }
 
 // Owners provides functionality related to owners of a specific code change.
@@ -67,25 +65,25 @@ type Owners struct {
 
 // NewOwners consturcts a new Owners instance. filenames is the slice of files changed.
 func NewOwners(log *logrus.Entry, filenames []string, r Repo, s int64) Owners {
-	return Owners{filenamesUnfiltered: filenames, filenames: filenames, repo: r, seed: s, log: log}
+	return Owners{filenames: filenames, repo: r, seed: s, log: log}
 }
 
-// GetApprovers returns a map from ownersFiles -> people that are approvers in them
+// GetApprovers returns a map from filenames -> people that can approve it
 func (o Owners) GetApprovers() map[string]sets.String {
-	ownersToApprovers := map[string]sets.String{}
+	filesToApprovers := map[string]sets.String{}
 
-	for ownersFilename := range o.GetOwnersSet() {
-		ownersToApprovers[ownersFilename] = o.repo.Approvers(ownersFilename).Set()
+	for _, fn := range o.filenames {
+		filesToApprovers[fn] = o.repo.Approvers(fn).Set()
 	}
 
-	return ownersToApprovers
+	return filesToApprovers
 }
 
-// GetLeafApprovers returns a map from ownersFiles -> people that are approvers in them (only the leaf)
+// GetLeafApprovers returns a map from files -> people that are approvers in them (only the leaf)
 func (o Owners) GetLeafApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
-	for fn := range o.GetOwnersSet() {
+	for _, fn := range o.filenames {
 		ownersToApprovers[fn] = o.repo.LeafApprovers(fn)
 	}
 
@@ -93,13 +91,22 @@ func (o Owners) GetLeafApprovers() map[string]sets.String {
 }
 
 // GetAllPotentialApprovers returns the people from relevant owners files needed to get the PR approved
+// It returns a list of people based on leaf owners files after subdirectories are ignored.
+// Example: If the PR has the following file changes:
+//   - a/b/c.go
+//   - a/b/c/d.go
+//   - p/q.go
+//
+// this function will return the list of approvers in a/b/c/OWNERS and p/OWNERS
 func (o Owners) GetAllPotentialApprovers() []string {
-	approversOnly := []string{}
-	for _, approverList := range o.GetLeafApprovers() {
-		for approver := range approverList {
-			approversOnly = append(approversOnly, approver)
+	approvers := sets.NewString()
+	owners := o.GetOwnersSet()
+	for _, fn := range o.filenames {
+		if owners.Has(o.repo.FindApproverOwnersForFile(fn)) {
+			approvers.Insert(o.repo.LeafApprovers(fn).List()...)
 		}
 	}
+	approversOnly := approvers.List()
 	sort.Strings(approversOnly)
 	if len(approversOnly) == 0 {
 		o.log.Debug("No potential approvers exist. Does the repo have OWNERS files?")
@@ -107,19 +114,19 @@ func (o Owners) GetAllPotentialApprovers() []string {
 	return approversOnly
 }
 
-// GetReverseMap returns a map from people -> OWNERS files for which they are an approver
+// GetReverseMap returns a map from people -> files. files for which they are an approver
 func (o Owners) GetReverseMap(approvers map[string]sets.String) map[string]sets.String {
-	approverOwnersfiles := map[string]sets.String{}
-	for ownersFile, approvers := range approvers {
+	approverFiles := map[string]sets.String{}
+	for file, approvers := range approvers {
 		for approver := range approvers {
-			if _, ok := approverOwnersfiles[approver]; ok {
-				approverOwnersfiles[approver].Insert(ownersFile)
+			if _, ok := approverFiles[approver]; ok {
+				approverFiles[approver].Insert(file)
 			} else {
-				approverOwnersfiles[approver] = sets.NewString(ownersFile)
+				approverFiles[approver] = sets.NewString(file)
 			}
 		}
 	}
-	return approverOwnersfiles
+	return approverFiles
 }
 
 func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.String, unapproved sets.String) string {
@@ -137,23 +144,25 @@ func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.
 
 // temporaryUnapprovedFiles returns the list of files that wouldn't be
 // approved by the given set of approvers.
-func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
+func (o Owners) temporaryUnapprovedFiles(approvals []Approval) sets.String {
 	ap := NewApprovers(o)
-	for approver := range approvers {
-		ap.AddApprover(approver, "", false)
+	for _, aprvl := range approvals {
+		for _, info := range aprvl.Infos {
+			ap.AddApprover(aprvl.Login, info.Reference, info.Path)
+		}
 	}
 	return ap.UnapprovedFiles()
 }
 
 // KeepCoveringApprovers finds who we should keep as suggested approvers given a pre-selection
 // knownApprovers must be a subset of potentialApprovers.
-func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownApprovers sets.String, potentialApprovers []string) sets.String {
+func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownApprovals []Approval, potentialApprovers []string) sets.String {
 	if len(potentialApprovers) == 0 {
 		o.log.Debug("No potential approvers exist to filter for relevance. Does this repo have OWNERS files?")
 	}
 	keptApprovers := sets.NewString()
 
-	unapproved := o.temporaryUnapprovedFiles(knownApprovers)
+	unapproved := o.temporaryUnapprovedFiles(knownApprovals)
 
 	for _, suggestedApprover := range o.GetSuggestedApprovers(reverseMap, potentialApprovers).List() {
 		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
@@ -171,10 +180,10 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 	for !ap.RequirementsMet() {
 		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
 		if newApprover == "" {
-			o.log.Debugf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
+			o.log.Warnf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
 			return ap.GetCurrentApproversSet()
 		}
-		ap.AddApprover(newApprover, "", false)
+		ap.AddApprover(newApprover, "", "")
 	}
 
 	return ap.GetCurrentApproversSet()
@@ -183,26 +192,31 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 // GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
-	for idx, toApprove := range o.filenames {
-		ownersFile := o.repo.FindApproverOwnersForFile(toApprove)
-		// If the ownersfile for toApprove is in the parent folder and has AllowFolderCreation enabled, we purge
-		// the file from our filenames list, because it doesn't need approval
-		if strings.Contains(filepath.Dir(filepath.Dir(toApprove)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
-			o.filenames = removeFromStringSlice(o.filenames, idx)
-		} else {
-			owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
-		}
+	for _, fn := range o.filenames {
+		owners.Insert(o.repo.FindApproverOwnersForFile(fn))
 	}
 	o.removeSubdirs(owners)
 	return owners
 }
 
-func removeFromStringSlice(slice []string, idx int) []string {
-	var prevElemIdx int
-	if idx > 0 {
-		prevElemIdx = idx - 1
+// GetFolderFiles returns a map from folder(owners file folder) -> files in that folder
+// for this PR
+func (o Owners) GetFolderFiles() map[string]sets.String {
+	folders := o.GetOwnersSet()
+	folderfiles := map[string]sets.String{}
+	for folder := range folders {
+		folderfiles[folder] = sets.NewString()
 	}
-	return slice[prevElemIdx : idx+1]
+
+	for _, file := range o.filenames {
+		for folder := range folders {
+			if strings.HasPrefix(file, folder) {
+				folderfiles[folder].Insert(file)
+			}
+		}
+	}
+
+	return folderfiles
 }
 
 // GetShuffledApprovers shuffles the potential approvers so that we don't
@@ -213,6 +227,20 @@ func (o Owners) GetShuffledApprovers() []string {
 	people := make([]string, 0, len(approversList))
 	for _, i := range order {
 		people = append(people, approversList[i])
+	}
+	return people
+}
+
+// GetShuffledApproversSubset shuffles the potential approvers, without the people
+// in remove set, so that we don't always suggest the same people.
+func (o Owners) GetShuffledApproversSubset(remove sets.String) []string {
+	approversList := o.GetAllPotentialApprovers()
+	order := rand.New(rand.NewSource(o.seed)).Perm(len(approversList))
+	people := []string{}
+	for _, i := range order {
+		if !remove.Has(approversList[i]) {
+			people = append(people, approversList[i])
+		}
 	}
 	return people
 }
@@ -244,16 +272,46 @@ func (o Owners) removeSubdirs(dirs sets.String) {
 	}
 }
 
+type ApprovalInfo struct {
+	Reference string
+	Path      string
+}
+
 // Approval has the information about each approval on a PR
 type Approval struct {
-	Login     string // Login of the approver (can include uppercase)
-	How       string // How did the approver approved
-	Reference string // Where did the approver approved
-	NoIssue   bool   // Approval also accepts missing associated issue
+	Login string         // Login of the approver (can include uppercase)
+	How   string         // How did the approver approved
+	Infos []ApprovalInfo // More information about the approval
+}
+
+func (a Approval) CoversFile(file string) bool {
+	for _, info := range a.Infos {
+		if wildcardPathMatch(info.Path, file) {
+			return true
+		}
+	}
+	return false
 }
 
 // String creates a link for the approval. Use `Login` if you just want the name.
 func (a Approval) String() string {
+	return fmt.Sprintf(
+		`*<a href="%s" title="%s">%s</a>*`,
+		a.Infos[0].Reference,
+		a.How,
+		a.Login,
+	)
+}
+
+// NoIssueApproval has the information about each "no-issue" approval on a PR
+type NoIssueApproval struct {
+	Login     string // Login of the approver (can include uppercase)
+	How       string // How did the approver approve
+	Reference string // Where did the approver approved
+}
+
+// String creates a link for the approval. Use `Login` if you just want the name.
+func (a NoIssueApproval) String() string {
 	return fmt.Sprintf(
 		`*<a href="%s" title="%s">%s</a>*`,
 		a.Reference,
@@ -265,18 +323,19 @@ func (a Approval) String() string {
 // Approvers is struct that provide functionality with regard to approvals of a specific
 // code change.
 type Approvers struct {
-	owners          Owners
-	approvers       map[string]Approval // The keys of this map are normalized to lowercase.
-	assignees       sets.String
-	AssociatedIssue int
-	RequireIssue    bool
+	owners           Owners
+	approvers        map[string]*Approval // The keys of this map are normalized to lowercase.
+	noissueapprovers map[string]*NoIssueApproval
+	assignees        sets.String
+	AssociatedIssue  int
+	RequireIssue     bool
 
 	ManuallyApproved func() bool
 }
 
-// CaseInsensitiveIntersection runs the intersection between to sets.String in a
-// case-insensitive way. It returns the lowercased intersection.
-func CaseInsensitiveIntersection(one, other sets.String) sets.String {
+// IntersectSetsCase runs the intersection between to sets.String in a
+// case-insensitive way. It returns the name with the case of "one".
+func IntersectSetsCase(one, other sets.String) sets.String {
 	lower := sets.NewString()
 	for item := range other {
 		lower.Insert(strings.ToLower(item))
@@ -294,9 +353,10 @@ func CaseInsensitiveIntersection(one, other sets.String) sets.String {
 // NewApprovers create a new "Approvers" with no approval.
 func NewApprovers(owners Owners) Approvers {
 	return Approvers{
-		owners:    owners,
-		approvers: map[string]Approval{},
-		assignees: sets.NewString(),
+		owners:           owners,
+		approvers:        map[string]*Approval{},
+		noissueapprovers: map[string]*NoIssueApproval{},
+		assignees:        sets.NewString(),
 
 		ManuallyApproved: func() bool {
 			return false
@@ -309,52 +369,74 @@ func NewApprovers(owners Owners) Approvers {
 // If someone approves a PR multiple times, we only want to keep the
 // latest approval, unless a previous approval was "no-issue", and the
 // most recent isn't.
+/*
 func (ap *Approvers) shouldNotOverrideApproval(login string, noIssue bool) bool {
 	login = strings.ToLower(login)
 	approval, alreadyApproved := ap.approvers[login]
 
 	return alreadyApproved && approval.NoIssue && !noIssue
 }
+*/
 
 // AddLGTMer adds a new LGTM Approver
-func (ap *Approvers) AddLGTMer(login, reference string, noIssue bool) {
-	if ap.shouldNotOverrideApproval(login, noIssue) {
-		return
-	}
-	ap.approvers[strings.ToLower(login)] = Approval{
-		Login:     login,
-		How:       "LGTM",
-		Reference: reference,
-		NoIssue:   noIssue,
-	}
+func (ap *Approvers) AddLGTMer(login, reference, path string) {
+	ap.addApproval(login, "LGTM", reference, path)
 }
 
 // AddApprover adds a new Approver
-func (ap *Approvers) AddApprover(login, reference string, noIssue bool) {
-	if ap.shouldNotOverrideApproval(login, noIssue) {
-		return
+func (ap *Approvers) AddApprover(login, reference, path string) {
+	ap.addApproval(login, "Approved", reference, path)
+}
+
+func (ap *Approvers) addApproval(login, how, reference, approvedPath string) {
+	if approvedPath == "" {
+		approvedPath = "*"
 	}
-	ap.approvers[strings.ToLower(login)] = Approval{
+	if approval, ok := ap.approvers[strings.ToLower(login)]; !ok {
+		ap.approvers[strings.ToLower(login)] = &Approval{
+			Login: login,
+			How:   how,
+			Infos: []ApprovalInfo{
+				{
+					Reference: reference,
+					Path:      approvedPath,
+				},
+			},
+		}
+	} else {
+		approval.Infos = append(approval.Infos, ApprovalInfo{
+			Reference: reference,
+			Path:      approvedPath,
+		})
+	}
+}
+
+func (ap *Approvers) AddNoIssueApprover(login, reference string) {
+	ap.addNoIssueApproval(login, "Approved", reference)
+}
+
+func (ap *Approvers) AddNoIssueLGTMer(login, reference string) {
+	ap.addNoIssueApproval(login, "LGTM", reference)
+}
+
+func (ap *Approvers) addNoIssueApproval(login, how, reference string) {
+	ap.noissueapprovers[strings.ToLower(login)] = &NoIssueApproval{
 		Login:     login,
-		How:       "Approved",
+		How:       how,
 		Reference: reference,
-		NoIssue:   noIssue,
 	}
 }
 
 // AddAuthorSelfApprover adds the author self approval
-func (ap *Approvers) AddAuthorSelfApprover(login, reference string, noIssue bool) {
-	if ap.shouldNotOverrideApproval(login, noIssue) {
-		return
-	}
-	ap.approvers[strings.ToLower(login)] = Approval{
-		Login:     login,
-		How:       "Author self-approved",
-		Reference: reference,
-		NoIssue:   noIssue,
-	}
+func (ap *Approvers) AddAuthorSelfApprover(login, reference, path string) {
+	ap.addApproval(login, "Author self-approved", reference, path)
 }
 
+func (ap *Approvers) AddNoIssueAuthorSelfApprover(login, reference string) {
+	ap.addNoIssueApproval(login, "Author self-approved", reference)
+}
+
+// RemoveApprover removes an approver from the list.
 // RemoveApprover removes an approver from the list.
 func (ap *Approvers) RemoveApprover(login string) {
 	delete(ap.approvers, strings.ToLower(login))
@@ -370,11 +452,9 @@ func (ap *Approvers) AddAssignees(logins ...string) {
 // GetCurrentApproversSet returns the set of approvers (login only, normalized to lower case)
 func (ap Approvers) GetCurrentApproversSet() sets.String {
 	currentApprovers := sets.NewString()
-
 	for approver := range ap.approvers {
 		currentApprovers.Insert(approver)
 	}
-
 	return currentApprovers
 }
 
@@ -404,45 +484,34 @@ func (ap Approvers) GetNoIssueApproversSet() sets.String {
 // GetFilesApprovers returns a map from files -> list of current approvers.
 func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
-	currentApprovers := ap.GetCurrentApproversSetCased()
-	for ownersFilename, potentialApprovers := range ap.owners.GetApprovers() {
-		// The order of parameter matters here:
-		// - currentApprovers is the list of github handles that have approved
-		// - potentialApprovers is the list of handles in the OWNER
-		// files (lower case).
-		//
-		// We want to keep the syntax of the github handle
-		// rather than the potential mis-cased username found in
-		// the OWNERS file, that's why it's the first parameter.
-		filesApprovers[ownersFilename] = CaseInsensitiveIntersection(currentApprovers, potentialApprovers)
+	for fn, potentialApprovers := range ap.owners.GetApprovers() {
+		// potentialApprovers is the list of github handles who can approve file fn.
+		filesApprovers[fn] = approversForFile(fn, potentialApprovers, ap.approvers)
 	}
 
 	return filesApprovers
 }
 
 // NoIssueApprovers returns the list of people who have "no-issue"
-// approved the pull-request. They are included in the list if they can
+// approved the pull-request. They are included in the list iff they can
 // approve one of the files.
-func (ap Approvers) NoIssueApprovers() map[string]Approval {
-	nia := map[string]Approval{}
+func (ap Approvers) NoIssueApprovers() map[string]*NoIssueApproval {
+	nia := map[string]*NoIssueApproval{}
 	reverseMap := ap.owners.GetReverseMap(ap.owners.GetApprovers())
 
-	for login, approver := range ap.approvers {
-		if !approver.NoIssue {
+	for login, approval := range ap.noissueapprovers {
+
+		if files, ok := reverseMap[login]; !ok || len(files) == 0 {
 			continue
 		}
 
-		if len(reverseMap[login]) == 0 {
-			continue
-		}
-
-		nia[login] = approver
+		nia[login] = approval
 	}
 
 	return nia
 }
 
-// UnapprovedFiles returns owners files that still need approval
+// UnapprovedFiles returns files that still need approval
 func (ap Approvers) UnapprovedFiles() sets.String {
 	unapproved := sets.NewString()
 	for fn, approvers := range ap.GetFilesApprovers() {
@@ -453,30 +522,42 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 	return unapproved
 }
 
-// GetFiles returns owners files that still need approval.
-func (ap Approvers) GetFiles(baseURL *url.URL, branch string) []File {
-	var allOwnersFiles []File
-	filesApprovers := ap.GetFilesApprovers()
-	for _, file := range ap.owners.GetOwnersSet().List() {
-		if len(filesApprovers[file]) == 0 {
-			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{
-				baseURL:        baseURL,
-				filepath:       file,
-				ownersFilename: ap.owners.repo.Filenames().Owners,
-				branch:         branch,
-			})
-		} else {
-			allOwnersFiles = append(allOwnersFiles, ApprovedFile{
-				baseURL:        baseURL,
-				filepath:       file,
-				ownersFilename: ap.owners.repo.Filenames().Owners,
-				approvers:      filesApprovers[file],
-				branch:         branch,
-			})
-		}
+// GetFolderStatus returns the approval status of the folders.
+// A folder can be approve, partially approved or unapproved
+func (ap Approvers) GetFolderStatus(baseURL *url.URL, branch string) []File {
+	allFiles := []File{}
+	folderFiles := ap.owners.GetFolderFiles()
+	fileApprovers := ap.GetFilesApprovers()
+
+	for folder := range folderFiles {
+		allFiles = append(allFiles, folderStatus(folder, folderFiles, fileApprovers, baseURL, branch))
 	}
 
-	return allOwnersFiles
+	return allFiles
+}
+
+// GetFiles returns owners files that still need approval.
+func (ap Approvers) GetFiles(baseURL *url.URL, branch string) []File {
+	allFiles := []File{}
+	for owner := range ap.UnapprovedOwners() {
+		allFiles = append(allFiles, UnapprovedFile{
+			baseURL:  baseURL,
+			branch:   branch,
+			filepath: owner,
+		})
+	}
+
+	return allFiles
+}
+
+// UnapprovedOwners return the owners files for the unapproved files
+func (ap Approvers) UnapprovedOwners() sets.String {
+	owners := sets.NewString()
+	for fn := range ap.UnapprovedFiles() {
+		owners.Insert(ap.owners.repo.FindApproverOwnersForFile(fn))
+	}
+	ap.owners.removeSubdirs(owners)
+	return owners
 }
 
 // GetCCs gets the list of suggested approvers for a pull-request.  It
@@ -496,34 +577,33 @@ func (ap Approvers) GetFiles(baseURL *url.URL, branch string) []File {
 // The goal of this second step is to only keep the assignees that are
 // the most useful.
 func (ap Approvers) GetCCs() []string {
-	randomizedApprovers := ap.owners.GetShuffledApprovers()
-
-	currentApprovers := ap.GetCurrentApproversSet()
-	approversAndAssignees := currentApprovers.Union(ap.assignees)
+	approversAndAssigneeApprovals := approvalsAndBlanketApprovals(ap.ListApprovals(), ap.assignees)
+	approversAndAssignees := approversOfApprovals(approversAndAssigneeApprovals)
+	randomizedApprovers := ap.owners.GetShuffledApproversSubset(approversAndAssignees)
 	leafReverseMap := ap.owners.GetReverseMap(ap.owners.GetLeafApprovers())
-	suggested := ap.owners.KeepCoveringApprovers(leafReverseMap, approversAndAssignees, randomizedApprovers)
-	approversAndSuggested := currentApprovers.Union(suggested)
-	everyone := approversAndSuggested.Union(ap.assignees)
+	suggested := ap.owners.KeepCoveringApprovers(leafReverseMap, approversAndAssigneeApprovals, randomizedApprovers)
+
+	approversAndSuggestedApprovals := approvalsAndBlanketApprovals(ap.ListApprovals(), suggested)
 	fullReverseMap := ap.owners.GetReverseMap(ap.owners.GetApprovers())
-	keepAssignees := ap.owners.KeepCoveringApprovers(fullReverseMap, approversAndSuggested, everyone.List())
+	keepAssignees := ap.owners.KeepCoveringApprovers(fullReverseMap, approversAndSuggestedApprovals, ap.assignees.List())
 
 	return suggested.Union(keepAssignees).List()
 }
 
-// AreFilesApproved returns a bool indicating whether or not OWNERS files associated with
-// the PR are approved.  A PR with no OWNERS files is not considered approved. If this
+// AreFilesApproved returns a bool indicating whether or not files associated with
+// the PR are approved.  A PR with no files is not considered approved. If this
 // returns true, the PR may still not be fully approved depending on the associated issue
 // requirement
 func (ap Approvers) AreFilesApproved() bool {
-	return (len(ap.owners.filenames) != 0 || len(ap.owners.filenamesUnfiltered) != 0) && ap.UnapprovedFiles().Len() == 0
+	return len(ap.owners.filenames) != 0 && ap.UnapprovedFiles().Len() == 0
 }
 
 // RequirementsMet returns a bool indicating whether the PR has met all approval requirements:
 // - all OWNERS files associated with the PR have been approved AND
 // EITHER
-// 	- the munger config is such that an issue is not required to be associated with the PR
-// 	- that there is an associated issue with the PR
-// 	- an OWNER has indicated that the PR is trivial enough that an issue need not be associated with the PR
+//   - the munger config is such that an issue is not required to be associated with the PR
+//   - that there is an associated issue with the PR
+//   - an OWNER has indicated that the PR is trivial enough that an issue need not be associated with the PR
 func (ap Approvers) RequirementsMet() bool {
 	return ap.AreFilesApproved() && (!ap.RequireIssue || ap.AssociatedIssue != 0 || len(ap.NoIssueApprovers()) != 0)
 }
@@ -531,39 +611,31 @@ func (ap Approvers) RequirementsMet() bool {
 // IsApproved returns a bool indicating whether the PR is fully approved.
 // If a human manually added the approved label, this returns true, ignoring normal approval rules.
 func (ap Approvers) IsApproved() bool {
-	return ap.RequirementsMet() || ap.ManuallyApproved()
+	reqsMet := ap.RequirementsMet()
+	if !reqsMet && ap.ManuallyApproved() {
+		return true
+	}
+	return reqsMet
 }
 
 // ListApprovals returns the list of approvals
 func (ap Approvers) ListApprovals() []Approval {
 	approvals := []Approval{}
-
-	for _, approver := range ap.GetCurrentApproversSet().List() {
-		approvals = append(approvals, ap.approvers[approver])
+	for _, approval := range ap.approvers {
+		approvals = append(approvals, *approval)
 	}
-
 	return approvals
 }
 
 // ListNoIssueApprovals returns the list of "no-issue" approvals
-func (ap Approvers) ListNoIssueApprovals() []Approval {
-	approvals := []Approval{}
+func (ap Approvers) ListNoIssueApprovals() []NoIssueApproval {
+	approvals := []NoIssueApproval{}
 
 	for _, approver := range ap.GetNoIssueApproversSet().List() {
-		approvals = append(approvals, ap.approvers[approver])
+		approvals = append(approvals, *ap.noissueapprovers[approver])
 	}
 
 	return approvals
-}
-
-// AssignedCCs returns potential approvers that are already assigned
-func (ap Approvers) AssignedCCs() []string {
-	return sets.NewString(ap.GetCCs()...).Intersection(ap.assignees).List()
-}
-
-// SuggestedCCs returns potential approvers that are not already assigned
-func (ap Approvers) SuggestedCCs() []string {
-	return sets.NewString(ap.GetCCs()...).Difference(ap.assignees).List()
 }
 
 // File in an interface for files
@@ -571,45 +643,118 @@ type File interface {
 	String() string
 }
 
-// ApprovedFile contains the information of a an approved file.
-type ApprovedFile struct {
-	baseURL        *url.URL
-	filepath       string
-	ownersFilename string
+// ApprovedFolder contains the information of a an approved folder.
+type ApprovedFolder struct {
+	baseURL    *url.URL
+	folderpath string
+	files      sets.String
 	// approvers is the set of users that approved this file change.
 	approvers sets.String
 	branch    string
 }
 
-// UnapprovedFile contains the information of a an unapproved file.
-type UnapprovedFile struct {
-	baseURL        *url.URL
-	filepath       string
-	ownersFilename string
-	branch         string
+// PartiallyApprovedFolder contains the information of a an approved folder.
+type PartiallyApprovedFolder struct {
+	baseURL         *url.URL
+	folderpath      string
+	approvedFiles   sets.String
+	unapprovedFiles sets.String
+	approvers       sets.String
+	branch          string
 }
 
-func (a ApprovedFile) String() string {
-	fullOwnersPath := filepath.Join(a.filepath, a.ownersFilename)
-	if strings.HasSuffix(a.filepath, ".md") {
-		fullOwnersPath = a.filepath
-	}
+// UnapprovedFolder contains the information of a an unapproved folder.
+type UnapprovedFolder struct {
+	baseURL    *url.URL
+	folderpath string
+	files      sets.String
+	branch     string
+}
+
+func (a ApprovedFolder) String() string {
 	link := fmt.Sprintf("%s/blob/%s/%v",
 		a.baseURL.String(),
 		a.branch,
-		fullOwnersPath,
+		a.folderpath,
 	)
-	return fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(a.approvers.List(), ","))
+
+	var files string
+	// sort files for repoducibality
+	sorted := a.files.List()
+	sort.Strings(sorted)
+	for _, f := range sorted {
+		files += fmt.Sprintf("- <strike>%s</strike> \n", f)
+	}
+	return fmt.Sprintf(`<details>
+<summary><strike><a href="%s">%s/</a></strike> (approved) [%v]</summary>
+
+%s
+</details>
+`, link, a.folderpath, strings.Join(a.approvers.List(), ","), files)
 }
 
-func (ua UnapprovedFile) String() string {
-	fullOwnersPath := filepath.Join(ua.filepath, ua.ownersFilename)
-	if strings.HasSuffix(ua.filepath, ".md") {
-		fullOwnersPath = ua.filepath
+func (pa PartiallyApprovedFolder) String() string {
+	link := fmt.Sprintf("%s/blob/%s/%v",
+		pa.baseURL.String(),
+		pa.branch,
+		pa.folderpath,
+	)
+	var files string
+	// sort files for repoducibality
+	sorted := pa.unapprovedFiles.List()
+	sort.Strings(sorted)
+	for _, f := range sorted {
+		files += fmt.Sprintf("- %s \n", f)
 	}
+	sorted = pa.approvedFiles.List()
+	sort.Strings(sorted)
+	for _, f := range sorted {
+		files += fmt.Sprintf("- <strike>%s</strike> \n", f)
+	}
+	return fmt.Sprintf(`<details>
+<summary><strong><a href="%s">%s/</a></strong> (partially approved, need additional approvals) [%v]</summary>
+
+%s
+</details>
+`, link, pa.folderpath, strings.Join(pa.approvers.List(), ","), files)
+}
+
+func (ua UnapprovedFolder) String() string {
 	link := fmt.Sprintf("%s/blob/%s/%v",
 		ua.baseURL.String(),
 		ua.branch,
+		ua.folderpath,
+	)
+	var files string
+	// sort files for repoducibality
+	sorted := ua.files.List()
+	sort.Strings(sorted)
+	for _, f := range sorted {
+		files += fmt.Sprintf("- %s \n", f)
+	}
+	return fmt.Sprintf(`<details>
+<summary><strong><a href="%s">%s/</a></strong> (unapproved) </summary>
+
+%s
+</details>
+`, link, ua.folderpath, files)
+}
+
+// UnapprovedFile contains information approved an unapproved owners file
+type UnapprovedFile struct {
+	baseURL  *url.URL
+	filepath string
+	branch   string
+}
+
+func (uaf UnapprovedFile) String() string {
+	fullOwnersPath := filepath.Join(uaf.filepath, ownersFileName)
+	if strings.HasSuffix(uaf.filepath, ".md") {
+		fullOwnersPath = uaf.filepath
+	}
+	link := fmt.Sprintf("%s/blob/%s/%v",
+		uaf.baseURL.String(),
+		uaf.branch,
 		fullOwnersPath,
 	)
 	return fmt.Sprintf("- **[%s](%s)**\n", fullOwnersPath, link)
@@ -618,8 +763,25 @@ func (ua UnapprovedFile) String() string {
 // GenerateTemplate takes a template, name and data, and generates
 // the corresponding string.
 func GenerateTemplate(templ, name string, data interface{}) (string, error) {
+	funcMaps := template.FuncMap{
+		"sub": func(a, b int) int {
+			return a - b
+		},
+		"sortApprovals": func(l []Approval) []Approval {
+			sort.Slice(l, func(i, j int) bool {
+				return l[i].String() < l[j].String()
+			})
+			return l
+		},
+		"sortFiles": func(l []File) []File {
+			sort.Slice(l, func(i, j int) bool {
+				return l[i].String() < l[j].String()
+			})
+			return l
+		},
+	}
 	buf := bytes.NewBufferString("")
-	if messageTempl, err := template.New(name).Parse(templ); err != nil {
+	if messageTempl, err := template.New(name).Funcs(funcMaps).Parse(templ); err != nil {
 		return "", fmt.Errorf("failed to parse template for %s: %v", name, err)
 	} else if err := messageTempl.Execute(buf, data); err != nil {
 		return "", fmt.Errorf("failed to execute template for %s: %v", name, err)
@@ -629,32 +791,22 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 
 // GetMessage returns the comment body that we want the approve plugin to display on PRs
 // The comment shows:
-// 	- a list of approvers files (and links) needed to get the PR approved
-// 	- a list of approvers files with strikethroughs that already have an approver's approval
-// 	- a suggested list of people from each OWNERS files that can fully approve the PR
-// 	- how an approver can indicate their approval
-// 	- how an approver can cancel their approval
+//   - a list of approvers files (and links) needed to get the PR approved
+//   - a list of approvers files with strikethroughs that already have an approver's approval
+//   - a suggested list of people from each OWNERS files that can fully approve the PR
+//   - how an approver can indicate their approval
+//   - how an approver can cancel their approval
 func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string) *string {
 	linkURL.Path = org + "/" + repo
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
-Approval requirements bypassed by manually added approval.
+**Approval requirements bypassed by manually added approval.**
 
 {{end -}}
-This pull-request has been approved by:{{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
+This pull-request has been approved by:{{range $index, $approval := sortApprovals .ap.ListApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
 
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
-{{ if len .ap.SuggestedCCs -}}
-{{- if len .ap.AssignedCCs -}}
-To complete the [pull request process]({{ .prProcessLink }}), please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
-{{- else -}}
-To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
-{{- end}}
-You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
-{{- else -}}
-{{- if len .ap.AssignedCCs -}}
-To complete the [pull request process]({{ .prProcessLink }}), please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
-{{- end}}
-{{- end}}
+To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
+You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- end}}
 
 {{if not .ap.RequireIssue -}}
@@ -678,13 +830,22 @@ The full list of commands accepted by this bot can be found [here]({{ .commandHe
 The pull request process is described [here]({{ .prProcessLink }})
 
 {{ end -}}
-<details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
-Needs approval from an approver in each of these files:
 
-{{range .ap.GetFiles .baseURL .branch}}{{.}}{{end}}
+Out of **{{len .ap.GetFilesApprovers}}** files: **{{sub (len .ap.GetFilesApprovers) (len .ap.UnapprovedFiles)}}** are approved and **{{len .ap.UnapprovedFiles}}** are unapproved.  
+
+{{if ne (len .ap.UnapprovedFiles) 0 -}}
+Needs approval from approvers in these files:
+{{range (sortFiles (.ap.GetFiles .baseURL .branch))}}{{.}}{{end}}
+
 Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can also choose to approve only specific files by writing `+"`/approve files <path-to-file>`"+` in a comment
 Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "commandHelpLink": commandHelpLink, "prProcessLink": prProcessLink, "org": org, "repo": repo, "branch": branch})
+{{end -}}  
+
+The status of the PR is:  
+
+{{range (sortFiles (.ap.GetFolderStatus .baseURL .branch))}}{{.}}{{end}}
+`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "commandHelpLink": commandHelpLink, "prProcessLink": prProcessLink, "org": org, "repo": repo, "branch": branch})
 	if err != nil {
 		ap.owners.log.WithError(err).Errorf("Error generating message.")
 		return nil
@@ -724,4 +885,148 @@ func getGubernatorMetadata(toBeAssigned []string) string {
 		return fmt.Sprintf("\n<!-- META=%s -->", bytes)
 	}
 	return ""
+}
+
+// wildcardPathMatch return true if the targetPath matches the given pattern
+// A '*' as a directory will recursively match all sub directories
+//
+//	Example: file a/b1/b2/c.go matches the pattern a/*/c.go
+//
+// A '*' is file name matches 0 or more characters
+//
+//	Example: file a/file_test.go matches the pattern a/*_test.go
+func wildcardPathMatch(pattern, targetPath string) bool {
+	if (len(pattern) == 0) != (len(targetPath) == 0) {
+		return false
+	}
+
+	if len(pattern) == 0 && len(targetPath) == 0 {
+		return true
+	}
+
+	var patternMatch, patternRemain string
+	var targetPathMatch, targetPathRemain string
+
+	patternSplitIndex := strings.IndexRune(pattern, '/')
+	if patternSplitIndex != -1 {
+		patternMatch, patternRemain = pattern[:patternSplitIndex], pattern[patternSplitIndex+1:]
+	} else {
+		patternMatch = pattern
+	}
+
+	targetPathSplitIndex := strings.IndexRune(targetPath, '/')
+	if targetPathSplitIndex != -1 {
+		targetPathMatch, targetPathRemain = targetPath[:targetPathSplitIndex], targetPath[targetPathSplitIndex+1:]
+	} else {
+		targetPathMatch = targetPath
+	}
+
+	if patternMatch == "*" && len(patternRemain) == 0 {
+		// everything below is a match. return true
+		return true
+	}
+
+	if patternMatch == "*" {
+		return wildcardPathMatch(patternRemain, targetPathRemain) || wildcardPathMatch(pattern, targetPathRemain)
+	}
+
+	matched, err := path.Match(patternMatch, targetPathMatch)
+	if err != nil {
+		return false
+	}
+	if matched {
+		return wildcardPathMatch(patternRemain, targetPathRemain)
+	}
+	return false
+}
+
+func wildcardPathSubset(pattern, targetPath string) bool {
+	targetPath = strings.ReplaceAll(targetPath, "*", "xyz")
+	return wildcardPathMatch(pattern, targetPath)
+}
+
+// approversForFile return the set of approvers in potentialApprovers who approved the file
+func approversForFile(file string, potentialApprovers sets.String, currentApprovals map[string]*Approval) sets.String {
+	approvers := sets.NewString()
+
+	potentialApproversLowerCase := sets.NewString()
+	for item := range potentialApprovers {
+		potentialApproversLowerCase.Insert(strings.ToLower(item))
+	}
+
+	for login, approval := range currentApprovals {
+		if potentialApproversLowerCase.Has(strings.ToLower(login)) && approval.CoversFile(file) {
+			approvers.Insert(login)
+		}
+	}
+
+	return approvers
+}
+
+func approvalsAndBlanketApprovals(approvals []Approval, blanketApprovers sets.String) []Approval {
+	allApprovals := []Approval{}
+	apprvs := sets.NewString()
+	for _, approval := range approvals {
+		apprvs.Insert(approval.Login)
+		allApprovals = append(allApprovals, approval)
+	}
+	for apprvr := range blanketApprovers {
+		if !apprvs.Has(apprvr) {
+			allApprovals = append(allApprovals, Approval{
+				Login: apprvr,
+				Infos: []ApprovalInfo{{Path: "*"}},
+			})
+		}
+	}
+	return allApprovals
+}
+
+func approversOfApprovals(approvals []Approval) sets.String {
+	approvers := sets.NewString()
+	for _, approval := range approvals {
+		approvers.Insert(strings.ToLower(approval.Login))
+	}
+	return approvers
+}
+
+func folderStatus(folder string, folderFiles map[string]sets.String, fileApprovers map[string]sets.String, baseURL *url.URL, branch string) File {
+	approvers := sets.NewString()
+	approvedFiles := sets.NewString()
+	unapprovedFiles := sets.NewString()
+	for file := range folderFiles[folder] {
+		if len(fileApprovers[file]) != 0 {
+			approvedFiles.Insert(file)
+			approvers = approvers.Union(fileApprovers[file])
+		} else {
+			unapprovedFiles.Insert(file)
+		}
+	}
+
+	if len(unapprovedFiles) == 0 {
+		return ApprovedFolder{
+			baseURL:    baseURL,
+			folderpath: folder,
+			files:      approvedFiles,
+			approvers:  approvers,
+			branch:     branch,
+		}
+	}
+
+	if len(approvedFiles) == 0 {
+		return UnapprovedFolder{
+			baseURL:    baseURL,
+			branch:     branch,
+			folderpath: folder,
+			files:      unapprovedFiles,
+		}
+	}
+
+	return PartiallyApprovedFolder{
+		baseURL:         baseURL,
+		folderpath:      folder,
+		approvedFiles:   approvedFiles,
+		unapprovedFiles: unapprovedFiles,
+		approvers:       approvers,
+		branch:          branch,
+	}
 }

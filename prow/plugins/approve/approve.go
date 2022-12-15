@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
+	"k8s.io/test-infra/prow/plugins/approve/approvers2"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -43,6 +44,7 @@ const (
 	approveCommand       = "APPROVE"
 	cancelArgument       = "cancel"
 	lgtmCommand          = "LGTM"
+	filesArgument        = "files"
 	noIssueArgument      = "no-issue"
 	removeApproveCommand = "REMOVE-APPROVE"
 )
@@ -420,28 +422,19 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	log.WithField("duration", time.Since(start).String()).Debug("Completed github functions in handle")
 
 	start = time.Now()
-	approversHandler := approvers.NewApprovers(
-		approvers.NewOwners(
-			log,
-			filenames,
-			repo,
-			int64(pr.number),
-		),
-	)
-	approversHandler.AssociatedIssue, err = findAssociatedIssue(pr.body, pr.org)
+	approversHelper := NewApproveHelper(opts, log, filenames, repo, int64(pr.number))
+
+	associatedIssue, err := findAssociatedIssue(pr.body, pr.org)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to find associated issue from PR body: %v", err)
 	}
-	approversHandler.RequireIssue = opts.IssueRequired
-	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, hasApprovedLabel)
+	approversHelper.setAssociatedIssue(associatedIssue)
+	approversHelper.setRequiredIssue(opts.IssueRequired)
+	approversHelper.setManuallyApproved(humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, hasApprovedLabel))
 
 	// Author implicitly approves their own PR if config allows it
-	if opts.HasSelfApproval() {
-		approversHandler.AddAuthorSelfApprover(pr.author, pr.htmlURL+"#", false)
-	} else {
-		// Treat the author as an assignee, and suggest them if possible
-		approversHandler.AddAssignees(pr.author)
-	}
+	// Otherwise, author is treated as an assignee and suggested if possible
+	approversHelper.processSelfApproval(opts.HasSelfApproval(), pr.author, pr.htmlURL+"#")
 	log.WithField("duration", time.Since(start).String()).Debug("Completed configuring approversHandler in handle")
 
 	start = time.Now()
@@ -452,17 +445,17 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
 	approveComments := filterComments(comments, approvalMatcher(botUserChecker, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
-	addApprovers(&approversHandler, approveComments, pr.author, opts.ConsiderReviewState())
+	addApprovers(approversHelper, approveComments, pr.author, opts.ConsiderReviewState())
 	log.WithField("duration", time.Since(start).String()).Debug("Completed filtering approval comments in handle")
 
 	for _, user := range pr.assignees {
-		approversHandler.AddAssignees(user.Login)
+		approversHelper.addAssignees(user.Login)
 	}
 
 	start = time.Now()
 	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botUserChecker))
 	latestNotification := getLast(notifications)
-	newMessage := updateNotification(githubConfig.LinkURL, opts.CommandHelpLink, opts.PrProcessLink, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
+	newMessage := approversHelper.updateNoficiation(githubConfig.LinkURL, opts.CommandHelpLink, opts.PrProcessLink, pr.org, pr.repo, pr.branch, latestNotification)
 	log.WithField("duration", time.Since(start).String()).Debug("Completed getting notifications in handle")
 	start = time.Now()
 	if newMessage != nil {
@@ -478,7 +471,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	log.WithField("duration", time.Since(start).String()).Debug("Completed adding/deleting approval comments in handle")
 
 	start = time.Now()
-	if !approversHandler.IsApproved() {
+	if !approversHelper.isApproved() {
 		if hasApprovedLabel {
 			if err := ghc.RemoveLabel(pr.org, pr.repo, pr.number, labels.Approved); err != nil {
 				log.WithError(err).Errorf("Failed to remove %q label from %s/%s#%d.", labels.Approved, pr.org, pr.repo, pr.number)
@@ -570,74 +563,14 @@ func notificationMatcher(isBot func(string) bool) func(*comment) bool {
 	}
 }
 
-func updateNotification(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
-	message := approvers.GetMessage(approversHandler, linkURL, commandHelpLink, prProcessLink, org, repo, branch)
-	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
-		return nil
-	}
-	return message
-}
-
 // addApprovers iterates through the list of comments on a PR
 // and identifies all of the people that have said /approve and adds
 // them to the Approvers.  The function uses the latest approve or cancel comment
 // to determine the Users intention. A review in requested changes state is
 // considered a cancel.
-func addApprovers(approversHandler *approvers.Approvers, approveComments []*comment, author string, reviewActsAsApprove bool) {
+func addApprovers(approversHelper approveHelper, approveComments []*comment, author string, reviewActsAsApprove bool) {
 	for _, c := range approveComments {
-		if c.Author == "" {
-			continue
-		}
-
-		if reviewActsAsApprove && c.ReviewState == github.ReviewStateApproved {
-			approversHandler.AddApprover(
-				c.Author,
-				c.HTMLURL,
-				false,
-			)
-		}
-		if reviewActsAsApprove && c.ReviewState == github.ReviewStateChangesRequested {
-			approversHandler.RemoveApprover(c.Author)
-		}
-
-		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
-			name := strings.ToUpper(match[1])
-			if name == removeApproveCommand {
-				approversHandler.RemoveApprover(c.Author)
-				continue
-			}
-			if name != approveCommand && name != lgtmCommand {
-				continue
-			}
-			args := strings.ToLower(strings.TrimSpace(match[2]))
-			if strings.Contains(args, cancelArgument) {
-				approversHandler.RemoveApprover(c.Author)
-				continue
-			}
-
-			if c.Author == author {
-				approversHandler.AddAuthorSelfApprover(
-					c.Author,
-					c.HTMLURL,
-					args == noIssueArgument,
-				)
-			}
-
-			if name == approveCommand {
-				approversHandler.AddApprover(
-					c.Author,
-					c.HTMLURL,
-					args == noIssueArgument,
-				)
-			} else {
-				approversHandler.AddLGTMer(
-					c.Author,
-					c.HTMLURL,
-					args == noIssueArgument,
-				)
-			}
-
-		}
+		approversHelper.processComment(c, author, reviewActsAsApprove)
 	}
 }
 
@@ -729,4 +662,242 @@ func getLast(cs []*comment) *comment {
 		return nil
 	}
 	return cs[len(cs)-1]
+}
+
+type approveHelper interface {
+	processSelfApproval(bool, string, string)
+	addAssignees(logins ...string)
+	setAssociatedIssue(int)
+	setRequiredIssue(bool)
+	setManuallyApproved(func() bool)
+	processComment(c *comment, author string, reviewActsAsApprove bool)
+	isApproved() bool
+	updateNoficiation(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string, latestNotification *comment) *string
+}
+
+func NewApproveHelper(opts *plugins.Approve, log *logrus.Entry, filenames []string, repo approvers.Repo, seed int64) approveHelper {
+	if opts.GranularApproval {
+		return &granularApproveHelper{
+			approversHandler: approvers2.NewApprovers(
+				approvers2.NewOwners(
+					log,
+					filenames,
+					repo,
+					seed,
+				),
+			),
+		}
+	}
+
+	return &simpleApproveHelper{
+		approversHandler: approvers.NewApprovers(
+			approvers.NewOwners(
+				log,
+				filenames,
+				repo,
+				seed,
+			),
+		),
+	}
+}
+
+var _ approveHelper = &simpleApproveHelper{}
+
+type simpleApproveHelper struct {
+	approversHandler approvers.Approvers
+}
+
+func (sa *simpleApproveHelper) processSelfApproval(approve bool, author string, url string) {
+	if approve {
+		sa.approversHandler.AddAuthorSelfApprover(author, url, false)
+	} else {
+		sa.approversHandler.AddAssignees(author)
+	}
+}
+
+func (sa *simpleApproveHelper) addAssignees(logins ...string) {
+	sa.approversHandler.AddAssignees(logins...)
+}
+
+func (sa *simpleApproveHelper) setAssociatedIssue(issue int) {
+	sa.approversHandler.AssociatedIssue = issue
+}
+
+func (sa *simpleApproveHelper) setRequiredIssue(required bool) {
+	sa.approversHandler.RequireIssue = required
+}
+
+func (sa *simpleApproveHelper) setManuallyApproved(f func() bool) {
+	sa.approversHandler.ManuallyApproved = f
+}
+
+func (sa *simpleApproveHelper) processComment(c *comment, author string, reviewActsAsApprove bool) {
+	if c.Author == "" {
+		return
+	}
+
+	if reviewActsAsApprove && c.ReviewState == github.ReviewStateApproved {
+		sa.approversHandler.AddApprover(
+			c.Author,
+			c.HTMLURL,
+			false,
+		)
+	}
+	if reviewActsAsApprove && c.ReviewState == github.ReviewStateChangesRequested {
+		sa.approversHandler.RemoveApprover(c.Author)
+	}
+
+	for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
+		name := strings.ToUpper(match[1])
+		if name == removeApproveCommand {
+			sa.approversHandler.RemoveApprover(c.Author)
+			continue
+		}
+		if name != approveCommand && name != lgtmCommand {
+			continue
+		}
+		args := strings.ToLower(strings.TrimSpace(match[2]))
+		if strings.Contains(args, cancelArgument) {
+			sa.approversHandler.RemoveApprover(c.Author)
+			continue
+		}
+
+		if c.Author == author {
+			sa.approversHandler.AddAuthorSelfApprover(
+				c.Author,
+				c.HTMLURL,
+				args == noIssueArgument,
+			)
+		}
+
+		if name == approveCommand {
+			sa.approversHandler.AddApprover(
+				c.Author,
+				c.HTMLURL,
+				args == noIssueArgument,
+			)
+		} else {
+			sa.approversHandler.AddLGTMer(
+				c.Author,
+				c.HTMLURL,
+				args == noIssueArgument,
+			)
+		}
+
+	}
+}
+
+func (sa *simpleApproveHelper) isApproved() bool {
+	return sa.approversHandler.IsApproved()
+}
+
+func (sa *simpleApproveHelper) updateNoficiation(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string, latestNotification *comment) *string {
+	message := approvers.GetMessage(sa.approversHandler, linkURL, commandHelpLink, prProcessLink, org, repo, branch)
+	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
+		return nil
+	}
+	return message
+}
+
+var _ approveHelper = &granularApproveHelper{}
+
+type granularApproveHelper struct {
+	approversHandler approvers2.Approvers
+}
+
+func (ga *granularApproveHelper) processSelfApproval(approve bool, author string, url string) {
+	if approve {
+		ga.approversHandler.AddAuthorSelfApprover(author, url, "")
+	} else {
+		ga.approversHandler.AddAssignees(author)
+	}
+}
+
+func (ga *granularApproveHelper) addAssignees(logins ...string) {
+	ga.approversHandler.AddAssignees(logins...)
+}
+
+func (ga *granularApproveHelper) setAssociatedIssue(issue int) {
+	ga.approversHandler.AssociatedIssue = issue
+}
+
+func (ga *granularApproveHelper) setRequiredIssue(required bool) {
+	ga.approversHandler.RequireIssue = required
+}
+
+func (ga *granularApproveHelper) setManuallyApproved(f func() bool) {
+	ga.approversHandler.ManuallyApproved = f
+}
+
+func (ga *granularApproveHelper) processComment(c *comment, author string, reviewActsAsApprove bool) {
+	if c.Author == "" {
+		return
+	}
+
+	if reviewActsAsApprove && c.ReviewState == github.ReviewStateApproved {
+		ga.approversHandler.AddApprover(
+			c.Author,
+			c.HTMLURL,
+			"",
+		)
+	}
+	if reviewActsAsApprove && c.ReviewState == github.ReviewStateChangesRequested {
+		ga.approversHandler.RemoveApprover(c.Author)
+	}
+
+	for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
+		name := strings.ToUpper(match[1])
+		if name == removeApproveCommand {
+			ga.approversHandler.RemoveApprover(c.Author)
+			continue
+		}
+		if name != approveCommand && name != lgtmCommand {
+			continue
+		}
+
+		args := strings.ToLower(strings.TrimSpace(match[2]))
+		if strings.Contains(args, cancelArgument) {
+			ga.approversHandler.RemoveApprover(c.Author)
+			continue
+		}
+
+		argsSplit := strings.Fields(args)
+		path := ""
+		if len(argsSplit) >= 2 && strings.Contains(argsSplit[0], filesArgument) {
+			path = strings.TrimSpace(argsSplit[1])
+		}
+
+		if args == noIssueArgument {
+			if c.Author == author {
+				ga.approversHandler.AddNoIssueAuthorSelfApprover(c.Author, c.HTMLURL)
+			}
+			if name == approveCommand {
+				ga.approversHandler.AddNoIssueApprover(c.Author, c.HTMLURL)
+			} else {
+				ga.approversHandler.AddNoIssueLGTMer(c.Author, c.HTMLURL)
+			}
+			continue
+		}
+
+		if c.Author == author {
+			ga.approversHandler.AddAuthorSelfApprover(c.Author, c.HTMLURL, path)
+		}
+		if name == approveCommand {
+			ga.approversHandler.AddApprover(c.Author, c.HTMLURL, path)
+		} else {
+			ga.approversHandler.AddLGTMer(c.Author, c.HTMLURL, path)
+		}
+	}
+}
+
+func (ga *granularApproveHelper) isApproved() bool {
+	return ga.approversHandler.IsApproved()
+}
+
+func (ga *granularApproveHelper) updateNoficiation(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string, latestNotification *comment) *string {
+	message := approvers2.GetMessage(ga.approversHandler, linkURL, commandHelpLink, prProcessLink, org, repo, branch)
+	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
+		return nil
+	}
+	return message
 }
