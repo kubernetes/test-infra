@@ -50,12 +50,6 @@ type Repo interface {
 
 // Owners provides functionality related to owners of a specific code change.
 type Owners struct {
-	// filenamesUnfiltered contains all files in a given PR, including those
-	// that do not need approval because of IsAutoApproveUnownedSubfolders
-	filenamesUnfiltered []string
-	// filenames refers to the files in a given PR, not to OWNERS files. Files
-	// that are a directory below an Owners file with IsAutoApproveUnownedSubfolders
-	// are excluded here but kept in filenamesUnfiltered.
 	filenames []string
 	repo      Repo
 	seed      int64
