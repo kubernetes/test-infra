@@ -38,8 +38,6 @@ presubmits:
     always_run: false
     skip_report: false
     decorate: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
