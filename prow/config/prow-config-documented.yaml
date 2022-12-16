@@ -102,6 +102,13 @@ branch-protection:
                                 # Approvals overrides the number of approvals required if set (set to 0 to disable)
                                 required_approving_review_count: 0
 
+                                # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                                bypass_pull_request_allowances:
+                                    teams:
+                                      - ""
+                                    users:
+                                      - ""
+
                             # RequiredStatusChecks configures github contexts
                             required_status_checks:
                                 # Contexts appends required contexts that must be green to merge
@@ -160,6 +167,13 @@ branch-protection:
                         # Approvals overrides the number of approvals required if set (set to 0 to disable)
                         required_approving_review_count: 0
 
+                        # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                        bypass_pull_request_allowances:
+                            teams:
+                              - ""
+                            users:
+                              - ""
+
                     # RequiredStatusChecks configures github contexts
                     required_status_checks:
                         # Contexts appends required contexts that must be green to merge
@@ -201,6 +215,13 @@ branch-protection:
 
                 # Approvals overrides the number of approvals required if set (set to 0 to disable)
                 required_approving_review_count: 0
+
+                # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                bypass_pull_request_allowances:
+                    teams:
+                      - ""
+                    users:
+                      - ""
 
             # RequiredStatusChecks configures github contexts
             required_status_checks:
@@ -255,6 +276,13 @@ branch-protection:
 
         # Approvals overrides the number of approvals required if set (set to 0 to disable)
         required_approving_review_count: 0
+
+        # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+        bypass_pull_request_allowances:
+            teams:
+              - ""
+            users:
+              - ""
 
     # RequiredStatusChecks configures github contexts
     required_status_checks:
