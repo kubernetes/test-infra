@@ -43,8 +43,6 @@ presubmits:
     cluster: k8s-infra-prow-build
     path_alias: "k8s.io/kubernetes"
     decorate: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
     annotations:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
