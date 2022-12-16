@@ -154,6 +154,7 @@ periodics:
         -label:lifecycle/frozen
         -label:"help wanted"
         -label:"good first issue"
+        -label:"triage/accepted"
         label:lifecycle/rotten
       - --updated=720h
       - --token=/etc/github-token/token
@@ -383,10 +384,11 @@ periodics:
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
-        label:lifecycle/stale
         -label:lifecycle/rotten
         -label:"help wanted"
         -label:"good first issue"
+        -label:"triage/accepted"
+        label:lifecycle/stale
       - --updated=720h
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
@@ -445,6 +447,7 @@ periodics:
         -label:lifecycle/rotten
         -label:"help wanted"
         -label:"good first issue"
+        -label:"triage/accepted"
       - --updated=2160h
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
