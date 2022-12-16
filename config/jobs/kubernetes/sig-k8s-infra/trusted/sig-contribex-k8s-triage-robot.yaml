@@ -529,6 +529,49 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
+- name: ci-k8s-triage-robot-retriage
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Removes the triage/accepted label after 1 year of inactivity
+    testgrid-tab-name: re-triage
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:commenter:v20230116-d4a02a2181
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
+        label:triage/accepted
+      - --updated=8760h
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This issue or PR has not been updated in over 1 year, and should be re-triaged.
+
+        You can:
+        - Confirm that this issue or PR is still relevant with `/triage accepted` (org members only)
+        - Close this issue or PR with `/close`
+
+        For more details on the triage process, see https://www.kubernetes.dev/docs/guide/issue-triage/
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
 - name: issue-creator
   interval: 24h
   cluster: k8s-infra-prow-build-trusted
