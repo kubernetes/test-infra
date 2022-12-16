@@ -92,17 +92,15 @@ presubmits:
 				JobName:          "trigger-inrepoconfig-presubmit-via-gangway1",
 				JobExecutionType: gangway.JobExecutionType_PRESUBMIT,
 				// Define where the job definition lives from inrepoconfig.
-				GitRefs: &gangway.GitReferenceDynamic{
-					Base: &gangway.GitReferenceStatic{
-						Url:    "https://fakegitserver.default/repo/some/org/gangway-test-repo-1",
-						Commit: "f1267354a7bbc5ce7d0458cdf4d0d36e8d35d8b3",
-						Ref:    "master",
-					},
-					RefsToMerge: []*gangway.GitReferenceStatic{
+				Refs: &gangway.Refs{
+					Org:     "https://fakegitserver.default/repo/some/org",
+					Repo:    "gangway-test-repo-1",
+					BaseRef: "master",
+					BaseSha: "f1267354a7bbc5ce7d0458cdf4d0d36e8d35d8b3",
+					Pulls: []*gangway.Pull{
 						{
-							Url:    "https://fakegitserver.default/repo/some/org/gangway-test-repo-1",
-							Commit: "458b96a96a74689447530035f5a71c426bacb505",
-							Ref:    "refs/changes/00/123/1",
+							Number: 1,
+							Sha:    "458b96a96a74689447530035f5a71c426bacb505",
 						},
 					},
 				},

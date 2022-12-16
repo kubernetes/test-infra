@@ -20,8 +20,6 @@ import (
 	context "context"
 	"errors"
 	"fmt"
-	"regexp"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 	codes "google.golang.org/grpc/codes"
@@ -84,17 +82,16 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 
 	enableDecoratedLogger(allowedApiClient, md)
 
-	// Fetch the job definition. We can use most of the existing code in Sub for
-	// this. The key is to translate the existing data from the request into
-	// something that the codebase understands (e.g., "pulls" instead of
-	// "refsToMerge").
-
-	jobStruct, err := gw.FetchJobStruct(req)
-	if err != nil {
-		logrus.WithError(err).Error("could not find requested job config")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
+	// Fetch the job definition.
+	// FIXME: Refactor this after refactoring Sub.
+	jobStruct := JobStruct{}
+	/*
+		jobStruct, err := gw.FetchJobStruct(req)
+		if err != nil {
+			logrus.WithError(err).Error("could not find requested job config")
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+	*/
 	var periodic config.Periodic
 	var presubmit config.Presubmit
 	var postsubmit config.Postsubmit
@@ -105,8 +102,8 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 	// clone/merge at runtime. We get this information from the request, as well
 	// as the Periodic/Presubmut/Postsubmit struct's JobBase.ExtraRefs (which
 	// has type prowcrd.Refs).
-	gitRefs := req.GetGitRefs()
-	refs, err = MkRefs(gitRefs)
+	gitRefs := req.GetRefs()
+	refs, err = ToCrdRefs(gitRefs)
 	if err != nil {
 		logrus.WithError(err).Error("could not construct refs from baseRepo")
 		return nil, err
@@ -228,48 +225,88 @@ func ClientAuthorized(allowedApiClient *config.AllowedApiClient, prowJobCR prowc
 	return false
 }
 
-func MkRefs(grd *GitReferenceDynamic) (*prowcrd.Refs, error) {
-	var refs prowcrd.Refs
-	if grd == nil {
-		return &refs, nil
+// FIXME: Add roundtrip tests to ensure that the conversion between gitRefs and refs is lossless.
+func ToCrdRefs(gitRefs *Refs) (*prowcrd.Refs, error) {
+	if gitRefs == nil {
+		return nil, errors.New("gitRefs is nil")
+	}
+
+	refs := prowcrd.Refs{
+		Org:            gitRefs.Org,
+		Repo:           gitRefs.Repo,
+		RepoLink:       gitRefs.RepoLink,
+		BaseRef:        gitRefs.BaseRef,
+		BaseSHA:        gitRefs.BaseSha,
+		BaseLink:       gitRefs.BaseLink,
+		PathAlias:      gitRefs.PathAlias,
+		WorkDir:        gitRefs.WorkDir,
+		CloneURI:       gitRefs.CloneUri,
+		SkipSubmodules: gitRefs.SkipSubmodules,
+		CloneDepth:     int(gitRefs.CloneDepth),
+		SkipFetchHead:  gitRefs.SkipFetchHead,
 	}
 
 	var pulls []prowcrd.Pull
-	base := grd.GetBase()
-	refsToMerge := grd.GetRefsToMerge()
-
-	url := base.GetUrl()
-	commit := base.GetCommit()
-	ref := base.GetRef()
-
-	orgRepo := config.NewOrgRepo(url)
-	org := orgRepo.Org
-	repo := orgRepo.Repo
-
-	// Convert GitReferenceDynamic into prowcrd.Refs.
-	refs = prowcrd.Refs{
-		Org:      org,
-		Repo:     repo,
-		RepoLink: url,
-		BaseRef:  ref,
-		BaseSHA:  commit,
-	}
-
-	// Convert refsToMerge to "pulls" (refToMerge -> prowcrd.Pull).
-	for _, refToMerge := range refsToMerge {
-		// prowcrd.Pull does not require "orgRepo" information (the various
-		// *Link fields are for reporting, not for cloning), because it is
-		// implied from the orgRepo (URL) of prowcrd.Refs.
-		pull := prowcrd.Pull{
-			SHA: refToMerge.GetCommit(),
-			Ref: refToMerge.GetRef(),
+	for _, pull := range gitRefs.GetPulls() {
+		if pull == nil {
+			continue
 		}
-		pulls = append(pulls, pull)
+		p := prowcrd.Pull{
+			Number:     int(pull.Number),
+			Author:     pull.Author,
+			SHA:        pull.Sha,
+			Title:      pull.Title,
+			Ref:        pull.Ref,
+			Link:       pull.Link,
+			CommitLink: pull.CommitLink,
+			AuthorLink: pull.AuthorLink,
+		}
+		pulls = append(pulls, p)
 	}
 
 	refs.Pulls = pulls
 
 	return &refs, nil
+}
+
+func FromCrdRefs(refs *prowcrd.Refs) (*Refs, error) {
+	if refs == nil {
+		return nil, errors.New("refs is nil")
+	}
+
+	gitRefs := Refs{
+		Org:            refs.Org,
+		Repo:           refs.Repo,
+		RepoLink:       refs.RepoLink,
+		BaseRef:        refs.BaseRef,
+		BaseSha:        refs.BaseSHA,
+		BaseLink:       refs.BaseLink,
+		PathAlias:      refs.PathAlias,
+		WorkDir:        refs.WorkDir,
+		CloneUri:       refs.CloneURI,
+		SkipSubmodules: refs.SkipSubmodules,
+		CloneDepth:     int32(refs.CloneDepth),
+		SkipFetchHead:  refs.SkipFetchHead,
+	}
+
+	var pulls []*Pull
+	for _, pull := range refs.Pulls {
+		p := Pull{
+			Number:     int32(pull.Number),
+			Author:     pull.Author,
+			Sha:        pull.SHA,
+			Title:      pull.Title,
+			Ref:        pull.Ref,
+			Link:       pull.Link,
+			CommitLink: pull.CommitLink,
+			AuthorLink: pull.AuthorLink,
+		}
+		pulls = append(pulls, &p)
+	}
+
+	gitRefs.Pulls = pulls
+
+	return &gitRefs, nil
 }
 
 type JobStruct struct {
@@ -279,155 +316,6 @@ type JobStruct struct {
 	// Encode the type of the Job to coerce into (via type assertion), so that
 	// users of JobStruct know how to make sense of the Job details.
 	JobExecutionType JobExecutionType
-}
-
-// FetchJobStruct looks at the sea of all possible Prow Job definitions and
-// selects The One that matches the details in the request.
-func (gw *Gangway) FetchJobStruct(req *CreateJobExecutionRequest) (*JobStruct, error) {
-	// We need to now write a single getProwJobSpec "handler" function
-	// that handles all 3 job execution types. In the pub/sub code we do this
-	// with 3 separate functions with a certain amount of code duplication
-	// across them, but we just do it here in one function for simplicity.
-
-	jobName := req.GetJobName()
-
-	// Only used for postsubmits and presubmits.
-	gitRefs := req.GetGitRefs()
-	baseRepoCommit := gitRefs.GetBase().GetCommit()
-	baseRepoRef := gitRefs.GetBase().GetRef()
-	baseSHAGetter := func() (string, error) {
-		return baseRepoCommit, nil
-	}
-
-	// Only used for presubmits.
-	var headSHAGetters []func() (string, error)
-	refsToMerge := gitRefs.GetRefsToMerge()
-	for _, refToMerge := range refsToMerge {
-		refToMerge := refToMerge
-		headSHAGetters = append(headSHAGetters, func() (string, error) {
-			return refToMerge.GetCommit(), nil
-		})
-	}
-
-	jobStruct := JobStruct{}
-	jobStruct.JobExecutionType = req.GetJobExecutionType()
-
-	mainConfig := gw.ConfigAgent.Config()
-	pc := gw.InRepoConfigCacheHandler
-
-	switch jobStruct.JobExecutionType {
-	case JobExecutionType_PERIODIC:
-		// Search for the correct Periodic job from the possible candidates
-		// defined in the central repo.
-		for _, candidateJob := range mainConfig.AllPeriodics() {
-			candidateJob := candidateJob
-			if candidateJob.Name == req.GetJobName() {
-				jobStruct.Periodic = &candidateJob
-				break
-			}
-		}
-		if jobStruct.Periodic == nil {
-			return nil, fmt.Errorf("failed to find associated periodic job %q", req.GetJobName())
-		}
-	case JobExecutionType_PRESUBMIT:
-		orgRepo := config.NewOrgRepo(gitRefs.GetBase().GetUrl()).String()
-
-		jobs := mainConfig.GetPresubmitsStatic(orgRepo)
-		if gitRefs != nil {
-			// The request wants to execute a job defined with gitRefs. This job
-			// can be defined either statically in a central repo or from
-			// inrepoconfig.
-			//
-			// For example, let's say the job is a presubmit job from the
-			// central repo. A presubmit job must have information about which
-			// GitHub pull request or Gerrit change we want to run the job
-			// against. This pull request or change number is obviously not
-			// found in the central config (it is discovered only at runtime).
-			// The gitRefs can be used to look up this information.
-			//
-			// For the case of a presubmit job defined from inrepoconfig, this
-			// gitRefs field performs two jobs: it tells us which pull request
-			// or change to clone (as with the example above), but it also tells
-			// us which git repo holds the job information (YAML file).
-			//
-			// Either way, we will look up jobs from the given gitRefs repo (the
-			// else clause below) because we don't know whether the specified
-			// job is from inrepoconfig or not. We could let clients tell us
-			// which one to look into (getJobsFromStaticConfig() vs
-			// getJobsFromInRepoConfig()), but this is asking additional
-			// information from the client that the client now has to keep track
-			// of.
-			if pc == nil {
-				return nil, errors.New("There is no inrepoconfig cache, but the request wanted to run a job defined from inrepoconfig")
-			} else {
-				fetched, err := pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
-				if err != nil {
-					return nil, errors.New("Failed to get presubmits")
-				} else {
-					jobs = fetched
-				}
-			}
-		}
-
-		// Search for the correct Presubmit job. This loops through all static
-		// and inrepoconfig jobs. It could be possible that an inrepoconfig
-		// job's name clashes with a static config job, so we guard against
-		// that here.
-		for _, candidateJob := range jobs {
-			candidateJob := candidateJob
-			if candidateJob.Name == jobName {
-				if jobStruct.Presubmit != nil {
-					return nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q; did you define the same job in the central repo and also as an inrepoconfig job?", jobName, orgRepo)
-				}
-				jobStruct.Presubmit = &candidateJob
-			}
-
-			// Filter out jobs that do not match the branch ("ref").
-			if jobStruct.Presubmit != nil && !jobStruct.Presubmit.CouldRun(baseRepoRef) {
-				jobStruct.Presubmit = nil
-			}
-		}
-
-		if jobStruct.Presubmit == nil {
-			return nil, fmt.Errorf("failed to find associated %s job %q from orgRepo %q", jobStruct.JobExecutionType, jobName, orgRepo)
-		}
-	case JobExecutionType_POSTSUBMIT:
-		orgRepo := config.NewOrgRepo(gitRefs.GetBase().GetUrl()).String()
-
-		jobs := mainConfig.GetPostsubmitsStatic(orgRepo)
-		if gitRefs != nil {
-			if pc == nil {
-				return nil, errors.New("There is no inrepoconfig cache, but the request wanted to run a job defined from inrepoconfig")
-			} else {
-				fetched, err := pc.GetPostsubmits(orgRepo, baseSHAGetter)
-				if err != nil {
-					return nil, errors.New("Failed to get postsubmits")
-				} else {
-					jobs = fetched
-				}
-			}
-		}
-
-		for _, candidateJob := range jobs {
-			candidateJob := candidateJob
-			if candidateJob.Name == jobName {
-				if jobStruct.Postsubmit != nil {
-					return nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q; did you define the same job in the central repo and also as an inrepoconfig job?", jobName, orgRepo)
-				}
-				jobStruct.Postsubmit = &candidateJob
-			}
-
-			if jobStruct.Postsubmit != nil && !jobStruct.Postsubmit.CouldRun(baseRepoRef) {
-				jobStruct.Postsubmit = nil
-			}
-		}
-
-		if jobStruct.Postsubmit == nil {
-			return nil, fmt.Errorf("failed to find associated %s job %q from orgRepo %q", jobStruct.JobExecutionType, jobName, orgRepo)
-		}
-	}
-
-	return &jobStruct, nil
 }
 
 func getHttpRequestHeaders(ctx context.Context) (error, *metadata.MD) {
@@ -500,7 +388,7 @@ func enableDecoratedLogger(allowedApiClient *config.AllowedApiClient, md *metada
 func (req *CreateJobExecutionRequest) Validate() error {
 	jobName := req.GetJobName()
 	jobExecutionType := req.GetJobExecutionType()
-	gitRefs := req.GetGitRefs()
+	gitRefs := req.GetRefs()
 
 	if len(jobName) == 0 {
 		return errors.New("job_name field cannot be empty")
@@ -519,53 +407,58 @@ func (req *CreateJobExecutionRequest) Validate() error {
 		return errors.New("periodic jobs cannot also have gitRefs")
 	}
 
-	// Check whether the gitRefs looks correct on the surface (this
-	// is a cursory check only, but still worth doing).
-	if gitRefs != nil {
-		base := gitRefs.GetBase()
-		if base == nil {
-			return errors.New("gitRefs: base repo cannot be nil")
-		}
+	// FIXME: Add validation for Refs field.
 
-		// Check whether the base repo exists (this is required).
-		if err := base.Validate(); err != nil {
-			return fmt.Errorf("invalid base repo for gitRefs: %s", err)
-		}
+	/*
 
-		// It could be that the job definition is only defined in a GitHub Pull
-		// Request or Gerrit Change. So in order to get that job definition we
-		// have to merge in the PR or Change.
-		//
-		// Technically a PR will always only have a single "ref" or head SHA
-		// commit. However the data structure we have here is for a list of
-		// refs, because we are leaving it possible to request batch jobs (which
-		// merge multiple PRs together) through the API in the future.
-		refsToMerge := gitRefs.GetRefsToMerge()
-		if refsToMerge != nil {
-			if jobExecutionType == JobExecutionType_PRESUBMIT || jobExecutionType == JobExecutionType_POSTSUBMIT {
-				if len(refsToMerge) > 1 {
-					return fmt.Errorf("cannot have more than 1 refsToMerge for %q", jobExecutionType)
-				}
+		// Check whether the gitRefs looks correct on the surface (this
+		// is a cursory check only, but still worth doing).
+		if gitRefs != nil {
+			base := gitRefs.GetBase()
+			if base == nil {
+				return errors.New("gitRefs: base repo cannot be nil")
 			}
 
-			for _, refToMerge := range refsToMerge {
-				if err := refToMerge.Validate(); err != nil {
-					return fmt.Errorf("invalid refsToMerge entry: %s", err)
+			// Check whether the base repo exists (this is required).
+			if err := base.Validate(); err != nil {
+				return fmt.Errorf("invalid base repo for gitRefs: %s", err)
+			}
+
+			// It could be that the job definition is only defined in a GitHub Pull
+			// Request or Gerrit Change. So in order to get that job definition we
+			// have to merge in the PR or Change.
+			//
+			// Technically a PR will always only have a single "ref" or head SHA
+			// commit. However the data structure we have here is for a list of
+			// refs, because we are leaving it possible to request batch jobs (which
+			// merge multiple PRs together) through the API in the future.
+			refsToMerge := gitRefs.GetRefsToMerge()
+			if refsToMerge != nil {
+				if jobExecutionType == JobExecutionType_PRESUBMIT || jobExecutionType == JobExecutionType_POSTSUBMIT {
+					if len(refsToMerge) > 1 {
+						return fmt.Errorf("cannot have more than 1 refsToMerge for %q", jobExecutionType)
+					}
+				}
+
+				for _, refToMerge := range refsToMerge {
+					if err := refToMerge.Validate(); err != nil {
+						return fmt.Errorf("invalid refsToMerge entry: %s", err)
+					}
 				}
 			}
 		}
-	}
 
-	if jobExecutionType != JobExecutionType_PERIODIC {
-		// Non-periodic jobs must have a BaseRepo (default repo to clone)
-		// defined.
-		if gitRefs == nil {
-			return fmt.Errorf("gitRefs must be defined for %q", jobExecutionType)
+		if jobExecutionType != JobExecutionType_PERIODIC {
+			// Non-periodic jobs must have a BaseRepo (default repo to clone)
+			// defined.
+			if gitRefs == nil {
+				return fmt.Errorf("gitRefs must be defined for %q", jobExecutionType)
+			}
+			if err := gitRefs.ValidateGitReferenceDynamic(); err != nil {
+				return fmt.Errorf("gitRefs: failed to validate: %s", err)
+			}
 		}
-		if err := gitRefs.ValidateGitReferenceDynamic(); err != nil {
-			return fmt.Errorf("gitRefs: failed to validate: %s", err)
-		}
-	}
+	*/
 
 	// Finally perform some additional checks on the requested PodSpecOptions.
 	podSpecOptions := req.GetPodSpecOptions()
@@ -599,6 +492,7 @@ func (req *CreateJobExecutionRequest) Validate() error {
 	return nil
 }
 
+/* FIXME: Revive this for Refs.
 func (grs *GitReferenceStatic) Validate() error {
 	url := grs.GetUrl()
 	if len(url) == 0 {
@@ -651,3 +545,5 @@ func (grd *GitReferenceDynamic) ValidateGitReferenceDynamic() error {
 
 	return nil
 }
+
+*/
