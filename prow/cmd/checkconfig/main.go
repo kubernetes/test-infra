@@ -278,10 +278,6 @@ func validate(o options) error {
 		}
 	}
 
-	if err := validateGangway(cfg); err != nil {
-		return fmt.Errorf("error validating prow config: %w", err)
-	}
-
 	var pcfg *plugins.Configuration
 	if o.pluginsConfig.PluginConfigPath != "" {
 		pluginAgent, err := o.pluginsConfig.PluginAgent()
@@ -1152,33 +1148,6 @@ func validateInRepoConfig(cfg *config.Config, filepath, repoIdentifier string, s
 		return fmt.Errorf("failed to validate Prow YAML: %w", err)
 	}
 	return nil
-}
-
-func validateGangway(cfg *config.Config) error {
-	var validationErrs []error
-
-	for _, client := range cfg.Gangway.AllowedApiClients {
-		// Ensure that the client has a name.
-		if len(client.Name) == 0 {
-			validationErrs = append(validationErrs, fmt.Errorf("client does not have a name: %v", client))
-		}
-
-		// Ensure that each client only specifies exactly 1 cloud provider for
-		// client identification.
-		var providers int
-		if client.Id.GCP != nil {
-			providers++
-		}
-		if client.Id.AWS != nil {
-			providers++
-		}
-
-		if providers != 1 {
-			validationErrs = append(validationErrs, fmt.Errorf("client %s: needed exactly 1 cloud provider; got %d", client.Name, providers))
-		}
-	}
-
-	return utilerrors.NewAggregate(validationErrs)
 }
 
 func validateTideContextPolicy(cfg *config.Config) error {
