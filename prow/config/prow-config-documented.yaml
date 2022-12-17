@@ -491,7 +491,15 @@ deck:
 # DefaultJobTimeout this is default deadline for prow jobs. This value is used when
 # no timeout is configured at the job level. This value is set to 24 hours.
 default_job_timeout: 0s
+
+
+# Gangway contains configurations needed by the the Prow API server of the
+# same name. It encodes an allowlist of API clients and what kinds of Prow
+# Jobs they are authorized to trigger.
 gangway:
+    # AllowedApiClients encodes identifying information about API clients
+    # (AllowedApiClient). An AllowedApiClient has authority to trigger a subset
+    # of Prow Jobs.
     allowed_api_clients:
       - # AllowedJobSubsets contains information about what kinds of Prow jobs this
         # API client is authorized to trigger.

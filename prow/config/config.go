@@ -140,7 +140,11 @@ type ProwConfig struct {
 	Horologium           Horologium           `json:"horologium"`
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
 	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
-	Gangway              Gangway              `json:"gangway,omitempty"`
+
+	// Gangway contains configurations needed by the the Prow API server of the
+	// same name. It encodes an allowlist of API clients and what kinds of Prow
+	// Jobs they are authorized to trigger.
+	Gangway Gangway `json:"gangway,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -215,15 +219,13 @@ type InRepoConfig struct {
 	AllowedClusters map[string][]string `json:"allowed_clusters,omitempty"`
 }
 
-// Gangway contains configurations needed by the the Prow API server of the same
-// name. It encodes an allowlist of API clients and what kinds of Prow Jobs they
-// are authorized to trigger.
 type Gangway struct {
+	// AllowedApiClients encodes identifying information about API clients
+	// (AllowedApiClient). An AllowedApiClient has authority to trigger a subset
+	// of Prow Jobs.
 	AllowedApiClients []*AllowedApiClient `json:"allowed_api_clients,omitempty"`
 }
 
-// AllowedApiClient encodes identifying information about an API client, and
-// what subsets of Prow Jobs it has authority to trigger.
 type AllowedApiClient struct {
 	// Name is only used for logging purposes. For example, it helps to identify
 	// configuration errors for misconfigured Gangway configuration in the main
