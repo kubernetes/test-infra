@@ -234,9 +234,9 @@ type AllowedApiClient struct {
 	// Id contains cloud-vendor-specific information that identifies an API
 	// client uniquely.
 	Id ApiClientId `json:"id"`
-	// AllowedJobSubsets contains information about what kinds of Prow jobs this
+	// AllowedJobsFilters contains information about what kinds of Prow jobs this
 	// API client is authorized to trigger.
-	AllowedJobSubsets []AllowedJobSubset `json:"allowed_job_subsets,omitempty"`
+	AllowedJobsFilters []AllowedJobsFilter `json:"allowed_jobs_filters,omitempty"`
 }
 
 // ApiClientCredentials is a union of different credentials provided by
@@ -268,9 +268,9 @@ type ApiClientIdAws struct {
 	Unimplemented string `json:"unimplemented,omitempty"`
 }
 
-// AllowedJobSubset defines filters for jobs that are allowed by an
+// AllowedJobsFilter defines filters for jobs that are allowed by an
 // authenticated API client.
-type AllowedJobSubset struct {
+type AllowedJobsFilter struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 

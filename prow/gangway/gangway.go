@@ -106,8 +106,8 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecut
 // allowlist (allowed_api_clients) allows it.
 func ClientAuthorized(allowedApiClient *config.AllowedApiClient, prowJobCR prowcrd.ProwJob) bool {
 	pjd := prowJobCR.Spec.ProwJobDefault
-	for _, allowedJobSubset := range allowedApiClient.AllowedJobSubsets {
-		if allowedJobSubset.TenantID == pjd.TenantID {
+	for _, allowedJobsFilter := range allowedApiClient.AllowedJobsFilters {
+		if allowedJobsFilter.TenantID == pjd.TenantID {
 			return true
 		}
 	}

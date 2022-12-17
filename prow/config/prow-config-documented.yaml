@@ -501,9 +501,9 @@ gangway:
     # (AllowedApiClient). An AllowedApiClient has authority to trigger a subset
     # of Prow Jobs.
     allowed_api_clients:
-      - # AllowedJobSubsets contains information about what kinds of Prow jobs this
+      - # AllowedJobsFilters contains information about what kinds of Prow jobs this
         # API client is authorized to trigger.
-        allowed_job_subsets:
+        allowed_jobs_filters:
           - tenant_id: ' '
 
         # Id contains cloud-vendor-specific information that identifies an API
