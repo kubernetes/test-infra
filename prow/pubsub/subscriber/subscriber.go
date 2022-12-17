@@ -34,6 +34,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gangway"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -150,18 +151,18 @@ func (m *pubSubMessage) nack() {
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (jobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error)
+	getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *gangway.CreateJobExecutionRequest) (prowJobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (jobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *gangway.CreateJobExecutionRequest) (prowJobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
 	for _, job := range cfg.AllPeriodics() {
-		if job.Name == pe.Name {
+		if job.Name == cjer.JobName {
 			// Directly followed by break, so this is ok
 			// nolint: exportloopref
 			periodicJob = &job
@@ -169,12 +170,12 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRe
 		}
 	}
 	if periodicJob == nil {
-		err = fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+		err = fmt.Errorf("failed to find associated periodic job %q", cjer.JobName)
 		return
 	}
 
 	spec := pjutil.PeriodicSpec(*periodicJob)
-	jobSpec = &spec
+	prowJobSpec = &spec
 	labels, annotations = periodicJob.Labels, periodicJob.Annotations
 	return
 }
@@ -183,9 +184,12 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRe
 type presubmitJobHandler struct {
 }
 
-func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (jobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *gangway.CreateJobExecutionRequest) (prowJobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
-	refs := pe.Refs
+	refs, err := gangway.ToCrdRefs(cjer.Refs)
+	if err != nil {
+		return
+	}
 	if refs == nil {
 		err = errors.New("Refs must be supplied")
 		return
@@ -217,7 +221,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
 	prefix := "https://"
-	if pe.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+	if cjer.PodSpecOptions != nil && cjer.PodSpecOptions.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
 		orgRepo = prefix + orgRepo
 	}
 	baseSHAGetter := func() (string, error) {
@@ -257,9 +261,9 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
 			continue
 		}
-		if job.Name == pe.Name {
+		if job.Name == cjer.JobName {
 			if presubmitJob != nil {
-				err = fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", pe.Name, orgRepo)
+				err = fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", cjer.JobName, orgRepo)
 				return
 			}
 			presubmitJob = &job
@@ -268,12 +272,12 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// This also captures the case where fetching jobs from inrepoconfig failed.
 	// However doesn't not distinguish between this case and a wrong prow job name.
 	if presubmitJob == nil {
-		err = fmt.Errorf("failed to find associated presubmit job %q from orgRepo %q", pe.Name, orgRepo)
+		err = fmt.Errorf("failed to find associated presubmit job %q from orgRepo %q", cjer.JobName, orgRepo)
 		return
 	}
 
 	spec := pjutil.PresubmitSpec(*presubmitJob, *refs)
-	jobSpec, labels, annotations = &spec, presubmitJob.Labels, presubmitJob.Annotations
+	prowJobSpec, labels, annotations = &spec, presubmitJob.Labels, presubmitJob.Annotations
 	return
 }
 
@@ -281,9 +285,9 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 type postsubmitJobHandler struct {
 }
 
-func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (jobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *gangway.CreateJobExecutionRequest) (prowJobSpec *v1.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// postsubmit jobs require Refs to be set
-	refs := pe.Refs
+	refs, err := gangway.ToCrdRefs(cjer.Refs)
 	if refs == nil {
 		err = errors.New("refs must be supplied")
 		return
@@ -311,7 +315,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
 	prefix := "https://"
-	if pe.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+	if cjer.PodSpecOptions != nil && cjer.PodSpecOptions.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
 		orgRepo = prefix + orgRepo
 	}
 	baseSHAGetter := func() (string, error) {
@@ -338,9 +342,9 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
 			continue
 		}
-		if job.Name == pe.Name {
+		if job.Name == cjer.JobName {
 			if postsubmitJob != nil {
-				return nil, nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", pe.Name, orgRepo)
+				return nil, nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", cjer.JobName, orgRepo)
 			}
 			postsubmitJob = &job
 		}
@@ -348,12 +352,12 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	// This also captures the case where fetching jobs from inrepoconfig failed.
 	// However doesn't not distinguish between this case and a wrong prow job name.
 	if postsubmitJob == nil {
-		err = fmt.Errorf("failed to find associated postsubmit job %q from orgRepo %q", pe.Name, orgRepo)
+		err = fmt.Errorf("failed to find associated postsubmit job %q from orgRepo %q", cjer.JobName, orgRepo)
 		return
 	}
 
 	spec := pjutil.PostsubmitSpec(*postsubmitJob, *refs)
-	jobSpec, labels, annotations = &spec, postsubmitJob.Labels, postsubmitJob.Annotations
+	prowJobSpec, labels, annotations = &spec, postsubmitJob.Labels, postsubmitJob.Annotations
 	return
 }
 
@@ -366,47 +370,19 @@ func extractFromAttribute(attrs map[string]string, key string) (string, error) {
 }
 
 func (s *Subscriber) handleMessage(msg messageInterface, subscription string, allowedClusters []string) error {
-	// Observed message payload drifts to the payload from another pubsub
-	// message and couldn't figure out why. Extracts the values ahead of time
-	// and hopefully could mitigate this issue for now.
-	// TODO(chaodaiG): remove these once figured out the root cause of data race.
-	msgID := msg.getID()
-	msgPayload := msg.getPayload()
-	msgAttributes := msg.getAttributes()
 
+	msgID := msg.getID()
 	l := logrus.WithFields(logrus.Fields{
 		"pubsub-subscription": subscription,
 		"pubsub-id":           msgID})
-	s.Metrics.MessageCounter.With(prometheus.Labels{subscriptionLabel: subscription}).Inc()
 
-	l.WithField("payload", string(msgPayload)).Debug("Received message")
-	eType, err := extractFromAttribute(msgAttributes, ProwEventType)
+	// First, convert the incoming message into a CreateJobExecutionRequest type.
+	cjer, err := s.msgToCjer(l, msg, subscription)
 	if err != nil {
-		l.WithError(err).Error("failed to read message")
-		s.Metrics.ErrorCounter.With(prometheus.Labels{
-			subscriptionLabel: subscription,
-			errorTypeLabel:    "malformed-message",
-		}).Inc()
 		return err
 	}
 
-	var jh jobHandler
-	switch eType {
-	case PeriodicProwJobEvent:
-		jh = &periodicJobHandler{}
-	case PresubmitProwJobEvent:
-		jh = &presubmitJobHandler{}
-	case PostsubmitProwJobEvent:
-		jh = &postsubmitJobHandler{}
-	default:
-		l.WithField("type", eType).Info("Unsupported event type")
-		s.Metrics.ErrorCounter.With(prometheus.Labels{
-			subscriptionLabel: subscription,
-			errorTypeLabel:    "unsupported-event-type",
-		}).Inc()
-		return fmt.Errorf("unsupported event type: %s", eType)
-	}
-	if err = s.handleProwJob(l, jh, msgPayload, subscription, eType, allowedClusters); err != nil {
+	if err = s.handleProwJob(l, cjer, subscription, allowedClusters); err != nil {
 		l.WithError(err).Info("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
@@ -422,17 +398,161 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	return err
 }
 
-func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []byte, subscription, eType string, allowedClusters []string) error {
+// FIXME: Refactor this to remove the coupling with *Subscriber. We still need
+// two values to return, the CJER and ProwJobSpec. We need the latter because
+// it's derived from the merger of the main Config and the InRepoConfig config.
+// It's the dynamic request payload and whatever relevant Prow YAML we got
+// somewhere, respectively. And we need both to create a Prow Job CR.
+//
+// msgToCjer converts an incoming message (PubSub message) into a CJER. It
+// actually does 2 conversion --- from the message to ProwJobEvent (in order to
+// unmarshal the raw bytes) then again from ProwJobEvent to a CJER.
+func (s *Subscriber) msgToCjer(l *logrus.Entry, msg messageInterface, subscription string) (*gangway.CreateJobExecutionRequest, error) {
 
+	msgAttributes := msg.getAttributes()
+	msgPayload := msg.getPayload()
+
+	l.WithField("payload", string(msgPayload)).Debug("Received message")
+	s.Metrics.MessageCounter.With(prometheus.Labels{subscriptionLabel: subscription}).Inc()
+
+	// Note that a CreateJobExecutionRequest is a superset of ProwJobEvent.
+	// However we still use ProwJobEvent here because we want to use the
+	// existing jobHandlers to fetch the prowJobSpec (and the jobHandlers expect
+	// a ProwJobEvent as an argument).
 	var pe ProwJobEvent
-	var prowJob prowapi.ProwJob
 
+	// We use ProwJobEvent here mainly to ensrue that the incoming payload
+	// (JSON) is well-formed. We convert it into a CreateJobExecutionRequest
+	// type here and never use it anywhere else.
 	l.WithField("raw-payload", string(msgPayload)).Debug("Raw payload passed in handleProwJob.")
 	if err := pe.FromPayload(msgPayload); err != nil {
-		return err
+		return nil, err
 	}
 
-	l.WithField("prowjob-event", pe).Debug("ProwjobEvent unmarshalled.")
+	cjer := gangway.CreateJobExecutionRequest{}
+	cjer.JobName = strings.TrimSpace(pe.Name)
+
+	eType, err := extractFromAttribute(msgAttributes, ProwEventType)
+	if err != nil {
+		l.WithError(err).Error("failed to read message")
+		s.Metrics.ErrorCounter.With(prometheus.Labels{
+			subscriptionLabel: subscription,
+			errorTypeLabel:    "malformed-message",
+		}).Inc()
+		return nil, err
+	}
+
+	// First encode the job type.
+	switch eType {
+	case PeriodicProwJobEvent:
+		cjer.JobExecutionType = gangway.JobExecutionType_PERIODIC
+	case PresubmitProwJobEvent:
+		cjer.JobExecutionType = gangway.JobExecutionType_PRESUBMIT
+	case PostsubmitProwJobEvent:
+		cjer.JobExecutionType = gangway.JobExecutionType_POSTSUBMIT
+	default:
+		l.WithField("type", eType).Info("Unsupported event type")
+		s.Metrics.ErrorCounter.With(prometheus.Labels{
+			subscriptionLabel: subscription,
+			errorTypeLabel:    "unsupported-event-type",
+		}).Inc()
+		return nil, fmt.Errorf("unsupported event type: %s", eType)
+	}
+
+	pso := gangway.PodSpecOptions{}
+	pso.Labels = make(map[string]string)
+	for k, v := range pe.Labels {
+		pso.Labels[k] = v
+	}
+
+	pso.Annotations = make(map[string]string)
+	for k, v := range pe.Annotations {
+		pso.Annotations[k] = v
+	}
+
+	pso.Envs = make(map[string]string)
+	for k, v := range pe.Envs {
+		pso.Envs[k] = v
+	}
+
+	cjer.PodSpecOptions = &pso
+
+	cjer.Refs, err = gangway.FromCrdRefs(pe.Refs)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cjer, nil
+}
+
+func getJobHandler(cjer *gangway.CreateJobExecutionRequest) (jobHandler, error) {
+	var jh jobHandler
+	switch cjer.JobExecutionType {
+	case gangway.JobExecutionType_PERIODIC:
+		jh = &periodicJobHandler{}
+	case gangway.JobExecutionType_PRESUBMIT:
+		jh = &presubmitJobHandler{}
+	case gangway.JobExecutionType_POSTSUBMIT:
+		jh = &postsubmitJobHandler{}
+	default:
+		return nil, fmt.Errorf("unsupported JobExecutionType type: %s", cjer.JobExecutionType)
+	}
+
+	return jh, nil
+}
+
+// Deep-copy all map fields from a gangway.CreateJobExecutionRequest and also
+// the statically defined (configured in YAML) Prow Job labels and annotations.
+func mergeMapFields(cjer *gangway.CreateJobExecutionRequest, staticLabels, staticAnnotations map[string]string) (map[string]string, map[string]string) {
+
+	pso := cjer.GetPodSpecOptions()
+
+	combinedLabels := make(map[string]string)
+	combinedAnnotations := make(map[string]string)
+
+	// Overwrite the static definitions with what we received in the
+	// CreateJobExecutionRequest. This order is important.
+	for k, v := range staticLabels {
+		combinedLabels[k] = v
+	}
+	for k, v := range pso.GetLabels() {
+		combinedLabels[k] = v
+	}
+
+	// Do the same for the annotations.
+	for k, v := range staticAnnotations {
+		combinedAnnotations[k] = v
+	}
+	for k, v := range pso.GetAnnotations() {
+		combinedAnnotations[k] = v
+	}
+
+	return combinedLabels, combinedAnnotations
+}
+
+func (s *Subscriber) handleProwJob(l *logrus.Entry, cjer *gangway.CreateJobExecutionRequest, subscription string, allowedClusters []string) error {
+
+	var prowJob prowapi.ProwJob
+
+	var prowJobSpec *v1.ProwJobSpec
+	var jh jobHandler
+	jh, err := getJobHandler(cjer)
+	if err != nil {
+		return err
+	}
+	prowJobSpec, labels, annotations, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, cjer)
+	if err != nil {
+		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
+		// These errors are already surfaced to user via pubsub two lines below.
+		l.WithError(err).WithField("name", cjer.JobName).Info("Failed getting prowjob spec")
+		return err
+	}
+	if prowJobSpec == nil {
+		return fmt.Errorf("failed getting prowjob spec") // This should not happen
+	}
+
+	combinedLabels, combinedAnnotations := mergeMapFields(cjer, labels, annotations)
+
 	reportProwJob := func(pj *prowapi.ProwJob, state v1.ProwJobState, err error) {
 		pj.Status.State = state
 		pj.Status.Description = "Successfully triggered prowjob."
@@ -454,41 +574,15 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 		reportProwJob(pj, prowapi.TriggeredState, nil)
 	}
 
-	// Normalize job name
-	pe.Name = strings.TrimSpace(pe.Name)
-
-	prowJobSpec, labels, annotations, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, pe)
-	if err != nil {
-		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
-		// These errors are already surfaced to user via pubsub two lines below.
-		l.WithError(err).WithField("name", pe.Name).Info("Failed getting prowjob spec")
-		prowJob = pjutil.NewProwJob(prowapi.ProwJobSpec{}, nil, pe.Annotations)
-		reportProwJobFailure(&prowJob, err)
-		return err
-	}
-	if prowJobSpec == nil {
-		return fmt.Errorf("failed getting prowjob spec") // This should not happen
-	}
-
-	// Copy labels and annotations instead of modifying them, they are pointers
-	// to the static prowjobs labels and annotations.
-	combinedLabels := make(map[string]string)
-	combinedAnnotations := make(map[string]string)
-	for k, v := range labels {
-		combinedLabels[k] = v
-	}
-	for k, v := range annotations {
-		combinedAnnotations[k] = v
-	}
-
-	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).Debug("ProwjobEvent and annotations after getProwJobSpec.")
-
-	// Adds / Updates Labels from prow job event
-	for k, v := range pe.Labels {
-		combinedLabels[k] = v
-	}
-	for k, v := range pe.Annotations {
-		combinedAnnotations[k] = v
+	prowJob = pjutil.NewProwJob(*prowJobSpec, combinedLabels, combinedAnnotations)
+	// Adds / Updates Environments to containers
+	if prowJob.Spec.PodSpec != nil {
+		for i, c := range prowJob.Spec.PodSpec.Containers {
+			for k, v := range cjer.GetPodSpecOptions().GetEnvs() {
+				c.Env = append(c.Env, coreapi.EnvVar{Name: k, Value: v})
+			}
+			prowJob.Spec.PodSpec.Containers[i].Env = c.Env
+		}
 	}
 
 	// deny job that runs on not allowed cluster
@@ -503,32 +597,17 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []
 	if !clusterIsAllowed {
 		err := fmt.Errorf("cluster %s is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters", prowJobSpec.Cluster)
 		l.WithField("cluster", prowJobSpec.Cluster).Warn("cluster not allowed")
-		prowJob = pjutil.NewProwJob(*prowJobSpec, nil, pe.Annotations)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
 
-	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before pjutil.NewProwJob.")
-	// Adds annotations
-	prowJob = pjutil.NewProwJob(*prowJobSpec, combinedLabels, combinedAnnotations)
-	// Adds / Updates Environments to containers
-	if prowJob.Spec.PodSpec != nil {
-		for i, c := range prowJob.Spec.PodSpec.Containers {
-			for k, v := range pe.Envs {
-				c.Env = append(c.Env, coreapi.EnvVar{Name: k, Value: v})
-			}
-			prowJob.Spec.PodSpec.Containers[i].Env = c.Env
-		}
-	}
-
-	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before creating prowjob.")
 	if _, err := s.ProwJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
-		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
+		l.WithError(err).Errorf("failed to create job %q as %q", cjer.GetJobName(), prowJob.Name)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
 	l.WithFields(logrus.Fields{
-		"job":                 pe.Name,
+		"job":                 cjer.GetJobName(),
 		"name":                prowJob.Name,
 		"prowjob-annotations": prowJob.Annotations,
 	}).Info("Job created.")
