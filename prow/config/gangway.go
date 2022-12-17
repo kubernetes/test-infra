@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -60,6 +61,8 @@ type ApiClientGcp struct {
 type ApiClientCloudVendor interface {
 	GetVendorName() string
 	GetRequiredMdHeaders() []string
+	GetUUID() string
+	Validate() error
 }
 
 func (gcp *ApiClientGcp) GetVendorName() string {
@@ -89,6 +92,27 @@ func (gcp *ApiClientGcp) GetRequiredMdHeaders() []string {
 	//
 	//  We only use 2 of the above because the others are not that useful at this level.
 	return []string{"x-endpoint-api-consumer-type", "x-endpoint-api-consumer-number"}
+}
+
+func (gcp *ApiClientGcp) Validate() error {
+	if gcp == nil {
+		return nil
+	}
+
+	if gcp.EndpointApiConsumerType != "PROJECT" {
+		return fmt.Errorf("unsupported GCP API consumer type: %q", gcp.EndpointApiConsumerType)
+	}
+
+	var validProjectNumber = regexp.MustCompile(`^[0-9]+$`)
+	if !validProjectNumber.MatchString(gcp.EndpointApiConsumerNumber) {
+		return fmt.Errorf("invalid EndpointApiConsumerNumber: %q", gcp.EndpointApiConsumerNumber)
+	}
+
+	return nil
+}
+
+func (gcp *ApiClientGcp) GetUUID() string {
+	return fmt.Sprintf("gcp-%s-%s", gcp.EndpointApiConsumerType, gcp.EndpointApiConsumerNumber)
 }
 
 func (allowedApiClient *AllowedApiClient) GetApiClientCloudVendor() (ApiClientCloudVendor, error) {
@@ -138,6 +162,11 @@ func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, erro
 			v = md.Get("x-endpoint-api-consumer-number")[0]
 
 			// Now check whether we can find the same information in the Config's allowlist.
+			//
+			// Note that we do not check whether multiple AllowedApiClient
+			// elements match here. That case (where there are duplicate clients
+			// with the same EndpointApiConsumerNumber) is taken care of during
+			// validation.
 			if client.GCP.EndpointApiConsumerNumber == v {
 				return &client, nil
 			}
@@ -151,4 +180,47 @@ func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, erro
 // authenticated API client.
 type AllowedJobsFilter struct {
 	TenantID string `json:"tenant_id,omitempty"`
+}
+
+func (ajf AllowedJobsFilter) Validate() error {
+	// TODO (listx): If there are other filter fields, we have to make sure that
+	// all filters with a non-empty value are valid. Currently we only have a
+	// TenantID filter so this one must be set and not empty.
+	if len(ajf.TenantID) == 0 {
+		return errors.New("AllowedJobsFilters entry has an empty tenant_id")
+	}
+	return nil
+}
+
+func (g *Gangway) Validate() error {
+	declaredClients := make(map[string]bool)
+	for _, allowedApiClient := range g.AllowedApiClients {
+		cv, err := allowedApiClient.GetApiClientCloudVendor()
+		if err != nil {
+			return err
+		}
+		if err := cv.Validate(); err != nil {
+			return err
+		}
+
+		switch cv.GetVendorName() {
+		case "gcp":
+			if _, declaredAlready := declaredClients[cv.GetUUID()]; declaredAlready {
+				return fmt.Errorf("AllowedApiClient %q declared multiple times", cv.GetUUID())
+			}
+			declaredClients[cv.GetUUID()] = true
+		}
+
+		if len(allowedApiClient.AllowedJobsFilters) == 0 {
+			return errors.New("allowed_jobs_filters field cannot be empty")
+		}
+
+		for _, allowedJobsFilter := range allowedApiClient.AllowedJobsFilters {
+			if err := allowedJobsFilter.Validate(); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

@@ -2135,6 +2135,10 @@ func (c *Config) validateComponentConfig() error {
 		return err
 	}
 
+	if err := c.Gangway.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
