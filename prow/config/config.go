@@ -275,10 +275,10 @@ type AllowedJobSubset struct {
 // IdentifyAllowedClient looks at the HTTP request headers (metadata) and tries
 // to match it up with an allowlisted Client already defined in the main Config.
 //
-// Each supported client.Type has custom logic around the HTTP metadata headers
-// to know what kind of headers to look for. Different cloud vendors will have
-// different HTTP metdata headers, although technically nothing stops users from
-// injecting these headers manually on their own.
+// Each supported client type (e.g., GCP) has custom logic around the HTTP
+// metadata headers to know what kind of headers to look for. Different cloud
+// vendors will have different HTTP metdata headers, although technically
+// nothing stops users from injecting these headers manually on their own.
 func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, error) {
 	if md == nil {
 		return nil, errors.New("metadata cannot be nil")

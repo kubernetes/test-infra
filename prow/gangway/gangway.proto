@@ -73,9 +73,8 @@ message JobExecution {
   string updated_by = 8;
 }
 
-/* The Prow codebase currently uses the word "Prow Job" to mean both the
- * definition and the execution, but we avoid that here (JobExecutionStatus
- * instead of ProwJobStatus). */
+// JobExecutionStatus is a 1:1 translation of the existing "ProwJobState" type
+// in prow/apis/prowjobs/v1/types.go.
 enum JobExecutionStatus {
   JOB_EXECUTION_STATUS_UNSPECIFIED = 0;
   TRIGGERED = 1;
@@ -86,6 +85,8 @@ enum JobExecutionStatus {
   ERROR = 6;
 }
 
+// JobExecutionType is a 1:1 translation of the existing "ProwJobType" type
+// in prow/apis/prowjobs/v1/types.go.
 enum JobExecutionType {
   JOB_EXECUTION_TYPE_UNSPECIFIED = 0;
   PERIODIC = 1;
