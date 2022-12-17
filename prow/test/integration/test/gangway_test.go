@@ -93,10 +93,11 @@ presubmits:
 				JobExecutionType: gangway.JobExecutionType_PRESUBMIT,
 				// Define where the job definition lives from inrepoconfig.
 				Refs: &gangway.Refs{
-					Org:     "https://fakegitserver.default/repo/some/org",
-					Repo:    "gangway-test-repo-1",
-					BaseRef: "master",
-					BaseSha: "f1267354a7bbc5ce7d0458cdf4d0d36e8d35d8b3",
+					Org:      "https://fakegitserver.default/repo/some/org",
+					Repo:     "gangway-test-repo-1",
+					CloneUri: "https://fakegitserver.default/repo/some/org/gangway-test-repo-1",
+					BaseRef:  "master",
+					BaseSha:  "f1267354a7bbc5ce7d0458cdf4d0d36e8d35d8b3",
 					Pulls: []*gangway.Pull{
 						{
 							Number: 1,

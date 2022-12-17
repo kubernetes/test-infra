@@ -20,15 +20,19 @@ import (
 	context "context"
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	codes "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	status "google.golang.org/grpc/status"
-	coreapi "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation"
 	prowcrd "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/version"
@@ -52,15 +56,16 @@ type ProwJobClient interface {
 	Create(context.Context, *prowcrd.ProwJob, metav1.CreateOptions) (*prowcrd.ProwJob, error)
 }
 
-func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecutionRequest) (*JobExecution, error) {
+func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecutionRequest) (*JobExecution, error) {
 	err, md := getHttpRequestHeaders(ctx)
+
 	if err != nil {
 		logrus.WithError(err).Error("could not find request HTTP headers")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Validate request fields.
-	if err := req.Validate(); err != nil {
+	if err := cjer.Validate(); err != nil {
 		logrus.WithError(err).Error("could not validate request fields")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -80,135 +85,19 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, req *CreateJobExecuti
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	enableDecoratedLogger(allowedApiClient, md)
+	l := getDecoratedLoggerEntry(allowedApiClient, md)
 
-	// Fetch the job definition.
-	// FIXME: Refactor this after refactoring Sub.
-	jobStruct := JobStruct{}
-	/*
-		jobStruct, err := gw.FetchJobStruct(req)
-		if err != nil {
-			logrus.WithError(err).Error("could not find requested job config")
-			return nil, status.Error(codes.InvalidArgument, err.Error())
-		}
-	*/
-	var periodic config.Periodic
-	var presubmit config.Presubmit
-	var postsubmit config.Postsubmit
-	var spec prowcrd.ProwJobSpec
-	var refs *prowcrd.Refs
+	allowedClusters := []string{"*"}
+	var reporterFunc reporterFunc = nil
+	requireTenantID := true
 
-	// Construct "prowcrd.Refs" type which encodes the Git references we want to
-	// clone/merge at runtime. We get this information from the request, as well
-	// as the Periodic/Presubmut/Postsubmit struct's JobBase.ExtraRefs (which
-	// has type prowcrd.Refs).
-	gitRefs := req.GetRefs()
-	refs, err = ToCrdRefs(gitRefs)
+	jobExec, err := HandleProwJob(l, reporterFunc, cjer, gw.ProwJobClient, mainConfig, gw.InRepoConfigCacheHandler, allowedApiClient, requireTenantID, allowedClusters)
 	if err != nil {
-		logrus.WithError(err).Error("could not construct refs from baseRepo")
+		logrus.WithError(err).Errorf("failed to create job %q", cjer.GetJobName())
 		return nil, err
 	}
 
-	// Coerce jobStruct into either a Presubmit, Postsubmit, or Periodic type, based on the
-	switch jobStruct.JobExecutionType {
-	case JobExecutionType_PERIODIC:
-		periodic = *jobStruct.Periodic
-		// We don't allow periodic jobs to clone a base repo. This is mainly
-		// because we're using the underlying pjutil.PeriodicSpec() function
-		// which doesn't take a "refs" argument.
-		spec = pjutil.PeriodicSpec(periodic)
-	case JobExecutionType_POSTSUBMIT:
-		postsubmit = *jobStruct.Postsubmit
-		spec = pjutil.PostsubmitSpec(postsubmit, *refs)
-	case JobExecutionType_PRESUBMIT:
-		presubmit = *jobStruct.Presubmit
-		spec = pjutil.PresubmitSpec(presubmit, *refs)
-	}
-
-	// Inject labels, annotations, and envs into the job.
-	podSpecOptions := req.GetPodSpecOptions()
-	labels := make(map[string]string)
-	annotations := make(map[string]string)
-	if podSpecOptions != nil {
-		psoLabels := podSpecOptions.GetLabels()
-		for k, v := range psoLabels {
-			labels[k] = v
-		}
-		psoAnnotations := podSpecOptions.GetAnnotations()
-		for k, v := range psoAnnotations {
-			annotations[k] = v
-		}
-	}
-	prowJobCR := pjutil.NewProwJob(spec, labels, annotations)
-	if prowJobCR.Spec.PodSpec != nil {
-		if podSpecOptions != nil {
-			envs := podSpecOptions.GetEnvs()
-			if envs != nil {
-				for i, c := range prowJobCR.Spec.PodSpec.Containers {
-					for k, v := range envs {
-						c.Env = append(c.Env, coreapi.EnvVar{Name: k, Value: v})
-					}
-					prowJobCR.Spec.PodSpec.Containers[i].Env = c.Env
-				}
-			}
-		}
-	}
-
-	// Figure out the tenantID defined for this job by looking it up in its
-	// config, or if that's missing, finding the default one specified in the
-	// main Config.
-	var jobTenantID string
-	if prowJobCR.Spec.ProwJobDefault != nil && prowJobCR.Spec.ProwJobDefault.TenantID != "" {
-		jobTenantID = prowJobCR.Spec.ProwJobDefault.TenantID
-	} else {
-		// Derive the orgRepo from the request. Postsubmits and Presubmits both
-		// require Git refs information, so we can use that to get the job's
-		// associated orgRepo. Then we can feed this orgRepo into
-		// mainConfig.GetProwJobDefault(orgRepo, '*') to get the tenantID from
-		// the main Config's "prowjob_default_entries" field.
-		switch jobStruct.JobExecutionType {
-		case JobExecutionType_POSTSUBMIT:
-			fallthrough
-		case JobExecutionType_PRESUBMIT:
-			orgRepo := fmt.Sprintf("%s/%s", refs.Org, refs.Repo)
-			jobTenantID = mainConfig.GetProwJobDefault(orgRepo, "*").TenantID
-		}
-	}
-
-	if len(jobTenantID) == 0 {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("could not determine tenant_id for job %s", prowJobCR.Name))
-	}
-	prowJobCR.Spec.ProwJobDefault.TenantID = jobTenantID
-
-	// At this point we know that this request is authorized (the request has
-	// GCP-specific headers, and the headers point to an allowlisted client ID).
-	// Now we need to check whether this authenticated API client has
-	// authorization to trigger the requested Prow Job.
-	authorized := ClientAuthorized(allowedApiClient, prowJobCR)
-
-	if !authorized {
-		logrus.Error("client is not authorized to execute the given job")
-		return nil, status.Error(codes.PermissionDenied, "client is not authorized to execute the given job")
-	}
-
-	if _, err := gw.ProwJobClient.Create(context.TODO(), &prowJobCR, metav1.CreateOptions{}); err != nil {
-		logrus.WithError(err).Errorf("failed to create job %q as %q", req.GetJobName(), prowJobCR.Name)
-		return nil, err
-	} else {
-		logrus.Infof("created Prow Job %s", prowJobCR.Name)
-	}
-
-	// Now populate a JobExecution. We have to convert data from the ProwJob
-	// custom resource to a JobExecution. For now we just reuse the "Name" field
-	// of a ProwJob CR as a globally-unique execution ID, because this existing
-	// string is already used to do lookups on Deck
-	// (https://prow.k8s.io/prowjob?prowjob=c2891365-621c-11ed-88b0-da2d50b4915c)
-	// but also for naming the test pod itself (prowcrd.ProwJob.Status.pod_name
-	// field).
-	return &JobExecution{
-		Id:     prowJobCR.Name,
-		Status: JobExecutionStatus_TRIGGERED,
-	}, nil
+	return jobExec, nil
 }
 
 // ClientAuthorized checks whether or not a client can run a Prow job based on
@@ -225,7 +114,8 @@ func ClientAuthorized(allowedApiClient *config.AllowedApiClient, prowJobCR prowc
 	return false
 }
 
-// FIXME: Add roundtrip tests to ensure that the conversion between gitRefs and refs is lossless.
+// FIXME: Add roundtrip tests to ensure that the conversion between gitRefs and
+// refs is lossless.
 func ToCrdRefs(gitRefs *Refs) (*prowcrd.Refs, error) {
 	if gitRefs == nil {
 		return nil, errors.New("gitRefs is nil")
@@ -309,15 +199,6 @@ func FromCrdRefs(refs *prowcrd.Refs) (*Refs, error) {
 	return &gitRefs, nil
 }
 
-type JobStruct struct {
-	Periodic   *config.Periodic
-	Postsubmit *config.Postsubmit
-	Presubmit  *config.Presubmit
-	// Encode the type of the Job to coerce into (via type assertion), so that
-	// users of JobStruct know how to make sense of the Job details.
-	JobExecutionType JobExecutionType
-}
-
 func getHttpRequestHeaders(ctx context.Context) (error, *metadata.MD) {
 	// Retrieve HTTP headers from call. All headers are lower-cased.
 	md, ok := metadata.FromIncomingContext(ctx)
@@ -327,10 +208,10 @@ func getHttpRequestHeaders(ctx context.Context) (error, *metadata.MD) {
 	return nil, &md
 }
 
-// enableDecoratedLogger turns on a new logger that captures all known
+// getDecoratedLoggerEntry turns on a new logger that captures all known
 // (interesting) HTTP headers of a gRPC request. We convert these headers into
 // log fields so that the logger can be very precise.
-func enableDecoratedLogger(allowedApiClient *config.AllowedApiClient, md *metadata.MD) {
+func getDecoratedLoggerEntry(allowedApiClient *config.AllowedApiClient, md *metadata.MD) *logrus.Entry {
 	knownHeaders := []string{}
 	if allowedApiClient.Id.GCP != nil {
 		// These headers were drawn from this example:
@@ -352,17 +233,14 @@ func enableDecoratedLogger(allowedApiClient *config.AllowedApiClient, md *metada
 		//       x-forwarded-proto:[http]
 		//       x-request-id:[44770c9a-ee5f-4e36-944e-198b8d9c5196]
 		//       ]
+		//
+		//  We only use 2 of the above because the others are not that useful at this level.
 		knownHeaders = []string{
-			":authority",
-			"user-agent",
 			"x-endpoint-api-consumer-number",
-			"x-endpoint-api-consumer-type",
-			"x-envoy-original-method",
-			"x-envoy-original-path",
-			"x-forwarded-proto",
 			"x-request-id",
 		}
 	}
+
 	fields := make(map[string]interface{})
 	for _, header := range knownHeaders {
 		values := md.Get(header)
@@ -383,12 +261,14 @@ func enableDecoratedLogger(allowedApiClient *config.AllowedApiClient, md *metada
 		PrintLineNumber: true,
 		DefaultFields:   fields,
 	})
+
+	return logrus.NewEntry(logrus.New())
 }
 
-func (req *CreateJobExecutionRequest) Validate() error {
-	jobName := req.GetJobName()
-	jobExecutionType := req.GetJobExecutionType()
-	gitRefs := req.GetRefs()
+func (cjer *CreateJobExecutionRequest) Validate() error {
+	jobName := cjer.GetJobName()
+	jobExecutionType := cjer.GetJobExecutionType()
+	gitRefs := cjer.GetRefs()
 
 	if len(jobName) == 0 {
 		return errors.New("job_name field cannot be empty")
@@ -407,61 +287,19 @@ func (req *CreateJobExecutionRequest) Validate() error {
 		return errors.New("periodic jobs cannot also have gitRefs")
 	}
 
-	// FIXME: Add validation for Refs field.
-
-	/*
-
-		// Check whether the gitRefs looks correct on the surface (this
-		// is a cursory check only, but still worth doing).
-		if gitRefs != nil {
-			base := gitRefs.GetBase()
-			if base == nil {
-				return errors.New("gitRefs: base repo cannot be nil")
-			}
-
-			// Check whether the base repo exists (this is required).
-			if err := base.Validate(); err != nil {
-				return fmt.Errorf("invalid base repo for gitRefs: %s", err)
-			}
-
-			// It could be that the job definition is only defined in a GitHub Pull
-			// Request or Gerrit Change. So in order to get that job definition we
-			// have to merge in the PR or Change.
-			//
-			// Technically a PR will always only have a single "ref" or head SHA
-			// commit. However the data structure we have here is for a list of
-			// refs, because we are leaving it possible to request batch jobs (which
-			// merge multiple PRs together) through the API in the future.
-			refsToMerge := gitRefs.GetRefsToMerge()
-			if refsToMerge != nil {
-				if jobExecutionType == JobExecutionType_PRESUBMIT || jobExecutionType == JobExecutionType_POSTSUBMIT {
-					if len(refsToMerge) > 1 {
-						return fmt.Errorf("cannot have more than 1 refsToMerge for %q", jobExecutionType)
-					}
-				}
-
-				for _, refToMerge := range refsToMerge {
-					if err := refToMerge.Validate(); err != nil {
-						return fmt.Errorf("invalid refsToMerge entry: %s", err)
-					}
-				}
-			}
+	if jobExecutionType != JobExecutionType_PERIODIC {
+		// Non-periodic jobs must have a BaseRepo (default repo to clone)
+		// defined.
+		if gitRefs == nil {
+			return fmt.Errorf("gitRefs must be defined for %q", jobExecutionType)
 		}
-
-		if jobExecutionType != JobExecutionType_PERIODIC {
-			// Non-periodic jobs must have a BaseRepo (default repo to clone)
-			// defined.
-			if gitRefs == nil {
-				return fmt.Errorf("gitRefs must be defined for %q", jobExecutionType)
-			}
-			if err := gitRefs.ValidateGitReferenceDynamic(); err != nil {
-				return fmt.Errorf("gitRefs: failed to validate: %s", err)
-			}
+		if err := gitRefs.Validate(); err != nil {
+			return fmt.Errorf("gitRefs: failed to validate: %s", err)
 		}
-	*/
+	}
 
 	// Finally perform some additional checks on the requested PodSpecOptions.
-	podSpecOptions := req.GetPodSpecOptions()
+	podSpecOptions := cjer.GetPodSpecOptions()
 	if podSpecOptions != nil {
 		envs := podSpecOptions.GetEnvs()
 		for k, v := range envs {
@@ -476,8 +314,9 @@ func (req *CreateJobExecutionRequest) Validate() error {
 				return fmt.Errorf("invalid label key/value pair: %q, %q", k, v)
 			}
 
-			if len(k) > 63 {
-				return fmt.Errorf("invalid label: exceeds 63 characters: %q", k)
+			errs := validation.IsValidLabelValue(v)
+			if len(errs) > 0 {
+				return fmt.Errorf("invalid label: the following errors found: %q", errs)
 			}
 		}
 
@@ -492,58 +331,438 @@ func (req *CreateJobExecutionRequest) Validate() error {
 	return nil
 }
 
-/* FIXME: Revive this for Refs.
-func (grs *GitReferenceStatic) Validate() error {
-	url := grs.GetUrl()
-	if len(url) == 0 {
-		return errors.New("url cannot be empty")
-	}
-	commit := grs.GetCommit()
-	if len(commit) == 0 {
-		return errors.New("commit cannot be empty")
-	}
-	ref := grs.GetRef()
-	if len(ref) == 0 {
-		return errors.New("ref cannot be empty")
+func (gitRefs *Refs) Validate() error {
+	if len(gitRefs.Org) == 0 {
+		return fmt.Errorf("gitRefs: Org cannot be empty")
 	}
 
-	// URL must start with a http or https protocol prefix.
-	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-		return fmt.Errorf("url does not start with http[s]://: %q", url)
+	if len(gitRefs.Repo) == 0 {
+		return fmt.Errorf("gitRefs: Repo cannot be empty")
 	}
 
-	// Commit SHA must be a 40-character hex string.
-	var validSha = regexp.MustCompile(`^[0-9a-f]{40}$`)
-	if !validSha.MatchString(commit) {
-		return fmt.Errorf("invalid commit SHA: %q", commit)
+	if len(gitRefs.BaseRef) == 0 {
+		return fmt.Errorf("gitRefs: BaseRef cannot be empty")
 	}
 
-	// Git reference names have special restrictions, but we don't bother doing
-	// the check here because it's too complicated:
-	// https://git-scm.com/docs/git-check-ref-format.
-	//
-	// (Skip additional checks for `ref`.)
-
-	return nil
-}
-
-func (grd *GitReferenceDynamic) ValidateGitReferenceDynamic() error {
-	base := grd.GetBase()
-	if base == nil {
-		return errors.New("baseRepo: base repo cannot be nil")
-	}
-	if err := base.Validate(); err != nil {
-		return fmt.Errorf("invalid base repo for baseRepo: %s", err)
+	if len(gitRefs.BaseSha) == 0 {
+		return fmt.Errorf("gitRefs: BaseSha cannot be empty")
 	}
 
-	refsToMerge := grd.GetRefsToMerge()
-	for _, refToMerge := range refsToMerge {
-		if err := refToMerge.Validate(); err != nil {
-			return fmt.Errorf("invalid refsToMerge entry: %s", err)
+	for _, pull := range gitRefs.Pulls {
+		if err := pull.Validate(); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-*/
+func (pull *Pull) Validate() error {
+	// Commit SHA must be a 40-character hex string.
+	var validSha = regexp.MustCompile(`^[0-9a-f]{40}$`)
+	if !validSha.MatchString(pull.Sha) {
+		return fmt.Errorf("pull: invalid SHA: %q", pull.Sha)
+	}
+	return nil
+}
+
+// Ensure interface is intact. I.e., this declaration ensures that the type
+// "*config.Config" implements the "prowCfgClient" interface. See
+// https://golang.org/doc/faq#guarantee_satisfies_interface.
+var _ prowCfgClient = (*config.Config)(nil)
+
+// prowCfgClient is a subset of all the various behaviors that the
+// "*config.Config" type implements, which we will test here.
+type prowCfgClient interface {
+	AllPeriodics() []config.Periodic
+	GetPresubmitsStatic(identifier string) []config.Presubmit
+	GetPostsubmitsStatic(identifier string) []config.Postsubmit
+	GetProwJobDefault(repo, cluster string) *prowcrd.ProwJobDefault
+}
+
+type reporterFunc func(pj *prowcrd.ProwJob, state prowcrd.ProwJobState, err error)
+
+func (cjer *CreateJobExecutionRequest) getJobHandler() (jobHandler, error) {
+	var jh jobHandler
+	switch cjer.JobExecutionType {
+	case JobExecutionType_PERIODIC:
+		jh = &periodicJobHandler{}
+	case JobExecutionType_PRESUBMIT:
+		jh = &presubmitJobHandler{}
+	case JobExecutionType_POSTSUBMIT:
+		jh = &postsubmitJobHandler{}
+	default:
+		return nil, fmt.Errorf("unsupported JobExecutionType type: %s", cjer.JobExecutionType)
+	}
+
+	return jh, nil
+}
+
+// Deep-copy all map fields from a gangway.CreateJobExecutionRequest and also
+// the statically defined (configured in YAML) Prow Job labels and annotations.
+func mergeMapFields(cjer *CreateJobExecutionRequest, staticLabels, staticAnnotations map[string]string) (map[string]string, map[string]string) {
+
+	pso := cjer.GetPodSpecOptions()
+
+	combinedLabels := make(map[string]string)
+	combinedAnnotations := make(map[string]string)
+
+	// Overwrite the static definitions with what we received in the
+	// CreateJobExecutionRequest. This order is important.
+	for k, v := range staticLabels {
+		combinedLabels[k] = v
+	}
+	for k, v := range pso.GetLabels() {
+		combinedLabels[k] = v
+	}
+
+	// Do the same for the annotations.
+	for k, v := range staticAnnotations {
+		combinedAnnotations[k] = v
+	}
+	for k, v := range pso.GetAnnotations() {
+		combinedAnnotations[k] = v
+	}
+
+	return combinedLabels, combinedAnnotations
+}
+
+func HandleProwJob(l *logrus.Entry,
+	reporterFunc reporterFunc,
+	cjer *CreateJobExecutionRequest,
+	pjc ProwJobClient,
+	mainConfig prowCfgClient,
+	pc *config.InRepoConfigCacheHandler,
+	allowedApiClient *config.AllowedApiClient,
+	requireTenantID bool,
+	allowedClusters []string) (*JobExecution, error) {
+
+	var prowJobCR prowcrd.ProwJob
+
+	var prowJobSpec *prowcrd.ProwJobSpec
+	var jh jobHandler
+	jh, err := cjer.getJobHandler()
+	if err != nil {
+		return nil, err
+	}
+	prowJobSpec, labels, annotations, err := jh.getProwJobSpec(mainConfig, pc, cjer)
+	if err != nil {
+		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
+		// These errors are already surfaced to user via pubsub two lines below.
+		l.WithError(err).WithField("name", cjer.JobName).Info("Failed getting prowjob spec")
+		return nil, err
+	}
+	if prowJobSpec == nil {
+		return nil, fmt.Errorf("failed getting prowjob spec") // This should not happen
+	}
+
+	combinedLabels, combinedAnnotations := mergeMapFields(cjer, labels, annotations)
+
+	prowJobCR = pjutil.NewProwJob(*prowJobSpec, combinedLabels, combinedAnnotations)
+	// Adds / Updates Environments to containers
+	if prowJobCR.Spec.PodSpec != nil {
+		for i, c := range prowJobCR.Spec.PodSpec.Containers {
+			for k, v := range cjer.GetPodSpecOptions().GetEnvs() {
+				c.Env = append(c.Env, v1.EnvVar{Name: k, Value: v})
+			}
+			prowJobCR.Spec.PodSpec.Containers[i].Env = c.Env
+		}
+	}
+
+	// deny job that runs on not allowed cluster
+	var clusterIsAllowed bool
+	for _, allowedCluster := range allowedClusters {
+		if allowedCluster == "*" || allowedCluster == prowJobSpec.Cluster {
+			clusterIsAllowed = true
+			break
+		}
+	}
+	// This is a user error, not sure whether we want to return error here.
+	if !clusterIsAllowed {
+		err := fmt.Errorf("cluster %s is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters", prowJobSpec.Cluster)
+		l.WithField("cluster", prowJobSpec.Cluster).Warn("cluster not allowed")
+		if reporterFunc != nil {
+			reporterFunc(&prowJobCR, prowcrd.ErrorState, err)
+		}
+		return nil, err
+	}
+
+	// Figure out the tenantID defined for this job by looking it up in its
+	// config, or if that's missing, finding the default one specified in the
+	// main Config.
+	var jobTenantID string
+	if prowJobCR.Spec.ProwJobDefault != nil && prowJobCR.Spec.ProwJobDefault.TenantID != "" {
+		jobTenantID = prowJobCR.Spec.ProwJobDefault.TenantID
+	} else {
+		// Derive the orgRepo from the request. Postsubmits and Presubmits both
+		// require Git refs information, so we can use that to get the job's
+		// associated orgRepo. Then we can feed this orgRepo into
+		// mainConfig.GetProwJobDefault(orgRepo, '*') to get the tenantID from
+		// the main Config's "prowjob_default_entries" field.
+		switch cjer.JobExecutionType {
+		case JobExecutionType_POSTSUBMIT:
+			fallthrough
+		case JobExecutionType_PRESUBMIT:
+			orgRepo := fmt.Sprintf("%s/%s", cjer.Refs.Org, cjer.Refs.Repo)
+			jobTenantID = mainConfig.GetProwJobDefault(orgRepo, "*").TenantID
+		}
+	}
+
+	if len(jobTenantID) == 0 {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("could not determine tenant_id for job %s", prowJobCR.Name))
+	}
+	prowJobCR.Spec.ProwJobDefault.TenantID = jobTenantID
+
+	// Check whether this authenticated API client has authorization to trigger
+	// the requested Prow Job.
+	if allowedApiClient != nil {
+		authorized := ClientAuthorized(allowedApiClient, prowJobCR)
+
+		if !authorized {
+			logrus.Error("client is not authorized to execute the given job")
+			return nil, status.Error(codes.PermissionDenied, "client is not authorized to execute the given job")
+		}
+	}
+
+	if _, err := pjc.Create(context.TODO(), &prowJobCR, metav1.CreateOptions{}); err != nil {
+		l.WithError(err).Errorf("failed to create job %q as %q", cjer.GetJobName(), prowJobCR.Name)
+		if reporterFunc != nil {
+			reporterFunc(&prowJobCR, prowcrd.ErrorState, err)
+		}
+		return nil, err
+	}
+	l.WithFields(logrus.Fields{
+		"job":                 cjer.GetJobName(),
+		"name":                prowJobCR.Name,
+		"prowjob-annotations": prowJobCR.Annotations,
+	}).Info("Job created.")
+	if reporterFunc != nil {
+		reporterFunc(&prowJobCR, prowcrd.TriggeredState, nil)
+	}
+
+	// Now populate a JobExecution. We have to convert data from the ProwJob
+	// custom resource to a JobExecution. For now we just reuse the "Name" field
+	// of a ProwJob CR as a globally-unique execution ID, because this existing
+	// string is already used to do lookups on Deck
+	// (https://prow.k8s.io/prowjob?prowjob=c2891365-621c-11ed-88b0-da2d50b4915c)
+	// but also for naming the test pod itself (prowcrd.ProwJob.Status.pod_name
+	// field).
+	jobExec := &JobExecution{
+		Id:     cjer.JobName,
+		Status: JobExecutionStatus_TRIGGERED,
+	}
+
+	return jobExec, nil
+}
+
+// jobHandler handles job type specific logic
+type jobHandler interface {
+	getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error)
+}
+
+// periodicJobHandler implements jobHandler
+type periodicJobHandler struct{}
+
+func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+	var periodicJob *config.Periodic
+	// TODO(chaodaiG): do we want to support inrepoconfig when
+	// https://github.com/kubernetes/test-infra/issues/21729 is done?
+	for _, job := range mainConfig.AllPeriodics() {
+		if job.Name == cjer.JobName {
+			// Directly followed by break, so this is ok
+			// nolint: exportloopref
+			periodicJob = &job
+			break
+		}
+	}
+	if periodicJob == nil {
+		err = fmt.Errorf("failed to find associated periodic job %q", cjer.JobName)
+		return
+	}
+
+	spec := pjutil.PeriodicSpec(*periodicJob)
+	prowJobSpec = &spec
+	labels, annotations = periodicJob.Labels, periodicJob.Annotations
+	return
+}
+
+// presubmitJobHandler implements jobHandler
+type presubmitJobHandler struct {
+}
+
+func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+	// presubmit jobs require Refs and Refs.Pulls to be set
+	refs, err := ToCrdRefs(cjer.Refs)
+	if err != nil {
+		return
+	}
+	if refs == nil {
+		err = errors.New("Refs must be supplied")
+		return
+	}
+	if len(refs.Org) == 0 {
+		err = errors.New("org must be supplied")
+		return
+	}
+	if len(refs.Repo) == 0 {
+		err = errors.New("repo must be supplied")
+		return
+	}
+	if len(refs.Pulls) == 0 {
+		err = errors.New("at least 1 Pulls is required")
+		return
+	}
+	if len(refs.BaseSHA) == 0 {
+		err = errors.New("baseSHA must be supplied")
+		return
+	}
+	if len(refs.BaseRef) == 0 {
+		err = errors.New("baseRef must be supplied")
+		return
+	}
+
+	var presubmitJob *config.Presubmit
+	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
+	orgRepo := org + "/" + repo
+	// Add "https://" prefix to orgRepo if this is a gerrit job.
+	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
+	prefix := "https://"
+	if cjer.PodSpecOptions != nil && cjer.PodSpecOptions.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+		orgRepo = prefix + orgRepo
+	}
+	baseSHAGetter := func() (string, error) {
+		return refs.BaseSHA, nil
+	}
+	var headSHAGetters []func() (string, error)
+	for _, pull := range refs.Pulls {
+		pull := pull
+		headSHAGetters = append(headSHAGetters, func() (string, error) {
+			return pull.SHA, nil
+		})
+	}
+
+	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
+	// Get presubmits from Config alone.
+	presubmits := mainConfig.GetPresubmitsStatic(orgRepo)
+	// If InRepoConfigCache is provided, then it means that we also want to fetch
+	// from an inrepoconfig.
+	if pc != nil {
+		logger.Debug("Getting prow jobs.")
+		var presubmitsWithInrepoconfig []config.Presubmit
+		var err error
+		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
+		if err != nil {
+			logger.WithError(err).Info("Failed to get presubmits")
+		} else {
+			logger.WithField("static-jobs", len(presubmits)).WithField("jobs-with-inrepoconfig", len(presubmitsWithInrepoconfig)).Debug("Jobs found.")
+			// Overwrite presubmits. This is safe because pc.GetPresubmits()
+			// itself calls mainConfig.GetPresubmitsStatic() and adds to it all the
+			// presubmits found in the inrepoconfig.
+			presubmits = presubmitsWithInrepoconfig
+		}
+	}
+
+	for _, job := range presubmits {
+		job := job
+		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
+			continue
+		}
+		if job.Name == cjer.JobName {
+			if presubmitJob != nil {
+				err = fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", cjer.JobName, orgRepo)
+				return
+			}
+			presubmitJob = &job
+		}
+	}
+	// This also captures the case where fetching jobs from inrepoconfig failed.
+	// However doesn't not distinguish between this case and a wrong prow job name.
+	if presubmitJob == nil {
+		err = fmt.Errorf("failed to find associated presubmit job %q from orgRepo %q", cjer.JobName, orgRepo)
+		return
+	}
+
+	spec := pjutil.PresubmitSpec(*presubmitJob, *refs)
+	prowJobSpec, labels, annotations = &spec, presubmitJob.Labels, presubmitJob.Annotations
+	return
+}
+
+// postsubmitJobHandler implements jobHandler
+type postsubmitJobHandler struct {
+}
+
+func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+	// postsubmit jobs require Refs to be set
+	refs, err := ToCrdRefs(cjer.Refs)
+	if refs == nil {
+		err = errors.New("refs must be supplied")
+		return
+	}
+	if len(refs.Org) == 0 {
+		err = errors.New("org must be supplied")
+		return
+	}
+	if len(refs.Repo) == 0 {
+		err = errors.New("repo must be supplied")
+		return
+	}
+	if len(refs.BaseSHA) == 0 {
+		err = errors.New("baseSHA must be supplied")
+		return
+	}
+	if len(refs.BaseRef) == 0 {
+		err = errors.New("baseRef must be supplied")
+		return
+	}
+
+	var postsubmitJob *config.Postsubmit
+	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
+	orgRepo := org + "/" + repo
+	// Add "https://" prefix to orgRepo if this is a gerrit job.
+	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
+	prefix := "https://"
+	if cjer.PodSpecOptions != nil && cjer.PodSpecOptions.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+		orgRepo = prefix + orgRepo
+	}
+	baseSHAGetter := func() (string, error) {
+		return refs.BaseSHA, nil
+	}
+
+	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
+	postsubmits := mainConfig.GetPostsubmitsStatic(orgRepo)
+	if pc != nil {
+		logger.Debug("Getting prow jobs.")
+		var postsubmitsWithInrepoconfig []config.Postsubmit
+		var err error
+		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
+		if err != nil {
+			logger.WithError(err).Info("Failed to get postsubmits from inrepoconfig")
+		} else {
+			logger.WithField("static-jobs", len(postsubmits)).WithField("jobs-with-inrepoconfig", len(postsubmitsWithInrepoconfig)).Debug("Jobs found.")
+			postsubmits = postsubmitsWithInrepoconfig
+		}
+	}
+
+	for _, job := range postsubmits {
+		job := job
+		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
+			continue
+		}
+		if job.Name == cjer.JobName {
+			if postsubmitJob != nil {
+				return nil, nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", cjer.JobName, orgRepo)
+			}
+			postsubmitJob = &job
+		}
+	}
+	// This also captures the case where fetching jobs from inrepoconfig failed.
+	// However doesn't not distinguish between this case and a wrong prow job name.
+	if postsubmitJob == nil {
+		err = fmt.Errorf("failed to find associated postsubmit job %q from orgRepo %q", cjer.JobName, orgRepo)
+		return
+	}
+
+	spec := pjutil.PostsubmitSpec(*postsubmitJob, *refs)
+	prowJobSpec, labels, annotations = &spec, postsubmitJob.Labels, postsubmitJob.Annotations
+	return
+}

@@ -146,6 +146,8 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	gangway.RegisterProwServer(grpcServer, &gw)
+	// FIXME (listx): Use interrupts package to ensure graceful termination. See
+	// https://github.com/kubernetes/test-infra/pull/28036#discussion_r1050190501.
 	// Register reflection service on gRPC server. This enables testing through
 	// clients that don't have the generated stubs baked in, such as grpcurl.
 	reflection.Register(grpcServer)

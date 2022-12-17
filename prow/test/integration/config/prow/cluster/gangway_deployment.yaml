@@ -15,6 +15,11 @@ spec:
       labels:
         app: gangway
     spec:
+      # FIXME (listx): serve readiness and liveness probes in the gangway binary
+      # (and configure them here).
+
+      # FIXME (listx): adjust terminationGracePeriodSeconds to be greater thant
+      # he graceful shutdown period to be set with the interrupts package.
       terminationGracePeriodSeconds: 1
       serviceAccountName: gangway
       containers:
