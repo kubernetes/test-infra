@@ -223,7 +223,7 @@ type Gangway struct {
 	// AllowedApiClients encodes identifying information about API clients
 	// (AllowedApiClient). An AllowedApiClient has authority to trigger a subset
 	// of Prow Jobs.
-	AllowedApiClients []*AllowedApiClient `json:"allowed_api_clients,omitempty"`
+	AllowedApiClients []AllowedApiClient `json:"allowed_api_clients,omitempty"`
 }
 
 type AllowedApiClient struct {
@@ -236,7 +236,7 @@ type AllowedApiClient struct {
 	Id ApiClientId `json:"id"`
 	// AllowedJobSubsets contains information about what kinds of Prow jobs this
 	// API client is authorized to trigger.
-	AllowedJobSubsets []*AllowedJobSubset `json:"allowed_job_subsets,omitempty"`
+	AllowedJobSubsets []AllowedJobSubset `json:"allowed_job_subsets,omitempty"`
 }
 
 // ApiClientCredentials is a union of different credentials provided by
@@ -306,7 +306,7 @@ func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, erro
 
 			// Now check whether we can find the same information in the Config's allowlist.
 			if client.Id.GCP.EndpointApiConsumerNumber == v {
-				return client, nil
+				return &client, nil
 			}
 		}
 	}
