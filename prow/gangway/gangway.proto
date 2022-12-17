@@ -69,8 +69,7 @@ message JobExecution {
   JobExecutionType type = 4;
   string gcs_path = 5;
   google.protobuf.Timestamp create_time = 6;
-  google.protobuf.Timestamp update_time = 7;
-  string updated_by = 8;
+  google.protobuf.Timestamp completion_time = 7;
 }
 
 // JobExecutionStatus is a 1:1 translation of the existing "ProwJobState" type
