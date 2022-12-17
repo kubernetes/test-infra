@@ -227,29 +227,20 @@ type Gangway struct {
 }
 
 type AllowedApiClient struct {
-	// Name is only used for logging purposes. For example, it helps to identify
-	// configuration errors for misconfigured Gangway configuration in the main
-	// Config.
-	Name string `json:"name"`
-	// Id contains cloud-vendor-specific information that identifies an API
-	// client uniquely.
-	Id ApiClientId `json:"id"`
+	// ApiClientGcp contains GoogleCloudPlatform details about a web API client.
+	// We currently only support GoogleCloudPlatform but other cloud vendors are
+	// possible as additional fields in this struct.
+	GCP *ApiClientGcp `json:"gcp,omitempty"`
+
 	// AllowedJobsFilters contains information about what kinds of Prow jobs this
 	// API client is authorized to trigger.
 	AllowedJobsFilters []AllowedJobsFilter `json:"allowed_jobs_filters,omitempty"`
 }
 
-// ApiClientCredentials is a union of different credentials provided by
-// different cloud providers.
-type ApiClientId struct {
-	GCP *ApiClientIdGcp `json:"gcp,omitempty"`
-	AWS *ApiClientIdAws `json:"aws,omitempty"`
-}
-
-// ApiClientIdGcp encodes GCP Cloud Endpoints-specific HTTP metadata header
+// ApiClientGcp encodes GCP Cloud Endpoints-specific HTTP metadata header
 // information, which are expected to be populated by the ESPv2 sidecar
 // container for GKE applications (in our case, the gangway pod).
-type ApiClientIdGcp struct {
+type ApiClientGcp struct {
 	// EndpointApiConsumerType is the expected value of the
 	// x-endpoint-api-consumer-type HTTP metadata header. Typically this will be
 	// "PROJECT".
@@ -261,17 +252,46 @@ type ApiClientIdGcp struct {
 	EndpointApiConsumerNumber string `json:"endpoint_api_consumer_number,omitempty"`
 }
 
-// ApiClientIdAws is not implemented. However it is still useful
-// because it allows us to write configuration validation logic that expects a
-// possibility of choosing either GCP or AWS credentials. See FIXME.
-type ApiClientIdAws struct {
-	Unimplemented string `json:"unimplemented,omitempty"`
+type ApiClientCloudVendor interface {
+	GetVendorName() string
+	GetRequiredMdHeaders() []string
 }
 
-// AllowedJobsFilter defines filters for jobs that are allowed by an
-// authenticated API client.
-type AllowedJobsFilter struct {
-	TenantID string `json:"tenant_id,omitempty"`
+func (gcp *ApiClientGcp) GetVendorName() string {
+	return "gcp"
+}
+
+func (gcp *ApiClientGcp) GetRequiredMdHeaders() []string {
+	// These headers were drawn from this example:
+	// https://github.com/envoyproxy/envoy/issues/13207 (source code appears
+	// to be
+	// https://github.com/GoogleCloudPlatform/esp-v2/blob/3828042e5b3f840e17837c1a019f4014276014d8/tests/endpoints/bookstore_grpc/server/server.go).
+	// Here's an example of what these headers can look like in practice
+	// (whitespace edited for readability):
+	//
+	//     map[
+	//       :authority:[localhost:20785]
+	//       accept-encoding:[gzip]
+	//       content-type:[application/grpc]
+	//       user-agent:[Go-http-client/1.1]
+	//       x-endpoint-api-consumer-number:[123456]
+	//       x-endpoint-api-consumer-type:[PROJECT]
+	//       x-envoy-original-method:[GET]
+	//       x-envoy-original-path:[/v1/shelves/200?key=api-key]
+	//       x-forwarded-proto:[http]
+	//       x-request-id:[44770c9a-ee5f-4e36-944e-198b8d9c5196]
+	//       ]
+	//
+	//  We only use 2 of the above because the others are not that useful at this level.
+	return []string{"x-endpoint-api-consumer-type", "x-endpoint-api-consumer-number"}
+}
+
+func (allowedApiClient *AllowedApiClient) GetApiClientCloudVendor() (ApiClientCloudVendor, error) {
+	if allowedApiClient.GCP != nil {
+		return allowedApiClient.GCP, nil
+	}
+
+	return nil, errors.New("allowedApiClient did not have a cloud vendor set")
 }
 
 // IdentifyAllowedClient looks at the HTTP request headers (metadata) and tries
@@ -291,21 +311,29 @@ func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, erro
 	}
 
 	for _, client := range c.Gangway.AllowedApiClients {
-		if client.Id.GCP != nil {
-			// First check that the expected headers even exist (and are formatted correctly).
-			err := assertRequiredHeaders(md, []string{"x-endpoint-api-consumer-type", "x-endpoint-api-consumer-number"})
-			if err != nil {
-				return nil, err
-			}
+		cv, err := client.GetApiClientCloudVendor()
+		if err != nil {
+			return nil, err
+		}
 
+		switch cv.GetVendorName() {
+		// For GCP (GKE) Prow installations Gangway must receive the special headers
+		// "x-endpoint-api-consumer-type" and "x-endpoint-api-consumer-number". This is
+		// because in GKE, Gangway must run behind a Cloud Endpoints sidecar container
+		// (which acts as a proxy and injects these special headers). These headers
+		// allow us to identify the caller's associated GCP Project, which we need in
+		// order to filter out only those Prow Jobs that this project is allowed to
+		// create. Otherwise, any caller could trigger any Prow Job, which is far from
+		// ideal from a security standpoint.
+		case "gcp":
 			v := md.Get("x-endpoint-api-consumer-type")[0]
-			if client.Id.GCP.EndpointApiConsumerType != "PROJECT" {
+			if client.GCP.EndpointApiConsumerType != "PROJECT" {
 				return nil, fmt.Errorf("unsupported GCP API consumer type: %q", v)
 			}
 			v = md.Get("x-endpoint-api-consumer-number")[0]
 
 			// Now check whether we can find the same information in the Config's allowlist.
-			if client.Id.GCP.EndpointApiConsumerNumber == v {
+			if client.GCP.EndpointApiConsumerNumber == v {
 				return &client, nil
 			}
 		}
@@ -314,25 +342,10 @@ func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, erro
 	return nil, fmt.Errorf("could not find allowed client from %v", md)
 }
 
-// assertRequiredHeaders checks that some required headers exist in the given
-// metadata. In particular, for GCP (GKE) Prow installations it must have the
-// special headers "x-endpoint-api-consumer-type" and
-// "x-endpoint-api-consumer-number". These headers allow us to identify the
-// caller's associated GCP Project, which we need in order to filter out only
-// those Prow Jobs that this project is allowed to create. Otherwise, any caller
-// could trigger any Prow Job, which is far from ideal from a security
-// standpoint.
-//
-// Gangway could be configured with a different cloud vendor and thus have
-// differently-named headers.
-func assertRequiredHeaders(md *metadata.MD, headers []string) error {
-	for _, header := range headers {
-		values := md.Get(header)
-		if len(values) == 0 {
-			return fmt.Errorf("could not find required HTTP header %q", header)
-		}
-	}
-	return nil
+// AllowedJobsFilter defines filters for jobs that are allowed by an
+// authenticated API client.
+type AllowedJobsFilter struct {
+	TenantID string `json:"tenant_id,omitempty"`
 }
 
 func SplitRepoName(fullRepoName string) (string, string, error) {

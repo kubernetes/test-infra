@@ -85,7 +85,10 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecut
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	l := getDecoratedLoggerEntry(allowedApiClient, md)
+	l, err := getDecoratedLoggerEntry(allowedApiClient, md)
+	if err != nil {
+		l = logrus.NewEntry(logrus.New())
+	}
 
 	allowedClusters := []string{"*"}
 	var reporterFunc reporterFunc = nil
@@ -211,36 +214,13 @@ func getHttpRequestHeaders(ctx context.Context) (error, *metadata.MD) {
 // getDecoratedLoggerEntry turns on a new logger that captures all known
 // (interesting) HTTP headers of a gRPC request. We convert these headers into
 // log fields so that the logger can be very precise.
-func getDecoratedLoggerEntry(allowedApiClient *config.AllowedApiClient, md *metadata.MD) *logrus.Entry {
-	knownHeaders := []string{}
-	if allowedApiClient.Id.GCP != nil {
-		// These headers were drawn from this example:
-		// https://github.com/envoyproxy/envoy/issues/13207 (source code appears
-		// to be
-		// https://github.com/GoogleCloudPlatform/esp-v2/blob/3828042e5b3f840e17837c1a019f4014276014d8/tests/endpoints/bookstore_grpc/server/server.go).
-		// Here's an example of what these headers can look like in practice
-		// (whitespace edited for readability):
-		//
-		//     map[
-		//       :authority:[localhost:20785]
-		//       accept-encoding:[gzip]
-		//       content-type:[application/grpc]
-		//       user-agent:[Go-http-client/1.1]
-		//       x-endpoint-api-consumer-number:[123456]
-		//       x-endpoint-api-consumer-type:[PROJECT]
-		//       x-envoy-original-method:[GET]
-		//       x-envoy-original-path:[/v1/shelves/200?key=api-key]
-		//       x-forwarded-proto:[http]
-		//       x-request-id:[44770c9a-ee5f-4e36-944e-198b8d9c5196]
-		//       ]
-		//
-		//  We only use 2 of the above because the others are not that useful at this level.
-		knownHeaders = []string{
-			"x-endpoint-api-consumer-number",
-			"x-request-id",
-		}
+func getDecoratedLoggerEntry(allowedApiClient *config.AllowedApiClient, md *metadata.MD) (*logrus.Entry, error) {
+	cv, err := allowedApiClient.GetApiClientCloudVendor()
+	if err != nil {
+		return nil, err
 	}
 
+	knownHeaders := cv.GetRequiredMdHeaders()
 	fields := make(map[string]interface{})
 	for _, header := range knownHeaders {
 		values := md.Get(header)
@@ -262,7 +242,7 @@ func getDecoratedLoggerEntry(allowedApiClient *config.AllowedApiClient, md *meta
 		DefaultFields:   fields,
 	})
 
-	return logrus.NewEntry(logrus.New())
+	return logrus.NewEntry(logrus.New()), nil
 }
 
 func (cjer *CreateJobExecutionRequest) Validate() error {

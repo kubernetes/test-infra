@@ -70,16 +70,15 @@ in_repo_config:
 # Allowlist of Prow API clients.
 gangway:
   allowed_api_clients:
-  - id:
-      gcp:
-        # This translates to the expected `x-endpoint-api-consumer-type` HTTP
-        # metadata header.
-        endpoint_api_consumer_type: "PROJECT"
-        # This translates to the expected `x-endpoint-api-consumer-number` HTTP
-        # metadata header.
-        endpoint_api_consumer_number: "123"
+  - gcp:
+      # This translates to the expected `x-endpoint-api-consumer-type` HTTP
+      # metadata header.
+      endpoint_api_consumer_type: "PROJECT"
+      # This translates to the expected `x-endpoint-api-consumer-number` HTTP
+      # metadata header.
+      endpoint_api_consumer_number: "123"
 
     # We don't want this client to be able to trigger *all* jobs. So instead we
     # limit its scope to only certain jobs defined for specific subsets of jobs.
-    allowed_job_subsets:
+    allowed_jobs_filters:
     - tenant_id: "well-behaved-tenant-for-gangway"

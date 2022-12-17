@@ -506,27 +506,20 @@ gangway:
         allowed_jobs_filters:
           - tenant_id: ' '
 
-        # Id contains cloud-vendor-specific information that identifies an API
-        # client uniquely.
-        id:
-            aws:
-                unimplemented: ' '
-            gcp:
-                # EndpointApiConsumerNumber is the expected value of the
-                # x-endpoint-api-consumer-number HTTP metadata header. Typically this
-                # encodes the GCP Project number value, which uniquely identifies a GCP
-                # Project.
-                endpoint_api_consumer_number: ' '
+        # ApiClientGcp contains GoogleCloudPlatform details about a web API client.
+        # We currently only support GoogleCloudPlatform but other cloud vendors are
+        # possible as additional fields in this struct.
+        gcp:
+            # EndpointApiConsumerNumber is the expected value of the
+            # x-endpoint-api-consumer-number HTTP metadata header. Typically this
+            # encodes the GCP Project number value, which uniquely identifies a GCP
+            # Project.
+            endpoint_api_consumer_number: ' '
 
-                # EndpointApiConsumerType is the expected value of the
-                # x-endpoint-api-consumer-type HTTP metadata header. Typically this will be
-                # "PROJECT".
-                endpoint_api_consumer_type: ' '
-
-        # Name is only used for logging purposes. For example, it helps to identify
-        # configuration errors for misconfigured Gangway configuration in the main
-        # Config.
-        name: ' '
+            # EndpointApiConsumerType is the expected value of the
+            # x-endpoint-api-consumer-type HTTP metadata header. Typically this will be
+            # "PROJECT".
+            endpoint_api_consumer_type: ' '
 gerrit:
     # DeckURL is the root URL of Deck. This is used to construct links to
     # job runs for a given CL.
