@@ -91,7 +91,7 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecut
 	}
 
 	allowedClusters := []string{"*"}
-	var reporterFunc reporterFunc = nil
+	var reporterFunc ReporterFunc = nil
 	requireTenantID := true
 
 	jobExec, err := HandleProwJob(l, reporterFunc, cjer, gw.ProwJobClient, mainConfig, gw.InRepoConfigCacheHandler, allowedApiClient, requireTenantID, allowedClusters)
@@ -360,7 +360,7 @@ type prowCfgClient interface {
 	GetProwJobDefault(repo, cluster string) *prowcrd.ProwJobDefault
 }
 
-type reporterFunc func(pj *prowcrd.ProwJob, state prowcrd.ProwJobState, err error)
+type ReporterFunc func(pj *prowcrd.ProwJob, state prowcrd.ProwJobState, err error)
 
 func (cjer *CreateJobExecutionRequest) getJobHandler() (jobHandler, error) {
 	var jh jobHandler
@@ -408,7 +408,7 @@ func mergeMapFields(cjer *CreateJobExecutionRequest, staticLabels, staticAnnotat
 }
 
 func HandleProwJob(l *logrus.Entry,
-	reporterFunc reporterFunc,
+	reporterFunc ReporterFunc,
 	cjer *CreateJobExecutionRequest,
 	pjc ProwJobClient,
 	mainConfig prowCfgClient,
@@ -430,6 +430,10 @@ func HandleProwJob(l *logrus.Entry,
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
 		l.WithError(err).WithField("name", cjer.JobName).Info("Failed getting prowjob spec")
+		prowJobCR = pjutil.NewProwJob(prowcrd.ProwJobSpec{}, nil, cjer.PodSpecOptions.Annotations)
+		if reporterFunc != nil {
+			reporterFunc(&prowJobCR, prowcrd.ErrorState, err)
+		}
 		return nil, err
 	}
 	if prowJobSpec == nil {
@@ -470,28 +474,32 @@ func HandleProwJob(l *logrus.Entry,
 	// Figure out the tenantID defined for this job by looking it up in its
 	// config, or if that's missing, finding the default one specified in the
 	// main Config.
-	var jobTenantID string
-	if prowJobCR.Spec.ProwJobDefault != nil && prowJobCR.Spec.ProwJobDefault.TenantID != "" {
-		jobTenantID = prowJobCR.Spec.ProwJobDefault.TenantID
-	} else {
-		// Derive the orgRepo from the request. Postsubmits and Presubmits both
-		// require Git refs information, so we can use that to get the job's
-		// associated orgRepo. Then we can feed this orgRepo into
-		// mainConfig.GetProwJobDefault(orgRepo, '*') to get the tenantID from
-		// the main Config's "prowjob_default_entries" field.
-		switch cjer.JobExecutionType {
-		case JobExecutionType_POSTSUBMIT:
-			fallthrough
-		case JobExecutionType_PRESUBMIT:
-			orgRepo := fmt.Sprintf("%s/%s", cjer.Refs.Org, cjer.Refs.Repo)
-			jobTenantID = mainConfig.GetProwJobDefault(orgRepo, "*").TenantID
+	if requireTenantID {
+		var jobTenantID string
+		if prowJobCR.Spec.ProwJobDefault != nil && prowJobCR.Spec.ProwJobDefault.TenantID != "" {
+			jobTenantID = prowJobCR.Spec.ProwJobDefault.TenantID
+		} else {
+			// Derive the orgRepo from the request. Postsubmits and Presubmits both
+			// require Git refs information, so we can use that to get the job's
+			// associated orgRepo. Then we can feed this orgRepo into
+			// mainConfig.GetProwJobDefault(orgRepo, '*') to get the tenantID from
+			// the main Config's "prowjob_default_entries" field.
+			switch cjer.JobExecutionType {
+			case JobExecutionType_POSTSUBMIT:
+				fallthrough
+			case JobExecutionType_PRESUBMIT:
+				orgRepo := fmt.Sprintf("%s/%s", cjer.Refs.Org, cjer.Refs.Repo)
+				jobTenantID = mainConfig.GetProwJobDefault(orgRepo, "*").TenantID
+			}
+		}
+
+		if len(jobTenantID) == 0 {
+			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("could not determine tenant_id for job %s", prowJobCR.Name))
+		}
+		if prowJobCR.Spec.ProwJobDefault != nil {
+			prowJobCR.Spec.ProwJobDefault.TenantID = jobTenantID
 		}
 	}
-
-	if len(jobTenantID) == 0 {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("could not determine tenant_id for job %s", prowJobCR.Name))
-	}
-	prowJobCR.Spec.ProwJobDefault.TenantID = jobTenantID
 
 	// Check whether this authenticated API client has authorization to trigger
 	// the requested Prow Job.

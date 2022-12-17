@@ -138,6 +138,21 @@ func extractFromAttribute(attrs map[string]string, key string) (string, error) {
 	return value, nil
 }
 
+func (s *Subscriber) getReporterFunc(l *logrus.Entry) gangway.ReporterFunc {
+	return func(pj *prowcrd.ProwJob, state prowcrd.ProwJobState, err error) {
+		pj.Status.State = state
+		pj.Status.Description = "Successfully triggered prowjob."
+		if err != nil {
+			pj.Status.Description = fmt.Sprintf("Failed creating prowjob: %v", err)
+		}
+		if s.Reporter.ShouldReport(context.TODO(), l, pj) {
+			if _, _, err := s.Reporter.Report(context.TODO(), l, pj); err != nil {
+				l.WithError(err).Warning("Failed to report status.")
+			}
+		}
+	}
+}
+
 func (s *Subscriber) handleMessage(msg messageInterface, subscription string, allowedClusters []string) error {
 
 	msgID := msg.getID()
@@ -151,25 +166,12 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		return err
 	}
 
-	reportProwJob := func(pj *prowcrd.ProwJob, state prowcrd.ProwJobState, err error) {
-		pj.Status.State = state
-		pj.Status.Description = "Successfully triggered prowjob."
-		if err != nil {
-			pj.Status.Description = fmt.Sprintf("Failed creating prowjob: %v", err)
-		}
-		if s.Reporter.ShouldReport(context.TODO(), l, pj) {
-			if _, _, err := s.Reporter.Report(context.TODO(), l, pj); err != nil {
-				l.WithError(err).Warning("Failed to report status.")
-			}
-		}
-	}
-
 	// Do not check for HTTP client authorization, because we're handling a
 	// PubSub message.
 	var allowedApiClient *config.AllowedApiClient = nil
 	var requireTenantID bool = false
 
-	if _, err = gangway.HandleProwJob(l, reportProwJob, cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, allowedApiClient, requireTenantID, allowedClusters); err != nil {
+	if _, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, allowedApiClient, requireTenantID, allowedClusters); err != nil {
 		l.WithError(err).Info("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
@@ -189,7 +191,6 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 // actually does 2 conversion --- from the message to ProwJobEvent (in order to
 // unmarshal the raw bytes) then again from ProwJobEvent to a CJER.
 func (s *Subscriber) msgToCjer(l *logrus.Entry, msg messageInterface, subscription string) (*gangway.CreateJobExecutionRequest, error) {
-
 	msgAttributes := msg.getAttributes()
 	msgPayload := msg.getPayload()
 
@@ -210,9 +211,6 @@ func (s *Subscriber) msgToCjer(l *logrus.Entry, msg messageInterface, subscripti
 		return nil, err
 	}
 
-	cjer := gangway.CreateJobExecutionRequest{}
-	cjer.JobName = strings.TrimSpace(pe.Name)
-
 	eType, err := extractFromAttribute(msgAttributes, ProwEventType)
 	if err != nil {
 		l.WithError(err).Error("failed to read message")
@@ -222,6 +220,14 @@ func (s *Subscriber) msgToCjer(l *logrus.Entry, msg messageInterface, subscripti
 		}).Inc()
 		return nil, err
 	}
+
+	return s.peToCjer(l, &pe, eType, subscription)
+}
+
+func (s *Subscriber) peToCjer(l *logrus.Entry, pe *ProwJobEvent, eType, subscription string) (*gangway.CreateJobExecutionRequest, error) {
+
+	cjer := gangway.CreateJobExecutionRequest{}
+	cjer.JobName = strings.TrimSpace(pe.Name)
 
 	// First encode the job type.
 	switch eType {
@@ -258,9 +264,13 @@ func (s *Subscriber) msgToCjer(l *logrus.Entry, msg messageInterface, subscripti
 
 	cjer.PodSpecOptions = &pso
 
-	cjer.Refs, err = gangway.FromCrdRefs(pe.Refs)
-	if err != nil {
-		return nil, err
+	var err error
+
+	if pe.Refs != nil {
+		cjer.Refs, err = gangway.FromCrdRefs(pe.Refs)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &cjer, nil
