@@ -236,6 +236,7 @@ lgtm:
   - kubernetes/test-infra
   review_acts_as_lgtm: true
 - repos:
+  - kubernetes/kubernetes
   - kubernetes/website
   - kubernetes-sigs/node-feature-discovery
   store_tree_hash: true
