@@ -382,7 +382,20 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		return err
 	}
 
-	if err = s.handleProwJob(l, cjer, subscription, allowedClusters); err != nil {
+	reportProwJob := func(pj *prowapi.ProwJob, state v1.ProwJobState, err error) {
+		pj.Status.State = state
+		pj.Status.Description = "Successfully triggered prowjob."
+		if err != nil {
+			pj.Status.Description = fmt.Sprintf("Failed creating prowjob: %v", err)
+		}
+		if s.Reporter.ShouldReport(context.TODO(), l, pj) {
+			if _, _, err := s.Reporter.Report(context.TODO(), l, pj); err != nil {
+				l.WithError(err).Warning("Failed to report status.")
+			}
+		}
+	}
+
+	if err = HandleProwJob(l, reportProwJob, cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, allowedClusters); err != nil {
 		l.WithError(err).Info("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
@@ -398,12 +411,6 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	return err
 }
 
-// FIXME: Refactor this to remove the coupling with *Subscriber. We still need
-// two values to return, the CJER and ProwJobSpec. We need the latter because
-// it's derived from the merger of the main Config and the InRepoConfig config.
-// It's the dynamic request payload and whatever relevant Prow YAML we got
-// somewhere, respectively. And we need both to create a Prow Job CR.
-//
 // msgToCjer converts an incoming message (PubSub message) into a CJER. It
 // actually does 2 conversion --- from the message to ProwJobEvent (in order to
 // unmarshal the raw bytes) then again from ProwJobEvent to a CJER.
@@ -530,7 +537,15 @@ func mergeMapFields(cjer *gangway.CreateJobExecutionRequest, staticLabels, stati
 	return combinedLabels, combinedAnnotations
 }
 
-func (s *Subscriber) handleProwJob(l *logrus.Entry, cjer *gangway.CreateJobExecutionRequest, subscription string, allowedClusters []string) error {
+type reporterFunc func(pj *prowapi.ProwJob, state v1.ProwJobState, err error)
+
+func HandleProwJob(l *logrus.Entry,
+	report reporterFunc,
+	cjer *gangway.CreateJobExecutionRequest,
+	pjc ProwJobClient,
+	cfg prowCfgClient,
+	pc *config.InRepoConfigCacheHandler,
+	allowedClusters []string) error {
 
 	var prowJob prowapi.ProwJob
 
@@ -540,7 +555,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, cjer *gangway.CreateJobExecu
 	if err != nil {
 		return err
 	}
-	prowJobSpec, labels, annotations, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, cjer)
+	prowJobSpec, labels, annotations, err := jh.getProwJobSpec(cfg, pc, cjer)
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
@@ -552,27 +567,6 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, cjer *gangway.CreateJobExecu
 	}
 
 	combinedLabels, combinedAnnotations := mergeMapFields(cjer, labels, annotations)
-
-	reportProwJob := func(pj *prowapi.ProwJob, state v1.ProwJobState, err error) {
-		pj.Status.State = state
-		pj.Status.Description = "Successfully triggered prowjob."
-		if err != nil {
-			pj.Status.Description = fmt.Sprintf("Failed creating prowjob: %v", err)
-		}
-		if s.Reporter.ShouldReport(context.TODO(), l, pj) {
-			if _, _, err := s.Reporter.Report(context.TODO(), l, pj); err != nil {
-				l.WithError(err).Warning("Failed to report status.")
-			}
-		}
-	}
-
-	reportProwJobFailure := func(pj *prowapi.ProwJob, err error) {
-		reportProwJob(pj, prowapi.ErrorState, err)
-	}
-
-	reportProwJobTriggered := func(pj *prowapi.ProwJob) {
-		reportProwJob(pj, prowapi.TriggeredState, nil)
-	}
 
 	prowJob = pjutil.NewProwJob(*prowJobSpec, combinedLabels, combinedAnnotations)
 	// Adds / Updates Environments to containers
@@ -597,13 +591,17 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, cjer *gangway.CreateJobExecu
 	if !clusterIsAllowed {
 		err := fmt.Errorf("cluster %s is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters", prowJobSpec.Cluster)
 		l.WithField("cluster", prowJobSpec.Cluster).Warn("cluster not allowed")
-		reportProwJobFailure(&prowJob, err)
+		if report != nil {
+			report(&prowJob, prowapi.ErrorState, err)
+		}
 		return err
 	}
 
-	if _, err := s.ProwJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
+	if _, err := pjc.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
 		l.WithError(err).Errorf("failed to create job %q as %q", cjer.GetJobName(), prowJob.Name)
-		reportProwJobFailure(&prowJob, err)
+		if report != nil {
+			report(&prowJob, prowapi.ErrorState, err)
+		}
 		return err
 	}
 	l.WithFields(logrus.Fields{
@@ -611,6 +609,8 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, cjer *gangway.CreateJobExecu
 		"name":                prowJob.Name,
 		"prowjob-annotations": prowJob.Annotations,
 	}).Info("Job created.")
-	reportProwJobTriggered(&prowJob)
+	if report != nil {
+		report(&prowJob, prowapi.TriggeredState, nil)
+	}
 	return nil
 }
