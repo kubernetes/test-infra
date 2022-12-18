@@ -55,6 +55,11 @@ default:
         - name: sig/gcp
         - name: gcp
     - color: 0052cc
+      description: Issues or PRs related to hetzner provider
+      name: area/provider/hetzner
+      target: both
+      addedBy: label
+    - color: 0052cc
       description: Issues or PRs related to ibmcloud provider
       name: area/provider/ibmcloud
       target: both
@@ -70,6 +75,11 @@ default:
       previously:
         - name: sig/openstack
         - name: openstack
+    - color: 0052cc
+      description: Issues or PRs related to scaleway provider
+      name: area/provider/scaleway
+      target: both
+      addedBy: label
     - color: 0052cc
       description: Issues or PRs related to vmware provider
       name: area/provider/vmware
