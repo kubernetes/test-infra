@@ -38,6 +38,8 @@ periodics:
       - --env=KUBE_NODE_OS_DISTRIBUTION=gci
       - --env=KUBE_GCE_NODE_IMAGE=cos-97-16919-189-5
       - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-project-type=gpu-project
       - --gcp-zone=us-west1-b
@@ -79,6 +81,8 @@ periodics:
       - --env=KUBE_NODE_OS_DISTRIBUTION=gci
       - --env=KUBE_GCE_NODE_IMAGE=cos-97-16919-189-5
       - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-project=k8s-infra-e2e-gpu-project
       - --gcp-zone=us-west1-b

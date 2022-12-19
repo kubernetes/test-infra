@@ -36,6 +36,8 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
@@ -97,6 +99,8 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
@@ -160,6 +164,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=kubemark-100
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-image=gci
@@ -238,6 +244,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=kubemark-100
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-image=gci
@@ -313,6 +321,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=kubemark-100-scheduler-highqps
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-image=gci
@@ -396,6 +406,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=kubemark-500
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-4
       - --gcp-node-image=gci
@@ -478,6 +490,8 @@ periodics:
       args:
       - --cluster=kubemark-5000
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=84
@@ -563,6 +577,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=kubemark-5000
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
@@ -638,6 +654,8 @@ periodics:
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=kubemark-100pods
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
@@ -791,6 +809,8 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=kube-dns-benchmark
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-size=e2-standard-2
       - --gcp-nodes=3
@@ -847,6 +867,8 @@ periodics:
       - --check-leaked-resources
       - --cluster=node-local-dns-benchmark
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-size=e2-standard-2
       - --gcp-nodes=3
@@ -895,6 +917,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=102
@@ -955,6 +979,8 @@ periodics:
       - --env=APISERVER_TEST_ARGS=--max-requests-inflight=1000 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --env=CL2_BENCHMARK_INFLIGHT=1
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps/benchmark-config-map-0?resourceVersion=0
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-96
       - --gcp-node-image=gci

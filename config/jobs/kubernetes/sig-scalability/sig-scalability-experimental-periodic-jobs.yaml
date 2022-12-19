@@ -34,6 +34,8 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
@@ -94,6 +96,8 @@ periodics:
       - --check-leaked-resources
       - --cluster=e2e-scalability-calico
       - --env=CL2_ENABLE_NETWORKPOLICIES=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -160,6 +164,8 @@ periodics:
         args:
           - --check-leaked-resources
           - --cluster=e2e-big
+          - --env=CLOUD_PROVIDER_FLAG=external
+          - --env=ENABLE_AUTH_PROVIDER_GCP=true
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-nodes=100

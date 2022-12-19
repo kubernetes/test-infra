@@ -16,6 +16,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -47,6 +49,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -78,6 +82,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -109,6 +115,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -140,6 +148,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -175,6 +185,8 @@ periodics:
       - --env=KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
       - --env=KUBE_ADMISSION_CONTROL=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota,Priority
       - --env=ENABLE_POD_PRIORITY=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=3
@@ -203,6 +215,8 @@ periodics:
       - --
       - --cluster=hpa
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-autoscaling
       - --gcp-zone=us-west1-b
@@ -237,6 +251,8 @@ periodics:
       - --env=KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
       - --env=KUBE_ADMISSION_CONTROL=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota,Priority
       - --env=ENABLE_POD_PRIORITY=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=3
@@ -265,6 +281,8 @@ periodics:
       - --
       - --cluster=hpa
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-autoscaling-migs
       - --gcp-zone=us-west1-b
@@ -296,6 +314,8 @@ periodics:
       - --gcp-node-image=gci
       # Enable HPAContainerMetrics. Required for container metrics tests.
       - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --timeout=240m
       - --test_args=--ginkgo.focus=\[Feature:HPA\]

@@ -29,6 +29,8 @@ periodics:
       - --cluster=gce-scale-cluster
       - --env=CONCURRENT_SERVICE_SYNCS=5
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
@@ -97,6 +99,8 @@ periodics:
       # TODO(mborsz): Adjust or remove this change once we understand coredns
       # memory usage regression.
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-nodes=5000
@@ -194,6 +198,8 @@ periodics:
       - --cluster=e2e-big
       - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci

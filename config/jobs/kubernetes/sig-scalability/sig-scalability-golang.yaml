@@ -96,6 +96,8 @@ periodics:
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=DEPLOY_GCI_DRIVER=false
       - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=gs://k8s-infra-scale-golang-builds/ci/latest-1.23.txt
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50

@@ -39,6 +39,8 @@ presubmits:
         - --timeout=50m
         - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
         - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -72,6 +74,8 @@ presubmits:
         - --timeout=50m
         - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
         - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

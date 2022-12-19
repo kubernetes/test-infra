@@ -26,6 +26,8 @@ presubmits:
         - --cluster=
         - --gcp-zone=us-west1-b
         - --extract=ci/latest
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --provider=gce
         - --gcp-nodes=2
         - --test=false

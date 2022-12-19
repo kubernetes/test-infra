@@ -13,6 +13,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -39,6 +41,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -98,6 +102,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
@@ -133,6 +139,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -162,6 +170,8 @@ periodics:
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --extract-ci-bucket=k8s-release-dev
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
@@ -202,6 +212,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -230,6 +242,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
@@ -258,6 +272,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -285,6 +301,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
@@ -312,6 +330,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/latest
       - --extract=ci/k8s-stable1
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -338,6 +358,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable2
       - --extract=ci/k8s-stable1
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
@@ -366,6 +388,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable2
       - --extract=ci/k8s-stable1
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -393,6 +417,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-stable2
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel
@@ -420,6 +446,8 @@ periodics:
       - --check-version-skew=false
       - --extract=ci/k8s-stable1
       - --extract=ci/k8s-stable2
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce

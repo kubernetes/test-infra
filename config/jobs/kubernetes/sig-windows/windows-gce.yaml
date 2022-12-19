@@ -73,6 +73,8 @@ periodics:
     - args:
       - --check-leaked-resources
       - --cluster=
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -122,6 +124,8 @@ periodics:
     - args:
       - --check-leaked-resources
       - --cluster=
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --provider=gce

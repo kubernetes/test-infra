@@ -43,6 +43,8 @@ presubmits:
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-node-image=gci
@@ -127,6 +129,8 @@ presubmits:
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-4
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0 --profiling --contention-profiling
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-nodes=500
@@ -195,6 +199,8 @@ presubmits:
         - --env=CONCURRENT_SERVICE_SYNCS=5
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-2
         - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --gcp-master-image=gci
         - --gcp-node-image=gci
@@ -262,6 +268,8 @@ presubmits:
         # TODO(mborsz): Adjust or remove this change once we understand coredns
         # memory usage regression.
         - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-nodes=5000
@@ -357,6 +365,8 @@ presubmits:
         args:
         - --build=quick
         - --cluster=
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-master-size=n1-standard-4
@@ -446,6 +456,8 @@ presubmits:
         args:
         - --build=quick
         - --cluster=
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-node-size=e2-standard-8
@@ -522,6 +534,8 @@ presubmits:
         args:
         - --check-leaked-resources
         - --cluster=kube-dns-benchmark
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=ci/latest
         - --gcp-nodes=3
         - --gcp-zone=us-east1-b
@@ -568,6 +582,8 @@ presubmits:
         args:
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=ci/latest
         - --gcp-nodes=100
         - --gcp-project-type=scalability-presubmit-project
@@ -638,6 +654,8 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --cluster=
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=ci/latest
         - --gcp-master-size=n1-standard-2
         - --gcp-node-size=e2-standard-4
@@ -715,6 +733,8 @@ presubmits:
         # TODO(mborsz): Adjust or remove this change once we understand coredns
         # memory usage regression.
         - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=ci/latest-fast
         - --extract-ci-bucket=k8s-release-dev
         - --gcp-nodes=5000

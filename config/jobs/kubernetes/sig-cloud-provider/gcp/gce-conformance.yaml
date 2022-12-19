@@ -20,6 +20,8 @@ periodics:
       - --
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b

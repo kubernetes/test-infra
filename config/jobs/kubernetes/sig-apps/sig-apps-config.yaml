@@ -12,6 +12,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce

@@ -37,6 +37,8 @@ presubmits:
         - --scenario=kubernetes_e2e
         - --
         - --deployment=node
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-project=cadvisor-e2e
         - --gcp-zone=us-central1-f
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-cadvisor.yaml --test-suite=cadvisor
@@ -68,6 +70,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-project=ci-cadvisor-e2e
       - --gcp-zone=us-central1-f
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-cadvisor.yaml --test-suite=cadvisor

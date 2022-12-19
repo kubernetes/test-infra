@@ -49,6 +49,8 @@ presubmits:
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
         - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-nodes=4
@@ -114,6 +116,8 @@ presubmits:
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --ginkgo-parallel=15
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
@@ -183,6 +187,8 @@ presubmits:
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_PROXY_MODE=ipvs
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --gcp-nodes=4
@@ -240,6 +246,8 @@ periodics:
       - --check-leaked-resources
       # List GCE Alpha features we want to enable, separated by commas.
       - --env=GCE_ALPHA_FEATURES=NetworkTiers
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -269,6 +277,8 @@ periodics:
       - --
       - --cluster=gce-coredns-perf
       - --env=CLUSTER_DNS_CORE_DNS=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -296,6 +306,8 @@ periodics:
       - --
       - --cluster=gce-kubedns-perf
       - --env=CLUSTER_DNS_CORE_DNS=false
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -324,6 +336,8 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
@@ -347,6 +361,8 @@ periodics:
       - --cluster=gce-coredns-perf-cache
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -375,6 +391,8 @@ periodics:
       - --cluster=gce-kubedns-perf-cache
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -404,6 +422,8 @@ periodics:
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=true
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
@@ -428,6 +448,8 @@ periodics:
       - --check-leaked-resources
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
@@ -465,6 +487,8 @@ periodics:
       - --check-leaked-resources
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
@@ -499,6 +523,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --env=CREATE_CUSTOM_NETWORK=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project-type=ingress-project
@@ -526,6 +552,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -554,6 +582,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --env=KUBE_PROXY_MODE=ipvs
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -582,6 +612,8 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=false
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
@@ -606,6 +638,8 @@ periodics:
       - --cluster=
       - --env=CLUSTER_DNS_CORE_DNS=false
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
@@ -629,6 +663,8 @@ periodics:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --env=CLUSTER_DNS_CORE_DNS=false,
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -654,6 +690,8 @@ periodics:
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --env=CLUSTER_DNS_CORE_DNS=false,
       - --env=KUBE_ENABLE_NODELOCAL_DNS=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -689,6 +727,8 @@ periodics:
       - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
       - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
       - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --ginkgo-parallel=15
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu

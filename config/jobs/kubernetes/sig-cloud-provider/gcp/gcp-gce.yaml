@@ -40,6 +40,8 @@ presubmits:
         - --
         - --build=quick
         - --cluster=
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -84,6 +86,8 @@ presubmits:
         - --
         - --build=quick
         - --cluster=
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -180,6 +184,8 @@ presubmits:
         - --
         - --build=quick
         - --cluster=
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -244,6 +250,8 @@ presubmits:
             - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
             - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --extract=local
             - --gcp-master-image=ubuntu
             - --gcp-node-image=ubuntu
@@ -303,6 +311,8 @@ presubmits:
             - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
             - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --extract=local
             - --gcp-master-image=ubuntu
             - --gcp-node-image=ubuntu
@@ -349,10 +359,12 @@ presubmits:
         - --ginkgo-parallel=1
         - --build=quick
         - --cluster=
-        - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false
+        - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
         - --env=ENABLE_APISERVER_TRACING=true
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -410,6 +422,8 @@ presubmits:
             - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
             - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
             - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --extract=local
             - --gcp-master-image=ubuntu
             - --gcp-node-image=ubuntu
@@ -548,6 +562,8 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -595,6 +611,8 @@ periodics:
           - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
           - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --env=CLOUD_PROVIDER_FLAG=external
+          - --env=ENABLE_AUTH_PROVIDER_GCP=true
           - --extract=ci/latest-fast
           - --extract-ci-bucket=k8s-release-dev
           - --gcp-master-image=ubuntu
@@ -633,9 +651,11 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,RecoverVolumeExpansionFailure=false,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false,InTreePluginGCEUnregister=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,RecoverVolumeExpansionFailure=false,InTreePluginGCEUnregister=false
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -663,9 +683,11 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
@@ -703,6 +725,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -737,6 +761,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -762,6 +788,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
@@ -789,6 +817,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=err-e2e
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
@@ -827,6 +857,8 @@ periodics:
       - --check-leaked-resources
       - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -863,6 +895,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-zone=europe-west1-c
@@ -899,6 +933,8 @@ periodics:
       - --
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -929,6 +965,8 @@ periodics:
       - --
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/k8s-beta
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -959,6 +997,8 @@ periodics:
       - --
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-gce-soak-1-4
@@ -988,6 +1028,8 @@ periodics:
       - --
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-gce-soak-1-7
@@ -1017,6 +1059,8 @@ periodics:
       - --
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/k8s-stable3
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-gce-soak-1-6

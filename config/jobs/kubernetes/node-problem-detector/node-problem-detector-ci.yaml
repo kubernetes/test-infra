@@ -87,6 +87,8 @@ periodics:
         cd $(GOPATH)/src/k8s.io/kubernetes &&
         /workspace/scenarios/kubernetes_e2e.py
         --deployment=node
+        --env=CLOUD_PROVIDER_FLAG=external
+        --env=ENABLE_AUTH_PROVIDER_GCP=true
         --provider=gce
         --gcp-zone=us-west1-b
         --node-tests=true
@@ -124,6 +126,8 @@ periodics:
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
         --cluster=
+        --env=CLOUD_PROVIDER_FLAG=external
+        --env=ENABLE_AUTH_PROVIDER_GCP=true
         --extract=ci/latest
         --provider=gce
         --gcp-node-image=gci
@@ -161,6 +165,8 @@ periodics:
         source ci-custom-flags.env &&
         /workspace/scenarios/kubernetes_e2e.py
         --cluster=
+        --env=CLOUD_PROVIDER_FLAG=external
+        --env=ENABLE_AUTH_PROVIDER_GCP=true
         --extract=ci/latest
         --provider=gce
         --gcp-node-image=gci
@@ -198,6 +204,8 @@ periodics:
         source ci.env &&
         /workspace/scenarios/kubernetes_e2e.py
         --cluster=
+        --env=CLOUD_PROVIDER_FLAG=external
+        --env=ENABLE_AUTH_PROVIDER_GCP=true
         --extract=ci/latest
         --provider=gce
         --gcp-node-image=ubuntu
@@ -235,6 +243,8 @@ periodics:
         source ci-custom-flags.env &&
         /workspace/scenarios/kubernetes_e2e.py
         --cluster=
+        --env=CLOUD_PROVIDER_FLAG=external
+        --env=ENABLE_AUTH_PROVIDER_GCP=true
         --extract=ci/latest
         --provider=gce
         --gcp-node-image=ubuntu

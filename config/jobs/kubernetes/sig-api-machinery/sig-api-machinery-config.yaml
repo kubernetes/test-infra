@@ -13,6 +13,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -42,6 +44,8 @@ periodics:
       - --env=RUN_KONNECTIVITY_PODS=true
       - --env=EGRESS_VIA_KONNECTIVITY=true
       - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -69,6 +73,8 @@ periodics:
       - --env=RUN_KONNECTIVITY_PODS=true
       - --env=EGRESS_VIA_KONNECTIVITY=true
       - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
@@ -109,6 +115,8 @@ presubmits:
         - --env=RUN_KONNECTIVITY_PODS=true
         - --env=EGRESS_VIA_KONNECTIVITY=true
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=http-connect
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -156,6 +164,8 @@ presubmits:
         - --env=RUN_KONNECTIVITY_PODS=true
         - --env=EGRESS_VIA_KONNECTIVITY=true
         - --env=KONNECTIVITY_SERVICE_PROXY_PROTOCOL_MODE=grpc
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30

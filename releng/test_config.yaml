@@ -213,6 +213,8 @@ cloudProviders:
     args:
     - --check-leaked-resources
     - --provider=gce
+    - --env=CLOUD_PROVIDER_FLAG=external
+    - --env=ENABLE_AUTH_PROVIDER_GCP=true
     - --gcp-zone=us-west1-b
 
 images:
@@ -282,9 +284,11 @@ testSuites:
     - --timeout=180m
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=false,InTreePluginGCEUnregister=false
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --env=CLOUD_PROVIDER_FLAG=external
+    - --env=ENABLE_AUTH_PROVIDER_GCP=true
     - --runtime-config=api/all=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
       --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0
@@ -387,6 +391,8 @@ nodeCommon:
   - --deployment=node
   - --node-tests=true
   - --provider=gce
+  - --env=CLOUD_PROVIDER_FLAG=external
+  - --env=ENABLE_AUTH_PROVIDER_GCP=true
   - --gcp-zone=us-west1-b
 
 nodeImages:

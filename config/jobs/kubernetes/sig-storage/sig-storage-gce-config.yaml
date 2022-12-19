@@ -36,6 +36,8 @@ presubmits:
         - --build=quick
         - --cluster=
         - --extract=local
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -87,6 +89,8 @@ presubmits:
         - --build=quick
         - --cluster=
         - --extract=local
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --provider=gce
@@ -137,6 +141,8 @@ presubmits:
         - --build=quick
         - --cluster=
         - --extract=local
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --provider=gce
@@ -176,6 +182,8 @@ presubmits:
         - --
         - --build=quick
         - --extract=local
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-master-image=gci
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
@@ -212,6 +220,8 @@ periodics:
       - --image-project=ubuntu-os-cloud
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.9
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --ginkgo-parallel=30
@@ -240,6 +250,8 @@ periodics:
       - --image-project=ubuntu-os-cloud
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.9
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
@@ -261,6 +273,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce

@@ -28,6 +28,8 @@ presubmits:
         - --cluster=
         - --extract=local
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -69,6 +71,8 @@ presubmits:
         - --scenario=kubernetes_e2e
         - --
         - --deployment=node
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
@@ -162,6 +166,8 @@ presubmits:
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
         - --deployment=node
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
@@ -266,6 +272,8 @@ presubmits:
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
         - --deployment=node
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-central1-b
         - '--node-test-args=--feature-gates=AllAlpha=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
@@ -305,6 +313,8 @@ presubmits:
         - --scenario=kubernetes_e2e
         - --
         - --deployment=node
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -345,6 +355,8 @@ presubmits:
         - --scenario=kubernetes_e2e
         - --
         - --deployment=node
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
         - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -386,6 +398,8 @@ presubmits:
           - --scenario=kubernetes_e2e
           - --
           - --deployment=node
+          - --env=CLOUD_PROVIDER_FLAG=external
+          - --env=ENABLE_AUTH_PROVIDER_GCP=true
           - --gcp-zone=us-west1-b
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
@@ -487,6 +501,8 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -585,6 +601,8 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -683,6 +701,8 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-hugepages.yaml
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -722,6 +742,8 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -825,6 +847,8 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_KEY_PATH=/etc/ssh-key-secret/ssh-private
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -870,6 +894,8 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_KEY_PATH=/etc/ssh-key-secret/ssh-private
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -917,6 +943,8 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -1025,6 +1053,8 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -1065,6 +1095,8 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates=MemoryQoS=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -1110,6 +1142,8 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -1150,6 +1184,8 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
+            - --env=CLOUD_PROVIDER_FLAG=external
+            - --env=ENABLE_AUTH_PROVIDER_GCP=true
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
             - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
@@ -1198,6 +1234,8 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
+        - --env=CLOUD_PROVIDER_FLAG=external
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -1246,6 +1284,8 @@ presubmits:
           - --scenario=kubernetes_e2e
           - -- # end bootstrap args, scenario args below
           - --deployment=node
+          - --env=CLOUD_PROVIDER_FLAG=external
+          - --env=ENABLE_AUTH_PROVIDER_GCP=true
           - --gcp-zone=us-west1-b
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--feature-gates=KubeletCredentialProviders=true,DisableKubeletCloudCredentialProviders=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
