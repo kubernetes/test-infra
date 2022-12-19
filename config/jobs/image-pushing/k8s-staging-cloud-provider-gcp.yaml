@@ -86,4 +86,5 @@ postsubmits:
               - --project=k8s-staging-cloud-provider-gcp
               - --scratch-bucket=gs://k8s-staging-cloud-provider-gcp-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
