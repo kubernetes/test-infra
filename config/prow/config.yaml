@@ -918,16 +918,6 @@ presets:
   env:
   - name: AZURE_CREDENTIALS
     value: /etc/azure-cred/credentials
-  - name: SERVICE_ACCOUNT_SIGNING_PUB
-    valueFrom:
-      secretKeyRef:
-        name: azure-capz-sa-cred
-        key: serviceAccountSigningPub
-  - name: SERVICE_ACCOUNT_SIGNING_KEY
-    valueFrom:
-      secretKeyRef:
-        name: azure-capz-sa-cred
-        key: serviceAccountSigningKey
   - name: AZURE_SSH_PUBLIC_KEY_FILE
     value: /etc/azure-ssh/azure-ssh-pub
   - name: REGISTRY
@@ -964,16 +954,6 @@ presets:
   env:
     - name: AZURE_CREDENTIALS
       value: /etc/azure-cred/credentials
-    - name: SERVICE_ACCOUNT_SIGNING_PUB
-      valueFrom:
-        secretKeyRef:
-          name: azure-capz-sa-cred
-          key: serviceAccountSigningPub
-    - name: SERVICE_ACCOUNT_SIGNING_KEY
-      valueFrom:
-        secretKeyRef:
-          name: azure-capz-sa-cred
-          key: serviceAccountSigningKey
   volumes:
     - name: azure-cred
       secret:
