@@ -5,6 +5,7 @@ steps:
     - build
     - --tag=gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - --build-arg=AWS_IAM_AUTHENTICATOR_VERSION=$_AWS_IAM_AUTHENTICATOR_VERSION
     - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le,linux/s390x
     - --push
     - .
@@ -19,3 +20,4 @@ steps:
     - gcr.io/$PROJECT_ID/alpine:latest
 substitutions:
   _GIT_TAG: '12345'
+  _AWS_IAM_AUTHENTICATOR_VERSION: '0.5.12'
