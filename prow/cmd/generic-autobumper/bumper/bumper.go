@@ -96,7 +96,7 @@ type PRHandler interface {
 	Changes() []func(context.Context) (string, error)
 	// PRTitleBody returns the body of the PR, this function runs after all
 	// changes have been executed
-	PRTitleBody() (string, string, error)
+	PRTitleBody() (string, string)
 }
 
 // GitAuthorOptions is specifically to read the author info for a commit
@@ -260,10 +260,7 @@ func processGitHub(ctx context.Context, o *Options, prh PRHandler) error {
 		return fmt.Errorf("push changes to the remote branch: %w", err)
 	}
 
-	summary, body, err := prh.PRTitleBody()
-	if err != nil {
-		return fmt.Errorf("creating PR summary and body: %w", err)
-	}
+	summary, body := prh.PRTitleBody()
 	if o.GitHubBaseBranch == "" {
 		repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
 		if err != nil {

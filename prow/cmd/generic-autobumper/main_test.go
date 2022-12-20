@@ -1032,3 +1032,61 @@ Commits | Dates | Images
 
 	}
 }
+
+func TestPRTitleBody(t *testing.T) {
+	prowPrefix := prefix{Name: "Prow", Prefix: "gcr.io/k8s-prow/", ConsistentImages: true}
+	beforeCommit := "2b1234567"
+	afterCommit := "3a1234567"
+	beforeDate := "20210128"
+	afterDate := "20210129"
+	prowImages := map[string]string{
+		fmt.Sprintf("gcr.io/k8s-prow/bumpName:v%s-%s", beforeDate, beforeCommit): fmt.Sprintf("v%s-%s", afterDate, afterCommit),
+	}
+	testCases := []struct {
+		name            string
+		options         options
+		versions        map[string][]string
+		images          map[string]string
+		expectedSummary string
+		expectedBody    string
+	}{
+		{
+			name: "prow bumped",
+			options: options{
+				Prefixes: []prefix{prowPrefix},
+			},
+			versions:        map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}},
+			images:          prowImages,
+			expectedSummary: "Update Prow to tag1",
+			expectedBody:    "Multiple distinct gcr.io/k8s-prow/ changes:\n\nCommits | Dates | Images\n--- | --- | ---\n/compare/2b1234567...3a1234567 | 2021&#x2011;01&#x2011;28&nbsp;&#x2192;&nbsp;2021&#x2011;01&#x2011;29 | bumpName\n\n\n\nNobody is currently oncall, so falling back to Blunderbuss.\n",
+		},
+		{
+			name: "contains additional PR body",
+			options: options{
+				Prefixes:         []prefix{prowPrefix},
+				AdditionalPRBody: "/some-other-command",
+			},
+			versions:        map[string][]string{"tag1": {"gcr.io/k8s-prow/test:tag1"}},
+			images:          prowImages,
+			expectedSummary: "Update Prow to tag1",
+			expectedBody:    "Multiple distinct gcr.io/k8s-prow/ changes:\n\nCommits | Dates | Images\n--- | --- | ---\n/compare/2b1234567...3a1234567 | 2021&#x2011;01&#x2011;28&nbsp;&#x2192;&nbsp;2021&#x2011;01&#x2011;29 | bumpName\n\n\n\nNobody is currently oncall, so falling back to Blunderbuss.\n/some-other-command\n",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := client{
+				o:        &tc.options,
+				images:   tc.images,
+				versions: tc.versions,
+			}
+			summary, body := c.PRTitleBody()
+			if diff := cmp.Diff(tc.expectedSummary, summary); diff != "" {
+				t.Fatalf("summary doesn't match expected, diff: %s", diff)
+			}
+			if diff := cmp.Diff(tc.expectedBody, body); diff != "" {
+				t.Fatalf("body doesn't match expected, diff: %s", diff)
+			}
+
+		})
+	}
+}
