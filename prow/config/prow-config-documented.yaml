@@ -86,6 +86,13 @@ branch-protection:
 
                             # RequiredPullRequestReviews specifies github approval/review criteria.
                             required_pull_request_reviews:
+                                # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                                bypass_pull_request_allowances:
+                                    teams:
+                                      - ""
+                                    users:
+                                      - ""
+
                                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                                 dismiss_stale_reviews: false
 
@@ -101,13 +108,6 @@ branch-protection:
 
                                 # Approvals overrides the number of approvals required if set (set to 0 to disable)
                                 required_approving_review_count: 0
-
-                                # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
-                                bypass_pull_request_allowances:
-                                    teams:
-                                      - ""
-                                    users:
-                                      - ""
 
                             # RequiredStatusChecks configures github contexts
                             required_status_checks:
@@ -151,6 +151,13 @@ branch-protection:
 
                     # RequiredPullRequestReviews specifies github approval/review criteria.
                     required_pull_request_reviews:
+                        # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                        bypass_pull_request_allowances:
+                            teams:
+                              - ""
+                            users:
+                              - ""
+
                         # DismissStale overrides whether new commits automatically dismiss old reviews if set
                         dismiss_stale_reviews: false
 
@@ -166,13 +173,6 @@ branch-protection:
 
                         # Approvals overrides the number of approvals required if set (set to 0 to disable)
                         required_approving_review_count: 0
-
-                        # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
-                        bypass_pull_request_allowances:
-                            teams:
-                              - ""
-                            users:
-                              - ""
 
                     # RequiredStatusChecks configures github contexts
                     required_status_checks:
@@ -200,6 +200,13 @@ branch-protection:
 
             # RequiredPullRequestReviews specifies github approval/review criteria.
             required_pull_request_reviews:
+                # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                bypass_pull_request_allowances:
+                    teams:
+                      - ""
+                    users:
+                      - ""
+
                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                 dismiss_stale_reviews: false
 
@@ -215,13 +222,6 @@ branch-protection:
 
                 # Approvals overrides the number of approvals required if set (set to 0 to disable)
                 required_approving_review_count: 0
-
-                # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
-                bypass_pull_request_allowances:
-                    teams:
-                      - ""
-                    users:
-                      - ""
 
             # RequiredStatusChecks configures github contexts
             required_status_checks:
@@ -261,6 +261,13 @@ branch-protection:
 
     # RequiredPullRequestReviews specifies github approval/review criteria.
     required_pull_request_reviews:
+        # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+        bypass_pull_request_allowances:
+            teams:
+              - ""
+            users:
+              - ""
+
         # DismissStale overrides whether new commits automatically dismiss old reviews if set
         dismiss_stale_reviews: false
 
@@ -276,13 +283,6 @@ branch-protection:
 
         # Approvals overrides the number of approvals required if set (set to 0 to disable)
         required_approving_review_count: 0
-
-        # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
-        bypass_pull_request_allowances:
-            teams:
-              - ""
-            users:
-              - ""
 
     # RequiredStatusChecks configures github contexts
     required_status_checks:
