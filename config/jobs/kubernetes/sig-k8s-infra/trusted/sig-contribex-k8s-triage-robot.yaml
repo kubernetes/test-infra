@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -58,7 +58,7 @@ periodics:
     testgrid-tab-name: stable-metrics-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -97,7 +97,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -140,7 +140,7 @@ periodics:
     testgrid-tab-name: close-issues
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -197,7 +197,7 @@ periodics:
     testgrid-tab-name: close-prs
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -252,7 +252,7 @@ periodics:
     testgrid-tab-name: freeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -301,7 +301,7 @@ periodics:
     description: Automatically /retest for approved PRs that are failing tests
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -369,7 +369,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -426,7 +426,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -484,7 +484,7 @@ periodics:
     testgrid-tab-name: thaw-prs
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/commenter:v20221220-5c7fbe528a
       command:
       - commenter
       args:
@@ -533,7 +533,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20221216-59943c5762
+    - image: gcr.io/k8s-prow/issue-creator:v20221220-5c7fbe528a
       command:
       - issue-creator
       args:
