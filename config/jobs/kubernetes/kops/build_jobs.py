@@ -1260,10 +1260,17 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-external-dns",
             cloud="aws",
-            distro="u2004",
             networking="calico",
             extra_flags=[
                 '--override=cluster.spec.externalDNS.provider=external-dns'
+            ],
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-node-local-dns",
+            cloud="aws",
+            distro='u2204arm64',
+            extra_flags=[
+                '--override=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true'
             ],
         ),
 
