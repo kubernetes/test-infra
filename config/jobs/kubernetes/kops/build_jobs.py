@@ -539,7 +539,7 @@ def generate_misc():
                    runs_per_day=3,
                    networking="cilium",
                    extra_flags=['--api-loadbalancer-type=public',
-                                '--set=cluster.spec.warmPool.minSize=1'
+                                '--set=cluster.spec.cloudProvider.aws.warmPool.minSize=1'
                                 ],
                    extra_dashboards=['kops-misc']),
 
