@@ -1298,6 +1298,12 @@ def generate_presubmits_e2e():
             networking="calico",
             extra_flags=["--dns=none"],
         ),
+        presubmit_test(
+            name="pull-kops-e2e-gce-dns-none",
+            cloud="gce",
+            networking="calico",
+            extra_flags=["--dns=none"],
+        ),
 
         presubmit_test(
             name="pull-kops-e2e-aws-nlb",
