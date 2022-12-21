@@ -1280,12 +1280,6 @@ def generate_presubmits_e2e():
             template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
             feature_flags=['APIServerNodes']
         ),
-        presubmit_test(
-            name="pull-kops-e2e-aws-apiserver-nodes-dns-none",
-            cloud="aws",
-            template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver-dns-none.yaml.tmpl", # pylint: disable=line-too-long
-            feature_flags=['APIServerNodes']
-        ),
 
         presubmit_test(
             name="pull-kops-e2e-arm64",
@@ -1301,6 +1295,12 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-aws-dns-none",
             cloud="aws",
             distro="u2204arm64",
+            networking="calico",
+            extra_flags=["--dns=none"],
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-gce-dns-none",
+            cloud="gce",
             networking="calico",
             extra_flags=["--dns=none"],
         ),
