@@ -36,7 +36,7 @@ const (
 )
 
 var (
-	commentBody = fmt.Sprintf("Adding label `%s` because PR contains merge commits, which are not allowed in this repository.\nUse `git rebase` to reapply your commits on top of the target branch. Detailed instructions for doing so can be found [here](https://git.k8s.io/community/contributors/guide/github-workflow.md#4-keep-your-branch-in-sync).", labels.MergeCommits)
+	commentBody = fmt.Sprintf("Adding label `%s` because PR contains merge commits, which are not allowed in this repository.\nUse `git rebase` to reapply your commits on top of the target branch. Detailed instructions for doing so can be found [here](https://git.k8s.io/community/contributors/guide/github-workflow.md#4-keep-your-branch-in-sync).\nYou can also issue `/label tide/merge-method-squash` command to ask tide to squash the commits when the PR is merged.", labels.MergeCommits)
 )
 
 // init registers out plugin as a pull request handler
@@ -48,7 +48,7 @@ func init() {
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-		Description: fmt.Sprintf("The merge commit blocker plugin adds the %s label to pull requests that contain merge commits", labels.MergeCommits),
+		Description: fmt.Sprintf("The merge commit blocker plugin adds the %s label to pull requests that contain merge commits. This plugin doesn't work on PRs that have 'tide/merge-method-squash' label.", labels.MergeCommits),
 	}, nil
 }
 
@@ -107,7 +107,10 @@ func handle(ghc githubClient, gc git.ClientFactory, cp pruneClient, log *logrus.
 		return err
 	}
 	hasLabel := github.HasLabel(labels.MergeCommits, issueLabels)
-	if hasLabel && !existMergeCommits {
+	hasLabelMergeMethodSquash := github.HasLabel("tide/merge-method-squash", issueLabels)
+	// TODO: Read the actual label from config
+
+	if (hasLabel && !existMergeCommits) || (hasLabel && hasLabelMergeMethodSquash) {
 		log.Infof("Removing %q Label for %s/%s#%d", labels.MergeCommits, org, repo, num)
 		if err := ghc.RemoveLabel(org, repo, num, labels.MergeCommits); err != nil {
 			return err
@@ -115,7 +118,7 @@ func handle(ghc githubClient, gc git.ClientFactory, cp pruneClient, log *logrus.
 		cp.PruneComments(func(ic github.IssueComment) bool {
 			return strings.Contains(ic.Body, commentBody)
 		})
-	} else if !hasLabel && existMergeCommits {
+	} else if !hasLabel && existMergeCommits && !hasLabelMergeMethodSquash {
 		log.Infof("Adding %q Label for %s/%s#%d", labels.MergeCommits, org, repo, num)
 		if err := ghc.AddLabel(org, repo, num, labels.MergeCommits); err != nil {
 			return err
