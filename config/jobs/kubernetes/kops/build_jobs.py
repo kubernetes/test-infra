@@ -539,7 +539,7 @@ def generate_misc():
                    runs_per_day=3,
                    networking="cilium",
                    extra_flags=['--api-loadbalancer-type=public',
-                                '--override=cluster.spec.warmPool.minSize=1'
+                                '--set=cluster.spec.warmPool.minSize=1'
                                 ],
                    extra_dashboards=['kops-misc']),
 
@@ -691,7 +691,7 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=[
-                       "--override=cluster.spec.externalDNS.provider=external-dns",
+                       "--set=cluster.spec.externalDNS.provider=external-dns",
                    ],
                    extra_dashboards=['kops-misc']),
 
@@ -1217,7 +1217,7 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2004",
             k8s_version="ci",
-            extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+            extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-ccm',
         ),
 
@@ -1262,7 +1262,7 @@ def generate_presubmits_e2e():
             cloud="aws",
             networking="calico",
             extra_flags=[
-                '--override=cluster.spec.externalDNS.provider=external-dns'
+                '--set=cluster.spec.externalDNS.provider=external-dns'
             ],
         ),
         presubmit_test(
@@ -1270,7 +1270,7 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro='u2204arm64',
             extra_flags=[
-                '--override=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true'
+                '--set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true'
             ],
         ),
 
@@ -1348,7 +1348,7 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-latest-e2e-aws-k8s-1-23',
             networking='calico',
-            extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+            extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-aws-1-23',
             always_run=False,
         ),
@@ -1358,7 +1358,7 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-latest-e2e-aws-k8s-1-22',
             networking='calico',
-            extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+            extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-aws-1-22',
             always_run=False,
         ),
