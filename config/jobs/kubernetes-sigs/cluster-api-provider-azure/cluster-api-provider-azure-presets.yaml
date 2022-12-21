@@ -1,0 +1,14 @@
+presets:
+- labels:
+    preset-azure-capz-sa-cred: "true"
+  env:
+  - name: SERVICE_ACCOUNT_SIGNING_PUB
+    valueFrom:
+      secretKeyRef:
+        name: azure-capz-sa-cred
+        key: serviceAccountSigningPub
+  - name: SERVICE_ACCOUNT_SIGNING_KEY
+    valueFrom:
+      secretKeyRef:
+        name: azure-capz-sa-cred
+        key: serviceAccountSigningKey
