@@ -12,7 +12,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221220-5d9eb5b181-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-1.22
       command:
       - "./scripts/ci-test.sh"
       resources:
@@ -43,7 +43,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221220-5d9eb5b181-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-1.22
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -88,7 +88,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221220-5d9eb5b181-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-1.22
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -126,7 +126,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221220-5d9eb5b181-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-1.22
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -161,7 +161,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221220-5d9eb5b181-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-1.22
       command:
       - "runner.sh"
       - "make"
