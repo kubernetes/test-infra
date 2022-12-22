@@ -481,6 +481,50 @@ EOF
           privileged: true
 $(resources_for_kubernetes master   "        ")
 EOF
+
+    if [[ $repo != "csi-driver-host-path" ]]; then
+      cat >>"$base/$repo/$repo-config.yaml" <<EOF
+
+  - name: $(job_name "pull" "$repo" "canary")
+    optional: true
+    decorate: true
+    skip_report: true
+    skip_branches: [$(skip_branches $repo)]
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    $(annotations "      " "pull" "$repo" "canary")
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: ${dind_image}
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "master"
+        - name: CSI_PROW_TESTS
+          value: "$(expand_tests "$tests")"
+        - name: CSI_PROW_BUILD_JOB
+          value: "true"
+        - name: CSI_PROW_HOSTPATH_CANARY
+          value: "canary"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
+        # ... but the RBAC rules only when testing on master.
+        # The other jobs test against the unmodified deployment for
+        # that Kubernetes version, i.e. with the original RBAC rules.
+        - name: UPDATE_RBAC_RULES
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+$(resources_for_kubernetes master   "        ")
+EOF
+    fi
 done
 
 for repo in $single_kubernetes_repos; do
