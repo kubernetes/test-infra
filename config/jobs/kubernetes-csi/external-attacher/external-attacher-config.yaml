@@ -363,7 +363,7 @@ presubmits:
   - name: pull-kubernetes-csi-external-attacher-canary
     optional: true
     decorate: true
-    skip_report: true
+    skip_report: false
     skip_branches: ["^(release-0.2.0|release-0.3.0|release-0.4|release-1.0|v0.1.0)$"]
     labels:
       preset-service-account: "true"
@@ -376,7 +376,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         args:

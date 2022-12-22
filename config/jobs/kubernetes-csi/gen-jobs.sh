@@ -488,7 +488,7 @@ EOF
   - name: $(job_name "pull" "$repo" "canary")
     optional: true
     decorate: true
-    skip_report: true
+    skip_report: false
     skip_branches: [$(skip_branches $repo)]
     labels:
       preset-service-account: "true"
