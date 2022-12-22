@@ -12,20 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:latest as builder
-ARG AWS_IAM_AUTHENTICATOR_VERSION
-# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
-RUN curl -fsSL \
-    https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${AWS_IAM_AUTHENTICATOR_VERSION}/aws-iam-authenticator_${AWS_IAM_AUTHENTICATOR_VERSION}_linux_amd64 -o /aws-iam-authenticator && \
-    chmod +x /aws-iam-authenticator
-
 FROM alpine:latest
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 RUN apk add --no-cache ca-certificates && update-ca-certificates
-COPY --from=builder /aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
-COPY --from=builder /usr/bin/gke-gcloud-auth-plugin /usr/local/bin/gke-gcloud-auth-plugin	
-
-RUN aws-iam-authenticator version && gke-gcloud-auth-plugin --version
