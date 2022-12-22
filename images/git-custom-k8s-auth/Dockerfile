@@ -12,21 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:410.0.0-alpine
-
-ARG IMAGE_ARG
-ENV IMAGE=${IMAGE_ARG}
-
-RUN apk add --no-cache git git-daemon openssh
-
-RUN gcloud components install gke-gcloud-auth-plugin
-
 FROM google/cloud-sdk:latest as builder
+# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
+
 # TARGETARCH is an automatic platform ARG enabled by Docker BuildKit.
 ARG TARGETARCH
 
 ARG AWS_IAM_AUTHENTICATOR_VERSION
-# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
 RUN curl -fsSL \
     https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${AWS_IAM_AUTHENTICATOR_VERSION}/aws-iam-authenticator_${AWS_IAM_AUTHENTICATOR_VERSION}_linux_${TARGETARCH} -o /aws-iam-authenticator && \
     chmod +x /aws-iam-authenticator
