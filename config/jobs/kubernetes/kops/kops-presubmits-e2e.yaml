@@ -1207,7 +1207,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-dns-none
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--dns=none", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--dns=none --gce-service-account=default", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-gce-dns-none
     branches:
     - master
@@ -1236,7 +1236,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=gce \
-            --create-args="--channel=alpha --networking=calico --container-runtime=containerd --dns=none" \
+            --create-args="--channel=alpha --networking=calico --container-runtime=containerd --dns=none --gce-service-account=default" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -1262,7 +1262,7 @@ presubmits:
       test.kops.k8s.io/cloud: gce
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2204
-      test.kops.k8s.io/extra_flags: --dns=none
+      test.kops.k8s.io/extra_flags: --dns=none --gce-service-account=default
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico

@@ -1302,7 +1302,7 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-gce-dns-none",
             cloud="gce",
             networking="calico",
-            extra_flags=["--dns=none"],
+            extra_flags=["--dns=none", "--gce-service-account=default"],
         ),
 
         presubmit_test(
