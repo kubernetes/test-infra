@@ -94,11 +94,13 @@ func (c *client) Changes() []func(context.Context) (string, error) {
 }
 
 // PRTitleBody returns the body of the PR, this function runs after each commit
-func (c *client) PRTitleBody() (string, string, error) {
+func (c *client) PRTitleBody() (string, string) {
 	body := generatePRBody(c.images, c.o.Prefixes) +
-		getAssignment(c.o.OncallAddress, c.o.OncallGroup, c.o.SkipOncallAssignment, c.o.SelfAssign) + "\n" +
-		c.o.AdditionalPRBody + "\n"
-	return makeCommitSummary(c.o.Prefixes, c.versions), body, nil
+		getAssignment(c.o.OncallAddress, c.o.OncallGroup, c.o.SkipOncallAssignment, c.o.SelfAssign) + "\n"
+	if c.o.AdditionalPRBody != "" {
+		body += c.o.AdditionalPRBody + "\n"
+	}
+	return makeCommitSummary(c.o.Prefixes, c.versions), body
 }
 
 func generatePRBody(images map[string]string, prefixes []prefix) (body string) {

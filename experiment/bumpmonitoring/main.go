@@ -117,8 +117,8 @@ func (c *client) Changes() []func(context.Context) (string, error) {
 }
 
 // PRTitleBody returns the body of the PR, this function runs after each commit
-func (c *client) PRTitleBody() (string, string, error) {
-	return c.title(), c.body(), nil
+func (c *client) PRTitleBody() (string, string) {
+	return c.title(), c.body()
 }
 
 func (c *client) title() string {

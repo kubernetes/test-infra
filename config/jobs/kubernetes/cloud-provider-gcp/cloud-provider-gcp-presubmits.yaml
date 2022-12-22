@@ -15,7 +15,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - /bin/bash
         args:
@@ -41,7 +41,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
           command:
             - runner.sh
           args:
@@ -66,7 +66,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -95,3 +95,25 @@ presubmits:
             echo "TEST_PACKAGE_VERSION - Falling back to v1.25.0";
           fi;
           kubetest2 gce -v 2 --repo-root "${REPO_ROOT}" --build --up --down --test=ginkgo --node-size n1-standard-4 --master-size n1-standard-8 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --test-args='--minStartupPods=8 --ginkgo.flakeAttempts=3' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+  - name: cloud-provider-gcp-verify-up-to-date
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Run verify scripts on kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+          command:
+            - runner.sh
+          args:
+          - "/bin/bash"
+          - "-c"
+          - export BAZEL_VERSION=5.3.0;
+            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
+            ./tools/verify-up-to-date.sh

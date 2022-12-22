@@ -46,13 +46,13 @@ variants:
     OLD_BAZEL_VERSION: 2.2.0
   '1.24':
     CONFIG: '1.24'
-    GO_VERSION: 1.18.9
+    GO_VERSION: 1.19.4
     K8S_RELEASE: stable-1.24
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
   '1.23':
     CONFIG: '1.23'
-    GO_VERSION: 1.17.13
+    GO_VERSION: 1.19.4
     K8S_RELEASE: stable-1.23
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0

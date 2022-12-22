@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         args:
@@ -58,7 +58,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         args:
@@ -83,7 +83,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         args:
@@ -106,7 +106,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         args:
@@ -135,7 +135,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         - kubetest
@@ -150,7 +150,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.21
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/test/e2e/manifest/linux.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -181,7 +181,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         - kubetest
@@ -229,7 +229,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         - kubetest
@@ -282,7 +282,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         - kubetest
@@ -335,7 +335,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -377,7 +377,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -425,7 +425,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
         command:
         - runner.sh
         - kubetest
