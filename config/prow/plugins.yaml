@@ -239,6 +239,7 @@ lgtm:
   - kubernetes/kubernetes
   - kubernetes/website
   - kubernetes-sigs/node-feature-discovery
+  - kubernetes-sigs/cluster-api
   store_tree_hash: true
 
 blockades:
