@@ -505,7 +505,7 @@ EOF
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "master"
+          value: "latest"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         - name: CSI_PROW_BUILD_JOB
