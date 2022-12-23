@@ -44,7 +44,7 @@ periodics:
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         export GO111MODULE=on;
-        export BAZEL_VERSION=5.3.0;
+        export BAZEL_VERSION=5.4.0;
         /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
@@ -102,7 +102,7 @@ periodics:
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         export GO111MODULE=on;
-        export BAZEL_VERSION=5.3.0;
+        export BAZEL_VERSION=5.4.0;
         /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
@@ -160,7 +160,7 @@ periodics:
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         export GO111MODULE=on;
-        export BAZEL_VERSION=5.3.0;
+        export BAZEL_VERSION=5.4.0;
         /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
@@ -218,7 +218,7 @@ periodics:
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         export GO111MODULE=on;
-        export BAZEL_VERSION=5.3.0;
+        export BAZEL_VERSION=5.4.0;
         /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
