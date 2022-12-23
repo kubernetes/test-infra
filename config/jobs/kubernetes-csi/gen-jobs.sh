@@ -514,6 +514,8 @@ EOF
           value: "canary"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "master"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "master"
         # ... but the RBAC rules only when testing on master.
         # The other jobs test against the unmodified deployment for
         # that Kubernetes version, i.e. with the original RBAC rules.
