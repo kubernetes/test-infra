@@ -505,7 +505,7 @@ EOF
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "master"
+          value: "latest"
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         - name: CSI_PROW_BUILD_JOB
@@ -513,6 +513,8 @@ EOF
         - name: CSI_PROW_HOSTPATH_CANARY
           value: "canary"
         - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
+        - name: CSI_PROW_DRIVER_VERSION
           value: "master"
         # ... but the RBAC rules only when testing on master.
         # The other jobs test against the unmodified deployment for
