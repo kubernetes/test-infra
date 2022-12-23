@@ -24,6 +24,7 @@ presubmits:
           if [ -f Makefile ]; then
             make test
           else
+            REPO_ROOT=$(git rev-parse --show-toplevel);
             if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
               export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
               echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
@@ -53,7 +54,8 @@ presubmits:
           args:
           - "/bin/bash"
           - "-c"
-          - if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+          - REPO_ROOT=$(git rev-parse --show-toplevel);
+            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
               export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
               echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
             else
@@ -132,7 +134,8 @@ presubmits:
           args:
           - "/bin/bash"
           - "-c"
-          - if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+          - REPO_ROOT=$(git rev-parse --show-toplevel);
+            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
               export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
               echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
             else
