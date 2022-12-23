@@ -20,7 +20,7 @@ periodics:
     path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20221220-5d9eb5b181-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221221-461b6105cf-master
       command:
       - wrapper.sh
       - bash
