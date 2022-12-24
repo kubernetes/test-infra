@@ -385,8 +385,8 @@ k8s_versions = [
 
 kops_versions = [
     None, # maps to latest
-    "1.24",
-    "1.25"
+    "1.25",
+    "1.26"
 ]
 
 container_runtimes = [
@@ -894,42 +894,41 @@ def generate_network_plugins():
 ################################
 def generate_upgrades():
 
-    kops23 = 'v1.23.4'
     kops24 = 'v1.24.4'
     kops25 = 'v1.25.2'
+    kops26 = 'v1.26.0-beta.1'
 
     versions_list = [
         #  kops    k8s          kops      k8s
-        # 1.24 release branch
-        ((kops23, 'v1.22.1'), ('1.24', 'v1.23.1')),
-        ((kops23, 'v1.23.1'), ('1.24', 'v1.24.0')),
-        ((kops24, 'v1.19.16'), ('1.24', 'v1.20.6')),
-        ((kops24, 'v1.23.1'), ('1.24', 'v1.23.1')),
         # 1.25 release branch
-        ((kops23, 'v1.22.1'), ('1.25', 'v1.23.1')),
-        ((kops23, 'v1.23.1'), ('1.25', 'v1.24.0')),
         ((kops24, 'v1.19.16'), ('1.25', 'v1.20.6')),
         ((kops24, 'v1.23.1'), ('1.25', 'v1.23.1')),
         ((kops25, 'v1.21.14'), ('1.25', 'v1.22.13')),
         ((kops25, 'v1.25.0'), ('1.25', 'v1.25.0')),
-        # 1.23 upgrade to latest
-        ((kops23, 'v1.22.4'), ('latest', 'v1.23.0')),
-        ((kops23, 'v1.23.0'), ('latest', 'v1.24.0')),
+        # 1.26 release branch
+        ((kops24, 'v1.20.6'), ('1.26', 'v1.21.7')),
+        ((kops24, 'v1.24.0'), ('1.26', 'v1.25.0')),
+        ((kops25, 'v1.20.6'), ('1.26', 'v1.21.7')),
+        ((kops25, 'v1.25.0'), ('1.26', 'v1.26.0')),
+        ((kops26, 'v1.21.14'), ('1.26', 'v1.22.13')),
+        ((kops26, 'v1.26.0'), ('1.26', 'v1.26.0')),
         # 1.24 upgrade to latest
         ((kops24, 'v1.23.1'), ('latest', 'v1.24.0')),
-        ((kops24, 'v1.24.0'), ('latest', 'v1.24.0')),
+        ((kops24, 'v1.24.0'), ('latest', 'v1.25.0')),
         # 1.25 upgrade to latest
-        ((kops25, 'v1.20.6'), ('latest', 'v1.21.7')),
-        ((kops25, 'v1.24.0'), ('latest', 'v1.24.0')),
         ((kops25, 'v1.24.0'), ('latest', 'v1.25.0')),
         ((kops25, 'v1.25.0'), ('latest', 'v1.26.0')),
+        # 1.26 upgrade to latest
+        ((kops26, 'v1.21.14'), ('latest', 'v1.22.1')),
+        ((kops26, 'v1.24.0'), ('latest', 'v1.25.0')),
+        ((kops26, 'v1.25.0'), ('latest', 'v1.25.0')),
+        ((kops26, 'v1.25.0'), ('latest', 'v1.26.0')),
         # we should have an upgrade test for every supported K8s version
         (('latest', 'v1.26.0'), ('latest', 'latest')),
         (('latest', 'v1.25.0'), ('latest', 'v1.26.0')),
         (('latest', 'v1.24.0'), ('latest', 'v1.25.0')),
         (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
-        (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
         # kOps latest should always be able to upgrade from stable to latest and stable to ci
         (('latest', 'stable'), ('latest', 'latest')),
         (('latest', 'stable'), ('latest', 'ci')),
@@ -1007,7 +1006,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.26', '1.25', '1.24', '1.23', '1.22', '1.21']:
+    for version in ['1.26', '1.25', '1.24', '1.23', '1.22']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -1026,7 +1025,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.25', '1.24']:
+    for version in ['master', '1.26', '1.25']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
@@ -1364,6 +1363,15 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            branch='release-1.26',
+            k8s_version='1.26',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-calico-1-26',
+            networking='calico',
+            tab_name='e2e-1-26',
+            always_run=True,
+        ),
+        presubmit_test(
             branch='release-1.25',
             k8s_version='1.25',
             kops_channel='alpha',
@@ -1410,7 +1418,7 @@ def generate_presubmits_e2e():
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic' # pylint: disable=line-too-long
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest",
+            name="pull-kops-e2e-aws-upgrade-k124-ko124-to-k125-kolatest",
             optional=True,
             distro='u2004',
             networking='cilium',
@@ -1418,14 +1426,14 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             scenario='upgrade-ab',
             env={
-                'KOPS_VERSION_A': "1.23",
-                'K8S_VERSION_A': "v1.25.0",
+                'KOPS_VERSION_A': "1.24",
+                'K8S_VERSION_A': "v1.24.0",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "latest",
+                'K8S_VERSION_B': "1.25.0",
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k120-kolatest-to-k121-kolatest",
+            name="pull-kops-e2e-aws-upgrade-k125-kolatest-to-k126-kolatest",
             optional=True,
             distro='u2004',
             networking='cilium',
@@ -1434,16 +1442,16 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "latest",
-                'K8S_VERSION_A': "v1.24.6",
+                'K8S_VERSION_A': "v1.25.0",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.25.2",
+                'K8S_VERSION_B': "v1.26.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
                 'KOPS_CONTROL_PLANE': '3',
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-125-ko125-to-klatest-kolatest-many-addons",
+            name="pull-kops-e2e-aws-upgrade-126-ko126-to-klatest-kolatest-many-addons",
             optional=True,
             distro='u2004',
             networking='cilium',
@@ -1452,8 +1460,8 @@ def generate_presubmits_e2e():
             run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
             scenario='upgrade-ab',
             env={
-                'KOPS_VERSION_A': "1.25",
-                'K8S_VERSION_A': "v1.25.0",
+                'KOPS_VERSION_A': "1.26",
+                'K8S_VERSION_A': "v1.26.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
                 'KOPS_SKIP_E2E': '1',
