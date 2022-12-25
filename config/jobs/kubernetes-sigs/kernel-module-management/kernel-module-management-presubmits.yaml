@@ -32,10 +32,6 @@ presubmits:
           curl -Lo /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x /usr/local/bin/kubectl
 
-          # install operator-sdk
-          curl -Lo /usr/local/bin/operator-sdk 'https://github.com/operator-framework/operator-sdk/releases/download/v1.25.2/operator-sdk_linux_amd64'
-          chmod +x /usr/local/bin/operator-sdk
-
           # Include the destination directory of `go install` in $PATH
           export PATH=$(go env GOPATH)/bin:${PATH}
 
