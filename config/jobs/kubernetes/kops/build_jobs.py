@@ -957,7 +957,7 @@ def generate_upgrades():
             'K8S_VERSION_B': k8s_b,
             'KOPS_SKIP_E2E': '1',
             'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-            'KOPS_CONTROL_PLANE': '3',
+            'KOPS_CONTROL_PLANE_SIZE': '3',
         }
         results.append(
             build_test(name_override=job_name,
@@ -1447,7 +1447,7 @@ def generate_presubmits_e2e():
                 'K8S_VERSION_B': "v1.26.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE': '3',
+                'KOPS_CONTROL_PLANE_SIZE': '3',
             }
         ),
         presubmit_test(
@@ -1466,7 +1466,7 @@ def generate_presubmits_e2e():
                 'K8S_VERSION_B': "latest",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE': '3',
+                'KOPS_CONTROL_PLANE_SIZE': '3',
             }
         )
     ]
