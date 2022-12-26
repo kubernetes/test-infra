@@ -2169,7 +2169,7 @@ presubmits:
           value: "1"
         - name: KOPS_TEMPLATE
           value: "tests/e2e/templates/many-addons.yaml.tmpl"
-        - name: KOPS_CONTROL_PLANE
+        - name: KOPS_CONTROL_PLANE_SIZE
           value: "3"
         - name: CLOUD_PROVIDER
           value: "aws"
@@ -2240,7 +2240,7 @@ presubmits:
           value: "1"
         - name: KOPS_TEMPLATE
           value: "tests/e2e/templates/many-addons.yaml.tmpl"
-        - name: KOPS_CONTROL_PLANE
+        - name: KOPS_CONTROL_PLANE_SIZE
           value: "3"
         - name: CLOUD_PROVIDER
           value: "aws"
