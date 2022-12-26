@@ -2009,7 +2009,7 @@ func TestListTeamMembers(t *testing.T) {
 	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers("orgName", 1, RoleAll)
+	teamMembers, err := c.ListTeamMembersBySlug("orgName", 1, RoleAll)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(teamMembers) != 1 {

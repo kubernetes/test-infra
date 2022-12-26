@@ -79,7 +79,7 @@ func TestProjectCommand(t *testing.T) {
 	}
 
 	projectConfig := plugins.ProjectConfig{
-		// The team ID is set to 0 (or 42) in order to match the teams returned by FakeClient's method ListTeamMembers
+		// The team ID is set to 0 (or 42) in order to match the teams returned by FakeClient's method ListTeamMembersBySlug
 		Orgs: map[string]plugins.ProjectOrgConfig{
 			"kubernetes": {
 				MaintainerTeamID: 0,

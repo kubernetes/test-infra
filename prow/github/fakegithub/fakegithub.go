@@ -692,7 +692,7 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 	return nil, fmt.Errorf("could not find file %s with ref %s", file, commit)
 }
 
-// ListTeams return a list of fake teams that correspond to the fake team members returned by ListTeamMembers
+// ListTeams return a list of fake teams that correspond to the fake team members returned by ListTeamMembersBySlug
 func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
@@ -710,8 +710,8 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 	}, nil
 }
 
-// ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
-func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]github.TeamMember, error) {
+// ListTeamMembersBySlug return a fake team with a single "sig-lead" GitHub teammember
+func (f *FakeClient) ListTeamMembersBySlug(org string, teamID int, role string) ([]github.TeamMember, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	if role != github.RoleAll {
@@ -728,7 +728,7 @@ func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]git
 	return members, nil
 }
 
-// ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
+// ListTeamMembersBySlug return a fake team with a single "sig-lead" GitHub teammember
 func (f *FakeClient) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
@@ -1018,7 +1018,7 @@ func (f *FakeClient) MoveProjectCard(org string, projectCardID int, newColumnID 
 
 // TeamHasMember checks if a user belongs to a team
 func (f *FakeClient) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
-	teamMembers, _ := f.ListTeamMembers(org, teamID, github.RoleAll)
+	teamMembers, _ := f.ListTeamMembersBySlug(org, teamID, github.RoleAll)
 	for _, member := range teamMembers {
 		if member.Login == memberLogin {
 			return true, nil

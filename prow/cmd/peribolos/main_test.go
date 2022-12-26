@@ -2125,7 +2125,7 @@ func (c fakeDumpClient) ListTeamMembersBySlug(org, teamSlug, role string) ([]git
 	var mapping map[string][]string
 	switch {
 	case teamSlug == "":
-		return nil, errors.New("injected ListTeamMembers error")
+		return nil, errors.New("injected ListTeamMembersBySlug error")
 	case role == github.RoleMaintainer:
 		mapping = c.maintainers
 	case role == github.RoleMember:

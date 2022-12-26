@@ -56,7 +56,7 @@ var (
 type githubClient interface {
 	BotUserChecker() (func(candidate string) bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
-	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
+	ListTeamMembersBySlug(org string, id int, role string) ([]github.TeamMember, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 	GetRepoProjects(owner, repo string) ([]github.Project, error)
 	GetOrgProjects(org string) ([]github.Project, error)

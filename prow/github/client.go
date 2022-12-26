@@ -200,7 +200,7 @@ type TeamClient interface {
 	UpdateTeamMembershipBySlug(org, teamSlug, user string, maintainer bool) (*TeamMembership, error)
 	RemoveTeamMembership(org string, id int, user string) error
 	RemoveTeamMembershipBySlug(org, teamSlug, user string) error
-	ListTeamMembers(org string, id int, role string) ([]TeamMember, error)
+	ListTeamMembersBySlug(org string, id int, role string) ([]TeamMember, error)
 	ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember, error)
 	ListTeamRepos(org string, id int) ([]Repo, error)
 	ListTeamReposBySlug(org, teamSlug string) ([]Repo, error)
@@ -3863,16 +3863,16 @@ func (c *client) RemoveTeamMembershipBySlug(org, teamSlug, user string) error {
 	return err
 }
 
-// ListTeamMembers gets a list of team members for the given team id
+// ListTeamMembersBySlug gets a list of team members for the given team id
 //
 // Role options are "all", "maintainer" and "member"
 //
 // https://developer.github.com/v3/teams/members/#list-team-members
 // Deprecated: please use ListTeamMembersBySlug
-func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember, error) {
-	c.logger.WithField("methodName", "ListTeamMembers").
+func (c *client) ListTeamMembersBySlug(org string, id int, role string) ([]TeamMember, error) {
+	c.logger.WithField("methodName", "ListTeamMembersBySlug").
 		Warn("method is deprecated, please use ListTeamMembersBySlug")
-	durationLogger := c.log("ListTeamMembers", id, role)
+	durationLogger := c.log("ListTeamMembersBySlug", id, role)
 	defer durationLogger()
 
 	if c.fake {
@@ -4887,7 +4887,7 @@ func (c *client) TeamHasMember(org string, teamID int, memberLogin string) (bool
 	durationLogger := c.log("TeamHasMember", teamID, memberLogin)
 	defer durationLogger()
 
-	projectMaintainers, err := c.ListTeamMembers(org, teamID, RoleAll)
+	projectMaintainers, err := c.ListTeamMembersBySlug(org, teamID, RoleAll)
 	if err != nil {
 		return false, err
 	}
