@@ -46,7 +46,7 @@ latest_stable_k8s_version="1.25" # TODO: bump to 1.26 after testing a pull job
 hostpath_driver_version="v1.10.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master"
+dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -481,6 +481,52 @@ EOF
           privileged: true
 $(resources_for_kubernetes master   "        ")
 EOF
+
+    if [[ $repo != "csi-driver-host-path" ]]; then
+      cat >>"$base/$repo/$repo-config.yaml" <<EOF
+
+  - name: $(job_name "pull" "$repo" "canary")
+    optional: true
+    decorate: true
+    skip_report: false
+    skip_branches: [$(skip_branches $repo)]
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    $(annotations "      " "pull" "$repo" "canary")
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: ${dind_image}
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "latest"
+        - name: CSI_PROW_TESTS
+          value: "$(expand_tests "$tests")"
+        - name: CSI_PROW_BUILD_JOB
+          value: "true"
+        - name: CSI_PROW_HOSTPATH_CANARY
+          value: "canary"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "master"
+        # ... but the RBAC rules only when testing on master.
+        # The other jobs test against the unmodified deployment for
+        # that Kubernetes version, i.e. with the original RBAC rules.
+        - name: UPDATE_RBAC_RULES
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+$(resources_for_kubernetes master   "        ")
+EOF
+    fi
 done
 
 for repo in $single_kubernetes_repos; do

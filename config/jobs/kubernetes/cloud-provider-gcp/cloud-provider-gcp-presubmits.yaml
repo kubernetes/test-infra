@@ -15,7 +15,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - /bin/bash
         args:
@@ -24,7 +24,14 @@ presubmits:
           if [ -f Makefile ]; then
             make test
           else
-            export BAZEL_VERSION=5.3.0;
+            REPO_ROOT=$(git rev-parse --show-toplevel);
+            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
+              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
+            else
+              export BAZEL_VERSION="5.3.0";
+              echo "BAZEL_VERSION - Falling back to 5.3.0";
+            fi;
             /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
             bazel test --test_output=errors -- //... -//vendor/...
           fi
@@ -41,13 +48,20 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
           command:
             - runner.sh
           args:
           - "/bin/bash"
           - "-c"
-          - export BAZEL_VERSION=5.3.0;
+          - REPO_ROOT=$(git rev-parse --show-toplevel);
+            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
+              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
+            else
+              export BAZEL_VERSION="5.3.0";
+              echo "BAZEL_VERSION - Falling back to 5.3.0";
+            fi;
             /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
             ./tools/verify-all.sh
   - name: cloud-provider-gcp-e2e-full
@@ -66,7 +80,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -82,7 +96,13 @@ presubmits:
           REPO_ROOT=$(git rev-parse --show-toplevel);
           cd;
           export GO111MODULE=on;
-          export BAZEL_VERSION=5.3.0;
+          if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+            export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
+            echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
+          else
+            export BAZEL_VERSION="5.3.0";
+            echo "BAZEL_VERSION - Falling back to 5.3.0";
+          fi;
           /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
           go install sigs.k8s.io/kubetest2@latest;
           go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
@@ -108,12 +128,19 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
           command:
             - runner.sh
           args:
           - "/bin/bash"
           - "-c"
-          - export BAZEL_VERSION=5.3.0;
+          - REPO_ROOT=$(git rev-parse --show-toplevel);
+            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
+              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
+            else
+              export BAZEL_VERSION="5.3.0";
+              echo "BAZEL_VERSION - Falling back to 5.3.0";
+            fi;
             /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
             ./tools/verify-up-to-date.sh

@@ -19,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -67,7 +67,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -110,7 +110,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -158,7 +158,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -201,7 +201,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -253,7 +253,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -296,7 +296,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -341,7 +341,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221221-461b6105cf-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -349,6 +349,56 @@ presubmits:
         env:
         - name: CSI_PROW_TESTS
           value: "unit"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            # these are both a bit below peak usage during build
+            # this is mostly for building kubernetes
+            memory: "9000Mi"
+            # during the tests more like 3-20m is used
+            cpu: 2000m
+
+  - name: pull-kubernetes-csi-node-driver-registrar-canary
+    optional: true
+    decorate: true
+    skip_report: false
+    skip_branches: ["^(release-1.0)$"]
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    annotations:
+      testgrid-dashboards: sig-storage-csi-node-driver-registrar
+      testgrid-tab-name: canary
+      description: Kubernetes-CSI pull job in repo node-driver-registrar for canary tests
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "latest"
+        - name: CSI_PROW_TESTS
+          value: "serial-alpha parallel-alpha"
+        - name: CSI_PROW_BUILD_JOB
+          value: "true"
+        - name: CSI_PROW_HOSTPATH_CANARY
+          value: "canary"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "master"
+        # ... but the RBAC rules only when testing on master.
+        # The other jobs test against the unmodified deployment for
+        # that Kubernetes version, i.e. with the original RBAC rules.
+        - name: UPDATE_RBAC_RULES
+          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
