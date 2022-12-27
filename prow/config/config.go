@@ -590,6 +590,8 @@ type Controller struct {
 	// controller to handle tests. Defaults to 20. Needs to be a positive
 	// number.
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
+
+	templateFuncs template.FuncMap
 }
 
 // ReportTemplateForRepo returns the template that belong to a specific repository.
@@ -2424,7 +2426,21 @@ func parseProwConfig(c *Config) error {
 		}
 	}
 
+	// jenkins operator controller template functions.
+	// reference:
+	// 	- https://helm.sh/docs/chart_template_guide/function_list/#string-functions
+	//  - https://github.com/Masterminds/sprig
+	//
+	// We could use sprig.FuncMap() instead in feature.
+	jenkinsFuncMap := template.FuncMap{
+		"replace": func(old, new, src string) string {
+			return strings.Replace(src, old, new, -1)
+		},
+	}
+
 	for i := range c.JenkinsOperators {
+		c.JenkinsOperators[i].Controller.templateFuncs = jenkinsFuncMap
+
 		if err := ValidateController(&c.JenkinsOperators[i].Controller); err != nil {
 			return fmt.Errorf("validating jenkins_operators config: %w", err)
 		}
@@ -2965,7 +2981,7 @@ func validateReporting(j JobBase, r Reporter) error {
 
 // ValidateController validates the provided controller config.
 func ValidateController(c *Controller) error {
-	urlTmpl, err := template.New("JobURL").Parse(c.JobURLTemplateString)
+	urlTmpl, err := template.New("JobURL").Funcs(c.templateFuncs).Parse(c.JobURLTemplateString)
 	if err != nil {
 		return fmt.Errorf("parsing template: %w", err)
 	}
