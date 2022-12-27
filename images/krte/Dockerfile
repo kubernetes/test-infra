@@ -16,7 +16,7 @@
 # NOTE: we attempt to avoid unnecessary tools and image layers while
 # supporting kubernetes builds, kind installation, etc.
 
-FROM debian:buster
+FROM debian:bullseye
 
 # arg that specifies the image name (for debugging)
 ARG IMAGE_ARG
@@ -41,8 +41,8 @@ COPY wrapper.sh /usr/local/bin/
 
 # Install tools needed to:
 # - install docker
-# - build kind (dockerized)
-# - build kubernetes (dockerized, or with bazel)
+# - build kind
+# - build kubernetes
 #
 # TODO: the `sed` is a bit of a hack, look into alternatives.
 # Why this exists: `docker service start` on debian runs a `cgroupfs_mount` method,
@@ -64,9 +64,7 @@ RUN echo "Installing Packages ..." \
             mercurial \
             pkg-config \
             procps \
-            python \
-            python-dev \
-            python-pip \
+            python3 \
             rsync \
             software-properties-common \
             unzip \

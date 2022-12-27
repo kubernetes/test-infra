@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20211207-16e4d57ac1
+        image: gcr.io/k8s-prow/deck:v20221220-5c7fbe528a
         imagePullPolicy: Always
         ports:
         - name: http
@@ -63,7 +63,7 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig:/etc/kubeconfig-build-rules-k8s/kubeconfig"
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/githuboauth
@@ -76,6 +76,12 @@ spec:
           readOnly: true
         - mountPath: /etc/kubeconfig-build-test-infra-trusted
           name: kubeconfig-build-test-infra-trusted
+          readOnly: true
+        - mountPath: /etc/kubeconfig-build-k8s-prow-builds
+          name: kubeconfig-build-k8s-prow-builds
+          readOnly: true
+        - mountPath: /etc/kubeconfig-build-rules-k8s
+          name: kubeconfig-build-rules-k8s
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -120,6 +126,14 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig-build-test-infra-trusted
+      - name: kubeconfig-build-k8s-prow-builds
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-build-k8s-prow-builds
+      - name: kubeconfig-build-rules-k8s
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-build-rules-k8s
       - name: config
         configMap:
           name: config

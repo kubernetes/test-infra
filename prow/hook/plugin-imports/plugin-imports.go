@@ -60,6 +60,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/skip"
 	_ "k8s.io/test-infra/prow/plugins/slackevents"
 	_ "k8s.io/test-infra/prow/plugins/stage"
+	_ "k8s.io/test-infra/prow/plugins/testfreeze"
 	_ "k8s.io/test-infra/prow/plugins/transfer-issue"
 	_ "k8s.io/test-infra/prow/plugins/trick-or-treat"
 	_ "k8s.io/test-infra/prow/plugins/trigger"

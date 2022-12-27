@@ -17,9 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -64,7 +64,7 @@ func parseOptions() (*options, error) {
 	flag.Parse()
 
 	var o options
-	data, err := ioutil.ReadFile(config)
+	data, err := os.ReadFile(config)
 	if err != nil {
 		return nil, fmt.Errorf("read %q: %w", config, err)
 	}
@@ -100,9 +100,9 @@ type client struct {
 
 // Changes returns a slice of functions, each one does some stuff, and
 // returns commit message for the changes
-func (c *client) Changes() []func() (string, error) {
-	return []func() (string, error){
-		func() (string, error) {
+func (c *client) Changes() []func(context.Context) (string, error) {
+	return []func(context.Context) (string, error){
+		func(_ context.Context) (string, error) {
 			if err := c.findConfigToUpdate(); err != nil {
 				return "", err
 			}
@@ -117,8 +117,8 @@ func (c *client) Changes() []func() (string, error) {
 }
 
 // PRTitleBody returns the body of the PR, this function runs after each commit
-func (c *client) PRTitleBody() (string, string, error) {
-	return c.title(), c.body(), nil
+func (c *client) PRTitleBody() (string, string) {
+	return c.title(), c.body()
 }
 
 func (c *client) title() string {
@@ -166,11 +166,11 @@ func (c *client) copyFiles() error {
 	for _, subPath := range c.paths {
 		SrcPath := path.Join(c.srcPath, subPath)
 		DstPath := path.Join(c.dstPath, subPath)
-		content, err := ioutil.ReadFile(SrcPath)
+		content, err := os.ReadFile(SrcPath)
 		if err != nil {
 			return fmt.Errorf("failed reading file %q: %w", SrcPath, err)
 		}
-		if err := ioutil.WriteFile(DstPath, content, 0755); err != nil {
+		if err := os.WriteFile(DstPath, content, 0755); err != nil {
 			return fmt.Errorf("failed writing file %q: %w", DstPath, err)
 		}
 	}
@@ -178,6 +178,7 @@ func (c *client) copyFiles() error {
 }
 
 func main() {
+	ctx := context.Background()
 	o, err := parseOptions()
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to run the bumper tool")
@@ -192,7 +193,7 @@ func main() {
 		paths:   make([]string, 0),
 	}
 
-	if err := bumper.Run(&o.Options, &c); err != nil {
+	if err := bumper.Run(ctx, &o.Options, &c); err != nil {
 		logrus.Fatal(err)
 	}
 }

@@ -6,14 +6,17 @@
     run_if_changed: '{{run_if_changed}}'
     {%- endif %}
     always_run: {{always_run}}
+    optional: {{optional}}
     skip_report: {{skip_report}}
     labels:
       {%- if cloud == "aws" %}
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
+      {%- if branch in ["release-1.22", "release-1.23"] %}
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+      {%- endif %}
       preset-dind-enabled: "true"
       {%- else %}
       preset-k8s-ssh: "true"
@@ -45,7 +48,11 @@
             --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
             {%- endif %}
             --kubernetes-version={{k8s_deploy_url}} \
+            {%- if branch in ["release-1.22", "release-1.23"] %}
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            {%- else %}
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+            {%- endif %}
             {%- if terraform_version %}
             --terraform-version={{terraform_version}} \
             {%- endif %}

@@ -25,48 +25,90 @@ res=0
 
 # run all verify scripts, optionally skipping any of them
 
+FAILED=()
 if [[ "${VERIFY_GO_LINT:-true}" == "true" ]]; then
-  echo "verifying go lints ..."
-  hack/make-rules/verify/golangci-lint.sh || res=1
+  name="go lints"
+  echo "verifying $name ..."
+  hack/make-rules/verify/golangci-lint.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
 if [[ "${VERIFY_GOFMT:-true}" == "true" ]]; then
-  echo "verifying go fmt ..."
-  hack/make-rules/verify/gofmt.sh || res=1
+  name="go fmt"
+  echo "verifying $name"
+  hack/make-rules/verify/gofmt.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
 if [[ "${VERIFY_FILE_PERMS:-true}" == "true" ]]; then
-  echo "verifying .sh files permissions ..."
-  hack/make-rules/verify/file-perms.sh || res=1
+  name=".sh files permissions"
+  echo "verifying $name"
+  hack/make-rules/verify/file-perms.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
 if [[ "${VERIFY_SPELLING:-true}" == "true" ]]; then
-  echo "verifying spelling ..."
-  hack/make-rules/verify/misspell.sh || res=1
+  name="spelling"
+  echo "verifying $name"
+  hack/make-rules/verify/misspell.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
 if [[ "${VERIFY_LABELS:-true}" == "true" ]]; then
-  echo "verifying labels ..."
-  hack/make-rules/verify/labels.sh || res=1
+  name="labels"
+  echo "verifying $name"
+  hack/make-rules/verify/labels.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
 if [[ "${VERIFY_CODEGEN:-true}" == "true" ]]; then
-  echo "verifying codegen ..."
-  hack/make-rules/verify/codegen.sh || res=1
+  name="codegen"
+  echo "verifying $name"
+  hack/make-rules/verify/codegen.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
-if [[ "${VERIFY_TSLINT:-true}" == "true" ]]; then
-  echo "verifying tslint ..."
-  hack/make-rules/verify/tslint.sh || res=1
+if [[ "${VERIFY_ESLINT:-true}" == "true" ]]; then
+  name="eslint"
+  echo "verifying $name"
+  hack/make-rules/verify/eslint.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  cd "${REPO_ROOT}"
+fi
+if [[ "${VERIFY_PYLINT:-true}" == "true" ]]; then
+  name="pylint"
+  echo "verifying $name"
+  hack/make-rules/verify/pylint.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  cd "${REPO_ROOT}"
+fi
+if [[ "${VERIFY_BOILERPLATE:-true}" == "true" ]]; then
+  name="boilerplate"
+  echo "verifying $name"
+  hack/make-rules/verify/boilerplate.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  cd "${REPO_ROOT}"
+fi
+if [[ "${VERIFY_YAMLLINT:-true}" == "true" ]]; then
+  name="yamllint"
+  echo "verifying $name"
+  hack/make-rules/verify/yamllint.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  cd "${REPO_ROOT}"
+fi
+if [[ "${VERIFY_TS_ROLLUP:-true}" == "true" ]]; then
+  name="rollup typescripts"
+  echo "verifying $name"
+  hack/make-rules/verify/ts-rollup.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  cd "${REPO_ROOT}"
+fi
+if [[ "${VERIFY_GO_DEPS:-true}" == "true" ]]; then
+  name="go deps"
+  echo "verifying $name"
+  hack/make-rules/verify/go-deps.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
 
 # exit based on verify scripts
-if [[ "${res}" = 0 ]]; then
+if [[ "${#FAILED[@]}" == 0 ]]; then
   echo ""
   echo "All verify checks passed, congrats!"
 else
   echo ""
-  echo "One or more verify checks failed! See output above..."
+  echo "One or more verify checks failed! See details above. Failed check:"
+  for failed in "${FAILED}"; do
+    echo "  FAILED: $failed"
+  done
+  res=1
 fi
 exit "${res}"

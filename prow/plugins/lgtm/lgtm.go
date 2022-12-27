@@ -135,7 +135,8 @@ type githubClient interface {
 	GetSingleCommit(org, repo, SHA string) (github.RepositoryCommit, error)
 	IsMember(org, user string) (bool, error)
 	ListTeams(org string) ([]github.Team, error)
-	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
+	RequestReview(org, repo string, number int, logins []string) error
 }
 
 // reviewCtx contains information about each review event
@@ -334,7 +335,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	opts := config.LgtmFor(rc.repo.Owner.Login, rc.repo.Name)
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
-		if err := gc.RemoveLabel(org, repoName, number, LGTMLabel); err != nil {
+		if err := removeLGTMAndRequestReview(gc, org, repoName, number, getLogins(assignees), opts.StoreTreeHash); err != nil {
 			return err
 		}
 		if opts.StoreTreeHash {
@@ -347,7 +348,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		if err := gc.AddLabel(org, repoName, number, LGTMLabel); err != nil {
 			return err
 		}
-		if !stickyLgtm(log, gc, config, opts, issueAuthor, org, repoName) {
+		if !stickyLgtm(log, gc, config, opts, issueAuthor, org) {
 			if opts.StoreTreeHash {
 				pr, err := gc.GetPullRequest(org, repoName, number)
 				if err != nil {
@@ -373,27 +374,33 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	return nil
 }
 
-func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
-	if len(lgtm.StickyLgtmTeam) > 0 {
-		if teams, err := gc.ListTeams(org); err == nil {
-			for _, teamInOrg := range teams {
-				if strings.Compare(teamInOrg.Name, lgtm.StickyLgtmTeam) == 0 {
-					if members, err := gc.ListTeamMembers(org, teamInOrg.ID, github.RoleAll); err == nil {
-						for _, member := range members {
-							if strings.Compare(member.Login, author) == 0 {
-								// The author is in a trusted team
-								return true
-							}
-						}
-					} else {
-						log.WithError(err).Errorf("Failed to list members in %s:%s.", org, teamInOrg.Name)
-					}
+func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lgtm *plugins.Lgtm, author, org string) bool {
+	if lgtm.StickyLgtmTeam == "" {
+		return false
+	}
+	teams, err := gc.ListTeams(org)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to list teams in org %s.", org)
+		return false
+	}
+	for _, teamInOrg := range teams {
+		if teamInOrg.Name == lgtm.StickyLgtmTeam {
+			members, err := gc.ListTeamMembersBySlug(org, teamInOrg.Slug, github.RoleAll)
+			if err != nil {
+				log.WithError(err).Errorf("Failed to list members in %s:%s.", org, teamInOrg.Name)
+				return false
+			}
+			for _, member := range members {
+				if member.Login == author {
+					// The author is in the trusted team
+					return true
 				}
 			}
-		} else {
-			log.WithError(err).Errorf("Failed to list teams in org %s.", org)
+			// The author is not in the trusted team
+			return false
 		}
 	}
+	log.Errorf("The configured trusted_team_for_sticky_lgtm (%q) was not found in the org %q.", lgtm.StickyLgtmTeam, org)
 	return false
 }
 
@@ -411,7 +418,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	number := pe.PullRequest.Number
 
 	opts := config.LgtmFor(org, repo)
-	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org, repo) {
+	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org) {
 		// If the author is trusted, skip tree hash verification and LGTM removal.
 		return nil
 	}
@@ -461,7 +468,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		}
 	}
 
-	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
+	if err := removeLGTMAndRequestReview(gc, org, repo, number, getLogins(pe.PullRequest.Assignees), opts.StoreTreeHash); err != nil {
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
@@ -469,6 +476,29 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	// pull request changes.
 	log.Infof("Commenting with an LGTM removed notification to %s/%s#%d with a message: %s", org, repo, number, removeLGTMLabelNoti)
 	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
+}
+
+func removeLGTMAndRequestReview(gc githubClient, org, repo string, number int, logins []string, storeTreeHash bool) error {
+	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
+		return fmt.Errorf("failed removing lgtm label: %w", err)
+	}
+
+	// Re-request review because LGTM has been removed only if storeTreeHash enabled.
+	// TODO(mpherman): Surface User errors to PR
+	if storeTreeHash {
+		if err := gc.RequestReview(org, repo, number, logins); err != nil {
+			return fmt.Errorf("failed to re-request review")
+		}
+	}
+	return nil
+}
+
+func getLogins(usrs []github.User) []string {
+	res := []string{}
+	for _, usr := range usrs {
+		res = append(res, usr.Login)
+	}
+	return res
 }
 
 func skipCollaborators(config *plugins.Configuration, org, repo string) bool {

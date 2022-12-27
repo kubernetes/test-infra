@@ -2,16 +2,13 @@
 
 reviewers:
 - bart0sh
+- bobbypage
 - ConnorDoyle
 - derekwaynecarr
 - dims
-- ehashman
 - endocrimes
-- karan
 - klueska
-- MHBauer
 - tallclair
-- vpickard
 - sjenning
 - SergeyKanzhelev
 approvers:
@@ -25,10 +22,11 @@ approvers:
 - dims
 - sjenning
 - mrunalp
-- ehashman
 - SergeyKanzhelev
+- endocrimes
 emeritus_approvers:
 - yguo0905
 - dashpole
+- ehashman
 labels:
 - sig/node

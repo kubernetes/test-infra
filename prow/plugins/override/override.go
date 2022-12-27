@@ -41,8 +41,14 @@ import (
 const pluginName = "override"
 
 var (
-	overrideRe = regexp.MustCompile(`(?mi)^/override( (.+?)\s*)?$`)
+	overrideRe = regexp.MustCompile(`(?mi)^/override( ([^\r\n]+))?[\r\n]?$`)
 )
+
+type Context struct {
+	Context     string
+	Description string
+	State       string
+}
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
@@ -53,7 +59,10 @@ type githubClient interface {
 	ListStatuses(org, repo, ref string) ([]github.Status, error)
 	GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error)
 	ListTeams(org string) ([]github.Team, error)
-	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
+	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
+	CreateCheckRun(org, repo string, checkRun github.CheckRun) error
+	UsesAppAuth() bool
 }
 
 type prowJobClient interface {
@@ -105,8 +114,19 @@ func (c client) HasPermission(org, repo, user string, role ...string) (bool, err
 func (c client) ListTeams(org string) ([]github.Team, error) {
 	return c.ghc.ListTeams(org)
 }
-func (c client) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
-	return c.ghc.ListTeamMembers(org, id, role)
+func (c client) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
+	return c.ghc.ListTeamMembersBySlug(org, teamSlug, role)
+}
+func (c client) ListCheckRuns(org, teamSlug, role string) (*github.CheckRunList, error) {
+	return c.ghc.ListCheckRuns(org, teamSlug, role)
+}
+
+func (c client) CreateCheckRun(org, repo string, checkRun github.CheckRun) error {
+	return c.ghc.CreateCheckRun(org, repo, checkRun)
+}
+
+func (c client) UsesAppAuth() bool {
+	return c.ghc.UsesAppAuth()
 }
 
 func (c client) Create(ctx context.Context, pj *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
@@ -162,11 +182,11 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		overrideConfig = config.Override
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/override [context]",
-		Description: "Forces a github status context to green (one per line).",
+		Usage:       "/override [context1] [context2]",
+		Description: "Forces github status contexts to green (multiple can be given). If the desired context has spaces, it must be quoted.",
 		Featured:    false,
 		WhoCanUse:   whoCanUse(overrideConfig, "", ""),
-		Examples:    []string{"/override pull-repo-whatever", "/override ci/circleci", "/override deleted-job"},
+		Examples:    []string{"/override pull-repo-whatever", "/override \"test / Unit Tests\"", "/override ci/circleci", "/override deleted-job other-job"},
 	})
 	return pluginHelp, nil
 }
@@ -253,18 +273,14 @@ func authorizedGitHubTeamMember(gc githubClient, log *logrus.Entry, teamSlugs ma
 	slugs := teamSlugs[fmt.Sprintf("%s/%s", org, repo)]
 	slugs = append(slugs, teamSlugs[org]...)
 	for _, slug := range slugs {
-		for _, team := range teams {
-			if team.Slug == slug {
-				members, err := gc.ListTeamMembers(org, team.ID, github.RoleAll)
-				if err != nil {
-					log.WithError(err).Warnf("cannot find members of team %s in org %s", slug, org)
-					continue
-				}
-				for _, member := range members {
-					if member.Login == user {
-						return true
-					}
-				}
+		members, err := gc.ListTeamMembersBySlug(org, slug, github.RoleAll)
+		if err != nil {
+			log.WithError(err).Warnf("cannot find members of team %s in org %s", slug, org)
+			continue
+		}
+		for _, member := range members {
+			if member.Login == user {
+				return true
 			}
 		}
 	}
@@ -281,6 +297,28 @@ func formatList(list []string) string {
 		lines = append(lines, fmt.Sprintf(" - `%s`", item))
 	}
 	return strings.Join(lines, "\n")
+}
+
+type descriptionAndState struct {
+	description string
+	state       string
+}
+
+// Parses /override foo something
+func parseOverrideInput(in string) []string {
+	quoted := false
+	f := strings.FieldsFunc(in, func(r rune) bool {
+		if r == '"' {
+			quoted = !quoted
+		}
+		return !quoted && r == ' '
+	})
+	var retval []string
+	for _, val := range f {
+		retval = append(retval, strings.Trim(strings.TrimSpace(val), `"`))
+	}
+
+	return retval
 }
 
 func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent, options plugins.Override) error {
@@ -302,11 +340,11 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	overrides := sets.NewString()
 	for _, m := range mat {
 		if m[1] == "" {
-			resp := "/override requires a failed status context to operate on, but none was given"
+			resp := "/override requires failed status contexts to operate on, but none was given"
 			log.Debug(resp)
 			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
-		overrides.Insert(strings.TrimSpace(m[2]))
+		overrides.Insert(parseOverrideInput(m[2])...)
 	}
 
 	authorized := authorizedUser(oc, log, org, repo, user)
@@ -340,6 +378,38 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
+	// Get CheckRuns and add them to contexts
+	var checkruns *github.CheckRunList
+	var checkrunContexts []Context
+	if oc.UsesAppAuth() {
+		checkruns, err = oc.ListCheckRuns(org, repo, sha)
+		if err != nil {
+			resp := fmt.Sprintf("Cannot get commit checkruns for PR #%d in %s/%s", number, org, repo)
+			log.WithError(err).Warn(resp)
+			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		}
+
+		checkrunContexts = make([]Context, len(checkruns.CheckRuns))
+		for _, checkrun := range checkruns.CheckRuns {
+			var state string
+			if checkrun.CompletedAt == "" {
+				state = "PENDING"
+			} else if strings.ToUpper(checkrun.Conclusion) == "NEUTRAL" {
+				state = "SUCCESS"
+			} else {
+				state = strings.ToUpper(checkrun.Conclusion)
+			}
+			checkrunContexts = append(checkrunContexts, Context{
+				Context:     checkrun.Name,
+				Description: checkrun.DetailsURL,
+				State:       state,
+			})
+		}
+
+		// dedupe checkruns and pick the best one
+		checkrunContexts = deduplicateContexts(checkrunContexts)
+	}
+
 	baseSHAGetter := shaGetterFactory(oc, org, repo, pr.Base.Ref)
 	presubmits, err := oc.presubmits(org, repo, baseSHAGetter, sha)
 	if err != nil {
@@ -364,6 +434,13 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		}
 	}
 
+	// add all checkruns that are not successful or pending to the list of contexts being tracked
+	for _, cr := range checkrunContexts {
+		if cr.Context != "" && cr.State != "SUCCESS" && cr.State != "PENDING" {
+			contexts.Insert(cr.Context)
+		}
+	}
+
 	branch := pr.Base.Ref
 	branchProtection, err := oc.GetBranchProtection(org, repo, branch)
 	if err != nil {
@@ -382,12 +459,15 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	}
 
 	if unknown := overrides.Difference(contexts); unknown.Len() > 0 {
-		resp := fmt.Sprintf(`/override requires a failed status context or a job name to operate on.
-The following unknown contexts were given:
+		resp := fmt.Sprintf(`/override requires failed status contexts, check run or a prowjob name to operate on.
+The following unknown contexts/checkruns were given:
 %s
 
-Only the following contexts were expected:
-%s`, formatList(unknown.List()), formatList(contexts.List()))
+Only the following failed contexts/checkruns were expected:
+%s
+
+If you are trying to override a checkrun that has a space in it, you must put a double quote on the context.
+`, formatList(unknown.List()), formatList(contexts.List()))
 		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
@@ -446,6 +526,33 @@ Only the following contexts were expected:
 		}
 		done.Insert(status.Context)
 	}
+
+	// We want to interate over the checkrunContexts, create a new checkrun with the same name as the context and mark it as successful.
+	// Tide has logic to pick the best checkrun result
+	// Checkruns have been converted to contexts and deduped
+	if oc.UsesAppAuth() {
+		for _, checkrun := range checkrunContexts {
+			if overrides.Has(checkrun.Context) {
+				prowOverrideCR := github.CheckRun{
+					Name:       checkrun.Context,
+					HeadSHA:    sha,
+					Status:     "completed",
+					Conclusion: "success",
+					Output: github.CheckRunOutput{
+						Title:   fmt.Sprintf("Prow override - %s", checkrun.Context),
+						Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", checkrun.Context),
+					},
+				}
+				if err := oc.CreateCheckRun(org, repo, prowOverrideCR); err != nil {
+					resp := fmt.Sprintf("cannot create prow-override CheckRun %v", prowOverrideCR)
+					log.WithError(err).Warn(resp)
+					return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+				}
+				done.Insert(checkrun.Context)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -460,4 +567,40 @@ func shaGetterFactory(oc overrideClient, org, repo, ref string) func() (string, 
 		baseSHA, err = oc.GetRef(org, repo, "heads/"+ref)
 		return baseSHA, err
 	}
+}
+
+func isStateBetter(previous, current string) bool {
+	if current == "SUCCESS" {
+		return true
+	}
+	if current == "PENDING" && (previous == "ERROR" || previous == "FAILURE" || previous == "EXPECTED") {
+		return true
+	}
+	if previous == "EXPECTED" && (current == "ERROR" || current == "FAILURE") {
+		return true
+	}
+
+	return false
+}
+
+// This function deduplicates checkruns and picks the best result
+func deduplicateContexts(contexts []Context) []Context {
+	result := map[string]descriptionAndState{}
+	for _, context := range contexts {
+		previousResult, found := result[context.Context]
+		if !found {
+			result[context.Context] = descriptionAndState{description: context.Description, state: context.State}
+			continue
+		}
+		if isStateBetter(previousResult.state, context.State) {
+			result[context.Context] = descriptionAndState{description: context.Description, state: context.State}
+		}
+	}
+
+	var resultSlice []Context
+	for name, descriptionAndState := range result {
+		resultSlice = append(resultSlice, Context{Context: name, Description: descriptionAndState.description, State: descriptionAndState.state})
+	}
+
+	return resultSlice
 }

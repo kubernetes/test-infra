@@ -27,6 +27,7 @@ import (
 
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowgithub "k8s.io/test-infra/prow/github"
@@ -66,6 +67,17 @@ const (
 	ErrorState ProwJobState = "error"
 )
 
+// GetAllProwJobStates returns all possible job states.
+func GetAllProwJobStates() []ProwJobState {
+	return []ProwJobState{
+		TriggeredState,
+		PendingState,
+		SuccessState,
+		FailureState,
+		AbortedState,
+		ErrorState}
+}
+
 // ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
 type ProwJobAgent string
 
@@ -85,7 +97,7 @@ const (
 
 const (
 	// StartedStatusFile is the JSON file that stores information about the build
-	// at the start ob the build. See testgrid/metadata/job.go for more details.
+	// at the start of the build. See testgrid/metadata/job.go for more details.
 	StartedStatusFile = "started.json"
 
 	// FinishedStatusFile is the JSON file that stores information about the build
@@ -94,6 +106,9 @@ const (
 
 	// ProwJobFile is the JSON file that stores the prowjob information.
 	ProwJobFile = "prowjob.json"
+
+	// CloneRecordFile is the JSON file that stores clone records of a prowjob.
+	CloneRecordFile = "clone-records.json"
 )
 
 // +genclient
@@ -155,7 +170,9 @@ type ProwJobSpec struct {
 	// trigger this job on their pull request
 	RerunCommand string `json:"rerun_command,omitempty"`
 	// MaxConcurrency restricts the total number of instances
-	// of this job that can run in parallel at once
+	// of this job that can run in parallel at once. This is
+	// a separate mechanism to JobQueueName and the lowest max
+	// concurrency is selected from these two.
 	// +kubebuilder:validation:Minimum=0
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
 	// ErrorOnEviction indicates that the ProwJob should be completed and given
@@ -196,6 +213,15 @@ type ProwJobSpec struct {
 	// ProwJobDefault holds configuration options provided as defaults
 	// in the Prow config
 	ProwJobDefault *ProwJobDefault `json:"prowjob_defaults,omitempty"`
+
+	// JobQueueName is an optional field with name of a queue defining
+	// max concurrency. When several jobs from the same queue try to run
+	// at the same time, the number of them that is actually started is
+	// limited by JobQueueCapacities (part of Plank's config). If
+	// this field is left undefined inifinite concurrency is assumed.
+	// This behaviour may be superseded by MaxConcurrency field, if it
+	// is set to a constraining value.
+	JobQueueName string `json:"job_queue_name,omitempty"`
 }
 
 type GitHubTeamSlug struct {
@@ -258,13 +284,9 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 		}
 	}
 	for _, ghts := range rac.GitHubTeamSlugs {
-		team, err := cli.GetTeamBySlug(ghts.Slug, ghts.Org)
+		member, err := cli.TeamBySlugHasMember(ghts.Org, ghts.Slug, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch team with slug %s and org %s: %w", ghts.Slug, ghts.Org, err)
-		}
-		member, err := cli.TeamHasMember(org, team.ID, user)
-		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v: %w", team, err)
+			return false, fmt.Errorf("GitHub failed to check if team with slug %s has member %s: %w", ghts.Slug, user, err)
 		}
 		if member {
 			return true, nil
@@ -457,6 +479,14 @@ type DecorationConfig struct {
 	// UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
 	// hope that the test process exits cleanly before starting an upload.
 	UploadIgnoresInterrupts *bool `json:"upload_ignores_interrupts,omitempty"`
+
+	// SetLimitEqualsMemoryRequest sets memory limit equal to request.
+	SetLimitEqualsMemoryRequest *bool `json:"set_limit_equals_memory_request,omitempty"`
+	// DefaultMemoryRequest is the default requested memory on a test container.
+	// If SetLimitEqualsMemoryRequest is also true then the Limit will also be
+	// set the same as this request. Could be overridden by memory request
+	// defined explicitly on prowjob.
+	DefaultMemoryRequest *resource.Quantity `json:"default_memory_request,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -657,6 +687,14 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 
 	if merged.UploadIgnoresInterrupts == nil {
 		merged.UploadIgnoresInterrupts = def.UploadIgnoresInterrupts
+	}
+
+	if merged.SetLimitEqualsMemoryRequest == nil {
+		merged.SetLimitEqualsMemoryRequest = def.SetLimitEqualsMemoryRequest
+	}
+
+	if merged.DefaultMemoryRequest == nil {
+		merged.DefaultMemoryRequest = def.DefaultMemoryRequest
 	}
 
 	return &merged
@@ -1026,6 +1064,13 @@ func (r Refs) String() string {
 		rs = append(rs, ref)
 	}
 	return strings.Join(rs, ",")
+}
+
+func (r Refs) OrgRepoString() string {
+	if r.Repo != "" {
+		return r.Org + "/" + r.Repo
+	}
+	return r.Org
 }
 
 // JenkinsSpec is optional parameters for Jenkins jobs.

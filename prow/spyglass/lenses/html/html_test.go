@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,9 +32,8 @@ import (
 )
 
 type FakeArtifact struct {
-	path      string
-	content   []byte
-	sizeLimit int64
+	path    string
+	content []byte
 }
 
 func (fa *FakeArtifact) JobPath() string {
@@ -44,6 +42,14 @@ func (fa *FakeArtifact) JobPath() string {
 
 func (fa *FakeArtifact) Size() (int64, error) {
 	return int64(len(fa.content)), nil
+}
+
+func (fa *FakeArtifact) Metadata() (map[string]string, error) {
+	return nil, nil
+}
+
+func (fa *FakeArtifact) UpdateMetadata(map[string]string) error {
+	return nil
 }
 
 func (fa *FakeArtifact) CanonicalLink() string {
@@ -90,6 +96,27 @@ func TestRenderBody(t *testing.T) {
 				content: []byte(`<body>"Hello world!"</body>`),
 			},
 		},
+		{
+			name: "With title",
+			artifact: FakeArtifact{
+				path:    "https://s3.internal/bucket/file.html",
+				content: []byte(`<head><title>Custom Title</title><body>Hello world!</body>`),
+			},
+		},
+		{
+			name: "With description",
+			artifact: FakeArtifact{
+				path:    "https://s3.internal/bucket/file.html",
+				content: []byte(`<head><meta name="description" content="Loki is a log aggregation system"></head><body>Hello world!</body>`),
+			},
+		},
+		{
+			name: "With description and title",
+			artifact: FakeArtifact{
+				path:    "https://s3.internal/bucket/file.html",
+				content: []byte(`<head><meta name="description" content="Loki is a log aggregation system"><title>Custom tools</title><body></body>`),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -97,11 +124,11 @@ func TestRenderBody(t *testing.T) {
 			body := (Lens{}).Body([]api.Artifact{&tc.artifact}, ".", "", nil, config.Spyglass{})
 			fixtureName := filepath.Join("testdata", fmt.Sprintf("%s.yaml", strings.ReplaceAll(t.Name(), "/", "_")))
 			if os.Getenv("UPDATE") != "" {
-				if err := ioutil.WriteFile(fixtureName, []byte(body), 0644); err != nil {
+				if err := os.WriteFile(fixtureName, []byte(body), 0644); err != nil {
 					t.Errorf("failed to update fixture: %v", err)
 				}
 			}
-			expectedRaw, err := ioutil.ReadFile(fixtureName)
+			expectedRaw, err := os.ReadFile(fixtureName)
 			if err != nil {
 				t.Fatalf("failed to read fixture: %v", err)
 			}

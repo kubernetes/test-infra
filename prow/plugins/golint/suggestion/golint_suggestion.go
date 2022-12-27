@@ -23,6 +23,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/lint"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -75,7 +77,7 @@ func fixNameAllCaps(p lint.Problem, matches []string) string {
 	// Identify all caps names
 	reAllCaps := regexp.MustCompile(`[A-Z]+(_[A-Z0-9]+)*`)
 	result = reAllCaps.ReplaceAllStringFunc(p.LineText, func(oldName string) string {
-		return strings.Replace(strings.Title(strings.Replace(strings.ToLower(oldName), "_", " ", -1)), " ", "", -1)
+		return strings.Replace(cases.Title(language.English).String(strings.Replace(strings.ToLower(oldName), "_", " ", -1)), " ", "", -1)
 	})
 	return result
 }

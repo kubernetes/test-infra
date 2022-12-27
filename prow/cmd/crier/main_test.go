@@ -33,8 +33,6 @@ func TestOptions(t *testing.T) {
 	var defaultGitHubOptions flagutil.GitHubOptions
 	defaultGitHubOptions.AddFlags(flag.NewFlagSet("", flag.ContinueOnError))
 
-	defaultGerritProjects := make(map[string][]string)
-
 	cases := []struct {
 		name     string
 		args     []string
@@ -51,19 +49,18 @@ func TestOptions(t *testing.T) {
 		},
 		//Gerrit Reporter
 		{
-			name: "gerrit only support one worker",
-			args: []string{"--gerrit-workers=99", "--gerrit-projects=foo=bar", "--cookiefile=foobar", "--config-path=foo"},
+			name: "gerrit supports multiple workers",
+			args: []string{"--gerrit-workers=99", "--cookiefile=foobar", "--config-path=foo"},
 			expected: &options{
-				gerritWorkers:  1,
+				gerritWorkers:  99,
 				cookiefilePath: "foobar",
-				gerritProjects: map[string][]string{
-					"foo": {"bar"},
-				},
 				config: configflagutil.ConfigOptions{
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "foo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
@@ -72,17 +69,16 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "gerrit missing --cookiefile",
-			args: []string{"--gerrit-workers=5", "--gerrit-projects=foo=bar", "--config-path=foo"},
+			args: []string{"--gerrit-workers=5", "--config-path=foo"},
 			expected: &options{
-				gerritWorkers: 1,
-				gerritProjects: map[string][]string{
-					"foo": {"bar"},
-				},
+				gerritWorkers: 5,
 				config: configflagutil.ConfigOptions{
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "foo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
@@ -99,10 +95,11 @@ func TestOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "baz",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pubsubWorkers:          7,
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
@@ -123,9 +120,10 @@ func TestOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "foo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
@@ -145,10 +143,11 @@ func TestOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "foo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				dryrun:                 true,
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
@@ -163,9 +162,10 @@ func TestOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "foo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
@@ -180,20 +180,21 @@ func TestOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "foo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				github:                 defaultGitHubOptions,
-				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      0.5,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
 			name: "k8s-gcs with too large report fraction rejects",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=1.5"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=1.5"},
 		},
 		{
 			name: "k8s-gcs with negative report fraction rejects",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=-1.2"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=-1.2"},
 		},
 	}
 

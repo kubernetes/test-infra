@@ -18,14 +18,13 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"k8s.io/test-infra/kubetest/e2e"
@@ -83,7 +82,8 @@ func run(deploy deployer, o options) error {
 
 	// Ensures that the cleanup/down action is performed exactly once.
 	var (
-		downDone = false
+		downDone      = false
+		kubemarkUpErr error
 	)
 
 	var (
@@ -98,6 +98,18 @@ func run(deploy deployer, o options) error {
 			beforeResources, err = listResources()
 			return err
 		}))
+	}
+
+	if o.postTestCmd != "" {
+		// Guaranteed to run after the entire test, including teardown.
+		defer control.XMLWrap(&suite, "Deferred post-test command", func() error {
+			if o.test || (kubemarkUpErr == nil && o.testCmd != "") {
+				cmdLineTokenized := strings.Fields(os.ExpandEnv(o.postTestCmd))
+				return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
+			}
+			return nil
+
+		})
 	}
 
 	if o.up {
@@ -209,7 +221,6 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
-	var kubemarkUpErr error
 	if o.kubemark {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
 			if kubemarkUpErr = kubemarkUp(dump, o, deploy); kubemarkUpErr != nil {
@@ -242,11 +253,10 @@ func run(deploy deployer, o options) error {
 
 	// TODO: consider remapping charts, etc to testCmd
 
-	var kubemarkWg sync.WaitGroup
-	var kubemarkDownErr error
 	if o.down && o.kubemark {
-		kubemarkWg.Add(1)
-		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, o.provider, dump, o.logexporterGCSPath)
+		if err := kubemarkDown(o.provider, dump, o.logexporterGCSPath); err != nil {
+			errs = util.AppendError(errs, err)
+		}
 	}
 
 	if o.charts {
@@ -277,10 +287,6 @@ func run(deploy deployer, o options) error {
 		}))
 	}
 
-	// Wait for kubemarkDown step to finish before going further.
-	kubemarkWg.Wait()
-	errs = util.AppendError(errs, kubemarkDownErr)
-
 	// Save the state if we upped a new cluster without downing it
 	if o.save != "" && ((!o.down && o.up) || (o.up && o.deployment != "none")) {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Save Cluster State", func() error {
@@ -310,19 +316,12 @@ func run(deploy deployer, o options) error {
 	if len(errs) == 0 && o.publish != "" {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Publish version", func() error {
 			// Use plaintext version file packaged with kubernetes.tar.gz
-			v, err := ioutil.ReadFile("version")
+			v, err := os.ReadFile("version")
 			if err != nil {
 				return err
 			}
 			log.Printf("Set %s version to %s", o.publish, string(v))
 			return gcsWrite(o.publish, v)
-		}))
-	}
-
-	if o.postTestCmd != "" && (o.test || (kubemarkUpErr == nil && o.testCmd != "")) {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "post-test command", func() error {
-			cmdLineTokenized := strings.Fields(os.ExpandEnv(o.postTestCmd))
-			return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
 		}))
 	}
 
@@ -395,7 +394,7 @@ func listNodes(dp deployer, dump string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
+	return os.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
 }
 
 func listKubemarkNodes(dp deployer, dump string) error {
@@ -411,13 +410,13 @@ func listKubemarkNodes(dp deployer, dump string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filepath.Join(dump, "kubemark_nodes.yaml"), b, 0644)
+	return os.WriteFile(filepath.Join(dump, "kubemark_nodes.yaml"), b, 0644)
 }
 
 func diffResources(before, clusterUp, clusterDown, after []byte, location string) error {
 	if location == "" {
 		var err error
-		location, err = ioutil.TempDir("", "e2e-check-resources")
+		location, err = os.MkdirTemp("", "e2e-check-resources")
 		if err != nil {
 			return fmt.Errorf("Could not create e2e-check-resources temp dir: %s", err)
 		}
@@ -430,21 +429,21 @@ func diffResources(before, clusterUp, clusterDown, after []byte, location string
 	ap := filepath.Join(location, "gcp-resources-after.txt")
 	dp := filepath.Join(location, "gcp-resources-diff.txt")
 
-	if err := ioutil.WriteFile(bp, before, mode); err != nil {
+	if err := os.WriteFile(bp, before, mode); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(up, clusterUp, mode); err != nil {
+	if err := os.WriteFile(up, clusterUp, mode); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(cdp, clusterDown, mode); err != nil {
+	if err := os.WriteFile(cdp, clusterDown, mode); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(ap, after, mode); err != nil {
+	if err := os.WriteFile(ap, after, mode); err != nil {
 		return err
 	}
 
 	stdout, cerr := control.Output(exec.Command("diff", "-sw", "-U0", "-F^\\[.*\\]$", bp, ap))
-	if err := ioutil.WriteFile(dp, stdout, mode); err != nil {
+	if err := os.WriteFile(dp, stdout, mode); err != nil {
 		return err
 	}
 	if cerr == nil { // No diffs
@@ -548,6 +547,14 @@ func logDumpPath(provider string) string {
 	return "./cluster/log-dump/log-dump.sh"
 }
 
+func kubemarkPath() string {
+	if kubemarkPath := os.Getenv("KUBEMARK_PATH"); kubemarkPath != "" {
+		return os.ExpandEnv(kubemarkPath)
+	}
+
+	return "./test/kubemark/"
+}
+
 func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath, provider string) error {
 	logDumpPath := logDumpPath(provider)
 	if _, err := os.Stat(logDumpPath); err != nil {
@@ -609,8 +616,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeC
 		"run",
 		util.K8s("kubernetes", "test", "e2e_node", "runner", "remote", "run_remote.go"),
 		"--cleanup",
-		"--logtostderr",
-		"--vmodule=*=4",
+		"-vmodule=*=4", // This causes more runtime overhead than -v=4, but perhaps there is a reason for using it?
 		"--ssh-env=gce",
 		fmt.Sprintf("--results-dir=%s", artifactsDir),
 		fmt.Sprintf("--project=%s", project),
@@ -634,7 +640,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeC
 func kubemarkUp(dump string, o options, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
 	if err := control.XMLWrap(&suite, "Kubemark TearDown Previous", func() error {
-		if err := control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh")); err != nil {
+		if err := control.FinishRunning(exec.Command(path.Join(kubemarkPath(), "stop-kubemark.sh"))); err != nil {
 			return fmt.Errorf("failed to stop kubemark cluster, err: %w", err)
 		}
 		return nil
@@ -650,7 +656,7 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 
 	// Start kubemark cluster.
 	if err := control.XMLWrap(&suite, "Kubemark Up", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
+		return control.FinishRunning(exec.Command(path.Join(kubemarkPath(), "start-kubemark.sh")))
 	}); err != nil {
 		return err
 	}
@@ -762,12 +768,15 @@ func kubemarkGinkgoTest(testArgs []string, dump string) error {
 }
 
 // Brings down the kubemark cluster.
-func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCSPath string) {
-	defer wg.Done()
+func kubemarkDown(provider, dump, logexporterGCSPath string) error {
 	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
 		logDumpPath := logDumpPath(provider)
 		masterName := os.Getenv("MASTER_NAME")
 		var cmd *exec.Cmd
+		if provider == "gke" {
+			log.Printf("Skipping dumping logs for gke provider")
+			return nil
+		}
 		if logexporterGCSPath != "" {
 			log.Printf("Dumping logs for kubemark master to GCS directly at path: %v", logexporterGCSPath)
 			cmd = exec.Command(logDumpPath, dump, logexporterGCSPath)
@@ -782,8 +791,8 @@ func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCS
 		)
 		return control.FinishRunning(cmd)
 	})
-	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
+	return control.XMLWrap(&suite, "Kubemark TearDown", func() error {
+		return control.FinishRunning(exec.Command(path.Join(kubemarkPath(), "stop-kubemark.sh")))
 	})
 }
 

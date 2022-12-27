@@ -21,7 +21,9 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
+	"regexp"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -42,17 +44,37 @@ type appGitHubClient interface {
 	GetApp() (*App, error)
 }
 
+func newAppsRoundTripper(appID string, privateKey func() *rsa.PrivateKey, upstream http.RoundTripper, githubClient appGitHubClient, v3BaseURLs []string) (*appsRoundTripper, error) {
+	roundTripper := &appsRoundTripper{
+		appID:             appID,
+		privateKey:        privateKey,
+		upstream:          upstream,
+		githubClient:      githubClient,
+		hostPrefixMapping: make(map[string]string, len(v3BaseURLs)),
+	}
+	for _, baseURL := range v3BaseURLs {
+		url, err := url.Parse(baseURL)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse github-endpoint %s as URL: %w", baseURL, err)
+		}
+		roundTripper.hostPrefixMapping[url.Host] = url.Path
+	}
+
+	return roundTripper, nil
+}
+
 type appsRoundTripper struct {
-	appID            string
-	appSlug          string
-	appSlugLock      sync.Mutex
-	privateKey       func() *rsa.PrivateKey
-	installationLock sync.RWMutex
-	installations    map[string]AppInstallation
-	tokenLock        sync.RWMutex
-	tokens           map[int64]*AppInstallationToken
-	upstream         http.RoundTripper
-	githubClient     appGitHubClient
+	appID             string
+	appSlug           string
+	appSlugLock       sync.Mutex
+	privateKey        func() *rsa.PrivateKey
+	installationLock  sync.RWMutex
+	installations     map[string]AppInstallation
+	tokenLock         sync.RWMutex
+	tokens            map[int64]*AppInstallationToken
+	upstream          http.RoundTripper
+	githubClient      appGitHubClient
+	hostPrefixMapping map[string]string
 }
 
 // appsAuthError is returned by the appsRoundTripper if any issues were encountered
@@ -66,8 +88,16 @@ func (*appsAuthError) Is(target error) bool {
 	return ok
 }
 
+func (arr *appsRoundTripper) canonicalizedPath(url *url.URL) string {
+	return strings.TrimPrefix(url.Path, arr.hostPrefixMapping[url.Host])
+}
+
+var installationPath = regexp.MustCompile(`^/repos/[^/]+/[^/]+/installation$`)
+
 func (arr *appsRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if strings.HasPrefix(r.URL.Path, "/app") {
+	path := arr.canonicalizedPath(r.URL)
+	// We need to use a JWT when we are getting /app/* endpoints or installation information for a particular repo
+	if strings.HasPrefix(path, "/app") || installationPath.MatchString(path) {
 		if err := arr.addAppAuth(r); err != nil {
 			return nil, err
 		}
@@ -78,10 +108,18 @@ func (arr *appsRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) 
 	return arr.upstream.RoundTrip(r)
 }
 
+// TimeNow is exposed so that it can be mocked by unit test, to ensure that
+// addAppAuth always return consistent token when needed.
+// DO NOT use it in prod
+var TimeNow = func() time.Time {
+	return time.Now().UTC()
+}
+
 func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
-	expiresAt := time.Now().UTC().Add(10 * time.Minute)
+	now := TimeNow()
+	expiresAt := now.Add(10 * time.Minute)
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, &jwt.StandardClaims{
-		IssuedAt:  jwt.NewTime(float64(time.Now().Unix())),
+		IssuedAt:  jwt.NewTime(float64(now.Unix())),
 		ExpiresAt: jwt.NewTime(float64(expiresAt.Unix())),
 		Issuer:    arr.appID,
 	}).SignedString(arr.privateKey())
@@ -93,7 +131,7 @@ func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
 	r.Header.Set(ghcache.TokenExpiryAtHeader, expiresAt.Format(time.RFC3339))
 
 	// We call the /app endpoint to resolve the slug, so we can't set it there
-	if r.URL.Path == "/app" {
+	if arr.canonicalizedPath(r.URL) == "/app" {
 		r.Header.Set(ghcache.TokenBudgetIdentifierHeader, arr.appID)
 	} else {
 		slug, err := arr.getSlug()

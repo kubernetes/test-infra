@@ -131,8 +131,7 @@ dashboard.new(
         min='0',
         max='1',
         formatY1='percentunit',
-        #TODO: uncomment When this merges, https://github.com/grafana/grafonnet-lib/pull/122
-        #y_axis_label='% Cacheable Request Fulfilled for Free',
+        labelY1='% Cacheable Request Fulfilled for Free',
     ) + legendConfig)
     .addTarget(prometheus.target(
         'sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login)) \n/ sum(increase(ghcache_responses{mode=~"COALESCED|REVALIDATED|MISS|CHANGED"}[1h]) * on(token_hash) group_left(login) max(github_user_info{login="%s"}) by (token_hash, login))' % [botName, botName],

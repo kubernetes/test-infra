@@ -36,7 +36,6 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
-	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -96,8 +95,8 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 		Metadata     map[string]interface{}
 	}
 	metadataViewData := MetadataViewData{}
-	started := gcs.Started{}
-	finished := gcs.Finished{}
+	started := metadata.Started{}
+	finished := metadata.Finished{}
 	for _, a := range artifacts {
 		read, err := a.ReadAll()
 		if err != nil {
@@ -105,22 +104,30 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 		}
 		switch a.JobPath() {
 		case prowv1.StartedStatusFile:
-			if err = json.Unmarshal(read, &started); err != nil {
-				logrus.WithError(err).Error("Error unmarshaling started.json")
-			}
-			metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
-		case prowv1.FinishedStatusFile:
-			if err = json.Unmarshal(read, &finished); err != nil {
-				logrus.WithError(err).Error("Error unmarshaling finished.json")
-			}
-			metadataViewData.Finished = true
-			if finished.Timestamp != nil {
-				metadataViewData.FinishedTime = time.Unix(*finished.Timestamp, 0)
-			}
-			if finished.Passed != nil {
-				metadataViewData.Passed = *finished.Passed
+			if len(read) > 0 {
+				if err = json.Unmarshal(read, &started); err != nil {
+					logrus.WithError(err).Error("Error unmarshaling started.json")
+				}
+				metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
 			} else {
-				metadataViewData.Passed = finished.Result == "SUCCESS"
+				logrus.Debug("Empty finished.json")
+			}
+		case prowv1.FinishedStatusFile:
+			if len(read) > 0 {
+				if err = json.Unmarshal(read, &finished); err != nil {
+					logrus.WithError(err).Error("Error unmarshaling finished.json")
+				}
+				metadataViewData.Finished = true
+				if finished.Timestamp != nil {
+					metadataViewData.FinishedTime = time.Unix(*finished.Timestamp, 0)
+				}
+				if finished.Passed != nil {
+					metadataViewData.Passed = *finished.Passed
+				} else {
+					metadataViewData.Passed = finished.Result == "SUCCESS"
+				}
+			} else {
+				logrus.Debug("Empty finished.json")
 			}
 		case "podinfo.json":
 			metadataViewData.Hint = hintFromPodInfo(read)

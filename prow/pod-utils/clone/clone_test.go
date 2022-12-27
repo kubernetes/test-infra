@@ -18,7 +18,6 @@ package clone
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
@@ -720,15 +719,10 @@ func TestCommandsForRefs(t *testing.T) {
 
 func TestGitHeadTimestamp(t *testing.T) {
 	fakeTimestamp := 987654321
-	fakeGitDir, err := makeFakeGitRepo(fakeTimestamp)
+	fakeGitDir, err := makeFakeGitRepo(t, fakeTimestamp)
 	if err != nil {
 		t.Errorf("error creating fake git dir: %v", err)
 	}
-	defer func() {
-		if err := os.RemoveAll(fakeGitDir); err != nil {
-			t.Errorf("error cleaning up fake git dir: %v", err)
-		}
-	}()
 
 	var testCases = []struct {
 		name        string
@@ -795,11 +789,8 @@ func TestGitHeadTimestamp(t *testing.T) {
 }
 
 // makeFakeGitRepo creates a fake git repo with a constant digest and timestamp.
-func makeFakeGitRepo(fakeTimestamp int) (string, error) {
-	fakeGitDir, err := ioutil.TempDir("", "fakegit")
-	if err != nil {
-		return "", err
-	}
+func makeFakeGitRepo(t *testing.T, fakeTimestamp int) (string, error) {
+	fakeGitDir := t.TempDir()
 	cmds := [][]string{
 		{"git", "init"},
 		{"git", "config", "user.email", "test@test.test"},
@@ -929,6 +920,40 @@ func TestGitFetch(t *testing.T) {
 				}
 			case tc.err:
 				t.Error("failed to received expected error")
+			}
+		})
+	}
+}
+
+func TestCloneCommandString(t *testing.T) {
+	tests := []struct {
+		name string
+		cc   cloneCommand
+		want string
+	}{
+		{
+			name: "empty",
+			cc:   cloneCommand{},
+			want: "PWD=   ",
+		},
+		{
+			name: "base",
+			cc: cloneCommand{
+				dir:     "abc",
+				env:     []string{"d=e", "f=g"},
+				command: "echo",
+				args:    []string{"hij klm"},
+			},
+			want: "PWD=abc d=e f=g echo hij klm",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			want, got := tc.want, tc.cc.String()
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("mismatch. want(-), got(+):\n%s", diff)
 			}
 		})
 	}

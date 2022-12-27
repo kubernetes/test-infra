@@ -19,7 +19,7 @@ package verifyowners
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -218,6 +218,10 @@ type fakeOwnersClient struct {
 	dirIgnorelist     []*regexp.Regexp
 }
 
+func (foc *fakeOwnersClient) AllOwners() sets.String {
+	return sets.String{}
+}
+
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
 	return ownersconfig.FakeFilenames
 }
@@ -270,7 +274,7 @@ func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleCo
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.SimpleConfig{}, err
 	}
@@ -287,7 +291,7 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.FullConfig{}, err
 	}

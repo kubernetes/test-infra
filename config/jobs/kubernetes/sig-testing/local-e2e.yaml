@@ -2,7 +2,9 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-local-e2e
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     always_run: false
     skip_report: false
     max_concurrency: 8
@@ -14,7 +16,12 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        env:
+        - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+          value: "true"
+        - name: CONTAINER_RUNTIME_ENDPOINT
+          value: "/var/run/docker/containerd/containerd.sock"
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -28,7 +35,7 @@ presubmits:
         - --deployment=local
         - --ginkgo-parallel=1
         - --provider=local
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
         - --timeout=120m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -43,7 +50,7 @@ presubmits:
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-misc
-      description: Runs conformance tests using kubetest with local-up-cluster
+      description: Runs single node conformance tests using kubetest with local-up-cluster
 
 periodics:
 - name: ci-kubernetes-local-e2e
@@ -54,7 +61,12 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      env:
+      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+        value: "true"
+      - name: CONTAINER_RUNTIME_ENDPOINT
+        value: "/var/run/docker/containerd/containerd.sock"
       args:
       - "--timeout=140"
       - "--bare"
@@ -65,7 +77,7 @@ periodics:
       - --extract-source
       - --ginkgo-parallel=1
       - --provider=local
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
       - --timeout=120m
       # docker-in-docker needs privileged mode
       securityContext:
@@ -80,6 +92,6 @@ periodics:
   annotations:
     testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster, sig-testing-misc
     testgrid-tab-name: local-up-cluster, master (dev)
-    description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
+    description: Runs single node conformance tests using kubetest with hack/local-up-cluster.sh
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-stale-results-hours: '24'

@@ -22,7 +22,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221223-736a4da5ba-master
         # workdir appears to be the base of the cloned repo
         command: ["wrapper.sh", "hack/prow-run-e2e.sh"]
         securityContext:
@@ -43,7 +43,6 @@ periodics:
     testgrid-alert-email: kubernetes-hnc-dev+alerts@googlegroups.com
     testgrid-num-failures-to-alert: "1"
   interval: 24h
-  always_run: true # Different from the postsubmit; copied from kind periodics
   decorate: true
   decoration_config:
     timeout: 1h
@@ -59,7 +58,7 @@ periodics:
     path_alias: sigs.k8s.io/hierarchical-namespaces
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221223-736a4da5ba-master
       command: ["wrapper.sh", "hack/prow-run-e2e.sh"]
       securityContext:
         privileged: true # Required for docker-in-docker

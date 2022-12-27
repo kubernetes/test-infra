@@ -6,13 +6,21 @@ reviewers:
 - feiskyer
 - karataliu
 - khenidak
-- chewong
+- lzhecheng
+- MartinForReal
+- nilo19
+
 approvers:
 - andyzhangx
 - brendandburns
 - feiskyer
 - karataliu
 - khenidak
+- lzhecheng
+- MartinForReal
+- nilo19
+
+emeritus_approvers:
 - chewong
 
 labels:

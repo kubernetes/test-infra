@@ -84,6 +84,17 @@ func TestReleaseNoteComment(t *testing.T) {
 			addedLabel:    labels.ReleaseNoteNone,
 		},
 		{
+			name:          "author release-note-none with \"no\" block",
+			action:        github.IssueCommentActionCreated,
+			isAuthor:      true,
+			commentBody:   "/release-note-none",
+			issueBody:     "bologna ```release-note \nno \n ```",
+			currentLabels: []string{labels.ReleaseNoteLabelNeeded, "other"},
+
+			deletedLabels: []string{labels.ReleaseNoteLabelNeeded},
+			addedLabel:    labels.ReleaseNoteNone,
+		},
+		{
 			name:          "author release-note-none, trailing space.",
 			action:        github.IssueCommentActionCreated,
 			isAuthor:      true,

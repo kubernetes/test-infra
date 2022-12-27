@@ -19,7 +19,7 @@ package phony
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"k8s.io/test-infra/prow/github"
@@ -42,7 +42,7 @@ func SendHook(address, eventType string, payload, hmac []byte) error {
 		return err
 	}
 	defer resp.Body.Close()
-	rb, err := ioutil.ReadAll(resp.Body)
+	rb, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

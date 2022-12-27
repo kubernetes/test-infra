@@ -32,6 +32,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
@@ -268,13 +269,13 @@ func (sg *Spyglass) JobPath(src string) (string, error) {
 	}
 }
 
-// ProwJobName returns a link to the YAML for the job specified in src.
-// If no job is found, it returns an empty string and nil error.
-func (sg *Spyglass) ProwJobName(src string) (string, error) {
+// ProwJob returns a link and state to the YAML for the job specified in src.
+// If no job is found, it returns empty strings and nil error.
+func (sg *Spyglass) ProwJob(src string) (string, string, prowapi.ProwJobState, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
-		return "", fmt.Errorf("error parsing src: %v", src)
+		return "", "", "", fmt.Errorf("error parsing src: %v", src)
 	}
 	split := strings.Split(key, "/")
 	var jobName string
@@ -282,13 +283,13 @@ func (sg *Spyglass) ProwJobName(src string) (string, error) {
 	switch keyType {
 	case prowKeyType:
 		if len(split) < 2 {
-			return "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+			return "", "", "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
 		}
 		jobName = split[0]
 		buildID = split[1]
 	default:
 		if len(split) < 4 {
-			return "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
+			return "", "", "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
 		}
 		jobName = split[len(split)-2]
 		buildID = split[len(split)-1]
@@ -296,11 +297,11 @@ func (sg *Spyglass) ProwJobName(src string) (string, error) {
 	job, err := sg.jobAgent.GetProwJob(jobName, buildID)
 	if err != nil {
 		if jobs.IsErrProwJobNotFound(err) {
-			return "", nil
+			return "", "", "", nil
 		}
-		return "", err
+		return "", "", "", err
 	}
-	return job.Name, nil
+	return job.Spec.Job, job.Name, job.Status.State, nil
 }
 
 // RunPath returns the path to the directory for the job run specified in src.
@@ -411,12 +412,17 @@ func (sg *Spyglass) ExtraLinks(ctx context.Context, src string) ([]ExtraLink, er
 
 	// Failing to find started.json is okay, just return nothing quietly.
 	if len(artifacts) == 0 {
-		logrus.Debugf("Failed to find started.json while looking for extra links.")
+		logrus.Debug("Failed to find started.json while looking for extra links.")
 		return nil, nil
 	}
 	// Failing to read an artifact we already know to exist shouldn't happen, so that's an error.
 	content, err := artifacts[0].ReadAll()
 	if err != nil {
+		// Swallow the error if this file is empty
+		if size, sizeErr := artifacts[0].Size(); sizeErr != nil && size == 0 {
+			logrus.Debug("Started.json is empty.")
+			err = nil
+		}
 		return nil, err
 	}
 	// Being unable to parse a successfully fetched started.json correctly is also an error.

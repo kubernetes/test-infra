@@ -1,0 +1,34 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+  - name: pull-cluster-api-provider-ccm-image
+    run_if_changed: '^hack/ccm/'
+    branches:
+      - ^main$
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+        - "runner.sh"
+        args:
+        - bash
+        - -c
+        - |
+          pushd hack/ccm
+          make build-image-linux-amd64
+          make build-image-linux-ppc64le
+          popd
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.24
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-ccm

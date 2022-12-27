@@ -23,4 +23,5 @@ cd $REPO_ROOT
 echo "Ensuring go version."
 source ./hack/build/setup-go.sh
 
+echo "Go version: $(go version)"
 find . -name '*.go' -type f -print0 | xargs -0 gofmt -s -w

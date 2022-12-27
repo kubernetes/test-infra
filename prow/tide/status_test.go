@@ -41,6 +41,7 @@ import (
 )
 
 func TestExpectedStatus(t *testing.T) {
+	neededLabelsWithAlt := []string{"need-1", "need-2", "need-a-very-super-duper-extra-not-short-at-all-label-name,need-3"}
 	neededLabels := []string{"need-1", "need-2", "need-a-very-super-duper-extra-not-short-at-all-label-name"}
 	forbiddenLabels := []string{"forbidden-1", "forbidden-2"}
 	testcases := []struct {
@@ -98,7 +99,7 @@ func TestExpectedStatus(t *testing.T) {
 			inPool:            false,
 
 			state: github.StatusPending,
-			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name label."),
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name or need-3 label."),
 		},
 		{
 			name:              "has forbidden labels",
@@ -742,7 +743,7 @@ func TestExpectedStatus(t *testing.T) {
 					Orgs:             []string{""},
 					ExcludedBranches: tc.branchDenyList,
 					IncludedBranches: tc.branchAllowList,
-					Labels:           neededLabels,
+					Labels:           neededLabelsWithAlt,
 					MissingLabels:    forbiddenLabels,
 					Author:           tc.firstQueryAuthor,
 					Milestone:        "v1.0",
@@ -792,9 +793,7 @@ func TestExpectedStatus(t *testing.T) {
 				Login githubql.String
 			}{githubql.String(tc.author)}
 			if tc.milestone != "" {
-				pr.Milestone = &struct {
-					Title githubql.String
-				}{githubql.String(tc.milestone)}
+				pr.Milestone = &Milestone{githubql.String(tc.milestone)}
 			}
 			if tc.mergeConflicts {
 				pr.Mergeable = githubql.MergeableStateConflicting
@@ -802,9 +801,9 @@ func TestExpectedStatus(t *testing.T) {
 			if tc.hasApprovingReview {
 				pr.ReviewDecision = githubql.PullRequestReviewDecisionApproved
 			}
-			var pool map[string]PullRequest
+			var pool map[string]CodeReviewCommon
 			if tc.inPool {
-				pool = map[string]PullRequest{"#0": {}}
+				pool = map[string]CodeReviewCommon{"#0": {}}
 			}
 			blocks := blockers.Blockers{
 				Repo: map[blockers.OrgRepo][]blockers.Blocker{},
@@ -816,17 +815,33 @@ func TestExpectedStatus(t *testing.T) {
 			blocks.Repo[blockers.OrgRepo{Org: "", Repo: ""}] = items
 
 			ca := &config.Agent{}
-			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}})
+			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{
+				TideGitHubConfig: config.TideGitHubConfig{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}}})
 			mmc := newMergeChecker(ca.Config, &fgc{})
 
-			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, ca.Config, nil, "", mmc, false)
+			sc, err := newStatusController(
+				context.Background(),
+				logrus.NewEntry(logrus.StandardLogger()),
+				nil,
+				newFakeManager(tc.prowJobs...),
+				nil,
+				ca.Config,
+				nil,
+				"",
+				mmc,
+				false,
+				&statusUpdate{
+					dontUpdateStatus: &threadSafePRSet{},
+					newPoolPending:   make(chan bool),
+				},
+			)
 			if err != nil {
 				t.Fatalf("failed to get statusController: %v", err)
 			}
 			ccg := func() (contextChecker, error) {
 				return &config.TideContextPolicy{RequiredContexts: tc.requiredContexts}, nil
 			}
-			state, desc, err := sc.expectedStatus(sc.logger, queriesByRepo, &pr, pool, ccg, blocks, tc.baseref)
+			state, desc, err := sc.expectedStatus(sc.logger, queriesByRepo, CodeReviewCommonFromPullRequest(&pr), pool, ccg, blocks, tc.baseref)
 			if err != nil {
 				t.Fatalf("error calling expectedStatus(): %v", err)
 			}
@@ -943,9 +958,10 @@ func TestSetStatuses(t *testing.T) {
 				},
 			}
 		}
-		pool := make(map[string]PullRequest)
+		crc := CodeReviewCommonFromPullRequest(&pr)
+		pool := make(map[string]CodeReviewCommon)
 		if tc.inPool {
-			pool[prKey(&pr)] = pr
+			pool[prKey(crc)] = *crc
 		}
 		fc := &fgc{
 			refs: map[string]string{"/ heads/": "SHA"},
@@ -961,14 +977,29 @@ func TestSetStatuses(t *testing.T) {
 		}
 
 		mmc := newMergeChecker(ca.Config, fc)
-		sc, err := newStatusController(context.Background(), log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc, false)
+		sc, err := newStatusController(
+			context.Background(),
+			log,
+			fc,
+			newFakeManager(),
+			nil,
+			ca.Config,
+			nil,
+			"",
+			mmc,
+			false,
+			&statusUpdate{
+				dontUpdateStatus: &threadSafePRSet{},
+				newPoolPending:   make(chan bool),
+			},
+		)
 		if err != nil {
 			t.Fatalf("failed to get statusController: %v", err)
 		}
 		if tc.inDontSetStatus {
-			sc.dontUpdateStatus = threadSafePRSet{data: map[pullRequestIdentifier]struct{}{{}: {}}}
+			sc.dontUpdateStatus = &threadSafePRSet{data: map[pullRequestIdentifier]struct{}{{}: {}}}
 		}
-		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil, nil)
+		sc.setStatuses([]CodeReviewCommon{*crc}, pool, blockers.Blockers{}, nil, nil)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
 		} else if str != initialLog {
@@ -999,13 +1030,13 @@ func TestTargetUrl(t *testing.T) {
 		{
 			name:        "tide overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURLs: map[string]string{"*": "tide.com"}},
+			config:      config.Tide{TideGitHubConfig: config.TideGitHubConfig{TargetURLs: map[string]string{"*": "tide.com"}}},
 			expectedURL: "tide.com",
 		},
 		{
 			name:        "PR dashboard config and overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURLs: map[string]string{"*": "tide.com"}, PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
+			config:      config.Tide{TideGitHubConfig: config.TideGitHubConfig{TargetURLs: map[string]string{"*": "tide.com"}, PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}}},
 			expectedURL: "tide.com",
 		},
 		{
@@ -1023,7 +1054,7 @@ func TestTargetUrl(t *testing.T) {
 				}{NameWithOwner: githubql.String("org/repo")},
 				HeadRefName: "head",
 			},
-			config:      config.Tide{PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
+			config:      config.Tide{TideGitHubConfig: config.TideGitHubConfig{PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}}},
 			expectedURL: "pr.status.com?query=is%3Apr+repo%3Aorg%2Frepo+author%3Aauthor+head%3Ahead",
 		},
 		{
@@ -1045,7 +1076,7 @@ func TestTargetUrl(t *testing.T) {
 				},
 				HeadRefName: "head",
 			},
-			config:      config.Tide{PRStatusBaseURLs: map[string]string{"*": "default.pr.status.com"}},
+			config:      config.Tide{TideGitHubConfig: config.TideGitHubConfig{PRStatusBaseURLs: map[string]string{"*": "default.pr.status.com"}}},
 			expectedURL: "default.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
 		},
 		{
@@ -1067,7 +1098,10 @@ func TestTargetUrl(t *testing.T) {
 				},
 				HeadRefName: "head",
 			},
-			config:      config.Tide{PRStatusBaseURLs: map[string]string{"testOrg": "byorg.pr.status.com"}},
+			config: config.Tide{TideGitHubConfig: config.TideGitHubConfig{PRStatusBaseURLs: map[string]string{
+				"*":       "default.pr.status.com",
+				"testOrg": "byorg.pr.status.com"},
+			}},
 			expectedURL: "byorg.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
 		},
 		{
@@ -1089,10 +1123,11 @@ func TestTargetUrl(t *testing.T) {
 				},
 				HeadRefName: "head",
 			},
-			config: config.Tide{PRStatusBaseURLs: map[string]string{
+			config: config.Tide{TideGitHubConfig: config.TideGitHubConfig{PRStatusBaseURLs: map[string]string{
+				"*":                "default.pr.status.com",
 				"testOrg":          "byorg.pr.status.com",
 				"testOrg/testRepo": "byrepo.pr.status.com"},
-			},
+			}},
 			expectedURL: "byrepo.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
 		},
 	}
@@ -1100,7 +1135,7 @@ func TestTargetUrl(t *testing.T) {
 	for _, tc := range testcases {
 		log := logrus.WithField("controller", "status-update")
 		c := &config.Config{ProwConfig: config.ProwConfig{Tide: tc.config}}
-		if actual, expected := targetURL(c, tc.pr, log), tc.expectedURL; actual != expected {
+		if actual, expected := targetURL(c, CodeReviewCommonFromPullRequest(tc.pr), log), tc.expectedURL; actual != expected {
 			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)
 		}
 	}
@@ -1189,14 +1224,22 @@ func TestSetStatusRespectsRequiredContexts(t *testing.T) {
 	ca.Set(&config.Config{})
 
 	sc := &statusController{
-		logger:       log,
-		ghc:          fghc,
-		config:       ca.Config,
-		pjClient:     fakectrlruntimeclient.NewFakeClient(),
-		mergeChecker: newMergeChecker(ca.Config, fghc),
+		logger:   log,
+		ghc:      fghc,
+		config:   ca.Config,
+		pjClient: fakectrlruntimeclient.NewFakeClient(),
+		ghProvider: &GitHubProvider{
+			ghc:          fghc,
+			mergeChecker: newMergeChecker(ca.Config, fghc),
+		},
+		statusUpdate: &statusUpdate{
+			dontUpdateStatus: &threadSafePRSet{},
+			newPoolPending:   make(chan bool),
+		},
 	}
-	pool := map[string]PullRequest{prKey(&pr): pr}
-	sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil, requiredContexts)
+	crc := CodeReviewCommonFromPullRequest(&pr)
+	pool := map[string]CodeReviewCommon{prKey(crc): *crc}
+	sc.setStatuses([]CodeReviewCommon{*crc}, pool, blockers.Blockers{}, nil, requiredContexts)
 	if str, err := log.String(); err != nil {
 		t.Fatalf("Failed to get log output: %v", err)
 	} else if str != initialLog {
@@ -1272,7 +1315,7 @@ func TestStatusControllerSearch(t *testing.T) {
 		prs          map[string][]PullRequest
 		usesAppsAuth bool
 
-		expected []PullRequest
+		expected []CodeReviewCommon
 	}{
 		{
 			name: "Apps auth: Query gets split by org",
@@ -1281,9 +1324,9 @@ func TestStatusControllerSearch(t *testing.T) {
 				"org-b": {{Number: githubql.Int(2)}},
 			},
 			usesAppsAuth: true,
-			expected: []PullRequest{
-				{Number: githubql.Int(1)},
-				{Number: githubql.Int(2)},
+			expected: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 1}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 2}),
 			},
 		},
 		{
@@ -1292,9 +1335,9 @@ func TestStatusControllerSearch(t *testing.T) {
 				"": {{Number: githubql.Int(1)}, {Number: githubql.Int(2)}},
 			},
 			usesAppsAuth: false,
-			expected: []PullRequest{
-				{Number: githubql.Int(1)},
-				{Number: githubql.Int(2)},
+			expected: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 1}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 2}),
 			},
 		},
 	}
@@ -1303,15 +1346,31 @@ func TestStatusControllerSearch(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ghc := &fgc{prs: tc.prs}
 			cfg := func() *config.Config {
-				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}
+				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{
+					TideGitHubConfig: config.TideGitHubConfig{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}}
 			}
-			sc, err := newStatusController(context.Background(), logrus.WithField("tc", tc), ghc, newFakeManager(), nil, cfg, nil, "", nil, tc.usesAppsAuth)
+			sc, err := newStatusController(
+				context.Background(),
+				logrus.WithField("tc", tc),
+				ghc,
+				newFakeManager(),
+				nil,
+				cfg,
+				nil,
+				"",
+				nil,
+				tc.usesAppsAuth,
+				&statusUpdate{
+					dontUpdateStatus: &threadSafePRSet{},
+					newPoolPending:   make(chan bool),
+				},
+			)
 			if err != nil {
 				t.Fatalf("failed to construct status controller: %v", err)
 			}
 
 			result := sc.search()
-			if diff := cmp.Diff(result, tc.expected, cmpopts.SortSlices(func(a, b PullRequest) bool { return a.Number < b.Number })); diff != "" {
+			if diff := cmp.Diff(result, tc.expected, cmpopts.SortSlices(func(a, b CodeReviewCommon) bool { return a.Number < b.Number })); diff != "" {
 				t.Errorf("result differs from expected: %s", diff)
 			}
 		})

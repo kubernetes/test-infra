@@ -28,7 +28,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         resources:
           requests:
             memory: "6Gi"
@@ -46,7 +46,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -63,7 +63,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -80,7 +80,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -99,7 +99,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -134,7 +134,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -169,7 +169,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -204,7 +204,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -231,6 +231,41 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
+  - name: pull-release-image-distroless-iptables
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/build\/distroless-iptables\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/build/distroless-iptables
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-distroless-iptables
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
   - name: pull-release-image-setcap
     cluster: k8s-infra-prow-build
     decorate: true
@@ -239,7 +274,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -274,7 +309,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -308,7 +343,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -343,7 +378,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:
@@ -378,7 +413,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:

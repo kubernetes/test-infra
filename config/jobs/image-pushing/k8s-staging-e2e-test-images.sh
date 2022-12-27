@@ -82,11 +82,13 @@ for image in "${IMAGES[@]}"; do
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/${image//\//\\/}\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
             command:
               - /run.sh
             args:
@@ -143,7 +145,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
           command:
             - /run.sh
           args:

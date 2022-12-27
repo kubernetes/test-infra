@@ -17,6 +17,31 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+usage()
+{
+  >&2 cat <<EOF
+Usage: $0 [FOLDER_TO_TEST]
+
+FOLDER_TO_TEST is a single argument, but can denote multiple folders with the
+"..." notation. See examples below.
+
+Examples:
+  Test all folders recursively; this is the default if FOLDER_TO_TEST is not provided:
+    $0 ...
+
+  Test all folders for the "Crier" component:
+    $0 prow/crier/...
+EOF
+}
+
+if (( $# > 1 )); then
+  usage
+  exit 1
+fi
+
+# By default, look for *_test.go files in all folders recursively.
+folder_to_test="${1:-...}"
+
 # cd to the repo root and setup go
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 cd "${REPO_ROOT}"
@@ -38,5 +63,5 @@ fi
   set -x;
   mkdir -p "${JUNIT_RESULT_DIR}"
   "${REPO_ROOT}/_bin/gotestsum" --junitfile="${JUNIT_RESULT_DIR}/junit-unit.xml" \
-    -- './...'
+    -- "./${folder_to_test}"
 )

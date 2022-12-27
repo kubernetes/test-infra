@@ -147,6 +147,7 @@ type githubClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]github.WorkflowRun, error)
 	GetRef(org, repo, ref string) (string, error)
 	CreateComment(owner, repo string, number int, comment string) error
 	ListIssueComments(owner, repo string, issue int) ([]github.IssueComment, error)
@@ -154,6 +155,7 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
+	TriggerGitHubWorkflow(org, repo string, id int) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
@@ -220,7 +222,7 @@ type TrustedUserResponse struct {
 
 // TrustedUser returns true if user is trusted in repo.
 // Trusted users are either repo collaborators, org members or trusted org members.
-func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
+func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []string, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
 	errorResponse := TrustedUserResponse{IsTrusted: false}
 	okResponse := TrustedUserResponse{IsTrusted: true}
 
@@ -248,6 +250,14 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
 			return errorResponse, fmt.Errorf("error in IsCollaborator: %w", err)
 		} else if ok {
+			return okResponse, nil
+		}
+	}
+
+	// Determine if user is on trusted_apps list.
+	// This allows automatic tests execution for GitHub automations that cannot be added as collaborators.
+	for _, trustedApp := range trustedApps {
+		if tUser := strings.TrimSuffix(user, "[bot]"); tUser == trustedApp {
 			return okResponse, nil
 		}
 	}
@@ -324,7 +334,7 @@ func getPresubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config, 
 		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
 		// inrepoconfig. Tide will still respect errors here and not merge.
 		log.WithError(err).Debug("Failed to get presubmits")
-		presubmits = cfg.PresubmitsStatic[orgRepo]
+		presubmits = cfg.GetPresubmitsStatic(orgRepo)
 	}
 	return presubmits
 }
@@ -334,7 +344,7 @@ func getPostsubmits(log *logrus.Entry, gc git.ClientFactory, cfg *config.Config,
 	if err != nil {
 		// Fall back to static postsubmits, loading inrepoconfig returned an error.
 		log.WithError(err).Error("Failed to get postsubmits")
-		postsubmits = cfg.PostsubmitsStatic[orgRepo]
+		postsubmits = cfg.GetPostsubmitsStatic(orgRepo)
 	}
 	return postsubmits
 }

@@ -55,6 +55,7 @@ func init() {
 type KubernetesOptions struct {
 	kubeconfig               string
 	kubeconfigDir            string
+	kubeconfigSuffix         string
 	projectedTokenFile       string
 	noInClusterConfig        bool
 	NOInClusterConfigDefault bool
@@ -175,6 +176,7 @@ func (o *KubernetesOptions) LoadClusterConfigs(callBacks ...func()) (map[string]
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.kubeconfigDir, "kubeconfig-dir", "", "Path to the directory containing kubeconfig files. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
+	fs.StringVar(&o.kubeconfigSuffix, "kubeconfig-suffix", "", "The files without the suffix will be ignored when loading kubeconfig files from --kubeconfig-dir. It must be used together with --kubeconfig-dir.")
 	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
 	fs.BoolVar(&o.noInClusterConfig, "no-in-cluster-config", o.NOInClusterConfigDefault, "Not resolving InCluster Config if set.")
 }
@@ -195,6 +197,10 @@ func (o *KubernetesOptions) Validate(_ bool) error {
 		}
 	}
 
+	if o.kubeconfigSuffix != "" && o.kubeconfigDir == "" {
+		return fmt.Errorf("--kubeconfig-dir must be set if --kubeconfig-suffix is set")
+	}
+
 	return nil
 }
 
@@ -208,7 +214,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 
 	clusterConfigs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig),
 		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile),
-		kube.NoInClusterConfig(o.noInClusterConfig)))
+		kube.NoInClusterConfig(o.noInClusterConfig), kube.ConfigSuffix(o.kubeconfigSuffix)))
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q configs: %w", o.kubeconfig, err)
 	}
@@ -334,13 +340,13 @@ func (o *KubernetesOptions) BuildClusterCoreV1Clients(dryRun bool) (v1Clients ma
 
 var clientCreationFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "kubernetes_failed_client_creations",
-	Help: "The number of clusters for which we failed to create a client",
+	Help: "The number of clusters for which we failed to create a client.",
 }, []string{"cluster"})
 
 // BuildClusterManagers returns a manager per buildCluster.
 // Per default, LeaderElection and the metrics listener are disabled, as we assume
 // that there is another manager for ProwJobs that handles that.
-func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*manager.Options)) (map[string]manager.Manager, error) {
+func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), opts ...func(*manager.Options)) (map[string]manager.Manager, error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -362,21 +368,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 	for buildCluserName, buildClusterConfig := range o.clusterConfigs {
 		go func(name string, config rest.Config) {
 			defer threads.Done()
-			var mgr manager.Manager
-			var err error
-			// Try up to 4 times to create the manager. Total time trying: ~31s
-			delay := time.Second
-			tries := 4
-			for try := 0; try < tries; try++ {
-				mgr, err = manager.New(&config, options)
-				if err == nil {
-					break
-				}
-				if try+1 < tries {
-					time.Sleep(delay)
-					delay = delay * 5
-				}
-			}
+			mgr, err := manager.New(&config, options)
 			lock.Lock()
 			defer lock.Unlock()
 			if err != nil {
@@ -388,7 +380,33 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 		}(buildCluserName, buildClusterConfig)
 	}
 	threads.Wait()
-	return res, utilerrors.NewAggregate(errs)
+
+	aggregatedErr := utilerrors.NewAggregate(errs)
+
+	if aggregatedErr != nil {
+		// Retry the build clusters that failed to be connected initially, execute
+		// callback function when they become reachable later on.
+		// This is useful where a build cluster is not reachable transiently, for
+		// example API server upgrade caused connection problem.
+		go func() {
+			for {
+				for buildCluserName, buildClusterConfig := range o.clusterConfigs {
+					if _, ok := res[buildCluserName]; ok {
+						continue
+					}
+					if _, err := manager.New(&buildClusterConfig, options); err == nil {
+						logrus.WithField("build-cluster", buildCluserName).Info("Build cluster that failed to connect initially now worked.")
+						callBack()
+					}
+				}
+				// Sleep arbitrarily amount of time
+				time.Sleep(5 * time.Second)
+			}
+		}()
+	} else {
+		logrus.Debug("No error constructing managers for build clusters, skip polling build clusters.")
+	}
+	return res, aggregatedErr
 }
 
 // BuildClusterUncachedRuntimeClients returns ctrlruntimeclients for the build cluster in a non-caching implementation.

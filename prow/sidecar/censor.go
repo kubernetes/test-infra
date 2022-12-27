@@ -23,12 +23,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
@@ -43,6 +43,10 @@ import (
 const defaultBufferSize = 10 * 1024 * 1024
 
 func (o Options) censor() error {
+	logrus.Info("Starting to censor data")
+	startTime := time.Now()
+	defer func() { logrus.WithField("duration", time.Since(startTime).String()).Info("Finished censoring data") }()
+
 	var concurrency int64
 	if o.CensoringOptions.CensoringConcurrency == nil {
 		concurrency = int64(10)
@@ -65,6 +69,11 @@ func (o Options) censor() error {
 
 	secrets, err := loadSecrets(o.CensoringOptions.SecretDirectories, o.CensoringOptions.IniFilenames)
 	if err != nil {
+		// TODO(petr-muller): This return makes the censoring mechanism fragile, single failure in `loadSecrets`
+		// will prevent us from censoring all other secrets that were successfully loaded. Alternatively,
+		// we could be more strict and just bail out at our callsite in run.go:preUpload() instead of just
+		// emitting a warning there. But failing fast combined with just warning about the failure is not
+		// a sound approach for a secret-censoring mechanism.
 		return fmt.Errorf("could not load secrets: %w", err)
 	}
 	logrus.WithField("secrets", len(secrets)).Debug("Loaded secrets to censor.")
@@ -91,8 +100,11 @@ func (o Options) censor() error {
 
 	for _, item := range o.GcsOptions.Items {
 		if err := filepath.Walk(item, func(absPath string, info os.FileInfo, err error) error {
+			// This method must never return an error, all files must be processed otherwise we may end up not censoring some
+			// files that are eventually uploaded
 			if err != nil {
-				return err
+				errors <- err
+				return nil
 			}
 			if info.IsDir() || info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				return nil
@@ -104,7 +116,8 @@ func (o Options) censor() error {
 			}
 			should, err := shouldCensor(*o.CensoringOptions, relpath)
 			if err != nil {
-				return fmt.Errorf("could not determine if we should censor path: %w", err)
+				errors <- fmt.Errorf("could not determine if we should censor path: %w", err)
+				return nil
 			}
 			if !should {
 				return nil
@@ -112,14 +125,16 @@ func (o Options) censor() error {
 
 			contentType, err := determineContentType(absPath)
 			if err != nil {
-				return fmt.Errorf("could not determine content type of %s: %w", absPath, err)
+				errors <- fmt.Errorf("could not determine content type of %s: %w", absPath, err)
+				return nil
 			}
 
 			switch contentType {
 			case "application/x-gzip", "application/zip":
 				logger.Debug("Censoring archive.")
 				if err := handleArchive(absPath, censorFile); err != nil {
-					return fmt.Errorf("could not censor archive %s: %w", absPath, err)
+					errors <- fmt.Errorf("could not censor archive %s: %w", absPath, err)
+					return nil
 				}
 			default:
 				logger.Debug("Censoring file.")
@@ -127,7 +142,10 @@ func (o Options) censor() error {
 			}
 			return nil
 		}); err != nil {
-			return fmt.Errorf("could not walk items to censor them: %w", err)
+			// This should never happen because the WalkFunc above is not supposed to return an error
+			// but if it somehow does, let's be defensive and log it
+			// DO NOT RETURN so that we continue to iterate o.GcsOptions
+			errors <- fmt.Errorf("could not walk items to censor them: %w", err)
 		}
 	}
 
@@ -188,7 +206,7 @@ func determineContentType(path string) (string, error) {
 	}()
 
 	header := make([]byte, 512)
-	if _, err := file.Read(header); err != nil {
+	if _, err := file.Read(header); err != nil && err != io.EOF {
 		return "", fmt.Errorf("could not read file to check content type: %w", err)
 	}
 	return http.DetectContentType(header), nil
@@ -197,7 +215,7 @@ func determineContentType(path string) (string, error) {
 // handleArchive unravels the archive in order to censor data in the files that were added to it.
 // This is mostly stolen from build/internal/untar/untar.go
 func handleArchive(archivePath string, censor func(wg *sync.WaitGroup, file string)) error {
-	outputDir, err := ioutil.TempDir("", "tmp-unpack")
+	outputDir, err := os.MkdirTemp("", "tmp-unpack")
 	if err != nil {
 		return fmt.Errorf("could not create temporary dir for unpacking: %w", err)
 	}
@@ -301,7 +319,7 @@ func validRelPath(p string) bool {
 func archive(srcDir, destArchive string) error {
 	// we want the temporary file we use for output to be in the same directory as the real destination, so
 	// we can be certain that our final os.Rename() call will not have to operate across a device boundary
-	output, err := ioutil.TempFile(filepath.Dir(destArchive), "tmp-archive")
+	output, err := os.CreateTemp(filepath.Dir(destArchive), "tmp-archive")
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file for archive: %w", err)
 	}
@@ -393,7 +411,7 @@ func handleFile(path string, censorer secretutil.Censorer, bufferSize int) error
 
 	// we want the temporary file we use for output to be in the same directory as the real destination, so
 	// we can be certain that our final os.Rename() call will not have to operate across a device boundary
-	output, err := ioutil.TempFile(filepath.Dir(path), "tmp-censor")
+	output, err := os.CreateTemp(filepath.Dir(path), "tmp-censor")
 	if err != nil {
 		return fmt.Errorf("could not create temporary file for censoring: %w", err)
 	}
@@ -478,7 +496,7 @@ func loadSecrets(paths, iniFilenames []string) ([][]byte, error) {
 			if info.IsDir() {
 				return nil
 			}
-			raw, err := ioutil.ReadFile(path)
+			raw, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}

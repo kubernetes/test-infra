@@ -160,6 +160,13 @@ type Blunderbuss struct {
 	// additional token per successful reviewer (and potentially more depending on
 	// how many busy reviewers it had to pass over).
 	UseStatusAvailability bool `json:"use_status_availability,omitempty"`
+	// IgnoreDrafts instructs the plugin to ignore assigning reviewers
+	// to the PR that is in Draft state. Default it's false.
+	IgnoreDrafts bool `json:"ignore_drafts,omitempty"`
+	// IgnoreAuthors skips requesting reviewers for specified users.
+	// This is useful when a bot user or admin opens a PR that will be
+	// merged regardless of approvals.
+	IgnoreAuthors []string `json:"ignore_authors,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -188,10 +195,6 @@ type Owners struct {
 	// OWNERS file, preventing their automatic addition by the owners-label plugin.
 	// This check is performed by the verify-owners plugin.
 	LabelsDenyList []string `json:"labels_denylist,omitempty"`
-
-	// LabelsBlackList will be removed after October 2021, use
-	// labels_denylist instead
-	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 
 	// Filenames allows configuring repos to use a separate set of filenames for
 	// any plugin that interacts with these files. Keys are in "org/repo" format.
@@ -278,7 +281,7 @@ type Size struct {
 type Blockade struct {
 	// Repos are either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
-	// BranchRegexp is the regular expression for branches that the the blockade applies to.
+	// BranchRegexp is the regular expression for branches that the blockade applies to.
 	// If BranchRegexp is not specified, the blockade applies to all branches by default.
 	// Compiles into BranchRe during config load.
 	BranchRegexp *string        `json:"branchregexp,omitempty"`
@@ -429,6 +432,10 @@ type AssignOnLabel struct {
 type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
+	// TrustedApps is the explicit list of GitHub apps whose PRs will be automatically
+	// considered as trusted. The list should contain usernames of each GitHub App without [bot] suffix.
+	// By default, trigger will ignore this list.
+	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' PRs will be automatically built for
 	// PRs to the above repos. The default is the PR's org.
 	//
@@ -445,6 +452,8 @@ type Trigger struct {
 	// IgnoreOkToTest makes trigger ignore /ok-to-test comments.
 	// This is a security mitigation to only allow testing from trusted users.
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
+	// TriggerGitHubWorkflows enables workflows run by github to be triggered by prow.
+	TriggerGitHubWorkflows bool `json:"trigger_github_workflows,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.
@@ -468,6 +477,7 @@ type Milestone struct {
 	// You can curl the following endpoint in order to determine the github ID of your team
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+	// Deprecated: use MaintainersTeam instead
 	MaintainersID           int    `json:"maintainers_id,omitempty"`
 	MaintainersTeam         string `json:"maintainers_team,omitempty"`
 	MaintainersFriendlyName string `json:"maintainers_friendly_name,omitempty"`
@@ -652,17 +662,30 @@ type Welcome struct {
 	// MessageTemplate is the welcome message template to post on new-contributor PRs
 	// For the info struct see prow/plugins/welcome/welcome.go's PRInfo
 	MessageTemplate string `json:"message_template,omitempty"`
+	// Post welcome message in all cases, even if PR author is not an existing
+	// contributor or part of the organization
+	AlwaysPost bool `json:"always_post,omitempty"`
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.
 type Dco struct {
 	// SkipDCOCheckForMembers is used to skip DCO check for trusted org members
 	SkipDCOCheckForMembers bool `json:"skip_dco_check_for_members,omitempty"`
+	// TrustedApps defines list of apps which commits will not be checked for DCO singoff.
+	// The list should contain usernames of each GitHub App without [bot] suffix.
+	// By default, this option is ignored.
+	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' commits will not be checked for DCO signoff
 	// if the skip DCO option is enabled. The default is the PR's org.
 	TrustedOrg string `json:"trusted_org,omitempty"`
 	// SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
 	SkipDCOCheckForCollaborators bool `json:"skip_dco_check_for_collaborators,omitempty"`
+	// ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
+	ContributingRepo string `json:"contributing_repo,omitempty"`
+	// ContributingBranch allows setting a custom branch where to find CONTRIBUTING.md
+	ContributingBranch string `json:"contributing_branch,omitempty"`
+	// ContributingPath is used to override the default path to CONTRIBUTING.md
+	ContributingPath string `json:"contributing_path,omitempty"`
 }
 
 // CherryPickUnapproved is the config for the cherrypick-unapproved plugin.
@@ -1003,11 +1026,7 @@ func (c *Configuration) setDefaults() {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
 	}
 	if c.Owners.LabelsDenyList == nil {
-		if c.Owners.LabelsBlackList != nil {
-			c.Owners.LabelsDenyList = c.Owners.LabelsBlackList
-		} else {
-			c.Owners.LabelsDenyList = []string{labels.Approved, labels.LGTM}
-		}
+		c.Owners.LabelsDenyList = []string{labels.Approved, labels.LGTM}
 	}
 	for _, milestone := range c.RepoMilestone {
 		if milestone.MaintainersFriendlyName == "" {
@@ -1231,6 +1250,16 @@ func validateTrigger(triggers []Trigger) error {
 	return nil
 }
 
+var warnRepoMilestone time.Time
+
+func validateRepoMilestone(milestones map[string]Milestone) {
+	for _, milestone := range milestones {
+		if milestone.MaintainersID != 0 {
+			logrusutil.ThrottledWarnf(&warnRepoMilestone, time.Hour, "deprecated field: maintainers_id is configured for repo_milestone, maintainers_team should be used instead")
+		}
+	}
+}
+
 func compileRegexpsAndDurations(pc *Configuration) error {
 	cRe, err := regexp.Compile(pc.SigMention.Regexp)
 	if err != nil {
@@ -1284,9 +1313,6 @@ func (c *Configuration) Validate() error {
 		logrus.Warn("no plugins specified-- check syntax?")
 	}
 
-	if c.Owners.LabelsBlackList != nil && c.Owners.LabelsDenyList != nil {
-		return errors.New("labels_blacklist and labels_denylist cannot be both supplied")
-	}
 	// Defaulting should run before validation.
 	c.setDefaults()
 	// Regexp compilation should run after defaulting, but before validation.
@@ -1318,6 +1344,7 @@ func (c *Configuration) Validate() error {
 	if err := validateTrigger(c.Triggers); err != nil {
 		return err
 	}
+	validateRepoMilestone(c.RepoMilestone)
 
 	return nil
 }
@@ -1862,7 +1889,12 @@ type Override struct {
 
 func (c *Configuration) mergeFrom(other *Configuration) error {
 	var errs []error
-	if diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla, ExternalPlugins: other.ExternalPlugins, Label: Label{RestrictedLabels: other.Label.RestrictedLabels}, Lgtm: other.Lgtm, Plugins: other.Plugins}); diff != "" {
+
+	diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla,
+		ExternalPlugins: other.ExternalPlugins, Label: Label{RestrictedLabels: other.Label.RestrictedLabels},
+		Lgtm: other.Lgtm, Plugins: other.Plugins, Triggers: other.Triggers, Welcome: other.Welcome})
+
+	if diff != "" {
 		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))
 	}
 
@@ -1879,6 +1911,8 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 
 	c.Approve = append(c.Approve, other.Approve...)
 	c.Lgtm = append(c.Lgtm, other.Lgtm...)
+	c.Triggers = append(c.Triggers, other.Triggers...)
+	c.Welcome = append(c.Welcome, other.Welcome...)
 
 	if err := c.mergeExternalPluginsFrom(other.ExternalPlugins); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge .external-plugins from supplemental config: %w", err))
@@ -2007,7 +2041,12 @@ func getLabelConfigFromRestrictedLabelsSlice(s []RestrictedLabel, label string) 
 }
 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Label: Label{RestrictedLabels: c.Label.RestrictedLabels}, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
+	equals := reflect.DeepEqual(c,
+		&Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins,
+			Label: Label{RestrictedLabels: c.Label.RestrictedLabels}, Lgtm: c.Lgtm, Plugins: c.Plugins,
+			Triggers: c.Triggers, Welcome: c.Welcome})
+
+	if !equals || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
@@ -2054,6 +2093,26 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 
 	for _, lgtm := range c.Lgtm {
 		for _, orgOrRepo := range lgtm.Repos {
+			if strings.Contains(orgOrRepo, "/") {
+				repos.Insert(orgOrRepo)
+			} else {
+				orgs.Insert(orgOrRepo)
+			}
+		}
+	}
+
+	for _, trigger := range c.Triggers {
+		for _, orgOrRepo := range trigger.Repos {
+			if strings.Contains(orgOrRepo, "/") {
+				repos.Insert(orgOrRepo)
+			} else {
+				orgs.Insert(orgOrRepo)
+			}
+		}
+	}
+
+	for _, welcome := range c.Welcome {
+		for _, orgOrRepo := range welcome.Repos {
 			if strings.Contains(orgOrRepo, "/") {
 				repos.Insert(orgOrRepo)
 			} else {

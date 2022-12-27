@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -22,7 +22,7 @@ presubmits:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -55,7 +55,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -73,12 +73,13 @@ presubmits:
       preset-service-account: "true"
       preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
+      preset-e2e-gce-windows-containerd: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         args:
@@ -98,6 +99,11 @@ presubmits:
         # this is done so that the e2e test runs faster
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
+        # in the e2e tests the flag --working-dir set on CSI Proxy allows
+        # setting the locations where CSI Proxy is supposed to run
+        # the test location is defined in /test/e2e/e2e_test.go
+        - name: CSI_PROXY_FLAGS
+          value: "--working-dir C:\\tmp"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -117,7 +123,7 @@ periodics:
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
       command:
       - runner.sh
       args:

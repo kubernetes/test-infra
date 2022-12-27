@@ -56,14 +56,14 @@ def parse_project(path):
     return None
 
 
-def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
+def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None, python='python3'):
     """Execute janitor for target GCP project """
     # Multiple jobs can share the same project, woooo
     if project in CHECKED:
         return
     CHECKED.add(project)
 
-    cmd = ['python', test_infra('boskos/cmd/janitor/gcp_janitor.py'), '--project=%s' % project]
+    cmd = [python, test_infra('boskos/cmd/janitor/gcp_janitor.py'), '--project=%s' % project]
     cmd.append('--hour=%d' % hours)
     if dryrun:
         cmd.append('--dryrun')
@@ -99,10 +99,6 @@ PR_PROJECTS = {
     'k8s-jkns-pr-gce-gpus': 3,
 }
 
-SCALE_PROJECT = {
-    'k8s-presubmit-scale': 3,
-}
-
 def check_predefine_jobs(jobs, ratelimit):
     """Handle predefined jobs"""
     for project, expire in jobs.iteritems():
@@ -129,8 +125,6 @@ def check_ci_jobs():
             if any(b in project for b in EXEMPT_PROJECTS):
                 print >>sys.stderr, 'Project %r is exempted in ci-janitor' % project
                 continue
-            if project in PR_PROJECTS or project in SCALE_PROJECT:
-                continue # CI janitor skips all PR jobs
             found = project
         if found:
             clean_project(found, clean_hours)
@@ -140,8 +134,6 @@ def main(mode, ratelimit, projects, age, artifacts, filt):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS, ratelimit)
-    elif mode == 'scale':
-        check_predefine_jobs(SCALE_PROJECT, ratelimit)
     elif mode == 'custom':
         projs = str.split(projects, ',')
         for proj in projs:
@@ -181,7 +173,7 @@ if __name__ == '__main__':
     VERBOSE = False
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--mode', default='ci', choices=['ci', 'pr', 'scale', 'custom'],
+        '--mode', default='ci', choices=['ci', 'pr', 'custom'],
         help='Which type of projects to clear')
     PARSER.add_argument(
         '--ratelimit', type=int,

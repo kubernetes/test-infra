@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-staging-test-infra/bootstrap:v20211008-e0e089cfce
+FROM gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -69,6 +69,11 @@ ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
 RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     rm "${GO_TARBALL}"
+
+# install yq
+ARG YQ_VERSION
+RUN wget -q "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
+    -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
 # install bazel
 ARG BAZEL_VERSION_ARG

@@ -27,9 +27,9 @@ function main() {
 
   # Generate PJ and Pod.
   docker pull gcr.io/k8s-prow/mkpj:latest
-  docker run -i --rm -v "${PWD}:${PWD}" -v "${config}:${config}" ${job_config_mnt} -w "${PWD}" gcr.io/k8s-prow/mkpj:latest "--config-path=${config}" "--job=${job}" ${job_config_flag} > "${PWD}/pj.yaml"
+  docker run -i --rm --user "$(id -u):$(id -g)" -v "${PWD}:${PWD}" -v "${config}:${config}" ${job_config_mnt} -w "${PWD}" gcr.io/k8s-prow/mkpj:latest "--config-path=${config}" "--job=${job}" ${job_config_flag} > "${PWD}/pj.yaml"
   docker pull gcr.io/k8s-prow/mkpod:latest
-  docker run -i --rm -v "${PWD}:${PWD}" -w "${PWD}" gcr.io/k8s-prow/mkpod:latest --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}/${job}" > "${PWD}/pod.yaml"
+  docker run -i --rm --user "$(id -u):$(id -g)" -v "${PWD}:${PWD}" -w "${PWD}" gcr.io/k8s-prow/mkpod:latest --build-id=snowflake "--prow-job=${PWD}/pj.yaml" --local "--out-dir=${out_dir}/${job}" > "${PWD}/pod.yaml"
 
   # Add any k8s resources that the pod depends on to the kind cluster here. (secrets, configmaps, etc.)
 
@@ -79,7 +79,7 @@ function ensureInstall() {
   # Install kind and set up cluster if not already done.
   if ! command -v kind >/dev/null 2>&1; then
     echo "Installing kind..."
-    GO111MODULE="on" go get sigs.k8s.io/kind@v0.7.0
+    GO111MODULE="on" go get sigs.k8s.io/kind@v0.16.0
   fi
   local found="false"
   for clust in $(kind get clusters); do

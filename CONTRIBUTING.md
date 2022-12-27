@@ -74,16 +74,12 @@ If you're not sure where to contribute or what any of these mean, please see
 
 ### Build and Test
 
-We use [`bazel`][bazel] to build, test and deploy code in this repo. In most
+We use make rules to build, test and deploy code in this repo. In most
 cases you can get by just fine with:
 
 ```
-bazel build //path/to/thing/in/repo/...
-bazel test //path/to/thing/in/repo/...
+make test
 ```
-
-If you modify Go code, run `./hack/update-bazel.sh` to keep `BUILD.bazel` files
-up to date
 
 ### Dependency Management
 
@@ -148,5 +144,3 @@ has test coverage in a variety of environments. For more info please see
 
 [kubernetes/kubernetes]: https://github.com/kubernetes/kubernetes
 [kuberenetes/enhancements/keps/sig-testing]: https://github.com/kubernetes/enhancements/tree/master/keps/sig-testing
-
-[bazel]: https://www.bazel.io/

@@ -105,12 +105,25 @@ func htmlContentHeader(out io.Writer, dirname, path string) error {
 	return tmplContentHeader.Execute(out, args)
 }
 
-const tmplContentFooterText = `</ul>`
+const tmplContentFooterText = `</ul>
+<details>
+	<summary style="display: list-item; padding-left: 1em">Download</summary>
+	<div style="padding: 1em">
+		You can download this directory by running the following <a href="https://cloud.google.com/storage/docs/gsutil">gsutil</a> command:
+		<pre>gsutil -m cp -r gs://{{.Path}} .</pre>
+	</div>
+</details>
+`
 
 var tmplContentFooter = template.Must(template.New("content-footer").Parse(tmplContentFooterText))
 
-func htmlContentFooter(out io.Writer) error {
-	return tmplContentFooter.Execute(out, struct{}{})
+func htmlContentFooter(out io.Writer, path string) error {
+	args := struct {
+		Path string
+	}{
+		Path: path,
+	}
+	return tmplContentFooter.Execute(out, args)
 }
 
 const tmplNextButtonText = `

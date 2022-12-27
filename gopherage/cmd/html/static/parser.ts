@@ -49,7 +49,7 @@ export class FileCoverage {
 
   get coveredStatements(): number {
     return reduce(this.blocks.values(),
-        (acc, b) => acc + (b.hits > 0 ? b.statements : 0), 0);
+      (acc, b) => acc + (b.hits > 0 ? b.statements : 0), 0);
   }
 
   private keyForBlock(block: Block): string {
@@ -72,7 +72,7 @@ export class Coverage {
 
   public getFilesWithPrefix(prefix: string): Map<string, FileCoverage> {
     return new Map(filter(
-        this.files.entries(), ([k]) => k.startsWith(this.prefix + prefix)));
+      this.files.entries(), ([k]) => k.startsWith(this.prefix + prefix)));
   }
 
   public getCoverageForPrefix(prefix: string): Coverage {
@@ -88,7 +88,7 @@ export class Coverage {
   get children(): Map<string, Coverage> {
     const children = new Map();
     for (const path of this.files.keys()) {
-      // tslint:disable-next-line:prefer-const
+      // eslint-disable-next-line prefer-const
       let [dir, rest] = path.substr(this.prefix.length).split('/', 2);
       if (!children.has(dir)) {
         if (rest) {
@@ -102,8 +102,8 @@ export class Coverage {
 
   get basename(): string {
     if (this.prefix.endsWith('/')) {
-      return this.prefix.substring(0, this.prefix.length - 1).split('/').pop() +
-          '/';
+      return `${this.prefix.substring(0, this.prefix.length - 1).split('/').pop()
+      }/`;
     }
     return this.prefix.split('/').pop()!;
   }
@@ -114,7 +114,7 @@ export class Coverage {
 
   get coveredStatements(): number {
     return reduce(
-        this.files.values(), (acc, f) => acc + f.coveredStatements, 0);
+      this.files.values(), (acc, f) => acc + f.coveredStatements, 0);
   }
 
   get totalFiles(): number {
@@ -123,8 +123,8 @@ export class Coverage {
 
   get coveredFiles(): number {
     return reduce(
-        this.files.values(),
-        (acc, f) => acc + (f.coveredStatements > 0 ? 1 : 0), 0);
+      this.files.values(),
+      (acc, f) => acc + (f.coveredStatements > 0 ? 1 : 0), 0);
   }
 }
 

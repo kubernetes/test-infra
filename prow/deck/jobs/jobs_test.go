@@ -20,9 +20,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -768,4 +770,24 @@ func (p *possiblyErroringFakeCtrlRuntimeClient) List(
 		return errors.New("could not list ProwJobs")
 	}
 	return p.Client.List(ctx, pjl, opts...)
+}
+
+func TestByPJStartTime(t *testing.T) {
+	now := metav1.Now()
+	in := []prowapi.ProwJob{
+		{Spec: prowapi.ProwJobSpec{Job: "foo"}},
+		{Spec: prowapi.ProwJobSpec{Job: "bar"}, Status: prowapi.ProwJobStatus{StartTime: now}},
+		{Spec: prowapi.ProwJobSpec{Job: "bar"}},
+	}
+	expected := []prowapi.ProwJob{
+		{Spec: prowapi.ProwJobSpec{Job: "bar"}, Status: prowapi.ProwJobStatus{StartTime: now}},
+		{Spec: prowapi.ProwJobSpec{Job: "bar"}},
+		{Spec: prowapi.ProwJobSpec{Job: "foo"}},
+	}
+
+	sort.Sort(byPJStartTime(in))
+
+	if diff := cmp.Diff(in, expected); diff != "" {
+		t.Errorf("actual differs from expected: %s", diff)
+	}
 }

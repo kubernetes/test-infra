@@ -3,14 +3,12 @@
 reviewers:
 - spiffxp
 - MushuEE
-- amwat
-- BenTheElder
 approvers:
 - spiffxp
 - MushuEE
+emeritus_approvers:
 - amwat
 - BenTheElder
-emeritus_approvers:
 - Katharine
 
 labels:

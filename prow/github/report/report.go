@@ -172,7 +172,7 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 	// whether to report or not.
 	refs := validPjs[0].Spec.Refs
 	// we are not reporting for batch jobs, we can consider support that in the future
-	if len(refs.Pulls) != 1 {
+	if refs == nil || len(refs.Pulls) != 1 {
 		return nil
 	}
 
@@ -184,14 +184,25 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 	if err != nil {
 		return fmt.Errorf("error getting bot name checker: %w", err)
 	}
-	deletes, entries, updateID := parseIssueComments(pjs, botNameChecker, ics)
+	deletes, entries, updateID := parseIssueComments(validPjs, botNameChecker, ics)
 	for _, delete := range deletes {
 		if err := ghc.DeleteCommentWithContext(ctx, refs.Org, refs.Repo, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %w", err)
 		}
 	}
-	if len(entries) > 0 || mustCreate {
-		comment, err := createComment(reportTemplate, pjs, entries)
+
+	// If there are any aborted pjs for this ref we don't want to report that all tests passed.
+	// This could be due to a push while pjs are running.
+	aborted := false
+	for _, pj := range validPjs {
+		if pj.Status.State == v1.AbortedState {
+			aborted = true
+			break
+		}
+	}
+
+	if len(entries) > 0 || (mustCreate && !aborted) {
+		comment, err := createComment(reportTemplate, validPjs, entries)
 		if err != nil {
 			return fmt.Errorf("generating comment: %w", err)
 		}

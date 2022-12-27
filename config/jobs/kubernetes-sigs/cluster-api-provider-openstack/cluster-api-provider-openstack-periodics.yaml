@@ -2,8 +2,6 @@ periodics:
 - name: periodic-cluster-api-provider-openstack-e2e-test-main
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -22,10 +20,12 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
+      - name: E2E_GINKGO_FOCUS
+        value: "\\[PR-Blocking\\]"
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -48,8 +48,6 @@ periodics:
 - name: periodic-cluster-api-provider-openstack-conformance-test-main-with-k8s-ci-artifacts
   labels:
     preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
@@ -72,7 +70,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"

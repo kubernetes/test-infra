@@ -80,6 +80,10 @@ ensure-in-gopath() {
   cd "$fake_repopath"
 }
 
+gen-prow-config-documented() {
+  go run ./hack/gen-prow-documented
+}
+
 # copyfiles will copy all files in 'path' in the fake gopath over to the
 # workspace directory as the code generators output directly into GOPATH,
 # meaning without this function the generated files are left in /tmp
@@ -147,6 +151,7 @@ gen-client() {
     --clientset-name versioned \
     --input-base "" \
     --input github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --input github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1 \
     --output-package k8s.io/test-infra/prow/pipeline/clientset
   copyfiles "./prow/pipeline/clientset" "*.go"
 }
@@ -165,6 +170,7 @@ gen-lister() {
   "$listergen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1 \
     --output-package k8s.io/test-infra/prow/pipeline/listers
   copyfiles "./prow/pipeline/listers" "*.go"
 }
@@ -185,6 +191,7 @@ gen-informer() {
   "$informergen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
     --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1 \
+    --input-dirs github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1 \
     --versioned-clientset-package k8s.io/test-infra/prow/pipeline/clientset/versioned \
     --listers-package k8s.io/test-infra/prow/pipeline/listers \
     --output-package k8s.io/test-infra/prow/pipeline/informers
@@ -205,6 +212,7 @@ gen-prowjob-crd(){
   if [[ -z ${HOME:-} ]]; then export HOME=$PWD; fi
   $controller_gen crd:preserveUnknownFields=false,crdVersions=v1 paths=./prow/apis/prowjobs/v1 output:stdout \
     | $SED '/^$/d' \
+    | $SED '/^spec:.*/a  \  preserveUnknownFields: false' \
     | $SED '/^  annotations.*/a  \    api-approved.kubernetes.io: https://github.com/kubernetes/test-infra/pull/8669' \
     | $SED '/^          status:/r'<(cat<<EOF
             anyOf:
@@ -218,10 +226,12 @@ gen-prowjob-crd(){
             - required:
               - completionTime
 EOF
-    ) > ./config/prow/cluster/prowjob_customresourcedefinition.yaml
-  copyfiles "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
+    ) > ./config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
+  copyfiles "./config/prow/cluster/prowjob-crd" "prowjob_customresourcedefinition.yaml"
   unset HOME
 }
+
+gen-prow-config-documented
 
 export GO111MODULE=off
 ensure-in-gopath

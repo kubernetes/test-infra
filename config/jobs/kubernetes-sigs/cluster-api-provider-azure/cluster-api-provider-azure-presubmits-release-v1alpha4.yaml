@@ -9,7 +9,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -25,7 +25,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -48,7 +48,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
           - runner.sh
         args:
@@ -80,7 +80,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
           - runner.sh
         args:
@@ -99,7 +99,7 @@ presubmits:
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e-windows-dockershim-v1alpha4
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    optional: false
+    optional: true
     decorate: true
     # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
     run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
@@ -113,7 +113,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
           - runner.sh
         args:
@@ -135,7 +135,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: '^((exp)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    run_if_changed: '^((exp)\/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)|managed.*\.go|aks|^azure\/services\/agentpools\/'
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -146,7 +146,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
           - runner.sh
         args:
@@ -180,7 +180,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
           - runner.sh
         args:
@@ -209,7 +209,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
         - "runner.sh"
         - "make"
@@ -236,7 +236,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
           - runner.sh
         args:
@@ -263,7 +263,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
           - runner.sh
         args:
@@ -287,7 +287,7 @@ presubmits:
     - ^release-0.5$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
         command:
           - runner.sh
         args:

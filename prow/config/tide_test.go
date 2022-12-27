@@ -26,8 +26,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 )
 
@@ -175,37 +175,39 @@ func TestOrgExceptionsAndRepos(t *testing.T) {
 
 func TestMergeMethod(t *testing.T) {
 	ti := &Tide{
-		MergeType: map[string]github.PullRequestMergeType{
-			"kubernetes/kops":             github.MergeRebase,
-			"kubernetes-helm":             github.MergeSquash,
-			"kubernetes-helm/chartmuseum": github.MergeMerge,
+		TideGitHubConfig: TideGitHubConfig{
+			MergeType: map[string]types.PullRequestMergeType{
+				"kubernetes/kops":             types.MergeRebase,
+				"kubernetes-helm":             types.MergeSquash,
+				"kubernetes-helm/chartmuseum": types.MergeMerge,
+			},
 		},
 	}
 
 	var testcases = []struct {
 		org      string
 		repo     string
-		expected github.PullRequestMergeType
+		expected types.PullRequestMergeType
 	}{
 		{
 			"kubernetes",
 			"kubernetes",
-			github.MergeMerge,
+			types.MergeMerge,
 		},
 		{
 			"kubernetes",
 			"kops",
-			github.MergeRebase,
+			types.MergeRebase,
 		},
 		{
 			"kubernetes-helm",
 			"monocular",
-			github.MergeSquash,
+			types.MergeSquash,
 		},
 		{
 			"kubernetes-helm",
 			"chartmuseum",
-			github.MergeMerge,
+			types.MergeMerge,
 		},
 	}
 
@@ -218,14 +220,16 @@ func TestMergeMethod(t *testing.T) {
 }
 func TestMergeTemplate(t *testing.T) {
 	ti := &Tide{
-		MergeTemplate: map[string]TideMergeCommitTemplate{
-			"kubernetes/kops": {
-				TitleTemplate: "",
-				BodyTemplate:  "",
-			},
-			"kubernetes-helm": {
-				TitleTemplate: "{{ .Title }}",
-				BodyTemplate:  "{{ .Body }}",
+		TideGitHubConfig: TideGitHubConfig{
+			MergeTemplate: map[string]TideMergeCommitTemplate{
+				"kubernetes/kops": {
+					TitleTemplate: "",
+					BodyTemplate:  "",
+				},
+				"kubernetes-helm": {
+					TitleTemplate: "{{ .Title }}",
+					BodyTemplate:  "{{ .Body }}",
+				},
 			},
 		},
 	}
@@ -476,9 +480,11 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					Tide: Tide{
-						ContextOptions: TideContextPolicyOptions{
-							TideContextPolicy: TideContextPolicy{
-								FromBranchProtection: &yes,
+						TideGitHubConfig: TideGitHubConfig{
+							ContextOptions: TideContextPolicyOptions{
+								TideContextPolicy: TideContextPolicy{
+									FromBranchProtection: &yes,
+								},
 							},
 						},
 					},
@@ -504,9 +510,11 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 						},
 					},
 					Tide: Tide{
-						ContextOptions: TideContextPolicyOptions{
-							TideContextPolicy: TideContextPolicy{
-								FromBranchProtection: &yes,
+						TideGitHubConfig: TideGitHubConfig{
+							ContextOptions: TideContextPolicyOptions{
+								TideContextPolicy: TideContextPolicy{
+									FromBranchProtection: &yes,
+								},
 							},
 						},
 					},
@@ -523,12 +531,14 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					Tide: Tide{
-						ContextOptions: TideContextPolicyOptions{
-							TideContextPolicy: TideContextPolicy{
-								RequiredContexts:          []string{"r1"},
-								RequiredIfPresentContexts: []string{},
-								OptionalContexts:          []string{"o1"},
-								SkipUnknownContexts:       &yes,
+						TideGitHubConfig: TideGitHubConfig{
+							ContextOptions: TideContextPolicyOptions{
+								TideContextPolicy: TideContextPolicy{
+									RequiredContexts:          []string{"r1"},
+									RequiredIfPresentContexts: []string{},
+									OptionalContexts:          []string{"o1"},
+									SkipUnknownContexts:       &yes,
+								},
 							},
 						},
 					},

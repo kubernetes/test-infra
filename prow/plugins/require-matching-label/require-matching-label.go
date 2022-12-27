@@ -23,6 +23,7 @@ package requirematchinglabel
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -48,6 +49,8 @@ var (
 		github.IssueActionLabeled:   true,
 		github.IssueActionUnlabeled: true,
 	}
+
+	checkRequireLabelsRe = regexp.MustCompile(`(?mi)^/check-required-labels\s*$`)
 )
 
 const (
@@ -59,6 +62,7 @@ type githubClient interface {
 	RemoveLabel(org, repo string, number int, label string) error
 	CreateComment(org, repo string, number int, content string) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 }
 
 type commentPruner interface {
@@ -68,6 +72,7 @@ type commentPruner interface {
 func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssue, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
@@ -95,14 +100,21 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	if err != nil {
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
-	return &pluginhelp.PluginHelp{
-			Description: `The require-matching-label plugin is a configurable plugin that applies a label to issues and/or PRs that do not have any labels matching a regular expression. An example of this is applying a 'needs-sig' label to all issues that do not have a 'sig/*' label. This plugin can have multiple configurations to provide this kind of behavior for multiple different label sets. The configuration allows issue type, PR branch, and an optional explanation comment to be specified.`,
-			Config: map[string]string{
-				"": fmt.Sprintf("The plugin has the following configurations:\n<ul><li>%s</li></ul>", strings.Join(descs, "</li><li>")),
-			},
-			Snippet: yamlSnippet,
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: `The require-matching-label plugin is a configurable plugin that applies a label to issues and/or PRs that do not have any labels matching a regular expression. An example of this is applying a 'needs-sig' label to all issues that do not have a 'sig/*' label. This plugin can have multiple configurations to provide this kind of behavior for multiple different label sets. The configuration allows issue type, PR branch, and an optional explanation comment to be specified.`,
+		Config: map[string]string{
+			"": fmt.Sprintf("The plugin has the following configurations:\n<ul><li>%s</li></ul>", strings.Join(descs, "</li><li>")),
 		},
-		nil
+		Snippet: yamlSnippet,
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/check-required-labels",
+		Description: "Checks for required labels.",
+		Featured:    true,
+		WhoCanUse:   "Anyone",
+		Examples:    []string{"/check-required-labels"},
+	})
+	return pluginHelp, nil
 }
 
 type event struct {
@@ -243,4 +255,43 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 
 	}
 	return nil
+}
+
+func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+	// Only consider open PRs and new comments.
+	if ce.IssueState != "open" || ce.Action != github.GenericCommentActionCreated {
+		return nil
+	}
+	// Only consider "/check-required-labels" comments.
+	if !checkRequireLabelsRe.MatchString(ce.Body) {
+		return nil
+	}
+
+	cp, err := pc.CommentPruner()
+	if err != nil {
+		return err
+	}
+
+	return handleComment(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, &ce)
+}
+
+func handleComment(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plugins.RequireMatchingLabel, e *github.GenericCommentEvent) error {
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
+	number := e.Number
+
+	event := &event{
+		org:    org,
+		repo:   repo,
+		number: number,
+		author: e.User.Login,
+	}
+	if e.IsPR {
+		pr, err := ghc.GetPullRequest(org, repo, number)
+		if err != nil {
+			return err
+		}
+		event.branch = pr.Base.Ref
+	}
+	return handle(log, ghc, cp, configs, event)
 }

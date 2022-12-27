@@ -18,9 +18,8 @@ limitations under the License.
 package secret
 
 import (
-	"os"
+	"fmt"
 	"sync"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -34,8 +33,7 @@ var secretAgent *agent
 
 func init() {
 	secretAgent = &agent{
-		RWMutex:           sync.RWMutex{},
-		secretsMap:        map[string][]byte{},
+		secretsMap:        map[string]secretReloader{},
 		ReloadingCensorer: secretutil.NewCensorer(),
 	}
 	logrus.SetFormatter(logrusutil.NewFormatterWithCensor(logrus.StandardLogger().Formatter, secretAgent.ReloadingCensorer))
@@ -45,38 +43,39 @@ func init() {
 // Additionally, Start wraps the current standard logger formatter with a
 // censoring formatter that removes secret occurrences from the logs.
 func (a *agent) Start(paths []string) error {
-	secretsMap, err := loadSecrets(paths)
-	if err != nil {
-		return err
-	}
-
-	a.secretsMap = secretsMap
+	a.secretsMap = make(map[string]secretReloader, len(paths))
 	a.ReloadingCensorer = secretutil.NewCensorer()
-	a.refreshCensorer()
+
+	for _, path := range paths {
+		if err := a.Add(path); err != nil {
+			return fmt.Errorf("failed to load secret at %s: %w", path, err)
+		}
+	}
 
 	logrus.SetFormatter(logrusutil.NewFormatterWithCensor(logrus.StandardLogger().Formatter, a.ReloadingCensorer))
-
-	// Start one goroutine for each file to monitor and update the secret's values.
-	for secretPath := range secretsMap {
-		go a.reloadSecret(secretPath)
-	}
 
 	return nil
 }
 
 // Add registers a new path to the agent.
 func Add(paths ...string) error {
-	secrets, err := loadSecrets(paths)
-	if err != nil {
-		return err
-	}
-
-	for path, value := range secrets {
-		secretAgent.setSecret(path, value)
-		// Start one goroutine for each file to monitor and update the secret's values.
-		go secretAgent.reloadSecret(path)
+	for _, path := range paths {
+		if err := secretAgent.Add(path); err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+// AddWithParser registers a new path to the agent. The secret will only be updated if it can
+// be successfully parsed. The returned getter must be kept, as it is the only way of accessing
+// the typed secret.
+func AddWithParser[T any](path string, parsingFN func([]byte) (T, error)) (func() T, error) {
+	loader := &parsingSecretReloader[T]{
+		path:      path,
+		parsingFN: parsingFN,
+	}
+	return loader.get, secretAgent.add(path, loader)
 }
 
 // GetSecret returns the value of a secret stored in a map.
@@ -98,81 +97,59 @@ func Censor(content []byte) []byte {
 // agent watches a path and automatically loads the secrets stored.
 type agent struct {
 	sync.RWMutex
-	secretsMap map[string][]byte
+	secretsMap map[string]secretReloader
 	*secretutil.ReloadingCensorer
+}
+
+type secretReloader interface {
+	getRaw() []byte
+	start(reloadCensor func()) error
 }
 
 // Add registers a new path to the agent.
 func (a *agent) Add(path string) error {
-	secret, err := loadSingleSecret(path)
-	if err != nil {
+	return a.add(path, &parsingSecretReloader[[]byte]{
+		path:      path,
+		parsingFN: func(b []byte) ([]byte, error) { return b, nil },
+	})
+}
+
+func (a *agent) add(path string, loader secretReloader) error {
+	if err := loader.start(a.refreshCensorer); err != nil {
 		return err
 	}
 
-	a.setSecret(path, secret)
+	a.setSecret(path, loader)
 
-	// Start one goroutine for each file to monitor and update the secret's values.
-	go a.reloadSecret(path)
 	return nil
-}
-
-// reloadSecret will begin polling the secret file at the path. If the first load
-// fails, Start with return the error and abort. Future load failures will log
-// the failure message but continue attempting to load.
-func (a *agent) reloadSecret(secretPath string) {
-	var lastModTime time.Time
-	logger := logrus.NewEntry(logrus.StandardLogger())
-
-	skips := 0
-	for range time.Tick(1 * time.Second) {
-		if skips < 600 {
-			// Check if the file changed to see if it needs to be re-read.
-			secretStat, err := os.Stat(secretPath)
-			if err != nil {
-				logger.WithField("secret-path", secretPath).
-					WithError(err).Error("Error loading secret file.")
-				continue
-			}
-
-			recentModTime := secretStat.ModTime()
-			if !recentModTime.After(lastModTime) {
-				skips++
-				continue // file hasn't been modified
-			}
-			lastModTime = recentModTime
-		}
-
-		if secretValue, err := loadSingleSecret(secretPath); err != nil {
-			logger.WithField("secret-path: ", secretPath).
-				WithError(err).Error("Error loading secret.")
-		} else {
-			a.setSecret(secretPath, secretValue)
-			skips = 0
-		}
-	}
 }
 
 // GetSecret returns the value of a secret stored in a map.
 func (a *agent) GetSecret(secretPath string) []byte {
 	a.RLock()
 	defer a.RUnlock()
-	return a.secretsMap[secretPath]
+	if val, set := a.secretsMap[secretPath]; set {
+		return val.getRaw()
+	}
+	return nil
 }
 
 // setSecret sets a value in a map of secrets.
-func (a *agent) setSecret(secretPath string, secretValue []byte) {
+func (a *agent) setSecret(secretPath string, secretValue secretReloader) {
 	a.Lock()
-	defer a.Unlock()
 	a.secretsMap[secretPath] = secretValue
+	a.Unlock()
 	a.refreshCensorer()
 }
 
-// refreshCensorer should be called when the lock is held and the secrets map changes
+// refreshCensorer should be called when the secrets map changes
 func (a *agent) refreshCensorer() {
 	var secrets [][]byte
+	a.RLock()
 	for _, value := range a.secretsMap {
-		secrets = append(secrets, value)
+		secrets = append(secrets, value.getRaw())
 	}
+	a.RUnlock()
 	a.ReloadingCensorer.RefreshBytes(secrets...)
 }
 
@@ -200,7 +177,7 @@ func (a *agent) getSecrets() sets.String {
 	defer a.RUnlock()
 	secrets := sets.NewString()
 	for _, v := range a.secretsMap {
-		secrets.Insert(string(v))
+		secrets.Insert(string(v.getRaw()))
 	}
 	return secrets
 }

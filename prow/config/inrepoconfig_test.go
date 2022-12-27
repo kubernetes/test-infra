@@ -19,11 +19,11 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
@@ -40,7 +40,7 @@ func TestDefaultProwYAMLGetterV2(t *testing.T) {
 }
 
 func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
-	org, repo := "org", "repo"
+	org, defaultRepo := "org", "repo"
 	testCases := []struct {
 		name              string
 		baseContent       map[string][]byte
@@ -48,12 +48,13 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 		config            *Config
 		dontPassGitClient bool
 		validate          func(*ProwYAML, error) error
+		repo              string
 	}{
 		// presubmits
 		{
 			name: "Basic happy path (presubmits)",
 			baseContent: map[string][]byte{
-				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+				".prow.yaml": []byte(`presubmits: [{"name": "hans", "annotations": {"foo.bar": "foobar"}, "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
@@ -61,6 +62,9 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				}
+				if diff := cmp.Diff(p.Presubmits[0].Annotations, map[string]string{"foo.bar": "foobar"}); diff != "" {
+					return errors.New(diff)
 				}
 				return nil
 			},
@@ -121,7 +125,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			config: &Config{JobConfig: JobConfig{
 				PresubmitsStatic: map[string][]Presubmit{
-					org + "/" + repo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
+					org + "/" + defaultRepo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
 				},
 			}},
 			validate: func(_ *ProwYAML, err error) error {
@@ -226,7 +230,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			config: &Config{JobConfig: JobConfig{
 				PostsubmitsStatic: map[string][]Postsubmit{
-					org + "/" + repo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
+					org + "/" + defaultRepo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
 				},
 			}},
 			validate: func(_ *ProwYAML, err error) error {
@@ -527,12 +531,33 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 				return nil
 			},
 		},
+		{
+			name: "Basic happy path (presubmits, gerrit repo)",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %w", err)
+				}
+				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+			repo: "repo/name",
+		},
 	}
 
 	for idx := range testCases {
 		tc := testCases[idx]
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
+			repo := defaultRepo
+			if len(tc.repo) > 0 {
+				repo = tc.repo
+			}
 
 			lg, gc, err := clients()
 			if err != nil {
@@ -611,15 +636,15 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 	}
 }
 
-func TestDefaultProwYAMLGetter_RejectsNonGitHubRepo(t *testing.T) {
-	testDefaultProwYAMLGetter_RejectsNonGitHubRepo(localgit.New, t)
+func TestDefaultProwYAMLGetter_RejectsJustOrg(t *testing.T) {
+	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.New, t)
 }
 
-func TestDefaultProwYAMLGetter_RejectsNonGitHubRepoV2(t *testing.T) {
-	testDefaultProwYAMLGetter_RejectsNonGitHubRepo(localgit.NewV2, t)
+func TestDefaultProwYAMLGetter_RejectsJustOrgV2(t *testing.T) {
+	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.NewV2, t)
 }
 
-func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t *testing.T) {
+func testDefaultProwYAMLGetter_RejectsJustOrg(clients localgit.Clients, t *testing.T) {
 	lg, gc, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
@@ -638,7 +663,7 @@ func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t 
 		t.Fatalf("Making fake repo: %v", err)
 	}
 	expectedErrMsg := `didn't get two results when splitting repo identifier "my-repo"`
-	if _, err := prowYAMLGetterWithDefaults(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
+	if _, err := prowYAMLGetterWithDefaults(&Config{}, gc, identifier, "", ""); err == nil || err.Error() != expectedErrMsg {
 		t.Errorf("Error %v does not have expected message %s", err, expectedErrMsg)
 	}
 }
@@ -660,7 +685,7 @@ type fetchOnlyNoCleanRepoClient struct {
 	git.RepoClient // This will be nil during testing, we override the functions that are allowed to be used.
 }
 
-func (rc *fetchOnlyNoCleanRepoClient) Fetch() error {
+func (rc *fetchOnlyNoCleanRepoClient) Fetch(arg ...string) error {
 	return nil
 }
 
@@ -778,7 +803,7 @@ func TestInRepoConfigClean(t *testing.T) {
 	clonedRepo := casted.cache["org/repo"]
 	dir := clonedRepo.RepoClient.Directory()
 	f := path.Join(dir, "new-file")
-	if err := ioutil.WriteFile(f, []byte("something"), 0644); err != nil {
+	if err := os.WriteFile(f, []byte("something"), 0644); err != nil {
 		t.Fatal(err)
 	}
 

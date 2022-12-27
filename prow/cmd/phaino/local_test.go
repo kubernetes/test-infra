@@ -18,9 +18,7 @@ package main
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"go/build"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -29,6 +27,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -88,11 +87,7 @@ func TestPathAlias(t *testing.T) {
 }
 
 func TestReadRepo(t *testing.T) {
-	dir, err := ioutil.TempDir("", "read-repo")
-	if err != nil {
-		t.Fatalf("Cannot create temp dir: %v", err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	cases := []struct {
 		name      string
@@ -243,11 +238,7 @@ func TestFindRepoFromLocal(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			dir, err := ioutil.TempDir("", "find-repo-"+tc.name)
-			if err != nil {
-				t.Fatalf("Cannot create temp dir: %v", err)
-			}
-			defer os.RemoveAll(dir)
+			dir := t.TempDir()
 
 			tc.dirs = append(tc.dirs, tc.wd)
 			for _, d := range tc.dirs {

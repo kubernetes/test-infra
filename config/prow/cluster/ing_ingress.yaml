@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   namespace: default
@@ -13,14 +13,23 @@ spec:
     http:
       paths:
       - path: /*
+        pathType: ImplementationSpecific
         backend:
-          serviceName: deck
-          servicePort: 80
+          service:
+            name: deck
+            port:
+              number: 80
       - path: /hook
+        pathType: ImplementationSpecific
         backend:
-          serviceName: hook
-          servicePort: 8888
+          service:
+            name: hook
+            port:
+              number: 8888
       - path: /metrics
+        pathType: ImplementationSpecific
         backend:
-          serviceName: pushgateway-external
-          servicePort: 80
+          service:
+            name: pushgateway-external
+            port:
+              number: 80

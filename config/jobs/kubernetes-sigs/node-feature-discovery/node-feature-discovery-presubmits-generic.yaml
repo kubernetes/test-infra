@@ -1,0 +1,83 @@
+presubmits:
+  kubernetes-sigs/node-feature-discovery:
+  - name: pull-node-feature-discovery-verify-release-06-09
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    branches:
+    - ^release-0.6
+    - ^release-0.7
+    - ^release-0.8
+    - ^release-0.9
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: verify-0.9
+      description: "Verify source code of pre golang 1.17 release branches"
+    spec:
+      containers:
+      - image: golang:1.16
+        command:
+        - scripts/test-infra/verify.sh
+  - name: pull-node-feature-discovery-build-image-generic
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    skip_branches:
+    - gh-pages
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build-image
+      description: "Build container image of node-feature-discovery"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - scripts/test-infra/build-image.sh
+  - name: pull-node-feature-discovery-build-image-cross-generic
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    skip_branches:
+    - gh-pages
+    - ^release-0.6
+    - ^release-0.7
+    - ^release-0.8
+    - ^release-0.9
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build-image-cross
+      description: "Build multiarch container images of node-feature-discovery"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - scripts/test-infra/build-image-cross.sh
+  - name: pull-node-feature-discovery-build-gh-pages-generic
+    run_if_changed: "^docs/"
+    skip_branches:
+    - gh-pages
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build-gh-pages
+      description: "Test build of gh-pages documentation"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - scripts/test-infra/build-gh-pages.sh

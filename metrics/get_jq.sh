@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2021 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-mkdir jq-1.5
-wget -O - https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64 > jq-1.5/jq-osx-amd64
-chmod a+x jq-1.5/jq-osx-amd64
+set -o errexit
+set -o nounset
+set -o pipefail
 
-wget -O - https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 > jq-1.5/jq-linux64
-chmod a+x jq-1.5/jq-linux64
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "${REPO_ROOT}"
+
+JQ_DIR="_bin/jq-1.5"
+JQ_BIN="${REPO_ROOT}/${JQ_DIR}/jq"
+if [[ -f "${JQ_BIN}" ]]; then
+    echo "$JQ_BIN"
+    exit 0
+fi
+
+bin-path() {
+    echo "${REPO_ROOT}/${JQ_DIR}/$1"
+}
+
+download() {
+    local name="$1"
+    local path="$(bin-path $name)"
+    curl -fsSL "https://github.com/stedolan/jq/releases/download/jq-1.5/$name" -o "$path"
+    chmod a+x "$path"
+    cp "$path" "$JQ_BIN"
+}
+
+mkdir -p "${JQ_DIR}"
+# linux64 is used by CI, making sure that this is used in CI as well
+download jq-linux64
+# ensure that `_bin/jq-1.5/jq` is compatible with host, so that python3 test
+# won't fail locally
+if [[ "$(uname)" == Darwin ]]; then
+    download jq-osx-amd64
+fi
+
+echo "$JQ_BIN"

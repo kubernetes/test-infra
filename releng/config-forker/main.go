@@ -21,8 +21,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 	"text/template"
@@ -62,6 +62,10 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 					c.Env = fixEnvVars(c.Env, version)
 					c.Image = fixImage(c.Image, version)
 					var err error
+					c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+					if err != nil {
+						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
+					}
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
@@ -86,13 +90,16 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 			p.SkipBranches = nil
 			p.Branches = []string{"release-" + version}
 			p.Context = generatePresubmitContextVariant(p.Name, p.Context, version)
-			p.Name = generatePresubmitNameVariant(p.Name, version)
 			if p.Spec != nil {
 				for i := range p.Spec.Containers {
 					c := &p.Spec.Containers[i]
 					c.Env = fixEnvVars(c.Env, version)
 					c.Image = fixImage(c.Image, version)
 					var err error
+					c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+					if err != nil {
+						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
+					}
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
@@ -131,6 +138,10 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 					c.Args = fixBootstrapArgs(c.Args, version)
 				}
 				var err error
+				c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+				if err != nil {
+					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
+				}
 				c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 				if err != nil {
 					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
@@ -367,14 +378,6 @@ func generateNameVariant(name, version string, generic bool) string {
 	return replaceAllMaster(name, suffix)
 }
 
-func generatePresubmitNameVariant(name, version string) string {
-	suffix := "-" + version
-	if !strings.HasSuffix(name, masterSuffix) {
-		return name + suffix
-	}
-	return replaceAllMaster(name, suffix)
-}
-
 func generatePresubmitContextVariant(name, context, version string) string {
 	suffix := "-" + version
 
@@ -445,7 +448,7 @@ func main() {
 	}
 
 	if o.outputPath != "" {
-		if err := ioutil.WriteFile(o.outputPath, output, 0666); err != nil {
+		if err := os.WriteFile(o.outputPath, output, 0666); err != nil {
 			log.Fatalf("Failed to write new presubmits: %v.\n", err)
 		}
 	} else {

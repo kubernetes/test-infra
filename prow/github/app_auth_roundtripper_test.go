@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
@@ -63,6 +62,7 @@ func TestAppsAuth(t *testing.T) {
 	const appID = "13"
 	testCases := []struct {
 		name                string
+		githubBaseURL       string
 		cachedAppSlug       *string
 		cachedInstallations map[string]AppInstallation
 		cachedTokens        map[int64]*AppInstallationToken
@@ -104,7 +104,7 @@ func TestAppsAuth(t *testing.T) {
 			},
 			responses: map[string]*http.Response{"/app": {
 				StatusCode: 401,
-				Body:       ioutil.NopCloser(&bytes.Buffer{}),
+				Body:       io.NopCloser(&bytes.Buffer{}),
 			}},
 			verifyRequests: func(r []*http.Request) error {
 				if n := len(r); n != 1 {
@@ -121,7 +121,7 @@ func TestAppsAuth(t *testing.T) {
 		},
 		{
 			name:                "App installation auth success, everything served from cache",
-			cachedAppSlug:       utilpointer.StringPtr("ci-app"),
+			cachedAppSlug:       utilpointer.String("ci-app"),
 			cachedInstallations: map[string]AppInstallation{"org": {ID: 1}},
 			cachedTokens:        map[int64]*AppInstallationToken{1: {Token: "the-token", ExpiresAt: time.Now().Add(time.Hour)}},
 			doRequest: func(c Client) error {
@@ -148,7 +148,7 @@ func TestAppsAuth(t *testing.T) {
 		},
 		{
 			name:                "App installation auth success, new token is requested",
-			cachedAppSlug:       utilpointer.StringPtr("ci-app"),
+			cachedAppSlug:       utilpointer.String("ci-app"),
 			cachedInstallations: map[string]AppInstallation{"org": {ID: 1}},
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("org")
@@ -183,7 +183,7 @@ func TestAppsAuth(t *testing.T) {
 		},
 		{
 			name:          "App installation auth success, installations and token is requsted",
-			cachedAppSlug: utilpointer.StringPtr("ci-app"),
+			cachedAppSlug: utilpointer.String("ci-app"),
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("org")
 				return err
@@ -285,8 +285,66 @@ func TestAppsAuth(t *testing.T) {
 			},
 		},
 		{
+			name:          "App installation auth with custom base url with path is successful, slug, installations and token are requsted",
+			githubBaseURL: "https://corp.internal/api/v3",
+			doRequest: func(c Client) error {
+				_, err := c.GetOrg("org")
+				return err
+			},
+			responses: map[string]*http.Response{
+				"/api/v3/app":                               {StatusCode: 200, Body: serializeOrDie(App{Slug: "ci-app"})},
+				"/api/v3/app/installations":                 {StatusCode: 200, Body: serializeOrDie([]AppInstallation{{ID: 1, Account: User{Login: "org"}}})},
+				"/api/v3/app/installations/1/access_tokens": {StatusCode: 201, Body: serializeOrDie(AppInstallationToken{Token: "the-token"})},
+				"/api/v3/orgs/org":                          {StatusCode: 200, Body: serializeOrDie(Organization{})},
+			},
+			verifyRequests: func(r []*http.Request) error {
+				if n := len(r); n != 4 {
+					return fmt.Errorf("expected exactly four request, got %d", n)
+				}
+
+				if r[0].URL.Path != "/api/v3/app" {
+					return fmt.Errorf("expected first request to have path '/api/v3/app' but had %q", r[0].URL.Path)
+				}
+				if val := r[0].Header.Get("Authorization"); !strings.HasPrefix(val, "Bearer ") {
+					return fmt.Errorf("expected the Authorization header %q to start with 'Bearer '", val)
+				}
+				if val := r[0].Header.Get("X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"); val != "13" {
+					return fmt.Errorf("expected X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER header %q to have value '13'", val)
+				}
+
+				if r[1].URL.Path != "/api/v3/app/installations" {
+					return fmt.Errorf("expected first request to have path '/api/v3/app/installations' but had %q", r[0].URL.Path)
+				}
+				if val := r[1].Header.Get("Authorization"); !strings.HasPrefix(val, "Bearer ") {
+					return fmt.Errorf("expected the Authorization header %q to start with 'Bearer '", val)
+				}
+				if val := r[1].Header.Get("X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"); val != "ci-app" {
+					return fmt.Errorf("expected X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER header %q to have value ci-app", val)
+				}
+
+				if r[2].URL.Path != "/api/v3/app/installations/1/access_tokens" {
+					return fmt.Errorf("expected second request to request a token, but had path %s", r[0].URL.Path)
+				}
+				if val := r[2].Header.Get("Authorization"); !strings.HasPrefix(val, "Bearer ") {
+					return fmt.Errorf("expected the Authorization header %q to start with 'Bearer '", val)
+				}
+				if val := r[2].Header.Get("X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"); val != "ci-app" {
+					return fmt.Errorf("expected X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER header %q to have value ci-app", val)
+				}
+
+				expectedGHCacheHeaderValue := "ci-app - org"
+				if val := r[3].Header.Get("Authorization"); val != "Bearer the-token" {
+					return fmt.Errorf("expected the Authorization header %q to be 'Bearer the-token'", val)
+				}
+				if val := r[3].Header.Get("X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"); val != expectedGHCacheHeaderValue {
+					return fmt.Errorf("expected X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER header %q to be %q", val, expectedGHCacheHeaderValue)
+				}
+				return nil
+			},
+		},
+		{
 			name:          "App installation request has no installation, failure",
-			cachedAppSlug: utilpointer.StringPtr("ci-app"),
+			cachedAppSlug: utilpointer.String("ci-app"),
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("other-org")
 				expectedErrMsgSubstr := "failed to get installation id for org other-org: the github app is not installed in organization other-org"
@@ -313,6 +371,32 @@ func TestAppsAuth(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			name:                "Check app installation for repo uses JWT",
+			cachedAppSlug:       utilpointer.String("ci-app"),
+			cachedTokens:        map[int64]*AppInstallationToken{1: {Token: "the-token", ExpiresAt: time.Now().Add(time.Hour)}},
+			cachedInstallations: map[string]AppInstallation{"kuber": {ID: 1}},
+			doRequest: func(c Client) error {
+				_, err := c.IsAppInstalled("kuber", "k8.s-repo")
+				return err
+			},
+			responses: map[string]*http.Response{"/repos/kuber/k8.s-repo/installation": {
+				StatusCode: 200,
+				Body:       serializeOrDie(AppInstallation{}),
+			}},
+			verifyRequests: func(r []*http.Request) error {
+				if n := len(r); n != 1 {
+					return fmt.Errorf("expected exactly one request, got %d", n)
+				}
+				if val := r[0].Header.Get("Authorization"); !strings.HasPrefix(val, "Bearer ") || val == "Bearer the-token" {
+					return fmt.Errorf("expected the Authorization header %q to start with 'Bearer ', and to be a JWT", val)
+				}
+				if val := r[0].Header.Get("X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"); val != "ci-app" {
+					return fmt.Errorf("expected X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER header %q to have value ci-app", val)
+				}
+				return nil
+			},
+		},
 	}
 
 	// Generate it only once. Can not be smaller, otherwise the JWT signature generation
@@ -324,7 +408,13 @@ func TestAppsAuth(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(b []byte) []byte { return b }, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
+			if tc.githubBaseURL == "" {
+				tc.githubBaseURL = "https://api.github.com"
+			}
+			_, _, ghClient, err := NewAppsAuthClientWithFields(logrus.Fields{}, func(b []byte) []byte { return b }, appID, func() *rsa.PrivateKey { return rsaKey }, "", tc.githubBaseURL)
+			if err != nil {
+				t.Fatalf("failed to construct client: %v", err)
+			}
 
 			if _, ok := ghClient.(*client); !ok {
 				t.Fatal("ghclient is not a *client")
@@ -372,7 +462,10 @@ func TestAppsRoundTripperThreadSafety(t *testing.T) {
 		t.Fatalf("Failed to generate RSA key: %v", err)
 	}
 
-	_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, nil, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
+	_, _, ghClient, err := NewAppsAuthClientWithFields(logrus.Fields{}, nil, appID, func() *rsa.PrivateKey { return rsaKey }, "", "https://api.github.com")
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 
 	if _, ok := ghClient.(*client); !ok {
 		t.Fatal("ghclient is not a *client")
@@ -427,5 +520,5 @@ func serializeOrDie(in interface{}) io.ReadCloser {
 	if err != nil {
 		panic(fmt.Sprintf("Serialization failed: %v", err))
 	}
-	return ioutil.NopCloser(bytes.NewBuffer(rawData))
+	return io.NopCloser(bytes.NewBuffer(rawData))
 }

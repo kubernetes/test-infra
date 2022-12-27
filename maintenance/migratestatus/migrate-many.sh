@@ -17,12 +17,15 @@
 set -o errexit
 set -o xtrace
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
+cd "${REPO_ROOT}"
+
 migrate() {
   if [[ -z "${2}" ]]; then
     exit 1
   fi
-  bazel-bin/maintenance/migratestatus/migratestatus \
-    --dry-run=false --alsologtostderr \
+  "${REPO_ROOT}/_bin/migratestatus" \
+    --dry-run=false \
     --org=kubernetes \
     --repo=kubernetes \
     --tokenfile ~/github-token \
@@ -30,7 +33,7 @@ migrate() {
     --dest="${2}"
 }
 
-bazel build //maintenance/migratestatus || exit 1
+./hack/make-rules/go-run/arbitrary.sh build -o "${REPO_ROOT}/_bin/migratestatus" ./maintenance/migratestatus || exit 1
 
 #migrate "Bazel test" pull-test-infra-bazel
 #migrate "Gubernator tests" pull-test-infra-gubernator

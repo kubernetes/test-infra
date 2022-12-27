@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
@@ -45,6 +46,8 @@ func Test_Options(t *testing.T) {
 					ConfigPathFlagName:                    "prow-config",
 					JobConfigPathFlagName:                 "prow-job-config",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				PrintText: true,
 				Oneshot:   true,
@@ -60,8 +63,26 @@ func Test_Options(t *testing.T) {
 					ConfigPathFlagName:                    "prow-config",
 					JobConfigPathFlagName:                 "prow-job-config",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
-				Output: "gs://foo/bar",
+				Output: flagutil.NewStringsBeenSet("gs://foo/bar"),
+			},
+		},
+		{
+			name: "Output to multiple Locations",
+			args: []string{"--yaml=file.yaml", "--output=gs://foo/bar", "--output=./foo/bar"},
+			expected: &Options{
+				Inputs:      []string{"file.yaml"},
+				DefaultYAML: "file.yaml",
+				ProwConfig: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "prow-config",
+					JobConfigPathFlagName:                 "prow-job-config",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
+				},
+				Output: flagutil.NewStringsBeenSet("gs://foo/bar", "./foo/bar"),
 			},
 		},
 		{
@@ -74,6 +95,8 @@ func Test_Options(t *testing.T) {
 					ConfigPathFlagName:                    "prow-config",
 					JobConfigPathFlagName:                 "prow-job-config",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				ValidateConfigFile: true,
 			},

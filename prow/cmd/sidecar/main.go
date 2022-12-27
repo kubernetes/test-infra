@@ -18,19 +18,22 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/options"
 	"k8s.io/test-infra/prow/sidecar"
 )
 
 func main() {
-	logrusutil.ComponentInit()
-	logrus.SetLevel(logrus.DebugLevel)
-
+	logFile, err := sidecar.LogSetup()
+	if err != nil {
+		logrus.WithError(err).Fatal("Unable to set up log file")
+	}
+	defer os.Remove(logFile.Name())
 	o := sidecar.NewOptions()
+
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
@@ -39,7 +42,7 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	failures, err := o.Run(context.Background())
+	failures, err := o.Run(context.Background(), logFile)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to report job status")
 	}

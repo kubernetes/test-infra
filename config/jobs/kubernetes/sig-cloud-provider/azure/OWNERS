@@ -4,17 +4,17 @@ reviewers:
 - andyzhangx
 - brendandburns
 - CecileRobertMichon
-- chewong
 - feiskyer
 - karataliu
 - khenidak
 approvers:
 - andyzhangx
 - brendandburns
-- chewong
 - feiskyer
 - karataliu
 - khenidak
+emeritus_approvers:
+- chewong
 
 labels:
 - area/provider/azure

@@ -20,7 +20,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -77,9 +76,11 @@ func updateJobBase(j *config.JobBase, old, new string) {
 	for i := range j.Spec.Containers {
 		c := &j.Spec.Containers[i]
 		for j := range c.Args {
+			c.Args[j] = updateGenericVersionMarker(c.Args[j])
 			c.Args[j] = updateString(c.Args[j], old, new)
 		}
 		for j := range c.Command {
+			c.Command[j] = updateGenericVersionMarker(c.Command[j])
 			c.Command[j] = updateString(c.Command[j], old, new)
 		}
 	}
@@ -146,7 +147,61 @@ func main() {
 		log.Fatalf("Failed to marshal new presubmits: %v\n", err)
 	}
 
-	if err := ioutil.WriteFile(o.configFile, output, 0666); err != nil {
+	if err := os.WriteFile(o.configFile, output, 0666); err != nil {
 		log.Fatalf("Failed to write new presubmits: %v.\n", err)
 	}
+}
+
+// Version marker logic
+
+const (
+	markerDefault     = "k8s-master"
+	markerBeta        = "k8s-beta"
+	markerStableOne   = "k8s-stable1"
+	markerStableTwo   = "k8s-stable2"
+	markerStableThree = "k8s-stable3"
+	markerStableFour  = "k8s-stable4"
+)
+
+var allowedMarkers = []string{
+	markerDefault,
+	markerBeta,
+	markerStableOne,
+	markerStableTwo,
+	markerStableThree,
+	markerStableFour,
+}
+
+func getMarker(s string) string {
+	var marker string
+	for _, m := range allowedMarkers {
+		if strings.Contains(s, m) {
+			marker = m
+			break
+		}
+	}
+
+	return marker
+}
+
+func updateGenericVersionMarker(s string) string {
+	var newMarker string
+
+	marker := getMarker(s)
+	switch marker {
+	case markerDefault:
+		newMarker = markerBeta
+	case markerBeta:
+		newMarker = markerStableOne
+	case markerStableOne:
+		newMarker = markerStableTwo
+	case markerStableTwo:
+		newMarker = markerStableThree
+	case markerStableThree:
+		newMarker = markerStableFour
+	default:
+		newMarker = marker
+	}
+
+	return updateString(s, marker, newMarker)
 }

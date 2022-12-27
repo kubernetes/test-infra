@@ -33,7 +33,16 @@ echo "Checking .sh files permission..."
 # find all files named *.sh (approximate shell script detection ...)
 # - ignoring .git
 # - that are not executable by all
-files=$(find . -type f -name '*.sh' -not -perm "${desired_perm}" -not -path './.git/*')
+files=$(find . -type f -name '*.sh' \
+  -not -perm "${desired_perm}" \
+  -not \( \
+    \( \
+      -path './.git/*' \
+      -o -path './node_modules/*' \
+      -o -path './_bin/*' \
+    \) -prune \
+  \))
+
 if [[ -n "${files}" ]]; then
   echo "ERROR: the following file(s) cannot be executed:"
   echo "${files}"

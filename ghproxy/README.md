@@ -30,3 +30,8 @@ A new container image is automatically built and published to
 directory is changed on the master branch. You can find a recent stable image
 tag and an example of how to deploy ghProxy to Kubernetes by checking out
 [Prow's ghProxy deployment](/config/prow/cluster/ghproxy.yaml).
+
+## Throttling algorithm
+
+To prevent hitting GH API secondary rate limits, an additional ghProxy throttling
+algorithm can be configured and used. It is described [here](/ghproxy/throttling-algorithm.md).

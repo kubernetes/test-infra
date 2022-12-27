@@ -4,10 +4,13 @@ presubmits:
   - name: pull-cluster-capacity-verify-gofmt
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     always_run: true
     spec:
       containers:
-      - image: golang:1.16.1
+      - image: golang:1.19.0
         command:
         - make
         args:
@@ -15,10 +18,13 @@ presubmits:
   - name: pull-cluster-capacity-verify-build
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     always_run: true
     spec:
       containers:
-      - image: golang:1.16.1
+      - image: golang:1.19.0
         command:
         - make
         args:
@@ -26,18 +32,21 @@ presubmits:
   - name: pull-cluster-capacity-unit-test
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
     always_run: true
     spec:
       containers:
-      - image: golang:1.16.1
+      - image: golang:1.19.0
         command:
         - make
         args:
         - test-unit
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-20
+  - name: pull-cluster-capacity-test-e2e-k8s-master-1-25
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.20
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.25
     decorate: true
     decoration_config:
       timeout: 20m
@@ -50,13 +59,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.20.0"
+          value: "v1.25.2"
         - name: KIND_E2E
           value: "true"
         args:
@@ -65,10 +74,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-19
+  - name: pull-cluster-capacity-test-e2e-k8s-master-1-24
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.19
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.24
     decorate: true
     decoration_config:
       timeout: 20m
@@ -81,13 +90,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.19.7"
+          value: "v1.24.4"
         - name: KIND_E2E
           value: "true"
         args:
@@ -96,10 +105,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-18
+  - name: pull-cluster-capacity-test-e2e-k8s-master-1-23
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.18
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.23
     decorate: true
     decoration_config:
       timeout: 20m
@@ -112,13 +121,13 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.18.2"
+          value: "v1.23.3"
         - name: KIND_E2E
           value: "true"
         args:

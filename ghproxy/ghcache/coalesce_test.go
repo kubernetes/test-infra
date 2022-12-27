@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -61,7 +61,7 @@ func (fre *fakeRequestExecutor) RoundTrip(req *http.Request) (*http.Response, er
 		header = http.Header{}
 	}
 	return &http.Response{
-			Body:   ioutil.NopCloser(bytes.NewBufferString("Response")),
+			Body:   io.NopCloser(bytes.NewBufferString("Response")),
 			Header: header,
 		},
 		nil
@@ -240,7 +240,7 @@ func runRequest(rt http.RoundTripper, uri string, immediate bool) (*http.Respons
 		defer close(waitChan)
 		resp, err = rt.RoundTrip(req)
 		if err == nil {
-			if b, readErr := ioutil.ReadAll(resp.Body); readErr != nil {
+			if b, readErr := io.ReadAll(resp.Body); readErr != nil {
 				err = readErr
 			} else if string(b) != "Response" {
 				err = errors.New("unexpected response value")

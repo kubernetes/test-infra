@@ -11,7 +11,7 @@ periodics:
     path_alias: sigs.k8s.io/structured-merge-diff
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
       command:
       - go
       args:
@@ -33,7 +33,7 @@ periodics:
     path_alias: sigs.k8s.io/structured-merge-diff
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
       command:
       - bash
       - -c
@@ -42,6 +42,7 @@ periodics:
     testgrid-dashboards: sig-api-machinery-structured-merge-diff
     testgrid-tab-name: ci-gofmt
 - name: ci-structured-merge-diff-benchmark
+  cluster: k8s-infra-prow-build
   interval: 1h
   decorate: true
   extra_refs:

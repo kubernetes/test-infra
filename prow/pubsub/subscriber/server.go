@@ -18,12 +18,9 @@ package subscriber
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"net/http"
 	"reflect"
-	"strconv"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -33,26 +30,9 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-const (
-	tokenLabel = "token"
-)
-
-type message struct {
-	Attributes map[string]string
-	Data       []byte
-	ID         string `json:"message_id"`
-}
-
-// pushRequest is the format of the push Pub/Sub subscription received form the WebHook.
-type pushRequest struct {
-	Message      message
-	Subscription string
-}
-
-// PushServer implements http.Handler. It validates incoming Pub/Sub subscriptions handle them.
-type PushServer struct {
-	Subscriber     *Subscriber
-	TokenGenerator func() []byte
+type configToWatch struct {
+	config.PubSubTriggers
+	config.PubsubSubscriptions
 }
 
 // PullServer listen to Pull Pub/Sub subscriptions and handle them.
@@ -66,51 +46,6 @@ func NewPullServer(s *Subscriber) *PullServer {
 	return &PullServer{
 		Subscriber: s,
 		Client:     &pubSubClient{},
-	}
-}
-
-// ServeHTTP validates an incoming Push Pub/Sub subscription and handle them.
-func (s *PushServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	HTTPCode := http.StatusOK
-	subscription := "unknown-subscription"
-	var finalError error
-
-	defer func() {
-		s.Subscriber.Metrics.ResponseCounter.With(prometheus.Labels{
-			subscriptionLabel: subscription,
-			responseCodeLabel: strconv.Itoa(HTTPCode),
-		}).Inc()
-		if finalError != nil {
-			http.Error(w, finalError.Error(), HTTPCode)
-		}
-	}()
-
-	if s.TokenGenerator != nil {
-		token := r.URL.Query().Get(tokenLabel)
-		if token != string(s.TokenGenerator()) {
-			finalError = fmt.Errorf("wrong token")
-			HTTPCode = http.StatusForbidden
-			return
-		}
-	}
-	// Get the payload and act on it.
-	pr := &pushRequest{}
-	if err := json.NewDecoder(r.Body).Decode(pr); err != nil {
-		finalError = err
-		HTTPCode = http.StatusBadRequest
-		return
-	}
-
-	msg := pubsub.Message{
-		Data:       pr.Message.Data,
-		ID:         pr.Message.ID,
-		Attributes: pr.Message.Attributes,
-	}
-
-	if err := s.Subscriber.handleMessage(&pubSubMessage{Message: msg}, pr.Subscription, []string{"*"}); err != nil {
-		finalError = err
-		HTTPCode = http.StatusNotModified
-		return
 	}
 }
 
@@ -156,7 +91,7 @@ func (c *pubSubClient) new(ctx context.Context, project string) (pubsubClientInt
 	return c, nil
 }
 
-// Subscription creates a subscription from the Cloud Pub/Sub Client
+// Subscription creates a reference to an existing subscription via the Cloud Pub/Sub Client.
 func (c *pubSubClient) subscription(id string, maxOutstandingMessages int) subscriptionInterface {
 	sub := c.client.Subscription(id)
 	sub.ReceiveSettings.MaxOutstandingMessages = maxOutstandingMessages
@@ -183,9 +118,13 @@ func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions confi
 		}
 		for _, subName := range subscriptions {
 			sub := client.subscription(subName, topics.MaxOutstandingMessages)
+			logger := logrus.WithFields(logrus.Fields{
+				"subscription": sub.string(),
+				"project":      project,
+			})
 			errGroup.Go(func() error {
-				logrus.Infof("Listening for subscription %s on project %s", sub.string(), project)
-				defer logrus.Warnf("Stopped Listening for subscription %s on project %s", sub.string(), project)
+				logger.Info("Listening for subscription")
+				defer logger.Warn("Stopped Listening for subscription")
 				err := sub.receive(derivedCtx, func(ctx context.Context, msg messageInterface) {
 					if err = s.Subscriber.handleMessage(msg, sub.string(), allowedClusters); err != nil {
 						s.Subscriber.Metrics.ACKMessageCounter.With(prometheus.Labels{subscriptionLabel: sub.string()}).Inc()
@@ -194,8 +133,16 @@ func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions confi
 					}
 					msg.ack()
 				})
-				if err != nil && !errors.Is(derivedCtx.Err(), context.Canceled) {
-					logrus.WithError(err).Errorf("failed to listen for subscription %s on project %s", sub.string(), project)
+				if err != nil {
+					if errors.Is(derivedCtx.Err(), context.Canceled) {
+						logger.WithError(err).Debug("Exiting as context cancelled")
+						return nil
+					}
+					if strings.Contains(err.Error(), "code = PermissionDenied") {
+						logger.WithError(err).Warn("Seems like missing permission.")
+						return nil
+					}
+					logger.WithError(err).Error("Failed to listen for subscription")
 					return err
 				}
 				return nil
@@ -218,8 +165,11 @@ func (s *PullServer) Run(ctx context.Context) error {
 		}
 		logrus.Debug("Pull server shutting down.")
 	}()
-	currentConfig := s.Subscriber.ConfigAgent.Config().PubSubTriggers
-	errGroup, derivedCtx, err := s.handlePulls(ctx, currentConfig)
+	currentConfig := configToWatch{
+		s.Subscriber.ConfigAgent.Config().PubSubTriggers,
+		s.Subscriber.ConfigAgent.Config().PubSubSubscriptions,
+	}
+	errGroup, derivedCtx, err := s.handlePulls(ctx, currentConfig.PubSubTriggers)
 	if err != nil {
 		return err
 	}
@@ -235,14 +185,17 @@ func (s *PullServer) Run(ctx context.Context) error {
 			return err
 		// Checking for update config
 		case event := <-configEvent:
-			newConfig := event.After.PubSubTriggers
+			newConfig := configToWatch{
+				event.After.PubSubTriggers,
+				event.After.PubSubSubscriptions,
+			}
 			logrus.Info("Received new config")
 			if !reflect.DeepEqual(currentConfig, newConfig) {
 				logrus.Info("New config found, reloading pull Server")
 				// Making sure the current thread finishes before starting a new one.
 				errGroup.Wait()
 				// Starting a new thread with new config
-				errGroup, derivedCtx, err = s.handlePulls(ctx, newConfig)
+				errGroup, derivedCtx, err = s.handlePulls(ctx, newConfig.PubSubTriggers)
 				if err != nil {
 					return err
 				}

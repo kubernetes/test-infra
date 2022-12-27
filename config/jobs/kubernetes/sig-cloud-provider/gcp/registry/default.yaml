@@ -1,0 +1,11 @@
+gcAuthenticatedRegistry: gcr.io/authenticated-image-pulling
+invalidRegistry: invalid.registry.k8s.io/invalid
+privateRegistry: gcr.io/k8s-authenticated-test
+microsoftRegistry: mcr.microsoft.com
+dockerLibraryRegistry: docker.io/library
+promoterE2eRegistry: registry.k8s.io/e2e-test-images
+buildImageRegistry: registry.k8s.io/build-image
+gcEtcdRegistry: registry.k8s.io
+gcRegistry: registry.k8s.io
+sigStorageRegistry: registry.k8s.io/sig-storage
+cloudProviderGcpRegistry: registry.k8s.io/cloud-provider-gcp

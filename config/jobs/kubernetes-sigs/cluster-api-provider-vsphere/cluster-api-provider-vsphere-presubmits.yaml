@@ -5,18 +5,23 @@ presets:
   - name: GOVC_URL
     valueFrom:
       secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
+        name: capv-ci-overrides
         key: vsphere-server
   - name: GOVC_USERNAME
     valueFrom:
       secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
+        name: capv-ci-overrides
         key: vsphere-username
   - name: GOVC_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
+        name: capv-ci-overrides
         key: vsphere-password
+  - name: VSPHERE_TLS_THUMBPRINT
+    valueFrom:
+      secretKeyRef:
+        name: capv-ci-overrides
+        key: vsphere-server-thumbprint
   - name: VM_SSH_PUB_KEY
     valueFrom:
       secretKeyRef:
@@ -79,14 +84,35 @@ presets:
 
 presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
-  - name: pull-cluster-api-provider-vsphere-verify-lint
-    always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/check-lint\.sh)'
+  - name: pull-cluster-api-provider-vsphere-apidiff-main
+    always_run: true
+    optional: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+          command:
+          - runner.sh
+          args:
+          - ./hack/ci-apidiff.sh
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-apidiff
+      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      description: Checks for API changes in the PR
+
+  - name: pull-cluster-api-provider-vsphere-verify-lint
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    always_run: false
+    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/check-lint\.sh|main\.go)'
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
         command:
         - hack/check-lint.sh
     annotations:
@@ -136,12 +162,12 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-crds
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/verify-crds\.sh)'
+    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/verify-crds\.sh|go\.mod|go\.sum)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
         command:
         - hack/verify-crds.sh
     annotations:
@@ -150,14 +176,36 @@ presubmits:
       testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
       description: Verifies the CRDs have been updated
 
-  - name: pull-cluster-api-provider-vsphere-test
+  - name: pull-cluster-api-provider-vsphere-verify-gen
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile)'
+    run_if_changed: '^((apis|config|contrib|controllers|packaging|pkg|templates)/|Makefile|go\.mod|go\.sum)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify-gen
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-verify-gen
+      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      description: Verifies generated files are up to date
+
+  - name: pull-cluster-api-provider-vsphere-test
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    always_run: false
+    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum|main\.go)'
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
         resources:
           requests:
             cpu: "500m"
@@ -177,12 +225,14 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile)'
+    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum|main\.go)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    branches:
+    - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -204,23 +254,28 @@ presubmits:
       description: Runs integration tests
 
   - name: pull-cluster-api-provider-vsphere-e2e
+    branches:
+      - ^main$
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Dockerfile|Makefile|hack/e2e\.sh)'
+    run_if_changed: '^((api|cmd|config|contrib|controllers|packaging|pkg|test)/|Dockerfile|Makefile|hack/e2e\.sh|go\.mod|go\.sum|main\.go)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
         command:
         - runner.sh
         args:
         - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[PR-Blocking\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -234,4 +289,77 @@ presubmits:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e
       testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
-      description: Runs e2e tests
+      description: Runs only PR Blocking e2e tests
+
+  - name: pull-cluster-api-provider-vsphere-full-e2e
+    branches:
+      - ^main$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_SKIP
+          value: "\\[clusterctl-Upgrade\\] \\[specialized-infra\\] \\[Conformance\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-full-e2e
+      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      description: Runs all e2e tests
+
+  - name: pull-cluster-api-provider-vsphere-e2e-v1alpha
+    branches:
+      - ^release-0.7$
+      - ^release-0.8$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    run_if_changed: '^((api|cmd|config|contrib|controllers|packaging|pkg|test)/|Dockerfile|Makefile|hack/e2e\.sh|go\.mod|go\.sum|main\.go)'
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+          command:
+            - runner.sh
+          args:
+            - ./hack/e2e.sh
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["NET_ADMIN"]
+          resources:
+            requests:
+              cpu: "4000m"
+              memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-e2e-v1alpha
+      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      description: Runs e2e tests for v1alpha3 and v1alpha4 types

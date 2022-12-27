@@ -19,7 +19,7 @@ package blunderbuss
 import (
 	"context"
 	"errors"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -115,6 +115,10 @@ type fakeOwnersClient struct {
 	dirDenylist       []*regexp.Regexp
 }
 
+func (foc *fakeOwnersClient) AllOwners() sets.String {
+	return sets.String{}
+}
+
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
 	return ownersconfig.FakeFilenames
 }
@@ -167,7 +171,7 @@ func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleCo
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.SimpleConfig{}, err
 	}
@@ -184,7 +188,7 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.FullConfig{}, err
 	}
@@ -570,6 +574,9 @@ func TestHandlePullRequest(t *testing.T) {
 		filesChanged      []string
 		reviewerCount     int
 		expectedRequested []string
+		draft             bool
+		ignoreDrafts      bool
+		ignoreAuthors     []string
 	}{
 		{
 			name:              "PR opened",
@@ -593,21 +600,52 @@ func TestHandlePullRequest(t *testing.T) {
 			filesChanged:  []string{"a.go"},
 			reviewerCount: 1,
 		},
+		{
+			name:         "draft pr opened, ignoreDrafts true, do not assign review to PR",
+			action:       github.PullRequestActionOpened,
+			filesChanged: []string{"a.go"},
+			draft:        true,
+			ignoreDrafts: true,
+		},
+		{
+			name:              "non-draft pr opened, ignoreDrafts true, assign review to PR",
+			action:            github.PullRequestActionOpened,
+			filesChanged:      []string{"a.go"},
+			draft:             false,
+			ignoreDrafts:      true,
+			reviewerCount:     1,
+			expectedRequested: []string{"al"},
+		},
+		{
+			name:              "draft is ready for review, ignoreDrafts true, assign review to PR",
+			action:            github.PullRequestActionReadyForReview,
+			filesChanged:      []string{"a.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"al"},
+		},
+		{
+			name:          "PR opened by ignored author, do not assign review to PR",
+			action:        github.PullRequestActionOpened,
+			filesChanged:  []string{"a.go"},
+			ignoreAuthors: []string{"author"},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}, Body: tc.body}
+			pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}, Body: tc.body, Draft: tc.draft}
 			repo := github.Repo{Owner: github.User{Login: "org"}, Name: "repo"}
 			fghc := newFakeGitHubClient(&pr, tc.filesChanged)
-			config := plugins.Blunderbuss{
+			c := plugins.Blunderbuss{
 				ReviewerCount:    &tc.reviewerCount,
 				MaxReviewerCount: 0,
 				ExcludeApprovers: false,
+				IgnoreDrafts:     tc.ignoreDrafts,
+				IgnoreAuthors:    tc.ignoreAuthors,
 			}
 
 			if err := handlePullRequest(
 				fghc, froc, logrus.WithField("plugin", PluginName),
-				config, tc.action, &pr, &repo,
+				c, tc.action, &pr, &repo,
 			); err != nil {
 				t.Fatalf("unexpected error from handle: %v", err)
 			}

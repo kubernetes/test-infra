@@ -20,7 +20,7 @@ Usage example:
 
   In $GOPATH/src/k8s.io/test-infra,
 
-  $ bazel run //releng:generate_tests -- \
+  $ make -C releng generate-tests \
       --yaml-config-path=releng/test_config.yaml \
 """
 
@@ -45,7 +45,7 @@ PROW_CONFIG_TEMPLATE = """
       containers:
       - args:
         env:
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         resources:
           requests:
             cpu: 1000m
@@ -147,9 +147,9 @@ class E2ENodeTest:
             prow_config['cluster'] = self.job['cluster']
         # use resources from test_suite, or job, or default
         if 'resources' in test_suite:
-            prow_config['resources'] = test_suite['resources']
+            prow_config['spec']['containers'][0]['resources'] = test_suite['resources']
         elif 'resources' in self.job:
-            prow_config['resources'] = self.job['resources']
+            prow_config['spec']['containers'][0]['resources'] = self.job['resources']
         # pull interval or cron from job
         if 'interval' in self.job:
             del prow_config['cron']
@@ -268,9 +268,9 @@ class E2ETest:
             prow_config['cluster'] = self.job['cluster']
         # use resources from test_suite, or job, or default
         if 'resources' in test_suite:
-            prow_config['resources'] = test_suite['resources']
+            prow_config['spec']['containers'][0]['resources'] = test_suite['resources']
         elif 'resources' in self.job:
-            prow_config['resources'] = self.job['resources']
+            prow_config['spec']['containers'][0]['resources'] = self.job['resources']
         if 'interval' in self.job:
             del prow_config['cron']
             prow_config['interval'] = self.job['interval']

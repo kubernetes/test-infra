@@ -25,7 +25,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -267,7 +267,7 @@ func TestCreateComment(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5/comments" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -294,7 +294,7 @@ func TestCreateCommentCensored(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5/comments" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -758,7 +758,7 @@ func TestCreateStatus(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/statuses/abcdef" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -859,7 +859,7 @@ func addLabelHTTPServer(t *testing.T, org, repo string, number int, labels ...st
 		if r.URL.Path != fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number) {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1073,7 +1073,7 @@ func TestAssignIssue(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5/assignees" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1123,7 +1123,7 @@ func TestUnassignIssue(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5/assignees" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1380,7 +1380,7 @@ func TestRequestReview(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5/requested_reviewers" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1442,7 +1442,7 @@ func TestUnrequestReview(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5/requested_reviewers" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1490,22 +1490,54 @@ func TestCloseIssue(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
 		var ps map[string]string
 		if err := json.Unmarshal(b, &ps); err != nil {
 			t.Errorf("Could not unmarshal request: %v", err)
-		} else if len(ps) != 1 {
+		} else if len(ps) != 2 {
 			t.Errorf("Wrong length patch: %v", ps)
 		} else if ps["state"] != "closed" {
 			t.Errorf("Wrong state: %s", ps["state"])
+		} else if ps["state_reason"] != "completed" {
+			t.Errorf("Wrong state_reason: %s", ps["state_reason"])
 		}
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if err := c.CloseIssue("k8s", "kuber", 5); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestCloseIssueAsNotPlanned(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPatch {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ps map[string]string
+		if err := json.Unmarshal(b, &ps); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if len(ps) != 2 {
+			t.Errorf("Wrong length patch: %v", ps)
+		} else if ps["state"] != "closed" {
+			t.Errorf("Wrong state: %s", ps["state"])
+		} else if ps["state_reason"] != "not_planned" {
+			t.Errorf("Wrong state_reason: %s", ps["state_reason"])
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.CloseIssueAsNotPlanned("k8s", "kuber", 5); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
@@ -1518,7 +1550,7 @@ func TestReopenIssue(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1546,7 +1578,7 @@ func TestClosePR(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1574,7 +1606,7 @@ func TestReopenPR(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1648,6 +1680,77 @@ func TestFindIssues(t *testing.T) {
 			sort = "sort-strategy"
 		}
 		if result, err = c.FindIssues("commit_hash", sort, tc.order); err != nil {
+			t.Errorf("%s: didn't expect error: %v", tc.name, err)
+		}
+		if len(result) != 1 {
+			t.Fatalf("%s: unexpected number of results: %v", tc.name, len(result))
+		}
+		if result[0].Number != issueNum {
+			t.Errorf("%s: expected issue number %+v, got %+v", tc.name, issueNum, result[0].Number)
+		}
+		if tc.sort && !strings.Contains(result[0].Title, "sort="+sort) {
+			t.Errorf("%s: missing sort=%s from query: %s", tc.name, sort, result[0].Title)
+		}
+		if tc.order && !strings.Contains(result[0].Title, "order=asc") {
+			t.Errorf("%s: missing order=asc from query: %s", tc.name, result[0].Title)
+		}
+	}
+}
+
+func TestFindIssuesWithOrg(t *testing.T) {
+	cases := []struct {
+		name  string
+		sort  bool
+		order bool
+	}{
+		{
+			name: "simple query",
+		},
+		{
+			name: "sort no order",
+			sort: true,
+		},
+		{
+			name:  "sort and order",
+			sort:  true,
+			order: true,
+		},
+	}
+
+	issueNum := 5
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/search/issues" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		issueList := IssuesSearchResult{
+			Total: 1,
+			Issues: []Issue{
+				{
+					Number: issueNum,
+					Title:  r.URL.RawQuery,
+				},
+			},
+		}
+		b, err := json.Marshal(&issueList)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+
+	for _, tc := range cases {
+		var result []Issue
+		var err error
+		sort := ""
+		if tc.sort {
+			sort = "sort-strategy"
+		}
+		if result, err = c.FindIssuesWithOrg("k8s", "commit_hash", sort, tc.order); err != nil {
 			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 		}
 		if len(result) != 1 {
@@ -1770,13 +1873,14 @@ func TestGetLabels(t *testing.T) {
 	}
 }
 
-func simpleTestServer(t *testing.T, path string, v interface{}) *httptest.Server {
+func simpleTestServer(t *testing.T, path string, v interface{}, statusCode int) *httptest.Server {
 	return httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == path {
 			b, err := json.Marshal(v)
 			if err != nil {
 				t.Fatalf("Didn't expect error: %v", err)
 			}
+			w.WriteHeader(statusCode)
 			fmt.Fprint(w, string(b))
 		} else {
 			t.Fatalf("Bad request path: %s", r.URL.Path)
@@ -1785,7 +1889,7 @@ func simpleTestServer(t *testing.T, path string, v interface{}) *httptest.Server
 }
 
 func TestListTeams(t *testing.T) {
-	ts := simpleTestServer(t, "/orgs/foo/teams", []Team{{ID: 1}})
+	ts := simpleTestServer(t, "/orgs/foo/teams", []Team{{ID: 1}}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
 	teams, err := c.ListTeams("foo")
@@ -1798,6 +1902,15 @@ func TestListTeams(t *testing.T) {
 	}
 }
 
+func TestDeleteTeamBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/foo/teams/bar", nil, http.StatusNoContent)
+	c := getClient(ts.URL)
+	err := c.DeleteTeamBySlug("foo", "bar")
+	if err != nil {
+		t.Fatalf("Didn't expect error: %v", err)
+	}
+}
+
 func TestCreateTeam(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -1806,7 +1919,7 @@ func TestCreateTeam(t *testing.T) {
 		if r.URL.Path != "/orgs/foo/teams" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1851,10 +1964,10 @@ func TestEditTeam(t *testing.T) {
 		if r.Method != http.MethodPatch {
 			t.Errorf("Bad method: %s", r.Method)
 		}
-		if r.URL.Path != "/teams/63" {
+		if r.URL.Path != "/orgs/someOrg/teams/some-team" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -1877,10 +1990,10 @@ func TestEditTeam(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	if _, err := c.EditTeam("", Team{ID: 0, Name: "frobber"}); err == nil {
-		t.Errorf("client should reject id 0")
+	if _, err := c.EditTeam("", Team{Slug: "", Name: "frobber"}); err == nil {
+		t.Errorf("client should reject an empty slug")
 	}
-	switch team, err := c.EditTeam("", Team{ID: 63, Name: "frobber"}); {
+	switch team, err := c.EditTeam("someOrg", Team{Slug: "some-team", Name: "frobber"}); {
 	case err != nil:
 		t.Errorf("unexpected error: %v", err)
 	case team.Name != "hello":
@@ -1893,10 +2006,24 @@ func TestEditTeam(t *testing.T) {
 }
 
 func TestListTeamMembers(t *testing.T) {
-	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
+	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers("", 1, RoleAll)
+	teamMembers, err := c.ListTeamMembers("orgName", 1, RoleAll)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teamMembers) != 1 {
+		t.Errorf("Expected one team member, found %d: %v", len(teamMembers), teamMembers)
+	} else if teamMembers[0].Login != "foo" {
+		t.Errorf("Wrong team names: %v", teamMembers)
+	}
+}
+
+func TestListTeamMembersBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/orgName/teams/team-name/members", []TeamMember{{Login: "foo"}}, http.StatusOK)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teamMembers, err := c.ListTeamMembersBySlug("orgName", "team-name", RoleAll)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(teamMembers) != 1 {
@@ -1930,7 +2057,7 @@ func TestListCollaborators(t *testing.T) {
 	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{
 		{Login: "foo", Permissions: RepoPermissions{Pull: true}},
 		{Login: "bar", Permissions: RepoPermissions{Push: true}},
-	})
+	}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
 	users, err := c.ListCollaborators("org", "repo")
@@ -1960,7 +2087,7 @@ func TestListRepoTeams(t *testing.T) {
 		{ID: 2, Slug: "bar", Permission: RepoPush},
 		{ID: 3, Slug: "foobar", Permission: RepoAdmin},
 	}
-	ts := simpleTestServer(t, "/repos/org/repo/teams", expectedTeams)
+	ts := simpleTestServer(t, "/repos/org/repo/teams", expectedTeams, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
 	teams, err := c.ListRepoTeams("org", "repo")
@@ -1975,14 +2102,10 @@ func TestListRepoTeams(t *testing.T) {
 	}
 }
 func TestListIssueEvents(t *testing.T) {
-	ts := simpleTestServer(
-		t,
-		"/repos/org/repo/issues/1/events",
-		[]ListedIssueEvent{
-			{Event: IssueActionLabeled},
-			{Event: IssueActionClosed},
-		},
-	)
+	ts := simpleTestServer(t, "/repos/org/repo/issues/1/events", []ListedIssueEvent{
+		{Event: IssueActionLabeled},
+		{Event: IssueActionClosed},
+	}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
 	events, err := c.ListIssueEvents("org", "repo", 1)
@@ -1997,6 +2120,31 @@ func TestListIssueEvents(t *testing.T) {
 	}
 	if events[1].Event != IssueActionClosed {
 		t.Errorf("Wrong event for index 1: %v", events[1])
+	}
+}
+
+func TestUpdateTeamMembershipBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/foo/teams/bar/memberships/baz", TeamMembership{
+		Membership: Membership{
+			Role: RoleMaintainer,
+		},
+	}, http.StatusOK)
+	c := getClient(ts.URL)
+	tm, err := c.UpdateTeamMembershipBySlug("foo", "bar", "baz", true)
+	if err != nil {
+		t.Fatalf("Didn't expect error: %v", err)
+	}
+	if tm.Role != RoleMaintainer {
+		t.Fatalf("Wrong role: %s, expected: %s", tm.Role, RoleMaintainer)
+	}
+}
+
+func TestRemoveTeamMembershipBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/foo/teams/bar/memberships/baz", nil, http.StatusNoContent)
+	c := getClient(ts.URL)
+	err := c.RemoveTeamMembershipBySlug("foo", "bar", "baz")
+	if err != nil {
+		t.Fatalf("Didn't expect error: %v", err)
 	}
 }
 
@@ -2158,7 +2306,7 @@ func TestGetBranches(t *testing.T) {
 	ts := simpleTestServer(t, "/repos/org/repo/branches", []Branch{
 		{Name: "master", Protected: false},
 		{Name: "release-3.7", Protected: true},
-	})
+	}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
 	branches, err := c.GetBranches("org", "repo", true)
@@ -2195,6 +2343,9 @@ func TestGetBranchProtection(t *testing.T) {
 			Restrictions: &Restrictions{
 				Teams: pushers,
 			},
+			AllowForcePushes: AllowForcePushes{
+				Enabled: true,
+			},
 		}
 		b, err := json.Marshal(&bp)
 		if err != nil {
@@ -2209,6 +2360,8 @@ func TestGetBranchProtection(t *testing.T) {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 	switch {
+	case !bp.AllowForcePushes.Enabled:
+		t.Errorf("AllowForcePushes is not enabled")
 	case bp.Restrictions == nil:
 		t.Errorf("RestrictionsRequest unset")
 	case bp.Restrictions.Teams == nil:
@@ -2347,7 +2500,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 			if r.URL.Path != "/repos/org/repo/branches/master/protection" {
 				t.Errorf("Bad request path: %s", r.URL.Path)
 			}
-			b, err := ioutil.ReadAll(r.Body)
+			b, err := io.ReadAll(r.Body)
 			if err != nil {
 				t.Fatalf("Could not read request body: %v", err)
 			}
@@ -2420,7 +2573,7 @@ func TestClearMilestone(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -2447,7 +2600,7 @@ func TestSetMilestone(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -2488,11 +2641,10 @@ func TestListMilestones(t *testing.T) {
 }
 
 func TestListPRCommits(t *testing.T) {
-	ts := simpleTestServer(t, "/repos/theorg/therepo/pulls/3/commits",
-		[]RepositoryCommit{
-			{SHA: "sha"},
-			{SHA: "sha2"},
-		})
+	ts := simpleTestServer(t, "/repos/theorg/therepo/pulls/3/commits", []RepositoryCommit{
+		{SHA: "sha"},
+		{SHA: "sha2"},
+	}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
 	if commits, err := c.ListPRCommits("theorg", "therepo", 3); err != nil {
@@ -2547,7 +2699,7 @@ func TestUpdatePullRequestBranch(t *testing.T) {
 				t.Errorf("Bad request path: %s", r.URL.Path)
 			}
 
-			b, err := ioutil.ReadAll(r.Body)
+			b, err := io.ReadAll(r.Body)
 			if err != nil {
 				t.Fatalf("Could not read request body: %v", err)
 			}
@@ -2696,7 +2848,7 @@ func TestCreateRepo(t *testing.T) {
 				} else if !tc.isUser && r.URL.Path != "/orgs/org/repos" {
 					t.Errorf("Bad request path to create org-owned repo: %s", r.URL.Path)
 				}
-				b, err := ioutil.ReadAll(r.Body)
+				b, err := io.ReadAll(r.Body)
 				if err != nil {
 					t.Fatalf("Could not read request body: %v", err)
 				}
@@ -2780,7 +2932,7 @@ func TestUpdateRepo(t *testing.T) {
 				if r.URL.Path != expectedPath {
 					t.Errorf("Bad request path to create user-owned repo: %s (expected %s)", r.URL.Path, expectedPath)
 				}
-				b, err := ioutil.ReadAll(r.Body)
+				b, err := io.ReadAll(r.Body)
 				if err != nil {
 					t.Fatalf("Could not read request body: %v", err)
 				}
@@ -2867,26 +3019,100 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 }
 
 func TestListTeamRepos(t *testing.T) {
-	ts := simpleTestServer(t, "/teams/1/repos",
-		[]Repo{
-			{
-				Name:        "repo-bar",
-				Permissions: RepoPermissions{Pull: true},
-			},
-			{
-				Name: "repo-invalid-permission-level",
-			},
-		},
-	)
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+
+		var result interface{}
+		switch r.URL.Path {
+		case "/organizations/1/team/1/repos":
+			result = []Repo{
+				{Name: "repo-bar", Permissions: RepoPermissions{Pull: true}},
+				{Name: "repo-invalid-permission-level"}}
+		case "/orgs/orgName":
+			result = Organization{Login: "orgName", Id: 1}
+		default:
+			t.Errorf("Bad request path: %s", r.URL.Path)
+			return
+		}
+
+		b, err := json.Marshal(result)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	repos, err := c.ListTeamRepos("", 1)
+	repos, err := c.ListTeamRepos("orgName", 1)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(repos) != 1 {
 		t.Errorf("Expected one repo, found %d: %v", len(repos), repos)
 	} else if repos[0].Name != "repo-bar" {
 		t.Errorf("Wrong repos: %v", repos)
+	}
+}
+
+func TestListTeamReposBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/orgName/teams/team-name/repos", []Repo{
+		{Name: "repo-bar", Permissions: RepoPermissions{Pull: true}},
+		{Name: "repo-invalid-permission-level"}}, http.StatusOK)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	repos, err := c.ListTeamReposBySlug("orgName", "team-name")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(repos) != 1 {
+		t.Errorf("Expected one repo, found %d: %v", len(repos), repos)
+	} else if repos[0].Name != "repo-bar" {
+		t.Errorf("Wrong repos: %v", repos)
+	}
+}
+
+func TestUpdateTeamRepoBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/orgName/teams/team-name/repos/orgName/repo-name", nil, http.StatusNoContent)
+	defer ts.Close()
+	c := getClient(ts.URL)
+
+	err := c.UpdateTeamRepoBySlug("orgName", "team-name", "repo-name", "admin")
+	if err != nil {
+		t.Fatalf("Didn't expect error: %v", err)
+	}
+}
+
+func TestRemoveTeamRepoBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/orgName/teams/team-name/repos/orgName/repo-name", nil, http.StatusNoContent)
+	defer ts.Close()
+	c := getClient(ts.URL)
+
+	err := c.RemoveTeamRepoBySlug("orgName", "team-name", "repo-name")
+	if err != nil {
+		t.Fatalf("Didn't expect error: %v", err)
+	}
+}
+
+func TestListTeamInvitationsBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/orgName/teams/team-name/invitations", []OrgInvitation{
+		{
+			TeamMember: TeamMember{Login: "new-person"},
+			Email:      "some-person@gmail.com",
+			Inviter:    TeamMember{Login: "existing-person"},
+		},
+	}, http.StatusOK)
+	defer ts.Close()
+	c := getClient(ts.URL)
+
+	invitations, err := c.ListTeamInvitationsBySlug("orgName", "team-name")
+	if err != nil {
+		t.Fatalf("Didn't expect error: %v", err)
+	}
+	if len(invitations) != 1 {
+		t.Fatalf("Wrong amount of invitations received: %d, expected: %d", len(invitations), 1)
+	}
+	if invitations[0].Email != "some-person@gmail.com" {
+		t.Fatalf("Wrong invitation content: %s, expected: %s", invitations[0].Email, "some-person@gmail.com")
 	}
 }
 
@@ -2951,7 +3177,10 @@ func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 // their arguments and calls them with an empty argument, then verifies via a RoundTripper that
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
-	_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
+	_, _, ghClient, err := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "https://api.github.com")
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 	toSkip := sets.NewString(
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
@@ -2986,7 +3215,7 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 						t.Errorf("Request didn't have %s header set to 'org'", githubOrgHeaderKey)
 					}
 				}
-				return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
+				return &http.Response{Body: io.NopCloser(&bytes.Buffer{})}, nil
 			}}
 			ghClient.(*client).client.(*http.Client).Transport = checkingRoundTripper
 			ghClient.(*client).gqlc.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
@@ -3125,10 +3354,10 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		if got := r.Header.Get("User-Agent"); got != expectedUserAgent {
 			return nil, fmt.Errorf("expected User-Agent %q, got %q", expectedUserAgent, got)
 		}
-		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(bytes.NewBufferString("{}"))}, nil
 	}}
 
-	_, _, client := NewClientFromOptions(
+	_, _, client, err := NewClientFromOptions(
 		logrus.Fields{},
 		ClientOptions{
 			Censor:           func(b []byte) []byte { return b },
@@ -3136,11 +3365,14 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 			AppID:            "",
 			AppPrivateKey:    nil,
 			GraphqlEndpoint:  "",
-			Bases:            nil,
+			Bases:            []string{"https://api.github.com"},
 			DryRun:           false,
 			BaseRoundTripper: roundTripper,
 		}.Default(),
 	)
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 
 	t.Run("User agent gets set initially", func(t *testing.T) {
 		expectedUserAgent = "unset/0"
@@ -3285,7 +3517,7 @@ func TestCreatePullRequestReviewComment(t *testing.T) {
 		if r.URL.Path != "/repos/k8s/kuber/pulls/5/comments" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
@@ -3340,6 +3572,85 @@ func TestThrottlerRespectsContexts(t *testing.T) {
 		t.Run(methodName, func(t *testing.T) {
 			if actualErr := callMethod(); !errors.Is(actualErr, context.DeadlineExceeded) {
 				t.Errorf("expected to get %v error, got %v", context.DeadlineExceeded, actualErr)
+			}
+		})
+	}
+}
+
+func TestCreateCheckRun(t *testing.T) {
+	checkRun := CheckRun{
+		Name:    "foo",
+		HeadSHA: "someref",
+	}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/check-runs" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var cr CheckRun
+		if err := json.Unmarshal(b, &cr); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if !reflect.DeepEqual(checkRun, cr) {
+			t.Errorf("expected checkrun differs from actual: %s", cmp.Diff(checkRun, cr))
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.CreateCheckRun("k8s", "kuber", checkRun); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestIsAppInstalled(t *testing.T) {
+	testCases := []struct {
+		name     string
+		org      string
+		repo     string
+		expected bool
+	}{
+		{
+			name:     "App is installed",
+			org:      "k8s",
+			repo:     "kuber",
+			expected: true,
+		},
+		{
+			name:     "App is not installed",
+			org:      "k8s",
+			repo:     "other",
+			expected: false,
+		},
+	}
+
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/installation" {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.usesAppsAuth = true
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			installed, err := c.IsAppInstalled(tc.org, tc.repo)
+			if err != nil {
+				t.Fatalf("unexpected error received: %v", err)
+			}
+			if installed != tc.expected {
+				t.Fatalf("response: %v doesn't match expected: %v", installed, tc.expected)
 			}
 		})
 	}

@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -210,12 +209,13 @@ func parsePullURL(u *url.URL) (org, repo string, pr int, err error) {
 }
 
 // getStorageDirsForPR returns a map from bucket names -> set of "directories" containing presubmit data
-func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient git.ClientFactory, org, repo string, prNumber int) (map[string]sets.String, error) {
+func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient git.ClientFactory, org, repo, cloneURI string, prNumber int) (map[string]sets.String, error) {
 	toSearch := make(map[string]sets.String)
 	fullRepo := org + "/" + repo
 
 	if c.InRepoConfigEnabled(fullRepo) && gitHubClient == nil {
-		return nil, errors.New("inrepoconfig is enabled but no --github-token-path configured on deck")
+		logrus.Info("Unable to get InRepoConfig PRs for PR History.")
+		return nil, nil
 	}
 	prRefGetter := config.NewRefGetterForGitHubPullRequest(gitHubClient, org, repo, prNumber)
 	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, prRefGetter.BaseSHA, prRefGetter.HeadSHA)
@@ -276,7 +276,12 @@ func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Con
 	template.Name = fmt.Sprintf("%s/%s #%d", org, repo, pr)
 	template.Link = githubPRLink(githubHost, org, repo, pr) // TODO(ibzib) support Gerrit :/
 
-	toSearch, err := getStorageDirsForPR(config, gitHubClient, gitClient, org, repo, pr)
+	// cloneURI is used for cloning Gerrit repos, set it to empty for now as PR
+	// history doesn't work for Gerrit yet.
+	// TODO(chaodaiG): update once
+	// https://github.com/kubernetes/test-infra/issues/24130 is fixed.
+	cloneURI := ""
+	toSearch, err := getStorageDirsForPR(config, gitHubClient, gitClient, org, repo, cloneURI, pr)
 	if err != nil {
 		return template, fmt.Errorf("failed to list directories for PR %s: %w", template.Name, err)
 	}

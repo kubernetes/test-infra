@@ -13,13 +13,3 @@ presets:
   env:
   - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
     value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list
-- labels:
-    preset-windows-repo-list-master: "true"
-  env:
-  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
-    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-master
-- labels:
-    preset-windows-repo-list-2004: "true"
-  env:
-  - name: KUBE_TEST_REPO_LIST_DOWNLOAD_LOCATION
-    value: https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/images/image-repo-list-2004

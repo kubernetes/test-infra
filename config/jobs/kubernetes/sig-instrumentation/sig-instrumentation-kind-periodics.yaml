@@ -1,5 +1,5 @@
 periodics:
-- interval: 6h
+- interval: 12h
   cluster: k8s-infra-prow-build
   # This combines tests from ci-kubernetes-kind-conformance and sig-storage
   # and runs them with JSON output in all components which support that.
@@ -26,7 +26,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221223-736a4da5ba-master
       command:
       - wrapper.sh
       - bash
@@ -38,8 +38,7 @@ periodics:
         value: json
       - name: KIND_CLUSTER_LOG_LEVEL
         # Default is 4, but we want to exercise more log calls and get more output.
-        # TODO: go even higher, depending on log volume
-        value: "6"
+        value: "10"
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"

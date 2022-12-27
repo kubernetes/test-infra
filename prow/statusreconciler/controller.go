@@ -244,9 +244,9 @@ func (c *Controller) triggerNewPresubmits(addedPresubmits map[string][]config.Pr
 			// we want to appropriately trigger and skip from the set of identified presubmits that were
 			// added. we know all of the presubmits we are filtering need to be forced to run, so we can
 			// enforce that with a custom filter
-			filter := func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+			filter := pjutil.NewArbitraryFilter(func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
 				return true, false, true
-			}
+			}, "inline-filter")
 			org, repo, number, branch := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, pr.Base.Ref
 			changes := config.NewGitHubDeferredChangedFilesProvider(c.githubClient, org, repo, number)
 			logger := log.WithFields(logrus.Fields{"org": org, "repo": repo, "number": number, "branch": branch})

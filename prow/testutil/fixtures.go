@@ -17,7 +17,6 @@ limitations under the License.
 package testutil
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -51,7 +50,7 @@ func CompareWithFixtureDir(t *testing.T, golden, output string) {
 // CompareWithFixture will compare output files with a test fixture and allows to automatically update them
 // by setting the UPDATE env var. The output and golden paths are relative to the test's directory.
 func CompareWithFixture(t *testing.T, golden, output string) {
-	actual, err := ioutil.ReadFile(output)
+	actual, err := os.ReadFile(output)
 	if err != nil {
 		t.Fatalf("failed to read testdata file: %v", err)
 	}
@@ -59,11 +58,11 @@ func CompareWithFixture(t *testing.T, golden, output string) {
 		if err := os.MkdirAll(filepath.Dir(golden), 0755); err != nil {
 			t.Fatalf("failed to create fixture directory: %v", err)
 		}
-		if err := ioutil.WriteFile(golden, actual, 0644); err != nil {
+		if err := os.WriteFile(golden, actual, 0644); err != nil {
 			t.Fatalf("failed to write updated fixture: %v", err)
 		}
 	}
-	expected, err := ioutil.ReadFile(golden)
+	expected, err := os.ReadFile(golden)
 	if err != nil {
 		t.Fatalf("failed to read testdata file: %v", err)
 	}
@@ -92,7 +91,7 @@ func sanitizeFilename(s string) string {
 // serialized version of the data.
 func CompareWithSerializedFixture(t *testing.T, data interface{}) {
 	t.Helper()
-	tempFile, err := ioutil.TempFile("", "tmp-serialized")
+	tempFile, err := os.CreateTemp("", "tmp-serialized")
 	if err != nil {
 		t.Fatalf("could not create temporary file to hold serialized data: %v", err)
 	}

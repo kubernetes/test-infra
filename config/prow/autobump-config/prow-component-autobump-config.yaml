@@ -12,6 +12,8 @@ remoteName: "test-infra"
 upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
 includedConfigPaths:
   - "."
+excludedConfigPaths:
+  - ".ko.yaml" # Contains gcr.io/k8s-prow/git, which is not pushed by prow
 targetVersion: "latest"
 prefixes:
   - name: "Prow"

@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -202,11 +201,11 @@ func (o *Options) Mark(exitCode int) error {
 
 	// create temp file in the same directory as the desired marker file
 	dir := filepath.Dir(o.MarkerFile)
-	tmpDir, err := ioutil.TempDir(dir, o.ContainerName)
+	tmpDir, err := os.MkdirTemp(dir, o.ContainerName)
 	if err != nil {
 		return fmt.Errorf("%s: error creating temp dir: %w", o.ContainerName, err)
 	}
-	tempFile, err := ioutil.TempFile(tmpDir, "temp-marker")
+	tempFile, err := os.CreateTemp(tmpDir, "temp-marker")
 	if err != nil {
 		return fmt.Errorf("could not create temp marker file in %s: %w", tmpDir, err)
 	}

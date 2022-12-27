@@ -1,15 +1,11 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 approvers:
-- luxas
-- timothysc
 - justinsb
 - fabriziopandini
 - neolit123
-reviewers:
+- vincepri
+emeritus_approvers:
 - luxas
 - timothysc
-- justinsb
-- fabriziopandini
-- neolit123
 labels:
 - sig/cluster-lifecycle

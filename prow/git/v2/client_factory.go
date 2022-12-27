@@ -17,8 +17,9 @@ limitations under the License.
 package git
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"runtime"
 	"sync"
@@ -68,6 +69,8 @@ type ClientFactoryOpts struct {
 	// The censor to use. Not needed for anonymous
 	// actions.
 	Censor Censor
+	// Path to the httpCookieFile that will be used to authenticate client
+	CookieFilePath string
 }
 
 // Apply allows to use a ClientFactoryOpts as Opt
@@ -93,6 +96,9 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	if cfo.Username != nil {
 		target.Username = cfo.Username
 	}
+	if cfo.CookieFilePath != "" {
+		target.CookieFilePath = cfo.CookieFilePath
+	}
 }
 
 // ClientFactoryOpts allows to manipulate the options for a ClientFactory
@@ -116,7 +122,11 @@ func defaultClientFactoryOpts(cfo *ClientFactoryOpts) {
 }
 
 // NewClientFactory allows for the creation of repository clients. It uses github.com
-// without authentication by default.
+// without authentication by default, if UseSSH then returns
+// sshRemoteResolverFactory, and if CookieFilePath is provided then returns
+// gerritResolverFactory(Assuming that git http.cookiefile is used only by
+// Gerrit, this function needs to be updated if it turned out that this
+// assumtpion is not correct.)
 func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	o := ClientFactoryOpts{}
 	defaultClientFactoryOpts(&o)
@@ -124,45 +134,54 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		opt(&o)
 	}
 
-	cacheDir, err := ioutil.TempDir(*o.CacheDirBase, "gitcache")
+	if o.CookieFilePath != "" {
+		if output, err := exec.Command("git", "config", "--global", "http.cookiefile", o.CookieFilePath).CombinedOutput(); err != nil {
+			return nil, fmt.Errorf("unable to configure http.cookiefile.\nOutput: %s\nError: %w", string(output), err)
+		}
+	}
+
+	cacheDir, err := os.MkdirTemp(*o.CacheDirBase, "gitcache")
 	if err != nil {
 		return nil, err
 	}
-	var remotes RemoteResolverFactory
+	var remote RemoteResolverFactory
 	if o.UseSSH != nil && *o.UseSSH {
-		remotes = &sshRemoteResolverFactory{
+		remote = &sshRemoteResolverFactory{
 			host:     o.Host,
 			username: o.Username,
 		}
+	} else if o.CookieFilePath != "" {
+		remote = &gerritResolverFactory{}
 	} else {
-		remotes = &httpResolverFactory{
+		remote = &httpResolverFactory{
 			host:     o.Host,
 			username: o.Username,
 			token:    o.Token,
 		}
 	}
 	return &clientFactory{
-		cacheDir:     cacheDir,
-		cacheDirBase: *o.CacheDirBase,
-		remotes:      remotes,
-		gitUser:      o.GitUser,
-		censor:       o.Censor,
-		masterLock:   &sync.Mutex{},
-		repoLocks:    map[string]*sync.Mutex{},
-		logger:       logrus.WithField("client", "git"),
+		cacheDir:       cacheDir,
+		cacheDirBase:   *o.CacheDirBase,
+		remote:         remote,
+		gitUser:        o.GitUser,
+		censor:         o.Censor,
+		masterLock:     &sync.Mutex{},
+		repoLocks:      map[string]*sync.Mutex{},
+		logger:         logrus.WithField("client", "git"),
+		cookieFilePath: o.CookieFilePath,
 	}, nil
 }
 
 // NewLocalClientFactory allows for the creation of repository clients
 // based on a local filepath remote for testing
 func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor) (ClientFactory, error) {
-	cacheDir, err := ioutil.TempDir("", "gitcache")
+	cacheDir, err := os.MkdirTemp("", "gitcache")
 	if err != nil {
 		return nil, err
 	}
 	return &clientFactory{
 		cacheDir:   cacheDir,
-		remotes:    &pathResolverFactory{baseDir: baseDir},
+		remote:     &pathResolverFactory{baseDir: baseDir},
 		gitUser:    gitUser,
 		censor:     censor,
 		masterLock: &sync.Mutex{},
@@ -172,10 +191,11 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 }
 
 type clientFactory struct {
-	remotes RemoteResolverFactory
-	gitUser GitUserGetter
-	censor  Censor
-	logger  *logrus.Entry
+	remote         RemoteResolverFactory
+	gitUser        GitUserGetter
+	censor         Censor
+	logger         *logrus.Entry
+	cookieFilePath string
 
 	// cacheDir is the root under which cached clones of repos are created
 	cacheDir string
@@ -202,11 +222,13 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	var remote RemoteResolverFactory
+	remote = c.remote
 	client := &repoClient{
 		publisher: publisher{
 			remotes: remotes{
-				publishRemote: c.remotes.PublishRemote(org, repo),
-				centralRemote: c.remotes.CentralRemote(org, repo),
+				publishRemote: remote.PublishRemote(org, repo),
+				centralRemote: remote.CentralRemote(org, repo),
 			},
 			executor: executor,
 			info:     c.gitUser,
@@ -214,7 +236,7 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 		},
 		interactor: interactor{
 			dir:      dir,
-			remote:   c.remotes.CentralRemote(org, repo),
+			remote:   remote.CentralRemote(org, repo),
 			executor: executor,
 			logger:   logger,
 		},
@@ -234,6 +256,9 @@ func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error)
 // In that case, it must do a full git mirror clone. For large repos, this can
 // take a while. Once that is done, it will do a git fetch instead of a clone,
 // which will usually take at most a few seconds.
+//
+// org and repo are used for determining where the repo is cloned, cloneURI
+// overrides org/repo for cloning.
 func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	cacheDir := path.Join(c.cacheDir, org, repo)
 	c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "dir": cacheDir}).Debug("Creating a client from the cache.")
@@ -242,7 +267,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		return nil, err
 	}
 
-	repoDir, err := ioutil.TempDir(c.cacheDirBase, "gitrepo")
+	repoDir, err := os.MkdirTemp(c.cacheDirBase, "gitrepo")
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,5 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviewers:
-- clarketm
-- fejta
-approvers:
+emeritus_approvers:
 - clarketm
 - fejta

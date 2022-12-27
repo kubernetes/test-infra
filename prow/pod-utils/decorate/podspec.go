@@ -27,6 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	coreapi "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -266,11 +267,10 @@ func CloneLogPath(logMount coreapi.VolumeMount) string {
 
 // Exposed for testing
 const (
-	entrypointName   = "place-entrypoint"
-	initUploadName   = "initupload"
-	sidecarName      = "sidecar"
-	cloneRefsName    = "clonerefs"
-	cloneRefsCommand = "/clonerefs"
+	entrypointName = "place-entrypoint"
+	initUploadName = "initupload"
+	sidecarName    = "sidecar"
+	cloneRefsName  = "clonerefs"
 )
 
 // cloneEnv encodes clonerefs Options into json and puts it into an environment variable
@@ -498,7 +498,6 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	container := coreapi.Container{
 		Name:         cloneRefsName,
 		Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
-		Command:      []string{cloneRefsCommand},
 		Args:         cloneArgs,
 		Env:          env,
 		VolumeMounts: append([]coreapi.VolumeMount{logMount, codeMount}, cloneMounts...),
@@ -574,8 +573,7 @@ func PlaceEntrypoint(config *prowapi.DecorationConfig, toolsMount coreapi.Volume
 	container := coreapi.Container{
 		Name:         entrypointName,
 		Image:        config.UtilityImages.Entrypoint,
-		Command:      []string{"/bin/cp"},
-		Args:         []string{"/entrypoint", entrypointLocation(toolsMount)},
+		Args:         []string{"--copy-mode-only"},
 		VolumeMounts: []coreapi.VolumeMount{toolsMount},
 	}
 	if config.Resources != nil && config.Resources.PlaceEntrypoint != nil {
@@ -652,9 +650,8 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %w", err)
 	}
 	container := &coreapi.Container{
-		Name:    initUploadName,
-		Image:   config.UtilityImages.InitUpload,
-		Command: []string{"/initupload"}, // TODO(fejta): remove this, use image's entrypoint and delete /initupload symlink
+		Name:  initUploadName,
+		Image: config.UtilityImages.InitUpload,
 		Env: KubeEnv(map[string]string{
 			downwardapi.JobSpecEnv:      encodedJobSpec,
 			initupload.JSONConfigEnvVar: initUploadConfigEnv,
@@ -819,6 +816,34 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
 
+	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.DefaultMemoryRequest != nil {
+		for i, container := range spec.Containers {
+			if container.Resources.Requests != nil {
+				if _, ok := container.Resources.Requests[v1.ResourceMemory]; ok {
+					continue // Memory request already defined, no need to default
+				}
+			}
+			if spec.Containers[i].Resources.Requests == nil {
+				spec.Containers[i].Resources.Requests = make(v1.ResourceList)
+			}
+			spec.Containers[i].Resources.Requests[v1.ResourceMemory] = *pj.Spec.DecorationConfig.DefaultMemoryRequest
+		}
+	}
+
+	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest != nil && *pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest {
+		for i, container := range spec.Containers {
+			if container.Resources.Requests == nil {
+				continue
+			}
+			if val, ok := container.Resources.Requests[v1.ResourceMemory]; ok {
+				if spec.Containers[i].Resources.Limits == nil {
+					spec.Containers[i].Resources.Limits = make(v1.ResourceList)
+				}
+				spec.Containers[i].Resources.Limits[v1.ResourceMemory] = val
+			}
+		}
+	}
+
 	spec.Containers = append(spec.Containers, *sidecar)
 
 	if spec.TerminationGracePeriodSeconds == nil && pj.Spec.DecorationConfig.GracePeriod != nil {
@@ -887,14 +912,14 @@ func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blo
 	}
 
 	container := &coreapi.Container{
-		Name:    sidecarName,
-		Image:   config.UtilityImages.Sidecar,
-		Command: []string{"/sidecar"}, // TODO(fejta): remove, use image's entrypoint
+		Name:  sidecarName,
+		Image: config.UtilityImages.Sidecar,
 		Env: KubeEnv(map[string]string{
 			sidecar.JSONConfigEnvVar: sidecarConfigEnv,
 			downwardapi.JobSpecEnv:   encodedJobSpec, // TODO: shouldn't need this?
 		}),
-		VolumeMounts: mounts,
+		VolumeMounts:             mounts,
+		TerminationMessagePolicy: coreapi.TerminationMessageFallbackToLogsOnError,
 	}
 	if config.Resources != nil && config.Resources.Sidecar != nil {
 		container.Resources = *config.Resources.Sidecar

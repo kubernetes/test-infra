@@ -5,15 +5,15 @@
 
 {{define "body"}}
   <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-    {{ range $title, $content:= . }}
+    {{ range $documents:= . }}
     <tr class="header section-expander">
-      <td class="mdl-data-table__cell--non-numeric expander failed" colspan="1"><h6>{{$title}}</h6></td>
+      <td class="mdl-data-table__cell--non-numeric expander failed" colspan="1"><h6>{{.Title}}</h6></td>
       <td class="mdl-data-table__cell--non-numeric expander"><i class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
     </tr>
     {{/* Do _not_ hide this by default, that will break inner javascript that dynamically resizes. Hiding post-render is ok, so we hide on first resize request */}}
-    <tr class="initial" id="{{$title}}-tr">
+    <tr class="initial" id="{{.Filename}}-tr">
       <td colspan="2" style="border: 0px; padding: 0px;">
-        <iframe srcdoc="{{$content}}" title="{{$title}}" sandbox="allow-scripts allow-popups allow-same-origin" id="{{$title}}" width="100%" scrolling="no"></iframe>
+        <iframe srcdoc="{{.Content}}" title="{{.Filename}}" sandbox="allow-scripts allow-popups allow-same-origin" id="{{.Filename}}" width="100%" scrolling="no"></iframe>
       </td>
     </tr>
     {{end}}

@@ -15,7 +15,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - /bin/bash
         args:
@@ -24,7 +24,16 @@ presubmits:
           if [ -f Makefile ]; then
             make test
           else
-            ../test-infra/hack/bazel.sh test --test_output=errors -- //... -//vendor/...
+            REPO_ROOT=$(git rev-parse --show-toplevel);
+            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
+              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
+            else
+              export BAZEL_VERSION="5.3.0";
+              echo "BAZEL_VERSION - Falling back to 5.3.0";
+            fi;
+            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
+            bazel test --test_output=errors -- //... -//vendor/...
           fi
   - name: cloud-provider-gcp-verify-all
     always_run: true
@@ -39,28 +48,39 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
           command:
             - runner.sh
-            - ./tools/verify-all.sh
+          args:
+          - "/bin/bash"
+          - "-c"
+          - REPO_ROOT=$(git rev-parse --show-toplevel);
+            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
+              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
+            else
+              export BAZEL_VERSION="5.3.0";
+              echo "BAZEL_VERSION - Falling back to 5.3.0";
+            fi;
+            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
+            ./tools/verify-all.sh
   - name: cloud-provider-gcp-e2e-full
     always_run: true
-    optional: false
     decorate: true
     decoration_config:
       timeout: 80m
     path_alias: k8s.io/cloud-provider-gcp
     labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
     annotations:
       testgrid-dashboards: provider-gcp-presubmits
-      description: End to end test of kubernetes/cloud-provider-gcp.
+      description: End to end test of kubernetes/cloud-provider-gcp for bumping to next version
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -76,7 +96,51 @@ presubmits:
           REPO_ROOT=$(git rev-parse --show-toplevel);
           cd;
           export GO111MODULE=on;
-          go get sigs.k8s.io/kubetest2@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.22.0 --parallel=30 --test-args='--minStartupPods=8 --container-runtime=containerd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+          if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+            export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
+            echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
+          else
+            export BAZEL_VERSION="5.3.0";
+            echo "BAZEL_VERSION - Falling back to 5.3.0";
+          fi;
+          /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
+          go install sigs.k8s.io/kubetest2@latest;
+          go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+          go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+          if [[ -f "${REPO_ROOT}/ginko-test-package-version.env" ]]; then
+            export TEST_PACKAGE_VERSION=$(cat "${REPO_ROOT}/ginko-test-package-version.env");
+            echo "TEST_PACKAGE_VERSION set to ${TEST_PACKAGE_VERSION}";
+          else
+            export TEST_PACKAGE_VERSION="v1.25.0";
+            echo "TEST_PACKAGE_VERSION - Falling back to v1.25.0";
+          fi;
+          kubetest2 gce -v 2 --repo-root "${REPO_ROOT}" --build --up --down --test=ginkgo --node-size n1-standard-4 --master-size n1-standard-8 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --test-args='--minStartupPods=8 --ginkgo.flakeAttempts=3' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+  - name: cloud-provider-gcp-verify-up-to-date
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-gcp
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Run verify scripts on kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+          command:
+            - runner.sh
+          args:
+          - "/bin/bash"
+          - "-c"
+          - REPO_ROOT=$(git rev-parse --show-toplevel);
+            if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
+              export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
+              echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
+            else
+              export BAZEL_VERSION="5.3.0";
+              echo "BAZEL_VERSION - Falling back to 5.3.0";
+            fi;
+            /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
+            ./tools/verify-up-to-date.sh

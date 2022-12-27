@@ -148,31 +148,51 @@ function detect-project() {
   fi
 }
 
-# Detect Linux and Windows nodes created in the instance group.
+# Detect Linux and Windows nodes in the cluster.
 #
-# Vars set:
+# If a custom get-instances function has been set, this function will use it
+# to set the NODE_NAMES array.
+#
+# Otherwise this function will attempt to detect the nodes based on the GCP
+# instance group information. If Windows nodes are present they will be detected
+# separately. The following arrays will be set:
 #   NODE_NAMES
 #   INSTANCE_GROUPS
 #   WINDOWS_NODE_NAMES
 #   WINDOWS_INSTANCE_GROUPS
 function detect-node-names() {
+  NODE_NAMES=()
+  INSTANCE_GROUPS=()
+  WINDOWS_INSTANCE_GROUPS=()
+  WINDOWS_NODE_NAMES=()
+
+  if [[ -n "${use_custom_instance_list}" ]]; then
+    echo 'Detecting node names using log_dump_custom_get_instances() function'
+    while IFS='' read -r line; do NODE_NAMES+=("$line"); done < <(log_dump_custom_get_instances node)
+    echo "NODE_NAMES=${NODE_NAMES[*]:-}" >&2
+    return
+  fi
+
+  if ! [[ "${gcloud_supported_providers}" =~ ${KUBERNETES_PROVIDER} ]]; then
+    echo "gcloud not supported for ${KUBERNETES_PROVIDER}, can't detect node names"
+    return
+  fi
+
   # These prefixes must not be prefixes of each other, so that they can be used to
   # detect mutually exclusive sets of nodes.
   local -r NODE_INSTANCE_PREFIX=${NODE_INSTANCE_PREFIX:-"${INSTANCE_PREFIX}-minion"}
   local -r WINDOWS_NODE_INSTANCE_PREFIX=${WINDOWS_NODE_INSTANCE_PREFIX:-"${INSTANCE_PREFIX}-windows-node"}
   detect-project
-  INSTANCE_GROUPS=()
+  echo 'Detecting nodes in the cluster'
   INSTANCE_GROUPS+=($(gcloud compute instance-groups managed list \
     --project "${PROJECT}" \
     --filter "name ~ '${NODE_INSTANCE_PREFIX}-.+' AND zone:(${ZONE})" \
     --format='value(name)' || true))
-  WINDOWS_INSTANCE_GROUPS=()
   WINDOWS_INSTANCE_GROUPS+=($(gcloud compute instance-groups managed list \
     --project "${PROJECT}" \
     --filter "name ~ '${WINDOWS_NODE_INSTANCE_PREFIX}-.+' AND zone:(${ZONE})" \
     --format='value(name)' || true))
 
-  NODE_NAMES=()
   if [[ -n "${INSTANCE_GROUPS[@]:-}" ]]; then
     for group in "${INSTANCE_GROUPS[@]}"; do
       NODE_NAMES+=($(gcloud compute instance-groups managed list-instances \
@@ -184,7 +204,6 @@ function detect-node-names() {
   if [[ -n "${HEAPSTER_MACHINE_TYPE:-}" ]]; then
     NODE_NAMES+=("${NODE_INSTANCE_PREFIX}-heapster")
   fi
-  WINDOWS_NODE_NAMES=()
   if [[ -n "${WINDOWS_INSTANCE_GROUPS[@]:-}" ]]; then
     for group in "${WINDOWS_INSTANCE_GROUPS[@]}"; do
       WINDOWS_NODE_NAMES+=($(gcloud compute instance-groups managed \
@@ -195,6 +214,8 @@ function detect-node-names() {
 
   echo "INSTANCE_GROUPS=${INSTANCE_GROUPS[*]:-}" >&2
   echo "NODE_NAMES=${NODE_NAMES[*]:-}" >&2
+  echo "WINDOWS_INSTANCE_GROUPS=${WINDOWS_INSTANCE_GROUPS[*]:-}" >&2
+  echo "WINDOWS_NODE_NAMES=${WINDOWS_NODE_NAMES[*]:-}" >&2
 }
 
 # Detect the IP for the master
@@ -356,7 +377,7 @@ function save-logs() {
         log-dump-ssh "${node_name}" "sudo journalctl --output=short-precise -k" > "${dir}/kern.log" || true
 
         for svc in "${services[@]}"; do
-            log-dump-ssh "${node_name}" "sudo journalctl --output=cat -u ${svc}.service" > "${dir}/${svc}.log" || true
+            log-dump-ssh "${node_name}" "sudo journalctl --output=short-precise -u ${svc}.service" > "${dir}/${svc}.log" || true
         done
 
         if [[ "$dump_systemd_journal" == "true" ]]; then
@@ -570,12 +591,6 @@ function dump_nodes() {
   if [[ -n "${1:-}" ]]; then
     echo 'Dumping logs for nodes provided as args to dump_nodes() function'
     node_names=( "$@" )
-  elif [[ -n "${use_custom_instance_list}" ]]; then
-    echo 'Dumping logs for nodes provided by log_dump_custom_get_instances() function'
-    while IFS='' read -r line; do node_names+=("$line"); done < <(log_dump_custom_get_instances node)
-  elif [[ ! "${node_ssh_supported_providers}" =~ ${KUBERNETES_PROVIDER} ]]; then
-    echo "Node SSH not supported for ${KUBERNETES_PROVIDER}"
-    return
   else
     echo 'Detecting nodes in the cluster'
     detect-node-names &> /dev/null
@@ -675,14 +690,7 @@ function find_non_logexported_nodes() {
 # This function examines NODE_NAMES but not WINDOWS_NODE_NAMES since logexporter
 # does not run on Windows nodes.
 function dump_nodes_with_logexporter() {
-  if [[ -n "${use_custom_instance_list}" ]]; then
-    echo 'Dumping logs for nodes provided by log_dump_custom_get_instances() function'
-    NODE_NAMES=()
-    while IFS='' read -r line; do NODE_NAMES+=("$line"); done < <(log_dump_custom_get_instances node)
-  else
-    echo 'Detecting nodes in the cluster'
-    detect-node-names &> /dev/null
-  fi
+  detect-node-names &> /dev/null
 
   if [[ -z "${NODE_NAMES:-}" ]]; then
     echo 'No nodes found!'
@@ -690,13 +698,16 @@ function dump_nodes_with_logexporter() {
   fi
 
   # Obtain parameters required by logexporter.
-  local -r service_account_credentials="$(base64 "${GOOGLE_APPLICATION_CREDENTIALS}" | tr -d '\n')"
+  if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+    local -r service_account_credentials="$(base64 "${GOOGLE_APPLICATION_CREDENTIALS}" | tr -d '\n')"
+  fi
   local -r cloud_provider="${KUBERNETES_PROVIDER}"
   local -r enable_hollow_node_logs="${ENABLE_HOLLOW_NODE_LOGS:-false}"
   local -r logexport_sleep_seconds="$(( 90 + NUM_NODES / 3 ))"
   if [[ -z "${ZONE_NODE_SELECTOR_DISABLED:-}" ]]; then
     local -r node_selector="${ZONE_NODE_SELECTOR_LABEL:-topology.kubernetes.io/zone}: ${ZONE}"
   fi
+  local -r use_application_default_credentials="${LOGEXPORTER_USE_APPLICATION_DEFAULT_CREDENTIALS:-false}"
 
   # Fill in the parameters in the logexporter daemonset template.
   local -r tmp="${KUBE_TEMP}/logexporter"
@@ -707,13 +718,14 @@ function dump_nodes_with_logexporter() {
 
   sed -i'' -e "s@{{.NodeSelector}}@${node_selector:-}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.LogexporterNamespace}}@${logexporter_namespace}@g" "${manifest_yaml}"
-  sed -i'' -e "s@{{.ServiceAccountCredentials}}@${service_account_credentials}@g" "${manifest_yaml}"
+  sed -i'' -e "s@{{.ServiceAccountCredentials}}@${service_account_credentials:-}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.CloudProvider}}@${cloud_provider}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.GCSPath}}@${gcs_artifacts_dir}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.EnableHollowNodeLogs}}@${enable_hollow_node_logs}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.DumpSystemdJournal}}@${dump_systemd_journal}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.ExtraLogFiles}}@${extra_log_files}@g" "${manifest_yaml}"
   sed -i'' -e "s@{{.ExtraSystemdServices}}@${extra_systemd_services}@g" "${manifest_yaml}"
+  sed -i'' -e "s@{{.UseApplicationDefaultCredentials}}@${use_application_default_credentials}@g" "${manifest_yaml}"
 
   # Create the logexporter namespace, service-account secret and the logexporter daemonset within that namespace.
   if ! kubectl create -f "${manifest_yaml}"; then
@@ -768,7 +780,9 @@ function dump_nodes_with_logexporter() {
       echo "Attempt ${retry} failed to list marker files for successful nodes"
       if [[ "${retry}" == 10 ]]; then
         echo 'Final attempt to list marker files failed.. falling back to logdump through SSH'
-        kubectl delete namespace "${logexporter_namespace}" || true
+        # Timeout prevents the test waiting too long to delete resources and
+        # never uploading logs, as happened in https://github.com/kubernetes/kubernetes/issues/111111
+        kubectl delete namespace "${logexporter_namespace}" --timeout 15m || true
         dump_nodes "${NODE_NAMES[@]}"
         logexporter_failed=1
         return
@@ -794,11 +808,30 @@ function dump_nodes_with_logexporter() {
 
   # Delete the logexporter resources and dump logs for the failed nodes (if any) through SSH.
   kubectl get pods --namespace "${logexporter_namespace}" || true
-  kubectl delete namespace "${logexporter_namespace}" || true
+  # Timeout prevents the test waiting too long to delete resources and
+  # never uploading logs, as happened in https://github.com/kubernetes/kubernetes/issues/111111
+  kubectl delete namespace "${logexporter_namespace}" --timeout 15m || true
   if [[ "${#failed_nodes[@]}" != 0 ]]; then
     echo -e "Dumping logs through SSH for the following nodes:\n${failed_nodes[*]}"
     dump_nodes "${failed_nodes[@]}"
   fi
+}
+
+# Writes node information that's available through the gcloud and kubectl API
+# surfaces to a nodes/ subdirectory of $report_dir.
+function dump_node_info() {
+  nodes_dir="${report_dir}/nodes"
+  mkdir -p "${nodes_dir}"
+
+  detect-node-names
+  if [[ -n "${NODE_NAMES:-}" ]]; then
+    printf "%s\n" "${NODE_NAMES[@]}" > "${nodes_dir}/node_names.txt"
+  fi
+  if [[ -n "${WINDOWS_NODE_NAMES:-}" ]]; then
+    printf "%s\n" "${WINDOWS_NODE_NAMES[@]}" > "${nodes_dir}/windows_node_names.txt"
+  fi
+
+  kubectl get nodes -o yaml > "${nodes_dir}/kubectl_get_nodes.yaml" || true
 }
 
 function detect_node_failures() {
@@ -874,6 +907,7 @@ function main() {
   fi
 
   dump_logs
+  dump_node_info
 
   if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]] && [[ -n "${gcs_artifacts_dir}" ]]; then
     if [[ "$(ls -A ${report_dir})" ]]; then

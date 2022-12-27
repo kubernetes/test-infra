@@ -51,17 +51,17 @@ func resultForJob(pjclient prowv1.ProwJobInterface, selector string) (*pjapi.Pro
 }
 
 // TriggerAndWatchProwJob would trigger the job provided by the prowjob parameter
-func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars map[string]string, dryRun bool) error {
+func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars map[string]string, dryRun bool) (succeeded bool, err error) {
 	logrus.Info("getting cluster config")
 	pjclient, err := o.ProwJobClient(config.ProwJobNamespace, dryRun)
 	if err != nil {
-		return fmt.Errorf("failed getting prowjob client: %w", err)
+		return false, fmt.Errorf("failed getting prowjob client: %w", err)
 	}
 
 	logrus.WithFields(ProwJobFields(prowjob)).Info("submitting a new prowjob")
 	created, err := pjclient.Create(context.Background(), prowjob, metav1.CreateOptions{})
 	if err != nil {
-		return fmt.Errorf("failed to submit the prowjob: %w", err)
+		return false, fmt.Errorf("failed to submit the prowjob: %w", err)
 	}
 
 	logger := logrus.WithFields(ProwJobFields(created))
@@ -74,7 +74,7 @@ func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.Pro
 	for {
 		result, shouldContinue, err = resultForJob(pjclient, selector.String())
 		if err != nil {
-			return fmt.Errorf("failed to watch job: %w", err)
+			return false, fmt.Errorf("failed to watch job: %w", err)
 		}
 		if !shouldContinue {
 			break
@@ -83,6 +83,8 @@ func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.Pro
 
 	if result.State != pjapi.SuccessState {
 		logrus.Error("job failed")
+	} else {
+		succeeded = true
 	}
 
 	b, err := yaml.Marshal(result)
@@ -91,5 +93,5 @@ func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.Pro
 	}
 
 	fmt.Println(string(b))
-	return nil
+	return succeeded, nil
 }

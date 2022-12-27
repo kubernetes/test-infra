@@ -15,9 +15,9 @@
 EXTRA_ARG =
 
 push-prod:
-	bazel run //images/builder -- $(EXTRA_ARG) --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/builder
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder $(EXTRA_ARG) --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/builder
 
 push:
-	bazel run //images/builder -- $(EXTRA_ARG) --allow-dirty images/builder
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder $(EXTRA_ARG) --allow-dirty images/builder
 
 .PHONY: push push-prod help

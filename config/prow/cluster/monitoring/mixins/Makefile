@@ -28,7 +28,7 @@ expose-gobin:
 grafana-dashboards: install clean-dashboard-out
 	@mkdir -p dashboards_out
 	@for input in $(shell ls grafana_dashboards); do \
-		if [[ ! $input =~ .*\.jsonnet ]]; then \
+		if [[ ! $${input} =~ .*\.jsonnet ]]; then \
 			continue; \
 		fi; \
 		output="$${input%.*}.json"; \
@@ -43,7 +43,7 @@ prow_prometheusrule.yaml: install clean-prometheus-out
 
 apply-configmaps: get-cluster-credentials grafana-dashboards
 	@for input in $(shell ls dashboards_out); do \
-		if [[ ! $input =~ .*\.json ]]; then \
+		if [[ ! $${input} =~ .*\.json ]]; then \
 			continue; \
 		fi; \
 		dashboard_name="grafana-dashboard-$${input%.*}"; \

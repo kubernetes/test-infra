@@ -2,13 +2,13 @@ presubmits:
   kubernetes/cloud-provider-openstack:
   - name: pull-cloud-provider-openstack-check
     always_run: true
-    branches:
-    - master
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -20,13 +20,13 @@ presubmits:
 
   - name: pull-cloud-provider-openstack-test
     always_run: true
-    branches:
-    - master
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"

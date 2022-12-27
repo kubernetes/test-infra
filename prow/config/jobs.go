@@ -128,8 +128,24 @@ type JobBase struct {
 	// ProwJobDefault holds configuration options provided as defaults
 	// in the Prow config
 	ProwJobDefault *prowapi.ProwJobDefault `json:"prowjob_defaults,omitempty"`
+	// Name of the job queue specifying maximum concurrency, omission implies no limit.
+	// Works in parallel with MaxConcurrency and the limit is selected from the
+	// minimal setting of those two fields.
+	JobQueueName string `json:"job_queue_name,omitempty"`
 
 	UtilityConfig
+}
+
+func (jb JobBase) GetName() string {
+	return jb.Name
+}
+
+func (jb JobBase) GetLabels() map[string]string {
+	return jb.Labels
+}
+
+func (jb JobBase) GetAnnotations() map[string]string {
+	return jb.Annotations
 }
 
 // +k8s:deepcopy-gen=true
@@ -154,6 +170,12 @@ type Presubmit struct {
 	// Trigger must also be specified if this field is specified.
 	// (Default: `/test <job name>`)
 	RerunCommand string `json:"rerun_command,omitempty"`
+
+	// RunBeforeMerge indicates that a job should always run by Tide as long as
+	// Brancher matches.
+	// This is used when a prowjob is so expensive that it's not ideal to run on
+	// every single push from all PRs.
+	RunBeforeMerge bool `json:"run_before_merge,omitempty"`
 
 	Brancher
 
@@ -222,13 +244,19 @@ type Periodic struct {
 	JobBase
 
 	// (deprecated)Interval to wait between two runs of the job.
+	// Consecutive jobs are run at `interval` duration apart, provided the
+	// previous job has completed.
 	Interval string `json:"interval,omitempty"`
+	// MinimumInterval to wait between two runs of the job.
+	// Consecutive jobs are run at `interval` + `duration of previous job` apart.
+	MinimumInterval string `json:"minimum_interval,omitempty"`
 	// Cron representation of job trigger time
 	Cron string `json:"cron,omitempty"`
 	// Tags for config entries
 	Tags []string `json:"tags,omitempty"`
 
-	interval time.Duration
+	interval         time.Duration
+	minimum_interval time.Duration
 }
 
 // JenkinsSpec holds optional Jenkins job config
@@ -246,6 +274,16 @@ func (p *Periodic) SetInterval(d time.Duration) {
 // GetInterval returns interval, the frequency duration it runs.
 func (p *Periodic) GetInterval() time.Duration {
 	return p.interval
+}
+
+// SetMinimumInterval updates minimum_interval, the minimum frequency duration it runs.
+func (p *Periodic) SetMinimumInterval(d time.Duration) {
+	p.minimum_interval = d
+}
+
+// GetMinimumInterval returns minimum_interval, the minimum frequency duration it runs.
+func (p *Periodic) GetMinimumInterval() time.Duration {
+	return p.minimum_interval
 }
 
 // +k8s:deepcopy-gen=true
@@ -269,10 +307,12 @@ type Brancher struct {
 type RegexpChangeMatcher struct {
 	// RunIfChanged defines a regex used to select which subset of file changes should trigger this job.
 	// If any file in the changeset matches this regex, the job will be triggered
+	// Additionally AlwaysRun is mutually exclusive with RunIfChanged.
 	RunIfChanged string `json:"run_if_changed,omitempty"`
 	// SkipIfOnlyChanged defines a regex used to select which subset of file changes should trigger this job.
 	// If all files in the changeset match this regex, the job will be skipped.
 	// In other words, this is the negation of RunIfChanged.
+	// Additionally AlwaysRun is mutually exclusive with SkipIfOnlyChanged.
 	SkipIfOnlyChanged string          `json:"skip_if_only_changed,omitempty"`
 	reChanges         *CopyableRegexp // from RunIfChanged xor SkipIfOnlyChanged
 }

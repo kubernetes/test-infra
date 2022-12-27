@@ -1,10 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-  - yutongz
-  - sebastienvas
+- chaodaiG
+- cjwagner
+- listx
 reviewers:
-  - yutongz
-  - sebastienvas
+- chaodaiG
+- cjwagner
+- listx
+emeritus_approvers:
+- sebastienvas
+- yutongz
 labels:
- - area/prow/pubsub
+- area/prow/pubsub

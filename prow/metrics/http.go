@@ -50,7 +50,7 @@ func ErrorRate(prefix string) *prometheus.CounterVec {
 	return prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: prefix + "_error_rate",
-			Help: "number of errors, sorted by label/type",
+			Help: "number of errors, sorted by label/type.",
 		},
 		[]string{"error"},
 	)

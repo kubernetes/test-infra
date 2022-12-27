@@ -22,7 +22,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -164,7 +163,7 @@ func ensureUUID(groupsFile, uuid, group string) (string, error) {
 }
 
 func updateGroups(workDir, uuid, group string) error {
-	data, err := ioutil.ReadFile(path.Join(workDir, groupsFile))
+	data, err := os.ReadFile(path.Join(workDir, groupsFile))
 	if err != nil {
 		return fmt.Errorf("failed to read groups file: %w", err)
 	}
@@ -174,7 +173,7 @@ func updateGroups(workDir, uuid, group string) error {
 		return fmt.Errorf("failed to ensure group exists: %w", err)
 	}
 
-	err = ioutil.WriteFile(path.Join(workDir, groupsFile), []byte(newData), 0755)
+	err = os.WriteFile(path.Join(workDir, groupsFile), []byte(newData), 0755)
 	if err != nil {
 		return fmt.Errorf("failed to write groups file: %w", err)
 	}
@@ -297,7 +296,7 @@ func verifyInTree(workDir, host, cur_branch string, configMap map[string][]strin
 			// If it failed to fetch refs/meta/config for parent, or checkout the FETCH_HEAD, just catch the error and return False
 			return false, nil
 		}
-		data, err := ioutil.ReadFile(path.Join(workDir, projectConfigFile))
+		data, err := os.ReadFile(path.Join(workDir, projectConfigFile))
 		if err != nil {
 			return false, fmt.Errorf("failed to read project.config file: %w", err)
 		}
@@ -355,7 +354,7 @@ func ensureProjectConfig(workDir, config, host, cur_branch, groupName string) (s
 }
 
 func updatePojectConfig(workDir, host, cur_branch, groupName string) error {
-	data, err := ioutil.ReadFile(path.Join(workDir, projectConfigFile))
+	data, err := os.ReadFile(path.Join(workDir, projectConfigFile))
 	if err != nil {
 		return fmt.Errorf("failed to read project.config file: %w", err)
 	}
@@ -364,7 +363,7 @@ func updatePojectConfig(workDir, host, cur_branch, groupName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to ensure updated project config: %w", err)
 	}
-	err = ioutil.WriteFile(path.Join(workDir, projectConfigFile), []byte(newData), 0755)
+	err = os.WriteFile(path.Join(workDir, projectConfigFile), []byte(newData), 0755)
 	if err != nil {
 		return fmt.Errorf("failed to write groups file: %w", err)
 	}
@@ -453,7 +452,7 @@ func main() {
 			logrus.Fatal(err)
 		}
 	} else {
-		workDir, err = ioutil.TempDir("", "gerrit_onboarding")
+		workDir, err = os.MkdirTemp("", "gerrit_onboarding")
 		if err != nil {
 			logrus.Fatal(err)
 		}

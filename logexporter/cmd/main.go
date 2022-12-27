@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -33,7 +32,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Initialize the log exporter's configuration related flags.
@@ -45,6 +44,7 @@ var (
 	extraSystemdServices = pflag.StringSlice("extra-systemd-services", []string{}, "Extra systemd services to dump")
 	gcsPath              = pflag.String("gcs-path", "", "Path to the GCS directory under which to upload logs, for eg: gs://my-logs-bucket/logs")
 	gcloudAuthFilePath   = pflag.String("gcloud-auth-file-path", "/etc/service-account/service-account.json", "Path to gcloud service account file, for authenticating gsutil to write to GCS bucket")
+	useAdc               = pflag.Bool("use-application-default-credentials", false, "Whether to use Application Default Credentials instead of the provided service account file")
 	journalPath          = pflag.String("journal-path", "/var/log/journal", "Path where the systemd journal dir is mounted")
 	nodeName             = pflag.String("node-name", "", "Name of the node this log exporter is running on")
 	sleepDuration        = pflag.Duration("sleep-duration", 60*time.Second, "Duration to sleep before exiting with success. Useful for making pods schedule with hard anti-affinity when run as a job on a k8s cluster")
@@ -80,10 +80,12 @@ func checkConfigValidity() error {
 	if *gcsPath == "" {
 		return fmt.Errorf("Flag --gcs-path has its value unspecified")
 	}
-	if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
-		return fmt.Errorf("Could not find the gcloud service account file: %w", err)
-	} else if err := runCommand("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath); err != nil {
-		return fmt.Errorf("Failed to activate gcloud service account: %w", err)
+	if !*useAdc {
+		if _, err := os.Stat(*gcloudAuthFilePath); err != nil {
+			return fmt.Errorf("Could not find the gcloud service account file: %w", err)
+		} else if err := runCommand("gcloud", "auth", "activate-service-account", "--key-file="+*gcloudAuthFilePath); err != nil {
+			return fmt.Errorf("Failed to activate gcloud service account: %w", err)
+		}
 	}
 	return nil
 }
@@ -105,7 +107,7 @@ func createSystemdLogfile(service string, outputMode string, outputDir string) e
 		return fmt.Errorf("Journalctl command for '%v' service failed: %w", service, err)
 	}
 	logfile := filepath.Join(outputDir, service+".log")
-	if err := ioutil.WriteFile(logfile, output, 0444); err != nil {
+	if err := os.WriteFile(logfile, output, 0444); err != nil {
 		return fmt.Errorf("Writing to file of journalctl logs for '%v' service failed: %w", service, err)
 	}
 	return nil
@@ -120,7 +122,7 @@ func createFullSystemdLogfile(outputDir string) error {
 		return fmt.Errorf("Journalctl command failed: %w", err)
 	}
 	logfile := filepath.Join(outputDir, "systemd.log")
-	if err := ioutil.WriteFile(logfile, output, 0444); err != nil {
+	if err := os.WriteFile(logfile, output, 0444); err != nil {
 		return fmt.Errorf("Writing full journalctl logs to file failed: %w", err)
 	}
 	return nil
@@ -244,7 +246,7 @@ func runCommand(name string, arg ...string) error {
 
 func dumpNetworkDebugInfo() {
 	klog.Info("Dumping network connectivity debug info")
-	resolv, err := ioutil.ReadFile("/etc/resolv.conf")
+	resolv, err := os.ReadFile("/etc/resolv.conf")
 	if err != nil {
 		klog.Errorf("Failed to read /etc/resolv.conf: %v", err)
 	}
@@ -275,7 +277,7 @@ func main() {
 		klog.Fatalf("Bad config provided: %v", err)
 	}
 
-	localTmpLogPath, err := ioutil.TempDir("/tmp", "k8s-systemd-logs")
+	localTmpLogPath, err := os.MkdirTemp("/tmp", "k8s-systemd-logs")
 	if err != nil {
 		klog.Fatalf("Could not create temporary dir locally for copying logs: %v", err)
 	}

@@ -124,11 +124,6 @@ func intP(i int) *int {
 }
 
 func TestListBuilds(t *testing.T) {
-	type Task struct {
-		// Used for tracking unscheduled builds for jobs.
-		Name string `json:"name"`
-	}
-
 	tests := []struct {
 		name string
 
@@ -166,7 +161,9 @@ func TestListBuilds(t *testing.T) {
 				"first-int":  {Number: 1, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first-int"}, {Name: prowJobID, Value: "first-int"}}}}},
 				"second-int": {Number: 2, Result: strP(success), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second-int"}, {Name: prowJobID, Value: "second-int"}}}}},
 				// queued_pj_id is returned from the testWrapper
-				"queued_pj_id": {Number: 0, Result: nil, Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "queued-int"}, {Name: prowJobID, Value: "queued_pj_id"}}}}, enqueued: true, Task: Task{Name: "PR-763"}},
+				"queued_pj_id": {Number: 0, Result: nil, Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "queued-int"}, {Name: prowJobID, Value: "queued_pj_id"}}}}, enqueued: true, Task: struct {
+					Name string `json:"name"`
+				}{Name: "PR-763"}},
 			},
 		},
 		{
@@ -390,6 +387,27 @@ func TestGetJobName(t *testing.T) {
 			output: "my-jenkins-job-name/view/change-requests/job/PR-123",
 		},
 		{
+			name: "GitHub Branch Source based PR job in folder",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "folder1/folder2/my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "folder1/job/folder2/job/my-jenkins-job-name/view/change-requests/job/PR-123",
+		},
+		{
 			name: "GitHub Branch Source based branch job",
 			input: &prowapi.ProwJobSpec{
 				Agent: "jenkins",
@@ -404,6 +422,22 @@ func TestGetJobName(t *testing.T) {
 				},
 			},
 			output: "my-jenkins-job-name/job/master",
+		},
+		{
+			name: "GitHub Branch Source based branch job in folder",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Type:  prowapi.PostsubmitJob,
+				Job:   "folder1/folder2/my-jenkins-job-name",
+				JenkinsSpec: &prowapi.JenkinsSpec{
+					GitHubBranchSourceJob: true,
+				},
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+				},
+			},
+			output: "folder1/job/folder2/job/my-jenkins-job-name/job/master",
 		},
 		{
 			name: "Static Jenkins job",
@@ -422,6 +456,24 @@ func TestGetJobName(t *testing.T) {
 				},
 			},
 			output: "my-k8s-job-name",
+		},
+		{
+			name: "Static Jenkins job in folder",
+			input: &prowapi.ProwJobSpec{
+				Agent: "jenkins",
+				Job:   "folder1/folder2/my-k8s-job-name",
+				Refs: &prowapi.Refs{
+					BaseRef: "master",
+					BaseSHA: "deadbeef",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 123,
+							SHA:    "abcd1234",
+						},
+					},
+				},
+			},
+			output: "folder1/job/folder2/job/my-k8s-job-name",
 		},
 	}
 

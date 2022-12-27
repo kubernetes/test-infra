@@ -23,10 +23,6 @@ run_hourly = [
 ]
 
 run_daily = [
-    'kops-grid-scenario-service-account-iam',
-    'kops-grid-scenario-arm64',
-    'kops-grid-scenario-serial-test-for-timeout',
-    'kops-grid-scenario-terraform',
 ]
 
 def simple_hash(s):
@@ -105,18 +101,17 @@ def create_args(kops_channel, networking, container_runtime, extra_flags, kops_i
     if container_runtime:
         args += f" --container-runtime={container_runtime}"
 
-    if kops_image:
-        image_overridden = False
-        if extra_flags:
-            for arg in extra_flags:
-                if "--image=" in arg:
-                    image_overridden = True
-                args = args + " " + arg
-        if not image_overridden:
-            args = f"--image='{kops_image}' {args}"
+    image_overridden = False
+    if extra_flags:
+        for arg in extra_flags:
+            if "--image=" in arg:
+                image_overridden = True
+            args = args + " " + arg
+    if kops_image and not image_overridden:
+        args = f"--image='{kops_image}' {args}"
     return args.strip()
 
-def latest_aws_image(owner, name):
+def latest_aws_image(owner, name, arch='x86_64'):
     client = boto3.client('ec2', region_name='us-east-1')
     response = client.describe_images(
         Owners=[owner],
@@ -127,39 +122,48 @@ def latest_aws_image(owner, name):
                     name,
                 ],
             },
+            {
+                'Name': 'architecture',
+                'Values': [
+                    arch
+                ],
+            },
         ],
     )
     images = {}
     for image in response['Images']:
-        images[image['CreationDate']] = image['ImageLocation']
+        image_location = image['ImageLocation']
+        if image_location.startswith("amazon/"):
+            image_location = image_location.replace('amazon', owner)
+        images[image['CreationDate']] = image_location
     return images[sorted(images, reverse=True)[0]]
 
 distro_images = {
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
-    'deb9': latest_aws_image('379101102735', 'debian-stretch-hvm-x86_64-gp2-*'),
     'deb10': latest_aws_image('136693071363', 'debian-10-amd64-*'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
-    'flatcar': latest_aws_image('075585003325', 'Flatcar-stable-*-hvm'),
-    'rhel7': latest_aws_image('309956199498', 'RHEL-7.*_HVM_*-x86_64-0-Hourly2-GP2'),
-    'rhel8': latest_aws_image('309956199498', 'RHEL-8.4.*_HVM-*-x86_64-0-Hourly2-GP2'),
+    'flatcar': latest_aws_image('075585003325', 'Flatcar-beta-*-hvm'),
+    'flatcararm64': latest_aws_image('075585003325', 'Flatcar-beta-*-hvm', 'arm64'),
+    'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-0-Hourly2-GP2'),
+    'rocky8': latest_aws_image('792107900819', 'Rocky-8-ec2-8.*.x86_64'),
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
-    'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*'), # pylint: disable=line-too-long
-    'u2110': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-impish-21.10-amd64-server-*'), # pylint: disable=line-too-long
-    'u2204': latest_aws_image('099720109477', 'ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-*'), # pylint: disable=line-too-long
+    'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
+    'u2204': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*'), # pylint: disable=line-too-long
+    'u2204arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-*', 'arm64'), # pylint: disable=line-too-long
 }
 
 distros_ssh_user = {
     'amzn2': 'ec2-user',
-    'deb9': 'admin',
     'deb10': 'admin',
     'deb11': 'admin',
     'flatcar': 'core',
-    'rhel7': 'ec2-user',
+    'flatcararm64': 'core',
     'rhel8': 'ec2-user',
+    'rocky8': 'rocky',
     'u1804': 'ubuntu',
     'u2004': 'ubuntu',
     'u2004arm64': 'ubuntu',
-    'u2110': 'ubuntu',
     'u2204': 'ubuntu',
+    'u2204arm64': 'ubuntu',
 }

@@ -21,7 +21,6 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -81,7 +80,8 @@ func (o *Options) createRecords() []clone.Record {
 			rec.Failed = true
 			return []clone.Record{rec}
 		}
-		tokenGenerator, userGenerator, _ = github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
+		var err error
+		tokenGenerator, userGenerator, _, err = github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
 			Censor: secret.Censor,
 			AppID:  o.GitHubAppID,
 			AppPrivateKey: func() *rsa.PrivateKey {
@@ -95,12 +95,17 @@ func (o *Options) createRecords() []clone.Record {
 			},
 			Bases: o.GitHubAPIEndpoints,
 		})
+		if err != nil {
+			logrus.WithError(err).Error("Failed to construct github client")
+			rec.Failed = true
+			return []clone.Record{rec}
+		}
 	}
 
 	// Print md5 sum of cookiefile for debugging purpose
 	if len(o.CookiePath) > 0 {
 		l := logrus.WithField("http-cookiefile", o.CookiePath)
-		f, err := ioutil.ReadFile(o.CookiePath)
+		f, err := os.ReadFile(o.CookiePath)
 		if err != nil {
 			l.WithError(err).Warn("Cannot read http cookiefile")
 		} else {
@@ -161,7 +166,7 @@ func (o Options) Run() error {
 		return fmt.Errorf("marshal clone records: %w", err)
 	}
 
-	if err := ioutil.WriteFile(o.Log, logData, 0755); err != nil {
+	if err := os.WriteFile(o.Log, logData, 0755); err != nil {
 		return fmt.Errorf("write clone records: %w", err)
 	}
 

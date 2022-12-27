@@ -21,7 +21,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 
@@ -86,7 +85,7 @@ func run(opts *options, args []string) {
 		logrus.WithError(testErr).Error("Error(s) executing benchmarks.")
 	}
 	if len(opts.logFile) > 0 && opts.logFile != "-" {
-		if err := ioutil.WriteFile(opts.logFile, testOutput, 0666); err != nil {
+		if err := os.WriteFile(opts.logFile, testOutput, 0666); err != nil {
 			logrus.WithError(err).Fatalf("Failed to write to log file %q.", opts.logFile)
 		}
 	}
@@ -107,7 +106,7 @@ func run(opts *options, args []string) {
 	if opts.outputFile == "-" {
 		fmt.Println(string(junitBytes))
 	} else {
-		if err := ioutil.WriteFile(opts.outputFile, junitBytes, 0666); err != nil {
+		if err := os.WriteFile(opts.outputFile, junitBytes, 0666); err != nil {
 			logrus.WithError(err).Fatalf("Failed to write JUnit to output file %q.", opts.outputFile)
 		}
 	}

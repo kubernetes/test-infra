@@ -22,64 +22,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"reflect"
-	"strconv"
+	"io"
+	"os"
 	"time"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
-
-// specToStarted translate a jobspec into a started struct
-// optionally overwrite RepoVersion with provided cloneRecords
-func specToStarted(spec *downwardapi.JobSpec, cloneRecords []clone.Record) gcs.Started {
-	var version string
-
-	started := gcs.Started{
-		Timestamp: time.Now().Unix(),
-	}
-
-	if mainRefs := spec.MainRefs(); mainRefs != nil {
-		version = shaForRefs(*mainRefs, cloneRecords)
-	}
-
-	if version == "" {
-		version = downwardapi.GetRevisionFromSpec(spec)
-	}
-
-	started.DeprecatedRepoVersion = version
-	started.RepoCommit = version
-
-	// TODO(fejta): VM name
-
-	if spec.Refs != nil && len(spec.Refs.Pulls) > 0 {
-		started.Pull = strconv.Itoa(spec.Refs.Pulls[0].Number)
-	}
-
-	started.Repos = map[string]string{}
-
-	if spec.Refs != nil {
-		started.Repos[spec.Refs.Org+"/"+spec.Refs.Repo] = spec.Refs.String()
-	}
-	for _, ref := range spec.ExtraRefs {
-		started.Repos[ref.Org+"/"+ref.Repo] = ref.String()
-	}
-
-	return started
-}
-
-// shaForRefs finds the resolved SHA after cloning and merging for the given refs
-func shaForRefs(refs prowv1.Refs, cloneRecords []clone.Record) string {
-	for _, record := range cloneRecords {
-		if reflect.DeepEqual(refs, record.Refs) {
-			return record.FinalSHA
-		}
-	}
-	return ""
-}
 
 // Run will start the initupload job to upload the artifacts, logs and clone status.
 func (o Options) Run() error {
@@ -98,14 +50,14 @@ func (o Options) Run() error {
 		}
 	}
 
-	started := specToStarted(spec, cloneRecords)
+	started := downwardapi.SpecToStarted(spec, cloneRecords)
 
 	startedData, err := json.Marshal(&started)
 	if err != nil {
 		return fmt.Errorf("could not marshal starting data: %w", err)
 	}
 
-	uploadTargets[prowv1.StartedStatusFile] = gcs.DataUpload(bytes.NewReader(startedData))
+	uploadTargets[prowv1.StartedStatusFile] = gcs.DataUpload(newBytesReadCloser(startedData))
 
 	ctx := context.Background()
 	if err := o.Options.Run(ctx, spec, uploadTargets); err != nil {
@@ -126,7 +78,7 @@ func (o Options) Run() error {
 //          error - when unexpected file operation happens
 func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (bool, []clone.Record, error) {
 	var cloneRecords []clone.Record
-	data, err := ioutil.ReadFile(logfile)
+	data, err := os.ReadFile(logfile)
 	if err != nil {
 		return true, cloneRecords, fmt.Errorf("could not read clone log: %w", err)
 	}
@@ -142,15 +94,15 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 		failed = failed || record.Failed
 
 	}
-	uploadTargets["clone-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
-	uploadTargets["clone-records.json"] = gcs.FileUpload(logfile)
+	uploadTargets["clone-log.txt"] = gcs.DataUpload(newBytesReadCloser(cloneLog.Bytes()))
+	uploadTargets[prowv1.CloneRecordFile] = gcs.FileUpload(logfile)
 
 	if failed {
-		uploadTargets["build-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
+		uploadTargets["build-log.txt"] = gcs.DataUpload(newBytesReadCloser(cloneLog.Bytes()))
 
 		passed := !failed
 		now := time.Now().Unix()
-		finished := gcs.Finished{
+		finished := metadata.Finished{
 			Timestamp: &now,
 			Passed:    &passed,
 			Result:    "FAILURE",
@@ -159,7 +111,13 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 		if err != nil {
 			return true, cloneRecords, fmt.Errorf("could not marshal finishing data: %w", err)
 		}
-		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewReader(finishedData))
+		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(newBytesReadCloser(finishedData))
 	}
 	return failed, cloneRecords, nil
+}
+
+func newBytesReadCloser(data []byte) gcs.ReaderFunc {
+	return func() (io.ReadCloser, error) {
+		return io.NopCloser(bytes.NewReader(data)), nil
+	}
 }

@@ -53,11 +53,12 @@ periodics:
   spec:
     serviceAccountName: k8s-metrics
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20211001-c920b4c552
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220427-c2db0f69b7
       args:
       - ./metrics/bigquery.py
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
+      - --jq=/usr/bin/jq
 
 - name: ci-test-infra-triage
   interval: 30m
@@ -123,9 +124,9 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20211207-16e4d57ac1
+    - image: gcr.io/k8s-prow/generic-autobumper:v20221220-5c7fbe528a
       command:
-      - /app/prow/cmd/generic-autobumper/app.binary
+      - generic-autobumper
       args:
       - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
       volumeMounts:
@@ -153,9 +154,9 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20211207-16e4d57ac1
+    - image: gcr.io/k8s-prow/generic-autobumper:v20221220-5c7fbe528a
       command:
-      - /app/prow/cmd/generic-autobumper/app.binary
+      - generic-autobumper
       args:
       - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
       - --labels-override=skip-review # This label is used by tide for identifying trusted PR

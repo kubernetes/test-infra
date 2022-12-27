@@ -34,7 +34,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-100-adhoc
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -47,7 +47,7 @@ presubmits:
         - --provider=gce
         - --tear-down-previous
         - # TODO(pohly@): Custom overrides, clean up after finishing the tests.
-        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=1000 --kube-api-burst=1000
+        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=1000 --kube-api-burst=1000
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/adhoc/run-e2e-test.sh
         - --timeout=100m

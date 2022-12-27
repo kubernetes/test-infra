@@ -5,10 +5,10 @@ reviewers:
 - spiffxp
 - stevekuznetsov
 approvers:
-- fejta
 - spiffxp
 - stevekuznetsov
 emeritus_approvers:
+- fejta
 - ibzib
 - Katharine
 - rmmh

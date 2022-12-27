@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"sort"
@@ -95,13 +95,14 @@ type Client interface {
 	ForPlugin(plugin string) Client
 	ForSubcomponent(subcomponent string) Client
 	WithFields(fields logrus.Fields) Client
+	Used() bool
 
 	// SearchBugs returns all bugs that meet the given criteria
 	SearchBugs(filters map[string]string) ([]*Bug, error)
 }
 
 // NewClient returns a bugzilla client.
-func NewClient(getAPIKey func() []byte, endpoint string, githubExternalTrackerId uint) Client {
+func NewClient(getAPIKey func() []byte, endpoint string, githubExternalTrackerId uint, authMethod string) Client {
 	return &client{
 		logger: logrus.WithField("client", "bugzilla"),
 		delegate: &delegate{
@@ -109,6 +110,7 @@ func NewClient(getAPIKey func() []byte, endpoint string, githubExternalTrackerId
 			endpoint:                endpoint,
 			githubExternalTrackerId: githubExternalTrackerId,
 			getAPIKey:               getAPIKey,
+			authMethod:              authMethod,
 		},
 	}
 }
@@ -161,7 +163,13 @@ type client struct {
 	logger *logrus.Entry
 	// identifier is used to add more identification to the user-agent header
 	identifier string
+	used       bool
 	*delegate
+}
+
+// Used determines whether the client has been used
+func (c *client) Used() bool {
+	return c.used
 }
 
 // ForPlugin clones the client, keeping the underlying delegate the same but adding
@@ -224,6 +232,11 @@ func (c *client) GetBug(id int) (*Bug, error) {
 	if err != nil {
 		return nil, err
 	}
+	values := req.URL.Query()
+	values.Add("include_fields", "_default")
+	// redhat bugzilla docs claim that flags are a default field, but they are actually not returned unless added to include_fields
+	values.Add("include_fields", "flags")
+	req.URL.RawQuery = values.Encode()
 	raw, err := c.request(req, logger)
 	if err != nil {
 		return nil, err
@@ -687,6 +700,7 @@ func (c *client) GetComments(bugID int) ([]Comment, error) {
 }
 
 func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error) {
+	c.used = true
 	if apiKey := c.getAPIKey(); len(apiKey) > 0 {
 		switch c.authMethod {
 		case "bearer":
@@ -733,7 +747,7 @@ func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error
 			logger.WithError(err).Warn("could not close response body")
 		}
 	}()
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read response body: %w", err)
 	}
@@ -787,7 +801,10 @@ func IsAccessDenied(err error) bool {
 	if !ok {
 		return false
 	}
-	return reqError.bugzillaCode == 102
+	if reqError.bugzillaCode == 102 || reqError.statusCode == 401 {
+		return true
+	}
+	return false
 }
 
 // AddPullRequestAsExternalBug attempts to add a PR to the external tracker list.
@@ -821,7 +838,6 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 		Method:  "ExternalBugs.add_external_bug",
 		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
 		Parameters: []AddExternalBugParameters{{
-			APIKey:       string(c.getAPIKey()),
 			BugIDs:       []int{id},
 			ExternalBugs: []ExternalBugIdentifier{bugIdentifier},
 		}},
@@ -905,7 +921,6 @@ func (c *client) RemovePullRequestAsExternalBug(id int, org, repo string, num in
 		Method:  "ExternalBugs.remove_external_bug",
 		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
 		Parameters: []RemoveExternalBugParameters{{
-			APIKey: string(c.getAPIKey()),
 			BugIDs: []int{id},
 			ExternalBugIdentifier: ExternalBugIdentifier{
 				Type: "https://github.com/",
@@ -968,11 +983,11 @@ func IdentifierForPull(org, repo string, num int) string {
 
 func PullFromIdentifier(identifier string) (org, repo string, num int, err error) {
 	parts := strings.Split(identifier, "/")
+	if len(parts) >= 3 && parts[2] != "pull" {
+		return "", "", 0, &identifierNotForPull{identifier: identifier}
+	}
 	if len(parts) != 4 && !(len(parts) == 5 && (parts[4] == "" || parts[4] == "files")) && !(len(parts) == 6 && (parts[4] == "files" && parts[5] == "")) {
 		return "", "", 0, fmt.Errorf("invalid pull identifier with %d parts: %q", len(parts), identifier)
-	}
-	if parts[2] != "pull" {
-		return "", "", 0, &identifierNotForPull{identifier: identifier}
 	}
 	number, err := strconv.Atoi(parts[3])
 	if err != nil {

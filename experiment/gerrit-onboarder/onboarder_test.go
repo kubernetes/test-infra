@@ -260,7 +260,7 @@ func TestEnsureUUID(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			res, err := ensureUUID(tc.groupsString, tc.id, tc.group)
 			if err != nil && !tc.err {
-				t.Errorf("expected no error but got %w", err)
+				t.Errorf("expected no error but got %v", err)
 			}
 			if err == nil && tc.err {
 				t.Error("expected error but got none")

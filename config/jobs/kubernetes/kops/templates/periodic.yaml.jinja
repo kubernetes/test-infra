@@ -35,6 +35,12 @@
           --up --down \
           --cloud-provider={{cloud}} \
           --create-args="{{create_args}}" \
+          {%- if cp_ig_overrides %}
+          --control-plane-instance-group-overrides="{{ cp_ig_overrides }}" \
+          {%- endif %}
+          {%- if node_ig_overrides %}
+          --node-instance-group-overrides="{{ node_ig_overrides }}" \
+          {%- endif %}
           {%- if kops_feature_flags %}
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
           {%- endif %}

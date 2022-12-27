@@ -17,15 +17,26 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 
-	transfigure "k8s.io/test-infra/testgrid/cmd/transfigure/cmd"
+	"github.com/sirupsen/logrus"
+)
+
+const (
+	defaultScriptPath = "/transfigure.sh"
 )
 
 func main() {
-	if err := transfigure.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	scriptPath := fmt.Sprintf("%s%s", os.Getenv("KO_DATA_PATH"), defaultScriptPath)
+	flag.Parse()
+	args := flag.Args()
+	cmd := exec.Command(scriptPath, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		logrus.WithError(err).Fatal()
 	}
 }

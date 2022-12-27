@@ -1,0 +1,7 @@
+images:
+  fedora:
+    image_family: fedora-coreos-stable
+    project: fedora-coreos-cloud
+    # Using `n1-standard-4` to enable CPU manager node e2e tests.
+    machine: n1-standard-4
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/crio/crio.ign"

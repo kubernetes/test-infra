@@ -18,7 +18,6 @@ package repoowners
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -144,9 +143,12 @@ func (entry cacheEntry) fullyLoaded() bool {
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
 	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
+	LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwner, error)
 
 	WithFields(fields logrus.Fields) Interface
 	WithGitHubClient(client github.Client) Interface
+	ForPlugin(plugin string) Interface
+	Used() bool
 }
 
 // Client is an implementation of the Interface.
@@ -156,6 +158,7 @@ var _ Interface = &Client{}
 type Client struct {
 	logger *logrus.Entry
 	ghc    githubClient
+	used   bool
 	*delegate
 }
 
@@ -187,6 +190,25 @@ func (c *Client) WithGitHubClient(client github.Client) Interface {
 		ghc:      client,
 		delegate: c.delegate,
 	}
+}
+
+// ForPlugin clones the client, keeping the underlying delegate the same but adding
+// a log field
+func (c *Client) ForPlugin(plugin string) Interface {
+	return c.forKeyValue("plugin", plugin)
+}
+
+func (c *Client) forKeyValue(key, value string) Interface {
+	return &Client{
+		logger:   c.logger.WithField(key, value),
+		ghc:      c.ghc,
+		delegate: c.delegate,
+	}
+}
+
+// Used determines whether the client has been used
+func (c *Client) Used() bool {
+	return c.used
 }
 
 // NewClient is the constructor for Client
@@ -232,6 +254,7 @@ type RepoOwner interface {
 	ParseFullConfig(path string) (FullConfig, error)
 	TopLevelApprovers() sets.String
 	Filenames() ownersconfig.Filenames
+	AllOwners() sets.String
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -275,12 +298,21 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	}
 	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.GetRef(%s, %s, %s)", org, repo, fmt.Sprintf("heads/%s", base))
 
-	entry, err := c.cacheEntryFor(org, repo, base, cloneRef, fullName, sha, log)
+	return c.LoadRepoOwnersSha(org, repo, base, sha, true)
+}
+
+func (c *Client) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwner, error) {
+	c.used = true
+	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base, "sha": sha})
+	cloneRef := fmt.Sprintf("%s/%s", org, repo)
+	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
+
+	entry, err := c.cacheEntryFor(org, repo, base, cloneRef, fullName, sha, updateCache, log)
 	if err != nil {
 		return nil, err
 	}
 
-	start = time.Now()
+	start := time.Now()
 	if c.skipCollaborators(org, repo) {
 		log.WithField("duration", time.Since(start).String()).Debugf("Completed c.skipCollaborators(%s, %s)", org, repo)
 		log.Debugf("Skipping collaborator checks for %s/%s", org, repo)
@@ -305,7 +337,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	return owners, nil
 }
 
-func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, log *logrus.Entry) (cacheEntry, error) {
+func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, setEntry bool, log *logrus.Entry) (cacheEntry, error) {
 	mdYaml := c.mdYAMLEnabled(org, repo)
 	lockStart := time.Now()
 	defer func() {
@@ -381,7 +413,9 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			}
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirIgnorelist, log)", gitRepo.Directory(), mdYaml)
 			entry.sha = sha
-			c.cache.setEntry(fullName, entry)
+			if setEntry {
+				c.cache.setEntry(fullName, entry)
+			}
 		}
 	}
 	return entry, nil
@@ -427,7 +461,7 @@ func (a RepoAliases) ExpandAllAliases() sets.String {
 
 func loadAliasesFrom(baseDir, filename string, log *logrus.Entry) RepoAliases {
 	path := filepath.Join(baseDir, filename)
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if os.IsNotExist(err) {
 		log.WithError(err).Infof("No alias file exists at %q. Using empty alias map.", path)
 		return nil
@@ -563,7 +597,7 @@ func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return FullConfig{}, err
 	}
@@ -582,7 +616,7 @@ func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return SimpleConfig{}, err
 	}
@@ -602,7 +636,7 @@ func SaveSimpleConfig(simple SimpleConfig, path string) error {
 	if err != nil {
 		return nil
 	}
-	return ioutil.WriteFile(path, b, 0644)
+	return os.WriteFile(path, b, 0644)
 }
 
 // LoadFullConfig loads FullConfig from bytes `b`
@@ -618,7 +652,7 @@ func SaveFullConfig(full FullConfig, path string) error {
 	if err != nil {
 		return nil
 	}
-	return ioutil.WriteFile(path, b, 0644)
+	return os.WriteFile(path, b, 0644)
 }
 
 // ParseAliasesConfig will unmarshal an OWNERS_ALIASES file's content into RepoAliases.
@@ -645,7 +679,7 @@ var mdStructuredHeaderRegex = regexp.MustCompile("^---\n(.|\n)*\n---")
 // If no yaml header is found, do nothing
 // Returns an error if the file cannot be read or the yaml header is found but cannot be unmarshalled.
 func decodeOwnersMdConfig(path string, config *SimpleConfig) error {
-	fileBytes, err := ioutil.ReadFile(path)
+	fileBytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -853,4 +887,19 @@ func (o *RepoOwners) RequiredReviewers(path string) sets.String {
 
 func (o *RepoOwners) TopLevelApprovers() sets.String {
 	return o.entriesForFile(".", o.approvers, true).Set()
+}
+
+func (o *RepoOwners) AllOwners() sets.String {
+	allOwners := sets.NewString()
+	for _, pv := range o.approvers {
+		for _, rv := range pv {
+			allOwners = allOwners.Union(rv)
+		}
+	}
+	for _, pv := range o.reviewers {
+		for _, rv := range pv {
+			allOwners = allOwners.Union(rv)
+		}
+	}
+	return allOwners
 }

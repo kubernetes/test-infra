@@ -19,7 +19,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -49,7 +48,7 @@ type Agent struct {
 
 // IsConfigMapMount determines whether the provided directory is a configmap mounted directory
 func IsConfigMapMount(path string) (bool, error) {
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return false, fmt.Errorf("Could not read provided directory %s: %w", path, err)
 	}
