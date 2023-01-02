@@ -128,17 +128,18 @@ type JobConfig struct {
 // ProwConfig is config for all prow controllers.
 type ProwConfig struct {
 	// The git sha from which this config was generated.
-	ConfigVersionSHA     string               `json:"config_version_sha,omitempty"`
-	Tide                 Tide                 `json:"tide,omitempty"`
-	Plank                Plank                `json:"plank,omitempty"`
-	Sinker               Sinker               `json:"sinker,omitempty"`
-	Deck                 Deck                 `json:"deck,omitempty"`
-	BranchProtection     BranchProtection     `json:"branch-protection"`
-	Gerrit               Gerrit               `json:"gerrit"`
-	GitHubReporter       GitHubReporter       `json:"github_reporter"`
-	Horologium           Horologium           `json:"horologium"`
-	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
-	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
+	ConfigVersionSHA       string                 `json:"config_version_sha,omitempty"`
+	Tide                   Tide                   `json:"tide,omitempty"`
+	Plank                  Plank                  `json:"plank,omitempty"`
+	Sinker                 Sinker                 `json:"sinker,omitempty"`
+	Deck                   Deck                   `json:"deck,omitempty"`
+	BranchProtection       BranchProtection       `json:"branch-protection"`
+	Gerrit                 Gerrit                 `json:"gerrit"`
+	GitHubReporter         GitHubReporter         `json:"github_reporter"`
+	Horologium             Horologium             `json:"horologium"`
+	SlackReporterConfigs   SlackReporterConfigs   `json:"slack_reporter_configs,omitempty"`
+	WebhookReporterConfigs WebhookReporterConfigs `json:"webhook_reporter_configs,omitempty"`
+	InRepoConfig           InRepoConfig           `json:"in_repo_config"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -1554,6 +1555,74 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 	}
 	if err := tmpl.Execute(&bytes.Buffer{}, &prowapi.ProwJob{}); err != nil {
 		return fmt.Errorf("failed to execute report_template: %w", err)
+	}
+
+	return nil
+}
+
+// WebhookReporter represents the config for the webhook reporter. The URL can be overridden
+// on the job via the .reporter_config.webhook.url property.
+type WebhookReporter struct {
+	JobTypesToReport              []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
+	prowapi.WebhookReporterConfig `json:",inline"`
+}
+
+// WebhookReporterConfigs represents the config for the webhook reporter(s).
+// Use `org/repo`, `org` or `*` as key and a `WebhookReporter` struct as value.
+type WebhookReporterConfigs map[string]WebhookReporter
+
+func (cfg WebhookReporterConfigs) mergeFrom(additional *WebhookReporterConfigs) error {
+	if additional == nil {
+		return nil
+	}
+
+	var errs []error
+	for orgOrRepo, webhookReporter := range *additional {
+		if _, alreadyConfigured := cfg[orgOrRepo]; alreadyConfigured {
+			errs = append(errs, fmt.Errorf("config for org or repo %s passed more than once", orgOrRepo))
+			continue
+		}
+		cfg[orgOrRepo] = webhookReporter
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func (cfg WebhookReporterConfigs) GetWebhookReporter(refs *prowapi.Refs) WebhookReporter {
+	if refs == nil {
+		return cfg["*"]
+	}
+
+	if wh, ok := cfg[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]; ok {
+		return wh
+	}
+
+	if wh, ok := cfg[refs.Org]; ok {
+		return wh
+	}
+
+	return cfg["*"]
+}
+
+func (cfg WebhookReporterConfigs) HasGlobalConfig() bool {
+	_, exists := cfg["*"]
+	return exists
+}
+
+func (cfg *WebhookReporter) DefaultAndValidate() error {
+	if cfg.URL == "" {
+		return errors.New("url must be set")
+	}
+
+	u, err := url.Parse(cfg.URL)
+	if err != nil {
+		return fmt.Errorf("failed to parse url: %w", err)
+	}
+
+	switch u.Scheme {
+	case "http", "https":
+	default:
+		return fmt.Errorf("URL scheme must be http or https; found %q", u.Scheme)
 	}
 
 	return nil
@@ -3214,6 +3283,12 @@ func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
 		pc.SlackReporterConfigs = additional.SlackReporterConfigs
 	} else if err := pc.SlackReporterConfigs.mergeFrom(&additional.SlackReporterConfigs); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge slack-reporter config: %w", err))
+	}
+
+	if pc.WebhookReporterConfigs == nil {
+		pc.WebhookReporterConfigs = additional.WebhookReporterConfigs
+	} else if err := pc.WebhookReporterConfigs.mergeFrom(&additional.WebhookReporterConfigs); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge webhook config: %w", err))
 	}
 
 	return utilerrors.NewAggregate(errs)

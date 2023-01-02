@@ -17,15 +17,24 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
+	"context"
+	"crypto/ed25519"
+	"encoding/base64"
 	"flag"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 
 	"k8s.io/test-infra/prow/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	"k8s.io/test-infra/prow/webhook"
 )
 
 func TestOptions(t *testing.T) {
@@ -256,5 +265,133 @@ func TestGitHubOptions(t *testing.T) {
 			t.Errorf("%s: path mismatch: actual %s != expected %s",
 				tc.name, actual.github.TokenPath, tc.expectedTokenPath)
 		}
+	}
+}
+
+// TestWebhook tests the integration of the webhook logic with Crier's
+// ed25519-based signature token. The signture-verification handler to
+// `httptest.NewServer` can be used in webhook target servers.
+func TestWebhook(t *testing.T) {
+	for _, tc := range [...]struct {
+		name                      string
+		privKey                   string
+		pubKey                    []byte
+		message                   any
+		expectedSendError         string
+		expectedVerificationError bool
+	}{
+		{
+			name:    "happy path",
+			privKey: "rfA2rImIhzsKSRGqAOzyCu722K8CJb0uRR94dac2BY7I1unzumhVcshbfon6QD6mGzIMW26pMHek+i5A5crbbw==",
+			pubKey:  []byte{200, 214, 233, 243, 186, 104, 85, 114, 200, 91, 126, 137, 250, 64, 62, 166, 27, 50, 12, 91, 110, 169, 48, 119, 164, 250, 46, 64, 229, 202, 219, 111},
+			message: "This is a message",
+		},
+		{
+			name:              "incorrect key length",
+			privKey:           "rfA2rImIhzsKSRGqAOzyCu722K8CJb0uRR94dac2BY7I1vO6aFVyyFt+ifpAPqYbMgxbbqkwd6T6LkDlyttv",
+			expectedSendError: "webhook signing key length mismatch",
+		},
+		{
+			name:    "complex message",
+			privKey: "rfA2rImIhzsKSRGqAOzyCu722K8CJb0uRR94dac2BY7I1unzumhVcshbfon6QD6mGzIMW26pMHek+i5A5crbbw==",
+			pubKey:  []byte{200, 214, 233, 243, 186, 104, 85, 114, 200, 91, 126, 137, 250, 64, 62, 166, 27, 50, 12, 91, 110, 169, 48, 119, 164, 250, 46, 64, 229, 202, 219, 111},
+			message: struct {
+				FieldOne   float64
+				FieldTwo   string
+				FieldThree struct{ FieldFour []byte }
+			}{
+				FieldOne:   12345.45672,
+				FieldTwo:   "🕬" + `";>`,
+				FieldThree: struct{ FieldFour []byte }{FieldFour: []byte{7, 77, 0, 0, 0, 0, 0, 0, 0, 123, 123, 123}},
+			},
+		},
+		{
+			name:                      "key mismatch",
+			privKey:                   "rfA2rImIhzsKSRGqAOzyCu722K8CJb0uRR94dac2BY7I1unzumhVcshbfon6QD6mGzIMW26pMHek+i5A5crbbw==",
+			pubKey:                    []byte{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+			message:                   "This is a message",
+			expectedVerificationError: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var (
+				tokenFunc = webhookSigningFunc(
+					func() []byte { return []byte(tc.privKey) },
+				)
+				client       = webhook.NewClient(tokenFunc)
+				callReceived = false
+
+				serverURL string
+			)
+
+			server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+				callReceived = true
+				timestamp := req.Header.Get("x-prow-timestamp")
+
+				// Verify the timestamp
+				{
+					ts, err := time.Parse(time.RFC3339, timestamp)
+					if err != nil {
+						t.Fatalf("the x-prow-timestamp header is not parseable as time.RFC3339")
+					}
+
+					tolerance := 5 * time.Second
+					if skew := time.Since(ts); skew > tolerance || -skew > tolerance {
+						t.Errorf("unacceptable time skew with x-prow-timestamp: %v", skew)
+					}
+				}
+
+				// Compute the digest
+				var digest []byte
+				{
+					var buf bytes.Buffer
+					buf.WriteString(serverURL)
+					buf.WriteByte(0)
+					buf.WriteString(timestamp)
+					buf.WriteByte(0)
+					_, err := buf.ReadFrom(req.Body)
+					if err != nil {
+						t.Fatalf("unexpected error reading from the request body: %v", err)
+					}
+					digest = buf.Bytes()
+				}
+
+				// Verify the signature
+				{
+					signature, err := base64.StdEncoding.DecodeString(req.Header.Get("x-prow-token"))
+					if err != nil {
+						t.Fatalf("unexpected error decoding x-prow-token from base64: %v", err)
+					}
+
+					if ok := ed25519.Verify(tc.pubKey, digest, signature); ok == tc.expectedVerificationError {
+						if ok {
+							t.Errorf("signature verification unexpectedly succeeded")
+						} else {
+							t.Errorf("signature verification failed")
+						}
+					}
+				}
+			}))
+			defer server.Close()
+			serverURL = server.URL
+
+			if err := client.Send(context.Background(), serverURL, tc.message); err != nil {
+				if tc.expectedSendError == "" {
+					t.Errorf("unexpected error while sending the webhook: %v", err)
+				} else {
+					if !strings.Contains(err.Error(), tc.expectedSendError) {
+						t.Errorf("expected error to contain %q, found instead: %v", tc.expectedSendError, err)
+					}
+				}
+			} else {
+				if tc.expectedSendError != "" {
+					t.Errorf("expected error containing %q, fuond nil", tc.expectedSendError)
+				}
+			}
+
+			if !callReceived && tc.expectedSendError == "" {
+				t.Errorf("expected call to the target server, not received")
+			}
+		})
 	}
 }

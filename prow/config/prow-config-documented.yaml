@@ -1361,3 +1361,11 @@ tide:
     # This field is mutually exclusive with TargetURL.
     target_urls:
         "": ""
+webhook_reporter_configs:
+    "":
+        job_states_to_report:
+          - ""
+        job_types_to_report:
+          - ""
+        report: false
+        url: ' '

@@ -18,8 +18,11 @@ package main
 
 import (
 	"context"
+	"crypto/ed25519"
+	"encoding/base64"
 	"errors"
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -36,6 +39,7 @@ import (
 	githubreporter "k8s.io/test-infra/prow/crier/reporters/github"
 	pubsubreporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
 	slackreporter "k8s.io/test-infra/prow/crier/reporters/slack"
+	webhookreporter "k8s.io/test-infra/prow/crier/reporters/webhook"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
@@ -56,11 +60,14 @@ type options struct {
 	pubsubWorkers         int
 	githubWorkers         int
 	slackWorkers          int
+	webhookWorkers        int
 	blobStorageWorkers    int
 	k8sBlobStorageWorkers int
 
 	slackTokenFile            string
 	additionalSlackTokenFiles slackclient.HostsFlag
+
+	webhookKeyFile string
 
 	storage prowflagutil.StorageClientOptions
 
@@ -73,7 +80,7 @@ type options struct {
 }
 
 func (o *options) validate() error {
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.webhookWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -99,6 +106,12 @@ func (o *options) validate() error {
 		}
 	}
 
+	if o.webhookWorkers > 0 {
+		if o.webhookKeyFile == "" {
+			return errors.New("--webhook-key-file must be set to a file containing an Ed25519 key to provide webhook authentication")
+		}
+	}
+
 	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement, &o.config} {
 		if err := opt.Validate(o.dryrun); err != nil {
 			return err
@@ -114,11 +127,13 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.pubsubWorkers, "pubsub-workers", 0, "Number of pubsub report workers (0 means disabled)")
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
+	fs.IntVar(&o.webhookWorkers, "webhook-workers", 0, "Number of webhook report workers (0 means disabled)")
 	fs.Var(&o.additionalSlackTokenFiles, "additional-slack-token-files", "Map of additional slack token files. example: --additional-slack-token-files=foo=/etc/foo-slack-tokens/token, repeat flag for each host")
 	fs.IntVar(&o.blobStorageWorkers, "blob-storage-workers", 0, "Number of blob storage report workers (0 means disabled)")
 	fs.IntVar(&o.k8sBlobStorageWorkers, "kubernetes-blob-storage-workers", 0, "Number of Kubernetes-specific blob storage report workers (0 means disabled)")
 	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-blob-storage-workers are enabled (0 - > none, 1.0 -> all)")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
+	fs.StringVar(&o.webhookKeyFile, "webhook-key-file", "", "Path to a file containing an Ed25519 private key to provide webhook authentication")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
 	// TODO(krzyzacy): implement dryrun for gerrit/pubsub
@@ -144,6 +159,23 @@ func parseOptions() options {
 	}
 
 	return o
+}
+
+func webhookSigningFunc(keyFunc func() []byte) func([]byte) (string, error) {
+	return func(digest []byte) (string, error) {
+		src := keyFunc()
+		b := make([]byte, base64.StdEncoding.DecodedLen(len(src)))
+		n, err := base64.StdEncoding.Decode(b, src)
+		if err != nil {
+			return "", fmt.Errorf("failed to decode the webhook key from secret: %w", err)
+		}
+		if n != ed25519.PrivateKeySize {
+			return "", fmt.Errorf("webhook signing key length mismatch: expected %d, found %d", ed25519.PrivateKeySize, n)
+		}
+		priv := ed25519.PrivateKey(b[:n])
+		signature := ed25519.Sign(priv, digest)
+		return base64.StdEncoding.EncodeToString(signature), nil
+	}
 }
 
 func main() {
@@ -207,6 +239,27 @@ func main() {
 		slackReporter := slackreporter.New(slackConfig, o.dryrun, tokensMap)
 		if err := crier.New(mgr, slackReporter, o.slackWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct slack reporter controller")
+		}
+	}
+
+	if o.webhookWorkers > 0 {
+		if cfg().WebhookReporterConfigs == nil {
+			logrus.Fatal("webhookreporter is enabled but has no config")
+		}
+		webhookConfig := func(refs *prowapi.Refs) config.WebhookReporter {
+			return cfg().WebhookReporterConfigs.GetWebhookReporter(refs)
+		}
+
+		if err := secret.Add(o.webhookKeyFile); err != nil {
+			logrus.WithError(err).Fatal("could not read webhook key")
+		}
+
+		tokenFunc := webhookSigningFunc(secret.GetTokenGenerator(o.webhookKeyFile))
+
+		hasReporter = true
+		webhookReporter := webhookreporter.New(webhookConfig, o.dryrun, tokenFunc)
+		if err := crier.New(mgr, webhookReporter, o.webhookWorkers, o.githubEnablement.EnablementChecker()); err != nil {
+			logrus.WithError(err).Fatal("failed to construct webhook reporter controller")
 		}
 	}
 

@@ -321,7 +321,8 @@ func (rac *RerunAuthConfig) IsAllowAnyone() bool {
 }
 
 type ReporterConfig struct {
-	Slack *SlackReporterConfig `json:"slack,omitempty"`
+	Slack   *SlackReporterConfig   `json:"slack,omitempty"`
+	Webhook *WebhookReporterConfig `json:"webhook,omitempty"`
 }
 
 type SlackReporterConfig struct {
@@ -368,6 +369,49 @@ func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackRep
 	}
 	if merged.ReportTemplate == "" {
 		merged.ReportTemplate = def.ReportTemplate
+	}
+	if merged.Report == nil {
+		merged.Report = def.Report
+	}
+	return &merged
+}
+
+type WebhookReporterConfig struct {
+	URL               string         `json:"url,omitempty"`
+	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
+	// Report is derived from JobStatesToReport, it's used for differentiating
+	// nil from empty slice, as yaml roundtrip by design can't tell the
+	// difference when omitempty is supplied.
+	// See https://github.com/kubernetes/test-infra/pull/24168 for details
+	// Priority-wise, it goes by following order:
+	// - `report: true/false`` in job config
+	// - `JobStatesToReport: <anything including empty slice>` in job config
+	// - `report: true/false`` in global config
+	// - `JobStatesToReport:` in global config
+	Report *bool `json:"report,omitempty"`
+}
+
+// ApplyDefault is called by jobConfig.ApplyDefault(globalConfig)
+func (src *WebhookReporterConfig) ApplyDefault(def *WebhookReporterConfig) *WebhookReporterConfig {
+	if src == nil && def == nil {
+		return nil
+	}
+	var merged WebhookReporterConfig
+	if src != nil {
+		merged = *src.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if src == nil || def == nil {
+		return &merged
+	}
+
+	if merged.URL == "" {
+		merged.URL = def.URL
+	}
+	// Note: `job_states_to_report: []` also results in JobStatesToReport == nil
+	if merged.JobStatesToReport == nil {
+		merged.JobStatesToReport = def.JobStatesToReport
 	}
 	if merged.Report == nil {
 		merged.Report = def.Report
