@@ -157,14 +157,21 @@ func TestQuery(t *testing.T) {
 				"foo1": {
 					"bar1": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar1",
+							Number:      1,
+							Project:     "bar1",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 				},
 			},
 			expect: map[string]CodeReviewCommon{
-				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar1"}, "foo1"),
+				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      1,
+					Project:     "bar1",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo1"),
 			},
 		},
 		{
@@ -183,37 +190,65 @@ func TestQuery(t *testing.T) {
 				"foo1": {
 					"bar1": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar1",
+							Number:      1,
+							Project:     "bar1",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 					"bar2": {
 						gerrit.ChangeInfo{
-							Number:  2,
-							Project: "bar2",
+							Number:      2,
+							Project:     "bar2",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 				},
 				"foo2": {
 					"bar3": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar3",
+							Number:      1,
+							Project:     "bar3",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 					"bar4": {
 						gerrit.ChangeInfo{
-							Number:  2,
-							Project: "bar4",
+							Number:      2,
+							Project:     "bar4",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 				},
 			},
 			expect: map[string]CodeReviewCommon{
-				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar1"}, "foo1"),
-				"foo1/bar2#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 2, Project: "bar2"}, "foo1"),
-				"foo2/bar3#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar3"}, "foo2"),
-				"foo2/bar4#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 2, Project: "bar4"}, "foo2"),
+				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      1,
+					Project:     "bar1",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo1"),
+				"foo1/bar2#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      2,
+					Project:     "bar2",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo1"),
+				"foo2/bar3#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      1,
+					Project:     "bar3",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo2"),
+				"foo2/bar4#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      2,
+					Project:     "bar4",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo2"),
 			},
 		},
 		{
