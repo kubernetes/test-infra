@@ -20,7 +20,7 @@ periodics:
     org: kubernetes-sigs
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     repo: cluster-api-provider-azure
-  interval: 3h
+  interval: 24h
   labels:
     preset-azure-cred-only: "true"
     preset-capz-containerd-latest: "true"

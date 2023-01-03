@@ -12,7 +12,7 @@ presets:
     value: "Standard_D4s_v3"
 periodics:
 - name: ci-kubernetes-e2e-capz-containerd-windows-1-25
-  interval: 3h
+  interval: 24h
   decorate: true
   decoration_config:
     timeout: 4h0m0s
