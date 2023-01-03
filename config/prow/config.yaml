@@ -13,10 +13,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20221220-5c7fbe528a"
-        initupload: "gcr.io/k8s-prow/initupload:v20221220-5c7fbe528a"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20221220-5c7fbe528a"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20221220-5c7fbe528a"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20230103-9979462ac9"
+        initupload: "gcr.io/k8s-prow/initupload:v20230103-9979462ac9"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20230103-9979462ac9"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20230103-9979462ac9"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
