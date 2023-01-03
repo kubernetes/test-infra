@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
@@ -92,6 +93,14 @@ func (c *kubeClient) Create(ctx context.Context, job *prowapi.ProwJob, o metav1.
 		return job, nil
 	}
 	return c.client.Create(ctx, job, o)
+}
+
+// Get is not implemented for sub's use of ProwJobClient because Sub does not
+// use it (from the clients who use Sub, it is a "fire and forget" type of
+// interaction). However we still use a stub here because Gangway internals
+// expect an interface that can support both Create() and Get().
+func (c *kubeClient) Get(ctx context.Context, jobId string, o metav1.GetOptions) (*prowapi.ProwJob, error) {
+	return nil, fmt.Errorf("unimplemented")
 }
 
 func main() {

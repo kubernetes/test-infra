@@ -102,6 +102,11 @@ func (c *kubeClient) Create(ctx context.Context, job *prowcr.ProwJob, o metav1.C
 	return c.client.Create(ctx, job, o)
 }
 
+// Get gets a Prow Job CR in the Kubernetes cluster (Prow service cluster).
+func (c *kubeClient) Get(ctx context.Context, jobId string, o metav1.GetOptions) (*prowcr.ProwJob, error) {
+	return c.client.Get(ctx, jobId, o)
+}
+
 // interruptableServer is a wrapper type around the gRPC server, so that we can
 // pass it along to our own interrupts package.
 type interruptableServer struct {
