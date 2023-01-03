@@ -26,11 +26,11 @@ presubmits:
           go install github.com/kubernetes-sigs/depstat@latest
           popd
 
-          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json > "${WORKDIR}/stats.json"
+          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats.txt"
           git reset --hard HEAD
           git checkout -b base "${PULL_BASE_SHA}"
-          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json > "${WORKDIR}/stats-base.json"
-          diff -s -u --ignore-all-space "${WORKDIR}"/stats-base.json "${WORKDIR}"/stats.json || true
+          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" -v > "${WORKDIR}/stats-base.txt"
+          diff -s -u --ignore-all-space "${WORKDIR}"/stats-base.txt "${WORKDIR}"/stats.txt || true
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-testing-misc
