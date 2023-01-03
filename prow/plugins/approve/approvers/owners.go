@@ -191,10 +191,10 @@ func (o Owners) GetOwnersSet() sets.String {
 		// the file from our filenames list, because it doesn't need approval
 		if strings.Contains(filepath.Dir(filepath.Dir(toApprove)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
 			continue
-		} else {
-			owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
-			newFilenames = append(newFilenames, toApprove)
 		}
+		owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
+		newFilenames = append(newFilenames, toApprove)
+
 	}
 	o.filenames = newFilenames
 	o.removeSubdirs(owners)
