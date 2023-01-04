@@ -45,7 +45,7 @@ import (
 
 const (
 	inRepoConfigRetries = 2
-	inRepoConfigFailed  = "Unable to get inRepoConfig. This could be due to a merge conflict or a flake. If a merge conflict, please rebase and fix conflicts. Otherwise try again with /test all"
+	inRepoConfigFailed  = "Unable to get inRepoConfig. This could be due to a merge conflict (please resolve them), an inRepoConfig parsing error (incorrect formatting) in the .prow directory or .prow.yaml file, or a flake. For possible flakes, try again with /test all"
 )
 
 var gerritMetrics = struct {
@@ -397,7 +397,8 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 	if err != nil {
 		// If we have not already recorded this failure send an error essage
 		if failed, ok := c.inRepoConfigFailures[key]; !ok || !failed {
-			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, inRepoConfigFailed, nil); setReviewWerr != nil {
+			msg := fmt.Sprintf("%s: %v", inRepoConfigFailed, err)
+			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, msg, nil); setReviewWerr != nil {
 				return fmt.Errorf("failed to get inRepoConfig and failed to set Review to notify user: %v and %v", err, setReviewWerr)
 			}
 			c.inRepoConfigFailures[key] = true
