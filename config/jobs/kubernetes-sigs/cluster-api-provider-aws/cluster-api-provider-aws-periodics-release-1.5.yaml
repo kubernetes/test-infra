@@ -108,6 +108,8 @@ periodics:
           # Parallelize tests
           - name: GINKGO_ARGS
             value: "-nodes 20"
+          - name: GINKGO_FOCUS
+            value: "Cluster API E2E tests"
         securityContext:
           privileged: true
         resources:
