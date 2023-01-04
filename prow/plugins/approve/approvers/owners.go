@@ -187,7 +187,7 @@ func (o Owners) GetOwnersSet() sets.String {
 	var newFilenames []string
 	for _, toApprove := range o.filenames {
 		ownersFile := o.repo.FindApproverOwnersForFile(toApprove)
-		// If the ownersfile for toApprove is in the parent folder and has AllowFolderCreation enabled, we purge
+		// If the ownersfile for toApprove is in the parent folder and has IsAutoApproveUnownedSubfolders enabled, we purge
 		// the file from our filenames list, because it doesn't need approval
 		if strings.Contains(filepath.Dir(filepath.Dir(toApprove)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
 			continue
