@@ -583,10 +583,7 @@ branch-protection:
         kernel-module-management:
           required_status_checks:
             contexts:
-              - Prebuilt kernel module
-              - Prebuilt kernel module - two nodes
-              - In-cluster build
-              - Container image CRD variable
+              - in-cluster-build
         kube-batch:
           required_status_checks:
             contexts:
