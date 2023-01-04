@@ -280,19 +280,9 @@ function deploy_prow() {
   # enough to only redeploy those components who configurations have changed as
   # a result of newly built images (from build_prow_images()).
   pushd "${SCRIPT_ROOT}/config/prow"
-  declare -a workers
-  do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
-  workers+=($!)
-  do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
-  workers+=($!)
-  do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f - &
-  workers+=($!)
-  for worker in ${workers[@]}; do
-    if ! wait $worker; then
-      echo >&2 "kubectl apply failed"
-      return 1
-    fi
-  done
+  do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f -
+  do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f -
+  do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f -
   popd
 
   deploy_components "${fakepubsub_node_port}"
@@ -313,10 +303,20 @@ function deploy_item() {
   local item
   local component
   local fakepubsub_node_port
+  local wait_for_resource_args
+  local wait_for_crd_args
   item="${1}"
   fakepubsub_node_port="${2:-30303}"
 
   case "${item}" in
+    WAIT_FOR_CRD_*)
+      wait_for_crd_args="${item#WAIT_FOR_CRD_}"
+      wait_for_crd "${wait_for_crd_args}"
+      ;;
+    WAIT_FOR_RESOURCE_*)
+      wait_for_resource_args="${item#WAIT_FOR_RESOURCE_}"
+      wait_for_resource "${wait_for_resource_args}"
+      ;;
     WAIT_*)
       component="${item#WAIT_}"
       if ! wait_for_readiness "${component}"; then
@@ -332,10 +332,10 @@ function deploy_item() {
     # randomized node port number.
     fakepubsub.yaml)
       sed "s/FAKEPUBSUB_RANDOM_NODE_PORT/${fakepubsub_node_port}/" "${SCRIPT_ROOT}"/config/prow/cluster/"${item}" |
-        do_kubectl apply --server-side=true -f - &
+        do_kubectl apply --server-side=true -f -
       ;;
     *)
-      do_kubectl apply --server-side=true -f "${SCRIPT_ROOT}"/config/prow/cluster/"${item}" &
+      do_kubectl apply --server-side=true -f "${SCRIPT_ROOT}"/config/prow/cluster/"${item}"
       ;;
   esac
 }

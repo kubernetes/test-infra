@@ -76,12 +76,12 @@ func updateJobBase(j *config.JobBase, old, new string) {
 	for i := range j.Spec.Containers {
 		c := &j.Spec.Containers[i]
 		for j := range c.Args {
-			c.Args[j] = updateString(c.Args[j], old, new)
 			c.Args[j] = updateGenericVersionMarker(c.Args[j])
+			c.Args[j] = updateString(c.Args[j], old, new)
 		}
 		for j := range c.Command {
-			c.Command[j] = updateString(c.Command[j], old, new)
 			c.Command[j] = updateGenericVersionMarker(c.Command[j])
+			c.Command[j] = updateString(c.Command[j], old, new)
 		}
 	}
 }
@@ -160,6 +160,7 @@ const (
 	markerStableOne   = "k8s-stable1"
 	markerStableTwo   = "k8s-stable2"
 	markerStableThree = "k8s-stable3"
+	markerStableFour  = "k8s-stable4"
 )
 
 var allowedMarkers = []string{
@@ -168,6 +169,7 @@ var allowedMarkers = []string{
 	markerStableOne,
 	markerStableTwo,
 	markerStableThree,
+	markerStableFour,
 }
 
 func getMarker(s string) string {
@@ -195,6 +197,8 @@ func updateGenericVersionMarker(s string) string {
 		newMarker = markerStableTwo
 	case markerStableTwo:
 		newMarker = markerStableThree
+	case markerStableThree:
+		newMarker = markerStableFour
 	default:
 		newMarker = marker
 	}

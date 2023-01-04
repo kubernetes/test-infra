@@ -163,6 +163,45 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
+  # stable4
+  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis:
+    interval: 24h
+    args:
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/beta=true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+
 # The following settings are used by cluster e2e tests.
 
 common:
@@ -213,20 +252,25 @@ k8sVersions:
     version: master
   beta:
     args:
+    - --extract=ci/latest-1.26
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.26'
+  stable1:
+    args:
     - --extract=ci/latest-1.25
     - --extract-ci-bucket=k8s-release-dev
     version: '1.25'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.24
     - --extract-ci-bucket=k8s-release-dev
     version: '1.24'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.23
     - --extract-ci-bucket=k8s-release-dev
     version: '1.23'
-  stable3:
+  stable4:
     args:
     - --extract=ci/latest-1.22
     - --extract-ci-bucket=k8s-release-dev
@@ -373,23 +417,27 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
   beta:
     args:
-    - --repo=k8s.io/kubernetes=release-1.25
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+    - --repo=k8s.io/kubernetes=release-1.26
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
   stable1:
     args:
-    - --repo=k8s.io/kubernetes=release-1.24
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.24
+    - --repo=k8s.io/kubernetes=release-1.25
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.25
   stable2:
     args:
-    - --repo=k8s.io/kubernetes=release-1.23
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.23
+    - --repo=k8s.io/kubernetes=release-1.24
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.24
   stable3:
     args:
+    - --repo=k8s.io/kubernetes=release-1.23
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.23
+  stable4:
+    args:
     - --repo=k8s.io/kubernetes=release-1.22
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.22
 
 nodeTestSuites:
   default:

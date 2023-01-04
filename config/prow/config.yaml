@@ -6,15 +6,17 @@ plank:
     '*': https://prow.k8s.io/view/
   pod_pending_timeout: 15m
   pod_unscheduled_timeout: 5m
+  job_queue_capacities:
+    'k8sio-image-promo': 1
   default_decoration_config_entries:
   - config:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20221110-d224b81b1a"
-        initupload: "gcr.io/k8s-prow/initupload:v20221110-d224b81b1a"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20221110-d224b81b1a"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20221110-d224b81b1a"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20230104-cc182b7760"
+        initupload: "gcr.io/k8s-prow/initupload:v20230104-cc182b7760"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20230104-cc182b7760"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20230104-cc182b7760"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -328,6 +330,11 @@ branch-protection:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
+        dynamic-resource-allocation:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         enhancements:
           restrictions: # only allow admins
             users: []
@@ -573,6 +580,13 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        kernel-module-management:
+          required_status_checks:
+            contexts:
+              - Prebuilt kernel module
+              - Prebuilt kernel module - two nodes
+              - In-cluster build
+              - Container image CRD variable
         kube-batch:
           required_status_checks:
             contexts:
@@ -653,7 +667,6 @@ tide:
     - kubernetes/component-helpers
     - kubernetes/controller-manager
     - kubernetes/cri-api
-    - kubernetes/csi-api
     - kubernetes/csi-translation-lib
     - kubernetes/kube-aggregator
     - kubernetes/kube-controller-manager
@@ -687,32 +700,6 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-    - master
-    - release-1.26
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/contains-merge-commits
-    - do-not-merge/hold
-    - do-not-merge/invalid-commit-message
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/needs-kind
-    - do-not-merge/needs-sig
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-    - needs-rebase
-  - repos:
-    - kubernetes/kubernetes
-    milestone: v1.26
-    includedBranches:
-    - master
-    - release-1.26
     labels:
     - lgtm
     - approved

@@ -24,29 +24,29 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.22
-1.23
 1.24
+1.25
+1.26
 "
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.22
-1.23
 1.24
+1.25
+1.26
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version="1.24"
+experimental_k8s_version="1.26"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.23" # TODO: bump to 1.24 after testing a pull job
+latest_stable_k8s_version="1.25" # TODO: bump to 1.26 after testing a pull job
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.8.0"
+hostpath_driver_version="v1.10.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master"
+dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -324,16 +324,7 @@ snapshotter_version() {
         # stable release.
         echo '"master"'
     else
-        # All other jobs test against the latest supported, stable snapshotter
-        # release for that Kubernetes release.
-        #
-        # Additional jobs could be created to cover version
-        # skew, if desired.
-        if [ "$kubernetes" == "latest" ] || [ "$kubernetes" == "master" ] || version_gt "$kubernetes" 1.19; then
-            echo '"v4.0.0"'
-        else
-            echo '"v3.0.3"'
-        fi
+        echo '"v6.1.0"'
     fi
 }
 
@@ -490,6 +481,52 @@ EOF
           privileged: true
 $(resources_for_kubernetes master   "        ")
 EOF
+
+    if [[ $repo != "csi-driver-host-path" ]]; then
+      cat >>"$base/$repo/$repo-config.yaml" <<EOF
+
+  - name: $(job_name "pull" "$repo" "canary")
+    optional: true
+    decorate: true
+    skip_report: false
+    skip_branches: [$(skip_branches $repo)]
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    $(annotations "      " "pull" "$repo" "canary")
+    spec:
+      containers:
+      # We need this image because it has Docker in Docker and go.
+      - image: ${dind_image}
+        command:
+        - runner.sh
+        args:
+        - ./.prow.sh
+        env:
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "latest"
+        - name: CSI_PROW_TESTS
+          value: "$(expand_tests "$tests")"
+        - name: CSI_PROW_BUILD_JOB
+          value: "true"
+        - name: CSI_PROW_HOSTPATH_CANARY
+          value: "canary"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "master"
+        # ... but the RBAC rules only when testing on master.
+        # The other jobs test against the unmodified deployment for
+        # that Kubernetes version, i.e. with the original RBAC rules.
+        - name: UPDATE_RBAC_RULES
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+$(resources_for_kubernetes master   "        ")
+EOF
+    fi
 done
 
 for repo in $single_kubernetes_repos; do

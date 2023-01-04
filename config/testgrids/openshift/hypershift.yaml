@@ -1,12 +1,12 @@
 test_groups:
 - name: redhat-hypershift-main-periodic-ci-openshift-hypershift-main-periodics-e2e-conformance-azure
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-conformance-azure-ovn-4-12
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-4.12-conformance-azure-ovn
 - name: redhat-hypershift-main-aws-4-11-conformance
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.11-periodics-aws-conformance
 - name: redhat-hypershift-main-aws-4-12-conformance
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-conformance-aws-ovn-4-12
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-4.12-conformance-aws-ovn
 - name: redhat-hypershift-main-periodics-e2e-conformance-proxy
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-conformance-proxy-aws-ovn-4-12
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-4.12-conformance-aws-ovn
 
 dashboards:
 - name: redhat-hypershift

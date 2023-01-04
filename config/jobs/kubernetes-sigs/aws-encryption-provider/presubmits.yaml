@@ -6,7 +6,9 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-      - image: golang:1.15
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+        command:
+        - runner.sh
         args:
         - make
         - lint
@@ -24,7 +26,9 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-      - image: golang:1.15
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+        command:
+        - runner.sh
         args:
         - make
         - test

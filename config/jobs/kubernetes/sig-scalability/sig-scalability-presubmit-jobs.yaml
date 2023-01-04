@@ -34,7 +34,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-100-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -42,7 +42,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-node-image=gci
@@ -118,7 +118,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-big-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -126,7 +126,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-4
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-nodes=500
@@ -185,7 +185,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -194,7 +194,7 @@ presubmits:
         - --cluster=gce-cluster
         - --env=CONCURRENT_SERVICE_SYNCS=5
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-2
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --extract=local
         - --gcp-master-image=gci
         - --gcp-node-image=gci
@@ -206,7 +206,7 @@ presubmits:
         - --ginkgo-parallel=40
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-correctness
-        - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
+        - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8 --node-schedulable-timeout=90m
         - --timeout=240m
         - --use-logexporter
         - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
@@ -251,7 +251,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -274,16 +274,16 @@ presubmits:
         - --env=CL2_DELETE_TEST_THROUGHPUT=50
         - --env=CL2_RATE_LIMIT_POD_CREATION=false
         # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
         # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
         # TODO(#1311): Clean this up after the experiment - it should allow
         #   to hugely decrease pod-startup-latency across the whole test.
         #   Given that individual controllers have separate QPS limits, we allow
         #   scheduler to keep up with the load from deployment, daemonset and job
         #   performing pod creations at once.
-        - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
+        - --env=SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
         # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
-        - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
+        - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
         - --test=false
@@ -350,7 +350,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -366,7 +366,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=500
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
@@ -439,7 +439,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-scale
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -457,7 +457,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale
         # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -515,7 +515,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -561,7 +561,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -578,7 +578,7 @@ presubmits:
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -632,7 +632,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -646,7 +646,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=100
-        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --provider=gce
         - --tear-down-previous
         - --test=false
@@ -705,7 +705,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -726,16 +726,16 @@ presubmits:
         - --env=CL2_DELETE_TEST_THROUGHPUT=50
         - --env=CL2_RATE_LIMIT_POD_CREATION=false
         # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
         # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
         # TODO(#1311): Clean this up after the experiment - it should allow
         #   to hugely decrease pod-startup-latency across the whole test.
         #   Given that individual controllers have separate QPS limits, we allow
         #   scheduler to keep up with the load from deployment, daemonset and job
         #   performing pod creations at once.
-        - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
+        - --env=SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
         # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
-        - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
+        - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
         - --test=false

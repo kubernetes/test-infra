@@ -810,11 +810,14 @@ func (r *reconciler) canExecuteConcurrentlyPerQueue(ctx context.Context, pj *pro
 		return true, nil
 	}
 
-	queueConcurrency, queueDefined := r.config().Plank.JobQueueConcurrencies[queueName]
+	queueConcurrency, queueDefined := r.config().Plank.JobQueueCapacities[queueName]
 	if !queueDefined {
 		return false, fmt.Errorf("failed to match queue name '%s' with Plank configuration", queueName)
 	}
 	if queueConcurrency == 0 {
+		return false, nil
+	}
+	if queueConcurrency < 0 {
 		return true, nil
 	}
 

@@ -12,7 +12,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -35,7 +35,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-apidiff-main
@@ -53,7 +53,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -77,7 +77,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -99,7 +99,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -132,7 +132,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -164,7 +164,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -198,7 +198,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -235,12 +235,12 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
-          # Since the PR-Blocking tests are run as part of the cluster-api-test-main job
+          # Since the PR-Blocking tests are run as part of the cluster-api-e2e job
           # and the upgrade tests are being run as part of the periodic upgrade jobs.
           # This jobs ends up running all the other tests in the E2E suite
           - name: GINKGO_SKIP
@@ -275,7 +275,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"

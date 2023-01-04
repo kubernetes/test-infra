@@ -32,7 +32,7 @@ import (
 // and clicking "Copy user ID".
 var githubToSlack = map[string]string{
 	"amwat":          "U9B1P2UGP",
-	"benkazemi":      "U03B4SNKVRT",
+	"benjaminkazemi": "U03B4SNKVRT",
 	"bentheelder":    "U1P7T516X",
 	"chaodaig":       "U010XUQ9VPE",
 	"chases2":        "UJ9R0FWD6",

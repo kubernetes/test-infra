@@ -33,6 +33,84 @@ presubmits:
         - make
         args:
         - test-integration
+  - name: pull-kueue-test-e2e-main-1-23
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-main-1-23
+      description: "Run kueue end to end tests for Kubernetes 1.23"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+        env:
+        - name: E2E_KIND_VERSION
+          value: kindest/node:v1.23.12
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - kind-image-build
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-kueue-test-e2e-main-1-24
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-main-1-24
+      description: "Run kueue end to end tests for Kubernetes 1.24"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+        env:
+        - name: E2E_KIND_VERSION
+          value: kindest/node:v1.24.7
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - kind-image-build
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-kueue-test-e2e-main-k8-1-25
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-main-1-25
+      description: "Run kueue end to end tests for Kubernetes 1.25"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+        env:
+        - name: E2E_KIND_VERSION
+          value: kindest/node:v1.25.3
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - kind-image-build
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
   - name: pull-kueue-verify-main
     always_run: true
     decorate: true
@@ -63,7 +141,7 @@ presubmits:
     - ^release-0.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         securityContext:
           privileged: true
         command:
@@ -86,7 +164,7 @@ presubmits:
     - ^release-0.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         securityContext:
           privileged: true
         command:

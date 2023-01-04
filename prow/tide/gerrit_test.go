@@ -157,14 +157,21 @@ func TestQuery(t *testing.T) {
 				"foo1": {
 					"bar1": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar1",
+							Number:      1,
+							Project:     "bar1",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 				},
 			},
 			expect: map[string]CodeReviewCommon{
-				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar1"}, "foo1"),
+				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      1,
+					Project:     "bar1",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo1"),
 			},
 		},
 		{
@@ -183,37 +190,65 @@ func TestQuery(t *testing.T) {
 				"foo1": {
 					"bar1": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar1",
+							Number:      1,
+							Project:     "bar1",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 					"bar2": {
 						gerrit.ChangeInfo{
-							Number:  2,
-							Project: "bar2",
+							Number:      2,
+							Project:     "bar2",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 				},
 				"foo2": {
 					"bar3": {
 						gerrit.ChangeInfo{
-							Number:  1,
-							Project: "bar3",
+							Number:      1,
+							Project:     "bar3",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 					"bar4": {
 						gerrit.ChangeInfo{
-							Number:  2,
-							Project: "bar4",
+							Number:      2,
+							Project:     "bar4",
+							Mergeable:   true,
+							Submittable: true,
 						},
 					},
 				},
 			},
 			expect: map[string]CodeReviewCommon{
-				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar1"}, "foo1"),
-				"foo1/bar2#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 2, Project: "bar2"}, "foo1"),
-				"foo2/bar3#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 1, Project: "bar3"}, "foo2"),
-				"foo2/bar4#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{Number: 2, Project: "bar4"}, "foo2"),
+				"foo1/bar1#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      1,
+					Project:     "bar1",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo1"),
+				"foo1/bar2#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      2,
+					Project:     "bar2",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo1"),
+				"foo2/bar3#1": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      1,
+					Project:     "bar3",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo2"),
+				"foo2/bar4#2": *CodeReviewCommonFromGerrit(&gerrit.ChangeInfo{
+					Number:      2,
+					Project:     "bar4",
+					Mergeable:   true,
+					Submittable: true,
+				}, "foo2"),
 			},
 		},
 		{
@@ -766,7 +801,7 @@ func TestGetTideContextPolicy(t *testing.T) {
 		wantErr    error
 	}{
 		{
-			name: "normal",
+			name: "base",
 			pr: gerrit.ChangeInfo{
 				Project:         "bar1",
 				Branch:          "main",
@@ -789,14 +824,10 @@ func TestGetTideContextPolicy(t *testing.T) {
 					},
 				},
 			},
-			want: &config.TideContextPolicy{
-				RequiredContexts:          []string{},
-				RequiredIfPresentContexts: []string{"job-1"},
-				OptionalContexts:          []string{},
-			},
+			want: &gerritContextChecker{},
 		},
 		{
-			name: "required",
+			name: "no-job",
 			pr: gerrit.ChangeInfo{
 				Project:         "bar1",
 				Branch:          "main",
@@ -808,54 +839,9 @@ func TestGetTideContextPolicy(t *testing.T) {
 				},
 			},
 			presubmits: map[string][]config.Presubmit{
-				"https://foo1/bar1": {
-					{
-						Reporter: config.Reporter{Context: "job-1"},
-						JobBase: config.JobBase{
-							Labels: map[string]string{
-								"prow.k8s.io/gerrit-report-label": "Verified",
-							},
-						},
-						AlwaysRun: true,
-					},
-				},
+				"https://foo1/bar1": {},
 			},
-			want: &config.TideContextPolicy{
-				RequiredContexts:          []string{"job-1"},
-				RequiredIfPresentContexts: []string{},
-				OptionalContexts:          []string{},
-			},
-		},
-		{
-			name: "optional",
-			pr: gerrit.ChangeInfo{
-				Project:         "bar1",
-				Branch:          "main",
-				CurrentRevision: "abc123",
-				Labels: map[string]gerrit.LabelInfo{
-					"Verified": {
-						Optional: false,
-					},
-				},
-			},
-			presubmits: map[string][]config.Presubmit{
-				"https://foo1/bar1": {
-					{
-						Reporter: config.Reporter{Context: "job-1"},
-						JobBase: config.JobBase{
-							Labels: map[string]string{
-								"prow.k8s.io/gerrit-report-label": "Optional",
-							},
-						},
-						AlwaysRun: true,
-					},
-				},
-			},
-			want: &config.TideContextPolicy{
-				RequiredContexts:          []string{},
-				RequiredIfPresentContexts: []string{},
-				OptionalContexts:          []string{"job-1"},
-			},
+			want: &gerritContextChecker{},
 		},
 	}
 
@@ -940,6 +926,60 @@ func TestPrMergeMethod(t *testing.T) {
 			}
 			if tc.wantErr != gotErr {
 				t.Errorf("Error mismatch. Want: %v, got: %v", tc.wantErr, gotErr)
+			}
+		})
+	}
+}
+
+func TestJobIsRequiredByTide(t *testing.T) {
+	tests := []struct {
+		name string
+		ps   *config.Presubmit
+		crc  *CodeReviewCommon
+		want bool
+	}{
+		{
+			name: "default",
+			ps:   &config.Presubmit{},
+			crc: &CodeReviewCommon{
+				Gerrit: &gerrit.ChangeInfo{Labels: map[string]gerrit.LabelInfo{}},
+			},
+		},
+		{
+			name: "run-before-merge",
+			ps:   &config.Presubmit{RunBeforeMerge: true},
+			crc: &CodeReviewCommon{
+				Gerrit: &gerrit.ChangeInfo{Labels: map[string]gerrit.LabelInfo{}},
+			},
+			want: true,
+		},
+		{
+			name: "required-label",
+			ps: &config.Presubmit{JobBase: config.JobBase{Labels: map[string]string{
+				"prow.k8s.io/gerrit-report-label": "Verified-By-Prow",
+			}}},
+			crc: &CodeReviewCommon{
+				Gerrit: &gerrit.ChangeInfo{Labels: map[string]gerrit.LabelInfo{"Verified-By-Prow": {}}},
+			},
+			want: true,
+		},
+		{
+			name: "optional-label",
+			ps: &config.Presubmit{JobBase: config.JobBase{Labels: map[string]string{
+				"prow.k8s.io/gerrit-report-label": "Verified-By-Prow",
+			}}},
+			crc: &CodeReviewCommon{
+				Gerrit: &gerrit.ChangeInfo{Labels: map[string]gerrit.LabelInfo{"Verified-By-Prow": {Optional: true}}},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &GerritProvider{}
+			if want, got := tc.want, fc.jobIsRequiredByTide(tc.ps, tc.crc); want != got {
+				t.Errorf("Wrong. Want: %v, got: %v", want, got)
 			}
 		})
 	}

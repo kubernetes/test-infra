@@ -33,7 +33,6 @@ import (
 	"k8s.io/test-infra/prow/config"
 	gerritadaptor "k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
-	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
@@ -71,6 +70,20 @@ func gerritQueryParam(optInByDefault bool) string {
 		enablementLabelQueryParam += "+label:" + tideEnablementLabel
 	}
 	return gerritDefaultQueryParam + enablementLabelQueryParam
+}
+
+// gerritContextChecker implements contextChecker, it's a permissive no-op
+// implementation for Gerrit only, as context checking only applies to GitHub.
+type gerritContextChecker struct{}
+
+// IsOptional tells whether a context is optional.
+func (gcc *gerritContextChecker) IsOptional(string) bool {
+	return true
+}
+
+// MissingRequiredContexts tells if required contexts are missing from the list of contexts provided.
+func (gcc *gerritContextChecker) MissingRequiredContexts([]string) []string {
+	return nil
 }
 
 type gerritClient interface {
@@ -194,13 +207,31 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 				optInByDefault = projFilter.OptInByDefault
 			}
 			go func(projName string, optInByDefault bool) {
+				logger := p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName})
 				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritQueryParam(optInByDefault))
 				if err != nil {
-					p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName}).WithError(err).Warn("Querying gerrit project for changes.")
+					logger.WithError(err).Warn("Querying gerrit project for changes.")
 					errChan <- fmt.Errorf("failed querying project '%s' from instance '%s': %v", projName, instance, err)
 					return
 				}
-				resChan <- changesFromProject{instance: instance, project: projName, changes: changes}
+				// Appears that `is:submittable` is not guaranteed to always
+				// work, add an extra layer of filtering until the below
+				// mentioned bug is fixed:
+				// Google internal bug reference: 263278725
+				var submittableChanges []gerrit.ChangeInfo
+				for _, c := range changes {
+					c := c
+					if !c.Submittable {
+						logger.WithField("id", c.ID).Debug("Change not submittable presented in query results.")
+						continue
+					}
+					if !c.Mergeable {
+						logger.WithField("id", c.ID).Debug("Change not mergeable presented in query results.")
+						continue
+					}
+					submittableChanges = append(submittableChanges, c)
+				}
+				resChan <- changesFromProject{instance: instance, project: projName, changes: submittableChanges}
 			}(projName, optInByDefault)
 		}
 	}
@@ -326,77 +357,13 @@ func (p *GerritProvider) mergePRs(sp subpool, prs []CodeReviewCommon, _ *threadS
 	return merged, utilerrors.NewAggregate(errs)
 }
 
-// GetTideContextPolicy gets context policy defined by users + requirements from
-// prow jobs.
+// GetTideContextPolicy returns an empty config.TideContextPolicy struct.
+//
+// These information are only for determining whether a PR is ready for merge or
+// not, this in Gerrit is handled by Gerrit query filters, so this is not useful
+// for Gerrit.
 func (p *GerritProvider) GetTideContextPolicy(org, repo, branch string, baseSHAGetter config.RefGetter, crc *CodeReviewCommon) (contextChecker, error) {
-	pr := crc.Gerrit
-	if pr == nil {
-		return nil, errors.New("programmer error: crc.Gerrit cannot be nil for GerritProvider")
-	}
-
-	required := sets.NewString()
-	requiredIfPresent := sets.NewString()
-	optional := sets.NewString()
-
-	headSHAGetter := func() (string, error) {
-		return crc.HeadRefOID, nil
-	}
-	cloneURI := gerritsource.CloneURIFromOrgRepo(org, repo)
-	// Get presubmits from Config alone.
-	presubmits, err := p.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
-	if err != nil {
-		return nil, fmt.Errorf("failed getting presubmits: %v", err)
-	}
-
-	requireLabels := sets.NewString()
-	for l, info := range pr.Labels {
-		if !info.Optional {
-			requireLabels.Insert(l)
-		}
-	}
-
-	// generate required and optional entries for Prow Jobs
-	for _, pj := range presubmits {
-		if !pj.CouldRun(branch) {
-			continue
-		}
-
-		// jobs that produce required contexts and will
-		// always run should be required at all times.
-		// jobs with `RunBeforeMerge` are also required.
-		var isJobRequired bool
-		// jobs that trigger conditionally are required if present.
-		var isJobRequiredWhenPresent bool
-
-		if pj.RunBeforeMerge {
-			isJobRequired = true
-		}
-		if val, ok := pj.Labels[kube.GerritReportLabel]; ok && requireLabels.Has(val) {
-			if pj.TriggersConditionally() {
-				isJobRequiredWhenPresent = true
-			} else {
-				isJobRequired = true
-			}
-		}
-
-		if isJobRequired {
-			required.Insert(pj.Context)
-		} else if isJobRequiredWhenPresent {
-			requiredIfPresent.Insert(pj.Context)
-		} else {
-			optional.Insert(pj.Context)
-		}
-	}
-
-	t := &config.TideContextPolicy{
-		RequiredContexts:          required.List(),
-		RequiredIfPresentContexts: requiredIfPresent.List(),
-		OptionalContexts:          optional.List(),
-	}
-	if err := t.Validate(); err != nil {
-		return t, err
-	}
-	return t, nil
+	return &gerritContextChecker{}, nil
 }
 
 func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
@@ -449,7 +416,7 @@ func (p *GerritProvider) GetPresubmits(identifier string, baseSHAGetter config.R
 
 func (p *GerritProvider) GetChangedFiles(org, repo string, number int) ([]string, error) {
 	// "CURRENT_FILES" lists all changed files from current revision, which is
-	// what we want, "CURRENT_REVISION" is required for "CURRENT_FILES"
+	// what we want, "CURRENT_REVISION" is required for "CURRENT_FILES".
 	// according to
 	// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes.
 	change, err := p.gc.GetChange(org, strconv.Itoa(number), "CURRENT_FILES", "CURRENT_REVISION")
@@ -474,4 +441,23 @@ func (p *GerritProvider) labelsAndAnnotations(instance string, jobLabels, jobAnn
 	}
 	labels, annotations = gerritadaptor.LabelsAndAnnotations(instance, jobLabels, jobAnnotations, changes...)
 	return
+}
+
+func (p *GerritProvider) jobIsRequiredByTide(ps *config.Presubmit, crc *CodeReviewCommon) bool {
+	if ps.RunBeforeMerge {
+		return true
+	}
+
+	requireLabels := sets.NewString()
+	for l, info := range crc.Gerrit.Labels {
+		if !info.Optional {
+			requireLabels.Insert(l)
+		}
+	}
+
+	val, ok := ps.Labels[kube.GerritReportLabel]
+	if !ok {
+		return false
+	}
+	return requireLabels.Has(val)
 }

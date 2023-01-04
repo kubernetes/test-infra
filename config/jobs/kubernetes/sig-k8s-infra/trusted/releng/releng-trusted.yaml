@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.9-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
         command:
         - /kpromo
         args:
@@ -35,12 +35,16 @@ postsubmits:
     # into a case where an older manifest PR merge gets run last (after a newer
     # one).
     max_concurrency: 1
+    # Run only 1 of image promotion postsubmit and periodic at the same time.
+    # This is an important step to ensure that we avoid issues of running promotion
+    # twice in parallel, such as double signing images.
+    job_queue_name: "k8sio-image-promo"
     branches:
     - ^main$
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.9-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
         command:
         - /kpromo
         args:
@@ -106,7 +110,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.9-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
       command:
       - /kpromo
       args:
@@ -128,6 +132,10 @@ periodics:
 - interval: 1h
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
+  # Run only 1 of image promotion postsubmit and periodic at the same time.
+  # This is an important step to ensure that we avoid issues of running promotion
+  # twice in parallel, such as double signing images.
+  job_queue_name: "k8sio-image-promo"
   # This name is the "job name", passed in as "--job=NAME" for mkpj.
   name: ci-k8sio-image-promo
   # Enable Pod Utilities.
@@ -144,7 +152,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.9-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
       command:
       - /kpromo
       args:

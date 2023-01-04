@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -39,7 +39,7 @@ periodics:
 #     preset-k8s-ssh: "true"
 #   spec:
 #     containers:
-#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
 #       args:
 #       - --root=/go/src
 #       - --repo=k8s.io/kubernetes
@@ -72,7 +72,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -104,7 +104,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -136,7 +136,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -168,7 +168,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -179,7 +179,7 @@ periodics:
       - --env=KUBE_SSH_USER=core
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
-      - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]"
@@ -200,7 +200,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -232,7 +232,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=120
@@ -243,7 +243,7 @@ periodics:
           - --env=KUBE_SSH_USER=core
           - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
-          - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+          - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:CPUManager\]|\[Feature:MemoryManager\]|\[Feature:TopologyManager\]"
@@ -264,7 +264,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=120
@@ -275,7 +275,7 @@ periodics:
           - --env=KUBE_SSH_USER=core
           - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
-          - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+          - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"

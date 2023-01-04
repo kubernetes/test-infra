@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -58,7 +58,7 @@ periodics:
     testgrid-tab-name: stable-metrics-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -97,7 +97,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -140,7 +140,7 @@ periodics:
     testgrid-tab-name: close-issues
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -152,6 +152,8 @@ periodics:
         is:issue
         -repo:kubernetes-sigs/kind
         -label:lifecycle/frozen
+        -label:"help wanted"
+        -label:"good first issue"
         label:lifecycle/rotten
       - --updated=720h
       - --token=/etc/github-token/token
@@ -195,7 +197,7 @@ periodics:
     testgrid-tab-name: close-prs
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -206,6 +208,7 @@ periodics:
         org:kubernetes-csi
         is:pr
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -250,7 +253,7 @@ periodics:
     testgrid-tab-name: freeze
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -260,6 +263,7 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         label:lifecycle/rotten
         label:kind/bug
@@ -299,7 +303,7 @@ periodics:
     description: Automatically /retest for approved PRs that are failing tests
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -367,7 +371,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -377,9 +381,12 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         label:lifecycle/stale
         -label:lifecycle/rotten
+        -label:"help wanted"
+        -label:"good first issue"
       - --updated=720h
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
@@ -422,7 +429,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -432,9 +439,12 @@ periodics:
         org:kubernetes-client
         org:kubernetes-csi
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
+        -label:"help wanted"
+        -label:"good first issue"
       - --updated=2160h
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
@@ -478,7 +488,7 @@ periodics:
     testgrid-tab-name: thaw-prs
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/commenter:v20230104-cc182b7760
       command:
       - commenter
       args:
@@ -527,7 +537,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/issue-creator:v20230104-cc182b7760
       command:
       - issue-creator
       args:

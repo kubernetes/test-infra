@@ -366,12 +366,21 @@ func extractFromAttribute(attrs map[string]string, key string) (string, error) {
 }
 
 func (s *Subscriber) handleMessage(msg messageInterface, subscription string, allowedClusters []string) error {
+	// Observed message payload drifts to the payload from another pubsub
+	// message and couldn't figure out why. Extracts the values ahead of time
+	// and hopefully could mitigate this issue for now.
+	// TODO(chaodaiG): remove these once figured out the root cause of data race.
+	msgID := msg.getID()
+	msgPayload := msg.getPayload()
+	msgAttributes := msg.getAttributes()
+
 	l := logrus.WithFields(logrus.Fields{
 		"pubsub-subscription": subscription,
-		"pubsub-id":           msg.getID()})
+		"pubsub-id":           msgID})
 	s.Metrics.MessageCounter.With(prometheus.Labels{subscriptionLabel: subscription}).Inc()
-	l.Info("Received message")
-	eType, err := extractFromAttribute(msg.getAttributes(), ProwEventType)
+
+	l.WithField("payload", string(msgPayload)).Debug("Received message")
+	eType, err := extractFromAttribute(msgAttributes, ProwEventType)
 	if err != nil {
 		l.WithError(err).Error("failed to read message")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
@@ -397,7 +406,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		}).Inc()
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
-	if err = s.handleProwJob(l, jh, msg, subscription, eType, allowedClusters); err != nil {
+	if err = s.handleProwJob(l, jh, msgPayload, subscription, eType, allowedClusters); err != nil {
 		l.WithError(err).Info("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
@@ -407,50 +416,23 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 			errorTypeLabel: "failed-handle-prowjob",
 		}).Inc()
 	}
+
+	// TODO(chaodaiG): debugging purpose, remove once done debugging.
+	l.WithField("payload", string(msg.getPayload())).WithField("post-id", msg.getID()).Debug("Finished handling message")
 	return err
 }
 
-func tryGetCloneURIAndHost(pe ProwJobEvent) (cloneURI, host string) {
-	refs := pe.Refs
-	if refs == nil {
-		return "", ""
-	}
-	if len(refs.Org) == 0 {
-		return "", ""
-	}
-	if len(refs.Repo) == 0 {
-		return "", ""
-	}
-
-	// If the Refs struct already has a populated CloneURI field, use that
-	// instead.
-	if refs.CloneURI != "" {
-		if strings.HasPrefix(refs.Org, "http") {
-			return refs.CloneURI, refs.Org
-		}
-		return refs.CloneURI, ""
-	}
-
-	org, repo := refs.Org, refs.Repo
-	orgRepo := org + "/" + repo
-	// Add "https://" prefix to orgRepo if this is a gerrit job.
-	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
-	prefix := "https://"
-	if pe.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
-		orgRepo = prefix + orgRepo
-	}
-	return orgRepo, org
-}
-
-func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription, eType string, allowedClusters []string) error {
+func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msgPayload []byte, subscription, eType string, allowedClusters []string) error {
 
 	var pe ProwJobEvent
 	var prowJob prowapi.ProwJob
 
-	if err := pe.FromPayload(msg.getPayload()); err != nil {
+	l.WithField("raw-payload", string(msgPayload)).Debug("Raw payload passed in handleProwJob.")
+	if err := pe.FromPayload(msgPayload); err != nil {
 		return err
 	}
 
+	l.WithField("prowjob-event", pe).Debug("ProwjobEvent unmarshalled.")
 	reportProwJob := func(pj *prowapi.ProwJob, state v1.ProwJobState, err error) {
 		pj.Status.State = state
 		pj.Status.Description = "Successfully triggered prowjob."
@@ -488,6 +470,27 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		return fmt.Errorf("failed getting prowjob spec") // This should not happen
 	}
 
+	// Copy labels and annotations instead of modifying them, they are pointers
+	// to the static prowjobs labels and annotations.
+	combinedLabels := make(map[string]string)
+	combinedAnnotations := make(map[string]string)
+	for k, v := range labels {
+		combinedLabels[k] = v
+	}
+	for k, v := range annotations {
+		combinedAnnotations[k] = v
+	}
+
+	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).Debug("ProwjobEvent and annotations after getProwJobSpec.")
+
+	// Adds / Updates Labels from prow job event
+	for k, v := range pe.Labels {
+		combinedLabels[k] = v
+	}
+	for k, v := range pe.Annotations {
+		combinedAnnotations[k] = v
+	}
+
 	// deny job that runs on not allowed cluster
 	var clusterIsAllowed bool
 	for _, allowedCluster := range allowedClusters {
@@ -505,22 +508,9 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		return err
 	}
 
-	// Adds / Updates Labels from prow job event
-	if labels == nil { // Could be nil if the job doesn't have label
-		labels = make(map[string]string)
-	}
-	for k, v := range pe.Labels {
-		labels[k] = v
-	}
-	if annotations == nil {
-		annotations = make(map[string]string)
-	}
-	for k, v := range pe.Annotations {
-		annotations[k] = v
-	}
-
+	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before pjutil.NewProwJob.")
 	// Adds annotations
-	prowJob = pjutil.NewProwJob(*prowJobSpec, labels, annotations)
+	prowJob = pjutil.NewProwJob(*prowJobSpec, combinedLabels, combinedAnnotations)
 	// Adds / Updates Environments to containers
 	if prowJob.Spec.PodSpec != nil {
 		for i, c := range prowJob.Spec.PodSpec.Containers {
@@ -531,14 +521,16 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		}
 	}
 
+	l.WithField("prowjob-event", pe).WithField("annotations", combinedAnnotations).WithField("prowjob-annotations", prowJob.Annotations).Debug("ProwjobEvent and annotations before creating prowjob.")
 	if _, err := s.ProwJobClient.Create(context.TODO(), &prowJob, metav1.CreateOptions{}); err != nil {
 		l.WithError(err).Errorf("failed to create job %q as %q", pe.Name, prowJob.Name)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
 	l.WithFields(logrus.Fields{
-		"job":  pe.Name,
-		"name": prowJob.Name,
+		"job":                 pe.Name,
+		"name":                prowJob.Name,
+		"prowjob-annotations": prowJob.Annotations,
 	}).Info("Job created.")
 	reportProwJobTriggered(&prowJob)
 	return nil

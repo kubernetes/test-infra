@@ -21,7 +21,7 @@ presets:
           hostNetwork: true
           containers:
             # HEAD is used unless otherwised specified by each individual job.
-          - image: gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+          - image: gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
             livenessProbe:
               httpGet:
                 path: /healthz
@@ -54,6 +54,7 @@ presets:
             - --log_file=/var/log/glbc.log
             - --enable-finalizer-add
             - --enable-finalizer-remove
+            - --enable-endpoint-slices
             - --default-backend-service=kube-system/default-http-backend
             - --kubeconfig=/etc/srv/kubernetes/l7-lb-controller/kubeconfig
             - --sync-period=600s
@@ -92,7 +93,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -114,7 +115,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -142,7 +143,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
       args:
       - --timeout=340
       - --bare
@@ -150,7 +151,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
@@ -174,7 +175,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
       args:
       - --timeout=340
       - --bare
@@ -182,9 +183,13 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
+      - --env=KUBE_GCE_NODE_IPAM_MODE=RangeAllocator
+      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --env=ENABLE_AUTH_PROVIDER_GCP=true
       - --extract=ci/latest
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=1
@@ -202,32 +207,3 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: ingress-gce-e2e-canary
     description: Duplicate of ci-ingress-gce-e2e pinned to a k8s-infra community-owned project
-
-- name: ci-ingress-gce-e2e-scale
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-ingress-master-yaml: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
-      args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
-      - --extract=ci/latest
-      - --gcp-project=k8s-ingress-e2e-scale-backup
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=1
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:IngressScale\]
-      - --timeout=320m
-  annotations:
-    testgrid-dashboards: sig-network-ingress-gce-e2e
-    testgrid-tab-name: ingress-gce-e2e-scale
-    testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com

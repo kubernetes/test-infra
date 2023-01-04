@@ -110,6 +110,26 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/git/
+  - name: post-test-infra-push-git-gke-gcloud-auth
+    cluster: test-infra-trusted
+    run_if_changed: '^images/git-gke-gcloud-auth/'
+    annotations:
+      testgrid-dashboards: sig-testing-images
+      testgrid-tab-name: git-gke-gcloud-auth
+    decorate: true
+    branches:
+    - ^master$
+    max_concurrency: 1
+    spec:
+      serviceAccountName: pusher
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+        command:
+        - /run.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-prow
+        - images/git-gke-gcloud-auth/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
@@ -151,7 +171,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20221110-d224b81b1a
+      - image: gcr.io/k8s-prow/hmac:v20230104-cc182b7760
         command:
         - hmac
         args:
@@ -201,7 +221,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-test-infra
         command:
         - runner.sh
         args:
@@ -367,7 +387,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20221110-d224b81b1a
+        image: gcr.io/k8s-prow/gencred:v20230104-cc182b7760
         command:
         - gencred
         args:
@@ -414,7 +434,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20221110-d224b81b1a
+      - image: gcr.io/k8s-prow/configurator:v20230104-cc182b7760
         command:
         - configurator
         args:
@@ -562,7 +582,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230104-cc182b7760
       command:
       - generic-autobumper
       args:
@@ -599,7 +619,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230104-cc182b7760
       command:
       - generic-autobumper
       args:
@@ -669,7 +689,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20221110-d224b81b1a
+      image: gcr.io/k8s-prow/branchprotector:v20230104-cc182b7760
       command:
       - branchprotector
       args:
@@ -703,7 +723,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20221110-d224b81b1a
+      image: gcr.io/k8s-prow/label_sync:v20230104-cc182b7760
       command:
       - label_sync
       args:
@@ -747,7 +767,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20221110-d224b81b1a
+      image: gcr.io/k8s-prow/gencred:v20230104-cc182b7760
       command:
       - gencred
       args:
@@ -759,6 +779,33 @@ periodics:
     testgrid-tab-name: gencred-refresh-kubeconfig
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs gencred to refresh generated kubeconfigs.
+# Legacy job for rotating the default sa json key used for legacy prowjobs that
+# can't migrate to use workload identity yet. This json key expires every 90
+# days, so rotating every 15 days should be safe as it allows 5 failures.
+# GCP only allows up to 9 keys for a sa, so deleting old ones on the fly as well.
+- cron: "30 1 1,15 * *"  # At 01:30 on day-of-month 1 and 15.
+  name: ci-test-infra-rotate-legacy-default-build-sa-json-key
+  cluster: test-infra-trusted
+  decorate: true
+  spec:
+    serviceAccountName: legacy-sa-json-key-rotator
+    containers:
+    - name: gcloud
+      image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+      command:
+      - bash
+        - -c
+        -
+            temp_file="$(mktemp)"
+            && gcloud iam service-accounts keys create "${temp_file}" --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com --key-file-type=json
+            && gcloud secrets versions add default-k8s-build-cluster-service-account-key --data-file=${temp_file} --project=k8s-prow-builds
+            && for key_id in $(gcloud iam service-accounts keys list --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com --managed-by=user --created-before=$(date +%Y-%m-%d -d "90 days ago") --format="value(KEY_ID)"); do gcloud iam service-accounts keys delete "$key_id" -q --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com;done
+  annotations:
+    testgrid-num-failures-to-alert: '3'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: rotate-legacy-default-build-sa-json-key
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Rotate legacy build cluster service account json key.
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
 # Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
@@ -773,7 +820,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20221110-d224b81b1a
+    - image: gcr.io/k8s-prow/checkconfig:v20230104-cc182b7760
       command:
       - checkconfig
       args:

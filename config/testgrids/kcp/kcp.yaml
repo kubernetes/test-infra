@@ -91,6 +91,35 @@ test_groups:
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.9-e2e-periodic
   - name: periodic-ci-kcp-dev-kcp-release-0.9-e2e-multiple-runs
     gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.9-e2e-multiple-runs-periodic
+# release-0.10
+  - name: pull-ci-kcp-dev-kcp-release-0.10-lint
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-lint
+  - name: pull-ci-kcp-dev-kcp-release-0.10-codegen
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-codegen
+  - name: pull-ci-kcp-dev-kcp-release-0.10-deps
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-deps
+  - name: pull-ci-kcp-dev-kcp-release-0.10-imports
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-imports
+  - name: pull-ci-kcp-dev-kcp-release-0.10-boilerplate
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-boilerplate
+  - name: pull-ci-kcp-dev-kcp-release-0.10-test
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-test
+  - name: pull-ci-kcp-dev-kcp-release-0.10-e2e
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-e2e
+  - name: pull-ci-kcp-dev-kcp-release-0.10-e2e-multiple-runs
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-e2e-multiple-runs
+  - name: pull-ci-kcp-dev-kcp-release-0.10-e2e-shared
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-e2e-shared
+  - name: pull-ci-kcp-dev-kcp-release-0.10-e2e-sharded
+    gcs_prefix: origin-ci-test/pr-logs/directory/pull-ci-kcp-dev-kcp-release-0.10-e2e-sharded
+  - name: periodic-ci-kcp-dev-kcp-release-0.10-e2e
+    gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.10-e2e-periodic
+  - name: periodic-ci-kcp-dev-kcp-release-0.10-e2e-sharded
+    gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.10-e2e-sharded-periodic
+  - name: periodic-ci-kcp-dev-kcp-release-0.10-e2e-shared
+    gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.10-e2e-shared-periodic
+  - name: periodic-ci-kcp-dev-kcp-release-0.10-e2e-multiple-runs
+    gcs_prefix: origin-ci-test/logs/periodic-ci-kcp-dev-kcp-release-0.10-e2e-multiple-runs-periodic
 
 dashboard_groups:
 - name: kcp
@@ -99,6 +128,7 @@ dashboard_groups:
   - kcp-release-0.7
   - kcp-release-0.8
   - kcp-release-0.9
+  - kcp-release-0.10
 
 dashboards:
   - name: kcp-main
@@ -369,6 +399,92 @@ dashboards:
         url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     - name: kcp-release-0.9-periodic-e2e-multiple-runs
       test_group_name: periodic-ci-kcp-dev-kcp-release-0.9-e2e-multiple-runs
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+  - name: kcp-release-0.10
+    dashboard_tab:
+    - name: kcp-release-0.10-pr-lint
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-lint
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-codegen
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-codegen
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-deps
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-deps
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-imports
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-imports
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-boilerplate
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-boilerplate
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-test
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-test
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-e2e
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-e2e
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-e2e-multiple-runs
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-e2e-multiple-runs
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-e2e-shared
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-e2e-shared
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-pr-e2e-sharded
+      test_group_name: pull-ci-kcp-dev-kcp-release-0.10-e2e-sharded
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-periodic-e2e
+      test_group_name: periodic-ci-kcp-dev-kcp-release-0.10-e2e
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-periodic-e2e-shared
+      test_group_name: periodic-ci-kcp-dev-kcp-release-0.10-e2e-shared
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-periodic-e2e-sharded
+      test_group_name: periodic-ci-kcp-dev-kcp-release-0.10-e2e-sharded
+      open_test_template:
+        url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+      results_url_template:
+        url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    - name: kcp-release-0.10-periodic-e2e-multiple-runs
+      test_group_name: periodic-ci-kcp-dev-kcp-release-0.10-e2e-multiple-runs
       open_test_template:
         url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
       results_url_template:

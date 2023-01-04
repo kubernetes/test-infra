@@ -55,19 +55,28 @@ dashboards:
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
     test_group_name: pull-kubernetes-conformance-kind-ga-only-parallel
     base_options: width=10
-  - name: pull-kubernetes-e2e-gce-ubuntu-containerd
-    test_group_name: pull-kubernetes-e2e-gce-ubuntu-containerd
-    base_options: width=10
   - name: pull-kubernetes-verify-govet-levee
     test_group_name: pull-kubernetes-verify-govet-levee
     base_options: width=10
   - name: pull-kubernetes-files-remake
     test_group_name: pull-kubernetes-files-remake
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce
+    test_group_name: pull-kubernetes-e2e-gce
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-ubuntu-containerd
+    test_group_name: pull-kubernetes-e2e-gce-ubuntu-containerd
+    base_options: width=10
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-network-proxy-grpc
     test_group_name: pull-kubernetes-e2e-gce-network-proxy-grpc
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-cos
+    test_group_name: pull-kubernetes-e2e-gce-cos
+    base_options: width=10
+  - name: pull-kubernetes-e2e-gce-cos-canary
+    test_group_name: pull-kubernetes-e2e-gce-cos-canary
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-canary
     test_group_name: pull-kubernetes-e2e-gce-canary
@@ -87,8 +96,8 @@ dashboards:
   - name: pull-kubernetes-e2e-kind-ipvs-dual-canary
     test_group_name: pull-kubernetes-e2e-kind-ipvs-dual-canary
     base_options: width=10
-  - name: pull-kubernetes-e2e-gce-alpha-features
-    test_group_name: pull-kubernetes-e2e-gce-alpha-features
+  - name: pull-kubernetes-e2e-gce-cos-alpha-features
+    test_group_name: pull-kubernetes-e2e-gce-cos-alpha-features
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-storage-slow
     test_group_name: pull-kubernetes-e2e-gce-storage-slow

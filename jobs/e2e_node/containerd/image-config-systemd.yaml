@@ -1,0 +1,12 @@
+images:
+  ubuntu:
+    image_family: pipeline-1-25
+    project: ubuntu-os-gke-cloud
+    # the image regex is added so that only cgroupv2 images are selected.
+    # currently all images with cgroupv1 from gke have a -cgroupsv1 suffix
+    image_regex: ".*[^-cgroupsv1]$"
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config-systemd.toml"
+  cos-stable:
+    image_family: cos-stable
+    project: cos-cloud
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config-systemd.toml"

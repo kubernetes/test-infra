@@ -17,6 +17,8 @@ presets:
   # Turn on profiling for various components.
   - name: ETCD_TEST_ARGS
     value: "--enable-pprof"
+  - name: APISERVER_TEST_ARGS
+    value: "--profiling --contention-profiling"
   # Number of bytes of an additional nodes objects annotation in a kubemark
   # cluster. The annotation label is added to make nodes objects sizes similar
   # to regular cluster nodes.
@@ -24,9 +26,9 @@ presets:
     value: 15000
   # Increase throughput in Kubemark master components and turn on profiling.
   - name: KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS
-    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   - name: KUBEMARK_SCHEDULER_TEST_ARGS
-    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity
   - name: TEST_CLUSTER_LOG_LEVEL
     value: "--v=2"
@@ -153,8 +155,10 @@ presets:
   # increase throughput in master components.
   - name: ETCD_EXTRA_ARGS
     value: "--enable-pprof"
+  - name: APISERVER_TEST_ARGS
+    value: "--profiling --contention-profiling"
   - name: CONTROLLER_MANAGER_TEST_ARGS
-    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   - name: KUBELET_TEST_ARGS
     value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
   - name: NODE_KUBELET_TEST_ARGS
@@ -167,7 +171,7 @@ presets:
     # FeatureGate added in #110268 v1.26
     value: "--profiling --metrics-bind-address=0.0.0.0 --feature-gates=MinimizeIPTablesRestore=true"
   - name: SCHEDULER_TEST_ARGS
-    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2
@@ -301,7 +305,7 @@ presets:
   - name: ETCD_EXTRA_ARGS
     value: "--enable-pprof"
   - name: CONTROLLER_MANAGER_TEST_ARGS
-    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   # Bump max pods per node in Kubelet, because there are more than 10
   # system pods in 1-node cluster.
   - name: MAX_PODS_PER_NODE
@@ -311,7 +315,7 @@ presets:
   - name: KUBEPROXY_TEST_ARGS
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
-    value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
   # Reduce logs verbosity.
   - name: TEST_CLUSTER_LOG_LEVEL
     value: --v=2

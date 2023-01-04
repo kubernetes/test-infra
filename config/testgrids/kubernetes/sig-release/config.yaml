@@ -5,6 +5,8 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
+  - sig-release-1.26-blocking
+  - sig-release-1.26-informing
   - sig-release-1.25-blocking
   - sig-release-1.25-informing
   - sig-release-1.24-blocking
@@ -27,6 +29,8 @@ dashboard_groups:
 dashboards:
 - name: sig-release-master-blocking
 - name: sig-release-master-informing
+- name: sig-release-1.26-blocking
+- name: sig-release-1.26-informing
 - name: sig-release-1.25-blocking
 - name: sig-release-1.25-informing
 - name: sig-release-1.24-blocking

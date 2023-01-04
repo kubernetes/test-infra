@@ -18,6 +18,7 @@ package subscriber
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -113,6 +114,38 @@ func (r *fakeReporter) Report(_ context.Context, _ *logrus.Entry, pj *prowapi.Pr
 
 func (r *fakeReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prowapi.ProwJob) bool {
 	return pj.Annotations[reporter.PubSubProjectLabel] != "" && pj.Annotations[reporter.PubSubTopicLabel] != ""
+}
+
+func tryGetCloneURIAndHost(pe ProwJobEvent) (cloneURI, host string) {
+	refs := pe.Refs
+	if refs == nil {
+		return "", ""
+	}
+	if len(refs.Org) == 0 {
+		return "", ""
+	}
+	if len(refs.Repo) == 0 {
+		return "", ""
+	}
+
+	// If the Refs struct already has a populated CloneURI field, use that
+	// instead.
+	if refs.CloneURI != "" {
+		if strings.HasPrefix(refs.Org, "http") {
+			return refs.CloneURI, refs.Org
+		}
+		return refs.CloneURI, ""
+	}
+
+	org, repo := refs.Org, refs.Repo
+	orgRepo := org + "/" + repo
+	// Add "https://" prefix to orgRepo if this is a gerrit job.
+	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
+	prefix := "https://"
+	if pe.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+		orgRepo = prefix + orgRepo
+	}
+	return orgRepo, org
 }
 
 func TestProwJobEvent_ToFromMessage(t *testing.T) {
@@ -553,12 +586,11 @@ func TestHandlePeriodicJob(t *testing.T) {
 				ConfigAgent:   ca,
 				Reporter:      &fr,
 			}
-			m, err := tc.pe.ToMessage()
+			m, err := json.Marshal(tc.pe)
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
-			m.ID = "id"
-			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, "", PeriodicProwJobEvent, tc.allowedClusters)
+			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, m, "", PeriodicProwJobEvent, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())

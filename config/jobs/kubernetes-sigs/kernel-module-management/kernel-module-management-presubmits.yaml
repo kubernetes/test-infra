@@ -12,6 +12,33 @@ presubmits:
       - image: golang:1.18
         command:
         - ci/prow/build
+  - name: pull-kernel-module-management-check-api-changes
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: check-api-changes
+      description: "make sure deployment manifests and bundle are up-to-date."
+    spec:
+      containers:
+      - image: docker.io/library/golang:1.19-alpine3.16
+        command: [sh]
+        args:
+        - -c
+        - |
+          apk add bash curl gcc git make
+
+          # Install kubectl
+          curl -Lo /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x /usr/local/bin/kubectl
+
+          # Include the destination directory of `go install` in $PATH
+          export PATH=$(go env GOPATH)/bin:${PATH}
+
+          ./ci/prow/check-api-changes
+        env:
+        - name: CGO_ENABLED
+          value: '0'
   - name: pull-kernel-module-management-check-commits-count
     always_run: true
     decorate: true
@@ -48,31 +75,3 @@ presubmits:
       - image: golang:1.18
         command:
         - ci/prow/unit-tests
-  - name: pull-kernel-module-management-pre-built-driver-container-no-nfd
-    always_run: true
-    decorate: true
-    optional: true
-    annotations:
-      testgrid-dashboards: sig-node-kernel-module-management
-      testgrid-tab-name: pre-built-driver-container-no-nfd
-      description: "run a pre-build driver-container e2e test without NFD."
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
-        env:
-        #- name: GO111MODULE
-        #  value: on
-        - name: BAZEL_VERSION
-          value: "5.3.0"
-
-        #  https://github.com/kubernetes/kubernetes/tree/master/cluster/log-dump#this-directory-is-deprecated
-        - name: USE_TEST_INFRA_LOG_DUMPING
-          value: "true"
-        #- name: KUBERNETES_VERSION
-        #  value: "1.25.0"
-        - name: TEST
-          value: ci/prow/e2e-pre-built-driver-container-no-nfd
-        command:
-        - runner.sh
-        args:
-        - ci/prow/e2e-runner

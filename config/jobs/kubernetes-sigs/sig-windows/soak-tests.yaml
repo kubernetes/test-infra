@@ -22,12 +22,12 @@ presubmits:
       #   path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.4
+        base_ref: release-1.6
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -50,7 +50,7 @@ presubmits:
             - name: TEST_WINDOWS
               value: "true"
             - name: KUBERNETES_VERSION
-              value: "v1.23.5"
+              value: "v1.25.3"
             - name: WINDOWS_WORKER_MACHINE_COUNT
               value: "1"
             - name: WORKER_MACHINE_COUNT
@@ -105,12 +105,12 @@ periodics:
         path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: main
+        base_ref: release-1.6
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -133,7 +133,7 @@ periodics:
             - name: TEST_WINDOWS
               value: "true"
             - name: KUBERNETES_VERSION
-              value: "v1.23.5"
+              value: "v1.25.3"
             - name: WINDOWS_WORKER_MACHINE_COUNT
               value: "1"
             - name: WORKER_MACHINE_COUNT

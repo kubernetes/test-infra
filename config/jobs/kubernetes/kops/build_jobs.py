@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221109-489d560851-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -44,7 +44,7 @@ loader = jinja2.FileSystemLoader(searchpath="./templates")
 # Returns a string representing the periodic prow job and the number of job invocations per week
 def build_test(cloud='aws',
                distro='u2204',
-               networking='kubenet',
+               networking='cilium',
                container_runtime='containerd',
                irsa=True,
                k8s_version='ci',
@@ -79,7 +79,7 @@ def build_test(cloud='aws',
         return None
     if container_runtime == 'docker' and k8s_version not in ('1.21', '1.22', '1.23'):
         return None
-    if networking == 'kopeio' and distro in ('flatcar'):
+    if networking == 'kopeio' and distro in ('flatcar', 'flatcararm64'):
         return None
 
     # Won't backport the rp_filter fixes to kops 1.23
@@ -96,12 +96,12 @@ def build_test(cloud='aws',
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
 
-    validation_wait = '20m' if distro == 'flatcar' else None
+    validation_wait = '20m' if distro in ('flatcar', 'flatcararm64') else None
 
     suffix = ""
     if cloud and cloud != "aws":
         suffix += "-" + cloud
-    if networking and networking != "kubenet":
+    if networking:
         suffix += "-" + networking
     if distro:
         suffix += "-" + distro
@@ -197,7 +197,7 @@ def build_test(cloud='aws',
 
     dashboards = [
         'sig-cluster-lifecycle-kops',
-        f"kops-distro-{distro}",
+        f"kops-distro-{distro.removesuffix('arm64')}",
         f"kops-k8s-{k8s_version or 'latest'}",
         f"kops-{kops_version or 'latest'}",
     ]
@@ -231,8 +231,8 @@ def build_test(cloud='aws',
 # Returns a string representing a presubmit prow job YAML
 def presubmit_test(branch='master',
                    cloud='aws',
-                   distro='u2004',
-                   networking='kubenet',
+                   distro='u2204',
+                   networking='cilium',
                    container_runtime='containerd',
                    irsa=True,
                    k8s_version='stable',
@@ -242,6 +242,7 @@ def presubmit_test(branch='master',
                    feature_flags=(),
                    extra_flags=None,
                    extra_dashboards=None,
+                   terraform_version=None,
                    test_parallelism=25,
                    test_timeout_minutes=60,
                    skip_regex='',
@@ -301,6 +302,7 @@ def presubmit_test(branch='master',
         marker=marker,
         skip_regex=skip_regex,
         kops_feature_flags=','.join(feature_flags),
+        terraform_version=terraform_version,
         test_package_bucket=test_package_bucket,
         test_package_dir=test_package_dir,
         focus_regex=focus_regex,
@@ -360,6 +362,7 @@ networking_options = [
     'calico',
     'cilium',
     'cilium-etcd',
+    'cilium-eni',
     'flannel',
     'kopeio',
 ]
@@ -374,16 +377,16 @@ distro_options = [
 ]
 
 k8s_versions = [
-    "1.22",
     "1.23",
     "1.24",
-    "1.25"
+    "1.25",
+    "1.26",
 ]
 
 kops_versions = [
     None, # maps to latest
-    "1.23",
-    "1.24"
+    "1.25",
+    "1.26"
 ]
 
 container_runtimes = [
@@ -402,6 +405,8 @@ def generate_grid():
             for distro in distro_options:
                 for k8s_version in k8s_versions:
                     for kops_version in kops_versions:
+                        if networking == 'cilium-eni' and kops_version in ['1.24', '1.25']:
+                            continue
                         results.append(
                             build_test(cloud="aws",
                                        distro=distro,
@@ -440,7 +445,7 @@ def generate_grid():
 def generate_misc():
     results = [
         # A one-off scenario testing the k8s.gcr.io mirror
-        build_test(name_override="kops-grid-scenario-gcr-mirror",
+        build_test(name_override="kops-scenario-gcr-mirror",
                    runs_per_day=24,
                    cloud="aws",
                    # Latest runs with a staging AWS CCM, not available in registry.k8s.io
@@ -448,38 +453,34 @@ def generate_misc():
                    extra_dashboards=['kops-misc']),
 
         # A one-off scenario testing arm64
-        build_test(name_override="kops-grid-scenario-arm64",
+        build_test(name_override="kops-scenario-arm64",
                    cloud="aws",
                    distro="u2204arm64",
+                   runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
                    extra_dashboards=['kops-misc']),
 
-        # A special test for IPv6 using Calico CNI on Ubuntu 22.04
-        build_test(name_override="kops-aws-cni-calico-ipv6-u2204",
+        # A special test for Calico CNI on Debian 11
+        build_test(name_override="kops-aws-cni-calico-deb11",
                    cloud="aws",
-                   distro="u2204",
+                   distro="deb11",
                    networking="calico",
                    runs_per_day=3,
-                   extra_flags=['--ipv6',
-                                '--zones=us-west-2a',
-                                ],
-                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
+                   extra_dashboards=['kops-network-plugins']),
+        # A special test for Calico CNI on Flatcar
+        build_test(name_override="kops-aws-cni-calico-flatcar",
+                   cloud="aws",
+                   distro="flatcararm64",
+                   networking="calico",
+                   runs_per_day=3,
+                   extra_dashboards=['kops-distros', 'kops-network-plugins']),
+
         # A special test for IPv6 using Calico CNI
         build_test(name_override="kops-aws-cni-calico-ipv6",
                    cloud="aws",
-                   distro="deb11",
-                   networking="calico",
-                   runs_per_day=3,
-                   extra_flags=['--ipv6',
-                                '--zones=us-west-2a',
-                                ],
-                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
-        # A special test for IPv6 using Calico CNI with private topology
-        build_test(name_override="kops-aws-cni-calico-ipv6-private",
-                   cloud="aws",
-                   distro="deb11",
+                   distro="u2204arm64",
                    networking="calico",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
@@ -491,18 +492,41 @@ def generate_misc():
         # A special test for IPv6 using Cilium CNI
         build_test(name_override="kops-aws-cni-cilium-ipv6",
                    cloud="aws",
-                   distro="deb11",
+                   distro="u2204arm64",
                    networking="cilium",
                    runs_per_day=3,
                    extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--bastion',
                                 '--zones=us-west-2a',
                                 ],
                    extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
-
+        # A special test for IPv6 on Flatcar
+        build_test(name_override="kops-aws-ipv6-flatcar",
+                   cloud="aws",
+                   distro="flatcararm64",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--bastion',
+                                ],
+                   extra_dashboards=['kops-distros', 'kops-ipv6']),
+        # A special test for IPv6 using Calico on Flatcar
+        build_test(name_override="kops-aws-cni-calico-ipv6-flatcar",
+                   cloud="aws",
+                   distro="flatcararm64",
+                   networking="calico",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--bastion',
+                                ],
+                   extra_dashboards=['kops-distros', 'kops-network-plugins', 'kops-ipv6']),
 
         # A special test for disabling IRSA
-        build_test(name_override="kops-grid-scenario-no-irsa",
+        build_test(name_override="kops-scenario-no-irsa",
                    cloud="aws",
+                   distro="u2204arm64",
                    runs_per_day=3,
                    irsa=False,
                    extra_flags=['--api-loadbalancer-type=public',
@@ -511,16 +535,18 @@ def generate_misc():
 
         # A special test for warm pool
         build_test(name_override="kops-warm-pool",
+                   distro="u2204arm64",
                    runs_per_day=3,
                    networking="cilium",
                    extra_flags=['--api-loadbalancer-type=public',
-                                '--override=cluster.spec.warmPool.minSize=1'
+                                '--set=cluster.spec.cloudProvider.aws.warmPool.minSize=1'
                                 ],
                    extra_dashboards=['kops-misc']),
 
         # A special test for private topology
         build_test(name_override="kops-aws-private",
                    cloud="aws",
+                   distro="u2204arm64",
                    runs_per_day=3,
                    networking="calico",
                    extra_flags=['--topology=private',
@@ -528,20 +554,38 @@ def generate_misc():
                                 ],
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-grid-scenario-terraform",
+        build_test(name_override="kops-scenario-terraform",
+                   distro="u2204arm64",
+                   runs_per_day=1,
                    terraform_version="1.0.5",
-                   extra_flags=["--zones=us-west-1a"],
+                   extra_flags=[
+                       "--zones=us-west-1a",
+                   ],
                    extra_dashboards=['kops-misc']),
+        build_test(name_override="kops-scenario-ipv6-terraform",
+                   distro="u2204arm64",
+                   runs_per_day=1,
+                   terraform_version="1.0.5",
+                   extra_flags=[
+                       '--ipv6',
+                       '--topology=private',
+                       '--bastion',
+                       "--zones=us-west-1a",
+                   ],
+                   extra_dashboards=['kops-misc', 'kops-ipv6']),
 
-        build_test(name_override="kops-aws-misc-ha-euwest1",
-                   k8s_version="stable",
+        build_test(name_override="kops-aws-ha-euwest1",
+                   distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
-                   extra_flags=["--master-count=3", "--zones=eu-west-1a,eu-west-1b,eu-west-1c"],
+                   extra_flags=[
+                       "--master-count=3",
+                       "--zones=eu-west-1a,eu-west-1b,eu-west-1c"
+                   ],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-release",
+        build_test(name_override="kops-aws-arm64-release",
                    k8s_version="latest",
                    distro="u2204arm64",
                    networking="calico",
@@ -552,7 +596,7 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-ci",
+        build_test(name_override="kops-aws-arm64-ci",
                    k8s_version="ci",
                    distro="u2204arm64",
                    networking="calico",
@@ -563,7 +607,7 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-arm64-conformance",
+        build_test(name_override="kops-aws-arm64-conformance",
                    k8s_version="ci",
                    distro="u2204arm64",
                    networking="calico",
@@ -576,9 +620,10 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-amd64-conformance",
+        build_test(name_override="kops-aws-amd64-conformance",
                    k8s_version="ci",
                    distro='u2204',
+                   networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=["--node-size=c5.large",
@@ -587,15 +632,14 @@ def generate_misc():
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=["kops-misc"]),
 
-        build_test(name_override="kops-aws-misc-updown",
+        build_test(name_override="kops-aws-updown",
                    k8s_version="stable",
+                   distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
                    kops_version="https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
                    publish_version_marker="gs://kops-ci/bin/latest-ci-updown-green.txt",
                    runs_per_day=24,
-                   extra_flags=["--node-size=c5.large",
-                                "--master-size=c5.large"],
                    focus_regex=r'\[k8s.io\]\sNetworking.*\[Conformance\]',
                    extra_dashboards=["kops-misc"]),
 
@@ -603,21 +647,14 @@ def generate_misc():
                    cloud="aws",
                    networking="cilium",
                    kops_channel="alpha",
-                   runs_per_day=1,
+                   runs_per_day=3,
                    scenario="aws-lb-controller",
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-aws-keypair-rotation",
-                   cloud="aws",
-                   kops_channel="alpha",
-                   runs_per_day=1,
-                   test_timeout_minutes=150,
-                   scenario="keypair-rotation",
-                   extra_dashboards=['kops-misc']),
         build_test(name_override="kops-aws-keypair-rotation-ha",
                    cloud="aws",
                    kops_channel="alpha",
-                   runs_per_day=3,
+                   runs_per_day=1,
                    test_timeout_minutes=240,
                    scenario="keypair-rotation",
                    env={'KOPS_CONTROL_PLANE_SIZE': '3'},
@@ -649,29 +686,76 @@ def generate_misc():
 
         build_test(name_override="kops-aws-external-dns",
                    cloud="aws",
+                   distro="u2204arm64",
                    networking="cilium",
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=[
-                       "--override=cluster.spec.externalDNS.provider=external-dns"
+                       "--set=cluster.spec.externalDNS.provider=external-dns",
                    ],
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-apiserver-nodes",
                    cloud="aws",
+                   distro="u2204arm64",
                    runs_per_day=3,
                    template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl", # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc'],
                    feature_flags=['APIServerNodes']),
 
-        build_test(name_override="kops-aws-misc-karpenter",
+        build_test(name_override="kops-aws-karpenter",
+                   distro="u2204arm64",
                    networking="cilium",
                    kops_channel="alpha",
                    runs_per_day=1,
-                   extra_flags=["--instance-manager=karpenter"],
+                   extra_flags=[
+                       "--instance-manager=karpenter",
+                   ],
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc"],
-                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes'), # pylint: disable=line-too-long
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic'), # pylint: disable=line-too-long
+
+        build_test(name_override="kops-aws-ipv6-karpenter",
+                   distro="u2204arm64",
+                   networking="cilium",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   extra_flags=[
+                       "--instance-manager=karpenter",
+                       '--ipv6',
+                       '--topology=private',
+                       '--bastion',
+                   ],
+                   feature_flags=['Karpenter'],
+                   extra_dashboards=["kops-misc", "kops-ipv6"],
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic'), # pylint: disable=line-too-long
+
+        # [sig-storage, @jsafrane] A one-off scenario testing SELinux features, because kops
+        # is the only way how to get Kubernetes on a Linux with SELinux in enforcing mode in CI.
+        # Test the latest kops and CI build of Kubernetes (=almost master).
+        build_test(name_override="kops-aws-selinux",
+                   # RHEL8 VM image is enforcing SELinux by default.
+                   distro="rhel8",
+                   networking="cilium",
+                   k8s_version="ci",
+                   kops_channel="alpha",
+                   feature_flags=['SELinuxMount'],
+                   extra_flags=["--kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod"], # pylint: disable=line-too-long
+                   focus_regex=r"\[Feature:SELinux\]",
+                   # Skip:
+                   # - Feature:Volumes: skips iSCSI and Ceph tests, they don't have client tools
+                   #   installed on nodes.
+                   # - Driver: nfs: NFS does not have client tools installed on nodes.
+                   # - Driver: local: this is optimization only, the volume plugin does not
+                   #   support SELinux and there are several subvariants of local volumes
+                   #   that multiply nr. of tests.
+                   skip_regex=r"\[Feature:Volumes\]|\[Driver:.nfs\]|\[Driver:.local\]",
+                   # [Serial] and [Disruptive] are intentionally not skipped, therefore run
+                   # everything as serial.
+                   test_parallelism=1,
+                   # Serial and Disruptive tests can be slow.
+                   test_timeout_minutes=120,
+                   runs_per_day=3),
     ]
     return results
 
@@ -680,7 +764,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.25', '1.24', '1.23']:
+    for version in ['1.25', '1.24']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -737,7 +821,7 @@ def generate_distros():
             ]
         results.append(
             build_test(distro=distro_short,
-                       networking='kubenet',
+                       networking='cilium',
                        k8s_version='stable',
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-{distro}",
@@ -781,15 +865,19 @@ def generate_presubmits_distros():
 #######################################
 def generate_network_plugins():
 
-    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'flannel', 'kopeio', 'kuberouter', 'weave'] # pylint: disable=line-too-long
+    plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'cilium-eni', 'flannel', 'kopeio', 'kuberouter', 'weave'] # pylint: disable=line-too-long
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
         k8s_version = 'stable'
         if plugin == 'weave':
             k8s_version = '1.22'
+        distro = 'u2204'
+        if plugin == 'amazon-vpc':
+            distro = 'u2004'
         results.append(
             build_test(
+                distro=distro,
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
@@ -806,41 +894,41 @@ def generate_network_plugins():
 ################################
 def generate_upgrades():
 
-    kops23 = 'v1.23.4'
-    kops24 = 'v1.24.2'
-    kops25 = 'v1.25.0-beta.1'
+    kops24 = 'v1.24.4'
+    kops25 = 'v1.25.2'
+    kops26 = 'v1.26.0-beta.1'
 
     versions_list = [
         #  kops    k8s          kops      k8s
-        # 1.24 release branch
-        ((kops23, 'v1.22.1'), ('1.24', 'v1.23.1')),
-        ((kops23, 'v1.23.1'), ('1.24', 'v1.24.0')),
-        ((kops24, 'v1.19.16'), ('1.24', 'v1.20.6')),
-        ((kops24, 'v1.23.1'), ('1.24', 'v1.23.1')),
         # 1.25 release branch
-        ((kops23, 'v1.22.1'), ('1.25', 'v1.23.1')),
-        ((kops23, 'v1.23.1'), ('1.25', 'v1.24.0')),
         ((kops24, 'v1.19.16'), ('1.25', 'v1.20.6')),
         ((kops24, 'v1.23.1'), ('1.25', 'v1.23.1')),
         ((kops25, 'v1.21.14'), ('1.25', 'v1.22.13')),
         ((kops25, 'v1.25.0'), ('1.25', 'v1.25.0')),
-        # 1.23 upgrade to latest
-        (('1.23', 'v1.22.4'), ('latest', 'v1.23.0')),
-        (('1.23', 'v1.23.0'), ('latest', 'v1.24.0')),
+        # 1.26 release branch
+        ((kops24, 'v1.20.6'), ('1.26', 'v1.21.7')),
+        ((kops24, 'v1.24.0'), ('1.26', 'v1.25.0')),
+        ((kops25, 'v1.20.6'), ('1.26', 'v1.21.7')),
+        ((kops25, 'v1.25.0'), ('1.26', 'v1.26.0')),
+        ((kops26, 'v1.21.14'), ('1.26', 'v1.22.13')),
+        ((kops26, 'v1.26.0'), ('1.26', 'v1.26.0')),
         # 1.24 upgrade to latest
         ((kops24, 'v1.23.1'), ('latest', 'v1.24.0')),
-        ((kops24, 'v1.24.0'), ('latest', 'v1.24.0')),
+        ((kops24, 'v1.24.0'), ('latest', 'v1.25.0')),
         # 1.25 upgrade to latest
-        ((kops25, 'v1.20.6'), ('latest', 'v1.21.7')),
-        ((kops25, 'v1.23.1'), ('latest', 'v1.24.0')),
-        ((kops25, 'v1.24.0'), ('latest', 'v1.24.0')),
         ((kops25, 'v1.24.0'), ('latest', 'v1.25.0')),
+        ((kops25, 'v1.25.0'), ('latest', 'v1.26.0')),
+        # 1.26 upgrade to latest
+        ((kops26, 'v1.21.14'), ('latest', 'v1.22.1')),
+        ((kops26, 'v1.24.0'), ('latest', 'v1.25.0')),
+        ((kops26, 'v1.25.0'), ('latest', 'v1.25.0')),
+        ((kops26, 'v1.25.0'), ('latest', 'v1.26.0')),
         # we should have an upgrade test for every supported K8s version
-        (('latest', 'v1.25.0'), ('latest', 'latest')),
+        (('latest', 'v1.26.0'), ('latest', 'latest')),
+        (('latest', 'v1.25.0'), ('latest', 'v1.26.0')),
         (('latest', 'v1.24.0'), ('latest', 'v1.25.0')),
         (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
-        (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
         # kOps latest should always be able to upgrade from stable to latest and stable to ci
         (('latest', 'stable'), ('latest', 'latest')),
         (('latest', 'stable'), ('latest', 'ci')),
@@ -869,7 +957,7 @@ def generate_upgrades():
             'K8S_VERSION_B': k8s_b,
             'KOPS_SKIP_E2E': '1',
             'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-            'KOPS_CONTROL_PLANE': '3',
+            'KOPS_CONTROL_PLANE_SIZE': '3',
         }
         results.append(
             build_test(name_override=job_name,
@@ -918,7 +1006,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.25', '1.24', '1.23', '1.22', '1.21']:
+    for version in ['1.26', '1.25', '1.24', '1.23', '1.22']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -937,7 +1025,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.25', '1.24']:
+    for version in ['master', '1.26', '1.25']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
@@ -966,7 +1054,8 @@ def generate_presubmits_network_plugins():
         'calico': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)', # pylint: disable=line-too-long
         'canal': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/)', # pylint: disable=line-too-long
         'cilium': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)', # pylint: disable=line-too-long
-        'cilium-etcd': None,
+        'cilium-etcd': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)', # pylint: disable=line-too-long
+        'cilium-eni': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)', # pylint: disable=line-too-long
         'flannel': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd\.go)', # pylint: disable=line-too-long
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)', # pylint: disable=line-too-long
         'weave': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/)' # pylint: disable=line-too-long
@@ -977,20 +1066,27 @@ def generate_presubmits_network_plugins():
         k8s_version = 'stable'
         networking_arg = plugin
         optional = False
+        distro = 'u2204arm64'
         if plugin == 'amazonvpc':
+            distro = 'u2004'
             optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
         if plugin == 'weave':
+            distro = 'u2204'
             k8s_version = '1.22'
+        extra_flags = ['--node-size=t3.large']
+        if 'arm64' in distro:
+            extra_flags = ["--node-size=t4g.large"]
         results.append(
             presubmit_test(
+                distro=distro,
                 k8s_version=k8s_version,
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
                 tab_name=f"e2e-{plugin}",
                 networking=networking_arg,
-                extra_flags=['--node-size=t3.large'],
+                extra_flags=extra_flags,
                 run_if_changed=run_if_changed,
                 optional=optional,
             )
@@ -998,15 +1094,15 @@ def generate_presubmits_network_plugins():
         if plugin in supports_ipv6:
             if plugin == 'amazonvpc':
                 run_if_changed = None
-            if plugin == 'cilium':
-                optional = True
             results.append(
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
+                    distro=distro,
                     tab_name=f"e2e-{plugin}-ipv6",
-                    distro="deb11",
                     networking=networking_arg,
                     extra_flags=['--ipv6',
+                                 '--topology=private',
+                                 '--bastion',
                                  '--zones=us-west-2a',
                                  ],
                     run_if_changed=run_if_changed,
@@ -1021,6 +1117,7 @@ def generate_presubmits_network_plugins():
 def generate_presubmits_e2e():
     jobs = [
         presubmit_test(
+            distro='u2204arm64',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci',
@@ -1030,6 +1127,7 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
         ),
         presubmit_test(
+            distro='u2204arm64',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci-ha',
@@ -1044,6 +1142,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             container_runtime='docker',
+            distro='u2204arm64',
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-docker',
@@ -1051,6 +1150,7 @@ def generate_presubmits_e2e():
             always_run=False,
         ),
         presubmit_test(
+            distro='u2204arm64',
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-calico',
@@ -1072,9 +1172,9 @@ def generate_presubmits_e2e():
             cloud='gce',
             k8s_version='stable',
             kops_channel='alpha',
-            name='pull-kops-e2e-k8s-gce',
-            networking='cilium',
-            tab_name='e2e-gce',
+            name='pull-kops-e2e-k8s-gce-cilium-etcd',
+            networking='cilium-etcd',
+            tab_name='e2e-gce-cilium-etcd',
             always_run=False,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
@@ -1116,12 +1216,12 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2004",
             k8s_version="ci",
-            extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+            extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-ccm',
         ),
 
         presubmit_test(
-            name="pull-e2e-kops-aws-load-balancer-controller",
+            name="pull-kops-e2e-aws-load-balancer-controller",
             cloud="aws",
             distro="u2004",
             networking="calico",
@@ -1130,7 +1230,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-e2e-kops-addon-resource-tracking",
+            name="pull-kops-e2e-addon-resource-tracking",
             cloud="aws",
             distro="u2004",
             networking="calico",
@@ -1139,7 +1239,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-e2e-kops-metrics-server",
+            name="pull-kops-e2e-metrics-server",
             cloud="aws",
             distro="u2004",
             networking="calico",
@@ -1148,7 +1248,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-e2e-kops-pod-identity-webhook",
+            name="pull-kops-e2e-pod-identity-webhook",
             cloud="aws",
             distro="u2004",
             networking="calico",
@@ -1159,10 +1259,17 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-external-dns",
             cloud="aws",
-            distro="u2004",
             networking="calico",
             extra_flags=[
-                '--override=cluster.spec.externalDNS.provider=external-dns'
+                '--set=cluster.spec.externalDNS.provider=external-dns'
+            ],
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-node-local-dns",
+            cloud="aws",
+            distro='u2204arm64',
+            extra_flags=[
+                '--set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true'
             ],
         ),
 
@@ -1170,12 +1277,6 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-aws-apiserver-nodes",
             cloud="aws",
             template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
-            feature_flags=['APIServerNodes']
-        ),
-        presubmit_test(
-            name="pull-kops-e2e-aws-apiserver-nodes-dns-none",
-            cloud="aws",
-            template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver-dns-none.yaml.tmpl", # pylint: disable=line-too-long
             feature_flags=['APIServerNodes']
         ),
 
@@ -1192,19 +1293,42 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-dns-none",
             cloud="aws",
-            distro="u2204",
+            distro="u2204arm64",
             networking="calico",
             extra_flags=["--dns=none"],
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-gce-dns-none",
+            cloud="gce",
+            networking="calico",
+            extra_flags=["--dns=none", "--gce-service-account=default"],
         ),
 
         presubmit_test(
             name="pull-kops-e2e-aws-nlb",
             cloud="aws",
-            distro="u2204",
+            distro="u2204arm64",
             networking="calico",
             extra_flags=[
                 "--api-loadbalancer-type=public",
                 "--api-loadbalancer-class=network"
+            ],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-terraform",
+            cloud="aws",
+            distro="u2204arm64",
+            terraform_version="1.0.5",
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-ipv6-terraform",
+            cloud="aws",
+            distro="u2204arm64",
+            terraform_version="1.0.5",
+            extra_flags=[
+                '--ipv6',
+                '--bastion',
             ],
         ),
 
@@ -1223,7 +1347,7 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-latest-e2e-aws-k8s-1-23',
             networking='calico',
-            extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+            extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-aws-1-23',
             always_run=False,
         ),
@@ -1233,11 +1357,20 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-latest-e2e-aws-k8s-1-22',
             networking='calico',
-            extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
+            extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-aws-1-22',
             always_run=False,
         ),
 
+        presubmit_test(
+            branch='release-1.26',
+            k8s_version='1.26',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-aws-calico-1-26',
+            networking='calico',
+            tab_name='e2e-1-26',
+            always_run=True,
+        ),
         presubmit_test(
             branch='release-1.25',
             k8s_version='1.25',
@@ -1275,16 +1408,17 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            distro='u2204arm64',
             name="pull-kops-e2e-aws-karpenter",
             run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
             kops_channel="alpha",
             extra_flags=["--instance-manager=karpenter"],
             feature_flags=['Karpenter'],
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes' # pylint: disable=line-too-long
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic' # pylint: disable=line-too-long
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest",
+            name="pull-kops-e2e-aws-upgrade-k124-ko124-to-k125-kolatest",
             optional=True,
             distro='u2004',
             networking='cilium',
@@ -1292,14 +1426,14 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             scenario='upgrade-ab',
             env={
-                'KOPS_VERSION_A': "1.23",
-                'K8S_VERSION_A': "v1.25.0",
+                'KOPS_VERSION_A': "1.24",
+                'K8S_VERSION_A': "v1.24.0",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "latest",
+                'K8S_VERSION_B': "1.25.0",
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k120-kolatest-to-k121-kolatest",
+            name="pull-kops-e2e-aws-upgrade-k125-kolatest-to-k126-kolatest",
             optional=True,
             distro='u2004',
             networking='cilium',
@@ -1308,30 +1442,31 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "latest",
-                'K8S_VERSION_A': "v1.24.6",
+                'K8S_VERSION_A': "v1.25.0",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.25.2",
+                'K8S_VERSION_B': "v1.26.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE': '3',
+                'KOPS_CONTROL_PLANE_SIZE': '3',
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest-many-addons",
+            name="pull-kops-e2e-aws-upgrade-126-ko126-to-klatest-kolatest-many-addons",
             optional=True,
             distro='u2004',
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
+            run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
             scenario='upgrade-ab',
             env={
-                'KOPS_VERSION_A': "1.23",
-                'K8S_VERSION_A': "v1.24.0",
+                'KOPS_VERSION_A': "1.26",
+                'K8S_VERSION_A': "v1.26.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
-                'KOPS_CONTROL_PLANE': '3',
+                'KOPS_CONTROL_PLANE_SIZE': '3',
             }
         )
     ]

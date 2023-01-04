@@ -1849,7 +1849,7 @@ func TestValidateJobBase(t *testing.T) {
 	}
 	cfg := Config{
 		ProwConfig: ProwConfig{
-			Plank:        Plank{JobQueueConcurrencies: map[string]int{"queue": 0}},
+			Plank:        Plank{JobQueueCapacities: map[string]int{"queue": 0}},
 			PodNamespace: "target-namespace",
 		},
 	}
