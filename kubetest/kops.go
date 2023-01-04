@@ -472,6 +472,7 @@ func (k kops) Up() error {
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
+	os.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
 
 	createArgs = append(createArgs, "--yes")
 
