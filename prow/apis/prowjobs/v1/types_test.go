@@ -732,7 +732,98 @@ func TestProwJobSpec_GetPipelineRunSpec(t *testing.T) {
 		want    *pipelinev1beta1.PipelineRunSpec
 		wantErr bool
 	}{
-		// TODO(eddycharly): Add test cases.
+		{
+			name: "none set",
+			fields: fields{
+				PipelineRunSpec:       nil,
+				TektonPipelineRunSpec: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "only PipelineRunSpec set",
+			fields: fields{
+				PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
+					ServiceAccountName: "robot",
+					Resources: []pipelinev1alpha1.PipelineResourceBinding{
+						{
+							Name:        "implicit git resource",
+							ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "abc"},
+						},
+					},
+				},
+				TektonPipelineRunSpec: nil,
+			},
+			want: &pipelinev1beta1.PipelineRunSpec{
+				ServiceAccountName: "robot",
+				Resources: []pipelinev1beta1.PipelineResourceBinding{
+					{
+						Name:        "implicit git resource",
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "abc"},
+					},
+				},
+			},
+		},
+		{
+			name: "only TektonPipelineRunSpec set",
+			fields: fields{
+				PipelineRunSpec: nil,
+				TektonPipelineRunSpec: &TektonPipelineRunSpec{
+					V1Beta1: &pipelinev1beta1.PipelineRunSpec{
+						ServiceAccountName: "robot",
+						Resources: []pipelinev1beta1.PipelineResourceBinding{
+							{
+								Name:        "implicit git resource",
+								ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "abc"},
+							},
+						},
+					},
+				},
+			},
+			want: &pipelinev1beta1.PipelineRunSpec{
+				ServiceAccountName: "robot",
+				Resources: []pipelinev1beta1.PipelineResourceBinding{
+					{
+						Name:        "implicit git resource",
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "abc"},
+					},
+				},
+			},
+		},
+		{
+			name: "PipelineRunSpec and TektonPipelineRunSpec set",
+			fields: fields{
+				PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
+					ServiceAccountName: "robot",
+					Resources: []pipelinev1alpha1.PipelineResourceBinding{
+						{
+							Name:        "implicit git resource",
+							ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "abc"},
+						},
+					},
+				},
+				TektonPipelineRunSpec: &TektonPipelineRunSpec{
+					V1Beta1: &pipelinev1beta1.PipelineRunSpec{
+						ServiceAccountName: "robot",
+						Resources: []pipelinev1beta1.PipelineResourceBinding{
+							{
+								Name:        "implicit git resource",
+								ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "def"},
+							},
+						},
+					},
+				},
+			},
+			want: &pipelinev1beta1.PipelineRunSpec{
+				ServiceAccountName: "robot",
+				Resources: []pipelinev1beta1.PipelineResourceBinding{
+					{
+						Name:        "implicit git resource",
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "def"},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
