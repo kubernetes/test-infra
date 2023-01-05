@@ -817,6 +817,62 @@ func TestIsApproved(t *testing.T) {
 			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
 			isApproved:                      false,
 		},
+		{
+			testName:  "Partially approved file in parent folder and change in folder with Owners whose parent has AutoApproveUnownedSubfolders",
+			filenames: []string{"a/file.go", "a/d/new-file.go"},
+			currentlyApproved: []approval{
+				{aApprovers.List()[0], "a/file.go"},
+			},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
+		},
+		{
+			testName:  "Blanket approval for parent folder and change in folder with Owners whose parent has AutoApproveUnownedSubfolders, blanket approval supercedes",
+			filenames: []string{"a/file.go", "a/d/new-file.go"},
+			currentlyApproved: []approval{
+				{aApprovers.List()[0], "a/*"},
+			},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      true,
+		},
+		{
+			testName:  "Partially approved file and change in folder with Owners whose parent (different folder) has AutoApproveUnownedSubfolders",
+			filenames: []string{"a/file.go", "b/d/new-file.go"},
+			currentlyApproved: []approval{
+				{aApprovers.List()[0], ""},
+			},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"b": true},
+			isApproved:                      true,
+		},
+		{
+			testName:  "Partially approved file and change in folder with Owners whose parent (different folder) has AutoApproveUnownedSubfolders",
+			filenames: []string{"a/file.go", "b/d/new-file.go"},
+			currentlyApproved: []approval{
+				{aApprovers.List()[0], ""},
+			},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"b": true},
+			isApproved:                      true,
+		},
+		{
+			testName:  "Partially approved file and change in folder with Owners whose parent (different folder) does not have AutoApproveUnownedSubfolders",
+			filenames: []string{"b/file.go", "a/d/new-file.go"},
+			currentlyApproved: []approval{
+				{bApprovers.List()[0], ""},
+			},
+			isApproved: false,
+		},
+		{
+			testName:                        "Unapproved file in parent folder and change in folder with Owners whose parent has AutoApproveUnownedSubfolders",
+			filenames:                       []string{"a/file.go", "a/d/new-file.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
+		},
+		{
+			testName:                        "Unapproved file in parent folder and change in folder with Owners whose parent has AutoApproveUnownedSubfolders",
+			filenames:                       []string{"a/file.go", "a/d/new-file.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
+		},
 	}
 
 	for _, test := range tests {
