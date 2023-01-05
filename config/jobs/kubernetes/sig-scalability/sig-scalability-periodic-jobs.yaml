@@ -716,7 +716,7 @@ periodics:
   tags:
   - "perfDashPrefix: scheduler-perf-benchmark"
   - "perfDashJobType: benchmark"
-  interval: 2h
+  interval: 2h30m
   annotations:
     testgrid-dashboards: sig-scalability-benchmarks
     testgrid-tab-name: scheduler-perf
@@ -727,7 +727,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   decoration_config:
-    timeout: 1h55m
+    timeout: 2h25m
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
@@ -737,7 +737,7 @@ periodics:
       - ./test/integration/scheduler_perf
       env:
       - name: KUBE_TIMEOUT
-        value: --timeout=1h50m
+        value: --timeout=2h25m
       - name: TEST_PREFIX
         value: BenchmarkPerfScheduling
       # Set the benchtime to a very low value so every test is ran at most once
