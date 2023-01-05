@@ -637,13 +637,15 @@ func TestIsApproved(t *testing.T) {
 		"c":       cApprovers,
 		"a/d":     dApprovers,
 		"a/combo": edcApprovers,
+		"d":       {},
 	}
 	tests := []struct {
-		testName          string
-		filenames         []string
-		currentlyApproved []approval
-		testSeed          int64
-		isApproved        bool
+		testName                        string
+		filenames                       []string
+		currentlyApproved               []approval
+		testSeed                        int64
+		isApproved                      bool
+		autoApproveUnownedSubfoldersMap map[string]bool
 	}{
 		{
 			testName:          "Empty PR",
@@ -772,10 +774,55 @@ func TestIsApproved(t *testing.T) {
 			},
 			isApproved: true,
 		},
+		{
+			testName:                        "File in folder with AutoApproveUnownedSubfolders does not get approved",
+			filenames:                       []string{"a/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
+		},
+		{
+			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders gets approved",
+			filenames:                       []string{"a/new-folder/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      true,
+		},
+		{
+			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders whose ownersfile has no approvers gets approved",
+			filenames:                       []string{"d/new-folder/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"d": true},
+			isApproved:                      true,
+		},
+		{
+			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders and other unapproved file does not get approved",
+			filenames:                       []string{"b/unapproved.go", "a/new-folder/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
+		},
+		{
+			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders and approved file, approved",
+			filenames:                       []string{"b/approved.go", "a/new-folder/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			currentlyApproved:               []approval{{bApprovers.List()[0], ""}},
+			isApproved:                      true,
+		},
+		{
+			testName:                        "Nested subfolder in folder with AutoApproveUnownedSubfolders gets approved",
+			filenames:                       []string{"a/new-folder/child/grandchild/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      true,
+		},
+		{
+			testName:                        "Change in folder with Owners whose parent has AutoApproveUnownedSubfolders does not get approved",
+			filenames:                       []string{"a/d/new-file.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
+		},
 	}
 
 	for _, test := range tests {
-		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
+		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, func(fr *FakeRepo) {
+			fr.autoApproveUnownedSubfolders = test.autoApproveUnownedSubfoldersMap
+		}), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
 		for _, approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver.name, "REFERENCE", approver.path)
 		}
