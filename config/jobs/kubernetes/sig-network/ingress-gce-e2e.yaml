@@ -93,7 +93,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230105-c1beb6cf98-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -115,7 +115,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230105-c1beb6cf98-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -143,7 +143,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230105-c1beb6cf98-master
       args:
       - --timeout=340
       - --bare
@@ -175,7 +175,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230104-fac78883b2-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230105-c1beb6cf98-master
       args:
       - --timeout=340
       - --bare
