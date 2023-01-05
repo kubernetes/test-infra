@@ -96,7 +96,7 @@ func canonicalize(path string) string {
 	return strings.TrimSuffix(path, "/")
 }
 
-func createFakeRepo(la map[string]sets.String) FakeRepo {
+func createFakeRepo(la map[string]sets.String, modify ...func(*FakeRepo)) FakeRepo {
 	// github doesn't use / at the root
 	a := map[string]layeredsets.String{}
 	for dir, approvers := range la {
@@ -114,7 +114,11 @@ func createFakeRepo(la map[string]sets.String) FakeRepo {
 		}
 	}
 
-	return FakeRepo{approversMap: a, leafApproversMap: la}
+	fr := FakeRepo{approversMap: a, leafApproversMap: la}
+	for _, m := range modify {
+		m(&fr)
+	}
+	return fr
 }
 
 func setToLower(s sets.String) sets.String {

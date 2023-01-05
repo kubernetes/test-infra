@@ -52,6 +52,12 @@ type Repo interface {
 
 // Owners provides functionality related to owners of a specific code change.
 type Owners struct {
+	// filenamesUnfiltered contains all files in a given PR, including those
+	// that do not need approval because of IsAutoApproveUnownedSubfolders
+	filenamesUnfiltered []string
+	// filenames refers to the files in a given PR, not to OWNERS files. Files
+	// that are a directory below an Owners file with IsAutoApproveUnownedSubfolders
+	// are excluded here but kept in filenamesUnfiltered.
 	filenames []string
 	repo      Repo
 	seed      int64
@@ -61,7 +67,7 @@ type Owners struct {
 
 // NewOwners consturcts a new Owners instance. filenames is the slice of files changed.
 func NewOwners(log *logrus.Entry, filenames []string, r Repo, s int64) Owners {
-	return Owners{filenames: filenames, repo: r, seed: s, log: log}
+	return Owners{filenamesUnfiltered: filenames, filenames: filenames, repo: r, seed: s, log: log}
 }
 
 // GetApprovers returns a map from filenames -> people that can approve it
@@ -192,6 +198,8 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 // GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
+
+	var newFilenames []string
 	for _, fn := range o.filenames {
 		ownersFile := o.repo.FindApproverOwnersForFile(fn)
 		// If the ownersfile for fn is in the parent folder and has AllowFolderCreation enabled, we purge
@@ -200,7 +208,9 @@ func (o Owners) GetOwnersSet() sets.String {
 			continue
 		}
 		owners.Insert(o.repo.FindApproverOwnersForFile(fn))
+		newFilenames = append(newFilenames, fn)
 	}
+	o.filenames = newFilenames
 	o.removeSubdirs(owners)
 	return owners
 }
@@ -590,12 +600,12 @@ func (ap Approvers) GetCCs() []string {
 	return suggested.Union(keepAssignees).List()
 }
 
-// AreFilesApproved returns a bool indicating whether or not files associated with
-// the PR are approved.  A PR with no files is not considered approved. If this
+// AreFilesApproved returns a bool indicating whether or not OWNERS files associated with
+// the PR are approved.  A PR with no OWNERS files is not considered approved. If this
 // returns true, the PR may still not be fully approved depending on the associated issue
 // requirement
 func (ap Approvers) AreFilesApproved() bool {
-	return len(ap.owners.filenames) != 0 && ap.UnapprovedFiles().Len() == 0
+	return (len(ap.owners.filenames) != 0 || len(ap.owners.filenamesUnfiltered) != 0) && ap.UnapprovedFiles().Len() == 0
 }
 
 // RequirementsMet returns a bool indicating whether the PR has met all approval requirements:
