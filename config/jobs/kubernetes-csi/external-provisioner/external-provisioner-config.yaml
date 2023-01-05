@@ -399,6 +399,8 @@ presubmits:
         # that Kubernetes version, i.e. with the original RBAC rules.
         - name: UPDATE_RBAC_RULES
           value: "true"
+        - name: VOLUME_MODE_CONVERSION_TESTS
+          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

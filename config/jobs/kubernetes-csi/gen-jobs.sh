@@ -521,6 +521,13 @@ EOF
         # that Kubernetes version, i.e. with the original RBAC rules.
         - name: UPDATE_RBAC_RULES
           value: "true"
+$(    if [ "$repo" = "external-provisioner" ]; then
+cat <<EOF2
+        - name: VOLUME_MODE_CONVERSION_TESTS
+          value: "true"
+EOF2
+      fi
+)
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
