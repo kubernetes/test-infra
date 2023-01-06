@@ -150,7 +150,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
+	buildClusterManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
 		// The watch apimachinery doesn't support restarts, so just exit the
 		// binary if a build cluster can be connected later .
 		func() {
@@ -165,8 +165,8 @@ func main() {
 		logrus.WithError(err).Error("Failed to construct build cluster managers. Is there a bad entry in the kubeconfig secret?")
 	}
 
-	for _, buildManager := range buildManagers {
-		if err := mgr.Add(buildManager); err != nil {
+	for _, buildClusterManager := range buildClusterManagers {
+		if err := mgr.Add(buildClusterManager); err != nil {
 			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
 		}
 	}
@@ -192,7 +192,7 @@ func main() {
 	}
 
 	if enabledControllersSet.Has(plank.ControllerName) {
-		if err := plank.Add(mgr, buildManagers, knownClusters, cfg, opener, o.totURL, o.selector); err != nil {
+		if err := plank.Add(mgr, buildClusterManagers, knownClusters, cfg, opener, o.totURL, o.selector); err != nil {
 			logrus.WithError(err).Fatal("Failed to add plank to manager")
 		}
 	}
