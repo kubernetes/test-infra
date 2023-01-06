@@ -786,6 +786,18 @@ plank:
                 # Name is the name of a kubernetes secret.
                 name: ' '
 
+            # PodPendingTimeout is after how long the controller will perform a garbage
+            # collection on pending pods. Defaults to 10 minutes.
+            pod_pending_timeout: 0s
+
+            # PodRunningTimeout is after how long the controller will abort a prowjob pod
+            # stuck in running state. Defaults to two days.
+            pod_running_timeout: 0s
+
+            # PodUnscheduledTimeout is after how long the controller will abort a prowjob
+            # stuck in an unscheduled state. Defaults to 5 minutes.
+            pod_unscheduled_timeout: 0s
+
             # Resources holds resource requests and limits for utility
             # containers used to decorate a PodSpec.
             resources:
@@ -991,6 +1003,18 @@ plank:
 
                 # Name is the name of a kubernetes secret.
                 name: ' '
+
+            # PodPendingTimeout is after how long the controller will perform a garbage
+            # collection on pending pods. Defaults to 10 minutes.
+            pod_pending_timeout: 0s
+
+            # PodRunningTimeout is after how long the controller will abort a prowjob pod
+            # stuck in running state. Defaults to two days.
+            pod_running_timeout: 0s
+
+            # PodUnscheduledTimeout is after how long the controller will abort a prowjob
+            # stuck in an unscheduled state. Defaults to 5 minutes.
+            pod_unscheduled_timeout: 0s
 
             # Resources holds resource requests and limits for utility
             # containers used to decorate a PodSpec.

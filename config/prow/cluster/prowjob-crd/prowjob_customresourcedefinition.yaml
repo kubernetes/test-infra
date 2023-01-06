@@ -250,6 +250,21 @@ spec:
                         description: Name is the name of a kubernetes secret.
                         type: string
                     type: object
+                  pod_pending_timeout:
+                    description: PodPendingTimeout is after how long the controller
+                      will perform a garbage collection on pending pods. Defaults
+                      to 10 minutes.
+                    type: string
+                  pod_running_timeout:
+                    description: PodRunningTimeout is after how long the controller
+                      will abort a prowjob pod stuck in running state. Defaults to
+                      two days.
+                    type: string
+                  pod_unscheduled_timeout:
+                    description: PodUnscheduledTimeout is after how long the controller
+                      will abort a prowjob stuck in an unscheduled state. Defaults
+                      to 5 minutes.
+                    type: string
                   resources:
                     description: Resources holds resource requests and limits for
                       utility containers used to decorate a PodSpec.

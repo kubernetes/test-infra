@@ -522,6 +522,16 @@ type DecorationConfig struct {
 	// set the same as this request. Could be overridden by memory request
 	// defined explicitly on prowjob.
 	DefaultMemoryRequest *resource.Quantity `json:"default_memory_request,omitempty"`
+
+	// PodPendingTimeout is after how long the controller will perform a garbage
+	// collection on pending pods. Defaults to 10 minutes.
+	PodPendingTimeout *metav1.Duration `json:"pod_pending_timeout,omitempty"`
+	// PodRunningTimeout is after how long the controller will abort a prowjob pod
+	// stuck in running state. Defaults to two days.
+	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
+	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
+	// stuck in an unscheduled state. Defaults to 5 minutes.
+	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -732,6 +742,17 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 		merged.DefaultMemoryRequest = def.DefaultMemoryRequest
 	}
 
+	if merged.PodPendingTimeout == nil {
+		merged.PodPendingTimeout = def.PodPendingTimeout
+	}
+
+	if merged.PodRunningTimeout == nil {
+		merged.PodRunningTimeout = def.PodRunningTimeout
+	}
+
+	if merged.PodUnscheduledTimeout == nil {
+		merged.PodUnscheduledTimeout = def.PodUnscheduledTimeout
+	}
 	return &merged
 }
 

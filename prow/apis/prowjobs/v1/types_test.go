@@ -27,6 +27,7 @@ import (
 	fuzz "github.com/google/gofuzz"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func pStr(str string) *string {
@@ -287,6 +288,20 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 				return def
 			},
 		},
+		{
+			name: "pod timeout provided",
+			provided: &DecorationConfig{
+				PodPendingTimeout:     &v1.Duration{Duration: 1 * time.Minute},
+				PodRunningTimeout:     &v1.Duration{Duration: 24 * time.Hour},
+				PodUnscheduledTimeout: &v1.Duration{Duration: 1 * time.Minute},
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.PodPendingTimeout = orig.PodPendingTimeout
+				def.PodRunningTimeout = orig.PodRunningTimeout
+				def.PodUnscheduledTimeout = orig.PodUnscheduledTimeout
+				return def
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -309,11 +324,14 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 					DefaultOrg:   "org",
 					DefaultRepo:  "repo",
 				},
-				GCSCredentialsSecret: pStr("secretName"),
-				S3CredentialsSecret:  pStr("s3-secret"),
-				SSHKeySecrets:        []string{"first", "second"},
-				SSHHostFingerprints:  []string{"primero", "segundo"},
-				SkipCloning:          &truth,
+				GCSCredentialsSecret:  pStr("secretName"),
+				S3CredentialsSecret:   pStr("s3-secret"),
+				SSHKeySecrets:         []string{"first", "second"},
+				SSHHostFingerprints:   []string{"primero", "segundo"},
+				SkipCloning:           &truth,
+				PodPendingTimeout:     &v1.Duration{Duration: 10 * time.Minute},
+				PodRunningTimeout:     &v1.Duration{Duration: 48 * time.Hour},
+				PodUnscheduledTimeout: &v1.Duration{Duration: 5 * time.Minute},
 			}
 
 			expected := tc.expected(tc.provided, defaults)
