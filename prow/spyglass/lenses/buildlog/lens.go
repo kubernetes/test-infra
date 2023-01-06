@@ -45,7 +45,8 @@ const (
 	priority           = 10
 	neighborLines      = 5 // number of "important" lines to be displayed in either direction
 	minLinesSkipped    = 5
-	maxHighlightLength = 10000 // Maximum length of a line worth highlighting
+	maxHighlightLength = 10000            // Maximum length of a line worth highlighting
+	maxLogfileSize     = 10 * 1024 * 1024 // log files larger than this will be skipped
 )
 
 type config struct {
@@ -212,6 +213,16 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			ArtifactName: a.JobPath(),
 			ArtifactLink: a.CanonicalLink(),
 			ShowRawLog:   conf.showRawLog,
+		}
+
+		size, err := a.Size()
+		if err != nil {
+			logrus.WithError(err).Info("Error reading log size.")
+			continue
+		}
+		if size > maxLogfileSize {
+			logrus.WithError(err).Info("Log too large, skipping.")
+			continue
 		}
 		lines, err := logLinesAll(a)
 		if err != nil {
