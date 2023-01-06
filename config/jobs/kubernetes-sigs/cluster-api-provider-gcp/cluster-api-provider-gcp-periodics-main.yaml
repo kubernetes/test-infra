@@ -20,6 +20,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: capg-build-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-gcp-test-main
   interval: 4h
   decorate: true
@@ -41,6 +43,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: capg-test-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-gcp-make-conformance-main
   labels:
     preset-service-account: "true"
@@ -77,7 +81,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
     testgrid-tab-name: capg-conformance-main
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-gcp-make-conformance-main-ci-artifacts
   labels:
@@ -124,5 +128,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
     testgrid-tab-name: capg-conformance-main-ci-artifacts
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io, release-team@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-gcp-alerts@kubernetes.io, release-team@kubernetes.io
     testgrid-num-failures-to-alert: "2"
