@@ -1,0 +1,27 @@
+periodics:
+- name: periodic-cluster-api-provider-digitalocean-janitor
+  decorate: true
+  decoration_config:
+    timeout: 1h
+  interval: 12h
+  labels:
+    preset-do-credential: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-digitalocean
+      base_ref: main
+      path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      imagePullPolicy: Always
+      command:
+        - "./scripts/ci-janitor.sh"
+      resources:
+        requests:
+          cpu: 1
+          memory: "2Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+    testgrid-tab-name: capdo-periodic-janitor
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io

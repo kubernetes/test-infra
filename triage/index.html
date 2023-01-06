@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css">
+<title>Kubernetes Aggregated Test Results</title>
+</head>
+<body>
+<h1 class="clearoptions">Kubernetes Aggregated Failures
+from
+<input id="date" onfocus="(this.type='date')" placeholder="today" onchange="getData();">
+</h1>
+<span id="btn-sig-group"><b>Show clusters for SIG:</b>
+	<button id="btn-sig-api-machinery"          class="toggle sig-api-machinery">api-machinery</button>
+	<button id="btn-sig-apps"                   class="toggle sig-apps">apps</button>
+	<button id="btn-sig-architecture"           class="toggle sig-architecture">architecture</button>
+	<button id="btn-sig-auth"                   class="toggle sig-auth">auth</button>
+	<button id="btn-sig-autoscaling"            class="toggle sig-autoscaling">autoscaling</button>
+	<button id="btn-sig-cli"                    class="toggle sig-cli">cli</button>
+	<button id="btn-sig-cloud-provider"         class="toggle sig-cloud-provider">cloud-provider</button>
+	<button id="btn-sig-cluster-lifecycle"      class="toggle sig-cluster-lifecycle">cluster-lifecycle</button>
+	<button id="btn-sig-contributor-experience" class="toggle sig-contributor-experience">contributor-experience</button>
+	<button id="btn-sig-docs"                   class="toggle sig-docs">docs</button>
+	<button id="btn-sig-instrumentation"        class="toggle sig-instrumentation">instrumentation</button>
+	<button id="btn-sig-multicluster"           class="toggle sig-multicluster">multicluster</button>
+	<button id="btn-sig-network"                class="toggle sig-network">network</button>
+	<button id="btn-sig-node"                   class="toggle sig-node">node</button>
+	<button id="btn-sig-release"                class="toggle sig-release">release</button>
+	<button id="btn-sig-scalability"            class="toggle sig-scalability">scalability</button>
+	<button id="btn-sig-scheduling"             class="toggle sig-scheduling">scheduling</button>
+	<button id="btn-sig-service-catalog"        class="toggle sig-service-catalog">service-catalog</button>
+	<button id="btn-sig-storage"                class="toggle sig-storage">storage</button>
+	<button id="btn-sig-testing"                class="toggle sig-testing">testing</button>
+	<button id="btn-sig-ui"                     class="toggle sig-ui">ui</button>
+	<button id="btn-sig-usability"              class="toggle sig-usability">usability</button>
+	<button id="btn-sig-windows"                class="toggle sig-windows">windows</button>
+<br><br>
+</span>
+<form id="options" onchange="rerender();">
+Include results from:
+<label><input type="checkbox" checked id="job-ci">CI</label>
+<label><input type="checkbox" id="job-pr">PR</label>
+<br>
+<span id="multiple-options">
+Sort by
+<label><input id="sort" name="sort" type="radio" value="total">total count</label>
+<label><input name="sort" type="radio" value="day" checked>count in last day</label>
+<label><input name="sort" type="radio" value="message">error message</label>
+<br>
+<label style="display:none"><input type="checkbox" id="show-normalize">Display normalized errors</label><br>
+<table>
+<tr>
+<td>
+Include Filter (these are regexes):
+<table>
+<label><tr><td>Failure text<td><input type="text" id="filter-include-text"></label><br>
+<label><tr><td>Job<td><input type="text" id="filter-include-job"></label><br>
+<label><tr><td>Test<td><input type="text" id="filter-include-test"></label><br>
+</table>
+<td>
+Exclude Filter (these are regexes):
+<table>
+<label><tr><td>Failure text<td><input type="text" id="filter-exclude-text"></label><br>
+<label><tr><td>Job<td><input type="text" id="filter-exclude-job"></label><br>
+<label><tr><td>Test<td><input type="text" id="filter-exclude-test"></label><br>
+</table>
+</table>
+</span>
+</form>
+<div id="summary"></div>
+<div id="load-status">
+  <h2>Loading... <span id="loading-progress"></span></h2>
+</div>
+<div id="clusters">
+</div>
+</body>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="model.js"></script>
+<script src="render.js"></script>
+<script src="interactive.js"></script>
+<script>load();</script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-82843984-4', 'auto');
+  ga('send', 'pageview');
+</script>
+</script>
+</html>

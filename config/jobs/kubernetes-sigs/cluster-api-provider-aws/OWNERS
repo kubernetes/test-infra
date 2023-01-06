@@ -1,0 +1,20 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- dthorsen
+- pydctw
+- shivi28
+- AverageMarcus
+approvers:
+- richardcase
+- sedefsavas
+- Skarlso
+- Ankitasw
+- dlipovetsky
+emeritus_approvers:
+- chuckha
+- detiber
+- ncdc
+- randomvariable
+- rudoi
+- vincepri

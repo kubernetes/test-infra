@@ -1,0 +1,18 @@
+presubmits:
+  kubernetes/repo-infra:
+  - name: pull-repo-infra-tests
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/repo-infra
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-kubernetes-master
+        command:
+        - ./presubmit.sh
+        imagePullPolicy: Always
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: repo-infra

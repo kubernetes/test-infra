@@ -1,0 +1,57 @@
+metric: job-flakes
+description: Computes flakiness for all jobs.
+query: |
+  select /* Calculate probability a job flaked this week */
+    job,
+    round(sum(if(flaked==1,passed,runs))/sum(runs),3) build_consistency,
+    round(1-sum(flaked)/count(distinct commit),3) commit_consistency,
+    sum(flaked) flakes,
+    sum(runs) runs
+  from ( /* Determine whether a (job, pr-num, commit) flaked */
+    select
+      job,
+      stamp,
+      num,
+      commit,
+      if(passed == runs or passed == 0, 0, 1) flaked,
+      passed,
+      integer(runs) runs
+    from (
+      select /* Count the runs and passes for each (job, pr-num, commit) */
+        max(stamp) stamp,
+        num,
+        if(kind = "pull", if(commit is NULL, version, commit), version) commit,
+        sum(if(result=='SUCCESS',1,0)) passed,
+        count(result) runs
+      from (
+        SELECT /* all runs of any job for the past week, noting the commit and whether it passed */
+          job,
+          regexp_extract(path, r'pull/(\d+)') as num, /* pr number */
+          if(left(job, 3) == "pr:", "pull", "ci") kind,
+          version,
+          regexp_extract(metadata.value, r'[^,]+,\d+:([a-f0-9]+)"') commit, /* extract the first commit id from the repo flag */
+          date(started) stamp,
+          date(date_add(date(started), -dayofweek(started), "day")) wk, /* TODO(fejta): remove or use */
+          result
+        FROM [k8s-gubernator:build.all]
+        where
+          started > date_add(current_timestamp(), -7, "DAY")
+          and version != "unknown"
+          and (metadata.key = 'repos' or left(job, 3) == "ci-")
+      )
+      group by job, num, commit
+    )
+  )
+  group by job
+  order by
+    flakes desc,
+    build_consistency,
+    commit_consistency,
+    job
+
+jqfilter: |
+  [(.[] | select(.job | contains("pr:")) | {(.job): {
+      flakes: (.flakes//0|tonumber),
+      runs: (.runs//0|tonumber),
+      consistency: (.commit_consistency//0|tonumber)
+  }})] | add

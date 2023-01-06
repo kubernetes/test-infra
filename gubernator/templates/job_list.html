@@ -1,0 +1,15 @@
+% extends 'base.html'
+{% block title %}Jobs for {{jobs_dir}}{% endblock %}
+% block header
+<h1>Jobs for {{jobs_dir}}</h1>
+% endblock
+% block content
+<div id="content">
+<h3>Jobs</h3>
+% for fstat in fstats
+	% if fstat.is_dir
+		<a href="/builds{{fstat.filename}}">{{fstat.filename|dirname|basename}}</a><br>
+	% endif
+% endfor
+</div>
+% endblock

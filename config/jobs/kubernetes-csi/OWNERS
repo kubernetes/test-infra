@@ -1,0 +1,14 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- msau42
+- saad-ali
+- xing-yang
+- jsafrane
+- pohly
+
+reviewers:
+- msau42
+- xing-yang
+- jsafrane
+- pohly

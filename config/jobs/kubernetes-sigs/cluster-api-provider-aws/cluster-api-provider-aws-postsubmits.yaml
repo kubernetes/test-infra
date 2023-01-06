@@ -1,0 +1,117 @@
+postsubmits:
+  kubernetes-sigs/cluster-api-provider-aws:
+    - name: ci-cluster-api-provider-aws-e2e
+      branches:
+      # The script this job runs is not in all branches.
+      - ^main
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+      decorate: true
+      decoration_config:
+        timeout: 5h
+      max_concurrency: 1
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-aws-credential: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.25
+            command:
+              - "runner.sh"
+              - "./scripts/ci-e2e.sh"
+            env:
+              - name: BOSKOS_HOST
+                value: "boskos.test-pods.svc.cluster.local"
+              - name: AWS_REGION
+                value: "us-west-2"
+              # Parallelize tests
+              - name: GINKGO_ARGS
+                value: "-nodes 20"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: "9Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+        testgrid-tab-name: postsubmit-e2e-main
+        testgrid-num-columns-recent: '20'
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
+    - name: ci-cluster-api-provider-aws-eks-e2e
+      branches:
+      # The script this job runs is not in all branches.
+      - ^main
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+      decorate: true
+      decoration_config:
+        timeout: 5h
+      max_concurrency: 1
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-aws-credential: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.25
+            command:
+              - "runner.sh"
+              - "./scripts/ci-e2e-eks.sh"
+            env:
+              - name: BOSKOS_HOST
+                value: "boskos.test-pods.svc.cluster.local"
+              - name: AWS_REGION
+                value: "us-west-2"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: "9Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+        testgrid-tab-name: postsubmit-eks-e2e-main
+        testgrid-num-columns-recent: '20'
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: "2"
+    - name: ci-cluster-api-provider-aws-e2e-conformance
+      branches:
+      # The script this job runs is not in all branches.
+      - ^main
+      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+      decorate: true
+      decoration_config:
+        timeout: 5h
+      max_concurrency: 1
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-service-account: "true"
+        preset-aws-ssh: "true"
+        preset-aws-credential: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.25
+            command:
+              - "runner.sh"
+              - "./scripts/ci-conformance.sh"
+            env:
+              - name: BOSKOS_HOST
+                value: "boskos.test-pods.svc.cluster.local"
+              - name: AWS_REGION
+                value: "us-west-2"
+            securityContext:
+              privileged: true
+            resources:
+              requests:
+                cpu: 2
+                memory: "9Gi"
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+        testgrid-tab-name: postsubmit-conformance-main
+        testgrid-num-columns-recent: '20'
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io

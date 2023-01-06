@@ -1,0 +1,82 @@
+presubmits:
+  http://fakegerritserver/gerrit-test-infra-0:
+    - name: hello-world-presubmit
+      always_run: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-cookie-file: "true"
+      spec:
+        containers:
+        - command:
+          - echo
+          args:
+          - "Hello World!"
+          image: localhost:5001/alpine
+    - name: bee-movie-presubmit
+      run_if_changed: "bee-movie-script.txt"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-cookie-file: "true"
+      spec:
+        containers:
+        - command:
+          - echo
+          args:
+          - "Hello World!"
+          image: localhost:5001/alpine
+  http://fakegerritserver/gerrit-test-infra-1:
+    - name: hello-world-presubmit
+      always_run: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-cookie-file: "true"
+      spec:
+        containers:
+        - command:
+          - echo
+          args:
+          - "Hello World!"
+          image: localhost:5001/alpine
+    - name: bee-movie-presubmit
+      run_if_changed: "bee-movie-script.txt"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-cookie-file: "true"
+      spec:
+        containers:
+        - command:
+          - echo
+          args:
+          - "Hello World!"
+          image: localhost:5001/alpine
+  http://fakegerritserver/gerrit-test-infra-2:
+    - name: hello-world-presubmit
+      always_run: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-cookie-file: "true"
+      spec:
+        containers:
+        - command:
+          - echo
+          args:
+          - "Hello World!"
+          image: localhost:5001/alpine
+    - name: bee-movie-presubmit
+      run_if_changed: "bee-movie-script.txt"
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-cookie-file: "true"
+      spec:
+        containers:
+        - command:
+          - echo
+          args:
+          - "Hello World!"
+          image: localhost:5001/alpine

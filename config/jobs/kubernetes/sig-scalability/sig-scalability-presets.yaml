@@ -1,0 +1,347 @@
+presets:
+###### Kubemark envs
+### Common env variables for all kubemark-related suites.
+- labels:
+    preset-e2e-kubemark-common: "true"
+  env:
+  - name: KUBE_GCS_UPDATE_LATEST
+    value: "n"
+  - name: KUBE_FASTBUILD
+    value: "true"
+  - name: KUBE_GCE_ENABLE_IP_ALIASES
+    value: "true"
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
+  - name: ENABLE_HOLLOW_NODE_LOGS
+    value: "true"
+  # Turn on profiling for various components.
+  - name: ETCD_TEST_ARGS
+    value: "--enable-pprof"
+  - name: APISERVER_TEST_ARGS
+    value: "--profiling --contention-profiling"
+  # Number of bytes of an additional nodes objects annotation in a kubemark
+  # cluster. The annotation label is added to make nodes objects sizes similar
+  # to regular cluster nodes.
+  - name: KUBEMARK_NODE_OBJECT_SIZE_BYTES
+    value: 15000
+  # Increase throughput in Kubemark master components and turn on profiling.
+  - name: KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+  - name: KUBEMARK_SCHEDULER_TEST_ARGS
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+  # Reduce logs verbosity
+  - name: TEST_CLUSTER_LOG_LEVEL
+    value: "--v=2"
+  - name: API_SERVER_TEST_LOG_LEVEL
+    value: "--v=3"
+  # Increase controller-manager's resync period to simulate production.
+  - name: TEST_CLUSTER_RESYNC_PERIOD
+    value: "--min-resync-period=12h"
+  # Reduce etcd compaction frequency to match production.
+  - name: KUBEMARK_ETCD_COMPACTION_INTERVAL_SEC
+    value: "150"
+  # Allow one node to not be ready after cluster creation.
+  - name: ALLOWED_NOTREADY_NODES
+    value: 1
+  - name: ENABLE_PROMETHEUS_SERVER
+    value: "true"
+  - name: KUBE_MASTER_NODE_LABELS
+    value: "node.kubernetes.io/node-exporter-ready=true"
+  # Keep all logrotated files (not just 5 latest which is a default)
+  - name: LOGROTATE_FILES_MAX_COUNT
+    value: 1000
+  - name: LOGROTATE_MAX_SIZE
+    value: "5G"
+  # Ensure good enough architecture for master machines.
+  - name: MASTER_MIN_CPU_ARCHITECTURE
+    value: "Intel Skylake"
+  # Increase delete collection parallelism.
+  - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
+    value: --delete-collection-workers=16
+  # Dump full systemd journal on master and nodes.
+  - name: LOG_DUMP_SYSTEMD_JOURNAL
+    value: "true"
+  # Timeout for the log dumping over SSH. Relevant only if fallback to SSH log dumping takes place
+  # e.g. when logexporter daemonset fails for some reason.
+  # We deliberately cap it at 1h to avoid spending too much time (e.g. over 5h for 5k node cluster)
+  # on dumping logs that in most cases we won't need anyway.
+  - name: LOG_DUMP_SSH_TIMEOUT_SECONDS
+    value: 3600
+  # Use private clusters for scalability tests - https://github.com/kubernetes/kubernetes/issues/76374
+  - name: KUBE_GCE_PRIVATE_CLUSTER
+    value: "true"
+  # We create approx. 70 hollow nodes per VM. Allow ~4 connections from each of them.
+  - name: KUBE_GCE_PRIVATE_CLUSTER_PORTS_PER_VM
+    value: 300
+  - name: PROMETHEUS_SCRAPE_ETCD
+    value: "true"
+  # Disable kubernetes-dashboard
+  - name: KUBE_ENABLE_CLUSTER_UI
+    value: "false"
+  # Enable assertions on scheduler throughput in density test.
+  # Setting the threshold to 90 should allow us to catch regressions like
+  # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
+  - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+    value: 90
+  - name: CL2_ALLOWED_SLOW_API_CALLS
+    value: 1
+  # Disable PVs until these are fixed in Kubemark:
+  # https://github.com/kubernetes/perf-tests/issues/803
+  - name: CL2_ENABLE_PVS
+    value: "false"
+  # Switch to using log-dump.sh script included in the kubekins-e2e image
+  # instead of relying on the deprecated one from k/k repository.
+  - name: USE_TEST_INFRA_LOG_DUMPING
+    value: "true"
+  # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
+  # of the nodes got logexported successfully, then report a failure.
+  - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
+    value: 50
+  - name: PERF_TESTS_PRINT_COMMIT_HISTORY
+    value: true
+  - name: DUMP_TO_GCS_ONLY
+    value: true
+  # Disable konnectivity in kubemark as it doesn't work (see https://github.com/kubernetes/perf-tests/issues/1828)
+  # TODO(https://github.com/kubernetes/perf-tests/issues/1828): Use konnectivity in kubemark.
+  - name: KUBE_ENABLE_KONNECTIVITY_SERVICE
+    value: false
+  - name: DEPLOY_GCI_DRIVER
+    value: true
+  - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+    value: pd.csi.storage.gke.io
+  - name: CL2_WAIT_FOR_CONTROLLED_PODS_USE_EXACT_OPERATION_TIMEOUT
+    value: true
+
+### kubemark-gce-scale
+- labels:
+    preset-e2e-kubemark-gce-scale: "true"
+  env:
+  # kubernetes env
+  # TODO: Remove this after kube-proxy improvements.
+  - name: USE_REAL_PROXIER
+    value: "false"
+  - name: HOLLOW_PROXY_TEST_ARGS
+    value: "--use-real-proxier=false"
+  - name: HEAPSTER_KUBELET_TEST_ARGS
+    value: "--register-with-taints=monitoring=:NoSchedule"
+  # Heapster node is needed in order for Prometheus pods to fit in a cluster.
+  - name: HEAPSTER_MACHINE_TYPE
+    value: "e2-standard-8"
+
+
+###### Scalability Envs
+### Common env variables for all scalability-related suites.
+- labels:
+    preset-e2e-scalability-common: "true"
+  env:
+  # Override GCE defaults.
+  - name: NODE_SIZE
+    value: "e2-medium"
+  - name: NODE_DISK_SIZE
+    value: "50GB"
+  - name: REGISTER_MASTER
+    value: "true"
+  - name: LOGROTATE_MAX_SIZE
+    value: "5G"
+  # Use IP-aliases for scalability tests.
+  - name: KUBE_GCE_ENABLE_IP_ALIASES
+    value: "true"
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
+  # Ensure good enough architecture for master machines.
+  - name: MASTER_MIN_CPU_ARCHITECTURE
+    value: "Intel Skylake"
+  # Turn on profiling for various components and
+  # increase throughput in master components.
+  - name: ETCD_EXTRA_ARGS
+    value: "--enable-pprof"
+  - name: APISERVER_TEST_ARGS
+    value: "--profiling --contention-profiling"
+  - name: CONTROLLER_MANAGER_TEST_ARGS
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+  - name: KUBELET_TEST_ARGS
+    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+  - name: NODE_KUBELET_TEST_ARGS
+    # e2-medium machines report the capacity of 2cpu.
+    # We adjust the allocatable to match reality and additionally tweak it
+    # to achieve roughly 1:4 allocatable cpu to memory ration.
+    value: "--kube-reserved=cpu=1050m"
+  - name: KUBEPROXY_TEST_ARGS
+    # TODO(#74011): Remove metrics-bind-address if the default is set.
+    # FeatureGate added in #110268 v1.26
+    value: "--profiling --metrics-bind-address=0.0.0.0 --feature-gates=MinimizeIPTablesRestore=true"
+  - name: SCHEDULER_TEST_ARGS
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+  # Reduce logs verbosity.
+  - name: TEST_CLUSTER_LOG_LEVEL
+    value: --v=2
+  - name: API_SERVER_TEST_LOG_LEVEL
+    value: "--v=3"
+  # Increase resync period to simulate production.
+  - name: TEST_CLUSTER_RESYNC_PERIOD
+    value: --min-resync-period=12h
+  # Reduce etcd compaction frequency to match production.
+  - name: ETCD_COMPACTION_INTERVAL_SEC
+    value: "150"
+  # Increase delete collection parallelism.
+  - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
+    value: --delete-collection-workers=16
+  # Dump full systemd journal on master and nodes.
+  - name: LOG_DUMP_SYSTEMD_JOURNAL
+    value: "true"
+  # Dump clusterloader prober's log files
+  - name: LOG_DUMP_EXTRA_FILES
+    value: "cl2-*"
+  # Timeout for the log dumping over SSH. Relevant only if fallback to SSH log dumping takes place
+  # e.g. when logexporter daemonset fails for some reason.
+  # We deliberately cap it at 1h to avoid spending too much time (e.g. over 5h for 5k node cluster)
+  # on dumping logs that in most cases we won't need anyway.
+  - name: LOG_DUMP_SSH_TIMEOUT_SECONDS
+    value: 3600
+  # Keep all logrotated files (not just 5 latest which is a default)
+  - name: LOGROTATE_FILES_MAX_COUNT
+    value: 1000
+  - name: ENABLE_PROMETHEUS_SERVER
+    value: "true"
+  - name: KUBE_MASTER_NODE_LABELS
+    value: "node.kubernetes.io/node-exporter-ready=true"
+  # Use private clusters for scalability tests - https://github.com/kubernetes/kubernetes/issues/76374
+  - name: KUBE_GCE_PRIVATE_CLUSTER
+    value: "true"
+  - name: PROMETHEUS_SCRAPE_ETCD
+    value: "true"
+  # Disable kubernetes-dashboard
+  - name: KUBE_ENABLE_CLUSTER_UI
+    value: "false"
+  # Enable assertions on scheduler throughput in density test.
+  # Setting the threshold to 90 should allow us to catch regressions like
+  # https://github.com/kubernetes/kubernetes/pull/85030 while not making the tests flaky.
+  - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+    value: 90
+  - name: CL2_ALLOWED_SLOW_API_CALLS
+    value: 1
+  # Override of the default list of whitelisted resources during addons reconciliation
+  # performed by kube-addon-manager. This is the same as the default list in the script
+  # k/k/cluster/addons/addon-manager/kube-addons.sh but without core/v1/Pod resource.
+  # As explained in https://github.com/kubernetes/kubernetes/pull/91018, this results
+  # in a Kubernetes cluster performance bump up.
+  - name: KUBECTL_PRUNE_WHITELIST_OVERRIDE
+    value: >-
+      core/v1/ConfigMap
+      core/v1/Endpoints
+      core/v1/Namespace
+      core/v1/PersistentVolumeClaim
+      core/v1/PersistentVolume
+      core/v1/ReplicationController
+      core/v1/Secret
+      core/v1/Service
+      batch/v1/Job
+      batch/v1/CronJob
+      apps/v1/DaemonSet
+      apps/v1/Deployment
+      apps/v1/ReplicaSet
+      apps/v1/StatefulSet
+      networking.k8s.io/v1/Ingress
+  # Switch to using log-dump.sh script included in the kubekins-e2e image
+  # instead of relying on the deprecated one from k/k repository.
+  - name: USE_TEST_INFRA_LOG_DUMPING
+    value: "true"
+  # If log dumping of nodes is enabled and logexporter creation fails or less than 50 %
+  # of the nodes got logexported successfully, then report a failure.
+  - name: LOG_DUMP_EXPECTED_SUCCESS_PERCENTAGE
+    value: 50
+  - name: PERF_TESTS_PRINT_COMMIT_HISTORY
+    value: true
+  - name: LOG_DUMP_SAVE_SERVICES
+    value: "containerd"
+  - name: DUMP_TO_GCS_ONLY
+    value: true
+  - name: DEPLOY_GCI_DRIVER
+    value: true
+  - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+    value: pd.csi.storage.gke.io
+  - name: KUBE_APISERVER_GODEBUG
+    value: gctrace=1
+  - name: CL2_WAIT_FOR_CONTROLLED_PODS_USE_EXACT_OPERATION_TIMEOUT
+    value: true
+  - name: CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT
+    value: "true"
+
+  ###### Scalability Envs
+  ### Common env variables for containerd scalability-related suites.
+  # Deprecated. Should be removed after 1.20 branch will be removed from testing
+- labels:
+    preset-e2e-scalability-containerd: "true"
+  env:
+  - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
+    value: "15m"
+
+###### Scalability Envs
+### Common env variables for node scalability-related suites.
+- labels:
+    preset-e2e-scalability-node: "true"
+  env:
+  # Override GCE defaults.
+  - name: MASTER_SIZE
+    value: "n1-standard-4"
+  - name: NODE_SIZE
+    value: "e2-standard-8"
+  - name: NODE_DISK_SIZE
+    value: "100GB"
+  - name: REGISTER_MASTER
+    value: "true"
+  - name: LOGROTATE_MAX_SIZE
+    value: "5G"
+  # Use IP-aliases for scalability tests.
+  - name: KUBE_GCE_ENABLE_IP_ALIASES
+    value: "true"
+  - name: CREATE_CUSTOM_NETWORK
+    value: "true"
+  # Ensure good enough architecture for master machines.
+  - name: MASTER_MIN_CPU_ARCHITECTURE
+    value: "Intel Skylake"
+  # Turn on profiling for various components and
+  # increase throughput in master components and Kubelet.
+  - name: ETCD_EXTRA_ARGS
+    value: "--enable-pprof"
+  - name: CONTROLLER_MANAGER_TEST_ARGS
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+  # Bump max pods per node in Kubelet, because there are more than 10
+  # system pods in 1-node cluster.
+  - name: MAX_PODS_PER_NODE
+    value: "128"
+  - name: KUBELET_TEST_ARGS
+    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
+  - name: KUBEPROXY_TEST_ARGS
+    value: "--profiling"
+  - name: SCHEDULER_TEST_ARGS
+    value: "--profiling --contention-profiling --kube-api-qps=100 --kube-api-burst=100"
+  # Reduce logs verbosity.
+  - name: TEST_CLUSTER_LOG_LEVEL
+    value: --v=2
+  - name: API_SERVER_TEST_LOG_LEVEL
+    value: "--v=3"
+  # Increase resync period to simulate production.
+  - name: TEST_CLUSTER_RESYNC_PERIOD
+    value: --min-resync-period=12h
+  # Increase delete collection parallelism.
+  - name: TEST_CLUSTER_DELETE_COLLECTION_WORKERS
+    value: --delete-collection-workers=16
+  - name: DUMP_TO_GCS_ONLY
+    value: true
+
+- labels:
+    preset-e2e-scalability-presubmits: "true"
+  env:
+  - name: PROMETHEUS_SCRAPE_MASTER_KUBELETS
+    value: true
+
+- labels:
+    preset-e2e-scalability-periodics: "true"
+  env:
+  - name: PROMETHEUS_SCRAPE_MASTER_KUBELETS
+    value: true
+
+- labels:
+    preset-e2e-scalability-periodics-master: "true"
+  env:

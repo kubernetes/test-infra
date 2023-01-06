@@ -1,0 +1,134 @@
+li > * {
+  cursor: default;
+}
+li, li > span {
+  cursor: pointer;
+}
+
+pre {
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow: auto;
+  background-color: #eee;
+  max-height: 800px;
+}
+
+pre span.mm {
+  color: grey;
+}
+
+.clearoptions {
+  cursor: pointer;
+}
+
+div.failure {
+  border: 1px solid;
+  border-radius: 5px;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+
+div.failure > h2 {
+  margin: 0;
+  padding: 0;
+}
+
+input[type=text] {
+  width: 500px;
+}
+
+h2 > a {
+  font-size: 14px;
+  padding: 10px 0 0 10px;
+}
+
+span.owner {
+  cursor: pointer;
+  margin: 10px;
+  padding: 0 10px 0 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+  background: var(--color, #eee);
+}
+
+button.toggle {
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px 10px 5px 10px;
+  border-radius: 5px;
+  border-color: var(--color, #eee);
+  border-width: 3px;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+button.toggle.active {
+  background-color: var(--color, #eee);
+}
+
+/* colors from http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12 */
+.sig-api-machinery          { --color: #fef764; }
+.sig-apps                   { --color: #4562c2; }
+.sig-architecture           { --color: #1057a8; }
+.sig-auth                   { --color: #98c0fc; }
+.sig-autoscaling            { --color: #806284; }
+.sig-cli                    { --color: #9000ad; }
+.sig-cloud-provider         { --color: #d70597; }
+.sig-cluster-lifecycle      { --color: #a16a81; }
+.sig-contributor-experience { --color: #63632a; }
+.sig-docs                   { --color: #975a0d; }
+.sig-instrumentation        { --color: #ca0f15; }
+.sig-multicluster           { --color: #d31847; }
+.sig-network                { --color: #c7740e; }
+.sig-node                   { --color: #e8af9b; }
+.sig-release                { --color: #f62962; }
+.sig-scalability            { --color: #05e81e; }
+.sig-scheduling             { --color: #d5fcf2; }
+.sig-service-catalog        { --color: #6edd82; }
+.sig-storage                { --color: #71a87d; }
+.sig-testing                { --color: #8bb023; }
+.sig-ui                     { --color: #3546e3; }
+.sig-usability              { --color: #4b8583; }
+.sig-windows                { --color: #a45dbc; }
+
+div.graph {
+  width: 1200px;
+  height: 200px;  /* keep synchronized with script.js:graphHeight */
+}
+
+/* http://stackoverflow.com/a/17579580/3694 */
+span[data-tooltip]:hover {
+  position: relative;
+}
+
+span[data-tooltip]:hover:after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 1;
+  background: white;
+  white-space: nowrap;
+  padding: 4px 4px;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+td {
+  padding: 0 1.5em 0 0;
+}
+
+table {
+  margin: 5px;
+}
+
+ul {
+  padding-left: 20px;
+}
+
+button.rest {
+  width: 20em;
+}
+
+button.rest ~ * {
+  display: none;
+}

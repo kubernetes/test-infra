@@ -1,0 +1,71 @@
+presubmits:
+  kubernetes-sigs/cli-utils:
+  - name: cli-utils-presubmit-master
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/cli-utils
+    branches:
+    - ^master$
+    - ^release-.*$
+    spec:
+      containers:
+      - image: golang:1.19
+        command:
+        - make
+        args:
+        - prow-presubmit-check
+        resources:
+          requests:
+            cpu: 4000m
+    annotations:
+      testgrid-dashboards: sig-cli-misc
+      testgrid-tab-name: cli-utils-presubmit-master
+      description: cli-utils presubmit tests on master branch
+  - name: cli-utils-presubmit-master-e2e
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/cli-utils
+    branches:
+    - ^master$
+    - ^release-.*$
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        - make
+        - prow-presubmit-check-e2e
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cli-misc
+      testgrid-tab-name: cli-utils-presubmit-master-e2e
+      description: cli-utils presubmit e2e tests on master branch
+  - name: cli-utils-presubmit-master-stress
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/cli-utils
+    branches:
+    - ^master$
+    - ^release-.*$
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        - make
+        - test-stress
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cli-misc
+      testgrid-tab-name: cli-utils-presubmit-master-stress
+      description: cli-utils presubmit stress tests on master branch

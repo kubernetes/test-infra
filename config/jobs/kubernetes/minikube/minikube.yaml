@@ -1,0 +1,47 @@
+presets:
+- labels:
+    preset-minikube-e2e-creds: "true"
+  env:
+  - name: GCS_CREDS
+    value: /root/.config/gcloud/k8s-minikube-build-gcs.json
+  volumes:
+  - name: k8s-minikube-build-gcs
+    secret:
+      secretName: k8s-minikube-build-gcs
+  volumeMounts:
+  - name: k8s-minikube-build-gcs
+    mountPath: /root/.config/gcloud
+    readOnly: true
+
+presubmits:
+  kubernetes/minikube:
+  - name: pull-minikube-build
+    decorate: true
+    path_alias: "k8s.io/minikube"
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-minikube/prow-test:v0.0.3
+        # we add --force since minikube is running as root
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - make && ./out/minikube start --force-systemd --force && kubectl get pods -A
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+  - name: pull-minikube-platform-tests
+    labels:
+        preset-minikube-e2e-creds: "true"
+        preset-k8s-ssh: "true"
+    always_run: false
+    optional: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-minikube/minikube-e2e:v20181022-a850455f-experimental
+        command:
+        - hack/prow/minkube_build_and_test.sh

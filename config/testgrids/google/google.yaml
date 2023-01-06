@@ -1,0 +1,72 @@
+#
+# Start dashboards
+#
+dashboards:
+- name: google-aws
+- name: google-gce
+- name: google-kops-gce
+- name: google-gci
+- name: google-osconfig
+  dashboard_tab:
+  - name: osconfig-unstable
+    test_group_name: osconfig-unstable
+    open_test_template:
+      url: https://oss.gprow.dev/view/gs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
+      options:
+      - key: title
+        value: 'osconfig-unstable issue: <test-name>'
+      - key: body
+        value: <test-url>
+  - name: osconfig-staging
+    test_group_name: osconfig-staging
+    open_test_template:
+      url: https://oss.gprow.dev/view/gs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
+      options:
+      - key: title
+        value: 'osconfig-staging issue: <test-name>'
+      - key: body
+        value: <test-url>
+  - name: osconfig-stable
+    test_group_name: osconfig-stable
+    open_test_template:
+      url: https://oss.gprow.dev/view/gs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
+      options:
+      - key: title
+        value: 'osconfig-stable issue: <test-name>'
+      - key: body
+        value: <test-url>
+  - name: osconfig-head-images
+    test_group_name: osconfig-head-images
+    open_test_template:
+      url: https://oss.gprow.dev/view/gs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
+      options:
+      - key: title
+        value: 'osconfig-head-images issue: <test-name>'
+      - key: body
+        value: <test-url>
+- name: google-soak
+- name: google-rules_k8s
+
+#
+# Start dashboard groups
+#
+dashboard_groups:
+- name: google
+  dashboard_names:
+  - google-aws
+  - google-cel
+  - google-gce
+  - google-gcp-guest
+  - google-gci
+  - google-kops-gce
+  - google-osconfig
+  - google-rules_k8s
+  - google-soak

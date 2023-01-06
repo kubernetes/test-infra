@@ -1,0 +1,7 @@
+{
+  "extends": "../../../../tsconfig.json",
+  "include": [
+    "html.ts",
+    "../lens.d.ts"
+  ],
+}

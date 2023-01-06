@@ -1,0 +1,455 @@
+# This file defines the list of tests whose definition and Prow configurations
+# that can be generated automatically.
+#
+# The name of the test job in this file must satisfy a predefined format, which
+# consists of several dimensions, such as cloud provider, OS image name,
+# Kubernetes version and test suites. The definition of each dimension is
+# provided separately from the job definition. A tool can automatically generate
+# the test definition and Prow configuration from the test name by pulling the
+# configs of each dimension in the test name and assembling them together.
+#
+# e.g., for test "ci-kubernetes-e2e-gce-ubuntu1-k8sdev-serial", its
+# configuration will be generated from the configs of cloud provider "gce", the
+# image "ubuntu1", the Kubernetes version "k8sdev" and the test suite "serial".
+
+# To generate the test definitions and Prow configurations from this file:
+#
+#   make -C releng generate-tests
+#
+# Supported tests:
+#
+#  * cluster e2e test
+#    The name starts with "ci-kubernetes-e2e-" and must satisfy the following
+#    format:
+#      ci-kubernetes-e2e-<cloudProvider>-<image>-<k8sVersion>-<testSuite>
+#
+#  * node e2e test
+#    The name starts with "ci-kubernetes-e2enode-" and must satisfy the
+#    following format:
+#      ci-kubernetes-e2enode-<nodeImage>-<nodeK8sVersion>-<nodeTestSuite>
+
+# The envs and args defined in "jobs" override the ones defined in each
+# dimension.
+jobs:
+  # GCE e2e tests
+
+  # release branch jobs - cos only (cvm is deprecated at 1.8)
+  # beta release (inactive)
+  ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sbeta-default:
+    args:
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
+    interval: 1h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+
+  # stable1
+  ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
+    interval: 2h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable1-ingress:
+    interval: 2h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable1-default:
+    args:
+    - --env=ENABLE_POD_SECURITY_POLICY=true
+    interval: 2h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
+    interval: 2h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable1-slow:
+    interval: 2h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures:
+    interval: 2h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+
+  # stable2
+  ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
+    interval: 6h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable2-ingress:
+    interval: 6h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable2-default:
+    interval: 6h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
+    interval: 6h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable2-slow:
+    interval: 6h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures:
+    interval: 6h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+
+  # stable3
+  ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable3-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable3-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable3-betaapis:
+    interval: 24h
+    args:
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/beta=true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+
+  # stable4
+  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis:
+    interval: 24h
+    args:
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/beta=true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+
+# The following settings are used by cluster e2e tests.
+
+common:
+  args:
+  - --cluster=test-${job_name_hash}
+
+cloudProviders:
+  gce:
+    args:
+    - --check-leaked-resources
+    - --provider=gce
+    - --gcp-zone=us-west1-b
+
+images:
+  cos1:
+    args:
+    - --image-family=cos-shielded-lts-1
+    - --image-project=gke-node-images-test
+    - --gcp-node-image=custom
+    testgrid_prefix: cos
+  cos2:
+    args:
+    - --image-family=cos-lts-2
+    - --image-project=gke-node-images-test
+    - --gcp-node-image=custom
+    testgrid_prefix: cos
+  ubuntu1:
+    args:
+    - --image-family=pipeline-1
+    - --image-project=ubuntu-os-gke-cloud-devel
+    - --gcp-node-image=custom
+    testgrid_prefix: canonical
+  ubuntu2:
+    args:
+    - --image-family=pipeline-2
+    - --image-project=ubuntu-os-gke-cloud-devel
+    - --gcp-node-image=custom
+    testgrid_prefix: canonical
+  cos:
+    args:
+    - --gcp-node-image=gci
+
+k8sVersions:
+  dev:
+    args:
+    - --extract=ci/latest
+    - --extract-ci-bucket=k8s-release-dev
+    version: master
+  beta:
+    args:
+    - --extract=ci/latest-1.26
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.26'
+  stable1:
+    args:
+    - --extract=ci/latest-1.25
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.25'
+  stable2:
+    args:
+    - --extract=ci/latest-1.24
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.24'
+  stable3:
+    args:
+    - --extract=ci/latest-1.23
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.23'
+  stable4:
+    args:
+    - --extract=ci/latest-1.22
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.22'
+
+testSuites:
+  alphafeatures:
+    args:
+    - --timeout=180m
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=false,InTreePluginGCEUnregister=false
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
+      --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0
+      --minStartupPods=8
+    cluster: k8s-infra-prow-build
+  betaapis: # copied from "default".  Tests that require beta APIs should use discovery in the e2e test to decide whether or not to skip the test.
+    args:
+    - --timeout=120m
+    - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      --minStartupPods=8
+    - --ginkgo-parallel=30
+    cluster: k8s-infra-prow-build
+    resources:
+      requests:
+        cpu: 2000m
+        memory: 6Gi
+      limits:
+        cpu: 2000m
+        memory: 6Gi
+  default:
+    args:
+    - --timeout=120m
+    - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      --minStartupPods=8
+    - --ginkgo-parallel=30
+    cluster: k8s-infra-prow-build
+    resources:
+      requests:
+        cpu: 2000m
+        memory: 6Gi
+      limits:
+        cpu: 2000m
+        memory: 6Gi
+  flaky:
+    args:
+    - --timeout=300m
+    - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\]
+      --minStartupPods=8
+    cluster: k8s-infra-prow-build
+  ingress:
+    args:
+    - --timeout=150m
+    - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
+    cluster: k8s-infra-prow-build
+  reboot:
+    args:
+    - --timeout=180m
+    - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
+    cluster: k8s-infra-prow-build
+  serial:
+    args:
+    - --timeout=660m
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]
+      --minStartupPods=8
+    - --ginkgo-parallel=1
+    cluster: k8s-infra-prow-build
+  slow:
+    args:
+    - --timeout=150m
+    - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      --minStartupPods=8
+    - --ginkgo-parallel=30
+    cluster: k8s-infra-prow-build
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 6Gi
+      limits:
+        cpu: 1000m
+        memory: 6Gi
+  soak:
+    args:
+    - --check-version-skew=false
+    - --down=false
+    - --soak
+    - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      --clean-start=true --minStartupPods=8
+    - --timeout=600m
+    - --up=false
+  stackdriver:
+    args:
+    - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]
+      --minStartupPods=8
+    - --timeout=50m
+  updown:
+    args:
+    - --timeout=30m
+    - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
+    - --ginkgo-parallel
+  nosnat:
+    args:
+    - --timeout=40m
+    - --test_args=--ginkgo.focus=\[Feature:NoSNAT\] --minStartupPods=8
+    - --ginkgo-parallel=1
+
+# The following settings are used by node e2e tests.
+
+nodeCommon:
+  args:
+  - --deployment=node
+  - --node-tests=true
+  - --provider=gce
+  - --gcp-zone=us-west1-b
+
+nodeImages:
+  cos1:
+    args:
+    - --image-family=cos-shielded-lts-1
+    - --image-project=gke-node-images-test
+    - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
+    testgrid_prefix: cos
+  cos2:
+    args:
+    - --image-family=cos-lts-2
+    - --image-project=gke-node-images-test
+    - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
+    testgrid_prefix: cos
+  ubuntu1:
+    args:
+    - --image-family=pipeline-1
+    - --image-project=ubuntu-os-gke-cloud-devel
+    testgrid_prefix: canonical
+  ubuntu2:
+    args:
+    - --image-family=pipeline-2
+    - --image-project=ubuntu-os-gke-cloud-devel
+    testgrid_prefix: canonical
+
+nodeK8sVersions:
+  dev:
+    args:
+    - --repo=k8s.io/kubernetes=master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+  beta:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.26
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.26
+  stable1:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.25
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.25
+  stable2:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.24
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.24
+  stable3:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.23
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.23
+  stable4:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.22
+
+nodeTestSuites:
+  default:
+    args:
+    - --timeout=120m
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]"
+  gkespec:
+    args:
+    - --node-args=--system-spec-name=gke
+    - --timeout=120m
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]"
+  serial:
+    args:
+    - --timeout=300m
+    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]"

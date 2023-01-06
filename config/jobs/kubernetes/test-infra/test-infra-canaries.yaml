@@ -1,0 +1,71 @@
+periodics:
+- name: ci-test-infra-benchmark-demo
+  interval: 24h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/benchmarkjunit:latest
+      command:
+      - /benchmarkjunit
+      args:
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - --pass-on-error
+      - ./experiment/dummybenchmarks/...
+  annotations:
+    testgrid-alert-email: colew@google.com
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: benchmark-demo
+    description: Demoing JUnit golang benchmark results.
+- interval: 1h
+  name: ci-test-infra-multiple-container-test
+  decorate: true
+  spec:
+    containers:
+    - name: test-1
+      image: alpine
+      command: ["/bin/echo"]
+      args: ["I am first"]
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "250m"
+        limits:
+          memory: "256Mi"
+          cpu: "500m"
+    - name: test-2
+      image: alpine
+      command: ["/bin/sh"]
+      args:
+      - -c
+      - "sleep 60 && echo I && sleep 60 && echo am && sleep 60 && echo second"
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "250m"
+        limits:
+          memory: "256Mi"
+          cpu: "500m"
+    - name: test-3
+      image: alpine
+      command: ["/bin/sh"]
+      args:
+      - -c
+      - "sleep 120 && echo I && sleep 120 && echo am && sleep 120 && echo third"
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "250m"
+        limits:
+          memory: "256Mi"
+          cpu: "500m"
+  annotations:
+    testgrid-alert-email: anthonytong@google.com
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: multiple-container-test
+    description: echo at different times from three different containers

@@ -1,0 +1,32 @@
+presubmits:
+  kubernetes/org:
+  - name: pull-org-test-all
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - make
+        args:
+        - test
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+  - name: pull-org-verify-all
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - make
+        args:
+        - verify
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'

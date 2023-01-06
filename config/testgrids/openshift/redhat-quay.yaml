@@ -1,0 +1,22 @@
+dashboards:
+- dashboard_tab:
+  - base_options: width=10
+    name: periodic-ci-quay-quay-bridge-operator-master-ocp-4.6-nightly-quay-3-7-unstable-e2e
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-quay-quay-bridge-operator-master-ocp-4.6-nightly-quay-3-7-unstable-e2e
+  - base_options: width=10
+    name: periodic-ci-quay-quay-bridge-operator-master-ocp-latest-nightly-quay-3-7-unstable-e2e
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-quay-quay-bridge-operator-master-ocp-latest-nightly-quay-3-7-unstable-e2e
+  name: redhat-quay
+test_groups:
+- gcs_prefix: origin-ci-test/logs/periodic-ci-quay-quay-bridge-operator-master-ocp-4.6-nightly-quay-3-7-unstable-e2e
+  name: periodic-ci-quay-quay-bridge-operator-master-ocp-4.6-nightly-quay-3-7-unstable-e2e
+- gcs_prefix: origin-ci-test/logs/periodic-ci-quay-quay-bridge-operator-master-ocp-latest-nightly-quay-3-7-unstable-e2e
+  name: periodic-ci-quay-quay-bridge-operator-master-ocp-latest-nightly-quay-3-7-unstable-e2e

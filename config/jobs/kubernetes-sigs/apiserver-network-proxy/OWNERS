@@ -1,0 +1,12 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+  - cheftako
+  - mcrute
+  - anfernee
+  - andrewsykim
+approvers:
+  - cheftako
+  - mcrute
+  - anfernee
+  - andrewsykim

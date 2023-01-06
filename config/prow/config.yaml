@@ -1,0 +1,1047 @@
+plank:
+  job_url_template: 'https://prow.k8s.io/view/gs/kubernetes-jenkins/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
+  report_templates:
+    '*': '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://prow.k8s.io/pr?query=is%3Apr%20state%3Aopen%20author%3A{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
+  job_url_prefix_config:
+    '*': https://prow.k8s.io/view/
+  pod_pending_timeout: 15m
+  pod_unscheduled_timeout: 5m
+  job_queue_capacities:
+    'k8sio-image-promo': 1
+  default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15m
+      utility_images:
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20221216-59943c5762"
+        initupload: "gcr.io/k8s-prow/initupload:v20221216-59943c5762"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20221216-59943c5762"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20221216-59943c5762"
+      gcs_configuration:
+        bucket: "kubernetes-jenkins"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "service-account"
+      resources:
+        clonerefs:
+          requests:
+            cpu: 100m
+        initupload:
+          requests:
+            cpu: 100m
+        place_entrypoint:
+          requests:
+            cpu: 100m
+        sidecar:
+          requests:
+            cpu: 100m
+  - cluster: gke_rules-k8s_us-central1-f_testing
+    config:
+      gcs_credentials_secret: ""
+      default_service_account_name: "prowjob-default-sa"
+  - cluster: test-infra-trusted
+    config:
+      gcs_credentials_secret: ""
+      default_service_account_name: "prowjob-default-sa"
+
+sinker:
+  resync_period: 1m
+  max_prowjob_age: 48h
+  max_pod_age: 48h
+  terminated_pod_ttl: 30m
+
+deck:
+  spyglass:
+    size_limit: 200000000 # 200MB
+    gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
+    testgrid_config: gs://k8s-testgrid/config
+    testgrid_root: https://testgrid.k8s.io/
+    lenses:
+    - lens:
+        name: metadata
+      required_files:
+      - ^(?:started|finished)\.json$
+      optional_files:
+      - ^(?:podinfo|prowjob)\.json$
+    - lens:
+        name: buildlog
+        config:
+          highlighter:
+            endpoint: http://halogen.default.svc.cluster.local
+            pin: true
+            auto: false
+          highlight_regexes:
+          - Automatic merge failed
+          - cannot convert.+to type
+          - "cannot use.+as.+(type|value)"
+          - Cluster failed to initialize
+          - cluster unreachable
+          - "compilepkg: error"
+          - configuration error
+          - contact Google support
+          - could not apply prowjob annotations
+          - could not find the referenced.+TestGroup
+          - could not write config
+          - "couldn't load prow config:"
+          - curl.+Failed to connect
+          - DATA RACE
+          - dirty working directory
+          - ^E\d{4} \d\d:\d\d:\d\d\.\d+
+          - "(Error|ERROR|error)s?:"
+          - Error.+executing benchmarks
+          - Expected.+got
+          - FAILED. See logs
+          - failed to acquire k8s binaries
+          - failed to solve
+          - (FAIL|Failure \[)\b
+          - fatal error
+          - flag provided but not defined
+          - Full Stack Trace
+          - got.+expected
+          - hash mismatch
+          - Hit an unsupported type
+          - imported but not used
+          - Incompatible changes
+          - incorrect boilerplate
+          - indent-error-flow
+          - INSTALLATION FAILED
+          - is a misspelling
+          - LimitExceeded
+          - "make:.+Error"
+          - Master not detected
+          - Merge conflict
+          - not enough arguments in call
+          - panic\b
+          - Previous (write|read)
+          - Process did not finish before.+timeout
+          - race detected
+          - security token.+invalid
+          - "signal: killed"
+          - Something went wrong
+          - too few arguments
+          - too many errors
+          - "[Tt]imed out"
+          - type.+has no field
+          - unable to start the controlplane
+          - "undefined:"
+          - Unfortunately, an error
+          - unused.+deadcode
+          - "[Uu]nexpected error"
+          - verify.+failed
+          - want.+got
+          - Your cluster may not be fully functional
+          - ^\s+\^$
+          - \[(0;)?31m
+          - "^diff " # [+-]{3}\\s" has too much noise from go test output and set -x
+          - • Failure
+          # This highlights the start of bazel tests/runs to skip go importing noise.
+          - "^INFO: Analyzed \\d+ targets"
+      required_files:
+        - ^.*build-log\.txt$
+    - lens:
+        name: junit
+      required_files:
+        - ^artifacts(/.*/|/)junit.*\.xml$ # https://regex101.com/r/vCSegS/1
+    - lens:
+        name: coverage
+      required_files:
+        - ^artifacts/filtered\.cov$
+      optional_files:
+        - ^artifacts/filtered\.html$
+    - lens:
+        name: podinfo
+        config:
+          runner_configs:
+              "default":
+                pod_link_template: "https://console.cloud.google.com/kubernetes/pod/us-central1-f/prow/test-pods/{{ .Name }}/details?project=k8s-prow-builds"
+              "test-infra-trusted":
+                pod_link_template: "https://console.cloud.google.com/kubernetes/pod/us-central1-f/prow/test-pods/{{ .Name }}/details?project=k8s-prow"
+      required_files:
+        - ^podinfo\.json$
+      optional_files:
+        - ^prowjob\.json$
+    - lens:
+        name: links
+      required_files:
+        - artifacts/.*\.link\.txt
+  tide_update_period: 1s
+  hidden_repos:
+  - kubernetes-security
+  google_analytics: UA-82843984-5
+  rerun_auth_configs:
+    '*':
+      github_team_ids:
+      - 2009231 # test-infra-admins
+      - 2460384 # milestone-maintainers
+  # additional_allowed_buckets is used only when skip_storage_path_validation is
+  # false
+  skip_storage_path_validation: false
+  additional_allowed_buckets:
+    - k8s-ovn
+    - containerd-integration
+    - ppc64le-kubernetes
+
+prowjob_namespace: default
+pod_namespace: test-pods
+log_level: debug
+
+managed_webhooks:
+  # This has to be true if any of the managed repo/org is using the legacy global token that is manually created.
+  respect_legacy_global_token: true
+  # Config for orgs and repos that have been onboarded to this Prow instance.
+  org_repo_config:
+    bazelbuild/rules_k8s:
+      token_created_after: 2020-06-24T00:10:00Z
+    kubernetes:
+      token_created_after: 2020-08-12T00:00:00Z
+    kubernetes-client:
+      token_created_after: 2020-07-24T00:00:00Z
+    kubernetes-csi:
+      token_created_after: 2020-08-12T00:00:00Z
+    kubernetes-security:
+      token_created_after: 2021-05-19T00:00:00Z
+    kubernetes-sigs:
+      token_created_after: 2020-08-12T00:00:00Z
+    containerd/containerd:
+      token_created_after: 2020-09-17T00:00:00Z
+    cncf/apisnoop:
+      token_created_after: 2020-09-22T00:00:00Z
+
+slack_reporter_configs:
+  '*':
+    job_types_to_report:
+      - postsubmit
+      - periodic
+      - batch
+    job_states_to_report:
+      - failure
+      - error
+    channel: test-failures
+    # The template shown below is the default
+    report_template: 'Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>'
+
+branch-protection:
+  allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
+  orgs:
+    kubernetes:
+      protect: true
+      required_status_checks:
+        contexts:
+        - EasyCLA
+      exclude:
+        - "^revert-" # don't protect revert branches
+        - "^dependabot/" # don't protect branches created by dependabot
+        - "^greenkeeper/" # don't protect branches created by greenkeeper
+      repos:
+        api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apiextensions-apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apimachinery:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        autoscaler:
+          required_status_checks:
+            contexts:
+            - test-and-verify
+            - Helm chart
+            - Helm Docs
+          branches:
+            gh-pages:
+              protect: false
+        client-go:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        cli-runtime:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        cloud-provider:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        cloud-provider-aws:
+          branches:
+            gh-pages:
+              protect: false
+        cloud-provider-openstack:
+          branches:
+            gh-pages:
+              protect: false
+        cluster-bootstrap:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        code-generator:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        component-base:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        component-helpers:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        controller-manager:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        cri-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        csi-translation-lib:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        dashboard:
+          required_pull_request_reviews:
+            required_approving_review_count: 1
+        dns:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+          required_pull_request_reviews:
+            required_approving_review_count: 1
+        dynamic-resource-allocation:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        enhancements:
+          restrictions: # only allow admins
+            users: []
+            teams: []
+        git-sync:
+          enforce_admins: true
+          restrictions: # only allow admins
+            users: []
+            teams: []
+        ingress-nginx:
+          branches:
+            gh-pages:
+              protect: false
+        kms:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kompose:
+          required_pull_request_reviews:
+            required_approving_review_count: 1
+        kops:
+          required_status_checks:
+            contexts:
+            - build-linux-amd64
+            - build-macos-amd64
+            - build-windows-amd64
+            - verify
+        kubelet:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kubernetes:
+          restrictions: # only allow admins
+            users: []
+            teams: []
+        kube-aggregator:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kube-controller-manager:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kube-openapi:
+          required_status_checks:
+            contexts:
+            - required
+        kube-proxy:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kube-state-metrics:
+          required_status_checks:
+            contexts:
+            - ci-benchmark-tests
+            - ci-build-kube-state-metrics
+            - ci-e2e-tests
+            - ci-go-lint
+            - ci-unit-tests
+            - ci-validate-docs
+            - ci-validate-go-modules
+            - ci-validate-manifests
+          branches:
+            gh-pages:
+              protect: false
+        kube-scheduler:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kubectl:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        legacy-cloud-providers:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        metrics:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        mount-utils:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        node-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        noderesourcetopology-api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        org:
+          restrictions: # only allow admins
+            users: []
+            teams: []
+        pod-security-admission:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        sample-apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        sample-cli-plugin:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        sample-controller:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        website:
+          protect: false # TODO(fejta): protect all branches soon
+          branches:
+            master:
+              protect: true
+            release-1.4:
+              protect: true
+            release-1.5:
+              protect: true
+            release-1.6:
+              protect: true
+            release-1.7:
+              protect: true
+            release-1.8:
+              protect: true
+            release-1.9:
+              protect: true
+            release-1.10:
+              protect: true
+            release-1.11:
+              protect: true
+            release-1.12:
+              protect: true
+            release-1.13:
+              protect: true
+            release-1.14:
+              protect: true
+            release-1.15:
+              protect: true
+            release-1.16:
+              protect: true
+            release-1.17:
+              protect: true
+            release-1.18:
+              protect: true
+            release-1.19:
+              protect: true
+            release-1.20:
+              protect: true
+            release-1.21:
+              protect: true
+            release-1.22:
+              protect: true
+            release-1.23:
+              protect: true
+            release-1.24:
+              protect: true
+    kubernetes-client:
+      protect: true
+      required_status_checks:
+        contexts:
+        - EasyCLA
+      exclude:
+        - "^revert-" # don't protect revert branches
+        - "^dependabot/" # don't protect branches created by dependabot
+        - "^greenkeeper/" # don't protect branches created by greenkeeper
+      repos:
+        python:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        python-base:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+    kubernetes-csi:
+      protect: true
+      required_status_checks:
+        contexts:
+        - EasyCLA
+      exclude:
+        - "^revert-" # don't protect revert branches
+        - "^dependabot/" # don't protect branches created by dependabot
+        - "^greenkeeper/" # don't protect branches created by greenkeeper
+    kubernetes-sigs:
+      protect: true
+      required_status_checks:
+        contexts:
+        - EasyCLA
+      exclude:
+        - "^revert-" # don't protect revert branches
+        - "^dependabot/" # don't protect branches created by dependabot
+        - "^greenkeeper/" # don't protect branches created by greenkeeper
+      repos:
+        aws-ebs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        aws-efs-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        aws-fsx-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        cluster-api:
+          required_status_checks:
+            contexts:
+            - lint
+        cluster-api-provider-gcp:
+          required_status_checks:
+            contexts:
+            - lint
+        cluster-proportional-autoscaler:
+          branches:
+            gh-pages:
+              protect: false
+        descheduler:
+          branches:
+            gh-pages:
+              protect: false
+        external-dns:
+          branches:
+            gh-pages:
+              protect: false
+        kernel-module-management:
+          required_status_checks:
+            contexts:
+              - Prebuilt kernel module
+              - Prebuilt kernel module - two nodes
+              - In-cluster build
+              - Container image CRD variable
+        kube-batch:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        kubernetes-scheduler-simulator:
+          branches:
+            gh-pages:
+              protect: false
+        kubespray:
+          required_status_checks:
+            contexts:
+            - Kubespray CI Pipeline
+        kustomize:
+          required_status_checks:
+            contexts:
+              - Lint
+              - Test Linux
+              - Test MacOS
+              - Test Windows
+        metrics-server:
+          branches:
+            gh-pages:
+              protect: false
+        nfs-ganesha-server-and-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
+        nfs-subdir-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
+        node-feature-discovery:
+          branches:
+            gh-pages:
+              protect: false
+        node-feature-discovery-operator:
+          branches:
+            gh-pages:
+              protect: false
+        secrets-store-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
+        security-profiles-operator:
+          enforce_admins: true
+          required_linear_history: true
+          restrictions:
+            users:
+            - k8s-ci-robot
+        sig-storage-local-static-provisioner:
+          branches:
+            gh-pages:
+              protect: false
+
+tide:
+  sync_period: 2m
+  queries:
+  - orgs:
+    - kubernetes
+    - kubernetes-client
+    - kubernetes-csi
+    - kubernetes-sigs
+    excludedRepos:
+    - kubernetes/kubernetes # Handled with a separate Tide query below.
+    - kubernetes-sigs/lwkd # Only 2 active contributors, they've requested that Tide be disabled.
+    # The following are staging repos which do not normally support merging PRs.
+    # https://github.com/kubernetes/kubernetes/blob/master/staging/README.md
+    # Note that k/client-go is an exception to this rule so it is not an excludedRepo.
+    - kubernetes/api
+    - kubernetes/apiextensions-apiserver
+    - kubernetes/apimachinery
+    - kubernetes/apiserver
+    - kubernetes/cli-runtime
+    - kubernetes/cloud-provider
+    - kubernetes/cluster-bootstrap
+    - kubernetes/code-generator
+    - kubernetes/component-base
+    - kubernetes/component-helpers
+    - kubernetes/controller-manager
+    - kubernetes/cri-api
+    - kubernetes/csi-translation-lib
+    - kubernetes/kube-aggregator
+    - kubernetes/kube-controller-manager
+    - kubernetes/kube-proxy
+    - kubernetes/kube-scheduler
+    - kubernetes/kubectl
+    - kubernetes/kubelet
+    - kubernetes/legacy-cloud-providers
+    - kubernetes/metrics
+    - kubernetes/mount-utils
+    - kubernetes/node-api
+    - kubernetes/noderesourcetopology-api
+    - kubernetes/pod-security-admission
+    - kubernetes/sample-apiserver
+    - kubernetes/sample-cli-plugin
+    - kubernetes/sample-controller
+    - kubernetes-sigs/cloud-provider-azure
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+  - repos:
+    - kubernetes/kubernetes
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+  - author: k8s-ci-robot
+    labels: # k8s-ci-robot should only create autobump PR with this label
+    - skip-review
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+    repos:
+    - kubernetes/test-infra
+  - author: k8s-infra-ci-robot
+    labels: # k8s-infra-ci-robot should only create autobump PR with this label
+    - skip-review
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+    repos:
+    - kubernetes/k8s.io
+    - kubernetes/test-infra
+  - repos:
+    - kubernetes-sigs/cloud-provider-azure
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+    - needs-kind
+  merge_method:
+    kubernetes-client/csharp: squash
+    kubernetes-client/gen: squash
+    kubernetes-sigs/cluster-api-provider-digitalocean: squash
+    kubernetes-sigs/cluster-api-provider-ibmcloud: squash
+    kubernetes-sigs/ibm-vpc-block-csi-driver: squash
+    kubernetes-sigs/kernel-module-management: squash
+    kubernetes-sigs/krew-index: squash
+    kubernetes-sigs/krew: squash
+    kubernetes-sigs/kubespray: squash
+    kubernetes-sigs/kui: rebase
+    kubernetes-sigs/security-profiles-operator: rebase
+    kubernetes-sigs/service-catalog: squash
+    kubernetes-sigs/go-open-service-broker-client: squash
+    kubernetes-sigs/minibroker: squash
+    kubernetes-sigs/vsphere-csi-driver: squash
+    kubernetes/cloud-provider-openstack: squash
+    kubernetes/dashboard: squash
+    kubernetes/ingress-nginx: squash
+  pr_status_base_urls:
+    '*': https://prow.k8s.io/pr
+  blocker_label: tide/merge-blocker
+  squash_label: tide/merge-method-squash
+  rebase_label: tide/merge-method-rebase
+  merge_label: tide/merge-method-merge
+  context_options:
+    orgs:
+      kubernetes:
+        optional-contexts:
+        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
+        # to ensure things get merged in.
+        - "cla/linuxfoundation"
+        repos:
+          dashboard:
+            from-branch-protection: true
+      kubernetes-client:
+        optional-contexts:
+        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
+        # to ensure things get merged in.
+        - "cla/linuxfoundation"
+      kubernetes-csi:
+        optional-contexts:
+        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
+        # to ensure things get merged in.
+        - "cla/linuxfoundation"
+      kubernetes-sigs:
+        optional-contexts:
+        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
+        # to ensure things get merged in.
+        - "cla/linuxfoundation"
+        repos:
+          cluster-api:
+            from-branch-protection: true
+  batch_size_limit:
+    "kubernetes/kubernetes": 15
+  priority:
+  - labels: [ "kind/flake", "priority/critical-urgent" ]
+  - labels: [ "kind/failing-test", "priority/critical-urgent" ]
+  - labels: [ "kind/bug", "priority/critical-urgent" ]
+
+push_gateway:
+  endpoint: pushgateway
+  serve_metrics: true
+
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+
+presets:
+# credential presets
+- labels:
+    preset-service-account: "true"
+  env:
+  - name: GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
+  # storage e2e tests borrow this as a preconfigured key instead of creating and
+  # injecting a new key. this allows us to avoid mass key download warnings
+  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
+  - name: GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED
+    value: "Migrate to workload identity, contact sig-testing"
+  volumes:
+  - name: service
+    secret:
+      secretName: service-account
+  volumeMounts:
+  - name: service
+    mountPath: /etc/service-account
+    readOnly: true
+- labels:
+    preset-k8s-ssh: "true"
+  env:
+  - name: USER
+    value: prow
+  - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-private
+  - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-public
+  - name: GCE_SSH_PRIVATE_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-private
+  - name: GCE_SSH_PUBLIC_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-public
+  volumes:
+  - name: ssh
+    secret:
+      defaultMode: 0400
+      secretName: ssh-key-secret
+  volumeMounts:
+  - name: ssh
+    mountPath: /etc/ssh-key-secret
+    readOnly: true
+- labels:
+    preset-aws-ssh: "true"
+  env:
+  - name: USER
+    value: prow
+  - name: AWS_SSH_PRIVATE_KEY_FILE
+    value: /etc/aws-ssh/aws-ssh-private
+  - name: AWS_SSH_PUBLIC_KEY_FILE
+    value: /etc/aws-ssh/aws-ssh-public
+  volumes:
+  - name: aws-ssh
+    secret:
+      defaultMode: 0400
+      secretName: aws-ssh-key-secret
+  volumeMounts:
+  - name: aws-ssh
+    mountPath: /etc/aws-ssh
+    readOnly: true
+- labels:
+    preset-windows-private-registry-cred: "true"
+  env:
+  - name: DOCKER_CONFIG_FILE
+    value: /etc/docker-cred/config.json
+  volumes:
+  - name: windows-private-registry-cred
+    secret:
+      secretName: windows-private-registry-docker-config
+  volumeMounts:
+  - name: windows-private-registry-cred
+    mountPath: /etc/docker-cred/
+    readOnly: true
+- labels:
+    preset-azure-cred: "true"
+  env:
+  - name: AZURE_CREDENTIALS
+    value: /etc/azure-cred/credentials
+  - name: SERVICE_ACCOUNT_SIGNING_PUB
+    valueFrom:
+      secretKeyRef:
+        name: azure-capz-sa-cred
+        key: serviceAccountSigningPub
+  - name: SERVICE_ACCOUNT_SIGNING_KEY
+    valueFrom:
+      secretKeyRef:
+        name: azure-capz-sa-cred
+        key: serviceAccountSigningKey
+  - name: AZURE_SSH_PUBLIC_KEY_FILE
+    value: /etc/azure-ssh/azure-ssh-pub
+  - name: REGISTRY
+    value: k8sprow.azurecr.io
+  - name: KUBE_VERBOSE
+    value: "0"
+  - name: AZ_STORAGE_CONTAINER_NAME
+    value: mystoragecontainer
+  - name: KUBE_BUILD_CONFORMANCE
+    value: "n"
+  volumes:
+  - name: azure-cred
+    secret:
+      secretName: azure-cred
+  - name: azure-ssh
+    secret:
+      secretName: azure-ssh
+  volumeMounts:
+  - name: azure-cred
+    mountPath: /etc/azure-cred
+    readOnly: true
+  - name: azure-ssh
+    mountPath: /etc/azure-ssh
+    readOnly: true
+- labels:
+    preset-azure-anonymous-pull: "true"
+  env:
+    - name: REGISTRY
+      value: capzci.azurecr.io
+    - name: LOCAL_ONLY
+      value: "false"
+- labels:
+    preset-azure-cred-only: "true"
+  env:
+    - name: AZURE_CREDENTIALS
+      value: /etc/azure-cred/credentials
+    - name: SERVICE_ACCOUNT_SIGNING_PUB
+      valueFrom:
+        secretKeyRef:
+          name: azure-capz-sa-cred
+          key: serviceAccountSigningPub
+    - name: SERVICE_ACCOUNT_SIGNING_KEY
+      valueFrom:
+        secretKeyRef:
+          name: azure-capz-sa-cred
+          key: serviceAccountSigningKey
+  volumes:
+    - name: azure-cred
+      secret:
+        secretName: azure-cred
+  volumeMounts:
+    - name: azure-cred
+      mountPath: /etc/azure-cred
+      readOnly: true
+# storage / caching presets
+- labels:
+    preset-bazel-scratch-dir: "true"
+  env:
+  - name: TEST_TMPDIR
+    value: /bazel-scratch/.cache/bazel
+  volumes:
+  - name: bazel-scratch
+    emptyDir: {}
+  volumeMounts:
+  - name: bazel-scratch
+    mountPath: /bazel-scratch/.cache
+- labels:
+    preset-bazel-remote-cache-enabled: "true"
+  env:
+  - name: BAZEL_REMOTE_CACHE_ENABLED
+    value: "false"
+# docker-in-docker (with images/bootstrap) preset
+# NOTE: using this also requires using that image,
+# ensuring you run your test under either the ENTRYPOINT or:
+# /usr/local/bin/runner.sh my-test-command --foo --bar
+# AND setting the following on your PodSpec:
+# securityContext:
+#   privileged: true
+- labels:
+    preset-dind-enabled: "true"
+  env:
+  - name: DOCKER_IN_DOCKER_ENABLED
+    value: "true"
+  volumes:
+  # kubekins-e2e legacy path
+  - name: docker-graph
+    emptyDir: {}
+  # krte (normal) path
+  - name: docker-root
+    emptyDir: {}
+  volumeMounts:
+  - name: docker-graph
+    mountPath: /docker-graph
+  - name: docker-root
+    mountPath: /var/lib/docker
+# volume mounts for kind
+- labels:
+    preset-kind-volume-mounts: "true"
+  volumeMounts:
+    - mountPath: /lib/modules
+      name: modules
+      readOnly: true
+    - mountPath: /sys/fs/cgroup
+      name: cgroup
+  volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
+# enable GOPROXY by default
+- env:
+  - name: GOPROXY
+    value: "https://proxy.golang.org"

@@ -1,0 +1,96 @@
+presubmits:
+  # Check that changes to promoter manifests are valid.
+  kubernetes/k8s.io:
+  - name: pull-k8sio-cip
+    cluster: k8s-infra-prow-build
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-k8s-infra-k8sio
+    decorate: true
+    skip_report: false
+    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    max_concurrency: 10
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        command:
+        - /kpromo
+        args:
+        - cip
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --use-prow-manifest-diff
+        resources:
+          limits:
+            cpu: 2
+            memory: "4Gi"
+          requests:
+            cpu: 2
+            memory: "4Gi"
+  # Check that images to be promoted are free of fixable vulnerabilities
+  - name: pull-k8sio-cip-vuln
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-k8s-infra-k8sio
+    decorate: true
+    optional: true
+    skip_report: false
+    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    max_concurrency: 10
+    branches:
+    - ^vuln-check-test$
+    spec:
+      serviceAccountName: k8s-infra-gcr-vuln-scanning
+      containers:
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        command:
+        - /kpromo
+        args:
+        - cip
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --use-prow-manifest-diff
+        - --vuln-severity-threshold=1
+  # Check that changes to backup scripts are valid.
+  - name: pull-k8sio-backup
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-k8s-infra-k8sio
+    decorate: true
+    run_if_changed: '^infra/gcp/backup_tools/'
+    max_concurrency: 1
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter-test
+      containers:
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+        command:
+        - infra/gcp/bash/backup_tools/backup_test.sh
+        env:
+        # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
+        # here anyway in case the underlying image changes (the backup_test.sh
+        # script needs it to be defined).
+        - name: GOPATH
+          value: /go
+  - name: pull-k8sio-file-promo
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '10'
+    decorate: true
+    skip_report: false
+    run_if_changed: '^artifacts\/(filestores|manifests)\/.*\/*.yaml'
+    max_concurrency: 10
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        command:
+        - /kpromo
+        args:
+        - run
+        - files
+        - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/

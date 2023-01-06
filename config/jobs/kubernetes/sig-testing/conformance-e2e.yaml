@@ -1,0 +1,184 @@
+presubmits:
+  kubernetes/kubernetes:
+  # conformance test using image against kubernetes master branch with `kind`
+  - name: pull-kubernetes-conformance-image-test
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    always_run: false
+    skip_report: false
+    max_concurrency: 8
+    optional: true
+    run_if_changed: 'conformance'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/test-infra=master"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--"
+        # the script must run from kubernetes, but we're checking out kind
+        - "bash"
+        - "--"
+        - "-c"
+        - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-testing-misc
+      description: Runs conformance tests using kind and the conformance image
+
+  - name: pull-kubernetes-conformance-kind-ipv6-parallel
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    skip_branches:
+    - release-\d+\.\d+ # per-release settings
+    always_run: false
+    skip_report: false
+    max_concurrency: 8
+    optional: true
+    run_if_changed: '^test/'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+        env:
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        command:
+          - wrapper.sh
+          - bash
+          - -c
+          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: sig-testing-kind
+      description: Use kind to run e2e tests (+Conformance, -Serial) against a latest kubernetes master IPv6 cluster created with sigs.k8s.io/kind
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+      testgrid-num-failures-to-alert: "15"
+
+periodics:
+# conformance test using image against kubernetes master branch with `kind`
+- interval: 1h
+  name: ci-kubernetes-conformance-image-test
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/test-infra=master"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=execute"
+      - "--"
+      # the script must run from kubernetes, but we're checking out kind
+      - "bash"
+      - "--"
+      - "-c"
+      - "cd ./../../k8s.io/kubernetes && source ./../test-infra/experiment/kind-conformance-image-e2e.sh"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  # conformance test using image against kubernetes 1.14 branch with `kind`
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
+    testgrid-tab-name: conformance-image, master (dev)
+    description: Runs conformance tests using image against latest kubernetes master with a kubernetes-in-docker cluster
+    testgrid-alert-email: davanum@gmail.com
+    testgrid-num-columns-recent: '3'
+
+- name: ci-kubernetes-conformance-kind-ga-only
+  cluster: k8s-infra-prow-build
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 200m # allow plenty of time for a serial conformance run
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      - name: GA_ONLY
+        value: "true"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-num-failures-to-alert: '2'
+    testgrid-alert-stale-results-hours: '48'
+    testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-kind, sig-testing-kind
+    testgrid-tab-name: conformance-ga-only
+    testgrid-alert-email: "release-team@kubernetes.io, kubernetes-sig-architecture@googlegroups.com"
+    description: "OWNER: sig-architecture (conformance); conformance tests run against a master kind cluster with only GA APIs and features enabled"

@@ -1,0 +1,15 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- dims
+- lingxiankong
+- ramineni
+- jichenjc
+approvers:
+- dims
+- lingxiankong
+- ramineni
+- jichenjc
+labels:
+- sig/cloud-provider
+- area/provider/openstack

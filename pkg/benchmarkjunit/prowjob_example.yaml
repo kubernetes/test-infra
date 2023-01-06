@@ -1,0 +1,19 @@
+periodics:
+- name: ci-benchmark-demo
+  interval: 10m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/benchmarkjunit:latest
+      command:
+      - /benchmarkjunit
+      args:
+      - --log-file=$(ARTIFACTS)/benchmark-log.txt
+      - --output=$(ARTIFACTS)/junit_benchmarks.xml
+      - --pass-on-error
+      - ./experiment/dummybenchmarks/...

@@ -1,0 +1,24 @@
+postsubmits:
+  kubernetes-sigs/boskos:
+    - name: post-boskos-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-boskos, sig-k8s-infra-gcb
+        testgrid-tab-name: push-images
+        testgrid-alert-email: jgrafton@google.com
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-boskos
+              - --scratch-bucket=gs://k8s-staging-boskos-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --build-dir=.
+              - images/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"

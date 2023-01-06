@@ -1,0 +1,112 @@
+# DEPRECATED: Please do not add to this document.
+# If you have test groups or tabs in this document, please:
+# 1. Move them to a .yaml file in an appropriate subdirectory. Create one, if needed.
+# 2. If there isn't an OWNERS file, create one and add yourself and others who work with these test groups.
+# See the OWNERS docs at https://go.k8s.io/owners for more info
+
+# Start testgroups
+test_groups:
+- name: ci-cri-containerd-node-e2e-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-cos-cgroupv1-containerd-node-e2e
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-cgroupv1-containerd-node-e2e
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-cos-cgroupv1-containerd-node-e2e-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-cgroupv1-containerd-node-e2e-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-cos-containerd-node-e2e
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-containerd-node-e2e
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-cos-containerd-node-e2e-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-containerd-node-e2e-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-coverage-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
+  short_text_metric: coverage
+- name: ci-kubernetes-coverage-e2e-gci-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-e2e-gci-gce
+  short_text_metric: coverage
+- name: ci-kubernetes-e2e-gce-scale-correctness
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-correctness
+  days_of_results: 60
+  num_columns_recent: 3
+- name: ci-kubernetes-e2e-gce-scale-performance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-performance
+  days_of_results: 60
+  num_columns_recent: 3
+  num_failures_to_alert: 1
+
+#
+# Start dashboards
+#
+dashboards:
+- name: sig-auth-gce
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gci-gce
+    base_options: include-filter-by-regex=sig-auth
+    description: apps gce e2e tests for master branch
+  - name: gce-slow
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow
+    base_options: include-filter-by-regex=sig-auth
+    description: apps gce slow e2e tests for master branch
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial
+    base_options: include-filter-by-regex=sig-auth
+    description: apps gce serial e2e tests for master branch
+
+- name: sig-auth-secrets-store-csi-driver
+- name: sig-auth-secrets-store-csi-driver-postsubmit
+- name: sig-auth-secrets-store-csi-driver-periodic
+- name: sig-auth-secrets-store-csi-driver-presubmit
+- name: sig-auth-secrets-store-csi-driver-release-signal
+- name: vmware-cluster-api-provider-vsphere
+- name: vmware-presubmits-cloud-provider-vsphere
+- name: vmware-postsubmits-cloud-provider-vsphere
+- name: vmware-presubmits-vsphere-csi-driver
+- name: vmware-postsubmits-vsphere-csi-driver
+
+#
+# Start dashboard groups
+#
+
+dashboard_groups:
+- name: sig-multicluster
+
+- name: vmware
+  dashboard_names:
+  - vmware-presubmits-cloud-provider-vsphere
+  - vmware-postsubmits-cloud-provider-vsphere
+  - vmware-presubmits-vsphere-csi-driver
+  - vmware-postsubmits-vsphere-csi-driver
+  - vmware-cluster-api-provider-vsphere
+
+- name: sig-auth
+  dashboard_names:
+  - sig-auth-gce
+  - sig-auth-secrets-store-csi-driver
+  - sig-auth-secrets-store-csi-driver-postsubmit
+  - sig-auth-secrets-store-csi-driver-periodic
+  - sig-auth-secrets-store-csi-driver-presubmit
+  - sig-auth-secrets-store-csi-driver-release-signal

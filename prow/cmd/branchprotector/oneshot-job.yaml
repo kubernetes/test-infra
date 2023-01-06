@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: branchprotector
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      name: branchprotector
+    spec:
+      containers:
+      - name: branchprotector
+        image: gcr.io/k8s-testimages/branchprotector:latest  # Note: not gcr.io/k8s-prow for dev
+        imagePullPolicy: Always  # Good practice for dev/debugging, bad for prod
+        args:
+        - --config-path=/etc/config/config.yaml
+        - --github-token-path=/etc/github/oauth
+        volumeMounts:
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      restartPolicy: Never
+      volumes:
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: config
+        configMap:
+          name: config

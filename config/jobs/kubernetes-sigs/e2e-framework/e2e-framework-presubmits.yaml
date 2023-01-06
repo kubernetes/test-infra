@@ -1,0 +1,42 @@
+presubmits:
+  kubernetes-sigs/e2e-framework:
+  - name: pull-e2e-framework-verify
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/e2e-framework
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.18-bullseye
+        imagePullPolicy: Always
+        command:
+        - make
+        - verify
+    annotations:
+      testgrid-dashboards: sig-testing-e2e-framework
+      testgrid-tab-name: pull-e2e-framework-verify
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+  - name: pull-e2e-framework-test
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/e2e-framework
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-testing-e2e-framework
+      testgrid-tab-name: pull-e2e-framework-test
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'

@@ -1,0 +1,42 @@
+{{define "header"}}
+<link rel="stylesheet" href="style.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{define "body"}}
+{{$len := len .Metadata}}
+<p class="test-summary">Test started <abbr id="summary-start-time" title="{{.StartTime}}">{{.StartTime}}</abbr> {{if .Finished -}}
+{{- if .Passed -}}
+  <span class="passed">passed</span>
+{{- else if .Errored -}}
+  <span class="failed">error</span>
+{{- else -}}
+  <span class="failed">failed</span>
+{{- end -}}
+{{- else -}}
+  is still running
+{{- end}} after {{.Elapsed}}. (<a href="#" id="show-table-link">more info</a>)</p>
+{{if .Hint -}}
+<p class="test-summary failure-hint">{{.Hint}}</p>
+{{end -}}
+<div id="bottom-padding"></div>
+<table class="mdl-data-table mdl-js-data-table metadata-table hidden" id="data-table">
+  <tbody>
+  <tr>
+    <td class="mdl-data-table__cell--non-numeric">Started</td>
+    <td class="mdl-data-table__cell--non-numeric" id="start_time">{{.StartTime}}</td>
+  </tr>
+  <tr>
+    <td class="mdl-data-table__cell--non-numeric">Elapsed</td>
+    <td class="mdl-data-table__cell--non-numeric">{{.Elapsed}}</td>
+  </tr>
+  {{range $key, $value := .Metadata}}
+  {{if $value}}
+    <tr>
+      <td class="mdl-data-table__cell--non-numeric">{{$key}}</td>
+      <td class="mdl-data-table__cell--non-numeric">{{$value}}</td>
+    </tr>
+  {{end}}
+  {{end}}
+</table>
+{{end}}

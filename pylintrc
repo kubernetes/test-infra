@@ -1,0 +1,16 @@
+[MESSAGES CONTROL]
+disable=fixme,locally-disabled,locally-enabled,relative-import,too-few-public-methods,missing-docstring,ungrouped-imports,too-many-lines,too-many-locals,invalid-name,superfluous-parens
+
+[REPORTS]
+reports=no
+
+[BASIC]
+good-names=ls,kw,pr,fp,_,db,n
+
+[DESIGN]
+max-args=12
+max-attributes=12
+
+[SIMILARITIES]
+ignore-imports=yes
+min-similarity-lines=100

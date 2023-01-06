@@ -1,0 +1,30 @@
+presets:
+- labels:
+    preset-e2e-platform-aws: "true"
+  env:
+  # TODO(zmerlynn): Eliminate the other uses of this env variable
+  - name: KUBE_SSH_USER
+    value: ubuntu
+  # Log dump for kops (relies on kops-e2e-runner.sh support)
+  - name: LOG_DUMP_SSH_KEY
+    value: /workspace/.ssh/kube_aws_rsa
+  - name: LOG_DUMP_SSH_USER
+    value: ubuntu
+  - name: LOG_DUMP_SAVE_LOGS
+    value: cloud-init-output
+  - name: LOG_DUMP_SAVE_SERVICES
+    value: protokube
+  # kops testing only ever uses Cloud SDK for status and uploads
+  - name: CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK
+    value: "true"
+  - name: CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE
+    value: "false"
+    # Ignore version-we-pass vs version-kops-expects
+  - name: KOPS_RUN_OBSOLETE_VERSION
+    value: "true"
+    # Except for the updown job itself, use a version of kops that's
+    # passed updown.
+  - name: KOPS_LATEST
+    value: latest-ci-updown-green.txt
+  - name: KOPS_DEPLOY_LATEST_KUBE
+    value: "y"

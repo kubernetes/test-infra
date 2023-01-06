@@ -1,0 +1,19 @@
+dashboards:
+- name: sig-scheduling
+  dashboard_tab:
+    - name: gce
+      test_group_name: ci-kubernetes-e2e-gci-gce
+      base_options: include-filter-by-regex=sig-scheduling
+      description: scheduling gce e2e tests for master branch
+    - name: gce-slow
+      test_group_name: ci-kubernetes-e2e-gci-gce-slow
+      base_options: include-filter-by-regex=sig-scheduling
+      description: scheduling gce slow e2e tests for master branch
+    - name: gce-serial
+      test_group_name: ci-kubernetes-e2e-gci-gce-serial
+      base_options: include-filter-by-regex=sig-scheduling
+      description: scheduling gce serial e2e tests for master branch
+    - name: gce-statefulset
+      test_group_name: ci-kubernetes-e2e-gci-gce-statefulset
+      base_options: include-filter-by-regex=sig-scheduling
+      description: scheduling gce statefulset e2e tests for master branch

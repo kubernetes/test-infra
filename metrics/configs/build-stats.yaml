@@ -1,0 +1,33 @@
+metric: build-stats
+description: Calculate the number of builds started and passed each day
+query: |
+  #standardSQL
+  select
+    unix_seconds(day) day,
+    invocations,
+    passes,
+    if (invocations > 0, passes / invocations, 1) rate
+  from (
+  SELECT
+    timestamp_trunc(started, day) day,
+    COUNT(started) invocations,
+    countif(result = 'SUCCESS') passes
+  FROM
+    `k8s-gubernator.build.all`
+  where
+    started >= TIMESTAMP_SECONDS(<LAST_DATA_TIME>)
+    and started < timestamp_trunc(current_timestamp(), day)
+  group by day
+  order by day
+  )
+  where day is not null
+  order by day
+
+jqfilter: |
+  ([(.[] | .day|tonumber)] | max) as $newestday |
+  [(.[] | select((.day|tonumber)==$newestday) | {
+    day: .day,
+    invocations: (.invocations|tonumber),
+    passes: (.passes|tonumber),
+    rate: (.rate|tonumber)
+  })]

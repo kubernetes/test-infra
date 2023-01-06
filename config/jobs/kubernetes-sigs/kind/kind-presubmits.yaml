@@ -1,0 +1,443 @@
+# sigs.k8s.io/kind presubmits
+presubmits:
+  kubernetes-sigs/kind:
+  - name: pull-kind-build
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+        command:
+        - wrapper.sh
+        - ./hack/ci/build-all.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+  - name: pull-kind-test
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+        command:
+        - wrapper.sh
+        - make
+        - test
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+  - name: pull-kind-verify
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-experimental
+        command:
+        - wrapper.sh
+        - make
+        - verify
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - name: pull-kind-e2e-kubernetes
+    cluster: k8s-infra-prow-build
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: "."
+        # TODO(bentheelder): reduce the skip list further
+        # NOTE: changes should filter down to pull-kubernetes-e2e-kind-canary
+        # and then pull-kubernetes-e2e-kind
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # GA-only variant
+  - name: pull-kind-conformance-parallel-ga-only
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        - name: GA_ONLY
+          value: "true"
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # IPv6 enabled variant
+  - name: pull-kind-conformance-parallel-ipv6
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # Dual Stack enabled variant
+  - name: pull-kind-conformance-parallel-dual-stack-ipv4-ipv6
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 40m
+      grace_period: 15m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: \[Conformance\]|IPv6DualStack
+        - name: PARALLEL
+          value: "true"
+        - name: IP_FAMILY
+          value: dual
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - always_run: true
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.24
+      path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kind-e2e-kubernetes-1-24
+    cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-1.24
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - always_run: true
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.23
+      path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kind-e2e-kubernetes-1-23
+    cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-1.23
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - always_run: true
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.22
+      path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kind-e2e-kubernetes-1-22
+    cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-1.22
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - always_run: true
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.21
+      path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kind-e2e-kubernetes-1-21
+    cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20220726-61b7bafca6-1.21
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - always_run: true
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.20
+      path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kind-e2e-kubernetes-1-20
+    cluster: k8s-infra-prow-build
+    path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20220413-ebb00ad7a6-1.20
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+        securityContext:
+          privileged: true

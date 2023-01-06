@@ -1,0 +1,50 @@
+# Sample file for running e2e jobs in k8s
+# Steps:
+#   1. Prepare service-account.json and ssh-keys (priv, pub)
+#   2. Prepare a cluster (`gcloud container clusters create CLUSTER_NAME`)
+#   3. `kubectl create secret generic service-account --from-file=service-account.json=/path/to/service-account.json`
+#      `kubectl create secret generic ssh-key-secret --from-file=ssh-private=/path/to/rsa --from-file=ssh-public=/path/to/rsa.pub`
+#   4. Replace JOB_NAME, PROJECT and --timeout in the yaml
+#      *** Point PROJECT to your own GCP project so that it would not conflict with the running job
+#   5. kubectl create -f pod.yaml
+#
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: k8s-e2e
+spec:
+  containers:
+  - name: k8s-e2e-test
+    image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170929-9413e407
+    args:
+    - "--timeout=60"
+    env:
+      - name: JOB_NAME
+        value: ci-kubernetes-e2e-prow-canary
+      - name: USER
+        value: prow
+      - name: PROJECT
+        value: k8s-jkns-e2e-prow-canary
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public       
+    volumeMounts:
+    - mountPath: /etc/service-account
+      name: service
+      readOnly: true
+    - mountPath: /etc/ssh-key-secret
+      name: ssh
+      readOnly: true
+  volumes:
+  - name: service
+    secret:
+      secretName: "service-account"
+      defaultMode: 0400
+  - name: ssh
+    secret:
+      secretName: "ssh-key-secret"
+      defaultMode: 0400

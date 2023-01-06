@@ -1,0 +1,41 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    iam.gke.io/gcp-service-account: kettle@k8s-gubernator.iam.gserviceaccount.com
+  name: kettle
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kettle-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kettle-staging
+  template:
+    metadata:
+      labels:
+        app: kettle-staging
+    spec:
+      serviceAccountName: kettle
+      containers:
+      - name: kettle-staging
+        image: gcr.io/k8s-testimages/kettle:latest
+        imagePullPolicy: Always
+        env:
+        - name: BUILD_LIMIT
+          value: "1000"
+        - name: DEPLOYMENT
+          value: staging
+        - name: SUBSCRIPTION_PATH
+          value: kubernetes-jenkins/gcs-changes/kettle-staging
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: kettle-data-staging

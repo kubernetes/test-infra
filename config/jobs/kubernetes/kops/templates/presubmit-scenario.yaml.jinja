@@ -1,0 +1,44 @@
+
+  - name: {{job_name}}
+    branches:
+    - {{branch}}
+    {%- if run_if_changed %}
+    run_if_changed: '{{run_if_changed}}'
+    {%- endif %}
+    always_run: {{always_run}}
+    optional: {{optional}}
+    skip_report: {{skip_report}}
+    labels:
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: {{job_timeout}}
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: {{image}}
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./tests/e2e/scenarios/{{ scenario }}/run-test.sh
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: {{kops_ssh_key_path}}
+        - name: KUBE_SSH_USER
+          value: {{kops_ssh_user}}
+        - name: GOPATH
+          value: /home/prow/go
+        {%- for key, val in env.items() %}
+        - name: {{ key }}
+          value: "{{ val }}"
+        {%- endfor %}
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"

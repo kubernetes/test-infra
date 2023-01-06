@@ -1,0 +1,21 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+  - sig-cluster-lifecycle-leads
+  - afbjorklund
+  - sharifelgamal
+  - medyagh
+  - blueelvis
+  - prasadkatti
+  - prezha
+  - spowelljr
+  - klaases
+approvers:
+  - sig-cluster-lifecycle-leads
+  - afbjorklund
+  - sharifelgamal
+  - medyagh
+  - spowelljr
+  - prezha
+labels:
+  - sig/cluster-lifecycle

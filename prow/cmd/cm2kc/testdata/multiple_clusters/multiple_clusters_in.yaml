@@ -1,0 +1,10 @@
+default:
+  clientCertificate: YQo=
+  clientKey: Ygo=
+  clusterCaCertificate: Ywo=
+  endpoint: https://1.2.3.4
+build:
+  clientCertificate: ZA==
+  clientKey: ZQ==
+  clusterCaCertificate: Zg==
+  endpoint: https://5.6.7.8

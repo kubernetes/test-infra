@@ -1,0 +1,22 @@
+postsubmits:
+  kubernetes-sigs/slack-infra:
+    - name: post-slack-infra-push-images
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^(slack|tempelis)'
+      annotations:
+        testgrid-num-failures-to-alert: "1"
+        testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com, k8s-infra-staging-slack-infra@kubernetes.io
+        testgrid-dashboards: sig-contribex-slack-infra, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+            command:
+              - /run.sh
+            args:
+              - --scratch-bucket=gs://k8s-staging-slack-infra
+              - --project=k8s-staging-slack-infra
+              - .

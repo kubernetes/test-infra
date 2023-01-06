@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackbox-prober
+  namespace: prow-monitoring
+  labels:
+    app: blackbox-prober
+spec:
+  selector:
+    matchLabels:
+      app: blackbox-prober
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: blackbox-prober
+    spec:
+      containers:
+      - name: blackbox-prober
+        args:
+        - --config.file=/etc/config/prober.yaml
+        image: prom/blackbox-exporter:v0.15.1
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config/
+      volumes:
+      - name: config
+        configMap:
+          name: blackbox-prober-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blackbox-prober-config
+  namespace: prow-monitoring
+  labels:
+    app: blackbox-prober
+data:
+  prober.yaml: |-
+    modules:
+      http_2xx:
+        prober: http
+        timeout: 8s
+        http:
+          # valid_status_codes defaults to 2xx
+          method: GET
+          no_follow_redirects: false
+          fail_if_ssl: false
+          fail_if_not_ssl: true
+          preferred_ip_protocol: "ip4" # Defaults to ip6
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackbox-prober
+  namespace: prow-monitoring
+  labels:
+    app: blackbox-prober
+spec:
+  type: ClusterIP
+  ports:
+  - name: blackbox-prober
+    port: 80
+    targetPort: 9115
+  selector:
+    app: blackbox-prober

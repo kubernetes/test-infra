@@ -1,0 +1,81 @@
+presubmits:
+  kubernetes-sigs/apiserver-network-proxy:
+  - name: pull-apiserver-network-proxy-test
+    always_run: true
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - make
+        args:
+        - test
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-test
+      description: Tests the apiserver-network-proxy
+  - name: pull-apiserver-network-proxy-docker-build-amd64
+    always_run: true
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.24
+        command:
+        - "runner.sh"
+        args:
+        - make
+        - docker-build/proxy-agent-amd64
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-docker-build-amd64
+      description: Build amd64 image via Docker for the apiserver-network-proxy
+  - name: pull-apiserver-network-proxy-docker-build-arm64
+    always_run: true
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.24
+        command:
+        - "runner.sh"
+        args:
+        - make
+        - docker-build/proxy-agent-arm64
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-docker-build-arm64
+      description: Build arm64 image via Docker for the apiserver-network-proxy
+  - name: pull-apiserver-network-proxy-make-lint
+    always_run: true
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-1.24
+        command:
+        - "runner.sh"
+        args:
+        - make
+        - lint
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-make-lint
+      description: Run lint target for the apiserver-network-proxy

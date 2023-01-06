@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: prometheus-operator
+  name: prometheus-operator
+  namespace: prow-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-operator
+  template:
+    metadata:
+      labels:
+        app: prometheus-operator
+    spec:
+      containers:
+      - args:
+        - --log-level=all
+        - --kubelet-service=kube-system/kubelet
+        - --prometheus-config-reloader=quay.io/prometheus-operator/prometheus-config-reloader:v0.45.0
+        - --namespaces=prow-monitoring
+        image: quay.io/prometheus-operator/prometheus-operator:v0.45.0
+        name: prometheus-operator
+        ports:
+        - containerPort: 8080
+          name: http
+        resources: {}
+        securityContext: {}
+      nodeSelector: {}
+      securityContext: {}
+      serviceAccount: prometheus-operator
+      serviceAccountName: prometheus-operator

@@ -1,0 +1,93 @@
+periodics:
+- name: ci-kubernetes-e2e-prow-canary
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=canary-e2e-prow
+      - --extract=ci/latest
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=65m
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: prow
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-canary
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --cluster=canary-e2e
+      - --extract=ci/k8s-stable1
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --timeout=40m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: gce
+
+- name: ci-kubernetes-e2e-node-canary
+  interval: 1h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --deployment=node
+      - --gcp-zone=us-west1-b
+        # node_e2e doesn't support passing an image-family on the CLI, only via
+        # a file, so here we manually specify an image to run tests against.
+        # To find the latest cos-97-lts image run:
+        #   gcloud compute images describe-from-family cos-97-lts --project cos-cloud --format='value(name)'
+      - --node-args=--images=cos-97-16919-29-21 --image-project=cos-cloud
+      - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=90m
+      env:
+      - name: GOPATH
+        value: /go
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    testgrid-tab-name: node

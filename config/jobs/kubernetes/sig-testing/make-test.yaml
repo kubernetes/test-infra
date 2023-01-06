@@ -1,0 +1,156 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-unit
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: presubmits-kubernetes-blocking
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    labels:
+      preset-service-account: "true"
+    optional: false
+    always_run: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+          command:
+            - make
+            - test
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+          # FIXME(dims): unit tests have no business requiring root or doing privileged operations
+          #securityContext:
+          #  runAsUser: 2000
+  - name: pull-kubernetes-unit-experimental
+    # try clonerefs with preclone
+    decoration_config:
+      utility_images:
+        clonerefs: "gcr.io/spiffxp-gke-dev/clonerefs-k8s-preclone:latest"
+    annotations:
+      testgrid-dashboards: sig-testing-misc
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    optional: true
+    always_run: false
+    path_alias: k8s.io/kubernetes
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
+          imagePullPolicy: Always
+          command:
+            - make
+            - test
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+  - name: pull-kubernetes-unit-go-canary
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
+    decorate: true
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+    always_run: false
+    skip_report: false
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-go-canary
+          command:
+            - make
+            - test
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+          # FIXME(dims): unit tests have no business requiring root or doing privileged operations
+          #securityContext:
+          #  runAsUser: 2000
+periodics:
+  - interval: 1h
+    name: ci-kubernetes-unit
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '3'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-days-of-results: '1'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-master-blocking
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    decorate: true
+    cluster: k8s-infra-prow-build
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+          command:
+            - make
+            - test
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+          # FIXME(dims): unit tests have no business requiring root or doing privileged operations
+          # securityContext:
+          #  runAsUser: 2000
+  - interval: 6h
+    name: ci-kubernetes-generate-make-test-count10
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    decorate: true
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+          command:
+            - runner.sh
+            - bash
+            - -c
+          args:
+            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=600s GOFLAGS=-count=10'
+          # FIXME(dims): unit tests have no business requiring root or doing privileged operations
+          # securityContext:
+          #  runAsUser: 2000

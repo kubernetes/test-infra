@@ -1,0 +1,211 @@
+{
+  "ref": "refs/heads/master",
+  "before": "1876a0f562a44b5193020075bb8825553b0c4102",
+  "after": "ff7b7646f056f5c60f382ace1381353df8d218ef",
+  "created": false,
+  "deleted": false,
+  "forced": false,
+  "base_ref": null,
+  "compare": "https://github.com/kubernetes/test-infra/compare/1876a0f562a4...ff7b7646f056",
+  "commits": [
+    {
+      "id": "fc7fcc627c2b1418698de23122a1c7a9fe3cc9df",
+      "tree_id": "c20ef8628eafb683ebddf19308211d8c04891637",
+      "distinct": true,
+      "message": "Reenable kops-aws for batch jobs in splice.",
+      "timestamp": "2017-01-03T16:11:01-08:00",
+      "url": "https://github.com/kubernetes/test-infra/commit/fc7fcc627c2b1418698de23122a1c7a9fe3cc9df",
+      "author": {
+        "name": "Ryan Hitchman",
+        "email": "rmmh@google.com",
+        "username": "rmmh"
+      },
+      "committer": {
+        "name": "Ryan Hitchman",
+        "email": "rmmh@google.com",
+        "username": "rmmh"
+      },
+      "added": [
+
+      ],
+      "removed": [
+
+      ],
+      "modified": [
+        "prow/Makefile",
+        "prow/cluster/splice_deployment.yaml",
+        "prow/cmd/splice/main.go"
+      ]
+    },
+    {
+      "id": "ff7b7646f056f5c60f382ace1381353df8d218ef",
+      "tree_id": "c20ef8628eafb683ebddf19308211d8c04891637",
+      "distinct": true,
+      "message": "Merge pull request #1476 from rmmh/reenable-kops\n\nReenable kops-aws for batch jobs in splice.",
+      "timestamp": "2017-01-03T16:30:33-08:00",
+      "url": "https://github.com/kubernetes/test-infra/commit/ff7b7646f056f5c60f382ace1381353df8d218ef",
+      "author": {
+        "name": "Ryan Hitchman",
+        "email": "rmmh@google.com",
+        "username": "rmmh"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "username": "web-flow"
+      },
+      "added": [
+
+      ],
+      "removed": [
+
+      ],
+      "modified": [
+        "prow/Makefile",
+        "prow/cluster/splice_deployment.yaml",
+        "prow/cmd/splice/main.go"
+      ]
+    }
+  ],
+  "head_commit": {
+    "id": "ff7b7646f056f5c60f382ace1381353df8d218ef",
+    "tree_id": "c20ef8628eafb683ebddf19308211d8c04891637",
+    "distinct": true,
+    "message": "Merge pull request #1476 from rmmh/reenable-kops\n\nReenable kops-aws for batch jobs in splice.",
+    "timestamp": "2017-01-03T16:30:33-08:00",
+    "url": "https://github.com/kubernetes/test-infra/commit/ff7b7646f056f5c60f382ace1381353df8d218ef",
+    "author": {
+      "name": "Ryan Hitchman",
+      "email": "rmmh@google.com",
+      "username": "rmmh"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "username": "web-flow"
+    },
+    "added": [
+
+    ],
+    "removed": [
+
+    ],
+    "modified": [
+      "prow/Makefile",
+      "prow/cluster/splice_deployment.yaml",
+      "prow/cmd/splice/main.go"
+    ]
+  },
+  "repository": {
+    "id": 57333709,
+    "name": "test-infra",
+    "full_name": "kubernetes/test-infra",
+    "owner": {
+      "name": "kubernetes",
+      "email": ""
+    },
+    "private": false,
+    "html_url": "https://github.com/kubernetes/test-infra",
+    "description": "Test infrastructure for the Kubernetes project.",
+    "fork": false,
+    "url": "https://github.com/kubernetes/test-infra",
+    "forks_url": "https://api.github.com/repos/kubernetes/test-infra/forks",
+    "keys_url": "https://api.github.com/repos/kubernetes/test-infra/keys{/key_id}",
+    "collaborators_url": "https://api.github.com/repos/kubernetes/test-infra/collaborators{/collaborator}",
+    "teams_url": "https://api.github.com/repos/kubernetes/test-infra/teams",
+    "hooks_url": "https://api.github.com/repos/kubernetes/test-infra/hooks",
+    "issue_events_url": "https://api.github.com/repos/kubernetes/test-infra/issues/events{/number}",
+    "events_url": "https://api.github.com/repos/kubernetes/test-infra/events",
+    "assignees_url": "https://api.github.com/repos/kubernetes/test-infra/assignees{/user}",
+    "branches_url": "https://api.github.com/repos/kubernetes/test-infra/branches{/branch}",
+    "tags_url": "https://api.github.com/repos/kubernetes/test-infra/tags",
+    "blobs_url": "https://api.github.com/repos/kubernetes/test-infra/git/blobs{/sha}",
+    "git_tags_url": "https://api.github.com/repos/kubernetes/test-infra/git/tags{/sha}",
+    "git_refs_url": "https://api.github.com/repos/kubernetes/test-infra/git/refs{/sha}",
+    "trees_url": "https://api.github.com/repos/kubernetes/test-infra/git/trees{/sha}",
+    "statuses_url": "https://api.github.com/repos/kubernetes/test-infra/statuses/{sha}",
+    "languages_url": "https://api.github.com/repos/kubernetes/test-infra/languages",
+    "stargazers_url": "https://api.github.com/repos/kubernetes/test-infra/stargazers",
+    "contributors_url": "https://api.github.com/repos/kubernetes/test-infra/contributors",
+    "subscribers_url": "https://api.github.com/repos/kubernetes/test-infra/subscribers",
+    "subscription_url": "https://api.github.com/repos/kubernetes/test-infra/subscription",
+    "commits_url": "https://api.github.com/repos/kubernetes/test-infra/commits{/sha}",
+    "git_commits_url": "https://api.github.com/repos/kubernetes/test-infra/git/commits{/sha}",
+    "comments_url": "https://api.github.com/repos/kubernetes/test-infra/comments{/number}",
+    "issue_comment_url": "https://api.github.com/repos/kubernetes/test-infra/issues/comments{/number}",
+    "contents_url": "https://api.github.com/repos/kubernetes/test-infra/contents/{+path}",
+    "compare_url": "https://api.github.com/repos/kubernetes/test-infra/compare/{base}...{head}",
+    "merges_url": "https://api.github.com/repos/kubernetes/test-infra/merges",
+    "archive_url": "https://api.github.com/repos/kubernetes/test-infra/{archive_format}{/ref}",
+    "downloads_url": "https://api.github.com/repos/kubernetes/test-infra/downloads",
+    "issues_url": "https://api.github.com/repos/kubernetes/test-infra/issues{/number}",
+    "pulls_url": "https://api.github.com/repos/kubernetes/test-infra/pulls{/number}",
+    "milestones_url": "https://api.github.com/repos/kubernetes/test-infra/milestones{/number}",
+    "notifications_url": "https://api.github.com/repos/kubernetes/test-infra/notifications{?since,all,participating}",
+    "labels_url": "https://api.github.com/repos/kubernetes/test-infra/labels{/name}",
+    "releases_url": "https://api.github.com/repos/kubernetes/test-infra/releases{/id}",
+    "deployments_url": "https://api.github.com/repos/kubernetes/test-infra/deployments",
+    "created_at": 1461877535,
+    "updated_at": "2016-12-21T21:12:19Z",
+    "pushed_at": 1483489834,
+    "git_url": "git://github.com/kubernetes/test-infra.git",
+    "ssh_url": "git@github.com:kubernetes/test-infra.git",
+    "clone_url": "https://github.com/kubernetes/test-infra.git",
+    "svn_url": "https://github.com/kubernetes/test-infra",
+    "homepage": null,
+    "size": 8003,
+    "stargazers_count": 37,
+    "watchers_count": 37,
+    "language": "Shell",
+    "has_issues": true,
+    "has_downloads": true,
+    "has_wiki": false,
+    "has_pages": false,
+    "forks_count": 79,
+    "mirror_url": null,
+    "open_issues_count": 96,
+    "forks": 79,
+    "open_issues": 96,
+    "watchers": 37,
+    "default_branch": "master",
+    "stargazers": 37,
+    "master_branch": "master",
+    "organization": "kubernetes"
+  },
+  "pusher": {
+    "name": "rmmh",
+    "email": "rmmh@google.com"
+  },
+  "organization": {
+    "login": "kubernetes",
+    "id": 13629408,
+    "url": "https://api.github.com/orgs/kubernetes",
+    "repos_url": "https://api.github.com/orgs/kubernetes/repos",
+    "events_url": "https://api.github.com/orgs/kubernetes/events",
+    "hooks_url": "https://api.github.com/orgs/kubernetes/hooks",
+    "issues_url": "https://api.github.com/orgs/kubernetes/issues",
+    "members_url": "https://api.github.com/orgs/kubernetes/members{/member}",
+    "public_members_url": "https://api.github.com/orgs/kubernetes/public_members{/member}",
+    "avatar_url": "https://avatars.githubusercontent.com/u/13629408?v=3",
+    "description": "Kubernetes"
+  },
+  "sender": {
+    "login": "rmmh",
+    "id": 211868,
+    "avatar_url": "https://avatars.githubusercontent.com/u/211868?v=3",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/rmmh",
+    "html_url": "https://github.com/rmmh",
+    "followers_url": "https://api.github.com/users/rmmh/followers",
+    "following_url": "https://api.github.com/users/rmmh/following{/other_user}",
+    "gists_url": "https://api.github.com/users/rmmh/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/rmmh/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/rmmh/subscriptions",
+    "organizations_url": "https://api.github.com/users/rmmh/orgs",
+    "repos_url": "https://api.github.com/users/rmmh/repos",
+    "events_url": "https://api.github.com/users/rmmh/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/rmmh/received_events",
+    "type": "User",
+    "site_admin": false
+  }
+}

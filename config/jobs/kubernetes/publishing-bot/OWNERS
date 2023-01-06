@@ -1,0 +1,12 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- publishing-bot-reviewers
+approvers:
+- publishing-bot-approvers
+emeritus_approvers:
+- caesarxuchao    # 2021-12-07
+- mfojtik         # 2021-12-07
+labels:
+- sig/release
+- area/release-eng

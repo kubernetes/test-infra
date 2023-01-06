@@ -1,0 +1,67 @@
+metric: job-health
+description: Calculate daily health metrics for jobs
+query: |
+  #standardSQL
+  select
+    unix_seconds(start_day) as day,
+    job_name as job,
+    runs,
+    passed_runs,
+    if(runs != 0,
+      round(1 - (passed_runs / runs), 3),
+      0) as failure_rate,
+    tests,
+    failed_tests,
+    if (tests != 0,
+      round(failed_tests / tests, 3),
+      0) as test_failure_rate,
+    p99_duration,
+    p75_duration,
+    p50_duration
+  from (
+    select
+      start_day,
+      job_name,
+      count(*) as runs,
+      countif(passed) as passed_runs,
+      sum(tests_run) as tests,
+      sum(tests_failed) as failed_tests,
+      round(max(_p99_duration), 3) as p99_duration,
+      round(max(_p75_duration), 3) as p75_duration,
+      round(max(_p50_duration), 3) as p50_duration
+    from (
+      select
+        timestamp_trunc(b.started, day) start_day,
+        b.job job_name,
+        percentile_cont(b.elapsed, 0.50) over(partition by b.job, timestamp_trunc(b.started, day)) / 60.0 as _p50_duration,
+        percentile_cont(b.elapsed, 0.75) over(partition by b.job, timestamp_trunc(b.started, day)) / 60.0 as _p75_duration,
+        percentile_cont(b.elapsed, 0.99) over(partition by b.job, timestamp_trunc(b.started, day)) / 60.0 as _p99_duration,
+        b.tests_run tests_run,
+        b.tests_failed tests_failed,
+        b.passed passed
+      from
+        `k8s-gubernator.build.all` AS b
+      where
+        b.started > timestamp_seconds(<LAST_DATA_TIME>)
+        and started < timestamp_trunc(current_timestamp(), day)
+        and b.elapsed is not null
+    )
+    group by
+      start_day, job_name
+  )
+  order by
+    start_day, job_name
+
+jqfilter: |
+  ([(.[] | .day|tonumber)] | max) as $newestday |
+  [(.[] | select((.day|tonumber)==$newestday) | {
+    day: (.day|tonumber|todateiso8601[:10]),
+    job: .job,
+    runs: (.runs|tonumber),
+    failure_rate: (.failure_rate|tonumber),
+    tests: (.tests|tonumber),
+    test_failure_rate: (.test_failure_rate|tonumber),
+    p50_duration: (.p50_duration|tonumber),
+    p75_duration: (.p75_duration|tonumber),
+    p99_duration: (.p99_duration|tonumber),
+  })]

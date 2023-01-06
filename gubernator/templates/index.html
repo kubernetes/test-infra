@@ -1,0 +1,21 @@
+% extends 'base.html'
+{% block title %}Gubernator{% endblock %}
+% block header
+<h1>Gubernator</h1>
+% endblock
+% block content
+<h1><a href="/pr">PR Dashboard</a></h1>
+<h1>Kubernetes Test Results</h1>
+<ul>
+% for prefix, jobset in jobs|dictsort
+	<li><h2>{{prefix}}</h2>
+	<a href="/jobs/{{prefix}}">Jobs List</a><br>
+	Jobs:
+	<ul>
+	% for job in jobset|sort
+		<li><a href="/builds/{{prefix}}{{job}}">{{job}}</a><br></li>
+	% endfor
+	</ul>
+	</li>
+% endfor
+% endblock

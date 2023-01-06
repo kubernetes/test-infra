@@ -1,0 +1,17 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- chaodaiG
+- michelle192837
+- mpherman2
+- smg247
+approvers:
+- chaodaiG
+- michelle192837
+- mpherman2
+- smg247
+emeritus_approvers:
+- Katharine
+- paulangton
+labels:
+ - area/prow/spyglass

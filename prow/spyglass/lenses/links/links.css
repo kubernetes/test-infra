@@ -1,0 +1,32 @@
+body {
+    padding-bottom: 20px;
+}
+
+.name {
+    width: 10%;
+}
+
+.hidden-links {
+    visibility: collapse;
+    display: none;
+}
+
+.expander {
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+.expander:last-of-type {
+    text-align: right;
+}
+
+button {
+    user-select: none;
+}
+
+td.link {
+    margin-left: 10px;
+    font-size: 14px;
+    font-family: monospace;
+    width: 100%;
+}

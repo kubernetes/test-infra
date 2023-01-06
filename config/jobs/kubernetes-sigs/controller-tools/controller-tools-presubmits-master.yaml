@@ -1,0 +1,17 @@
+presubmits:
+  kubernetes-sigs/controller-tools:
+  - name: pull-controller-tools-test-master
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/controller-tools
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: golang:1.19
+        command:
+        - make
+        - test-all
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kubebuilder
+      testgrid-tab-name: controller-tools-master

@@ -1,0 +1,12 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- cpanato
+- MorrisLaw
+- prksu
+- timoreimann
+approvers:
+- cpanato
+- MorrisLaw
+- prksu
+- timoreimann

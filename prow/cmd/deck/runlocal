@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# Copyright 2017 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+if [[ "${1:-}" == '--help' ]]; then
+  echo "Usage: [NO_DOCKER=yes] $(basename "$0") [--skip-pregenerated|HOST] [--skip-typescript]" >&2
+  echo >&2
+  echo "  --skip-pregenerated: do not fetch pregenerated cluster data from a prod instance" >&2
+  echo "  HOST: fetch pregenerated cluster data from a prod instance, eg https://prow.k8s.io" >&2
+  echo "  --skip-typescript: do not compile typescript" >&2
+  echo >&2
+  echo "  NO_DOCKER=yes: Run Makefile commands on host machine, rather than a container" >&2
+  exit 1
+fi
+  
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "${DIR}"
+
+fetch() {
+  echo "* $@" >&2
+  curl -s "$@" 
+}
+
+update-pregenerated() {
+  local readonly HOST=$1
+
+  echo "Updating pregenerated data from ${HOST}: " >&2
+
+  cd localdata
+  fetch "${HOST}/plugin-help.js?var=allHelp" > plugin-help.js
+  fetch "${HOST}/pr-data.js" > pr-data.js
+  fetch "${HOST}/prowjobs.js" > prowjobs.json
+  fetch "${HOST}/tide-history.js?var=tideHistory" > tide-history.js
+  fetch "${HOST}/tide.js?var=tideData" > tide.js
+  cd ..
+  echo "DONE"
+}
+
+if [[ "${1:-}" != '--skip-pregenerated' ]]; then
+  HOST=${1:-"https://prow.k8s.io"}
+  if [[ "${1:-}" == "openshift" ]]; then
+    HOST="https://prow.ci.openshift.org"
+  fi
+  update-pregenerated "$HOST"
+  shift || true
+else
+  shift
+fi
+
+compile-typescript() {
+  echo "Compiling typescript..." >&2
+  ./gather-static.sh
+}
+
+if [[ "${1:-}" != '--skip-typescript' ]]; then
+  compile-typescript
+fi
+(
+  set -o xtrace
+  go run . \
+    --pregenerated-data=${DIR}/localdata \
+    --static-files-location="$DIR/kodata/static" \
+    --template-files-location="$DIR/kodata/template" \
+    --spyglass-files-location="$DIR/kodata/lenses" \
+    --config-path "${DIR}/../../../config/prow/config.yaml" \
+    --spyglass
+)

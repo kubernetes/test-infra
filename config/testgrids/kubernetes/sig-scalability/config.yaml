@@ -1,0 +1,21 @@
+dashboard_groups:
+- name: sig-scalability
+  dashboard_names:
+    - sig-scalability-gce
+    - sig-scalability-node
+    - sig-scalability-kubemark
+    - sig-scalability-perf-tests
+    - sig-scalability-benchmarks
+    - sig-scalability-experiments
+    - sig-scalability-golang
+    - sig-scalability-network
+
+dashboards:
+- name: sig-scalability-gce
+- name: sig-scalability-kubemark
+- name: sig-scalability-node
+- name: sig-scalability-perf-tests
+- name: sig-scalability-benchmarks
+- name: sig-scalability-experiments
+- name: sig-scalability-golang
+- name: sig-scalability-network

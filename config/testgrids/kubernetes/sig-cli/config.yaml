@@ -1,0 +1,18 @@
+dashboard_groups:
+- name: sig-cli
+  dashboard_names:
+    - sig-cli-master
+    - sig-cli-misc
+
+dashboards:
+- name: sig-cli-master
+  dashboard_tab:
+    - name: soak-gce-gci
+      test_group_name: ci-kubernetes-soak-gce-gci
+      base_options: include-filter-by-regex=Kubectl%7Ckubectl
+    - name: integration-cmd
+      test_group_name: ci-kubernetes-integration-master
+      base_options: include-filter-by-regex=kubectl%7COverall
+      description: unit, integration and cmd tests for master branch
+
+- name: sig-cli-misc

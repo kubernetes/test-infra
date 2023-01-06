@@ -1,0 +1,166 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-cross
+    optional: true
+    always_run: false
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
+        command:
+        - runner.sh
+        args:
+        - make
+        - release
+        - KUBE_RELEASE_RUN_TESTS=n
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 7300m
+            memory: "41Gi"
+          requests:
+            cpu: 7300m
+            memory: "41Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
+
+periodics:
+- name: ci-kubernetes-build
+  interval: 1h
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
+      command:
+      - wrapper.sh
+      - /krel
+      - ci-build
+      - --configure-docker
+      - --allow-dup
+      - --bucket=k8s-release-dev
+      - --registry=gcr.io/k8s-staging-ci-images
+      - --extra-version-markers=k8s-master
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "7"
+          memory: "34Gi"
+        requests:
+          cpu: "7"
+          memory: "34Gi"
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "k8s-master -> k8s-beta, latest-default -> latest-{{.Version}}"
+    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
+    testgrid-tab-name: build-master
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
+
+- interval: 5m
+  name: ci-kubernetes-build-fast
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
+      command:
+      - wrapper.sh
+      - /krel
+      - ci-build
+      - --configure-docker
+      - --allow-dup
+      - --fast
+      - --bucket=k8s-release-dev
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 6
+          memory: "12Gi"
+        requests:
+          cpu: 6
+          memory: "12Gi"
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
+    testgrid-tab-name: build-master-fast
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
+    description: 'Ends up running: make quick-release'
+
+- interval: 4h
+  name: ci-release-build-packages-debs
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-releng/kubepkg:latest
+      imagePullPolicy: Always
+      command:
+      - ./kubepkg
+      args:
+      - debs
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: build-packages-debs
+
+- interval: 4h
+  name: ci-release-build-packages-rpms
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-releng/kubepkg-rpm:latest
+      imagePullPolicy: Always
+      command:
+      - ./kubepkg
+      args:
+      - rpms
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: build-packages-rpms

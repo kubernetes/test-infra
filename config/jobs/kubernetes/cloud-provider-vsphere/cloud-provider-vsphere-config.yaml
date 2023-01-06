@@ -1,0 +1,350 @@
+presets:
+# Attaches the secrets to a job required to execute the e2e conformance
+# suite against a cluster turned up with the cloud provider.
+- labels:
+    preset-cloud-provider-vsphere-e2e-config: "true"
+  env:
+  - name: CONFIG_ENV
+    value: /root/.cloud-provider-vsphere/config.env
+  - name: GCR_KEY_FILE
+    value: /root/.cloud-provider-vsphere/keyfile.json
+  volumes:
+  - name: cloud-provider-vsphere-e2e-config
+    secret:
+      secretName: cloud-provider-vsphere-e2e-config
+      items:
+      - key: config.env
+        path: config.env
+        mode: 288
+      - key: keyfile.json
+        path: keyfile.json
+        mode: 288
+  volumeMounts:
+  - name: cloud-provider-vsphere-e2e-config
+    mountPath: /root/.cloud-provider-vsphere
+    readOnly: true
+
+presubmits:
+  kubernetes/cloud-provider-vsphere:
+
+  - name: pull-cloud-provider-vsphere-verify-fmt
+    always_run: false
+    run_if_changed: '\.go$|hack/check-format\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - make
+        args:
+        - fmt
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-fmt
+      description: Verifies the Golang sources have been formatted
+
+  - name: pull-cloud-provider-vsphere-verify-lint
+    always_run: false
+    run_if_changed: '\.go$|hack/check-lint\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - make
+        args:
+        - lint
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-lint
+      description: Verifies the Golang sources are linted
+
+  - name: pull-cloud-provider-vsphere-verify-vet
+    always_run: false
+    run_if_changed: '\.go$|hack/check-vet\.sh'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - make
+        args:
+        - vet
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-vet
+      description: Vets the Golang sources have been vetted
+
+  - name: pull-cloud-provider-vsphere-verify-markdown
+    always_run: false
+    run_if_changed: '.*\.md$'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/cluster-api-provider-vsphere/extra/mdlint:0.17.0
+        command:
+        - /nodejs/bin/node
+        args:
+        - /md/lint
+        - -i
+        - vendor
+        - -i
+        - docs/book/node_modules
+        - .
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-tab-name: pr-verify-markdown
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies the markdown has been linted
+
+  - name: pull-cloud-provider-vsphere-verify-shell
+    always_run: false
+    run_if_changed: '.*\.\w*sh$'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.6.0
+        command:
+        - /bin/shellcheck.sh
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-tab-name: pr-verify-shell
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: Verifies the shell scripts have been linted
+
+  - name: pull-cloud-provider-vsphere-verify-staticcheck
+    always_run: false
+    run_if_changed: '\.go$|hack/check-staticcheck\.sh$|go.mod'
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - make
+        args:
+        - staticcheck
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-staticheck
+      description: Verifies the Golang sources pass a static source checker
+
+  # Builds the CCM and CSI binaries.
+  - name: pull-cloud-provider-vsphere-build
+    decorate: true
+    branches:
+    - ^master$
+    - ^release-.*$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - "make"
+        args:
+        - "build"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+  # Executes the unit tests.
+  - name: pull-cloud-provider-vsphere-unit-test
+    decorate: true
+    branches:
+    - ^master$
+    - ^release-.*$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - "make"
+        args:
+        - "unit-test"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+  # Executes the integration tests.
+  - name: pull-cloud-provider-vsphere-integration-test
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^master$
+    - ^release-.*$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - "make"
+        args:
+        - "integration-test"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+  # Executes the test coverage.
+  - name: pull-cloud-provider-vsphere-coverage
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    branches:
+    - ^master$
+    - ^release-.*$
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        - bash
+        args:
+        - -c
+        - |
+          result=0
+          ./scripts/ci-test-coverage.sh || result=$?
+          cp coverage.* ${ARTIFACTS}
+          cd ../../k8s.io/test-infra/gopherage
+          GO111MODULE=on go build .
+          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          exit $result
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-test-coverage
+      description: Shows the test coverage of the Golang sources
+
+  # Executes the e2e tests.
+  - name: pull-cloud-provider-vsphere-e2e-test
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      # Borrows CAPV credentials for cloud provider e2e testing
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod|hack/e2e\.sh'
+    skip_report: false
+    optional: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
+postsubmits:
+  kubernetes/cloud-provider-vsphere:
+
+  # Deploys the images and binaries after all merges to master
+  - name: post-cloud-provider-vsphere-deploy
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^master$
+    - ^release-.*$
+    # Temporarily always pushing until workflow is worked out.
+    always_run: true
+    # Only build a new a image if something that could change binary changes
+    #run_if_changed: '^(cmd|pkg)\/|cluster\/images\/controller-manager\/Dockerfile|Makefile'
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        resources:
+          requests:
+            cpu: "1000m"
+        command:
+        - "make"
+        args:
+        - "release-push"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere
+      testgrid-tab-name: post-deploy
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-num-columns-recent: '20'
+      description: Pushes new images and binaries from master
+
+  # Deploys images and binaries for tagged releases
+  - name: post-cloud-provider-vsphere-release
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+    max_concurrency: 1
+    branches:
+    - ^v\d+\.\d+\.\d+(-(alpha|beta|rc)\.(\d)+)?$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        resources:
+          requests:
+            cpu: "1000m"
+        command:
+        - "make"
+        args:
+        - "release-push"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere
+      testgrid-tab-name: release
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      description: releases new tagged images and binaries

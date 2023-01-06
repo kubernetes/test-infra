@@ -1,0 +1,20 @@
+postsubmits:
+  kubernetes-sigs/kube-storage-version-migrator:
+    - name: kube-storage-version-migrator-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-storage-migrator
+              - --scratch-bucket=gs://k8s-staging-storage-migrator-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

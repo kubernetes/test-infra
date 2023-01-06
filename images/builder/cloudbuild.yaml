@@ -1,0 +1,27 @@
+steps:
+  - name: golang:$_GO_VERSION
+    args:
+    - go
+    - build
+    - -o=./images/builder/builder
+    - ./images/builder
+    env:
+    - CGO_ENABLED=0
+    - GOOS=linux
+    - GOARCH=amd64
+    - GO111MODULE=on
+    - GOPROXY=https://proxy.golang.org
+    - GOSUMDB=sum.golang.org
+  - name: gcr.io/cloud-builders/docker
+    args:
+    - build
+    - --tag=gcr.io/$PROJECT_ID/image-builder:$_GIT_TAG
+    - --tag=gcr.io/$PROJECT_ID/image-builder:latest
+    - .
+    dir: images/builder
+substitutions:
+  _GIT_TAG: '12345'
+  _GO_VERSION: '1.18'
+images:
+  - 'gcr.io/$PROJECT_ID/image-builder:$_GIT_TAG'
+  - 'gcr.io/$PROJECT_ID/image-builder:latest'

@@ -1,0 +1,74 @@
+metric: presubmit-health
+description: Calculate daily health metrics for presubmits
+query: |
+  #standardSQL
+  SELECT
+    UNIX_SECONDS(day) day,
+    job,
+    ROUND(prs_failed/prs * 100, 1) pr_failure_perc,
+    prs,
+    prs_failed,
+    total_runs,
+    ROUND(total_elapsed / total_runs / 60, 1) avg_run_time_minutes,
+    IF(total_passes>0,
+      ROUND(total_pass_elapsed / total_passes / 60, 1),
+      0) avg_pass_time_minutes
+  FROM (
+    SELECT
+      day,
+      job,
+      COUNT(job) prs,
+      SUM(IF(passes<runs,
+          1,
+          0)) prs_failed,
+      SUM(passes_elapsed) total_pass_elapsed,
+      SUM(passes) total_passes,
+      SUM(total_elapsed) total_elapsed,
+      SUM(runs) total_runs
+    FROM (
+      SELECT
+        day,
+        job,
+        pr,
+        COUNTIF(result='SUCCESS') passes,
+        COUNT(result) runs,
+        SUM(elapsed) total_elapsed,
+        SUM(IF(result='SUCCESS',elapsed,0)) passes_elapsed
+      FROM (
+        SELECT
+          TIMESTAMP_TRUNC(started, day) day,
+          path,
+          job,
+          result,
+          elapsed,
+          REGEXP_EXTRACT(path, "/(\\d+)/") pr
+        FROM
+          `k8s-gubernator.build.all`
+        WHERE
+          REGEXP_CONTAINS(job, '^pr:')
+          AND started > TIMESTAMP_SECONDS(<LAST_DATA_TIME>)
+          AND started < TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), day)
+          AND elapsed IS NOT NULL)
+      GROUP BY
+        day,
+        job,
+        pr)
+    GROUP BY
+      day,
+      job)
+  ORDER BY
+    day DESC,
+    pr_failure_perc DESC
+
+jqfilter: |
+  ([(.[] | .day|tonumber)] | max) as $newestday |
+  [(.[] | select((.day|tonumber)==$newestday) | {
+    day: (.day|tonumber|todateiso8601[:10]),
+    job: .job,
+    pr_failure_perc: (.pr_failure_perc|tonumber),
+    prs: (.prs|tonumber),
+    prs_failed: (.prs_failed|tonumber),
+    total_runs: (.total_runs|tonumber),
+    avg_run_time_minutes: (.avg_run_time_minutes|tonumber),
+    avg_pass_time_minutes: (.avg_pass_time_minutes|tonumber),
+  })]

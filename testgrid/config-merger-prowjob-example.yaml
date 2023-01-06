@@ -1,0 +1,60 @@
+presubmits:
+  YOUR-ORG/YOUR-REPO: # TODO: Replace this
+  - name: pull-[repo-name]-check-testgrid-config # TODO: Rename this
+    branches:
+    - ^your-branch$ # TODO: Replace this
+    run_if_changed: '^(dir/to/your/prowjobs/.*\.yaml)|(dir/to/your/testgrid/default\.yaml)$' # TODO: Replace this
+    decorate: true
+    annotations:
+      testgrid-create-test-group: "false"
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/configurator
+        command:
+        - /app/testgrid/cmd/configurator/app.binary
+        args: # TODO: Replace These (See Configurator Readme)
+        - --yaml=testgrid/dashboard/config.yaml
+        - --default=testgrid/default.yaml
+        - --prow-config=prow/config.yaml
+        - --prow-job-config=prow/prowjob/dir
+        - --prowjob-url-prefix=https://github.com/[ORG]/[REPO]/tree/[BRANCH]/prow/prowjob/dir
+        - --update-description
+        - --validate-config-file
+        - --oneshot
+        resources:
+          requests:
+            memory: "1Gi"
+
+postsubmits:
+  YOUR-ORG/YOUR-REPO: # TODO: Replace this
+  - name: post-[repo-name]-upload-testgrid-config # TODO: Rename this
+    branches:
+    - ^your-branch$ # TODO: Replace this
+    max_concurrency: 1
+    labels:
+      preset-bazel-scratch-dir: "true"
+    run_if_changed: '^(dir/to/your/prowjobs/.*\.yaml)|(dir/to/your/testgrid/default\.yaml)$' # TODO: Replace this
+    decorate: true
+    annotations: # TODO: These add your postsubmit job to TestGrid. Replace these
+      testgrid-dashboards: YOUR_DASHBOARD
+      testgrid-tab-name: testgrid-upload
+      testgrid-alert-email: your-email@example.com
+      testgrid-num-failures-to-alert: '1'
+    spec:
+      serviceAccountName: testgrid-config-updater # TODO: Add a service account that can write to your cloud storage
+      containers:
+      - image: gcr.io/k8s-prow/configurator
+        command:
+        - /app/testgrid/cmd/configurator/app.binary
+        args: # TODO: Replace These (See Configurator Readme)
+        - --yaml=testgrid/dashboard/config.yaml
+        - --default=testgrid/default.yaml
+        - --prow-config=prow/config.yaml
+        - --prow-job-config=prow/prowjob/dir
+        - --prowjob-url-prefix=https://github.com/[ORG]/[REPO]/tree/[BRANCH]/prow/prowjob/dir
+        - --update-description
+        - --output=gs://[BUCKET]/config
+        - --oneshot
+        resources:
+          requests:
+            memory: "1Gi"

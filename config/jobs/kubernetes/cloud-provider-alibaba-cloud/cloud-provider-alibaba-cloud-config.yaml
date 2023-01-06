@@ -1,0 +1,40 @@
+presubmits:
+  kubernetes/cloud-provider-alibaba-cloud:
+  - name: pull-cloud-provider-alibaba-cloud-check
+    always_run: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/cloud-provider-alibaba-cloud
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - check
+    annotations:
+      testgrid-dashboards: presubmits-cloud-provider-alibaba
+      testgrid-tab-name: check
+      description: alibaba cloud provider checks
+      testgrid-num-columns-recent: '30'
+  - name: pull-cloud-provider-alibaba-cloud-unit-test
+    always_run: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/cloud-provider-alibaba-cloud
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit-test
+    annotations:
+      testgrid-dashboards: presubmits-cloud-provider-alibaba
+      testgrid-tab-name: unit-test
+      description: alibaba cloud provider unit test
+      testgrid-num-columns-recent: '30'

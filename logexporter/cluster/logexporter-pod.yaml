@@ -1,0 +1,65 @@
+# Template pod config for running the log exporter pod on a kubernetes node.
+# Creates everything within 'logexporter' namespace.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: logexporter
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: google-service-account
+  namespace: logexporter
+type: Opaque
+data:
+  service-account.json: {{.ServiceAccountCredentials}}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: logexporter
+  namespace: logexporter
+spec:
+  containers:
+  - name: logexporter-test
+    image: gcr.io/k8s-testimages/logexporter:v0.1.6
+    env:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    command:
+    - logexporter
+    - --node-name=$(NODE_NAME)
+    - --cloud-provider={{.CloudProvider}}
+    - --gcs-path={{.GCSPath}}
+    - --gcloud-auth-file-path=/etc/service-account/service-account.json
+    - --enable-hollow-node-logs={{.EnableHollowNodeLogs}}
+    - --journal-path=/var/log/journal
+    - --sleep-duration=24h
+    - --alsologtostderr
+    volumeMounts:
+    - mountPath: /etc/service-account
+      name: service
+      readOnly: true
+    - mountPath: /var/log
+      name: varlog
+      readOnly: true
+    - mountPath: /workspace/etc
+      name: hostetc
+      readOnly: true
+    resources:
+      requests:
+        cpu: 10m
+        memory: 10Mi
+  volumes:
+  - name: service
+    secret:
+      secretName: google-service-account
+  - name: varlog
+    hostPath:
+      path: /var/log
+  - name: hostetc
+    hostPath:
+      path: /etc

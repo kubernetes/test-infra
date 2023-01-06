@@ -1,0 +1,490 @@
+presubmits:
+  kubernetes/release:
+  - name: pull-release-cluster-up
+    run_if_changed: '^push-build.sh'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes
+        - --repo=k8s.io/release=$(PULL_REFS)
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=quick
+        - --cluster=
+        - --down=false
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-nodes=4
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
+        - --test_args=--ginkgo.focus=definitely-not-a-real-focus
+        - --timeout=65m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        resources:
+          requests:
+            memory: "6Gi"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-cluster-up
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-test
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+        imagePullPolicy: Always
+        command:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-test
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-integration-test
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+        imagePullPolicy: Always
+        command:
+        - make
+        - test-go-integration
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-integration-test
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-verify
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/release
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+        imagePullPolicy: Always
+        command:
+        - make
+        - verify
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-verify
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-kube-cross
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/build\/cross\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/build/cross
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-kube-cross
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-go-runner
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/build\/go-runner\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/build/go-runner
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-go-runner
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-debian-base
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/build\/debian-base\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/build/debian-base
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-debian-base
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-debian-iptables
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/build\/debian-iptables\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/build/debian-iptables
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-debian-iptables
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-distroless-iptables
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/build\/distroless-iptables\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/build/distroless-iptables
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-distroless-iptables
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-setcap
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/build\/setcap\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/build/setcap
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-setcap
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-k8s-cloud-builder
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/k8s-cloud-builder\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --env-passthrough=PULL_BASE_REF,REGISTRY
+            - images/k8s-cloud-builder
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-k8s-cloud-builder
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-k8s-ci-builder
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/releng\/k8s-ci-builder\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --build-dir=.
+            - --env-passthrough=REGISTRY
+            - images/releng/k8s-ci-builder
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-k8s-ci-builder
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-releng-ci
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: '^images\/releng\/ci\/'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --env-passthrough=PULL_BASE_REF,REGISTRY
+            - --build-dir=.
+            - images/releng/ci
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-releng-ci
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-release-image-kubepkg
+    cluster: k8s-infra-prow-build
+    decorate: true
+    run_if_changed: 'cloudbuild-kubepkg.yaml|Dockerfile-kubepkg*'
+    path_alias: k8s.io/release
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --env-passthrough=PULL_BASE_REF,REGISTRY
+            - --gcb-config=./cloudbuild-kubepkg.yaml
+            - .
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-image-kubepkg
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+periodics:
+# package tests
+- name: periodic-release-verify-packages-debs
+  interval: 6h
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: verify-packages-debs
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: quay.io/k8s/release-tools:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-debs
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+- name: periodic-release-verify-packages-rpms
+  interval: 6h
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: verify-packages-rpms
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  spec:
+    containers:
+    - image: quay.io/k8s/release-tools-centos:latest
+      imagePullPolicy: Always
+      command:
+      - make
+      - verify-published-rpms
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers

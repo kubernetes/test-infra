@@ -1,0 +1,113 @@
+presubmits:
+  kubernetes-sigs/release-notes:
+  - name: pull-release-notes-build-dev
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: node:14
+        command:
+        - /bin/bash
+        - -c
+        - >
+          npm ci &&
+          npm run build-dev
+
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+  - name: pull-release-notes-build-prod
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: node:14
+        command:
+        - /bin/bash
+        - -c
+        - >
+          npm ci &&
+          npm run build-prod
+
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+  - name: pull-release-notes-check-prettier
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: node:14
+        command:
+        - /bin/bash
+        - -c
+        - >
+          npm ci &&
+          npm run check-prettier
+
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+  - name: pull-release-notes-doc
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: node:14
+        command:
+        - /bin/bash
+        - -c
+        - >
+          npm ci &&
+          npm run doc
+
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+  - name: pull-release-notes-e2e
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: cypress/base:18.6.0
+        command:
+        - /bin/bash
+        - -c
+        - >
+          npm ci &&
+          npm run e2e-cy-ci
+
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+  - name: pull-release-notes-lint
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: node:14
+        command:
+        - /bin/bash
+        - -c
+        - >
+          npm ci &&
+          npm run lint
+
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+  - name: pull-release-notes-test
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: node:14
+        command:
+        - /bin/bash
+        - -c
+        - >
+          npm ci &&
+          npm run test
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'

@@ -1,0 +1,85 @@
+postsubmits:
+  kubernetes-sigs/sig-storage-local-static-provisioner:
+  # A postsubmit job to build canary image on master.
+  - name: post-sig-storage-local-static-provisioner-build-canary
+    branches:
+    - master
+    decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - release
+        env:
+        - name: VERSION
+          value: canary
+        - name: ALLOW_UNSTABLE
+          value: "true"
+        - name: CONFIRM
+          value: "yes"
+        - name: DOCKER_CONFIG
+          value: /etc/pusher-docker-config
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: pusher-docker-config
+          mountPath: /etc/pusher-docker-config
+      volumes:
+      - name: pusher-docker-config
+        secret:
+          secretName: sig-storage-local-static-provisioner-pusher
+    # A postsubmit job to build release image on release tags.
+    annotations:
+      testgrid-dashboards: sig-storage-local-static-provisioner
+      testgrid-tab-name: master-canary-build
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Canary image build against latest master
+  - name: post-sig-storage-local-static-provisioner-build-release
+    branches:
+    - ^v\d+\.\d+\.\d+$ # stable
+    - ^v\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ # pre-release
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - release
+        env:
+        - name: CONFIRM
+          value: "yes"
+        - name: ALLOW_UNSTABLE
+          value: "true"
+        - name: DOCKER_CONFIG
+          value: /etc/pusher-docker-config
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: pusher-docker-config
+          mountPath: /etc/pusher-docker-config
+      volumes:
+      - name: pusher-docker-config
+        secret:
+          secretName: sig-storage-local-static-provisioner-pusher
+    annotations:
+      testgrid-dashboards: sig-storage-local-static-provisioner
+      testgrid-tab-name: release-build
+      description: Release image build against tagged releases

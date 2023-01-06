@@ -1,0 +1,96 @@
+
+  - name: {{job_name}}
+    branches:
+    - {{branch}}
+    {%- if run_if_changed %}
+    run_if_changed: '{{run_if_changed}}'
+    {%- endif %}
+    always_run: {{always_run}}
+    optional: {{optional}}
+    skip_report: {{skip_report}}
+    labels:
+      {%- if cloud == "aws" %}
+      preset-service-account: "true"
+      preset-aws-ssh: "true"
+      preset-aws-credential: "true"
+      {%- if branch in ["release-1.22", "release-1.23"] %}
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      {%- endif %}
+      preset-dind-enabled: "true"
+      {%- else %}
+      preset-k8s-ssh: "true"
+      {%- endif %}
+    decorate: true
+    decoration_config:
+      timeout: {{job_timeout}}
+    path_alias: k8s.io/kops
+    spec:
+      {%- if cloud == "gce" %}
+      serviceAccountName: k8s-kops-test
+      {%- endif %}
+      containers:
+      - image: {{image}}
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+            make test-e2e-install
+            kubetest2 kops \
+            -v 2 \
+            --up --build --down \
+            --cloud-provider={{cloud}} \
+            --create-args="{{create_args}}" \
+            {%- if kops_feature_flags %}
+            --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
+            {%- endif %}
+            --kubernetes-version={{k8s_deploy_url}} \
+            {%- if branch in ["release-1.22", "release-1.23"] %}
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            {%- else %}
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
+            {%- endif %}
+            {%- if terraform_version %}
+            --terraform-version={{terraform_version}} \
+            {%- endif %}
+            {%- if template_path %}
+            --template-path={{template_path}} \
+            {%- endif %}
+            --test=kops \
+            -- \
+            --ginkgo-args="--debug" \
+            --test-args="-test.timeout={{test_timeout}} -num-nodes=0" \
+            {%- if test_package_bucket %}
+            --test-package-bucket={{test_package_bucket}} \
+            {%- endif %}
+            {%- if test_package_dir %}
+            --test-package-dir={{test_package_dir}} \
+            {%- endif %}
+            --test-package-marker={{marker}} \
+            {%- if focus_regex %}
+            --focus-regex="{{focus_regex}}" \
+            {%- endif %}
+            {%- if skip_regex %}
+            --skip-regex="{{skip_regex}}" \
+            {%- endif %}
+            --parallel={{test_parallelism}}
+        securityContext:
+          privileged: true
+        env:
+        - name: KUBE_SSH_KEY_PATH
+          value: {{kops_ssh_key_path}}
+        - name: KUBE_SSH_USER
+          value: {{kops_ssh_user}}
+        - name: GOPATH
+          value: /home/prow/go
+        {%- for key, val in env.items() %}
+        - name: {{ key }}
+          value: "{{ val }}"
+        {%- endfor %}
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"

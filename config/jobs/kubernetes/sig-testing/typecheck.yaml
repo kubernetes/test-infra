@@ -1,0 +1,35 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-typecheck
+    cluster: k8s-infra-prow-build
+    path_alias: "k8s.io/kubernetes"
+    decorate: true
+    always_run: true
+    skip_report: false
+    # branched per release (older go versions)
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+    spec:
+      containers:
+      - name: main
+        command:
+        - make
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        resources:
+          limits:
+            cpu: 5
+            memory: 32Gi
+          requests:
+            cpu: 5
+            memory: 32Gi
+        args:
+        - verify
+        env:
+        # Space separated list of the checks to run
+        - name: WHAT
+          value: typecheck typecheck-providerless

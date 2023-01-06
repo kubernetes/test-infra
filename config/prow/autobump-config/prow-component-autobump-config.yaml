@@ -1,0 +1,30 @@
+---
+gitHubLogin: "k8s-ci-robot"
+gitHubToken: "/etc/github-token/oauth"
+gitName: "Kubernetes Prow Robot"
+gitEmail: "k8s.ci.robot@gmail.com"
+onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
+selfAssign: true # Commenting `/cc`, so that autobump PR is not assigned to anyone
+skipPullRequest: false
+gitHubOrg: "kubernetes"
+gitHubRepo: "test-infra"
+remoteName: "test-infra"
+upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+includedConfigPaths:
+  - "."
+excludedConfigPaths:
+  - ".ko.yaml" # Contains gcr.io/k8s-prow/git, which is not pushed by prow
+targetVersion: "latest"
+prefixes:
+  - name: "Prow"
+    prefix: "gcr.io/k8s-prow/"
+    refConfigFile: "config/prow/cluster/deck_deployment.yaml"
+    repo: "https://github.com/kubernetes/test-infra"
+    summarise: true
+    consistentImages: true
+  - name: "Boskos"
+    prefix: "gcr.io/k8s-staging-boskos/"
+    refConfigFile: "config/prow/cluster/build/boskos.yaml"
+    repo: "https://github.com/kubernetes-sigs/boskos"
+    summarise: false
+    consistentImages: true

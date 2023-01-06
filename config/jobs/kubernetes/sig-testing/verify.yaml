@@ -1,0 +1,172 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-verify
+    cluster: k8s-infra-prow-build
+    always_run: true
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/verify-dockerized.sh
+        env:
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          # Consider reducing memory limits after govet memory usage issue is
+          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
+          limits:
+            cpu: 7
+            memory: 12Gi
+          requests:
+            cpu: 7
+            memory: 12Gi
+  - name: pull-kubernetes-verify-go-canary
+    cluster: k8s-infra-prow-build
+    always_run: false
+    skip_report: false
+    decorate: true
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-go-canary
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/verify-dockerized.sh
+        env:
+        - name: EXCLUDE_TYPECHECK
+          value: "y"
+        - name: EXCLUDE_GODEP
+          value: "y"
+        - name: KUBE_VERIFY_GIT_BRANCH
+          value: master
+        - name: REPO_DIR
+          value: /workspace/k8s.io/kubernetes
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          # Consider reducing memory limits after govet memory usage issue is
+          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
+          limits:
+            cpu: 7
+            memory: 12Gi
+          requests:
+            cpu: 7
+            memory: 12Gi
+periodics:
+- interval: 1h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-verify-master
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 2h 2h 6h 24h
+    testgrid-dashboards: sig-release-master-blocking
+    testgrid-tab-name: verify-master
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers+alerts@kubernetes.io
+    description: "Ends up running: make verify"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/verify-dockerized.sh
+      env:
+      - name: EXCLUDE_READONLY_PACKAGE
+        value: "y"
+      - name: KUBE_VERIFY_GIT_BRANCH
+        value: master
+      - name: REPO_DIR
+        value: /workspace/k8s.io/kubernetes
+      # Consider removing after https://github.com/golang/go/issues/49035 is solved
+      # See https://github.com/kubernetes/kubernetes/pull/108618
+      - name: TYPECHECK_SERIAL
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 6
+          memory: 24Gi
+        requests:
+          cpu: 6
+          memory: 24Gi
+- interval: 6h
+  name: kubernetes-verify-go-licenses-periodical
+  decorate: true
+  decoration_config:
+    timeout: 5m
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
+    description: "Verify licences for the upstream Kubernetes Project's go-packages to the CNCF approved list of licences."
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./hack/verify-licenses.sh
+      env:
+      - name: KUBE_VERIFY_GIT_BRANCH
+        value: master
+      - name: REPO_DIR
+        value: /workspace/k8s.io/kubernetes
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true

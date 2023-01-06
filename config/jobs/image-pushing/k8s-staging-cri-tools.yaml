@@ -1,0 +1,24 @@
+postsubmits:
+  kubernetes-sigs/cri-tools:
+    - name: post-cri-tools-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-cri-tools, sig-k8s-infra-gcb
+      decorate: true
+      run_if_changed: '^images\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-cri-tools
+              - --scratch-bucket=gs://k8s-staging-cri-tools-gcb
+              - --gcb-config=cloudbuild.yaml
+              - images
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"

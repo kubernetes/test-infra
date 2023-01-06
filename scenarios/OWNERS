@@ -1,0 +1,16 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- MushuEE
+- spiffxp
+approvers:
+- spiffxp
+emeritus_approvers:
+- amwat
+- BenTheElder
+- cjwagner
+- fejta
+- krzyzacy
+
+labels:
+- area/scenarios

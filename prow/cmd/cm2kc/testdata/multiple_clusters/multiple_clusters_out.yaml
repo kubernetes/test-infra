@@ -1,0 +1,31 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: Zg==
+    server: https://5.6.7.8
+  name: build
+- cluster:
+    certificate-authority-data: Ywo=
+    server: https://1.2.3.4
+  name: default
+contexts:
+- context:
+    cluster: build
+    user: build
+  name: build
+- context:
+    cluster: default
+    user: default
+  name: default
+current-context: default
+kind: Config
+preferences: {}
+users:
+- name: build
+  user:
+    client-certificate-data: ZA==
+    client-key-data: ZQ==
+- name: default
+  user:
+    client-certificate-data: YQo=
+    client-key-data: Ygo=

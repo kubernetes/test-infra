@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: quay.io/coreos/jsonnet-ci:release-0.38
+
+    working_directory: /go/src/github.com/kubernetes-monitoring/kubernetes-mixin
+    steps:
+      - checkout
+      - run: jb install
+      - run: make

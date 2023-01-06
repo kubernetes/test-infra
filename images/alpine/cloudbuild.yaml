@@ -1,0 +1,21 @@
+steps:
+  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+    entrypoint: /buildx-entrypoint
+    args:
+    - build
+    - --tag=gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le,linux/s390x
+    - --push
+    - .
+    dir: .
+  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+    entrypoint: gcloud
+    args:
+    - container
+    - images
+    - add-tag
+    - gcr.io/$PROJECT_ID/alpine:$_GIT_TAG
+    - gcr.io/$PROJECT_ID/alpine:latest
+substitutions:
+  _GIT_TAG: '12345'

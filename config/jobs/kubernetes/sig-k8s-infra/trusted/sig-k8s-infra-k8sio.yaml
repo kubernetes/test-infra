@@ -1,0 +1,62 @@
+periodics:
+- name: ci-k8sio-audit
+  interval: 3h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes
+      slug: sig-k8s-infra-leads
+    - org: kubernetes
+      slug: k8s-infra-gcp-auditors
+  spec:
+    serviceAccountName: k8s-infra-gcp-auditor
+    containers:
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+      imagePullPolicy: Always
+      command:
+      - ./audit/create-or-update-audit-pr.sh
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-infra-ci-robot-github-token
+
+postsubmits:
+  kubernetes/k8s.io:
+  - name: post-k8sio-deploy-tf-monitoring-resources
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    branches:
+    - ^main$
+    run_if_changed: "^infra/gcp/terraform/k8s-infra-monitoring/"
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-alert-email: ameukam@gmail.com
+      testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes
+        slug: sig-k8s-infra-leads
+    spec:
+      serviceAccountName: tf-monitoring-deployer
+      containers:
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+        imagePullPolicy: Always
+        command:
+        - ./infra/gcp/terraform/k8s-infra-monitoring/deploy.sh

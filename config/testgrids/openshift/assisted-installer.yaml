@@ -1,0 +1,754 @@
+dashboards:
+- name: redhat-assisted-installer
+  dashboard_tab:
+  - name: periodic-ci-openshift-assisted-service-master-edge-subsystem-aws-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-subsystem-aws-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-master-edge-subsystem-kubeapi-aws-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-subsystem-kubeapi-aws-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-single-node-live-iso
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-single-node-live-iso
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-release-master-nightly-4.9-e2e-metal-single-node-live-iso
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.9-e2e-metal-single-node-live-iso
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-disconnected-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-disconnected-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-none-periodic
+    test_group_name: periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-none-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-prod-periodic
+    test_group_name: periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-prod-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-aws-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-aws-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-kubeapi-aws-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-kubeapi-aws-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-disconnected-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-disconnected-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-ai-operator-ztp-ipv4v6-sno-ocp-49-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-ai-operator-ztp-ipv4v6-sno-ocp-49-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-ztp-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-ztp-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-ai-operator-ztp-ipv4v6-3masters-ocp-49-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-ai-operator-ztp-ipv4v6-3masters-ocp-49-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-operator-ztp-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-operator-ztp-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.4-subsystem-aws-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.4-subsystem-aws-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.4-subsystem-kubeapi-aws-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.4-subsystem-kubeapi-aws-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-3masters-periodic-ocp-49
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-3masters-periodic-ocp-49
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-sno-periodic-ocp-49
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-sno-periodic-ocp-49
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+  - name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-3masters-periodic-ocp-48
+    test_group_name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-3masters-periodic-ocp-48
+    base_options: width=10
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+test_groups:
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-subsystem-aws-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-subsystem-aws-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-subsystem-kubeapi-aws-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-subsystem-kubeapi-aws-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-disconnected-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-disconnected-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-none-periodic
+  name: periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-none-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-prod-periodic
+  name: periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-prod-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-aws-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-aws-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-kubeapi-aws-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-kubeapi-aws-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-ztp-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-ztp-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-disconnected-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-disconnected-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-ai-operator-ztp-ipv4v6-sno-ocp-49-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-ai-operator-ztp-ipv4v6-sno-ocp-49-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-ai-operator-ztp-ipv4v6-3masters-ocp-49-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.5-e2e-ai-operator-ztp-ipv4v6-3masters-ocp-49-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-operator-ztp-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-operator-ztp-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.4-subsystem-aws-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.4-subsystem-aws-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.4-subsystem-kubeapi-aws-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.4-subsystem-kubeapi-aws-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-3masters-periodic-ocp-49
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-3masters-periodic-ocp-49
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-sno-periodic-ocp-49
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-sno-periodic-ocp-49
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-3masters-periodic-ocp-48
+  name: periodic-ci-openshift-assisted-service-release-ocm-2.4-e2e-ai-operator-ztp-ipv4v6-3masters-periodic-ocp-48

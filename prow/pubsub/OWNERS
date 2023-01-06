@@ -1,0 +1,15 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- chaodaiG
+- cjwagner
+- listx
+reviewers:
+- chaodaiG
+- cjwagner
+- listx
+emeritus_approvers:
+- sebastienvas
+- yutongz
+labels:
+- area/prow/pubsub

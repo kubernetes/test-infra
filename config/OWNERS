@@ -1,0 +1,18 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- cblecker
+- spiffxp
+- wojtek-t
+- chases2
+- dims
+approvers:
+- cblecker
+- spiffxp
+- wojtek-t
+- chases2
+- dims
+emeritus_approvers:
+- krzyzacy
+labels:
+- area/config

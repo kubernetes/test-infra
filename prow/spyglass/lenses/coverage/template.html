@@ -1,0 +1,27 @@
+{{define "header"}}
+  <link rel="stylesheet" type="text/css" href="coverage.css">
+  <script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{define "body"}}
+  <script type="text/javascript">
+    var COVERAGE_FILE = {{ .CoverageContent }};
+    var RENDERED_COVERAGE_URL = {{ .RenderedCoverage }};
+  </script>
+  <div id="treemap" style="width: 100%; height: 300px; position: relative;">
+
+  </div>
+  <div id="stats">
+    <table class="mdl-data-table mdl-js-data-table">
+      <tbody>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric" style="width: 200px;">Covered statements</td>
+        <td class="mdl-data-table__cell--non-numeric" id="statement-coverage"></td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Covered files</td>
+        <td class="mdl-data-table__cell--non-numeric" id="file-coverage"></td>
+      </tr>
+    </table>
+  </div>
+{{end}}

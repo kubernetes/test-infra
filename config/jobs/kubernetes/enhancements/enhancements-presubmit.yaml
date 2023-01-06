@@ -1,0 +1,22 @@
+presubmits:
+  kubernetes/enhancements:
+    - name: pull-enhancements-verify
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: golang:1.17
+            command:
+              - sh
+              - "-c"
+              - "export PATH=$PATH:$GOPATH/bin && ./hack/verify.sh"
+    - name: pull-enhancements-test
+      always_run: true
+      decorate: true
+      spec:
+        containers:
+          - image: golang:1.17
+            command:
+              - make
+              - test
+              - tools

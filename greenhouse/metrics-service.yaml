@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazel-cache-metrics
+  namespace: default
+spec:
+  selector:
+    app: greenhouse
+  ports:
+  - name: default
+    protocol: TCP
+    port: 80
+    targetPort: 9090
+  loadBalancerIP: 35.225.115.154
+  type: LoadBalancer

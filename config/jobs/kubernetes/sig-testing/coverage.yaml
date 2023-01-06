@@ -1,0 +1,208 @@
+presubmits:
+  kubernetes/kubernetes:
+  # The presubmit version of the ci-kubernetes-coverage-unit job.
+  - name: pull-kubernetes-coverage-unit
+    always_run: false
+    skip_report: false
+    max_concurrency: 12
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+      description: unit test coverage presubmit
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        - bash
+        args:
+        - -c
+        - |
+          result=0
+          ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
+          make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
+          cd ../test-infra/gopherage
+          GO111MODULE=on go build .
+          find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
+          ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          # For now let's swallow the error - we can reenable returning $result once we're in better shape.
+          exit 0
+        securityContext:
+          privileged: true
+
+periodics:
+- interval: 1h
+  name: ci-kubernetes-coverage-conformance
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  decoration_config:
+    timeout: 6h
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -e
+      - -c
+      - |
+        shopt -s globstar
+        ../test-infra/scenarios/kubernetes_e2e.py \
+          --build=quick \
+          --dump-before-and-after \
+          --extract=local \
+          --stage=gs://k8s-release-dev/ci/ci-kubernetes-conformance-coverage \
+          --gcp-zone=us-west1-b \
+          --provider=gce \
+          --timeout=300m \
+          --test_args="--ginkgo.focus=\[Conformance\]"
+        cd ../test-infra/gopherage
+        GO111MODULE=on go build .
+        ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
+        ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
+        ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
+        ./gopherage filter --exclude-path="zz_generated,third_party/,cmd/,cloudprovider/providers/,alpha,beta,\.pb\.go,k8s\.io/legacy-cloud-providers,k8s\.io/kubernetes/pkg/volume/"  "${ARTIFACTS}/conformance.cov" > "${ARTIFACTS}/filtered.cov"
+        ./gopherage html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/conformance.html"
+        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
+      env:
+      - name: KUBE_BUILD_WITH_COVERAGE
+        value: "true"
+      - name: KUBE_BUILD_CONFORMANCE
+        value: "n"
+      securityContext:
+        privileged: true
+  # coverage for same tests that run in ci-kubernetes-e2e-gci-gce
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    description: build instrumented kubernetes, run conformance tests, generate line coverage using gopherage
+- interval: 1h
+  name: ci-kubernetes-coverage-e2e-gci-gce
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
+  decoration_config:
+    timeout: 3h
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -e
+      - -c
+      - |
+        shopt -s globstar
+        ../test-infra/scenarios/kubernetes_e2e.py \
+          --build=quick \
+          --dump-before-and-after \
+          --extract=local \
+          --stage=gs://k8s-release-dev/ci/ci-kubernetes-coverage-e2e-gci-gce \
+          --gcp-master-image=gci \
+          --gcp-node-image=gci \
+          --gcp-nodes=4 \
+          --gcp-zone=us-west1-b \
+          --ginkgo-parallel=30 \
+          --provider=gce \
+          --timeout=150m \
+          --test_args="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8"
+        cd ../test-infra/gopherage
+        GO111MODULE=on go build .
+        ./gopherage merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
+        ./gopherage merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
+        ./gopherage diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/e2e.cov"
+        ./gopherage filter --exclude-path="zz_generated,third_party/,cmd/,cloudprovider/providers/,\.pb\.go,k8s\.io/legacy-cloud-providers,k8s\.io/kubernetes/pkg/volume/"  "${ARTIFACTS}/e2e.cov" > "${ARTIFACTS}/filtered.cov"
+        ./gopherage html "${ARTIFACTS}/filtered.cov"  > "${ARTIFACTS}/e2e.html"
+        ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml"
+      env:
+      - name: KUBE_BUILD_WITH_COVERAGE
+        value: "true"
+      - name: KUBE_BUILD_CONFORMANCE
+        value: "n"
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-testing-canaries
+    description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
+
+- interval: 1h
+  name: ci-kubernetes-coverage-unit
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -c
+      - |
+        result=0
+        ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
+        make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
+        cd ../test-infra/gopherage
+        GO111MODULE=on go build .
+        find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
+        ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+        ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+        exit $result
+      resources:
+        limits:
+          cpu: 4
+          memory: 16Gi
+        requests:
+          cpu: 4
+          memory: 16Gi
+      securityContext:
+        privileged: true

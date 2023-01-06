@@ -1,0 +1,17 @@
+presubmits:
+  kubernetes/client-go:
+  - name: pull-client-go-build
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/client-go
+    spec:
+      containers:
+      - image: golang:1.15.8
+        env:
+        - name: GO111MODULE
+          value: "on"
+        command:
+        - go
+        args:
+        - build
+        - ./...

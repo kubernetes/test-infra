@@ -1,0 +1,89 @@
+#empty-junit-container {
+  color: #e8e8e8;
+  text-align: center;
+  padding-bottom: 10px;
+}
+
+.hidden-tests {
+  visibility: collapse;
+  display: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.noselect {
+  user-select: none;
+}
+.expander {
+  font-weight:bold;
+  font-size:1.5em;
+}
+
+.expander:last-of-type {
+  text-align: right;
+}
+
+td.failed {
+  color: #ff4040;
+}
+
+td.flaky {
+  color: #dd99dd;
+}
+
+td.passed {
+  color: #61ff61;
+}
+
+td.skipped {
+  color: #ffe62d;
+}
+
+.failed-layout, .flaky-layout {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.failed-layout td, .flaky-layout td {
+  border: 0;
+  padding: 0;
+}
+
+.failure-name, .flaky-name {
+  cursor: pointer;
+}
+
+td {
+  white-space: normal !important;
+}
+
+/* We are engaged in a never-ending war of cascade escalation against MDL */
+#failed-tbody > tr:hover, #flaky-tbody > tr:hover {
+  background-color: unset !important;
+}
+
+table.failed-layout tbody tr.failure-text:hover {
+  background-color: unset !important;
+}
+
+table.flaky-layout tbody tr.flaky-text:hover {
+  background-color: unset !important;
+}
+
+.failure-text div, .flaky-text div {
+  padding-left: 20px;
+  padding-right: 20px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  padding-bottom: 10px;
+}
+
+.failure-text td, .flaky-text td {
+  padding-bottom: 15px;
+}
+
+.arrow-icon {
+  vertical-align: middle;
+}

@@ -1,0 +1,1 @@
+// This file serves for custom javascript extensions

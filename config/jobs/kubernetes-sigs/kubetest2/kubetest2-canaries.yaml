@@ -1,0 +1,24 @@
+presubmits:
+  kubernetes-sigs/kubetest2:
+  - name: gce-build-up-down
+    decorate: true
+    run_if_changed: "kubetest2-gce/.*"
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: cloud-provider-gcp
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - "runner.sh"
+        args:
+        - "./kubetest2-gce/ci-tests/buildupdown.sh"
+        securityContext:
+          privileged: true

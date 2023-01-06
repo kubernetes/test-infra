@@ -1,0 +1,39 @@
+.test-row {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.test-summary {
+    color: #e8e8e8;
+    padding-left: 17px;
+    margin: 0;
+}
+
+.failure-hint {
+    font-weight: bold;
+}
+
+#bottom-padding {
+    padding-bottom: 15px;
+}
+
+body {
+    padding-top: 15px;
+}
+
+.failed {
+    color: #ff4040;
+}
+
+.passed {
+    color: #61ff61;
+}
+
+.passed, .failed {
+    font-weight: bold;
+}
+
+.mdl-data-table .metadata-header th {
+    font-size: 1.2em;
+    color: black;
+}

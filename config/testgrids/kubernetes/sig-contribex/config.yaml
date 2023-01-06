@@ -1,0 +1,32 @@
+# Dashboard Group
+
+dashboard_groups:
+- name: sig-contribex
+  dashboard_names:
+  - sig-contribex-community
+  - sig-contribex-k8s-triage-robot
+  - sig-contribex-org
+  - sig-contribex-slack-infra
+
+# Dashboards
+
+dashboards:
+- name: sig-contribex-community
+- name: sig-contribex-k8s-triage-robot
+- name: sig-contribex-org
+  dashboard_tab:
+    - name: post-peribolos
+      test_group_name: post-org-peribolos
+      alert_options:
+        alert_mail_to_addresses: kubernetes-github-managment-alerts@googlegroups.com
+      code_search_url_template:
+        url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
+    - name: test-all
+      test_group_name: pull-org-test-all
+      code_search_url_template:
+        url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
+    - name: verify-all
+      test_group_name: pull-org-verify-all
+      code_search_url_template:
+        url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
+- name: sig-contribex-slack-infra

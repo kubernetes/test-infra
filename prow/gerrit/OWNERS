@@ -1,0 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- chaodaiG
+- chases2
+approvers:
+- chaodaiG
+- chases2
+emeritus_approvers:
+- fejta
+- Katharine
+labels:
+- area/prow/gerrit

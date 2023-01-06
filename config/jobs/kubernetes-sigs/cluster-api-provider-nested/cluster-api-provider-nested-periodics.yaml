@@ -1,0 +1,51 @@
+periodics:
+- name: periodic-cluster-api-provider-nested-build
+  interval: 4h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-nested
+    base_ref: main
+    path_alias: "sigs.k8s.io/cluster-api-provider-nested"
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      command:
+      - "runner.sh"
+      - "./scripts/ci-build.sh"
+      resources:
+        requests:
+          memory: "6Gi"
+          cpu: "2"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-nested
+    testgrid-tab-name: periodic-cluster-api-provider-nested-build
+- name: periodic-cluster-api-provider-nested-test
+  interval: 4h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-nested
+    base_ref: main
+    path_alias: "sigs.k8s.io/cluster-api-provider-nested"
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      command:
+      - "runner.sh"
+      - "./scripts/ci-test.sh"
+      resources:
+        requests:
+          memory: "6Gi"
+          cpu: "2"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-nested
+    testgrid-tab-name: periodic-cluster-api-provider-nested-test

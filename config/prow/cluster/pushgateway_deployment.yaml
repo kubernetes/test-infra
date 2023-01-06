@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: pushgateway
+  labels:
+    app: pushgateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pushgateway
+  template:
+    metadata:
+      labels:
+        app: pushgateway
+    spec:
+      containers:
+      - name: pushgateway
+        image: prom/pushgateway:v0.4.0
+        ports:
+          - name: http
+            containerPort: 9091
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  name: pushgateway
+  labels:
+    app: pushgateway
+spec:
+  ports:
+  - name: pushgateway
+    port: 80
+    targetPort: http
+  type: NodePort
+  selector:
+    app: pushgateway
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  namespace: default
+  name: pushgateway-proxy-config
+data:
+  nginx.conf: |-
+    user www-data;
+    worker_processes 4;
+    pid /run/nginx.pid;
+    error_log /dev/stdout;
+    events {
+      worker_connections 1024;
+    }
+    http {
+      access_log /dev/stdout;
+      server {
+        listen 0.0.0.0:8081;
+        location / {
+          limit_except GET {
+            deny all;
+          }
+          proxy_pass http://pushgateway;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: pushgateway-proxy
+  labels:
+    app: pushgateway-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pushgateway-proxy
+  template:
+    metadata:
+      labels:
+        app: pushgateway-proxy
+    spec:
+      containers:
+      - name: nginx
+        ports:
+          - name: http
+            containerPort: 8081
+        image: nginx:1
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/
+      volumes:
+      - name: config-volume
+        configMap:
+          name: pushgateway-proxy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  name: pushgateway-external
+  labels:
+    app: pushgateway-external
+spec:
+  ports:
+  - name: pushgateway-external
+    port: 80
+    targetPort: http
+  type: NodePort
+  selector:
+    app: pushgateway-proxy

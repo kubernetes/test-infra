@@ -1,0 +1,27 @@
+#
+# Define test groups
+#
+test_groups:
+- name: gcp-guest-osconfig-presubmit-gobuild
+  gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gobuild
+- name: gcp-guest-osconfig-presubmit-gotest
+  gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gotest
+- name: gcp-guest-osconfig-presubmit-gocheck
+  gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gocheck
+- name: gcp-guest-cloud-image-tests
+  gcs_prefix: gcp-guest-testgrid/logs/cit-periodic
+
+#
+# Define dashboards
+#
+dashboards:
+- name: google-gcp-guest
+  dashboard_tab:
+  - name: OSConfig presubmits - gobuild
+    test_group_name: gcp-guest-osconfig-presubmit-gobuild
+  - name: OSConfig presubmits - gotest
+    test_group_name: gcp-guest-osconfig-presubmit-gotest
+  - name: OSConfig presubmits - gocheck
+    test_group_name: gcp-guest-osconfig-presubmit-gocheck
+  - name: CIT periodics
+    test_group_name: gcp-guest-cloud-image-tests

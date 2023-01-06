@@ -1,0 +1,81 @@
+presubmits:
+  kubernetes-sigs/kernel-module-management:
+  - name: pull-kernel-module-management-build
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: build
+      description: build the kernel-module-management controller binary
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - ci/prow/build
+  - name: pull-kernel-module-management-check-api-changes
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: check-api-changes
+      description: "make sure deployment manifests and bundle are up-to-date."
+    spec:
+      containers:
+      - image: docker.io/library/golang:1.19-alpine3.16
+        command: [sh]
+        args:
+        - -c
+        - |
+          apk add bash curl gcc git make
+
+          # Install kubectl
+          curl -Lo /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x /usr/local/bin/kubectl
+
+          # install operator-sdk
+          curl -Lo /usr/local/bin/operator-sdk 'https://github.com/operator-framework/operator-sdk/releases/download/v1.25.2/operator-sdk_linux_amd64'
+          chmod +x /usr/local/bin/operator-sdk
+
+          # Include the destination directory of `go install` in $PATH
+          export PATH=$(go env GOPATH)/bin:${PATH}
+
+          ./ci/prow/check-api-changes
+        env:
+        - name: CGO_ENABLED
+          value: '0'
+  - name: pull-kernel-module-management-check-commits-count
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: check-commits-count
+      description: "make sure each PR to kernel-module-management has a single commit."
+    spec:
+      containers:
+      - image: docker.io/bitnami/git
+        command:
+        - ci/prow/check-commits-count
+  - name: pull-kernel-module-management-lint
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: lint
+      description: "lint the source code of kernel-module-management."
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - ci/prow/lint
+  - name: pull-kernel-module-management-unit-tests
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: unit-tests
+      description: "unit-tests the source code of kernel-module-management."
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - ci/prow/unit-tests

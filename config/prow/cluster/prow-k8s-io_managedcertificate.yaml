@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: prow-k8s-io
+spec:
+  domains:
+  - prow.k8s.io

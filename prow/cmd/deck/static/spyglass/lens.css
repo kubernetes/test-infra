@@ -1,0 +1,63 @@
+/*
+ * Ensure we don't accidentally scroll on this frame.
+ */
+html {
+  overflow-y: hidden;
+}
+/*
+ * MDL sets min-height: 100% for the body, which prevents us from ever shrinking.
+ * In order to prevent this, we unset it again, using a higher-priority selector.
+ */
+body.lens-body {
+  min-height: unset;
+  font-size: 14px;
+}
+
+
+/*
+ * Dark mode + table tweaks
+ */
+table.mdl-data-table {
+  height: unset;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  width: 100%;
+  font-size: inherit;
+}
+
+.mdl-data-table {
+  background-color: unset;
+  border-collapse: collapse;
+}
+
+.mdl-data-table tbody tr:hover {
+  background-color: #666 !important;
+}
+
+.hidden {
+  visibility: collapse;
+}
+
+.mdl-data-table td {
+  color: #e8e8e8;
+  border-width: 1px;
+}
+
+.expander {
+  cursor: pointer;
+  user-select: none;
+  background-color: #505050;
+}
+
+.expander .icon-button {
+  vertical-align: middle;
+}
+
+a:link {
+  color: #ff8caa;
+}
+
+a:visited {
+  color: #ff8caa;
+}

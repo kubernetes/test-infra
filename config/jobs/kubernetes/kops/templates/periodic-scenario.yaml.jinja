@@ -1,0 +1,38 @@
+
+- name: {{job_name}}
+  cron: '{{cron}}'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: {{job_timeout}}
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/{{ scenario }}/run-test.sh
+      env:
+      {%- for key, val in env.items() %}
+      - name: {{ key }}
+        value: "{{ val }}"
+      {%- endfor %}
+      image: {{image}}
+      imagePullPolicy: Always
+      resources:
+        limits:
+          memory: 6Gi
+        requests:
+          cpu: "2"
+          memory: 6Gi
+      securityContext:
+        privileged: true

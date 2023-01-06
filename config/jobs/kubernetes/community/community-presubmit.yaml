@@ -1,0 +1,42 @@
+presubmits:
+  kubernetes/community:
+  - name: pull-community-verify
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: golang:1.18.2
+        command:
+        - sh
+        - "-c"
+        # Add GOPATH/bin back to PATH to workaround #9469
+        - "export PATH=$PATH:$GOPATH/bin && make verify"
+    annotations:
+      testgrid-dashboards: sig-contribex-community
+      testgrid-tab-name: pull-verify
+  - name: pull-community-tempelis-check
+    decorate: true
+    branches:
+    - ^master$
+    run_if_changed: '^communication/slack-config'
+    annotations:
+      testgrid-dashboards: sig-contribex-slack-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-slack-infra/tempelis:v20200909-1eb97f5
+        command:
+        - /tempelis
+        args:
+        - --config=communication/slack-config/
+        - --restrictions=communication/slack-config/restrictions.yaml
+        - --auth=/etc/slack-auth/auth.json
+        volumeMounts:
+        - name: tempelis-readonly-creds
+          mountPath: /etc/slack-auth
+          readOnly: true
+      volumes:
+      - name: tempelis-readonly-creds
+        secret:
+          secretName: slack-tempelis-auth

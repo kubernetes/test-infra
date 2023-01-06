@@ -1,0 +1,32 @@
+{{define "header"}}
+<link rel="stylesheet" href="links.css">
+<script type="text/javascript" src="script_bundle.min.js"></script>
+{{end}}
+
+{{define "body"}}
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+  <tbody>
+    {{range $ix, $linkGroup := .LinkGroups}}
+      <tr class="header links-expander">
+        <td class="mdl-data-table__cell--non-numeric expander"><h6>{{$linkGroup.Title}}</h6></td>
+        <td class="mdl-data-table__cell--non-numeric expander"><i class="icon-button material-icons arrow-icon noselect">expand_more</i></td>
+      </tr>
+      <tbody class="hidden-links">
+        {{range $jx, $link := $linkGroup.Links}}
+          <tr>
+            <td class="mdl-data-table__cell--non-numeric">{{$link.Name}}</td>
+            <td class="mdl-data-table__cell--non-numeric link">
+              <button class="copy" data-link="{{$link.URL}}">Copy</button>
+                {{if $link.Link}}
+                  <a href="{{$link.Link}}">{{$link.URL}}</a>
+                {{else}}
+                  {{$link.URL}}
+                {{end}}
+            </td>
+          </tr>
+        {{end}}
+      </tbody>
+    {{end}}
+  </tbody>
+</table>
+{{end}}

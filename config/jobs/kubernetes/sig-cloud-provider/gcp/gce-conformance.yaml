@@ -1,0 +1,97 @@
+periodics:
+- interval: 3h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-gce-conformance-latest
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}"
+    testgrid-dashboards: conformance-all, conformance-gce
+    testgrid-tab-name: Conformance - GCE - master
+    description: Runs conformance tests using kubetest against kubernetes master on GCE
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=200m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      resources:
+        limits:
+          cpu: 1
+          memory: 3Gi
+        requests:
+          cpu: 1
+          memory: 3Gi
+- interval: 3h
+  cluster: k8s-infra-prow-build
+  name: ci-kubernetes-gce-conformance-latest-kubetest2
+  annotations:
+    testgrid-dashboards: sig-release-master-blocking, conformance-all, conformance-gce
+    testgrid-tab-name: Conformance - GCE - master - kubetest2
+    description: Runs conformance tests using kubetest2 against kubernetes master on GCE
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-stale-results-hours: '24'
+    testgrid-num-columns-recent: '3'
+    testgrid-alert-email: release-team@kubernetes.io
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  decoration_config:
+    timeout: 220m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 4
+          memory: 14Gi
+        requests:
+          cpu: 4
+          memory: 14Gi
+      command:
+      - runner.sh
+      args:
+      - "/bin/bash"
+      - "-c"
+      # TODO: Use published release tars for k/k
+      - set -o errexit;
+        set -o nounset;
+        set -o pipefail;
+        set -o xtrace;
+        REPO_ROOT=$GOPATH/src/k8s.io/kubernetes;
+        cd;
+        export GO111MODULE=on;
+        go install sigs.k8s.io/kubetest2@latest;
+        go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+        go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+        kubetest2 gce -v 2 \;
+          --repo-root $REPO_ROOT \;
+          --legacy-mode \;
+          --build \;
+          --up \;
+          --down \;
+          --test=ginkgo \;
+          -- \;
+          --focus-regex='\[Conformance\]' \;
+          --use-built-binaries

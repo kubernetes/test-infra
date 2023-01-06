@@ -1,0 +1,15 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- spiffxp
+- MushuEE
+approvers:
+- spiffxp
+- MushuEE
+emeritus_approvers:
+- amwat
+- BenTheElder
+- Katharine
+
+labels:
+- area/kettle

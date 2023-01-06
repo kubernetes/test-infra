@@ -1,0 +1,9 @@
+<testsuites>
+    <testsuite>
+        <testcase name="TestSimpleFile">
+            <failure message="simple_test.go:186: Running tests in file plumbing"/>
+        </testcase>
+        <testcase name="TestSimpleFile/plumbing/min/min_program"> PASS </testcase>
+        <testcase name="TestSimpleFile/plumbing/eval_results/error_result"> PASS </testcase>
+    </testsuite>
+</testsuites>

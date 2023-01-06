@@ -1,0 +1,63 @@
+# This file contains a PoC presubmit for providing community members ability
+# to run ad-hoc 100 node scale tests.
+
+# Please contact mm4tt@ if you're interested in using it.
+# TODO(mm4tt): Create a mailing group with owners of this framework.
+
+# Current reservation holder: pohly@
+
+presubmits:
+  kubernetes/perf-tests:
+  - name: pull-perf-tests-100-adhoc
+    always_run: false # This test needs to be triggered manually via `/test pull-perf-tests-100-adhoc`
+    max_concurrency: 1 # Keep at 1 until we figure out a proper reservation system.
+    skip_report: false # Report the status on github.
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/perf-tests
+    decoration_config:
+      timeout: 120m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-e2e-scalability-common: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-100-adhoc
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --cluster=
+        - --extract=ci/latest
+        - --gcp-nodes=100
+        - --gcp-project-type=scalability-presubmit-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --tear-down-previous
+        - # TODO(pohly@): Custom overrides, clean up after finishing the tests.
+        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=1000 --kube-api-burst=1000
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/adhoc/run-e2e-test.sh
+        - --timeout=100m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        # The resources are set to support a 100 node CL2 test.
+        resources:
+          limits:
+            cpu: 2
+            memory: "6Gi"
+          requests:
+            cpu: 2
+            memory: "6Gi"

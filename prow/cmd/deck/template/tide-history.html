@@ -1,0 +1,50 @@
+{{define "title"}}Tide History{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript" src="/static/tide_history_bundle.min.js"></script>
+<script type="text/javascript" src="tide-history.js?var=tideHistory"></script>
+{{end}}
+
+{{define "content"}}
+<button id="top-navigator" class="mdl-button mdl-js-button mdl-button--fab hidden">
+  <i class="material-icons">arrow_upward</i>
+</button>
+<div class="page-content">
+  <aside>
+    <div id="filter-box" class="card-box">
+      <ul id="filter-list" class="noBullets">
+        <li>Filter</li>
+        <li><select id="repo"><option value="">all repositories</option></select></li>
+        <li><select id="branch"><option value="">all branches</option></select></li>
+        &gt;&gt;
+        <li><select id="pull"><option value="">all pull requests</option></select></li>
+        <li><select id="author"><option value="">all authors</option></select></li>
+        <li><select id="action"><option value="">all actions</option></select></li>
+        <li><select id="state"><option value="">all states</option></select></li>
+        <li id="record-count"></li>
+      </ul>
+    </div>
+  </aside>
+  <article>
+    <div class="table-container">
+      <table id="records">
+        <thead>
+        <tr>
+          <th></th> <!-- State icon -->
+          <th>Pool</th>
+          <th>Base Commit</th>
+          <th>Action</th>
+          <th>Target</th>
+          <th>Time</th>
+          <th>Error</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </article>
+</div>
+{{end}}
+
+{{template "page" (settings mobileUnfriendly lightMode "tide-history" .)}}

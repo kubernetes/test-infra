@@ -1,0 +1,217 @@
+periodics:
+- name: ci-kind-unit-test
+  interval: 6h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: main
+    path_alias: sigs.k8s.io/kind
+  labels:
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+      command:
+      - wrapper.sh
+      - make
+      - test
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-testing-kind
+    testgrid-tab-name: kind-ci-unit-test
+    testgrid-alert-email: bentheelder@google.com
+    description: kind CI unit test
+# conformance test against kubernetes master branch with `kind`
+- interval: 1h
+  name: ci-kubernetes-kind-conformance
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # don't retry conformance tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
+    testgrid-tab-name: conformance, master (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes master branch with `kind` ipv6
+- interval: 1h
+  name: ci-kubernetes-kind-conformance-ipv6
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      # enable IPV6 in bootstrap image
+      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+        value: "true"
+      # tell kind CI script to use ipv6
+      - name: "IP_FAMILY"
+        value: "ipv6"
+      # don't retry conformance tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
+    testgrid-tab-name: kind (IPv6), master (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes master branch with `kind`, skipping
+# serial tests so it runs in ~20m
+- interval: 1h
+  name: ci-kubernetes-kind-conformance-parallel
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+      env:
+      # skip serial tests and run with --ginkgo-parallel
+      - name: "PARALLEL"
+        value: "true"
+      # don't retry conformance tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
+    testgrid-tab-name: conformance, master (dev) [non-serial]
+    description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'
+# conformance test against kubernetes master branch with `kind` ipv6
+- interval: 1h
+  name: ci-kubernetes-kind-conformance-parallel-ipv6
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20221207-9bb38b7b14-master
+      env:
+      # enable IPV6 in bootstrap image
+      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+        value: "true"
+      # tell kind CI script to use ipv6
+      - name: "IP_FAMILY"
+        value: "ipv6"
+      # skip serial tests and run with --ginkgo-parallel
+      - name: "PARALLEL"
+        value: "true"
+      # don't retry conformance tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
+    testgrid-tab-name: kind (IPv6), master (dev) [non-serial]
+    description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+    testgrid-num-columns-recent: '3'

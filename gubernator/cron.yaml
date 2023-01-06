@@ -1,0 +1,8 @@
+# These URLs will be fetched by AppEngine on the given schedule.
+# Only the default (currently serving) version's URL will be fetched.
+# docs: https://cloud.google.com/appengine/docs/standard/python/config/cron
+cron:
+- description: sync PR state
+  url: /sync
+  schedule: every 8 hours
+  target: github

@@ -1,0 +1,7 @@
+{{ range $labelCSS := . -}}
+.{{- $labelCSS.Name }} {
+    background-color: #{{ $labelCSS.BackgroundColor -}};
+    color: #{{ $labelCSS.Color -}};
+}
+
+{{ end }}

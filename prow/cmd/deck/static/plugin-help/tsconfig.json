@@ -1,0 +1,12 @@
+{
+  "extends": "../../../../../tsconfig.json",
+  "include": [
+    "plugin-help.ts",
+    "prettify.ts",
+    "../common/common.ts",
+    "../vendor.d.ts",
+    "../../../../../node_modules/moment/moment.d.ts",
+    "../../../../../node_modules/@types/gtag.js/index.d.ts",
+    "../api"
+  ],
+}

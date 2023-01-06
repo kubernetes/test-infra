@@ -1,0 +1,15 @@
+# Dashboard Group
+#
+dashboard_groups:
+- name: sig-security
+  dashboard_names:
+  - sig-security-cvelist-public
+  - sig-security-snyk-scan
+  - sig-security-cve-feed
+
+# Dashboards
+#
+dashboards:
+- name: sig-security-cvelist-public
+- name: sig-security-snyk-scan
+- name: sig-security-cve-feed

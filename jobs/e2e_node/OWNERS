@@ -1,0 +1,34 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- bart0sh
+- ConnorDoyle
+- derekwaynecarr
+- dims
+- endocrimes
+- karan
+- klueska
+- MHBauer
+- tallclair
+- vpickard
+- sjenning
+- SergeyKanzhelev
+approvers:
+- Random-Liu
+- yujuhong
+- tallclair
+- derekwaynecarr
+- ConnorDoyle
+- klueska
+- dchen1107
+- dims
+- sjenning
+- mrunalp
+- SergeyKanzhelev
+- endocrimes
+emeritus_approvers:
+- yguo0905
+- dashpole
+- ehashman
+labels:
+- sig/node

@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- chases2
+- stevekuznetsov
+approvers:
+- chases2
+- stevekuznetsov
+labels:
+ - area/prow/config-bootstrapper
