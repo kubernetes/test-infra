@@ -162,7 +162,7 @@ func main() {
 		},
 	)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to construct build cluster managers. Is there a bad entry in the kubeconfig secret?")
+		logrus.WithError(err).Error("Failed to construct build cluster managers. Please check that the kubeconfig secrets are correct, and that RBAC roles on the build cluster allow Prow's service account to list pods on it.")
 	}
 
 	for buildClusterName, buildClusterManager := range buildClusterManagers {
