@@ -2985,13 +2985,14 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 		expectedHeader http.Header
 	}{
 		{
-			name: "Empty token, no auth header",
-			mod:  func(c *client) { c.getToken = func() []byte { return []byte{} } },
+			name:           "Empty token, no auth header",
+			mod:            func(c *client) { c.getToken = func() []byte { return []byte{} } },
+			expectedHeader: http.Header{"X-GitHub-Api-Version": []string{"2022-11-28"}},
 		},
 		{
 			name:           "Token, auth header",
 			mod:            func(c *client) { c.getToken = func() []byte { return []byte("sup") } },
-			expectedHeader: http.Header{"Authorization": []string{"Bearer sup"}},
+			expectedHeader: http.Header{"Authorization": []string{"Bearer sup"}, "X-GitHub-Api-Version": []string{"2022-11-28"}},
 		},
 	}
 
