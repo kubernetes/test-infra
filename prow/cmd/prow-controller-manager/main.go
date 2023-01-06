@@ -165,9 +165,11 @@ func main() {
 		logrus.WithError(err).Error("Failed to construct build cluster managers. Is there a bad entry in the kubeconfig secret?")
 	}
 
-	for _, buildClusterManager := range buildClusterManagers {
+	for buildClusterName, buildClusterManager := range buildClusterManagers {
 		if err := mgr.Add(buildClusterManager); err != nil {
-			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
+			logrus.WithError(err).WithFields(logrus.Fields{
+				"cluster": buildClusterName,
+			}).Fatalf("Failed to add build cluster manager to main manager")
 		}
 	}
 
