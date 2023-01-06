@@ -667,6 +667,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
+    max_concurrency: 1
     decorate: true
     decoration_config:
       timeout: 90m
@@ -723,6 +724,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
+    max_concurrency: 1
     decorate: true
     decoration_config:
       timeout: 90m
@@ -779,6 +781,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
+    max_concurrency: 1
     decorate: true
     decoration_config:
       timeout: 90m
@@ -835,6 +838,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
+    max_concurrency: 1
     decorate: true
     decoration_config:
       timeout: 90m
@@ -2072,6 +2076,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
+    max_concurrency: 1
     decorate: true
     decoration_config:
       timeout: 90m
@@ -2136,6 +2141,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
+    max_concurrency: 1
     decorate: true
     decoration_config:
       timeout: 90m
@@ -2207,6 +2213,7 @@ presubmits:
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
       preset-dind-enabled: "true"
+    max_concurrency: 1
     decorate: true
     decoration_config:
       timeout: 150m
