@@ -12,7 +12,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -74,7 +74,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -138,7 +138,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -208,7 +208,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -270,7 +270,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -338,7 +338,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -402,7 +402,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -472,7 +472,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -534,7 +534,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -602,7 +602,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -666,7 +666,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -736,7 +736,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -798,7 +798,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -866,7 +866,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -930,7 +930,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1000,7 +1000,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1062,7 +1062,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1130,7 +1130,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1194,7 +1194,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1264,7 +1264,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1328,7 +1328,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1398,7 +1398,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1462,7 +1462,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1532,7 +1532,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1596,7 +1596,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1666,7 +1666,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1730,7 +1730,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1800,7 +1800,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1862,7 +1862,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1930,7 +1930,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1994,7 +1994,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2064,7 +2064,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2128,7 +2128,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2198,7 +2198,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2262,7 +2262,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2332,7 +2332,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2396,7 +2396,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2466,7 +2466,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2530,7 +2530,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2600,7 +2600,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2664,7 +2664,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2734,7 +2734,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2798,7 +2798,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2868,7 +2868,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2932,7 +2932,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -3002,7 +3002,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -3064,7 +3064,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -3132,7 +3132,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -3194,7 +3194,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops

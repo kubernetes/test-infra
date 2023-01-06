@@ -968,6 +968,7 @@ def generate_upgrades():
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades'],
                        runs_per_day=8,
+                       test_timeout_minutes=120,
                        scenario='upgrade-ab',
                        env=env,
                        )
@@ -983,6 +984,7 @@ def generate_upgrades():
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades-many-addons'],
+                       test_timeout_minutes=120,
                        runs_per_day=4,
                        scenario='upgrade-ab',
                        env=addonsenv,
@@ -1457,6 +1459,7 @@ def generate_presubmits_e2e():
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
+            test_timeout_minutes=120,
             run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
             scenario='upgrade-ab',
             env={
