@@ -15,13 +15,10 @@
 FROM google/cloud-sdk:latest as builder
 # https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/Dockerfile
 
-# TARGETARCH is an automatic platform ARG enabled by Docker BuildKit.
-ARG TARGETARCH # Briefly unused as s390x and ppcle64 binaries aren't available.
-
 ARG AWS_IAM_AUTHENTICATOR_VERSION
 RUN curl -fsSL \
     https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${AWS_IAM_AUTHENTICATOR_VERSION}/aws-iam-authenticator_${AWS_IAM_AUTHENTICATOR_VERSION}_linux_amd64 -o /aws-iam-authenticator && \
-    chmod +x /aws-iam-authenticator || true
+    chmod +x /aws-iam-authenticator
 
 
 FROM alpine:latest
