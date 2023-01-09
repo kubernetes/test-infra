@@ -1,5 +1,25 @@
 presubmits:
   kubernetes-sigs/aws-ebs-csi-driver:
+  - name: pull-aws-ebs-csi-driver-test-helm-chart
+    always_run: true
+    decorate: true
+    skip_branches:
+    - gh-pages
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230105-c1beb6cf98-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-helm-chart
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: test-helm-chart
+      description: aws ebs csi driver test helm chart on pull request
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-verify
     always_run: true
     decorate: true
