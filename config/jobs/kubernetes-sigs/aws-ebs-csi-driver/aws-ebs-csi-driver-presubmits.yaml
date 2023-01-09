@@ -7,6 +7,8 @@ presubmits:
     - gh-pages
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230105-c1beb6cf98-master
