@@ -471,6 +471,8 @@ spec:
                             description: AuthorLink links to the author of the pull
                               request.
                             type: string
+                          body:
+                            type: string
                           commit_link:
                             description: CommitLink links to the commit identified
                               by the SHA.
@@ -21378,6 +21380,8 @@ spec:
                         author_link:
                           description: AuthorLink links to the author of the pull
                             request.
+                          type: string
+                        body:
                           type: string
                         commit_link:
                           description: CommitLink links to the commit identified by

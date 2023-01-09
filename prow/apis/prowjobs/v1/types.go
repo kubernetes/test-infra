@@ -989,6 +989,7 @@ type Pull struct {
 	Author string `json:"author"`
 	SHA    string `json:"sha"`
 	Title  string `json:"title,omitempty"`
+	Body   string `json:"body,omitempty"`
 
 	// Ref is git ref can be checked out for a change
 	// for example,
