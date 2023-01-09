@@ -446,7 +446,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
 	approveComments := filterComments(comments, approvalMatcher(botUserChecker, opts.LgtmActsAsApprove, opts.ConsiderReviewState()))
-	addApprovers(approversHelper, approveComments, pr.author, opts.ConsiderReviewState())
+	addApprovers(approversHelper, approveComments, botUserChecker, opts, pr.author)
 	log.WithField("duration", time.Since(start).String()).Debug("Completed filtering approval comments in handle")
 
 	for _, user := range pr.assignees {
@@ -569,9 +569,10 @@ func notificationMatcher(isBot func(string) bool) func(*comment) bool {
 // them to the Approvers.  The function uses the latest approve or cancel comment
 // to determine the Users intention. A review in requested changes state is
 // considered a cancel.
-func addApprovers(approversHelper approveHelper, approveComments []*comment, author string, reviewActsAsApprove bool) {
+func addApprovers(approversHelper approveHelper, approveComments []*comment, botUserCheck func(string) bool, opts *plugins.Approve, author string) {
 	for _, c := range approveComments {
-		approversHelper.processComment(c, author, reviewActsAsApprove)
+		containsApprovalCommand := isApprovalCommand(botUserCheck, opts.LgtmActsAsApprove, c)
+		approversHelper.processComment(c, author, opts.ConsiderReviewState(), containsApprovalCommand)
 	}
 }
 
@@ -671,7 +672,7 @@ type approveHelper interface {
 	setAssociatedIssue(int)
 	setRequiredIssue(bool)
 	setManuallyApproved(func() bool)
-	processComment(c *comment, author string, reviewActsAsApprove bool)
+	processComment(c *comment, author string, reviewActsAsApprove, containsApprovalCommand bool)
 	isApproved() bool
 	updateNoficiation(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string, latestNotification *comment) *string
 }
@@ -732,7 +733,7 @@ func (sa *simpleApproveHelper) setManuallyApproved(f func() bool) {
 	sa.approversHandler.ManuallyApproved = f
 }
 
-func (sa *simpleApproveHelper) processComment(c *comment, author string, reviewActsAsApprove bool) {
+func (sa *simpleApproveHelper) processComment(c *comment, author string, reviewActsAsApprove, _ bool) {
 	if c.Author == "" {
 		return
 	}
@@ -830,12 +831,16 @@ func (ga *granularApproveHelper) setManuallyApproved(f func() bool) {
 	ga.approversHandler.ManuallyApproved = f
 }
 
-func (ga *granularApproveHelper) processComment(c *comment, author string, reviewActsAsApprove bool) {
+func (ga *granularApproveHelper) processComment(c *comment, author string, reviewActsAsApprove, containsApprovalCommand bool) {
 	if c.Author == "" {
 		return
 	}
 
-	if reviewActsAsApprove && c.ReviewState == github.ReviewStateApproved {
+	// If an approve review contains a approve2 type command (ex /approve files path),
+	// we would like the approve2 command to take precedence. This differs slightly
+	// from the implementation of simpleApprove in that we again check here if the
+	// comment contains an approve command.
+	if reviewActsAsApprove && c.ReviewState == github.ReviewStateApproved && !containsApprovalCommand {
 		ga.approversHandler.AddApprover(
 			c.Author,
 			c.HTMLURL,

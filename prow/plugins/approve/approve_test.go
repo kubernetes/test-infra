@@ -1644,6 +1644,269 @@ The status of the PR is:
 		},
 
 		{
+			name:     "partially approved with approve review state, partial approval should take precedence; reviewActsAsApprove = true.",
+			hasLabel: false,
+			prAuthor: "nikhita",
+			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
+			approvers: map[string]layeredsets.String{
+				"x/x.go":      layeredsets.NewString("xtrme"),
+				"x/x_test.go": layeredsets.NewString("xtrme"),
+				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
+				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
+				"z/z.go":      layeredsets.NewString("zac", "zoe"),
+				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+			},
+			leafApprovers: map[string]sets.String{
+				"x/x.go":      sets.NewString("xtrme"),
+				"x/x_test.go": sets.NewString("xtrme"),
+				"y/y.go":      sets.NewString("ykakarap"),
+				"y/y_test.go": sets.NewString("ykakarap"),
+				"z/z.go":      sets.NewString("zac", "zoe"),
+				"z/z_test.go": sets.NewString("zac", "zoe"),
+			},
+			approversOwners: map[string]string{
+				"x/x.go":      "x",
+				"x/x_test.go": "x",
+				"y/y.go":      "y",
+				"y/y_test.go": "y",
+				"z/z.go":      "z",
+				"z/z_test.go": "z",
+			},
+			comments: []github.IssueComment{},
+			reviews: []github.Review{
+				newTestReview("Zac", "Something \n/approve files y/*", github.ReviewStateApproved),
+			},
+			selfApprove:         true,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Zac</a>*, *<a href="#" title="Author self-approved">nikhita</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **xtrme**, **zoe**
+You can assign the PR to them by writing ` + "`/assign @xtrme @zoe`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **6** files: **2** are approved and **4** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[x/OWNERS](https://github.com/org/repo/blob/master/x/OWNERS)**
+- **[z/OWNERS](https://github.com/org/repo/blob/master/z/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/y">y/</a></strike> (approved) [zac]</summary>
+
+- <strike>y/y.go</strike> 
+- <strike>y/y_test.go</strike> 
+
+</details>
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/x">x/</a></strong> (unapproved) </summary>
+
+- x/x.go 
+- x/x_test.go 
+
+</details>
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/z">z/</a></strong> (unapproved) </summary>
+
+- z/z.go 
+- z/z_test.go 
+
+</details>
+
+
+<!-- META={"approvers":["xtrme","zoe"]} -->`,
+		},
+
+		{
+			name:     "partially approved with approve review state, partial approval should take precedence; reviewActsAsApprove = false.",
+			hasLabel: false,
+			prAuthor: "nikhita",
+			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
+			approvers: map[string]layeredsets.String{
+				"x/x.go":      layeredsets.NewString("xtrme"),
+				"x/x_test.go": layeredsets.NewString("xtrme"),
+				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
+				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
+				"z/z.go":      layeredsets.NewString("zac", "zoe"),
+				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+			},
+			leafApprovers: map[string]sets.String{
+				"x/x.go":      sets.NewString("xtrme"),
+				"x/x_test.go": sets.NewString("xtrme"),
+				"y/y.go":      sets.NewString("ykakarap"),
+				"y/y_test.go": sets.NewString("ykakarap"),
+				"z/z.go":      sets.NewString("zac", "zoe"),
+				"z/z_test.go": sets.NewString("zac", "zoe"),
+			},
+			approversOwners: map[string]string{
+				"x/x.go":      "x",
+				"x/x_test.go": "x",
+				"y/y.go":      "y",
+				"y/y_test.go": "y",
+				"z/z.go":      "z",
+				"z/z_test.go": "z",
+			},
+			comments: []github.IssueComment{},
+			reviews: []github.Review{
+				newTestReview("Zac", "Something \n/approve files y/*", github.ReviewStateApproved),
+			},
+			selfApprove:         true,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Zac</a>*, *<a href="#" title="Author self-approved">nikhita</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **xtrme**, **zoe**
+You can assign the PR to them by writing ` + "`/assign @xtrme @zoe`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **6** files: **2** are approved and **4** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[x/OWNERS](https://github.com/org/repo/blob/master/x/OWNERS)**
+- **[z/OWNERS](https://github.com/org/repo/blob/master/z/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/y">y/</a></strike> (approved) [zac]</summary>
+
+- <strike>y/y.go</strike> 
+- <strike>y/y_test.go</strike> 
+
+</details>
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/x">x/</a></strong> (unapproved) </summary>
+
+- x/x.go 
+- x/x_test.go 
+
+</details>
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/z">z/</a></strong> (unapproved) </summary>
+
+- z/z.go 
+- z/z_test.go 
+
+</details>
+
+
+<!-- META={"approvers":["xtrme","zoe"]} -->`,
+		},
+
+		{
+			name:     "Review acts as approve, an empty approve review should approve all files that the approver has rights over.",
+			hasLabel: false,
+			prAuthor: "nikhita",
+			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
+			approvers: map[string]layeredsets.String{
+				"x/x.go":      layeredsets.NewString("xtrme"),
+				"x/x_test.go": layeredsets.NewString("xtrme"),
+				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
+				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
+				"z/z.go":      layeredsets.NewString("zac", "zoe"),
+				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+			},
+			leafApprovers: map[string]sets.String{
+				"x/x.go":      sets.NewString("xtrme"),
+				"x/x_test.go": sets.NewString("xtrme"),
+				"y/y.go":      sets.NewString("ykakarap"),
+				"y/y_test.go": sets.NewString("ykakarap"),
+				"z/z.go":      sets.NewString("zac", "zoe"),
+				"z/z_test.go": sets.NewString("zac", "zoe"),
+			},
+			approversOwners: map[string]string{
+				"x/x.go":      "x",
+				"x/x_test.go": "x",
+				"y/y.go":      "y",
+				"y/y_test.go": "y",
+				"z/z.go":      "z",
+				"z/z_test.go": "z",
+			},
+			comments: []github.IssueComment{},
+			reviews: []github.Review{
+				newTestReview("Zac", "", github.ReviewStateApproved),
+			},
+			selfApprove:         true,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Zac</a>*, *<a href="#" title="Author self-approved">nikhita</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **xtrme**
+You can assign the PR to them by writing ` + "`/assign @xtrme`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **6** files: **4** are approved and **2** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[x/OWNERS](https://github.com/org/repo/blob/master/x/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/y">y/</a></strike> (approved) [zac]</summary>
+
+- <strike>y/y.go</strike> 
+- <strike>y/y_test.go</strike> 
+
+</details>
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/z">z/</a></strike> (approved) [zac]</summary>
+
+- <strike>z/z.go</strike> 
+- <strike>z/z_test.go</strike> 
+
+</details>
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/x">x/</a></strong> (unapproved) </summary>
+
+- x/x.go 
+- x/x_test.go 
+
+</details>
+
+
+<!-- META={"approvers":["xtrme"]} -->`,
+		},
+
+		{
 			name:     "issue provided in PR body",
 			prBody:   "some changes that fix #42.\n/assign",
 			prAuthor: "ykakarap",
