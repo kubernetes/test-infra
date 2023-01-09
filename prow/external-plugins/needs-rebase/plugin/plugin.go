@@ -231,9 +231,9 @@ func takeActionWithContext(ctx context.Context, ghc githubClient, org, repo stri
 		}
 		var msg string
 		if author == dependabotUser {
-			msg = plugins.FormatSimpleResponse(author, dependabotRebaseMessage)
+			msg = plugins.FormatSimpleResponse(dependabotRebaseMessage)
 		} else {
-			msg = plugins.FormatSimpleResponse(author, needsRebaseMessage)
+			msg = plugins.FormatSimpleResponse(needsRebaseMessage)
 		}
 		return ghc.CreateCommentWithContext(ctx, org, repo, num, msg)
 	} else if mergeable && hasLabel {

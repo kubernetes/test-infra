@@ -120,7 +120,7 @@ func handle(ghc githubClient, gc git.ClientFactory, cp pruneClient, log *logrus.
 		if err := ghc.AddLabel(org, repo, num, labels.MergeCommits); err != nil {
 			return err
 		}
-		msg := plugins.FormatSimpleResponse(pre.PullRequest.User.Login, commentBody)
+		msg := plugins.FormatSimpleResponse(commentBody)
 		return ghc.CreateComment(org, repo, num, msg)
 	}
 	return nil
