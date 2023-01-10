@@ -5,9 +5,9 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/checkconfig: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/clonerefs: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/config-bootstrapper: gcr.io/k8s-prow/git:v20220215-ddc3ad9
-  k8s.io/test-infra/prow/cmd/deck: gcr.io/k8s-prow/git:v20220215-ddc3ad9
+  k8s.io/test-infra/prow/cmd/deck: gcr.io/k8s-prow/git-gke-gcloud-auth:v20221221-af5c6c8c0d
   k8s.io/test-infra/prow/cmd/exporter: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
-  k8s.io/test-infra/prow/cmd/crier: gcr.io/k8s-prow/git:v20220215-ddc3ad9
+  k8s.io/test-infra/prow/cmd/crier: gcr.io/k8s-prow/git-gke-gcloud-auth:v20221221-af5c6c8c0d
   k8s.io/test-infra/prow/cmd/entrypoint: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/generic-autobumper: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/gerrit: gcr.io/k8s-prow/git:v20220215-ddc3ad9
@@ -21,12 +21,12 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/jenkins-operator: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/peribolos: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/prow/cmd/sidecar: gcr.io/k8s-prow/git:v20220215-ddc3ad9
-  k8s.io/test-infra/prow/cmd/sinker: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/sinker: gcr.io/k8s-prow/git-gke-gcloud-auth:v20221221-af5c6c8c0d
   k8s.io/test-infra/prow/cmd/status-reconciler: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/prow/cmd/sub: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/tide: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/tot: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
-  k8s.io/test-infra/prow/cmd/prow-controller-manager: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/prow-controller-manager: gcr.io/k8s-prow/git-gke-gcloud-auth:v20221221-af5c6c8c0d
   k8s.io/test-infra/prow/cmd/admission: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/prow/cmd/mkpj: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/prow/cmd/mkpod: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
