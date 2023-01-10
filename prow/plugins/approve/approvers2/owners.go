@@ -439,7 +439,6 @@ func (ap *Approvers) AddNoIssueAuthorSelfApprover(login, reference string) {
 }
 
 // RemoveApprover removes an approver from the list.
-// RemoveApprover removes an approver from the list.
 func (ap *Approvers) RemoveApprover(login string) {
 	delete(ap.approvers, strings.ToLower(login))
 }
