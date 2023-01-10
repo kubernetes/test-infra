@@ -140,7 +140,7 @@ func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.
 func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
 	ap := NewApprovers(o)
 	for approver := range approvers {
-		ap.AddApprover(approver, "", false)
+		ap.AddApprover(approver, "", false, "")
 	}
 	return ap.UnapprovedFiles()
 }
@@ -174,7 +174,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 			o.log.Debugf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
 			return ap.GetCurrentApproversSet()
 		}
-		ap.AddApprover(newApprover, "", false)
+		ap.AddApprover(newApprover, "", false, "")
 	}
 
 	return ap.GetCurrentApproversSet()
@@ -288,8 +288,8 @@ func CaseInsensitiveIntersection(one, other sets.String) sets.String {
 }
 
 // NewApprovers create a new "Approvers" with no approval.
-func NewApprovers(owners Owners) Approvers {
-	return Approvers{
+func NewApprovers(owners Owners) *Approvers {
+	return &Approvers{
 		owners:    owners,
 		approvers: map[string]Approval{},
 		assignees: sets.NewString(),
@@ -313,7 +313,7 @@ func (ap *Approvers) shouldNotOverrideApproval(login string, noIssue bool) bool 
 }
 
 // AddLGTMer adds a new LGTM Approver
-func (ap *Approvers) AddLGTMer(login, reference string, noIssue bool) {
+func (ap *Approvers) AddLGTMer(login, reference string, noIssue bool, _ string) {
 	if ap.shouldNotOverrideApproval(login, noIssue) {
 		return
 	}
@@ -326,7 +326,7 @@ func (ap *Approvers) AddLGTMer(login, reference string, noIssue bool) {
 }
 
 // AddApprover adds a new Approver
-func (ap *Approvers) AddApprover(login, reference string, noIssue bool) {
+func (ap *Approvers) AddApprover(login, reference string, noIssue bool, _ string) {
 	if ap.shouldNotOverrideApproval(login, noIssue) {
 		return
 	}
@@ -339,7 +339,7 @@ func (ap *Approvers) AddApprover(login, reference string, noIssue bool) {
 }
 
 // AddAuthorSelfApprover adds the author self approval
-func (ap *Approvers) AddAuthorSelfApprover(login, reference string, noIssue bool) {
+func (ap *Approvers) AddAuthorSelfApprover(login, reference string, noIssue bool, _ string) {
 	if ap.shouldNotOverrideApproval(login, noIssue) {
 		return
 	}
@@ -361,6 +361,18 @@ func (ap *Approvers) AddAssignees(logins ...string) {
 	for _, login := range logins {
 		ap.assignees.Insert(strings.ToLower(login))
 	}
+}
+
+func (ap *Approvers) SetAssociatedIssue(issue int) {
+	ap.AssociatedIssue = issue
+}
+
+func (ap *Approvers) SetRequiredIssue(required bool) {
+	ap.RequireIssue = required
+}
+
+func (ap *Approvers) SetManuallyApproved(f func() bool) {
+	ap.ManuallyApproved = f
 }
 
 // GetCurrentApproversSet returns the set of approvers (login only, normalized to lower case)
@@ -630,7 +642,7 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 //   - a suggested list of people from each OWNERS files that can fully approve the PR
 //   - how an approver can indicate their approval
 //   - how an approver can cancel their approval
-func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string) *string {
+func (ap *Approvers) GetMessage(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string) *string {
 	linkURL.Path = org + "/" + repo
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
 Approval requirements bypassed by manually added approval.

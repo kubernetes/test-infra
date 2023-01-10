@@ -154,7 +154,7 @@ func (o Owners) temporaryUnapprovedFiles(approvals []Approval) sets.String {
 	ap := NewApprovers(o)
 	for _, aprvl := range approvals {
 		for _, info := range aprvl.Infos {
-			ap.AddApprover(aprvl.Login, info.Reference, info.Path)
+			ap.AddApprover(aprvl.Login, info.Reference, false, info.Path)
 		}
 	}
 	return ap.UnapprovedFiles()
@@ -189,7 +189,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 			o.log.Warnf("Couldn't find/suggest approvers for each file. Unapproved: %q", ap.UnapprovedFiles().List())
 			return ap.GetCurrentApproversSet()
 		}
-		ap.AddApprover(newApprover, "", "")
+		ap.AddApprover(newApprover, "", false, "")
 	}
 
 	return ap.GetCurrentApproversSet()
@@ -367,8 +367,8 @@ func CaseInsensitiveIntersection(one, other sets.String) sets.String {
 }
 
 // NewApprovers create a new "Approvers" with no approval.
-func NewApprovers(owners Owners) Approvers {
-	return Approvers{
+func NewApprovers(owners Owners) *Approvers {
+	return &Approvers{
 		owners:           owners,
 		approvers:        map[string]*Approval{},
 		noissueapprovers: map[string]*NoIssueApproval{},
@@ -381,13 +381,21 @@ func NewApprovers(owners Owners) Approvers {
 }
 
 // AddLGTMer adds a new LGTM Approver
-func (ap *Approvers) AddLGTMer(login, reference, path string) {
-	ap.addApproval(login, "LGTM", reference, path)
+func (ap *Approvers) AddLGTMer(login, reference string, noIssue bool, path string) {
+	if noIssue {
+		ap.AddNoIssueLGTMer(login, reference)
+	} else {
+		ap.addApproval(login, "LGTM", reference, path)
+	}
 }
 
 // AddApprover adds a new Approver
-func (ap *Approvers) AddApprover(login, reference, path string) {
-	ap.addApproval(login, "Approved", reference, path)
+func (ap *Approvers) AddApprover(login, reference string, noIssue bool, path string) {
+	if noIssue {
+		ap.AddNoIssueApprover(login, reference)
+	} else {
+		ap.addApproval(login, "Approved", reference, path)
+	}
 }
 
 func (ap *Approvers) addApproval(login, how, reference, approvedPath string) {
@@ -430,8 +438,12 @@ func (ap *Approvers) addNoIssueApproval(login, how, reference string) {
 }
 
 // AddAuthorSelfApprover adds the author self approval
-func (ap *Approvers) AddAuthorSelfApprover(login, reference, path string) {
-	ap.addApproval(login, "Author self-approved", reference, path)
+func (ap *Approvers) AddAuthorSelfApprover(login, reference string, noIssue bool, path string) {
+	if noIssue {
+		ap.AddNoIssueAuthorSelfApprover(login, reference)
+	} else {
+		ap.addApproval(login, "Author self-approved", reference, path)
+	}
 }
 
 func (ap *Approvers) AddNoIssueAuthorSelfApprover(login, reference string) {
@@ -440,7 +452,9 @@ func (ap *Approvers) AddNoIssueAuthorSelfApprover(login, reference string) {
 
 // RemoveApprover removes an approver from the list.
 func (ap *Approvers) RemoveApprover(login string) {
-	delete(ap.approvers, strings.ToLower(login))
+	normalisedLogin := strings.ToLower(login)
+	delete(ap.approvers, normalisedLogin)
+	delete(ap.noissueapprovers, normalisedLogin)
 }
 
 // AddAssignees adds assignees to the list
@@ -448,6 +462,18 @@ func (ap *Approvers) AddAssignees(logins ...string) {
 	for _, login := range logins {
 		ap.assignees.Insert(strings.ToLower(login))
 	}
+}
+
+func (ap *Approvers) SetAssociatedIssue(issue int) {
+	ap.AssociatedIssue = issue
+}
+
+func (ap *Approvers) SetRequiredIssue(required bool) {
+	ap.RequireIssue = required
+}
+
+func (ap *Approvers) SetManuallyApproved(f func() bool) {
+	ap.ManuallyApproved = f
 }
 
 // GetCurrentApproversSet returns the set of approvers (login only, normalized to lower case)
@@ -802,7 +828,7 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 //   - a suggested list of people from each OWNERS files that can fully approve the PR
 //   - how an approver can indicate their approval
 //   - how an approver can cancel their approval
-func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string) *string {
+func (ap *Approvers) GetMessage(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string) *string {
 	linkURL.Path = org + "/" + repo
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
 **Approval requirements bypassed by manually added approval.**

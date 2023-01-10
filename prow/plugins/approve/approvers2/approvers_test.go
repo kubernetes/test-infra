@@ -122,7 +122,7 @@ func TestUnapprovedFiles(t *testing.T) {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
 		testApprovers.RequireIssue = false
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE", "")
+			testApprovers.AddApprover(approver, "REFERENCE", false, "")
 		}
 		calculated := testApprovers.UnapprovedFiles()
 		if !test.expectedUnapproved.Equal(calculated) {
@@ -236,7 +236,7 @@ func TestUnapprovedFilesWithGranularApprovals(t *testing.T) {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
 		testApprovers.RequireIssue = false
 		for _, approval := range test.currentApproval {
-			testApprovers.AddApprover(approval.approver, "REFERENCE", approval.path)
+			testApprovers.AddApprover(approval.approver, "REFERENCE", false, approval.path)
 		}
 		calculated := testApprovers.UnapprovedFiles()
 		if !test.expectedUnapproved.Equal(calculated) {
@@ -370,7 +370,7 @@ func TestGetFiles(t *testing.T) {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TestSeed, log: logrus.WithField("plugin", "some_plugin")})
 		testApprovers.RequireIssue = false
 		for approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver, "REFERENCE", "")
+			testApprovers.AddApprover(approver, "REFERENCE", false, "")
 		}
 		calculated := testApprovers.GetFiles(&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "master")
 		sortFiles(test.expectedFiles)
@@ -612,7 +612,7 @@ func TestGetCCs(t *testing.T) {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
 		testApprovers.RequireIssue = false
 		for _, aprvl := range test.currentlyApproved {
-			testApprovers.AddApprover(aprvl.name, "REFERENCE", aprvl.path)
+			testApprovers.AddApprover(aprvl.name, "REFERENCE", false, aprvl.path)
 		}
 		testApprovers.AddAssignees(test.assignees...)
 		calculated := testApprovers.GetCCs()
@@ -880,7 +880,7 @@ func TestIsApproved(t *testing.T) {
 			fr.autoApproveUnownedSubfolders = test.autoApproveUnownedSubfoldersMap
 		}), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
 		for _, approver := range test.currentlyApproved {
-			testApprovers.AddApprover(approver.name, "REFERENCE", approver.path)
+			testApprovers.AddApprover(approver.name, "REFERENCE", false, approver.path)
 		}
 		calculated := testApprovers.IsApproved()
 		if test.isApproved != calculated {
@@ -1061,10 +1061,10 @@ func TestIsApprovedWithIssue(t *testing.T) {
 		testApprovers.RequireIssue = true
 		testApprovers.AssociatedIssue = test.associatedIssue
 		for _, aprvl := range test.currentlyApproved {
-			testApprovers.AddApprover(aprvl.name, "REFERENCE", aprvl.path)
+			testApprovers.AddApprover(aprvl.name, "REFERENCE", false, aprvl.path)
 		}
 		if test.useselfApprove {
-			testApprovers.AddAuthorSelfApprover("Author", "REFERENCE", "")
+			testApprovers.AddAuthorSelfApprover("Author", "REFERENCE", false, "")
 		}
 		for nia := range test.noIssueApprovers {
 			testApprovers.AddNoIssueApprover(nia, "REFERENCE")
@@ -1198,7 +1198,7 @@ func TestGetFilesApprovers(t *testing.T) {
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(test.owners), log: logrus.WithField("plugin", "some_plugin")})
 		for _, aprvl := range test.approvals {
-			testApprovers.AddApprover(aprvl.name, "REFERENCE", aprvl.path)
+			testApprovers.AddApprover(aprvl.name, "REFERENCE", false, aprvl.path)
 		}
 		calculated := testApprovers.GetFilesApprovers()
 		if !reflect.DeepEqual(test.expectedStatus, calculated) {
@@ -1219,7 +1219,7 @@ func TestGetMessage(t *testing.T) {
 		},
 	)
 	ap.RequireIssue = true
-	ap.AddApprover("Bill", "REFERENCE", "")
+	ap.AddApprover("Bill", "REFERENCE", false, "")
 
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
@@ -1257,7 +1257,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":["alice"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "dev"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "dev"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -1276,7 +1276,7 @@ func TestGetMessagePartiallyApproved(t *testing.T) {
 		},
 	)
 	ap.RequireIssue = true
-	ap.AddApprover("Bill", "REFERENCE", "b/b1.go")
+	ap.AddApprover("Bill", "REFERENCE", false, "b/b1.go")
 
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
@@ -1316,7 +1316,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":["alice"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "dev"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "dev"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -1335,9 +1335,9 @@ func TestGetMessageAllApproved(t *testing.T) {
 		},
 	)
 	ap.RequireIssue = true
-	ap.AddApprover("Alice", "REFERENCE", "")
-	ap.AddLGTMer("Bill", "REFERENCE", "")
-	ap.AddNoIssueApprover("Alice", "REFERENCE")
+	ap.AddApprover("Alice", "REFERENCE", false, "")
+	ap.AddLGTMer("Bill", "REFERENCE", false, "")
+	ap.AddApprover("Alice", "REFERENCE", true, "")
 
 	want := `[APPROVALNOTIFIER] This PR is **APPROVED**
 
@@ -1368,7 +1368,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -1387,8 +1387,8 @@ func TestGetMessageFilesApprovedIssueNotApproved(t *testing.T) {
 		},
 	)
 	ap.RequireIssue = true
-	ap.AddApprover("Alice", "REFERENCE", "")
-	ap.AddLGTMer("Bill", "REFERENCE", "")
+	ap.AddApprover("Alice", "REFERENCE", false, "")
+	ap.AddLGTMer("Bill", "REFERENCE", false, "")
 
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
@@ -1419,7 +1419,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -1437,7 +1437,7 @@ func TestGetMessageNoneApproved(t *testing.T) {
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
 	)
-	ap.AddAuthorSelfApprover("John", "REFERENCE", "")
+	ap.AddAuthorSelfApprover("John", "REFERENCE", false, "")
 	ap.RequireIssue = true
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
@@ -1476,7 +1476,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":["alice","bill"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -1496,9 +1496,9 @@ func TestGetMessageApprovedIssueAssociated(t *testing.T) {
 	)
 	ap.RequireIssue = true
 	ap.AssociatedIssue = 12345
-	ap.AddAuthorSelfApprover("John", "REFERENCE", "")
-	ap.AddApprover("Bill", "REFERENCE", "")
-	ap.AddApprover("Alice", "REFERENCE", "")
+	ap.AddAuthorSelfApprover("John", "REFERENCE", false, "")
+	ap.AddApprover("Bill", "REFERENCE", false, "")
+	ap.AddApprover("Alice", "REFERENCE", false, "")
 
 	want := `[APPROVALNOTIFIER] This PR is **APPROVED**
 
@@ -1529,7 +1529,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -1548,11 +1548,11 @@ func TestGetMessageApprovedNoIssueByPassed(t *testing.T) {
 		},
 	)
 	ap.RequireIssue = true
-	ap.AddAuthorSelfApprover("John", "REFERENCE", "")
-	ap.AddApprover("Bill", "REFERENCE", "")
-	ap.AddNoIssueApprover("Bill", "REFERENCE")
-	ap.AddApprover("Alice", "REFERENCE", "")
-	ap.AddNoIssueApprover("Alice", "REFERENCE")
+	ap.AddAuthorSelfApprover("John", "REFERENCE", false, "")
+	ap.AddApprover("Bill", "REFERENCE", false, "")
+	ap.AddApprover("Bill", "REFERENCE", true, "")
+	ap.AddApprover("Alice", "REFERENCE", false, "")
+	ap.AddApprover("Alice", "REFERENCE", true, "")
 
 	want := `[APPROVALNOTIFIER] This PR is **APPROVED**
 
@@ -1583,7 +1583,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -1602,7 +1602,7 @@ func TestGetMessageMDOwners(t *testing.T) {
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
 	)
-	ap.AddAuthorSelfApprover("John", "REFERENCE", "")
+	ap.AddAuthorSelfApprover("John", "REFERENCE", false, "")
 	ap.RequireIssue = true
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
@@ -1641,7 +1641,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":["alice","doctor"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -1659,7 +1659,7 @@ func TestGetMessageDifferentGitHubLink(t *testing.T) {
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
 	)
-	ap.AddAuthorSelfApprover("John", "REFERENCE", "")
+	ap.AddAuthorSelfApprover("John", "REFERENCE", false, "")
 	ap.RequireIssue = true
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
@@ -1698,7 +1698,7 @@ The status of the PR is:
 
 
 <!-- META={"approvers":["alice","bill"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.mycorp.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.mycorp.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
