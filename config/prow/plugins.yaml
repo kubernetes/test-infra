@@ -406,16 +406,12 @@ slack:
     - k8s-ci-robot
   - repos:
     - kubernetes/sig-release
-    channels:
-    - release-management
-    exempt_users:
-    - k8s-ci-robot
-  - repos:
     - kubernetes/release
     channels:
     - release-management
     exempt_users:
     - k8s-ci-robot
+    - dependabot[bot]
   - repos:
     - kubernetes/k8s.io
     channels:
