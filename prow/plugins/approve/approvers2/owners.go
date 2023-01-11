@@ -79,7 +79,7 @@ func (o Owners) GetApprovers() map[string]sets.String {
 		if strings.Contains(filepath.Dir(filepath.Dir(fn)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
 			continue
 		}
-		filesToApprovers[fn] = o.repo.Approvers(fn).Set()
+		filesToApprovers[fn] = o.repo.Approvers(ownersFile).Set()
 	}
 
 	return filesToApprovers

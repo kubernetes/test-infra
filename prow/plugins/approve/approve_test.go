@@ -229,7 +229,7 @@ func TestHandle_GranularApprover(t *testing.T) {
 			hasLabel: false,
 			files:    []string{"y/y.go"},
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("xtrme", "ykakarap", "zac"),
+				"y": layeredsets.NewString("xtrme", "ykakarap", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
@@ -276,7 +276,7 @@ The status of the PR is:
 			hasLabel: false,
 			files:    []string{"y/y.go"},
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("xtrme", "ykakarap", "zac"),
+				"y": layeredsets.NewString("xtrme", "ykakarap", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
@@ -330,7 +330,7 @@ The status of the PR is:
 			prAuthor: "ykakarap",
 			files:    []string{"z/z.go"},
 			approvers: map[string]layeredsets.String{
-				"z/z.go": layeredsets.NewString("xtrme", "zac"),
+				"z": layeredsets.NewString("xtrme", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go": sets.NewString("zac"),
@@ -383,12 +383,9 @@ The status of the PR is:
 			prAuthor: "nikhita",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
-				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("ykakarap", "zac"),
+				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -472,12 +469,9 @@ The status of the PR is:
 			prAuthor: "nikhita",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
-				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("ykakarap", "zac"),
+				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -560,12 +554,9 @@ The status of the PR is:
 			prAuthor: "nikhita",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
-				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("ykakarap", "zac"),
+				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -648,12 +639,9 @@ The status of the PR is:
 			prAuthor: "nikhita",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
-				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("ykakarap", "zac"),
+				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -735,7 +723,7 @@ The status of the PR is:
 			prAuthor: "ykakarap",
 			files:    []string{"z/z.go"},
 			approvers: map[string]layeredsets.String{
-				"z/z.go": layeredsets.NewString("xtrme", "zac"),
+				"z": layeredsets.NewString("xtrme", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go": sets.NewString("zac"),
@@ -787,12 +775,9 @@ The status of the PR is:
 			prAuthor: "nikhita",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
-				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("ykakarap", "zac"),
+				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -878,12 +863,9 @@ The status of the PR is:
 			prAuthor: "nikhita",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("ykakarap", "zac"),
-				"y/y_test.go": layeredsets.NewString("ykakarap", "zac"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("ykakarap", "zac"),
+				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -969,12 +951,9 @@ The status of the PR is:
 			prAuthor: "yuvaraj",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("yuvaraj", "zac", "nikhita"),
-				"y/y_test.go": layeredsets.NewString("yuvaraj", "zac", "nikhita"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("yuvaraj", "zac", "nikhita"),
+				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -1061,12 +1040,9 @@ The status of the PR is:
 			prAuthor: "yuvaraj",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("yuvaraj", "zac", "nikhita"),
-				"y/y_test.go": layeredsets.NewString("yuvaraj", "zac", "nikhita"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("yuvaraj", "zac", "nikhita"),
+				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -1152,12 +1128,9 @@ The status of the PR is:
 			prAuthor: "yuvaraj",
 			files:    []string{"x/x.go", "x/x_test.go", "y/y.go", "y/y_test.go", "z/z.go", "z/z_test.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go":      layeredsets.NewString("xtrme"),
-				"x/x_test.go": layeredsets.NewString("xtrme"),
-				"y/y.go":      layeredsets.NewString("yuvaraj", "zac", "nikhita"),
-				"y/y_test.go": layeredsets.NewString("yuvaraj", "zac", "nikhita"),
-				"z/z.go":      layeredsets.NewString("zac", "zoe", "nikhita"),
-				"z/z_test.go": layeredsets.NewString("zac", "zoe", "nikhita"),
+				"x": layeredsets.NewString("xtrme"),
+				"y": layeredsets.NewString("yuvaraj", "zac", "nikhita"),
+				"z": layeredsets.NewString("zac", "zoe", "nikhita"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go":      sets.NewString("xtrme"),
@@ -1237,8 +1210,8 @@ The status of the PR is:
 			prAuthor: "zac",
 			files:    []string{"x/x.go", "z/z.go"},
 			approvers: map[string]layeredsets.String{
-				"x/x.go": layeredsets.NewString("xtrme"),
-				"z/z.go": layeredsets.NewString("zac"),
+				"x": layeredsets.NewString("xtrme"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"x/x.go": sets.NewString("xtrme"),
@@ -1271,8 +1244,8 @@ The status of the PR is:
 			files:    []string{"y/y.go", "z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("ykakarap"),
-				"z/z.go": layeredsets.NewString("zac"),
+				"y": layeredsets.NewString("ykakarap"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
@@ -1331,8 +1304,8 @@ The status of the PR is:
 			files:    []string{"y/y.go", "z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("ykakarap"),
-				"z/z.go": layeredsets.NewString("xtrme", "zac"),
+				"y": layeredsets.NewString("ykakarap"),
+				"z": layeredsets.NewString("xtrme", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
@@ -1402,8 +1375,8 @@ The status of the PR is:
 			files:    []string{"y/y.go", "y/z/z.go"},
 			prAuthor: "xtrme",
 			approvers: map[string]layeredsets.String{
-				"y/y.go":   layeredsets.NewString("ykakarap"),
-				"y/z/z.go": layeredsets.NewString("ykakarap", "zac"),
+				"y":   layeredsets.NewString("ykakarap"),
+				"y/z": layeredsets.NewString("ykakarap", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go":   sets.NewString("ykakarap"),
@@ -1435,8 +1408,8 @@ The status of the PR is:
 			files:    []string{"y/y.go", "y/z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go":   layeredsets.NewString("ykakarap"),
-				"y/z/z.go": layeredsets.NewString("ykakarap", "zac"),
+				"y":   layeredsets.NewString("ykakarap"),
+				"y/z": layeredsets.NewString("ykakarap", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go":   sets.NewString("ykakarap"),
@@ -1469,8 +1442,8 @@ The status of the PR is:
 			files:    []string{"y/y.go", "y/z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go":   layeredsets.NewString("ykakarap"),
-				"y/z/z.go": layeredsets.NewString("ykakarap", "zac"),
+				"y":   layeredsets.NewString("ykakarap"),
+				"y/z": layeredsets.NewString("ykakarap", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go":   sets.NewString("ykakarap"),
@@ -1502,8 +1475,7 @@ The status of the PR is:
 			files:    []string{"z/z.go", "z/zz.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go":  layeredsets.NewString("zac"),
-				"z/zz.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go":  sets.NewString("zac"),
@@ -1558,8 +1530,7 @@ The status of the PR is:
 			files:    []string{"z/z.go", "z/zz.go"}, // previous commits may have been ["b/b.go"]
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go":  layeredsets.NewString("zac"),
-				"z/zz.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go":  sets.NewString("zac"),
@@ -1591,8 +1562,7 @@ The status of the PR is:
 			files:         []string{"z/z.go", "z/zz.go"},
 			prAuthor:      "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go":  layeredsets.NewString("zac"),
-				"z/zz.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go":  sets.NewString("zac"),
@@ -1654,8 +1624,7 @@ The status of the PR is:
 			files:    []string{"z/z.go", "z/zz.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go":  layeredsets.NewString("zac"),
-				"z/zz.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go":  sets.NewString("zac"),
@@ -1687,8 +1656,7 @@ The status of the PR is:
 			files:    []string{"z/z.go", "z/zz.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go":  layeredsets.NewString("zac"),
-				"z/zz.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go":  sets.NewString("zac"),
@@ -1747,7 +1715,7 @@ The status of the PR is:
 			files:    []string{"z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go": sets.NewString("zac"),
@@ -1794,7 +1762,7 @@ The status of the PR is:
 			files:    []string{"z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go": sets.NewString("zac"),
@@ -1848,7 +1816,7 @@ The status of the PR is:
 			files:    []string{"z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go": sets.NewString("zac"),
@@ -1895,7 +1863,7 @@ The status of the PR is:
 			files:    []string{"z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go": layeredsets.NewString("xtrme", "zac"),
+				"z": layeredsets.NewString("xtrme", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go": sets.NewString("zac"),
@@ -1953,7 +1921,7 @@ The status of the PR is:
 			files:    []string{"z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go": layeredsets.NewString("ykakarap", "zac"),
+				"z": layeredsets.NewString("ykakarap", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go": sets.NewString("zac"),
@@ -2012,7 +1980,7 @@ The status of the PR is:
 			files:    []string{"z/z.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"z/z.go": layeredsets.NewString("zac"),
+				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
 				"z/z.go": sets.NewString("zac"),
@@ -2064,7 +2032,7 @@ The status of the PR is:
 			files:    []string{"y/y.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("ykakarap"),
+				"y": layeredsets.NewString("ykakarap"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
@@ -2123,7 +2091,7 @@ The status of the PR is:
 			files:    []string{"y/y.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("ykakarap"),
+				"y": layeredsets.NewString("ykakarap"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
@@ -2179,7 +2147,7 @@ The status of the PR is:
 			files:    []string{"y/y.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("ykakarap"),
+				"y": layeredsets.NewString("ykakarap"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
@@ -2227,7 +2195,7 @@ The status of the PR is:
 			files:    []string{"y/y.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("ykakarap"),
+				"y": layeredsets.NewString("ykakarap"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
@@ -2275,7 +2243,7 @@ The status of the PR is:
 			files:    []string{"y/y.go"},
 			prAuthor: "ykakarap",
 			approvers: map[string]layeredsets.String{
-				"y/y.go": layeredsets.NewString("ykakarap"),
+				"y": layeredsets.NewString("ykakarap"),
 			},
 			leafApprovers: map[string]sets.String{
 				"y/y.go": sets.NewString("ykakarap"),
