@@ -225,10 +225,6 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 						logger.WithField("id", c.ID).Debug("Change not submittable presented in query results.")
 						continue
 					}
-					if !c.Mergeable {
-						logger.WithField("id", c.ID).Debug("Change not mergeable presented in query results.")
-						continue
-					}
 					submittableChanges = append(submittableChanges, c)
 				}
 				resChan <- changesFromProject{instance: instance, project: projName, changes: submittableChanges}
