@@ -6,6 +6,7 @@ dashboard_groups:
   - sig-instrumentation-metrics-server
   - sig-instrumentation-custom-metrics-apiserver
   - sig-instrumentation-prometheus-adapter
+  - sig-instrumentation-usage-metrics-collector
 
 dashboards:
 - name: sig-instrumentation-tests
@@ -22,3 +23,4 @@ dashboards:
 - name: sig-instrumentation-metrics-server
 - name: sig-instrumentation-custom-metrics-apiserver
 - name: sig-instrumentation-prometheus-adapter
+- name: sig-instrumentation-usage-metrics-collector
