@@ -86,6 +86,13 @@ branch-protection:
 
                             # RequiredPullRequestReviews specifies github approval/review criteria.
                             required_pull_request_reviews:
+                                # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                                bypass_pull_request_allowances:
+                                    teams:
+                                      - ""
+                                    users:
+                                      - ""
+
                                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                                 dismiss_stale_reviews: false
 
@@ -144,6 +151,13 @@ branch-protection:
 
                     # RequiredPullRequestReviews specifies github approval/review criteria.
                     required_pull_request_reviews:
+                        # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                        bypass_pull_request_allowances:
+                            teams:
+                              - ""
+                            users:
+                              - ""
+
                         # DismissStale overrides whether new commits automatically dismiss old reviews if set
                         dismiss_stale_reviews: false
 
@@ -186,6 +200,13 @@ branch-protection:
 
             # RequiredPullRequestReviews specifies github approval/review criteria.
             required_pull_request_reviews:
+                # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+                bypass_pull_request_allowances:
+                    teams:
+                      - ""
+                    users:
+                      - ""
+
                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                 dismiss_stale_reviews: false
 
@@ -240,6 +261,13 @@ branch-protection:
 
     # RequiredPullRequestReviews specifies github approval/review criteria.
     required_pull_request_reviews:
+        # BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+        bypass_pull_request_allowances:
+            teams:
+              - ""
+            users:
+              - ""
+
         # DismissStale overrides whether new commits automatically dismiss old reviews if set
         dismiss_stale_reviews: false
 

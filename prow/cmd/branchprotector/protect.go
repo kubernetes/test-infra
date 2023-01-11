@@ -593,13 +593,31 @@ func equalRequiredPullRequestReviews(state *github.RequiredPullRequestReviews, r
 		return state.DismissStaleReviews == request.DismissStaleReviews &&
 			state.RequireCodeOwnerReviews == request.RequireCodeOwnerReviews &&
 			state.RequiredApprovingReviewCount == request.RequiredApprovingReviewCount &&
-			equalDismissalRestrictions(state.DismissalRestrictions, &request.DismissalRestrictions)
+			equalDismissalRestrictions(state.DismissalRestrictions, &request.DismissalRestrictions) &&
+			equalBypassRestrictions(state.BypassRestrictions, &request.BypassRestrictions)
 	default:
 		return false
 	}
 }
 
 func equalDismissalRestrictions(state *github.DismissalRestrictions, request *github.DismissalRestrictionsRequest) bool {
+	switch {
+	case state == nil && request == nil:
+		return true
+	case state == nil && request != nil:
+		// when there are no restrictions on users or teams, GitHub will
+		// omit the fields from the response we get when asking for the
+		// current state. If we _are_ making a request but it has no real
+		// effect, this is identical to making no request for restriction.
+		return request.Users == nil && request.Teams == nil
+	case state != nil && request != nil:
+		return equalTeams(state.Teams, request.Teams) && equalUsers(state.Users, request.Users)
+	default:
+		return false
+	}
+}
+
+func equalBypassRestrictions(state *github.BypassRestrictions, request *github.BypassRestrictionsRequest) bool {
 	switch {
 	case state == nil && request == nil:
 		return true

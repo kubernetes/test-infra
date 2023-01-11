@@ -88,11 +88,20 @@ type ReviewPolicy struct {
 	RequireOwners *bool `json:"require_code_owner_reviews,omitempty"`
 	// Approvals overrides the number of approvals required if set (set to 0 to disable)
 	Approvals *int `json:"required_approving_review_count,omitempty"`
+	// BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+	BypassRestrictions *BypassRestrictions `json:"bypass_pull_request_allowances,omitempty"`
 }
 
 // DismissalRestrictions limits who can merge
 // Users and Teams items are appended to parent lists.
 type DismissalRestrictions struct {
+	Users []string `json:"users,omitempty"`
+	Teams []string `json:"teams,omitempty"`
+}
+
+// BypassRestrictions defines who can bypass PR restrictions
+// Users and Teams items are appended to parent lists.
+type BypassRestrictions struct {
 	Users []string `json:"users,omitempty"`
 	Teams []string `json:"teams,omitempty"`
 }
@@ -159,6 +168,7 @@ func mergeReviewPolicy(parent, child *ReviewPolicy) *ReviewPolicy {
 		DismissStale:          selectBool(parent.DismissStale, child.DismissStale),
 		RequireOwners:         selectBool(parent.RequireOwners, child.RequireOwners),
 		Approvals:             selectInt(parent.Approvals, child.Approvals),
+		BypassRestrictions:    mergeBypassRestrictions(parent.BypassRestrictions, child.BypassRestrictions),
 	}
 }
 
@@ -170,6 +180,19 @@ func mergeDismissalRestrictions(parent, child *DismissalRestrictions) *Dismissal
 		return child
 	}
 	return &DismissalRestrictions{
+		Users: unionStrings(parent.Users, child.Users),
+		Teams: unionStrings(parent.Teams, child.Teams),
+	}
+}
+
+func mergeBypassRestrictions(parent, child *BypassRestrictions) *BypassRestrictions {
+	if child == nil {
+		return parent
+	}
+	if parent == nil {
+		return child
+	}
+	return &BypassRestrictions{
 		Users: unionStrings(parent.Users, child.Users),
 		Teams: unionStrings(parent.Teams, child.Teams),
 	}

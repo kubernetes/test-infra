@@ -85,6 +85,22 @@ func makeDismissalRestrictions(rp *branchprotection.DismissalRestrictions) *gith
 	}
 }
 
+// makeBypassRestrictions renders restrictions into the corresponding GitHub api object.
+//
+// Returns nil when input restrictions is nil.
+// Otherwise Teams and Users are both non-nil (empty list if unset).
+func makeBypassRestrictions(rp *branchprotection.BypassRestrictions) *github.BypassRestrictionsRequest {
+	if rp == nil {
+		return nil
+	}
+	teams := append([]string{}, sets.NewString(rp.Teams...).List()...)
+	users := append([]string{}, sets.NewString(rp.Users...).List()...)
+	return &github.BypassRestrictionsRequest{
+		Teams: &teams,
+		Users: &users,
+	}
+}
+
 // makeRestrictions renders restrictions into the corresponding GitHub api object.
 //
 // Returns nil when input restrictions is nil.
@@ -130,6 +146,10 @@ func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestR
 	}
 	if rp.DismissalRestrictions != nil {
 		rprr.DismissalRestrictions = *makeDismissalRestrictions(rp.DismissalRestrictions)
+	}
+
+	if rp.BypassRestrictions != nil {
+		rprr.BypassRestrictions = *makeBypassRestrictions(rp.BypassRestrictions)
 	}
 	return &rprr
 }
