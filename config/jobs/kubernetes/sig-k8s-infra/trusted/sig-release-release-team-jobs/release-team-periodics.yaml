@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-sync-enhancements-github-project-beta-1-26
+- name: periodic-sync-enhancements-github-project-1-27
   interval: 6h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
@@ -18,7 +18,7 @@ periodics:
       - ./release-team/hack/sync-enhancements-github-project-beta.sh
       env:
         - name: GITHUB_PROJECT_BETA_NUMBER
-          value: "98"
+          value: "117"
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
