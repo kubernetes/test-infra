@@ -205,8 +205,9 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		ExtraRefs:        jb.ExtraRefs,
 		DecorationConfig: jb.DecorationConfig,
 
-		PodSpec:         jb.Spec,
-		PipelineRunSpec: jb.PipelineRunSpec,
+		PodSpec:               jb.Spec,
+		PipelineRunSpec:       jb.PipelineRunSpec,
+		TektonPipelineRunSpec: jb.TektonPipelineRunSpec,
 
 		ReporterConfig:  jb.ReporterConfig,
 		RerunAuthConfig: jb.RerunAuthConfig,
