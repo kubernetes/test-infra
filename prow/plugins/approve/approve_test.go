@@ -187,1184 +187,7 @@ func (fr fakeRepo) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 
 func TestHandle_SimpleApprover(t *testing.T) {
 	// This function does not need to test IsApproved, that is tested in approvers/approvers_test.go.
-
-	// includes tests with mixed case usernames
-	// includes tests with stale notifications
-	tests := []struct {
-		name          string
-		branch        string
-		prBody        string
-		hasLabel      bool
-		humanApproved bool
-		files         []string
-		comments      []github.IssueComment
-		reviews       []github.Review
-
-		selfApprove         bool
-		needsIssue          bool
-		lgtmActsAsApprove   bool
-		reviewActsAsApprove bool
-		githubLinkURL       *url.URL
-
-		expectDelete    bool
-		expectComment   bool
-		expectedComment string
-		expectToggle    bool
-	}{
-
-		// breaking cases
-		// case: /approve in PR body
-		{
-			name:                "initial notification (approved)",
-			hasLabel:            false,
-			files:               []string{"c/c.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{},
-			selfApprove:         true,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:                "initial notification (unapproved)",
-			hasLabel:            false,
-			files:               []string{"c/c.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["cjwagner"]} -->`,
-		},
-		{
-			name:                "no-issue comment",
-			hasLabel:            false,
-			files:               []string{"a/a.go"},
-			comments:            []github.IssueComment{newTestComment("Alice", "stuff\n/approve no-issue \nmore stuff")},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-
-Associated issue requirement bypassed by: *<a href="" title="Approved">Alice</a>*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:                "issue provided in PR body",
-			prBody:              "some changes that fix #42.\n/assign",
-			hasLabel:            false,
-			files:               []string{"a/a.go"},
-			comments:            []github.IssueComment{newTestComment("Alice", "stuff\n/approve")},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-
-Associated issue: *#42*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:     "non-implicit self approve no-issue",
-			hasLabel: false,
-			files:    []string{"a/a.go", "c/c.go"},
-			comments: []github.IssueComment{
-				newTestComment("ALIcE", "stuff\n/approve"),
-				newTestComment("cjwagner", "stuff\n/approve no-issue"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:    false,
-			expectToggle:    true,
-			expectComment:   true,
-			expectedComment: "",
-		},
-		{
-			name:     "implicit self approve, missing issue",
-			hasLabel: false,
-			files:    []string{"a/a.go", "c/c.go"},
-			comments: []github.IssueComment{
-				newTestComment("ALIcE", "stuff\n/approve"),
-				newTestCommentTime(time.Now(), "k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">ALIcE</a>*, *<a href="#" title="Author self-approved">cjwagner</a>*
-
-*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [ALIcE]
-- ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
-
-Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>
-<!-- META={"approvers":[]} -->`),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         true,
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: false,
-		},
-		{
-			name:     "remove approval with /approve cancel",
-			hasLabel: true,
-			files:    []string{"a/a.go"},
-			comments: []github.IssueComment{
-				newTestComment("Alice", "/approve no-issue"),
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
-				newTestComment("Alice", "stuff\n/approve cancel \nmore stuff"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         true, // no-op test
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["alice"]} -->`,
-		},
-		{
-			name:     "remove approval with remove-approve",
-			hasLabel: true,
-			files:    []string{"a/a.go"},
-			comments: []github.IssueComment{
-				newTestComment("Alice", "/approve no-issue"),
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
-				newTestComment("Alice", "stuff\n/remove-approve \nmore stuff"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         true, // no-op test
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["alice"]} -->`,
-		},
-		{
-			name:     "remove approval after sync",
-			prBody:   "Changes the thing.\n fixes #42",
-			hasLabel: true,
-			files:    []string{"a/a.go", "b/b.go"},
-			comments: []github.IssueComment{
-				newTestComment("bOb", "stuff\n/approve \nblah"),
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         true, // no-op test
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-		},
-		{
-			name:     "cancel implicit self approve",
-			prBody:   "Changes the thing.\n fixes #42",
-			hasLabel: true,
-			files:    []string{"c/c.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
-				newTestCommentTime(time.Now(), "CJWagner", "stuff\n/approve cancel \nmore stuff"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         true,
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-		},
-		{
-			name:     "remove-approve for implicit self approveS",
-			prBody:   "Changes the thing.\n fixes #42",
-			hasLabel: true,
-			files:    []string{"c/c.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
-				newTestCommentTime(time.Now(), "CJWagner", "stuff\n/remove-approve \nmore stuff"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         true,
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-		},
-		{
-			name:     "cancel implicit self approve (with lgtm-after-commit message)",
-			prBody:   "Changes the thing.\n fixes #42",
-			hasLabel: true,
-			files:    []string{"c/c.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
-				newTestCommentTime(time.Now(), "CJWagner", "/lgtm cancel //PR changed after LGTM, removing LGTM."),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         true,
-			needsIssue:          true,
-			lgtmActsAsApprove:   true,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-		},
-		{
-			name:     "up to date, poked by pr sync",
-			prBody:   "Finally fixes kubernetes/kubernetes#1\n",
-			hasLabel: true,
-			files:    []string{"a/a.go", "a/aa.go"},
-			comments: []github.IssueComment{
-				newTestComment("alice", "stuff\n/approve\nblah"),
-				newTestCommentTime(time.Now(), "k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">alice</a>*
-
-Associated issue: *#1*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [alice]
-
-Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>
-<!-- META={"approvers":[]} -->`),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: false,
-		},
-		{
-			name:     "out of date, poked by pr sync",
-			prBody:   "Finally fixes kubernetes/kubernetes#1\n",
-			hasLabel: false,
-			files:    []string{"a/a.go", "a/aa.go"}, // previous commits may have been ["b/b.go"]
-			comments: []github.IssueComment{
-				newTestComment("alice", "stuff\n/approve\nblah"),
-				newTestCommentTime(time.Now(), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          true,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-		},
-		{
-			name:          "human added approve",
-			hasLabel:      true,
-			humanApproved: true,
-			files:         []string{"a/a.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-Approval requirements bypassed by manually added approval.
-
-This pull-request has been approved by:
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["alice"]} -->`,
-		},
-		{
-			name:     "lgtm means approve",
-			prBody:   "This is a great PR that will fix\nlots of things!",
-			hasLabel: false,
-			files:    []string{"a/a.go", "a/aa.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
-				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   true,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-		},
-		{
-			name:     "lgtm does not mean approve",
-			prBody:   "This is a great PR that will fix\nlots of things!",
-			hasLabel: false,
-			files:    []string{"a/a.go", "a/aa.go"},
-			comments: []github.IssueComment{
-				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
-
-Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>
-<!-- META={"approvers":["alice"]} -->`),
-				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
-			},
-			reviews:             []github.Review{},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: false,
-		},
-		{
-			name:                "approve in review body with empty state",
-			hasLabel:            false,
-			files:               []string{"a/a.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("Alice", "stuff\n/approve", "")},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:                "approved review but reviewActsAsApprove disabled",
-			hasLabel:            false,
-			files:               []string{"c/c.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("cjwagner", "stuff", github.ReviewStateApproved)},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["cjwagner"]} -->`,
-		},
-		{
-			name:                "approved review with reviewActsAsApprove enabled",
-			hasLabel:            false,
-			files:               []string{"a/a.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("Alice", "stuff", github.ReviewStateApproved)},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:     "reviews in non-approving state (should not approve)",
-			hasLabel: false,
-			files:    []string{"c/c.go"},
-			comments: []github.IssueComment{},
-			reviews: []github.Review{
-				newTestReview("cjwagner", "stuff", "COMMENTED"),
-				newTestReview("cjwagner", "unsubmitted stuff", "PENDING"),
-				newTestReview("cjwagner", "dismissed stuff", "DISMISSED"),
-			},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["cjwagner"]} -->`,
-		},
-		{
-			name:     "review in request changes state means cancel",
-			hasLabel: true,
-			files:    []string{"c/c.go"},
-			comments: []github.IssueComment{
-				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
-			},
-			reviews: []github.Review{
-				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved),                           // first
-				newTestReviewTime(time.Now().Add(time.Hour*2), "cjwagner", "nope", github.ReviewStateChangesRequested), // third
-			},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["cjwagner"]} -->`,
-		},
-		{
-			name:     "dismissed review doesn't cancel prior approval",
-			hasLabel: true,
-			files:    []string{"a/a.go"},
-			comments: []github.IssueComment{
-				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
-			},
-			reviews: []github.Review{
-				newTestReviewTime(time.Now(), "Alice", "yep", github.ReviewStateApproved),                         // first
-				newTestReviewTime(time.Now().Add(time.Hour*2), "Alice", "dismissed", github.ReviewStateDismissed), // third
-			},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:     "approve cancel command supersedes earlier approved review",
-			hasLabel: true,
-			files:    []string{"c/c.go"},
-			comments: []github.IssueComment{
-				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
-				newTestCommentTime(time.Now().Add(time.Hour*2), "cjwagner", "stuff\n/approve cancel \nmore stuff"),                  // third
-			},
-			reviews: []github.Review{
-				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved), // first
-			},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["cjwagner"]} -->`,
-		},
-		{
-			name:     "remove-approve command supersedes earlier approved review",
-			hasLabel: true,
-			files:    []string{"c/c.go"},
-			comments: []github.IssueComment{
-				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
-				newTestCommentTime(time.Now().Add(time.Hour*2), "cjwagner", "stuff\n/remove-approve \nmore stuff"),                  // third
-			},
-			reviews: []github.Review{
-				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved), // first
-			},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  true,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["cjwagner"]} -->`,
-		},
-		{
-			name:     "approve cancel command supersedes simultaneous approved review",
-			hasLabel: false,
-			files:    []string{"a/a.go", "c/c.go"},
-			comments: []github.IssueComment{},
-			reviews: []github.Review{
-				newTestReview("cjwagner", "/approve cancel", github.ReviewStateApproved),
-			},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["alice","cjwagner"]} -->`,
-		},
-		{
-			name:     "remove-approve command supersedes simultaneous approved review",
-			hasLabel: false,
-			files:    []string{"a/a.go", "c/c.go"},
-			comments: []github.IssueComment{},
-			reviews: []github.Review{
-				newTestReview("cjwagner", "/remove-approve", github.ReviewStateApproved),
-			},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by:
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["alice","cjwagner"]} -->`,
-		},
-		{
-			name:                "approve command supersedes simultaneous changes requested review",
-			hasLabel:            false,
-			files:               []string{"a/a.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("Alice", "/approve", github.ReviewStateChangesRequested)},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:                "different branch, initial notification (approved)",
-			branch:              "dev",
-			hasLabel:            false,
-			files:               []string{"c/c.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{},
-			selfApprove:         true,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[c/OWNERS](https://github.com/org/repo/blob/dev/c/OWNERS)~~ [cjwagner]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:                "different GitHub link URL",
-			branch:              "dev",
-			hasLabel:            false,
-			files:               []string{"c/c.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{},
-			selfApprove:         true,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.mycorp.com"},
-
-			expectDelete:  false,
-			expectToggle:  true,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-- ~~[c/OWNERS](https://github.mycorp.com/org/repo/blob/dev/c/OWNERS)~~ [cjwagner]
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:                "Approved because of AutoApproveUnownedSubfolders:",
-			hasLabel:            true,
-			humanApproved:       true,
-			files:               []string{"d/new-folder/new_file.go"},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: false,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
-
-This pull-request has been approved by:
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
-
-<details >
-Needs approval from an approver in each of these files:
-
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":[]} -->`,
-		},
-		{
-			name:                "don't suggest to /assign already assigned cjwagner",
-			hasLabel:            false,
-			files:               []string{"a/a.go", "c/c.go"},
-			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("Alice", "/approve", github.ReviewStateChangesRequested)},
-			selfApprove:         false,
-			needsIssue:          false,
-			lgtmActsAsApprove:   false,
-			reviewActsAsApprove: true,
-			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
-
-			expectDelete:  false,
-			expectToggle:  false,
-			expectComment: true,
-			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
-
-This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
-
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
-
-<details open>
-Needs approval from an approver in each of these files:
-
-- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
-- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
-
-Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
-Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
-</details>
-<!-- META={"approvers":["cjwagner"]} -->`,
-		},
-	}
-
-	fr := fakeRepo{
-		approvers: map[string]layeredsets.String{
-			"a":   layeredsets.NewString("alice"),
-			"a/b": layeredsets.NewString("alice", "bob"),
-			"c":   layeredsets.NewString("cblecker", "cjwagner"),
-		},
-		leafApprovers: map[string]sets.String{
-			"a":   sets.NewString("alice"),
-			"a/b": sets.NewString("bob"),
-			"c":   sets.NewString("cblecker", "cjwagner"),
-		},
-		approverOwners: map[string]string{
-			"a/a.go":                   "a",
-			"a/aa.go":                  "a",
-			"a/b/b.go":                 "a/b",
-			"c/c.go":                   "c",
-			"d/new-folder/new_file.go": "d",
-		},
-		autoApproveUnownedSubfolders: map[string]bool{
-			"d": true,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			fghc := newFakeGitHubClient(test.hasLabel, test.humanApproved, test.files, test.comments, test.reviews)
-			branch := "master"
-			if test.branch != "" {
-				branch = test.branch
-			}
-
-			rsa := !test.selfApprove
-			irs := !test.reviewActsAsApprove
-			if err := handle(
-				logrus.WithField("plugin", "approve"),
-				fghc,
-				fr,
-				config.GitHubOptions{
-					LinkURL: test.githubLinkURL,
-				},
-				&plugins.Approve{
-					Repos:               []string{"org/repo"},
-					RequireSelfApproval: &rsa,
-					IssueRequired:       test.needsIssue,
-					LgtmActsAsApprove:   test.lgtmActsAsApprove,
-					IgnoreReviewState:   &irs,
-					CommandHelpLink:     "https://go.k8s.io/bot-commands",
-					PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
-				},
-				&state{
-					org:       "org",
-					repo:      "repo",
-					branch:    branch,
-					number:    prNumber,
-					body:      test.prBody,
-					author:    "cjwagner",
-					assignees: []github.User{{Login: "spxtr"}},
-				},
-			); err != nil {
-				t.Errorf("[%s] Unexpected error handling event: %v.", test.name, err)
-			}
-
-			if test.expectDelete {
-				if len(fghc.IssueCommentsDeleted) != 1 {
-					t.Errorf(
-						"[%s] Expected 1 notification to be deleted but %d notifications were deleted.",
-						test.name,
-						len(fghc.IssueCommentsDeleted),
-					)
-				}
-			} else {
-				if len(fghc.IssueCommentsDeleted) != 0 {
-					t.Errorf(
-						"[%s] Expected 0 notifications to be deleted but %d notification was deleted.",
-						test.name,
-						len(fghc.IssueCommentsDeleted),
-					)
-				}
-			}
-			if test.expectComment {
-				if len(fghc.IssueCommentsAdded) != 1 {
-					t.Errorf(
-						"[%s] Expected 1 notification to be added but %d notifications were added.",
-						test.name,
-						len(fghc.IssueCommentsAdded),
-					)
-				} else if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
-					t.Errorf("expected notification differs from actual: %s", cmp.Diff(expect, got))
-				}
-			} else {
-				if len(fghc.IssueCommentsAdded) != 0 {
-					t.Errorf(
-						"[%s] Expected 0 notifications to be added but %d notification was added.",
-						test.name,
-						len(fghc.IssueCommentsAdded),
-					)
-				}
-			}
-
-			labelAdded := false
-			for _, l := range fghc.IssueLabelsAdded {
-				if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
-					if labelAdded {
-						t.Errorf("[%s] The approved label was applied to a PR that already had it!", test.name)
-					}
-					labelAdded = true
-				}
-			}
-			if test.hasLabel {
-				labelAdded = false
-			}
-			toggled := labelAdded
-			for _, l := range fghc.IssueLabelsRemoved {
-				if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
-					if !test.hasLabel {
-						t.Errorf("[%s] The approved label was removed from a PR that doesn't have it!", test.name)
-					}
-					toggled = true
-				}
-			}
-			if test.expectToggle != toggled {
-				t.Errorf(
-					"[%s] Expected 'approved' label toggled: %t, but got %t.",
-					test.name,
-					test.expectToggle,
-					toggled,
-				)
-			}
-		})
-	}
+	testApproveBaseline(t, false)
 }
 
 func TestHandle_GranularApprover(t *testing.T) {
@@ -3612,6 +2435,1192 @@ The status of the PR is:
 				toggled,
 			)
 		}
+	}
+}
+
+// testApproveBaseline tests handling of simple and granular
+// approval against test cases that existed in the original
+// approve plugin implementation. The point of this is to
+// ensure that granular approval still does everything simple
+// approve does. Testing granular approval specific cases will
+// be done in a seperate test.
+func testApproveBaseline(t *testing.T, granular bool) {
+	// includes tests with mixed case usernames
+	// includes tests with stale notifications
+	tests := []struct {
+		name          string
+		branch        string
+		prBody        string
+		hasLabel      bool
+		humanApproved bool
+		files         []string
+		comments      []github.IssueComment
+		reviews       []github.Review
+
+		selfApprove         bool
+		needsIssue          bool
+		lgtmActsAsApprove   bool
+		reviewActsAsApprove bool
+		githubLinkURL       *url.URL
+
+		expectDelete    bool
+		expectComment   bool
+		expectedComment string
+		expectToggle    bool
+	}{
+
+		// breaking cases
+		// case: /approve in PR body
+		{
+			name:                "initial notification (approved)",
+			hasLabel:            false,
+			files:               []string{"c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "initial notification (unapproved)",
+			hasLabel:            false,
+			files:               []string{"c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:                "no-issue comment",
+			hasLabel:            false,
+			files:               []string{"a/a.go"},
+			comments:            []github.IssueComment{newTestComment("Alice", "stuff\n/approve no-issue \nmore stuff")},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+Associated issue requirement bypassed by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "issue provided in PR body",
+			prBody:              "some changes that fix #42.\n/assign",
+			hasLabel:            false,
+			files:               []string{"a/a.go"},
+			comments:            []github.IssueComment{newTestComment("Alice", "stuff\n/approve")},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+Associated issue: *#42*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:     "non-implicit self approve no-issue",
+			hasLabel: false,
+			files:    []string{"a/a.go", "c/c.go"},
+			comments: []github.IssueComment{
+				newTestComment("ALIcE", "stuff\n/approve"),
+				newTestComment("cjwagner", "stuff\n/approve no-issue"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:    false,
+			expectToggle:    true,
+			expectComment:   true,
+			expectedComment: "",
+		},
+		{
+			name:     "implicit self approve, missing issue",
+			hasLabel: false,
+			files:    []string{"a/a.go", "c/c.go"},
+			comments: []github.IssueComment{
+				newTestComment("ALIcE", "stuff\n/approve"),
+				newTestCommentTime(time.Now(), "k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">ALIcE</a>*, *<a href="#" title="Author self-approved">cjwagner</a>*
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [ALIcE]
+- ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
+
+Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+</details>
+<!-- META={"approvers":[]} -->`),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: false,
+		},
+		{
+			name:     "remove approval with /approve cancel",
+			hasLabel: true,
+			files:    []string{"a/a.go"},
+			comments: []github.IssueComment{
+				newTestComment("Alice", "/approve no-issue"),
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestComment("Alice", "stuff\n/approve cancel \nmore stuff"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true, // no-op test
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice"]} -->`,
+		},
+		{
+			name:     "remove approval with remove-approve",
+			hasLabel: true,
+			files:    []string{"a/a.go"},
+			comments: []github.IssueComment{
+				newTestComment("Alice", "/approve no-issue"),
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestComment("Alice", "stuff\n/remove-approve \nmore stuff"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true, // no-op test
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice"]} -->`,
+		},
+		{
+			name:     "remove approval after sync",
+			prBody:   "Changes the thing.\n fixes #42",
+			hasLabel: true,
+			files:    []string{"a/a.go", "b/b.go"},
+			comments: []github.IssueComment{
+				newTestComment("bOb", "stuff\n/approve \nblah"),
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true, // no-op test
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
+			name:     "cancel implicit self approve",
+			prBody:   "Changes the thing.\n fixes #42",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "CJWagner", "stuff\n/approve cancel \nmore stuff"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
+			name:     "remove-approve for implicit self approveS",
+			prBody:   "Changes the thing.\n fixes #42",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "CJWagner", "stuff\n/remove-approve \nmore stuff"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
+			name:     "cancel implicit self approve (with lgtm-after-commit message)",
+			prBody:   "Changes the thing.\n fixes #42",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "CJWagner", "/lgtm cancel //PR changed after LGTM, removing LGTM."),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          true,
+			lgtmActsAsApprove:   true,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
+			name:     "up to date, poked by pr sync",
+			prBody:   "Finally fixes kubernetes/kubernetes#1\n",
+			hasLabel: true,
+			files:    []string{"a/a.go", "a/aa.go"},
+			comments: []github.IssueComment{
+				newTestComment("alice", "stuff\n/approve\nblah"),
+				newTestCommentTime(time.Now(), "k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">alice</a>*
+
+Associated issue: *#1*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [alice]
+
+Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+</details>
+<!-- META={"approvers":[]} -->`),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: false,
+		},
+		{
+			name:     "out of date, poked by pr sync",
+			prBody:   "Finally fixes kubernetes/kubernetes#1\n",
+			hasLabel: false,
+			files:    []string{"a/a.go", "a/aa.go"}, // previous commits may have been ["b/b.go"]
+			comments: []github.IssueComment{
+				newTestComment("alice", "stuff\n/approve\nblah"),
+				newTestCommentTime(time.Now(), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
+			name:          "human added approve",
+			hasLabel:      true,
+			humanApproved: true,
+			files:         []string{"a/a.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+Approval requirements bypassed by manually added approval.
+
+This pull-request has been approved by:
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice"]} -->`,
+		},
+		{
+			name:     "lgtm means approve",
+			prBody:   "This is a great PR that will fix\nlots of things!",
+			hasLabel: false,
+			files:    []string{"a/a.go", "a/aa.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   true,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
+			name:     "lgtm does not mean approve",
+			prBody:   "This is a great PR that will fix\nlots of things!",
+			hasLabel: false,
+			files:    []string{"a/a.go", "a/aa.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing `+"`/assign @alice`"+` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+</details>
+<!-- META={"approvers":["alice"]} -->`),
+				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: false,
+		},
+		{
+			name:                "approve in review body with empty state",
+			hasLabel:            false,
+			files:               []string{"a/a.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{newTestReview("Alice", "stuff\n/approve", "")},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "approved review but reviewActsAsApprove disabled",
+			hasLabel:            false,
+			files:               []string{"c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{newTestReview("cjwagner", "stuff", github.ReviewStateApproved)},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:                "approved review with reviewActsAsApprove enabled",
+			hasLabel:            false,
+			files:               []string{"a/a.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{newTestReview("Alice", "stuff", github.ReviewStateApproved)},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:     "reviews in non-approving state (should not approve)",
+			hasLabel: false,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{},
+			reviews: []github.Review{
+				newTestReview("cjwagner", "stuff", "COMMENTED"),
+				newTestReview("cjwagner", "unsubmitted stuff", "PENDING"),
+				newTestReview("cjwagner", "dismissed stuff", "DISMISSED"),
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:     "review in request changes state means cancel",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
+			},
+			reviews: []github.Review{
+				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved),                           // first
+				newTestReviewTime(time.Now().Add(time.Hour*2), "cjwagner", "nope", github.ReviewStateChangesRequested), // third
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:     "dismissed review doesn't cancel prior approval",
+			hasLabel: true,
+			files:    []string{"a/a.go"},
+			comments: []github.IssueComment{
+				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
+			},
+			reviews: []github.Review{
+				newTestReviewTime(time.Now(), "Alice", "yep", github.ReviewStateApproved),                         // first
+				newTestReviewTime(time.Now().Add(time.Hour*2), "Alice", "dismissed", github.ReviewStateDismissed), // third
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:     "approve cancel command supersedes earlier approved review",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
+				newTestCommentTime(time.Now().Add(time.Hour*2), "cjwagner", "stuff\n/approve cancel \nmore stuff"),                  // third
+			},
+			reviews: []github.Review{
+				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved), // first
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:     "remove-approve command supersedes earlier approved review",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
+				newTestCommentTime(time.Now().Add(time.Hour*2), "cjwagner", "stuff\n/remove-approve \nmore stuff"),                  // third
+			},
+			reviews: []github.Review{
+				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved), // first
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:     "approve cancel command supersedes simultaneous approved review",
+			hasLabel: false,
+			files:    []string{"a/a.go", "c/c.go"},
+			comments: []github.IssueComment{},
+			reviews: []github.Review{
+				newTestReview("cjwagner", "/approve cancel", github.ReviewStateApproved),
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice","cjwagner"]} -->`,
+		},
+		{
+			name:     "remove-approve command supersedes simultaneous approved review",
+			hasLabel: false,
+			files:    []string{"a/a.go", "c/c.go"},
+			comments: []github.IssueComment{},
+			reviews: []github.Review{
+				newTestReview("cjwagner", "/remove-approve", github.ReviewStateApproved),
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner and additionally assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice","cjwagner"]} -->`,
+		},
+		{
+			name:                "approve command supersedes simultaneous changes requested review",
+			hasLabel:            false,
+			files:               []string{"a/a.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{newTestReview("Alice", "/approve", github.ReviewStateChangesRequested)},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "different branch, initial notification (approved)",
+			branch:              "dev",
+			hasLabel:            false,
+			files:               []string{"c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[c/OWNERS](https://github.com/org/repo/blob/dev/c/OWNERS)~~ [cjwagner]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "different GitHub link URL",
+			branch:              "dev",
+			hasLabel:            false,
+			files:               []string{"c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.mycorp.com"},
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[c/OWNERS](https://github.mycorp.com/org/repo/blob/dev/c/OWNERS)~~ [cjwagner]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "Approved because of AutoApproveUnownedSubfolders:",
+			hasLabel:            true,
+			humanApproved:       true,
+			files:               []string{"d/new-folder/new_file.go"},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by:
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "don't suggest to /assign already assigned cjwagner",
+			hasLabel:            false,
+			files:               []string{"a/a.go", "c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{newTestReview("Alice", "/approve", github.ReviewStateChangesRequested)},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from cjwagner by writing ` + "`/assign @cjwagner`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
+	}
+
+	fr := fakeRepo{
+		approvers: map[string]layeredsets.String{
+			"a":   layeredsets.NewString("alice"),
+			"a/b": layeredsets.NewString("alice", "bob"),
+			"c":   layeredsets.NewString("cblecker", "cjwagner"),
+		},
+		leafApprovers: map[string]sets.String{
+			"a":   sets.NewString("alice"),
+			"a/b": sets.NewString("bob"),
+			"c":   sets.NewString("cblecker", "cjwagner"),
+		},
+		approverOwners: map[string]string{
+			"a/a.go":                   "a",
+			"a/aa.go":                  "a",
+			"a/b/b.go":                 "a/b",
+			"c/c.go":                   "c",
+			"d/new-folder/new_file.go": "d",
+		},
+		autoApproveUnownedSubfolders: map[string]bool{
+			"d": true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			fghc := newFakeGitHubClient(test.hasLabel, test.humanApproved, test.files, test.comments, test.reviews)
+			branch := "master"
+			if test.branch != "" {
+				branch = test.branch
+			}
+
+			rsa := !test.selfApprove
+			irs := !test.reviewActsAsApprove
+			if err := handle(
+				logrus.WithField("plugin", "approve"),
+				fghc,
+				fr,
+				config.GitHubOptions{
+					LinkURL: test.githubLinkURL,
+				},
+				&plugins.Approve{
+					Repos:               []string{"org/repo"},
+					RequireSelfApproval: &rsa,
+					IssueRequired:       test.needsIssue,
+					LgtmActsAsApprove:   test.lgtmActsAsApprove,
+					IgnoreReviewState:   &irs,
+					CommandHelpLink:     "https://go.k8s.io/bot-commands",
+					PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
+				},
+				&state{
+					org:       "org",
+					repo:      "repo",
+					branch:    branch,
+					number:    prNumber,
+					body:      test.prBody,
+					author:    "cjwagner",
+					assignees: []github.User{{Login: "spxtr"}},
+				},
+			); err != nil {
+				t.Errorf("[%s] Unexpected error handling event: %v.", test.name, err)
+			}
+
+			if test.expectDelete {
+				if len(fghc.IssueCommentsDeleted) != 1 {
+					t.Errorf(
+						"[%s] Expected 1 notification to be deleted but %d notifications were deleted.",
+						test.name,
+						len(fghc.IssueCommentsDeleted),
+					)
+				}
+			} else {
+				if len(fghc.IssueCommentsDeleted) != 0 {
+					t.Errorf(
+						"[%s] Expected 0 notifications to be deleted but %d notification was deleted.",
+						test.name,
+						len(fghc.IssueCommentsDeleted),
+					)
+				}
+			}
+			if test.expectComment {
+				if len(fghc.IssueCommentsAdded) != 1 {
+					t.Errorf(
+						"[%s] Expected 1 notification to be added but %d notifications were added.",
+						test.name,
+						len(fghc.IssueCommentsAdded),
+					)
+				} else if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
+					t.Errorf("expected notification differs from actual: %s", cmp.Diff(expect, got))
+				}
+			} else {
+				if len(fghc.IssueCommentsAdded) != 0 {
+					t.Errorf(
+						"[%s] Expected 0 notifications to be added but %d notification was added.",
+						test.name,
+						len(fghc.IssueCommentsAdded),
+					)
+				}
+			}
+
+			labelAdded := false
+			for _, l := range fghc.IssueLabelsAdded {
+				if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
+					if labelAdded {
+						t.Errorf("[%s] The approved label was applied to a PR that already had it!", test.name)
+					}
+					labelAdded = true
+				}
+			}
+			if test.hasLabel {
+				labelAdded = false
+			}
+			toggled := labelAdded
+			for _, l := range fghc.IssueLabelsRemoved {
+				if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
+					if !test.hasLabel {
+						t.Errorf("[%s] The approved label was removed from a PR that doesn't have it!", test.name)
+					}
+					toggled = true
+				}
+			}
+			if test.expectToggle != toggled {
+				t.Errorf(
+					"[%s] Expected 'approved' label toggled: %t, but got %t.",
+					test.name,
+					test.expectToggle,
+					toggled,
+				)
+			}
+		})
 	}
 }
 
