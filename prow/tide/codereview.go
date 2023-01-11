@@ -19,6 +19,9 @@ package tide
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
@@ -136,6 +139,32 @@ func (crc *CodeReviewCommon) GitHubCommits() *Commits {
 		return nil
 	}
 	return &crc.GitHub.Commits
+}
+
+// Regexp used to compile regular expressions and use it in CommitTemplate.
+func (CodeReviewCommon) Regexp(pattern string) *regexp.Regexp {
+	return regexp.MustCompile(pattern)
+}
+
+// ExtractContent used to extract text content through regular expressions.
+// Engage that when the regexp contains a named group named `content`, only the part matched by the named group
+// will be returned, if not, the part matched by the entire regular expression will be returned.
+func (CodeReviewCommon) ExtractContent(pattern string, content string) string {
+	compile, err := regexp.Compile(pattern)
+	if err != nil {
+		panic(fmt.Errorf("failed to compile the extract content regexp: %v", err))
+	}
+
+	index := compile.SubexpIndex("content")
+	if index == -1 {
+		return compile.FindString(content)
+	} else {
+		if compile.MatchString(content) {
+			matches := compile.FindStringSubmatch(content)
+			return strings.TrimSpace(matches[index])
+		}
+		return ""
+	}
 }
 
 // CodeReviewCommonFromPullRequest derives CodeReviewCommon struct from GitHub

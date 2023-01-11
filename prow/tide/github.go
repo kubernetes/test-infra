@@ -237,59 +237,6 @@ func (gi *GitHubProvider) prepareMergeDetails(commitTemplates config.TideMergeCo
 	return ghMergeDetails
 }
 
-func (gi *GitHubProvider) preparePRCommits(pr *PullRequest) error {
-	org := string(pr.Repository.Owner.Login)
-	repo := string(pr.Repository.Name)
-	number := int(pr.Number)
-
-	// Store the SHA of commits that have been queried through graphql.
-	lastCommitNodesMap := make(map[string]CommitNode)
-	for _, node := range pr.Commits.Nodes {
-		SHA := string(node.Commit.OID)
-		if len(SHA) != 0 {
-			lastCommitNodesMap[SHA] = node
-		}
-	}
-
-	// Notice：We only fetch the commits list, the checks and statuses related to commits will not be fetched.
-	commits, err := gi.ghc.ListPRCommits(org, repo, number)
-	if err != nil {
-		return err
-	}
-
-	commitNodes := make([]struct {
-		Commit Commit
-	}, 0)
-	for _, commit := range commits {
-		// Use the commit node that queryed by graphql.
-		if node, ok := lastCommitNodesMap[commit.SHA]; ok {
-			commitNodes = append(commitNodes, node)
-			continue
-		}
-
-		// Construct the commit node from the commit object that queryed by rest API.
-		gitCommit := commit.Commit
-		commitNodes = append(commitNodes, struct {
-			Commit Commit
-		}{
-			Commit: Commit{
-				OID:     githubql.String(commit.SHA),
-				Message: githubql.String(gitCommit.Message),
-				Author: Author{
-					Name:  githubql.String(gitCommit.Author.Name),
-					Email: githubql.String(gitCommit.Author.Email),
-					User: User{
-						Login: githubql.String(commit.Author.Login),
-					},
-				},
-			},
-		})
-	}
-	pr.Commits.Nodes = commitNodes
-
-	return nil
-}
-
 func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) ([]CodeReviewCommon, error) {
 	var merged []CodeReviewCommon
 	var failed []int
@@ -314,12 +261,6 @@ func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdat
 			log.WithError(err).Error("Unable to set tide context to SUCCESS.")
 			errs = append(errs, err)
 			failed = append(failed, pr.Number)
-			continue
-		}
-
-		// Notice: In order to be able to generate complete Signed-off information, we need to complete the PR commits list here.
-		if err := gi.preparePRCommits(pr.GitHub); err != nil {
-			log.WithError(err).Errorf("Failed to prepare commits list for PR %s/%s#%d.", sp.org, sp.repo, int(pr.Number))
 			continue
 		}
 

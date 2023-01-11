@@ -590,8 +590,6 @@ type Controller struct {
 	// controller to handle tests. Defaults to 20. Needs to be a positive
 	// number.
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
-
-	templateFuncs template.FuncMap
 }
 
 // ReportTemplateForRepo returns the template that belong to a specific repository.
@@ -2439,9 +2437,7 @@ func parseProwConfig(c *Config) error {
 	}
 
 	for i := range c.JenkinsOperators {
-		c.JenkinsOperators[i].Controller.templateFuncs = jenkinsFuncMap
-
-		if err := ValidateController(&c.JenkinsOperators[i].Controller); err != nil {
+		if err := ValidateController(&c.JenkinsOperators[i].Controller, jenkinsFuncMap); err != nil {
 			return fmt.Errorf("validating jenkins_operators config: %w", err)
 		}
 		sel, err := labels.Parse(c.JenkinsOperators[i].LabelSelectorString)
@@ -2980,8 +2976,12 @@ func validateReporting(j JobBase, r Reporter) error {
 }
 
 // ValidateController validates the provided controller config.
-func ValidateController(c *Controller) error {
-	urlTmpl, err := template.New("JobURL").Funcs(c.templateFuncs).Parse(c.JobURLTemplateString)
+func ValidateController(c *Controller, templateFuncMaps ...template.FuncMap) error {
+	tmpl := template.New("JobURL")
+	for _, fm := range templateFuncMaps {
+		_ = tmpl.Funcs(fm)
+	}
+	urlTmpl, err := tmpl.Parse(c.JobURLTemplateString)
 	if err != nil {
 		return fmt.Errorf("parsing template: %w", err)
 	}

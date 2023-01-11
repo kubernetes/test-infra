@@ -201,7 +201,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 	commitTempalteCombineAllFunc := `
 		{{- $body := print .Body -}}
 		{{- $issueNumberLine := .ExtractContent "(?im)^Issue Number:.+" $body -}}
-		{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+		{{- $numbers := .GitHub.NormalizeIssueNumbers $issueNumberLine -}}
 		{{- range $index, $number := $numbers -}}
 			{{- if $index }}, {{ end -}}
 			{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
@@ -209,13 +209,13 @@ func TestPrepareMergeDetails(t *testing.T) {
 		{{- $description := .ExtractContent "(?i)\x60\x60\x60commit-message(?P<content>[\\w|\\W]+)\x60\x60\x60" $body -}}
 		{{- if $description -}}{{- "\n\n" -}}{{- end -}}
 		{{- $description -}}
-		{{- $signedAuthors := .NormalizeSignedOffBy -}}
+		{{- $signedAuthors := .GitHub.NormalizeSignedOffBy -}}
 		{{- if $signedAuthors -}}{{- "\n\n" -}}{{- end -}}
 		{{- range $index, $author := $signedAuthors -}}
 			{{- if $index -}}{{- "\n" -}}{{- end -}}
 			{{- "Signed-off-by:" }} {{ .Name }} <{{- .Email -}}>
 		{{- end -}}
-		{{- $coAuthors := .NormalizeCoAuthorBy -}}
+		{{- $coAuthors := .GitHub.NormalizeCoAuthorBy -}}
 		{{- if $coAuthors -}}{{- "\n\n" -}}{{- end -}}
 		{{- range $index, $author := $coAuthors -}}
 			{{- if $index -}}{{- "\n" -}}{{- end -}}
@@ -320,7 +320,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
 			Body: getTemplate("CommitBody", `
 					{{- $body := print .Body -}}
-					{{- $numbers := .NormalizeIssueNumbers $body -}}
+					{{- $numbers := .GitHub.NormalizeIssueNumbers $body -}}
 					{{- range $index, $number := $numbers -}}
 					{{- if $index }}, {{ end -}}
 					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
@@ -350,7 +350,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
 					{{- $body := print .Body -}}
 					{{- $issueNumberLine := $pattern.FindString $body -}}
-					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- $numbers := .GitHub.NormalizeIssueNumbers $issueNumberLine -}}
 					{{- range $index, $number := $numbers -}}
 					{{- if $index }}, {{ end -}}
 					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
@@ -380,7 +380,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
 					{{- $body := print .Body -}}
 					{{- $issueNumberLine := $pattern.FindString $body -}}
-					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- $numbers := .GitHub.NormalizeIssueNumbers $issueNumberLine -}}
 					{{- range $index, $number := $numbers -}}
 					{{- if $index }}, {{ end -}}
 					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
@@ -410,7 +410,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
 					{{- $body := print .Body -}}
 					{{- $issueNumberLine := $pattern.FindString $body -}}
-					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- $numbers := .GitHub.NormalizeIssueNumbers $issueNumberLine -}}
 					{{- range $index, $number := $numbers -}}
 					{{- if $index }}, {{ end -}}
 					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
@@ -440,7 +440,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
 					{{- $body := print .Body -}}
 					{{- $issueNumberLine := $pattern.FindString $body -}}
-					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- $numbers := .GitHub.NormalizeIssueNumbers $issueNumberLine -}}
 					{{- range $index, $number := $numbers -}}
 					{{- if $index }}, {{ end -}}
 					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
@@ -470,7 +470,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 					{{- $pattern := .Regexp "(?i)Issue Number:.+" -}}
 					{{- $body := print .Body -}}
 					{{- $issueNumberLine := $pattern.FindString $body -}}
-					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- $numbers := .GitHub.NormalizeIssueNumbers $issueNumberLine -}}
 					{{- range $index, $number := $numbers -}}
 					{{- if $index }}, {{ end -}}
 					{{- .AssociatePrefix }} {{ .Org -}}/{{- .Repo -}}#{{- .Number -}}
@@ -499,11 +499,11 @@ func TestPrepareMergeDetails(t *testing.T) {
 			Body: getTemplate("CommitBody", `
 					{{- /* convert graphql.String to string type */ -}}
 					{{- $body := print .Body -}}
-					{{- $org := print .Repository.Owner.Login -}}
-					{{- $repo := print .Repository.Name -}}
+					{{- $org := print .Org -}}
+					{{- $repo := print .Repo -}}
 					{{- $pattern := .Regexp "(?im)^Issue Number:.+" -}}
 					{{- $issueNumberLine := $pattern.FindString $body -}}
-					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- $numbers := .GitHub.NormalizeIssueNumbers $issueNumberLine -}}
 					{{- if $numbers -}}
 						{{- range $index, $number := $numbers -}}
 							{{- if $index }}, {{ end -}}
@@ -542,7 +542,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 					{{- $pattern := .Regexp "(?im)^Issue Number:.+" -}}
 					{{- $body := print .Body -}}
 					{{- $issueNumberLine := $pattern.FindString $body -}}
-					{{- $numbers := .NormalizeIssueNumbers $issueNumberLine -}}
+					{{- $numbers := .GitHub.NormalizeIssueNumbers $issueNumberLine -}}
 					{{- if $numbers -}}
 						{{- range $index, $number := $numbers -}}
 							{{- if $index }}, {{ end -}}
@@ -573,7 +573,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 		tpl: config.TideMergeCommitTemplate{
 			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
 			Body: getTemplate("CommitBody", `
-					{{- $signedAuthors := .NormalizeSignedOffBy -}}
+					{{- $signedAuthors := .GitHub.NormalizeSignedOffBy -}}
 					{{- range $index, $author := $signedAuthors -}}
 					{{- "Signed-off-by:" }} {{ .Name }} <{{- .Email -}}>{{- "\n" -}}
 					{{- end -}}
@@ -609,11 +609,11 @@ func TestPrepareMergeDetails(t *testing.T) {
 			CommitMessage: "Signed-off-by: foo <foo.bar@gmail.com>\n",
 		},
 	}, {
-		name: "Commit template uses NormalizeCoAuthorBy func",
+		name: "Commit template uses .GitHub.NormalizeCoAuthorBy func",
 		tpl: config.TideMergeCommitTemplate{
 			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
 			Body: getTemplate("CommitBody", `
-					{{- $coAuthors := .NormalizeCoAuthorBy -}}
+					{{- $coAuthors := .GitHub.NormalizeCoAuthorBy -}}
 					{{- range $index, $author := $coAuthors -}}
 					{{- "Co-authored-by:" }} {{ .Name }} <{{- .Email -}}>{{- "\n" -}}
 					{{- end -}}
@@ -666,17 +666,17 @@ func TestPrepareMergeDetails(t *testing.T) {
 			CommitMessage: "Co-authored-by: zhangsan <zhangsan@gmail.com>\n",
 		},
 	}, {
-		name: "Commit template uses NormalizeSignedOffBy and NormalizeCoAuthorBy func",
+		name: "Commit template uses NormalizeSignedOffBy and .GitHub.NormalizeCoAuthorBy func",
 		tpl: config.TideMergeCommitTemplate{
 			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
 			Body: getTemplate("CommitBody", `
-					{{- $signedAuthors := .NormalizeSignedOffBy -}}
+					{{- $signedAuthors := .GitHub.NormalizeSignedOffBy -}}
 					{{- range $index, $author := $signedAuthors -}}
 						{{- if $index -}}{{- "\n" -}}{{- end -}}
 						{{- "Signed-off-by:" }} {{ .Name }} <{{- .Email -}}>
 					{{- end -}}
 					{{- "\n" -}}
-					{{- $coAuthors := .NormalizeCoAuthorBy -}}
+					{{- $coAuthors := .GitHub.NormalizeCoAuthorBy -}}
 					{{- range $index, $author := $coAuthors -}}
 						{{- if $index -}}{{- "\n" -}}{{- end -}}
 						{{- "Co-authored-by:" }} {{ .Name }} <{{- .Email -}}>
@@ -742,16 +742,16 @@ func TestPrepareMergeDetails(t *testing.T) {
 			CommitMessage: "Signed-off-by: foo <foo.bar@gmail.com>\nSigned-off-by: zhangsan <zhangsan@gmail.com>\nSigned-off-by: wangwu <wangwu@gmail.com>\nCo-authored-by: zhangsan <zhangsan@gmail.com>\nCo-authored-by: wangwu <wangwu@gmail.com>",
 		},
 	}, {
-		name: "Commit template uses NormalizeSignedOffBy and NormalizeCoAuthorBy func to handle non-signed commit",
+		name: "Commit template uses NormalizeSignedOffBy and .GitHub.NormalizeCoAuthorBy func to handle non-signed commit",
 		tpl: config.TideMergeCommitTemplate{
 			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
 			Body: getTemplate("CommitBody", `
-					{{- $signedAuthors := .NormalizeSignedOffBy -}}
+					{{- $signedAuthors := .GitHub.NormalizeSignedOffBy -}}
 					{{- range $index, $author := $signedAuthors -}}
 						{{- if $index -}}{{- "\n" -}}{{- end -}}
 						{{- "Signed-off-by:" }} {{ .Name }} <{{- .Email -}}>
 					{{- end -}}
-					{{- $coAuthors := .NormalizeCoAuthorBy -}}
+					{{- $coAuthors := .GitHub.NormalizeCoAuthorBy -}}
 					{{- if $coAuthors -}}{{- "\n" -}}{{- end -}}
 					{{- range $index, $author := $coAuthors -}}
 						{{- if $index -}}{{- "\n" -}}{{- end -}}
@@ -904,13 +904,16 @@ func TestPrepareMergeDetails(t *testing.T) {
 			MergeMethod: "merge",
 			CommitTitle: "my commit title (#1)",
 			CommitMessage: `close pingcap/tidb#123, ref tikv/tikv#456
-	one line.
-	two line.
-	Signed-off-by: foo <foo.bar@gmail.com>
-	Signed-off-by: zhangsan <zhangsan@gmail.com>
-	Signed-off-by: wangwu <wangwu@gmail.com>
-	Co-authored-by: zhangsan <zhangsan@gmail.com>
-	Co-authored-by: wangwu <wangwu@gmail.com>`,
+
+one line.
+two line.
+
+Signed-off-by: foo <foo.bar@gmail.com>
+Signed-off-by: zhangsan <zhangsan@gmail.com>
+Signed-off-by: wangwu <wangwu@gmail.com>
+
+Co-authored-by: zhangsan <zhangsan@gmail.com>
+Co-authored-by: wangwu <wangwu@gmail.com>`,
 		},
 	}, {
 		name: "one commit is suggested by co-author but not committed by co-author",
@@ -975,12 +978,15 @@ func TestPrepareMergeDetails(t *testing.T) {
 			MergeMethod: "merge",
 			CommitTitle: "my commit title (#1)",
 			CommitMessage: `close pingcap/tidb#123, ref tikv/tikv#456
-	one line.
-	two line.
-	Signed-off-by: foo <foo.bar@gmail.com>
-	Signed-off-by: zhangsan <zhangsan@gmail.com>
-	Co-authored-by: zhangsan <zhangsan@gmail.com>
-	Co-authored-by: wangwu <wangwu@gmail.com>`,
+
+one line.
+two line.
+
+Signed-off-by: foo <foo.bar@gmail.com>
+Signed-off-by: zhangsan <zhangsan@gmail.com>
+
+Co-authored-by: zhangsan <zhangsan@gmail.com>
+Co-authored-by: wangwu <wangwu@gmail.com>`,
 		},
 	}}
 
