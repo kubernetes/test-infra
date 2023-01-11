@@ -40,7 +40,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -61,7 +61,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -82,7 +82,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -103,7 +103,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -123,7 +123,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -149,7 +149,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
         command:
         - make
         args:
@@ -221,7 +221,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230105-c1beb6cf98-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-test-infra
         command:
         - runner.sh
         args:
@@ -274,7 +274,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -298,7 +298,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -321,7 +321,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -345,7 +345,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -369,7 +369,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -467,7 +467,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
         command:
         - make
         args:
@@ -654,7 +654,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
       command:
       - ./hack/make-rules/go-run/arbitrary.sh
       args:
@@ -791,7 +791,7 @@ periodics:
     serviceAccountName: legacy-sa-json-key-rotator
     containers:
     - name: gcloud
-      image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+      image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
       command:
       - bash
         - -c
