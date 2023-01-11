@@ -11,7 +11,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230105-c1beb6cf98-test-infra
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-test-infra
       command:
       - runner.sh
       args:
