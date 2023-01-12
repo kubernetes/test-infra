@@ -4,6 +4,7 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/usage-metrics-collector
     always_run: true
+    optional: false
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
@@ -18,6 +19,7 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/usage-metrics-collector
     always_run: true
+    optional: false
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
@@ -32,6 +34,7 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/usage-metrics-collector
     always_run: true
+    optional: false
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
