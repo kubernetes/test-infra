@@ -57,7 +57,6 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 	GetRef(string, string, string) (string, error)
 	GetRepo(owner, name string) (github.FullRepo, error)
 	Merge(string, string, int, github.MergeDetails) error
@@ -667,13 +666,13 @@ func filterSubpool(provider provider, mergeAllowed func(*CodeReviewCommon) (stri
 
 // filterPR indicates if a PR should be filtered out of the subpool.
 // Specifically we filter out PRs that:
-// - Have known merge conflicts or invalid merge method.
-// - Have failing or missing status contexts.
-// - Have pending required status contexts that are not associated with a
-//   ProwJob. (This ensures that the 'tide' context indicates that the pending
-//   status is preventing merge. Required ProwJob statuses are allowed to be
-//   'pending' because this prevents kicking PRs from the pool when Tide is
-//   retesting them.)
+//   - Have known merge conflicts or invalid merge method.
+//   - Have failing or missing status contexts.
+//   - Have pending required status contexts that are not associated with a
+//     ProwJob. (This ensures that the 'tide' context indicates that the pending
+//     status is preventing merge. Required ProwJob statuses are allowed to be
+//     'pending' because this prevents kicking PRs from the pool when Tide is
+//     retesting them.)
 //
 // This function works for any source code provider.
 func filterPR(provider provider, mergeAllowed func(*CodeReviewCommon) (string, error), sp *subpool, pr *CodeReviewCommon) bool {
@@ -2101,7 +2100,6 @@ func nonFailedBatchByNameBaseAndPullsIndexFunc(obj ctrlruntimeclient.Object) []s
 	return []string{nonFailedBatchByNameBaseAndPullsIndexKey(pj.Spec.Job, pj.Spec.Refs)}
 }
 
-//
 func checkRunNodesToContexts(log *logrus.Entry, nodes []CheckRunNode) []Context {
 	var result []Context
 	for _, node := range nodes {
