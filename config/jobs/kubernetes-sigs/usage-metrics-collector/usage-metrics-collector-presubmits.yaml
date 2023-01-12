@@ -1,0 +1,44 @@
+presubmits:
+  kubernetes-sigs/usage-metrics-collector:
+  - name: pull-usage-metrics-collector-verify
+    decorate: true
+    path_alias: sigs.k8s.io/usage-metrics-collector
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+        command:
+        - runner.sh
+        - make
+        - verify
+    annotations:
+      testgrid-dashboards: sig-instrumentation-usage-metrics-collector
+      testgrid-tab-name: pr-verify
+  - name: pull-usage-metrics-collector-test
+    decorate: true
+    path_alias: sigs.k8s.io/usage-metrics-collector
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+        command:
+        - runner.sh
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: sig-instrumentation-usage-metrics-collector
+      testgrid-tab-name: pr-test
+  - name: pull-usage-metrics-collector-build
+    decorate: true
+    path_alias: sigs.k8s.io/usage-metrics-collector
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+        command:
+        - runner.sh
+        - make
+        - build
+    annotations:
+      testgrid-dashboards: sig-instrumentation-usage-metrics-collector
+      testgrid-tab-name: pr-build
