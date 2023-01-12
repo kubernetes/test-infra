@@ -1420,6 +1420,10 @@ func TestRequestReview(t *testing.T) {
 		if len(merr.Users) != 1 || merr.Users[0] != "not-a-collaborator" {
 			t.Errorf("Expected [not-a-collaborator], not %v", merr.Users)
 		}
+		expErr := "could not request a PR review from the following user(s): not-a-collaborator; status code 422 not one of [201], body: ."
+		if merr.Error() != expErr {
+			t.Errorf("Expected error string %q, not %q", expErr, merr.Error())
+		}
 	} else {
 		t.Errorf("Expected MissingUsers error")
 	}
@@ -1428,6 +1432,10 @@ func TestRequestReview(t *testing.T) {
 	} else if merr, ok := err.(MissingUsers); ok {
 		if len(merr.Users) != 1 || merr.Users[0] != "notk8s/team1" {
 			t.Errorf("Expected [notk8s/team1], not %v", merr.Users)
+		}
+		expErr := "could not request a PR review from the following user(s): notk8s/team1; team notk8s/team1 is not part of k8s org."
+		if merr.Error() != expErr {
+			t.Errorf("Expected error string %q, not %q", expErr, merr.Error())
 		}
 	} else {
 		t.Errorf("Expected MissingUsers error")
