@@ -602,10 +602,7 @@ func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, p
 
 	var opt gerrit.QueryChangeOptions
 	opt.Query = append(opt.Query, strings.Join(append(additionalFilters, "project:"+project), "+"))
-	// Gerrit query by default doesn't include all fields, add necessary fields
-	// according to
-	// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html.
-	opt.AdditionalFields = []string{"SUBMITTABLE", "CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES", "LABELS"}
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES", "LABELS"}
 
 	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
 	var start int

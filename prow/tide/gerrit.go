@@ -207,31 +207,13 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 				optInByDefault = projFilter.OptInByDefault
 			}
 			go func(projName string, optInByDefault bool) {
-				logger := p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName})
 				changes, err := p.gc.QueryChangesForProject(instance, projName, lastUpdate, p.cfg().Gerrit.RateLimit, gerritQueryParam(optInByDefault))
 				if err != nil {
-					logger.WithError(err).Warn("Querying gerrit project for changes.")
+					p.logger.WithFields(logrus.Fields{"instance": instance, "project": projName}).WithError(err).Warn("Querying gerrit project for changes.")
 					errChan <- fmt.Errorf("failed querying project '%s' from instance '%s': %v", projName, instance, err)
 					return
 				}
-				// Appears that `is:submittable` is not guaranteed to always
-				// work, add an extra layer of filtering until the below
-				// mentioned bug is fixed:
-				// Google internal bug reference: 263278725
-				var submittableChanges []gerrit.ChangeInfo
-				for _, c := range changes {
-					c := c
-					if !c.Submittable {
-						logger.WithField("id", c.ID).Debug("Change not submittable presented in query results.")
-						continue
-					}
-					if !c.Mergeable {
-						logger.WithField("id", c.ID).Debug("Change not mergeable presented in query results.")
-						continue
-					}
-					submittableChanges = append(submittableChanges, c)
-				}
-				resChan <- changesFromProject{instance: instance, project: projName, changes: submittableChanges}
+				resChan <- changesFromProject{instance: instance, project: projName, changes: changes}
 			}(projName, optInByDefault)
 		}
 	}
