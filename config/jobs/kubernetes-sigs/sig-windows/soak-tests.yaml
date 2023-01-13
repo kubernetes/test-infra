@@ -17,14 +17,13 @@ presets:
       - key: win-soak-test
         path: win-soak-test.kubeconfig
 presubmits:
-  kubernetes/test-infra:
+  kubernetes/perf-tests:
   - name: soak-tests-capz-windows-2019
     decorate: true
     always_run: false
     optional: true
     decoration_config:
       timeout: 8h
-    path_alias: k8s.io/perf-tests
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -32,12 +31,6 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
       preset-azure-win-soak-test-creds: "true"
-    extra_refs:
-      - org: kubernetes
-        repo: perf-tests
-        base_ref: "main"
-        path_alias: "k8s.io/perf-tests"
-        workdir: true
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
