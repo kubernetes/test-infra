@@ -2636,12 +2636,8 @@ func parseProwConfig(c *Config) error {
 		}
 	}
 
-	for name, method := range c.Tide.MergeType {
-		if method.MergeType != types.MergeMerge &&
-			method.MergeType != types.MergeRebase &&
-			method.MergeType != types.MergeSquash {
-			return fmt.Errorf("merge type %q for %s is not a valid type", method, name)
-		}
+	if err := parseTideMergeType(c.Tide.MergeType); err != nil {
+		return fmt.Errorf("tide merge type: %w", err)
 	}
 
 	for name, templates := range c.Tide.MergeTemplate {
