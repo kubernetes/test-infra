@@ -22,7 +22,7 @@ presubmits:
       #   path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
@@ -105,7 +105,7 @@ periodics:
         path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
