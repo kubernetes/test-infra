@@ -152,6 +152,7 @@ func handle(h *handler) error {
 				if len(msg) == 0 {
 					return nil
 				}
+				h.log.Printf("Failed to add %s to %s/%s#%d: %s", h.userType, org, repo, e.Number, mu.Error())
 				if err := h.gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg)); err != nil {
 					return fmt.Errorf("comment err: %w", err)
 				}
