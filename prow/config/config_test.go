@@ -8820,7 +8820,7 @@ func TestProwConfigMergingProperties(t *testing.T) {
 				if err := newConfig.mergeFrom(fuzzedMergeableConfig); err != nil {
 					t.Fatalf("merging fuzzed mergeable config into empty config failed: %v", err)
 				}
-				if diff := cmp.Diff(newConfig, fuzzedMergeableConfig); diff != "" {
+				if diff := cmp.Diff(newConfig, fuzzedMergeableConfig, DefaultDiffOpts...); diff != "" {
 					t.Errorf("after merging config into an empty config, the config that was merged into differs from the one we merged from:\n%s\n", diff)
 				}
 			},
@@ -8916,6 +8916,11 @@ func TestProwConfigMergingProperties(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestEnsureConfigIsDiffable(t *testing.T) {
+	// This will panic in case it is not able to diff 'Config'.
+	_ = cmp.Diff(Config{}, Config{}, DefaultDiffOpts...)
 }
 
 // TestDeduplicateTideQueriesDoesntLoseData simply uses deduplicateTideQueries

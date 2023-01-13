@@ -39,6 +39,7 @@ import (
 
 	gitignore "github.com/denormal/go-gitignore"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	"gopkg.in/robfig/cron.v2"
@@ -76,6 +77,10 @@ const (
 	DefaultTenantID = "GlobalDefaultID"
 
 	ProwIgnoreFileName = ".prowignore"
+)
+
+var (
+	DefaultDiffOpts []cmp.Option = []cmp.Option{cmpopts.IgnoreFields(TideBranchMergeType{}, "Regexpr")}
 )
 
 // Config is a read-only snapshot of the config.
@@ -3269,7 +3274,7 @@ func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
 	}
 
 	var errs []error
-	if diff := cmp.Diff(additional, emptyReference); diff != "" {
+	if diff := cmp.Diff(additional, emptyReference, DefaultDiffOpts...); diff != "" {
 		errs = append(errs, fmt.Errorf("only 'branch-protection', 'slack_reporter_configs', 'tide.merge_method' and 'tide.queries' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff))
 	}
 	if err := pc.BranchProtection.merge(&additional.BranchProtection); err != nil {
@@ -3394,7 +3399,7 @@ func (pc *ProwConfig) hasGlobalConfig() bool {
 		Tide:                 Tide{TideGitHubConfig: TideGitHubConfig{MergeType: pc.Tide.MergeType, Queries: pc.Tide.Queries}},
 		SlackReporterConfigs: pc.SlackReporterConfigs,
 	}
-	return cmp.Diff(pc, emptyReference) != ""
+	return cmp.Diff(pc, emptyReference, DefaultDiffOpts...) != ""
 }
 
 // tideQueryMap is a map[tideQueryConfig]*tideQueryTarget. Because slices are not comparable, they
