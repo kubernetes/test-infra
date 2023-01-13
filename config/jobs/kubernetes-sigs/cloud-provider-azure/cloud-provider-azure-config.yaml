@@ -45,7 +45,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -70,7 +70,8 @@ presubmits:
             - name: KUBERNETES_VERSION
               value: "latest"
             - name: CLUSTER_TEMPLATE
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+              # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+              value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: AZURE_LOADBALANCER_SKU
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL
@@ -161,7 +162,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes
@@ -221,7 +222,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -273,7 +274,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -298,7 +299,8 @@ presubmits:
             - name: KUBERNETES_VERSION
               value: "latest"
             - name: CLUSTER_TEMPLATE
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+              # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+              value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: AZURE_LOADBALANCER_SKU
               value: "Standard"
             - name: ENABLE_MULTI_SLB
@@ -358,7 +360,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
+      base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -392,7 +394,8 @@ periodics:
         - name: CLUSTER_PROVISIONING_TOOL
           value: "capz"
         - name: CLUSTER_TEMPLATE
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-ipv6.yaml
+          # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+          value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-ipv6.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-ipv6-capz
@@ -412,7 +415,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
+      base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -515,7 +518,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
+      base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -573,7 +576,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -634,7 +637,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -704,7 +707,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -766,7 +769,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
+      base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -796,7 +799,8 @@ periodics:
         - name: KUBERNETES_VERSION
           value: "latest"
         - name: CLUSTER_TEMPLATE
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+          # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+          value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL
@@ -820,7 +824,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -858,7 +862,8 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_TEMPLATE
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+        # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+        value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL
@@ -884,7 +889,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -923,7 +928,8 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_TEMPLATE
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+        # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+        value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL
@@ -951,7 +957,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -990,7 +996,8 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_TEMPLATE
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
+        # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+        value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL
@@ -1016,7 +1023,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1054,7 +1061,8 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_TEMPLATE
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+        # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+        value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/master/tests/calico-crs/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL
