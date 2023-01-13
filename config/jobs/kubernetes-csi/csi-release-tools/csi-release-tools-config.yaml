@@ -106,7 +106,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.25"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -152,7 +152,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.25"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION
@@ -198,7 +198,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.25"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: CSI_SNAPSHOTTER_VERSION
