@@ -2637,9 +2637,9 @@ func parseProwConfig(c *Config) error {
 	}
 
 	for name, method := range c.Tide.MergeType {
-		if method != types.MergeMerge &&
-			method != types.MergeRebase &&
-			method != types.MergeSquash {
+		if method.MergeType != types.MergeMerge &&
+			method.MergeType != types.MergeRebase &&
+			method.MergeType != types.MergeSquash {
 			return fmt.Errorf("merge type %q for %s is not a valid type", method, name)
 		}
 	}
@@ -2718,6 +2718,44 @@ func parseProwConfig(c *Config) error {
 	}
 
 	return nil
+}
+
+// parseTideMergeType function parses a tide merge configuration and sets regexps out of every branch name.
+func parseTideMergeType(tideMergeTypes map[string]TideOrgMergeType) utilerrors.Aggregate {
+	isTideMergeTypeValid := func(mm types.PullRequestMergeType) bool {
+		return mm == types.MergeMerge || mm == types.MergeRebase || mm == types.MergeSquash
+	}
+	mergeTypeErrs := make([]error, 0)
+	for org, orgConfig := range tideMergeTypes {
+		// Validate orgs
+		if orgConfig.MergeType != "" && !isTideMergeTypeValid(orgConfig.MergeType) {
+			mergeTypeErrs = append(mergeTypeErrs,
+				fmt.Errorf("merge type %q for %s is not a valid type", orgConfig.MergeType, org))
+		}
+		for repo, repoConfig := range orgConfig.Repos {
+			// Validate repos
+			if repoConfig.MergeType != "" && !isTideMergeTypeValid(repoConfig.MergeType) {
+				mergeTypeErrs = append(mergeTypeErrs,
+					fmt.Errorf("merge type %q for %s/%s is not a valid type", repoConfig.MergeType, org, repo))
+			}
+			for branch, branchConfig := range repoConfig.Branches {
+				// Validate branches
+				regexpr, err := regexp.Compile(branch)
+				if err != nil {
+					mergeTypeErrs = append(mergeTypeErrs, fmt.Errorf("regex %q is not valid", branch))
+				} else {
+					branchConfig.Regexpr = regexpr
+				}
+				if !isTideMergeTypeValid(branchConfig.MergeType) {
+					mergeTypeErrs = append(mergeTypeErrs,
+						fmt.Errorf("merge type %q for %s/%s@%s is not a valid type",
+							branchConfig.MergeType, org, repo, branch))
+				}
+				repoConfig.Branches[branch] = branchConfig
+			}
+		}
+	}
+	return utilerrors.NewAggregate(mergeTypeErrs)
 }
 
 func validateLabels(labels map[string]string) error {
