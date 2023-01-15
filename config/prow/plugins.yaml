@@ -793,7 +793,7 @@ require_matching_label:
   repo: kustomize
   issues: true
   prs: false
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
