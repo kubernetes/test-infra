@@ -944,7 +944,9 @@ presets:
   env:
     - name: REGISTRY
       value: capzci.azurecr.io
-    - name: LOCAL_ONLY
+    - name: LOCAL_ONLY # This variable is used for backwards compatability, can be removed once CAPZ v1.7.0+ is used in all jobs
+      value: "false"
+    - name: USE_LOCAL_KIND_REGISTRY
       value: "false"
 - labels:
     preset-azure-cred-only: "true"
