@@ -24,7 +24,7 @@ func Test_getRealJenkinsLogPath(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		args    args
+		path    string
 		want    string
 		wantErr bool
 	}{
