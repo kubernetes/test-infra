@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -69,8 +68,8 @@ func handleLog(jc *jenkins.Client) http.HandlerFunc {
 
 func getRealJenkinsLogPath(path string) (string, error) {
 	jobMatches := reJenkinsJobURL.FindStringSubmatch(path)
-	if len(jobMatches) == 0 {
-		return "", errors.New("job name invalid")
+	if len(jobMatches) != 5 {
+		return "", fmt.Errorf("job URL path not match regexp pattern: ^%s$", reJenkinsJobURL)
 	}
 
 	realPath := fmt.Sprintf("%s/%s/%s/consoleText",
