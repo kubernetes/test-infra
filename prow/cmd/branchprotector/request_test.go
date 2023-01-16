@@ -95,12 +95,20 @@ func TestMakeReviews(t *testing.T) {
 					Users: []string{"fred", "jane"},
 					Teams: []string{"megacorp", "startup"},
 				},
+				BypassRestrictions: &branchprotection.BypassRestrictions{
+					Users: []string{"fred", "jane"},
+					Teams: []string{"megacorp", "startup"},
+				},
 			},
 			expected: &github.RequiredPullRequestReviewsRequest{
 				RequiredApprovingReviewCount: 1,
 				RequireCodeOwnerReviews:      true,
 				DismissStaleReviews:          true,
 				DismissalRestrictions: github.DismissalRestrictionsRequest{
+					Teams: &[]string{"megacorp", "startup"},
+					Users: &[]string{"fred", "jane"},
+				},
+				BypassRestrictions: github.BypassRestrictionsRequest{
 					Teams: &[]string{"megacorp", "startup"},
 					Users: &[]string{"fred", "jane"},
 				},

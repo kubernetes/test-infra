@@ -1478,6 +1478,10 @@ type BugzillaBranchOptions struct {
 	// ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
 	ExcludeDefaults *bool `json:"exclude_defaults,omitempty"`
 
+	// EnableBackporting enables functionality to create new backport bugs for
+	// cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+	EnableBackporting *bool
+
 	// ValidateByDefault determines whether a validation check is run for all pull
 	// requests by default
 	ValidateByDefault *bool `json:"validate_by_default,omitempty"`

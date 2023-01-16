@@ -40,7 +40,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -61,7 +61,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -82,7 +82,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -103,7 +103,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -123,7 +123,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -149,7 +149,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
         command:
         - make
         args:
@@ -171,7 +171,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20221220-5c7fbe528a
+      - image: gcr.io/k8s-prow/hmac:v20230113-8f2ffbe0d4
         command:
         - hmac
         args:
@@ -221,7 +221,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-test-infra
         command:
         - runner.sh
         args:
@@ -274,7 +274,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -298,7 +298,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -321,7 +321,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -345,7 +345,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -369,7 +369,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
         command:
         - /run.sh
         args:
@@ -387,7 +387,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20221220-5c7fbe528a
+        image: gcr.io/k8s-prow/gencred:v20230113-8f2ffbe0d4
         command:
         - gencred
         args:
@@ -434,7 +434,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20221220-5c7fbe528a
+      - image: gcr.io/k8s-prow/configurator:v20230113-8f2ffbe0d4
         command:
         - configurator
         args:
@@ -467,7 +467,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
         command:
         - make
         args:
@@ -570,6 +570,45 @@ periodics:
     - name: github
       secret:
         secretName: oauth-token
+- cron: "30 18-23/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (18:05 UTC, fall) Mon-Fri
+  # Save for daylight saving:
+  # cron: "30 17-22/5 * * 1-5"  # Bump with label `skip-review`. Run at 10:30 and 15:30 PST (17:05 UTC, spring) Mon-Fri
+  name: ci-test-infra-autobump-prow-for-auto-deploy
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230113-8f2ffbe0d4
+      command:
+      - generic-autobumper
+      args:
+      - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
+      - --labels-override=skip-review # This label is used by tide for identifying trusted PR
+      - --skip-if-no-oncall # Only apply `skip-review` label when oncall is active
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: ssh
+        mountPath: /root/.ssh
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
+    - name: ssh
+      secret:
+        secretName: k8s-ci-robot-ssh-keys
+        defaultMode: 0400
+  annotations:
+    testgrid-dashboards: sig-testing-prow
+    testgrid-tab-name: autobump-prow-for-auto-deploy
+    testgrid-alert-email: k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '2' # This could fail when it runs right in the middle of prow push, tolerate it once
+    description: runs autobumper to create/update a PR that bumps prow to the latest RC with label 'skip-review'
 - cron: "15 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
@@ -580,7 +619,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20221220-5c7fbe528a
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230113-8f2ffbe0d4
       command:
       - generic-autobumper
       args:
@@ -615,7 +654,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
       command:
       - ./hack/make-rules/go-run/arbitrary.sh
       args:
@@ -650,7 +689,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20221220-5c7fbe528a
+      image: gcr.io/k8s-prow/branchprotector:v20230113-8f2ffbe0d4
       command:
       - branchprotector
       args:
@@ -684,7 +723,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20221220-5c7fbe528a
+      image: gcr.io/k8s-prow/label_sync:v20230113-8f2ffbe0d4
       command:
       - label_sync
       args:
@@ -728,7 +767,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20221220-5c7fbe528a
+      image: gcr.io/k8s-prow/gencred:v20230113-8f2ffbe0d4
       command:
       - gencred
       args:
@@ -752,7 +791,7 @@ periodics:
     serviceAccountName: legacy-sa-json-key-rotator
     containers:
     - name: gcloud
-      image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20221109-fc7608f5ec
+      image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
       command:
       - bash
         - -c
@@ -781,7 +820,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20221220-5c7fbe528a
+    - image: gcr.io/k8s-prow/checkconfig:v20230113-8f2ffbe0d4
       command:
       - checkconfig
       args:

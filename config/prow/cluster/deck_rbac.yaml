@@ -22,6 +22,8 @@ rules:
   - watch
   # Required when deck runs with `--rerun-creates-job=true`
   - create
+  # Required to abort jobs
+  - patch
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1

@@ -93,6 +93,10 @@ bugzilla:
     # The `*` wildcard will apply to all branches.
     default:
         "":
+            # EnableBackporting enables functionality to create new backport bugs for
+            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+            EnableBackporting: false
+
             # AddExternalLink determines whether the pull request will be added to the Bugzilla
             # bug using the ExternalBug tracker API after being validated
             add_external_link: false
@@ -180,6 +184,10 @@ bugzilla:
             # The `*` wildcard will apply to all branches.
             default:
                 "":
+                    # EnableBackporting enables functionality to create new backport bugs for
+                    # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+                    EnableBackporting: false
+
                     # AddExternalLink determines whether the pull request will be added to the Bugzilla
                     # bug using the ExternalBug tracker API after being validated
                     add_external_link: false
@@ -267,6 +275,10 @@ bugzilla:
                     # The `*` wildcard will apply to all branches.
                     branches:
                         "":
+                            # EnableBackporting enables functionality to create new backport bugs for
+                            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+                            EnableBackporting: false
+
                             # AddExternalLink determines whether the pull request will be added to the Bugzilla
                             # bug using the ExternalBug tracker API after being validated
                             add_external_link: false

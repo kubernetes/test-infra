@@ -3,17 +3,14 @@
 # See sigs.k8s.io/cluster-api-provider-openstack/OWNERS_ALIASES
 approvers:
   - sig-cluster-lifecycle-leads
-  - hidekazuna
   - jichenjc
   - mdbooth
   - seanschneeweiss
   - tobiasgiese
 
 reviewers:
-  - hidekazuna
   - jichenjc
   - mdbooth
-  - prankul88
   - seanschneeweiss
   - tobiasgiese
-  # - macaptain (not yet member of k8s org)
+  - lentzi90

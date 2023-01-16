@@ -380,7 +380,8 @@ var (
 )
 
 const (
-	acceptNone = ""
+	acceptNone       = ""
+	githubApiVersion = "2022-11-28"
 
 	// MaxRequestTime aborts requests that don't return in 5 mins. Longest graphql
 	// calls can take up to 2 minutes. This limit should ensure all successful calls
@@ -1182,6 +1183,12 @@ func (c *client) doRequest(ctx context.Context, method, path, accept, org string
 	if err != nil {
 		return nil, fmt.Errorf("failed creating new request: %w", err)
 	}
+	// We do not make use of the Set() method to set this header because
+	// the header name `X-GitHub-Api-Version` is non-canonical in nature.
+	//
+	// See https://pkg.go.dev/net/http#Header.Set for more info.
+	req.Header["X-GitHub-Api-Version"] = []string{githubApiVersion}
+	c.logger.Infof("Using GitHub REST API Version: %s", githubApiVersion)
 	if header := c.authHeader(); len(header) > 0 {
 		req.Header.Set("Authorization", header)
 	}
@@ -3002,10 +3009,11 @@ func (c *client) WasLabelAddedByHuman(org, repo string, number int, label string
 type MissingUsers struct {
 	Users  []string
 	action string
+	apiErr error
 }
 
 func (m MissingUsers) Error() string {
-	return fmt.Sprintf("could not %s the following user(s): %s.", m.action, strings.Join(m.Users, ", "))
+	return fmt.Sprintf("could not %s the following user(s): %s; %v.", m.action, strings.Join(m.Users, ", "), m.apiErr)
 }
 
 // AssignIssue adds logins to org/repo#number, returning an error if any login is missing after making the call.
@@ -3172,7 +3180,7 @@ func (c *client) RequestReview(org, repo string, number int, logins []string) er
 	statusCode, err := c.tryRequestReview(org, repo, number, logins)
 	if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
 		// Failed to set all members of 'logins' as reviewers, try individually.
-		missing := MissingUsers{action: "request a PR review from"}
+		missing := MissingUsers{action: "request a PR review from", apiErr: err}
 		for _, user := range logins {
 			statusCode, err = c.tryRequestReview(org, repo, number, []string{user})
 			if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {

@@ -11,7 +11,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 3h
+  interval: 24h
   labels:
     preset-azure-cred: "true"
     preset-azure-windows: "true"
@@ -49,7 +49,7 @@ periodics:
       command:
       - runner.sh
       - kubetest
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.23
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-1.23
       name: ""
       resources: {}
       securityContext:
@@ -73,7 +73,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-1.23
       command:
       - runner.sh
       - kubetest
@@ -108,7 +108,7 @@ periodics:
     testgrid-tab-name: aks-engine-windows-containerd-serial-slow-1.23
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release serial tests on K8s 1.23 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 3h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-1-23-windows
   decorate: true
   decoration_config:
@@ -128,7 +128,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-1.23
       command:
       - runner.sh
       - kubetest

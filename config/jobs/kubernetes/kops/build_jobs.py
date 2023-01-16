@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -968,6 +968,7 @@ def generate_upgrades():
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades'],
                        runs_per_day=8,
+                       test_timeout_minutes=120,
                        scenario='upgrade-ab',
                        env=env,
                        )
@@ -983,6 +984,7 @@ def generate_upgrades():
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades-many-addons'],
+                       test_timeout_minutes=120,
                        runs_per_day=4,
                        scenario='upgrade-ab',
                        env=addonsenv,
@@ -1457,6 +1459,7 @@ def generate_presubmits_e2e():
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
+            test_timeout_minutes=120,
             run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
             scenario='upgrade-ab',
             env={

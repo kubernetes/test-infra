@@ -14,8 +14,16 @@ presubmits:
     always_run: true
     path_alias: k8s.io/kubernetes
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - make
             - test
@@ -27,9 +35,6 @@ presubmits:
             requests:
               cpu: 4
               memory: "36Gi"
-          # FIXME(dims): unit tests have no business requiring root or doing privileged operations
-          #securityContext:
-          #  runAsUser: 2000
   - name: pull-kubernetes-unit-experimental
     # try clonerefs with preclone
     decoration_config:
@@ -54,6 +59,8 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - make
             - test
@@ -79,8 +86,16 @@ presubmits:
     skip_report: false
     path_alias: k8s.io/kubernetes
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-go-canary
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - make
             - test
@@ -92,9 +107,6 @@ presubmits:
             requests:
               cpu: 4
               memory: "36Gi"
-          # FIXME(dims): unit tests have no business requiring root or doing privileged operations
-          #securityContext:
-          #  runAsUser: 2000
 periodics:
   - interval: 1h
     name: ci-kubernetes-unit
@@ -114,8 +126,16 @@ periodics:
         base_ref: master
         path_alias: k8s.io/kubernetes
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - make
             - test
@@ -127,9 +147,6 @@ periodics:
             requests:
               cpu: 4
               memory: "36Gi"
-          # FIXME(dims): unit tests have no business requiring root or doing privileged operations
-          # securityContext:
-          #  runAsUser: 2000
   - interval: 6h
     name: ci-kubernetes-generate-make-test-count10
     annotations:
@@ -143,14 +160,19 @@ periodics:
     labels:
       preset-service-account: "true"
     spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - runner.sh
             - bash
             - -c
           args:
             - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=600s GOFLAGS=-count=10'
-          # FIXME(dims): unit tests have no business requiring root or doing privileged operations
-          # securityContext:
-          #  runAsUser: 2000

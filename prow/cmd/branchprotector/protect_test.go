@@ -765,6 +765,13 @@ branch-protection:
       teams:
       - oncall
       - sres
+    bypass_pull_request_allowances:
+     users:
+     - bypass_bob
+     - bypass_jane
+     teams:
+     - bypass_oncall
+     - bypass_sres
   restrictions:
     apps:
     - content-app
@@ -799,6 +806,10 @@ branch-protection:
 							DismissalRestrictions: github.DismissalRestrictionsRequest{
 								Users: &[]string{"bob", "jane"},
 								Teams: &[]string{"oncall", "sres"},
+							},
+							BypassRestrictions: github.BypassRestrictionsRequest{
+								Users: &[]string{"bypass_bob", "bypass_jane"},
+								Teams: &[]string{"bypass_oncall", "bypass_sres"},
 							},
 						},
 						Restrictions: &github.RestrictionsRequest{
@@ -910,6 +921,13 @@ branch-protection:
       teams:
       - oncall
       - sres
+    bypass_pull_request_allowances:
+      users:
+      - bypass_bob
+      - bypass_jane
+      teams:
+      - bypass_oncall
+      - bypass_sres
   restrictions:
     apps:
     - content-app
@@ -937,6 +955,10 @@ branch-protection:
 						DismissalRestrictions: &github.DismissalRestrictions{
 							Users: []github.User{{Login: "bob"}, {Login: "jane"}},
 							Teams: []github.Team{{Slug: "oncall"}, {Slug: "sres"}},
+						},
+						BypassRestrictions: &github.BypassRestrictions{
+							Users: []github.User{{Login: "bypass_bob"}, {Login: "bypass_jane"}},
+							Teams: []github.Team{{Slug: "bypass_oncall"}, {Slug: "bypass_sres"}},
 						},
 					},
 					Restrictions: &github.Restrictions{
@@ -989,6 +1011,13 @@ branch-protection:
       teams:
       - oncall
       - sres
+    bypass_pull_request_allowances:
+      users:
+      - bypass_bob
+      - bypass_jane
+      teams:
+      - bypass_oncall
+      - bypass_sres
   restrictions:
     teams:
     - config-team
@@ -1014,6 +1043,10 @@ branch-protection:
 						DismissalRestrictions: &github.DismissalRestrictions{
 							Users: []github.User{{Login: "bob"}, {Login: "jane"}},
 							Teams: []github.Team{{Slug: "oncall"}, {Slug: "sres"}},
+						},
+						BypassRestrictions: &github.BypassRestrictions{
+							Users: []github.User{{Login: "bypass_bob"}, {Login: "bypass_jane"}},
+							Teams: []github.Team{{Slug: "bypass_oncall"}, {Slug: "bypass_sres"}},
 						},
 					},
 					Restrictions: &github.Restrictions{
@@ -1751,6 +1784,10 @@ func TestEqualBranchProtection(t *testing.T) {
 						Users: []github.User{{Login: "user"}},
 						Teams: []github.Team{{Slug: "team"}},
 					},
+					BypassRestrictions: &github.BypassRestrictions{
+						Users: []github.User{{Login: "user"}},
+						Teams: []github.Team{{Slug: "team"}},
+					},
 				},
 				Restrictions: &github.Restrictions{
 					Apps:  []github.App{{Slug: "app"}},
@@ -1769,6 +1806,10 @@ func TestEqualBranchProtection(t *testing.T) {
 					RequireCodeOwnerReviews:      true,
 					RequiredApprovingReviewCount: 1,
 					DismissalRestrictions: github.DismissalRestrictionsRequest{
+						Users: &[]string{"user"},
+						Teams: &[]string{"team"},
+					},
+					BypassRestrictions: github.BypassRestrictionsRequest{
 						Users: &[]string{"user"},
 						Teams: &[]string{"team"},
 					},
@@ -1799,6 +1840,10 @@ func TestEqualBranchProtection(t *testing.T) {
 						Users: []github.User{{Login: "user"}},
 						Teams: []github.Team{{Slug: "team"}},
 					},
+					BypassRestrictions: &github.BypassRestrictions{
+						Users: []github.User{{Login: "user"}},
+						Teams: []github.Team{{Slug: "team"}},
+					},
 				},
 				Restrictions: &github.Restrictions{
 					Apps:  []github.App{{Slug: "app"}},
@@ -1817,6 +1862,10 @@ func TestEqualBranchProtection(t *testing.T) {
 					RequireCodeOwnerReviews:      true,
 					RequiredApprovingReviewCount: 1,
 					DismissalRestrictions: github.DismissalRestrictionsRequest{
+						Users: &[]string{"user"},
+						Teams: &[]string{"team"},
+					},
+					BypassRestrictions: github.BypassRestrictionsRequest{
 						Users: &[]string{"user"},
 						Teams: &[]string{"team"},
 					},
@@ -2036,12 +2085,20 @@ func TestEqualRequiredPullRequestReviews(t *testing.T) {
 					Users: []github.User{{Login: "user"}},
 					Teams: []github.Team{{Slug: "team"}},
 				},
+				BypassRestrictions: &github.BypassRestrictions{
+					Users: []github.User{{Login: "user"}},
+					Teams: []github.Team{{Slug: "team"}},
+				},
 			},
 			request: &github.RequiredPullRequestReviewsRequest{
 				DismissStaleReviews:          true,
 				RequireCodeOwnerReviews:      true,
 				RequiredApprovingReviewCount: 1,
 				DismissalRestrictions: github.DismissalRestrictionsRequest{
+					Users: &[]string{"user"},
+					Teams: &[]string{"team"},
+				},
+				BypassRestrictions: github.BypassRestrictionsRequest{
 					Users: &[]string{"user"},
 					Teams: &[]string{"team"},
 				},
@@ -2100,12 +2157,20 @@ func TestEqualRequiredPullRequestReviews(t *testing.T) {
 					Users: []github.User{{Login: "user"}},
 					Teams: []github.Team{{Slug: "team"}},
 				},
+				BypassRestrictions: &github.BypassRestrictions{
+					Users: []github.User{{Login: "user"}},
+					Teams: []github.Team{{Slug: "team"}},
+				},
 			},
 			request: &github.RequiredPullRequestReviewsRequest{
 				DismissStaleReviews:          true,
 				RequireCodeOwnerReviews:      true,
 				RequiredApprovingReviewCount: 1,
 				DismissalRestrictions: github.DismissalRestrictionsRequest{
+					Users: &[]string{"other"},
+					Teams: &[]string{"team"},
+				},
+				BypassRestrictions: github.BypassRestrictionsRequest{
 					Users: &[]string{"other"},
 					Teams: &[]string{"team"},
 				},
@@ -2201,6 +2266,91 @@ func TestEqualDismissalRestrictions(t *testing.T) {
 
 	for _, testCase := range testCases {
 		if actual, expected := equalDismissalRestrictions(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestEqualBypassRestrictions(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		state    *github.BypassRestrictions
+		request  *github.BypassRestrictionsRequest
+		expected bool
+	}{
+		{
+			name:     "neither set matches",
+			expected: true,
+		},
+		{
+			name:     "request unset doesn't match",
+			state:    &github.BypassRestrictions{},
+			expected: false,
+		},
+		{
+			name: "matching requests work",
+			state: &github.BypassRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.BypassRestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "user login casing is ignored",
+			state: &github.BypassRestrictions{
+				Users: []github.User{{Login: "User"}, {Login: "OTHer"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.BypassRestrictionsRequest{
+				Users: &[]string{"uSer", "oThER"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "not matching on users",
+			state: &github.BypassRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.BypassRestrictionsRequest{
+				Users: &[]string{"other"},
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+		{
+			name: "not matching on team",
+			state: &github.BypassRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.BypassRestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"other"},
+			},
+			expected: false,
+		},
+		{
+			name:     "both unset",
+			request:  &github.BypassRestrictionsRequest{},
+			expected: true,
+		},
+		{
+			name: "partially unset",
+			request: &github.BypassRestrictionsRequest{
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalBypassRestrictions(testCase.state, testCase.request), testCase.expected; actual != expected {
 			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
 		}
 	}

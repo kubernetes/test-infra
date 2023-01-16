@@ -98,6 +98,11 @@ func (in *JobBase) DeepCopyInto(out *JobBase) {
 		*out = new(v1alpha1.PipelineRunSpec)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.TektonPipelineRunSpec != nil {
+		in, out := &in.TektonPipelineRunSpec, &out.TektonPipelineRunSpec
+		*out = new(prowjobsv1.TektonPipelineRunSpec)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Annotations != nil {
 		in, out := &in.Annotations, &out.Annotations
 		*out = make(map[string]string, len(*in))

@@ -11,6 +11,7 @@ presubmits:
         - make
         args:
         - verify
+        - --always-make
     annotations:
       testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
       testgrid-tab-name: pr-verify
