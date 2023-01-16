@@ -320,6 +320,13 @@ func RunRequestedWithLabels(c Client, pr *github.PullRequest, baseSHA string, re
 
 func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, labels map[string]string, millisecondOverride ...time.Duration) error {
 	var errors []error
+
+	// If the PR is not mergeable (e.g. due to merge conflicts),we will not trigger any jobs,
+	// to reduce the load on resources and reduce spam comments which will lead to a better review experience.
+	if pr.Mergable != nil && !*pr.Mergable {
+		return nil
+	}
+
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID, labels)
