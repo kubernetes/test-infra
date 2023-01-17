@@ -1,0 +1,26 @@
+periodics:
+- name: ci-usage-metrics-collector-test
+  interval: 8h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: usage-metrics-collector
+    base_ref: main
+    path_alias: sigs.k8s.io/usage-metrics-collector
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230116-866ee24d6f-master
+        command:
+        - runner.sh
+        - make
+        - test
+        resources:
+          requests:
+            cpu: 1
+            memory: "512Mi"
+          limits:
+            cpu: 1
+            memory: "1Gi"
+  annotations:
+    testgrid-dashboards: sig-instrumentation-usage-metrics-collector
+    testgrid-tab-name: periodic-test
