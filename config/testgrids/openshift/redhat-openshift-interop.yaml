@@ -1,0 +1,14 @@
+test_groups:
+- name: periodic-ci-windup-windup_integration_test-mtr-mtr-scenario
+  gcs_prefix: origin-ci-test/logs/periodic-ci-windup-windup_integration_test-mtr-mtr-scenario
+  days_of_results: 60
+
+dashboards:
+- name: redhat-openshift-release-4.12-interop
+  dashboard_tab:
+  - name: mtr-operator-latest
+    test_group_name: periodic-ci-windup-windup_integration_test-mtr-mtr-scenario
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
