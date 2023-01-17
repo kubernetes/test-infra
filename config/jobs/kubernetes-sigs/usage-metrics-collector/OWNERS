@@ -5,3 +5,5 @@ approvers:
   - KnVerey
   - pmorie
   - pwittrock
+labels:
+- sig/instrumentation
