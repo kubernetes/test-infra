@@ -27,6 +27,13 @@ presubmits:
         - runner.sh
         - make
         - test
+        resources:
+          requests:
+            cpu: 1
+            memory: "512Mi"
+          limits:
+            cpu: 1
+            memory: "1Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-usage-metrics-collector
       testgrid-tab-name: pr-test
