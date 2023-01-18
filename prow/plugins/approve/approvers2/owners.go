@@ -152,25 +152,28 @@ func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.
 
 // temporaryUnapprovedFiles returns the list of files that wouldn't be
 // approved by the given set of approvers.
-func (o Owners) temporaryUnapprovedFiles(approvals []Approval) sets.String {
+func (o Owners) temporaryUnapprovedFiles(approvals []Approval, noIssueApprovals []NoIssueApproval) sets.String {
 	ap := NewApprovers(o)
 	for _, aprvl := range approvals {
 		for _, info := range aprvl.Infos {
 			ap.AddApprover(aprvl.Login, info.Reference, false, info.Path)
 		}
 	}
+	for _, noIssueAprvls := range noIssueApprovals {
+		ap.AddNoIssueApprover(noIssueAprvls.Login, noIssueAprvls.Reference)
+	}
 	return ap.UnapprovedFiles()
 }
 
 // KeepCoveringApprovers finds who we should keep as suggested approvers given a pre-selection
 // knownApprovers must be a subset of potentialApprovers.
-func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownApprovals []Approval, potentialApprovers []string) sets.String {
+func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownApprovals []Approval, noIssueApprovals []NoIssueApproval, potentialApprovers []string) sets.String {
 	if len(potentialApprovers) == 0 {
 		o.log.Debug("No potential approvers exist to filter for relevance. Does this repo have OWNERS files?")
 	}
 	keptApprovers := sets.NewString()
 
-	unapproved := o.temporaryUnapprovedFiles(knownApprovals)
+	unapproved := o.temporaryUnapprovedFiles(knownApprovals, noIssueApprovals)
 
 	for _, suggestedApprover := range o.GetSuggestedApprovers(reverseMap, potentialApprovers).List() {
 		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
@@ -516,7 +519,7 @@ func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
 	for fn, potentialApprovers := range ap.owners.GetApprovers() {
 		// potentialApprovers is the list of github handles who can approve file fn.
-		filesApprovers[fn] = approversForFile(fn, potentialApprovers, ap.approvers)
+		filesApprovers[fn] = approversForFile(fn, potentialApprovers, ap.approvers, ap.NoIssueApprovers())
 	}
 
 	return filesApprovers
@@ -616,13 +619,15 @@ func (ap Approvers) UnapprovedOwners() sets.String {
 func (ap Approvers) GetCCs() []string {
 	approversAndAssigneeApprovals := approvalsAndBlanketApprovals(ap.ListApprovals(), ap.assignees)
 	approversAndAssignees := approversOfApprovals(approversAndAssigneeApprovals)
-	randomizedApprovers := ap.owners.GetShuffledApproversSubset(approversAndAssignees)
+	allApproversAndAssignees := approversAndAssignees.Union(ap.GetNoIssueApproversSet())
+	noIssueApprovals := ap.ListNoIssueApprovals()
+	randomizedApprovers := ap.owners.GetShuffledApproversSubset(allApproversAndAssignees)
 	leafReverseMap := ap.owners.GetReverseMap(ap.owners.GetLeafApprovers())
-	suggested := ap.owners.KeepCoveringApprovers(leafReverseMap, approversAndAssigneeApprovals, randomizedApprovers)
+	suggested := ap.owners.KeepCoveringApprovers(leafReverseMap, approversAndAssigneeApprovals, noIssueApprovals, randomizedApprovers)
 
 	approversAndSuggestedApprovals := approvalsAndBlanketApprovals(ap.ListApprovals(), suggested)
 	fullReverseMap := ap.owners.GetReverseMap(ap.owners.GetApprovers())
-	keepAssignees := ap.owners.KeepCoveringApprovers(fullReverseMap, approversAndSuggestedApprovals, ap.assignees.List())
+	keepAssignees := ap.owners.KeepCoveringApprovers(fullReverseMap, approversAndSuggestedApprovals, noIssueApprovals, ap.assignees.List())
 
 	return suggested.Union(keepAssignees).List()
 }
@@ -975,7 +980,7 @@ func wildcardPathMatch(pattern, targetPath string) bool {
 }
 
 // approversForFile return the set of approvers in potentialApprovers who approved the file
-func approversForFile(file string, potentialApprovers sets.String, currentApprovals map[string]*Approval) sets.String {
+func approversForFile(file string, potentialApprovers sets.String, currentApprovals map[string]*Approval, currentNoIssueApprovals map[string]*NoIssueApproval) sets.String {
 	approvers := sets.NewString()
 
 	potentialApproversLowerCase := sets.NewString()
@@ -985,6 +990,12 @@ func approversForFile(file string, potentialApprovers sets.String, currentApprov
 
 	for login, approval := range currentApprovals {
 		if potentialApproversLowerCase.Has(strings.ToLower(login)) && approval.CoversFile(file) {
+			approvers.Insert(login)
+		}
+	}
+
+	for login := range currentNoIssueApprovals {
+		if potentialApproversLowerCase.Has(strings.ToLower(login)) {
 			approvers.Insert(login)
 		}
 	}
