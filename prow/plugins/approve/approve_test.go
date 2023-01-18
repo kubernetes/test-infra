@@ -190,6 +190,13 @@ func TestHandle_SimpleApprover(t *testing.T) {
 	testApproveBaseline(t, false)
 }
 
+// This test is responsible for testing the granular
+// approver against the test cases that exist for the
+// simple approver.
+func TestHandle_GranularApprover_Baseline(t *testing.T) {
+	testApproveBaseline(t, true)
+}
+
 func TestHandle_GranularApprover(t *testing.T) {
 	// This function does not need to test IsApproved, that is tested in approvers/approvers_test.go.
 
@@ -2396,7 +2403,11 @@ func testApproveBaseline(t *testing.T, granular bool) {
 		humanApproved bool
 		files         []string
 		comments      []github.IssueComment
-		reviews       []github.Review
+		// This is used in cases where we want
+		// a comment in the granular approval format
+		// (which happens to be slightly different).
+		granularCommentsInterceptor func([]github.IssueComment) []github.IssueComment
+		reviews                     []github.Review
 
 		selfApprove         bool
 		needsIssue          bool
@@ -2407,7 +2418,10 @@ func testApproveBaseline(t *testing.T, granular bool) {
 		expectDelete    bool
 		expectComment   bool
 		expectedComment string
-		expectToggle    bool
+		// This is the comment that is expected
+		// if we are testing for granular approval
+		expectedCommentGranular string
+		expectToggle            bool
 	}{
 
 		// breaking cases
@@ -2444,6 +2458,27 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/c">c/</a></strike> (approved) [cjwagner]</summary>
+
+- <strike>c/c.go</strike> 
+
+</details>
+
+
+<!-- META={"approvers":[]} -->`,
 		},
 		{
 			name:                "initial notification (unapproved)",
@@ -2475,6 +2510,34 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
 <!-- META={"approvers":["cjwagner"]} -->`,
 		},
 		{
@@ -2511,6 +2574,29 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by:
+
+Associated issue requirement bypassed by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+
+</details>
+
+
+<!-- META={"approvers":[]} -->`,
 		},
 		{
 			name:                "issue provided in PR body",
@@ -2546,6 +2632,29 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+Associated issue: *#42*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+
+</details>
+
+
 <!-- META={"approvers":[]} -->`,
 		},
 		{
@@ -2595,6 +2704,38 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 </details>
 <!-- META={"approvers":[]} -->`),
 			},
+			granularCommentsInterceptor: func(ic []github.IssueComment) []github.IssueComment {
+				ic[1] = newTestCommentTime(time.Now(), "k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">ALIcE</a>*, *<a href="#" title="Author self-approved">cjwagner</a>*
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **2** files: **2** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+
+</details>
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/c">c/</a></strike> (approved) [cjwagner]</summary>
+
+- <strike>c/c.go</strike> 
+
+</details>
+
+
+<!-- META={"approvers":[]} -->`)
+				return ic
+			},
 			reviews:             []github.Review{},
 			selfApprove:         true,
 			needsIssue:          true,
@@ -2643,6 +2784,36 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
+You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/a">a/</a></strong> (unapproved) </summary>
+
+- a/a.go 
+
+</details>
+
+
+<!-- META={"approvers":["alice"]} -->`,
 		},
 		{
 			name:     "remove approval with remove-approve",
@@ -2680,6 +2851,36 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":["alice"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
+You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/a">a/</a></strong> (unapproved) </summary>
+
+- a/a.go 
+
+</details>
+
+
 <!-- META={"approvers":["alice"]} -->`,
 		},
 		{
@@ -2789,6 +2990,33 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 </details>
 <!-- META={"approvers":[]} -->`),
 			},
+			granularCommentsInterceptor: func(ic []github.IssueComment) []github.IssueComment {
+				ic[1] = newTestCommentTime(time.Now(), "k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">alice</a>*
+
+Associated issue: *#1*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **2** files: **2** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+- <strike>a/aa.go</strike> 
+
+</details>
+
+
+<!-- META={"approvers":[]} -->`)
+				return ic
+			},
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          true,
@@ -2857,6 +3085,36 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+**Approval requirements bypassed by manually added approval.**
+
+This pull-request has been approved by:
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/a">a/</a></strong> (unapproved) </summary>
+
+- a/a.go 
+
+</details>
+
+
+<!-- META={"approvers":["alice"]} -->`,
 		},
 		{
 			name:     "lgtm means approve",
@@ -2902,6 +3160,38 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 <!-- META={"approvers":["alice"]} -->`),
 				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
 			},
+			granularCommentsInterceptor: func(ic []github.IssueComment) []github.IssueComment {
+				ic[0] = newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**
+You can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **2** files: **0** are approved and **2** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+
+Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can also choose to approve only specific files by writing `+"`/approve files <path-to-file>`"+` in a comment
+Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/a">a/</a></strong> (unapproved) </summary>
+
+- a/a.go 
+- a/aa.go 
+
+</details>
+
+
+<!-- META={"approvers":["alice"]} -->`)
+				return ic
+			},
 			reviews:             []github.Review{},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -2945,6 +3235,27 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+
+</details>
+
+
+<!-- META={"approvers":[]} -->`,
 		},
 		{
 			name:                "approved review but reviewActsAsApprove disabled",
@@ -2976,6 +3287,34 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
 <!-- META={"approvers":["cjwagner"]} -->`,
 		},
 		{
@@ -3009,6 +3348,27 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+
+</details>
+
+
 <!-- META={"approvers":[]} -->`,
 		},
 		{
@@ -3046,6 +3406,34 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
+<!-- META={"approvers":["cjwagner"]} -->`,
 		},
 		{
 			name:     "review in request changes state means cancel",
@@ -3082,6 +3470,34 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
 <!-- META={"approvers":["cjwagner"]} -->`,
 		},
 		{
@@ -3121,6 +3537,27 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+
+</details>
+
+
+<!-- META={"approvers":[]} -->`,
 		},
 		{
 			name:     "approve cancel command supersedes earlier approved review",
@@ -3157,6 +3594,34 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
 <!-- META={"approvers":["cjwagner"]} -->`,
 		},
 		{
@@ -3195,6 +3660,34 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **1** files: **0** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
+<!-- META={"approvers":["cjwagner"]} -->`,
 		},
 		{
 			name:     "approve cancel command supersedes simultaneous approved review",
@@ -3229,6 +3722,41 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":["alice","cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @alice @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **2** files: **0** are approved and **2** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/a">a/</a></strong> (unapproved) </summary>
+
+- a/a.go 
+
+</details>
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
 <!-- META={"approvers":["alice","cjwagner"]} -->`,
 		},
 		{
@@ -3265,6 +3793,41 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @alice @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **2** files: **0** are approved and **2** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/a">a/</a></strong> (unapproved) </summary>
+
+- a/a.go 
+
+</details>
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
+<!-- META={"approvers":["alice","cjwagner"]} -->`,
 		},
 		{
 			name:                "approve command supersedes simultaneous changes requested review",
@@ -3297,6 +3860,27 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+
+</details>
+
+
 <!-- META={"approvers":[]} -->`,
 		},
 		{
@@ -3332,6 +3916,27 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/dev/c">c/</a></strike> (approved) [cjwagner]</summary>
+
+- <strike>c/c.go</strike> 
+
+</details>
+
+
+<!-- META={"approvers":[]} -->`,
 		},
 		{
 			name:                "different GitHub link URL",
@@ -3366,6 +3971,27 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.mycorp.com/org/repo/blob/dev/c">c/</a></strike> (approved) [cjwagner]</summary>
+
+- <strike>c/c.go</strike> 
+
+</details>
+
+
+<!-- META={"approvers":[]} -->`,
 		},
 		{
 			name:                "Approved because of AutoApproveUnownedSubfolders:",
@@ -3396,6 +4022,21 @@ Needs approval from an approver in each of these files:
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
+<!-- META={"approvers":[]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by:
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+Out of **1** files: **1** are approved and **0** are unapproved.  
+
+The status of the PR is:  
+
+
+
 <!-- META={"approvers":[]} -->`,
 		},
 		{
@@ -3430,6 +4071,40 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["cjwagner"]} -->`,
+			expectedCommentGranular: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner**
+You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+Out of **2** files: **1** are approved and **1** are unapproved.  
+
+Needs approval from approvers in these files:
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can also choose to approve only specific files by writing ` + "`/approve files <path-to-file>`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+The status of the PR is:  
+
+<details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/a">a/</a></strike> (approved) [alice]</summary>
+
+- <strike>a/a.go</strike> 
+
+</details>
+<details>
+<summary><strong><a href="https://github.com/org/repo/blob/master/c">c/</a></strong> (unapproved) </summary>
+
+- c/c.go 
+
+</details>
+
+
+<!-- META={"approvers":["cjwagner"]} -->`,
 		},
 	}
 
@@ -3457,6 +4132,9 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 	}
 
 	for _, test := range tests {
+		if granular && test.granularCommentsInterceptor != nil {
+			test.comments = test.granularCommentsInterceptor(test.comments)
+		}
 		t.Run(test.name, func(t *testing.T) {
 			fghc := newFakeGitHubClient(test.hasLabel, test.humanApproved, test.files, test.comments, test.reviews)
 			branch := "master"
@@ -3478,6 +4156,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 					RequireSelfApproval: &rsa,
 					IssueRequired:       test.needsIssue,
 					LgtmActsAsApprove:   test.lgtmActsAsApprove,
+					GranularApproval:    granular,
 					IgnoreReviewState:   &irs,
 					CommandHelpLink:     "https://go.k8s.io/bot-commands",
 					PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
@@ -3519,8 +4198,16 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 						test.name,
 						len(fghc.IssueCommentsAdded),
 					)
-				} else if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
-					t.Errorf("expected notification differs from actual: %s", cmp.Diff(expect, got))
+				} else {
+					var expectedComment string
+					if granular {
+						expectedComment = test.expectedCommentGranular
+					} else {
+						expectedComment = test.expectedComment
+					}
+					if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
+						t.Errorf("expected notification differs from actual: %s", cmp.Diff(expect, got))
+					}
 				}
 			} else {
 				if len(fghc.IssueCommentsAdded) != 0 {
