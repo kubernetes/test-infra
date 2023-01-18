@@ -733,18 +733,17 @@ The status of the PR is:
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="" title="Approved">Xtrme</a>*, *<a href="" title="Approved">Zac</a>*, *<a href="#" title="Author self-approved">nikhita</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **zoe**
-You can assign the PR to them by writing ` + "`/assign @zoe`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **xtrme**
+You can assign the PR to them by writing ` + "`/assign @xtrme`" + ` in a comment when ready.
 
 Associated issue requirement bypassed by: *<a href="" title="Approved">Zoe</a>*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
-Out of **6** files: **3** are approved and **3** are unapproved.  
+Out of **6** files: **5** are approved and **1** are unapproved.  
 
 Needs approval from approvers in these files:
 - **[x/OWNERS](https://github.com/org/repo/blob/master/x/OWNERS)**
-- **[z/OWNERS](https://github.com/org/repo/blob/master/z/OWNERS)**
 
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
@@ -760,22 +759,22 @@ The status of the PR is:
 
 </details>
 <details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/z">z/</a></strike> (approved) [zoe]</summary>
+
+- <strike>z/z.go</strike> 
+- <strike>z/z_test.go</strike> 
+
+</details>
+<details>
 <summary><strong><a href="https://github.com/org/repo/blob/master/x">x/</a></strong> (partially approved, need additional approvals) [xtrme]</summary>
 
 - x/x.go 
 - <strike>x/x_test.go</strike> 
 
 </details>
-<details>
-<summary><strong><a href="https://github.com/org/repo/blob/master/z">z/</a></strong> (unapproved) </summary>
-
-- z/z.go 
-- z/z_test.go 
-
-</details>
 
 
-<!-- META={"approvers":["zoe"]} -->`,
+<!-- META={"approvers":["xtrme"]} -->`,
 		},
 		{
 			name:     "approve single file",
@@ -802,11 +801,9 @@ The status of the PR is:
 			},
 			comments: []github.IssueComment{
 				newTestComment("nikhita", "changes in y/ look okay\n/approve files y/y.go"),
-				newTestComment("Zoe", "/approve no-issue"),
 			},
 			reviews:             []github.Review{},
 			selfApprove:         false,
-			needsIssue:          true,
 			lgtmActsAsApprove:   false,
 			reviewActsAsApprove: false,
 			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
@@ -819,8 +816,6 @@ The status of the PR is:
 This pull-request has been approved by: *<a href="" title="Approved">nikhita</a>*
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **xtrme**, **zac**
 You can assign the PR to them by writing ` + "`/assign @xtrme @zac`" + ` in a comment when ready.
-
-Associated issue requirement bypassed by: *<a href="" title="Approved">Zoe</a>*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -903,18 +898,17 @@ The status of the PR is:
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="" title="Approved">nikhita</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **xtrme**, **zac**
-You can assign the PR to them by writing ` + "`/assign @xtrme @zac`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **xtrme**
+You can assign the PR to them by writing ` + "`/assign @xtrme`" + ` in a comment when ready.
 
 Associated issue requirement bypassed by: *<a href="" title="Approved">Zoe</a>*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
-Out of **6** files: **2** are approved and **4** are unapproved.  
+Out of **6** files: **4** are approved and **2** are unapproved.  
 
 Needs approval from approvers in these files:
 - **[x/OWNERS](https://github.com/org/repo/blob/master/x/OWNERS)**
-- **[z/OWNERS](https://github.com/org/repo/blob/master/z/OWNERS)**
 
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
@@ -930,22 +924,22 @@ The status of the PR is:
 
 </details>
 <details>
+<summary><strike><a href="https://github.com/org/repo/blob/master/z">z/</a></strike> (approved) [zoe]</summary>
+
+- <strike>z/z.go</strike> 
+- <strike>z/z_test.go</strike> 
+
+</details>
+<details>
 <summary><strong><a href="https://github.com/org/repo/blob/master/x">x/</a></strong> (unapproved) </summary>
 
 - x/x.go 
 - x/x_test.go 
 
 </details>
-<details>
-<summary><strong><a href="https://github.com/org/repo/blob/master/z">z/</a></strong> (unapproved) </summary>
-
-- z/z.go 
-- z/z_test.go 
-
-</details>
 
 
-<!-- META={"approvers":["xtrme","zac"]} -->`,
+<!-- META={"approvers":["xtrme"]} -->`,
 		},
 
 		{
@@ -1100,7 +1094,7 @@ This pull-request has been approved by: *<a href="#" title="Author self-approved
 To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **zac**
 You can assign the PR to them by writing ` + "`/assign @zac`" + ` in a comment when ready.
 
-Associated issue requirement bypassed by: *<a href="" title="Approved">Xtrme</a>*
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
