@@ -17,6 +17,8 @@ presubmits:
         args:
         - make
         - test-helm-chart
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: test-helm-chart
