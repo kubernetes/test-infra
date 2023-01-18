@@ -831,7 +831,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		},
 	)
 	ap.RequireIssue = true
-	ap.AddApprover("Bill", "REFERENCE", false)
+	ap.AddApprover("Bill", "REFERENCE", false, "")
 
 	want = `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
@@ -853,7 +853,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","bob"]} -->`
-	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "dev"); got == nil {
+	if got := ap.GetMessage(&url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "dev"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
