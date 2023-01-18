@@ -388,12 +388,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("ykakarap"),
-				"y/y_test.go": sets.NewString("ykakarap"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("ykakarap"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -474,12 +471,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("ykakarap"),
-				"y/y_test.go": sets.NewString("ykakarap"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("ykakarap"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -559,12 +553,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("ykakarap"),
-				"y/y_test.go": sets.NewString("ykakarap"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("ykakarap"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -644,12 +635,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("ykakarap"),
-				"y/y_test.go": sets.NewString("ykakarap"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("ykakarap"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -726,7 +714,7 @@ The status of the PR is:
 				"z": layeredsets.NewString("xtrme", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
-				"z/z.go": sets.NewString("zac"),
+				"z": sets.NewString("zac"),
 			},
 			approversOwners: map[string]string{
 				"z/z.go": "z",
@@ -780,12 +768,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("ykakarap"),
-				"y/y_test.go": sets.NewString("ykakarap"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("ykakarap"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -868,12 +853,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("ykakarap"),
-				"y/y_test.go": sets.NewString("ykakarap"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("ykakarap"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -956,12 +938,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("yuvaraj"),
-				"y/y_test.go": sets.NewString("yuvaraj"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("yuvaraj"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -1045,12 +1024,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("yuvaraj"),
-				"y/y_test.go": sets.NewString("yuvaraj"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("yuvaraj"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -1133,12 +1109,9 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac", "zoe", "nikhita"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go":      sets.NewString("xtrme"),
-				"x/x_test.go": sets.NewString("xtrme"),
-				"y/y.go":      sets.NewString("yuvaraj"),
-				"y/y_test.go": sets.NewString("yuvaraj"),
-				"z/z.go":      sets.NewString("zac", "zoe"),
-				"z/z_test.go": sets.NewString("zac", "zoe"),
+				"x": sets.NewString("xtrme"),
+				"y": sets.NewString("yuvaraj"),
+				"z": sets.NewString("zac", "zoe"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go":      "x",
@@ -1214,8 +1187,8 @@ The status of the PR is:
 				"z": layeredsets.NewString("zac"),
 			},
 			leafApprovers: map[string]sets.String{
-				"x/x.go": sets.NewString("xtrme"),
-				"z/z.go": sets.NewString("zac"),
+				"x": sets.NewString("xtrme"),
+				"z": sets.NewString("zac"),
 			},
 			approversOwners: map[string]string{
 				"x/x.go": "x",
@@ -1308,8 +1281,8 @@ The status of the PR is:
 				"z": layeredsets.NewString("xtrme", "zac"),
 			},
 			leafApprovers: map[string]sets.String{
-				"y/y.go": sets.NewString("ykakarap"),
-				"z/z.go": sets.NewString("zac"),
+				"y": sets.NewString("ykakarap"),
+				"z": sets.NewString("zac"),
 			},
 			approversOwners: map[string]string{
 				"y/y.go": "y",

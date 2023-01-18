@@ -90,7 +90,8 @@ func (o Owners) GetLeafApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
 	for _, fn := range o.filenames {
-		ownersToApprovers[fn] = o.repo.LeafApprovers(fn)
+		ownersFile := o.repo.FindApproverOwnersForFile(fn)
+		ownersToApprovers[fn] = o.repo.LeafApprovers(ownersFile)
 	}
 
 	return ownersToApprovers
@@ -108,8 +109,9 @@ func (o Owners) GetAllPotentialApprovers() []string {
 	approvers := sets.NewString()
 	owners := o.GetOwnersSet()
 	for _, fn := range o.filenames {
-		if owners.Has(o.repo.FindApproverOwnersForFile(fn)) {
-			approvers.Insert(o.repo.LeafApprovers(fn).List()...)
+		ownersFile := o.repo.FindApproverOwnersForFile(fn)
+		if owners.Has(ownersFile) {
+			approvers.Insert(o.repo.LeafApprovers(ownersFile).List()...)
 		}
 	}
 	approversOnly := approvers.List()
