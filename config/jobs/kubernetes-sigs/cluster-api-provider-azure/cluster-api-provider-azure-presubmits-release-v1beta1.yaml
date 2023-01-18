@@ -191,7 +191,7 @@ presubmits:
           - ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
-            value: \[[Managed Kubernetes\\]
+            value: \[Managed Kubernetes\]
           - name: GINKGO_SKIP
             value: ""
         # docker-in-docker needs privileged mode
