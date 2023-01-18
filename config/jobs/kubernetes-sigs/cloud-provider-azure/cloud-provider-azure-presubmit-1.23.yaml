@@ -45,7 +45,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.6
+          base_ref: release-1.7
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
@@ -70,7 +70,8 @@ presubmits:
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
               - name: CLUSTER_TEMPLATE
-                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+              # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
+                value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-ci-version.yaml
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
               - name: K8S_FEATURE_GATES
@@ -97,7 +98,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.6
+          base_ref: release-1.7
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
         - org: kubernetes
@@ -153,7 +154,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.6
+          base_ref: release-1.7
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
