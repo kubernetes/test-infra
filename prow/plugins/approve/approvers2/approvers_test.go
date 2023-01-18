@@ -394,6 +394,7 @@ func TestGetCCs(t *testing.T) {
 	dApprovers := sets.NewString("David", "Dan", "Debbie")
 	eApprovers := sets.NewString("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
+	fApprovers := sets.NewString("Fred")
 	FakeRepoMap := map[string]sets.String{
 		"":        rootApprovers,
 		"a":       aApprovers,
@@ -401,6 +402,7 @@ func TestGetCCs(t *testing.T) {
 		"c":       cApprovers,
 		"a/d":     dApprovers,
 		"a/combo": edcApprovers,
+		"f":       fApprovers,
 	}
 	tests := []struct {
 		testName          string
@@ -605,6 +607,27 @@ func TestGetCCs(t *testing.T) {
 			// Assignee is a root approver
 			assignees:   []string{"alice"},
 			expectedCCs: []string{"alice"},
+		},
+		{
+			testName:  "F folder partially approved, next set of CCs should reuse F folder approver",
+			filenames: []string{"f/f.go", "f/f_test.go"},
+			testSeed:  0,
+			currentlyApproved: []approval{
+				{"Fred", "f/*_test.go"},
+			},
+			assignees:   []string{""},
+			expectedCCs: []string{"fred"},
+		},
+		{
+			testName:  "G folder partially approved by parent approver, next set of CCs should reuse parent approver",
+			filenames: []string{"f/g/g.go", "f/g/g_test.go"},
+			testSeed:  0,
+			currentlyApproved: []approval{
+				{"Fred", "f/g/*_test.go"},
+			},
+			// Assignee is a root approver
+			assignees:   []string{""},
+			expectedCCs: []string{"fred"},
 		},
 	}
 

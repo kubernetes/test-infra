@@ -616,6 +616,17 @@ func (ap Approvers) UnapprovedOwners() sets.String {
 // assignees.
 // The goal of this second step is to only keep the assignees that are
 // the most useful.
+//
+// Additionally to the original approve implementation, now we can have
+// scenarios of a partially approved directory, i.e. consider a dir x. The
+// files it contains are x/x.go and x/x_test.go and both are changed in a PR.
+// If x has an OWNERS file with only one approver, say xApprover and there are
+// no approvers in parent dirs as well. If xApprover in one review says tests
+// look good /approve files x/x_test.go. With the original approve impl, there
+// will be no approvers that will be suggested to drive the PR to completion since
+// xApprover has already given a review before. Therefore, if there are no CCs
+// suggested by the original algorithm, we take another look to also include
+// approvers who have already given a review.
 func (ap Approvers) GetCCs() []string {
 	approversAndAssigneeApprovals := approvalsAndBlanketApprovals(ap.ListApprovals(), ap.assignees)
 	approversAndAssignees := approversOfApprovals(approversAndAssigneeApprovals)
@@ -629,7 +640,13 @@ func (ap Approvers) GetCCs() []string {
 	fullReverseMap := ap.owners.GetReverseMap(ap.owners.GetApprovers())
 	keepAssignees := ap.owners.KeepCoveringApprovers(fullReverseMap, approversAndSuggestedApprovals, noIssueApprovals, ap.assignees.List())
 
-	return suggested.Union(keepAssignees).List()
+	preferredCCs := suggested.Union(keepAssignees).List()
+	if len(preferredCCs) > 0 {
+		return preferredCCs
+	}
+
+	allApprovers := ap.owners.GetShuffledApprovers()
+	return ap.owners.KeepCoveringApprovers(leafReverseMap, approversAndAssigneeApprovals, noIssueApprovals, allApprovers).List()
 }
 
 // AreFilesApproved returns a bool indicating whether or not OWNERS files associated with
