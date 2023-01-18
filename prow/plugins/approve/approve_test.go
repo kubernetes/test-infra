@@ -1252,7 +1252,7 @@ The status of the PR is:
 // approve plugin implementation. The point of this is to
 // ensure that granular approval still does everything simple
 // approve does. Testing granular approval specific cases will
-// be done in a seperate test.
+// be done in a separate test.
 func testApproveBaseline(t *testing.T, granular bool) {
 	// includes tests with mixed case usernames
 	// includes tests with stale notifications
