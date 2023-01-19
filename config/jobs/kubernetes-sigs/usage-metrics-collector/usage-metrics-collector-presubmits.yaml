@@ -30,10 +30,10 @@ presubmits:
         resources:
           requests:
             cpu: 1
-            memory: "512Mi"
+            memory: "1Gi"
           limits:
             cpu: 1
-            memory: "1Gi"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-usage-metrics-collector
       testgrid-tab-name: pr-test
