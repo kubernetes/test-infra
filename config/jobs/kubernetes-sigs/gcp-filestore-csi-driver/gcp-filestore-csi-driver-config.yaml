@@ -69,7 +69,8 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "hack/verify_all.sh"
   - name: pull-gcp-filestore-csi-driver-kubernetes-integration
-    always_run: true
+    always_run: false
+    run_if_changed: '^(pkg\/|cmd\/|test\/|hack\/|vendor\/)'
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
