@@ -246,7 +246,7 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 				log.WithError(err).Errorf("Failed to add %q label.", cfg.MissingLabel)
 			}
 			if cfg.MissingComment != "" {
-				msg := plugins.FormatSimpleResponse(e.author, cfg.MissingComment)
+				msg := plugins.FormatSimpleResponse(cfg.MissingComment)
 				if err := ghc.CreateComment(e.org, e.repo, e.number, msg); err != nil {
 					log.WithError(err).Error("Failed to create comment.")
 				}

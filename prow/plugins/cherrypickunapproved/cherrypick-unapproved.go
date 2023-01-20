@@ -180,7 +180,7 @@ func ensureLabels(gc githubClient, org string, repo string, pr *github.PullReque
 		log.WithError(err).Errorf("GitHub failed to add the following label: %s", labels.CpUnapproved)
 	}
 
-	formattedComment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, commentBody)
+	formattedComment := plugins.FormatSimpleResponse(commentBody)
 	if err := gc.CreateComment(org, repo, pr.Number, formattedComment); err != nil {
 		log.WithError(err).Errorf("Failed to comment %q", formattedComment)
 	}
