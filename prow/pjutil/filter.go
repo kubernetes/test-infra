@@ -27,7 +27,10 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-var TestAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
+var (
+	TestAllRe    = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
+	TestGoCanary = regexp.MustCompile(`(?m)^/test go-canary,?($|\s.*)`)
+)
 
 // RetestRe provides the regex for `/retest`
 var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
@@ -77,10 +80,10 @@ func AvailablePresubmits(changes config.ChangedFilesProvider, branch string,
 }
 
 // Filter digests a presubmit config to determine if:
-//  - the presubmit matched the filter
-//  - we know that the presubmit is forced to run
-//  - what the default behavior should be if the presubmit
-//    runs conditionally and does not match trigger conditions
+//   - the presubmit matched the filter
+//   - we know that the presubmit is forced to run
+//   - what the default behavior should be if the presubmit
+//     runs conditionally and does not match trigger conditions
 type Filter interface {
 	ShouldRun(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool)
 	Name() string
@@ -174,6 +177,27 @@ func (nf *AggregateFilter) Name() string {
 		names = append(names, filter.Name())
 	}
 	return strings.Join(names, "::")
+}
+
+// TestGoCanaryFilter builds a filter for the automatic behavior of `/test go-canary`.
+// Jobs that explicitly match `/test go-canary` in their trigger regex will be
+// handled by a commandFilter for the comment in question.
+type TestGoCanaryFilter struct{}
+
+func NewTestGoCanaryFilter() *TestGoCanaryFilter {
+	return &TestGoCanaryFilter{}
+}
+
+func (tgcf *TestGoCanaryFilter) ShouldRun(p config.Presubmit) (bool, bool, bool) {
+	return isGoCanaryJob(p.Name) && !p.NeedsExplicitTrigger(), false, false
+}
+
+func (tgcf *TestGoCanaryFilter) Name() string {
+	return "test-go-canary-filter"
+}
+
+func isGoCanaryJob(name string) bool {
+	return strings.HasSuffix(strings.ToLower(name), "go-canary")
 }
 
 // FilterPresubmits determines which presubmits should run by evaluating the user-provided filter.
@@ -291,6 +315,10 @@ func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body strin
 	if (honorOkToTest && OkToTestRe.MatchString(body)) || TestAllRe.MatchString(body) {
 		logger.Debug("Using test-all filter.")
 		filters = append(filters, NewTestAllFilter())
+	}
+	if (honorOkToTest && OkToTestRe.MatchString(body)) || TestGoCanary.MatchString(body) {
+		logger.Debug("Using test-go-canary filter.")
+		filters = append(filters, NewTestGoCanaryFilter())
 	}
 	return NewAggregateFilter(filters), nil
 }
