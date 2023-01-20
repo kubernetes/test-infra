@@ -13,9 +13,9 @@
 # limitations under the License.
 
 push-prod:
-	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-prow --scratch-bucket=gs://k8s-testimages-scratch images/git-gke-gcloud-auth
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-prow --scratch-bucket=gs://k8s-testimages-scratch images/git-custom-k8s-auth
 
 push:
-	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --allow-dirty images/git-gke-gcloud-auth
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --allow-dirty images/git-custom-k8s-auth
 
 .PHONY: push push-prod
