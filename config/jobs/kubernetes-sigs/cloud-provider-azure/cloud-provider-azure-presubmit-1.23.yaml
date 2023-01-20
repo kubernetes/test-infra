@@ -70,8 +70,7 @@ presubmits:
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
               - name: CLUSTER_TEMPLATE
-              # TODO: change this back to kubernetes-sigs/cloud-provider-azure/master branch once https://github.com/kubernetes-sigs/cloud-provider-azure/pull/2995 merges.
-                value: https://raw.githubusercontent.com/CecileRobertMichon/cloud-provider-azure/calico-crs/tests/k8s-azure/manifest/cluster-api/linux-ci-version.yaml
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-ci-version.yaml
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
               - name: K8S_FEATURE_GATES
