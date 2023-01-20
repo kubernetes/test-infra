@@ -39,7 +39,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230120-519ab607f8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -114,7 +114,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230120-519ab607f8-master
           command:
             - ./run-e2e.sh
           args:
@@ -160,7 +160,7 @@ periodics:
       preset-azure-anonymous-pull: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230120-519ab607f8-master
           command:
             - az
           args:
@@ -197,7 +197,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230120-519ab607f8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -262,7 +262,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230120-519ab607f8-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
