@@ -1184,6 +1184,16 @@ def generate_presubmits_e2e():
             cloud='gce',
             k8s_version='stable',
             kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-ipalias',
+            networking='gce',
+            tab_name='e2e-gce',
+            always_run=False,
+            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+        ),
+        presubmit_test(
+            cloud='gce',
+            k8s_version='stable',
+            kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce-long-cluster-name',
             networking='cilium',
             tab_name='e2e-gce-long-name',
