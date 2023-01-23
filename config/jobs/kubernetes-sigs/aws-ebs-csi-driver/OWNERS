@@ -1,14 +1,16 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- leakingtapan
-- gyuho
 - bertinatto
+- ConnorJC3
+- gyuho
+- leakingtapan
 - torredil
 - wongma7
 approvers:
-- leakingtapan
-- gyuho
 - bertinatto
+- ConnorJC3
+- gyuho
+- leakingtapan
 - torredil
 - wongma7
