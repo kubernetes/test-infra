@@ -806,7 +806,12 @@ repos:
         description: Issues or PRs related to the upstream marketing team
         name: area/contributor-comms
         target: both
-        addedBy: humans
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the annual reports
+        name: area/annual-reports
+        target: both
+        addedBy: label
   kubernetes/dns:
     labels:
       - color: 0052cc
