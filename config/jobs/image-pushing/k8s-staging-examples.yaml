@@ -1,0 +1,25 @@
+postsubmits:
+  # this is the github repo we'll build from; this block needs to be repeated for each repo.
+  kubernetes/examples:
+    - name: examples-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+       # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-k8s-infra-gcb
+      decorate: true
+      # match on regex '^\d+\.\d+\.\d+$' to trigger job on new tags
+      branches:
+        - ^master$
+        - ^\d+\.\d+\.\d+$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-examples
+              - --scratch-bucket=gs://k8s-staging-examples-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
