@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20230124-61b36115b7
         command:
         - runner.sh
         args:
