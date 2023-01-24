@@ -991,6 +991,10 @@ cherry_pick_unapproved:
 
     To merge this cherry pick, it must first be approved (`/lgtm` + `/approve`) by the relevant OWNERS.
 
+    If you **didn't cherry-pick** this change to [**all supported release branches**](https://k8s.io/releases/patch-releases), please leave a comment describing why other cherry-picks are not needed to speed up the review process.
+
+    If you're not sure is it required to cherry-pick this change to all supported release branches, please consult the [cherry-pick guidelines](https://git.k8s.io/community/contributors/devel/sig-release/cherry-picks.md) document.
+
     **AFTER** it has been approved by code owners, please leave the following comment on a line **by itself, with no leading whitespace**: **/cc kubernetes/release-managers**
 
     (This command will request a cherry pick review from [Release Managers](https://github.com/orgs/kubernetes/teams/release-managers) and should work for all GitHub users, whether they are members of the Kubernetes GitHub organization or not.)
