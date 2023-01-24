@@ -802,7 +802,7 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 	defer f.lock.RUnlock()
 	milestones := []github.Milestone{}
 	for k, v := range f.MilestoneMap {
-		milestones = append(milestones, github.Milestone{Title: k, Number: v})
+		milestones = append(milestones, github.Milestone{Title: k, Number: v, State: "open"})
 	}
 	return milestones, nil
 }
