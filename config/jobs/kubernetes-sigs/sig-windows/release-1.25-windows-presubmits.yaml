@@ -25,7 +25,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.25
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
