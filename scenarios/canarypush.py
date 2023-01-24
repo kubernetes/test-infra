@@ -26,8 +26,8 @@ import sys
 
 def check_with_log(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
-    print >>sys.stderr, subprocess.check_call(cmd)
+    print('Run:', cmd, file=sys.stderr)
+    print(subprocess.check_call(cmd), file=sys.stderr)
 
 def check_no_log(*cmd):
     """Run the command, raising on errors, no logs"""
@@ -38,7 +38,7 @@ def check_no_log(*cmd):
 
 def check_output(*cmd):
     """Log and run the command, return output, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     return subprocess.check_output(cmd)
 
 
@@ -61,9 +61,9 @@ def main(target, buildfile):
             pwd = content_file.read()
 
     if not user or not pwd:
-        print >>sys.stderr, 'Logging info not exist'
+        print('Logging info not exist', file=sys.stderr)
         sys.exit(1)
-    print >>sys.stderr, 'Logging in as %r' % user
+    print('Logging in as %r' % user, file=sys.stderr)
     check_no_log('docker', 'login', '--username=%s' % user, '--password=%s' % pwd)
 
     os.environ.pop('DOCKER_USER', None)

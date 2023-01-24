@@ -26,7 +26,7 @@ import sys
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     subprocess.check_call(cmd)
 
 
@@ -34,7 +34,7 @@ def main(envs, cmd):
     """Run script and verify it exits 0."""
     for env in envs:
         key, val = env.split('=', 1)
-        print >>sys.stderr, '%s=%s' % (key, val)
+        print('%s=%s' % (key, val), file=sys.stderr)
         os.environ[key] = val
     if not cmd:
         raise ValueError(cmd)

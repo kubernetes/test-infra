@@ -53,7 +53,7 @@ import subprocess
 import sys
 import tempfile
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -152,7 +152,7 @@ def _call(end, cmd, stdin=None, check=True, output=None, log_failures=True, env=
 
 def ref_has_shas(ref):
     """Determine if a reference specifies shas (contains ':')"""
-    return isinstance(ref, basestring) and ':' in ref
+    return isinstance(ref, str) and ':' in ref
 
 
 def pull_numbers(pull):
@@ -309,7 +309,7 @@ def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=Fa
 
 def repos_dict(repos):
     """Returns {"repo1": "branch", "repo2": "pull"}."""
-    return {r: b or p for (r, (b, p)) in repos.items()}
+    return {r: b or p for (r, (b, p)) in list(repos.items())}
 
 
 def start(gsutil, paths, stamp, node_name, version, repos):
@@ -585,7 +585,7 @@ def node():
         try:
             # Try reading the name of the VM we're running on, using the
             # metadata server.
-            os.environ[NODE_ENV] = urllib2.urlopen(urllib2.Request(
+            os.environ[NODE_ENV] = urllib.request.urlopen(urllib.request.Request(
                 'http://169.254.169.254/computeMetadata/v1/instance/name',
                 headers={'Metadata-Flavor': 'Google'})).read()
             os.environ[POD_ENV] = host  # We also want to log this.
@@ -938,7 +938,7 @@ def configure_ssh_key(ssh):
         fp.write(
             '#!/bin/sh\nssh -o StrictHostKeyChecking=no -i \'%s\' -F /dev/null "${@}"\n' % ssh)
     try:
-        os.chmod(fp.name, 0500)
+        os.chmod(fp.name, 0o500)
         had = 'GIT_SSH' in os.environ
         old = os.getenv('GIT_SSH')
         os.environ['GIT_SSH'] = fp.name
@@ -965,7 +965,7 @@ def setup_root(call, root, repos, ssh, git_cache, clean):
     # under the sun assumes $GOPATH/src/k8s.io/kubernetes so... :(
     # after this method is called we've already computed the upload paths
     # etc. so we can just swap it out for the desired path on disk
-    for repo, (branch, pull) in repos.items():
+    for repo, (branch, pull) in list(repos.items()):
         os.chdir(root_dir)
         # for k-s/k these are different, for the rest they are the same
         # TODO(cjwagner,stevekuznetsov): in the integrated
@@ -1130,7 +1130,7 @@ def bootstrap(args):
     if upload:
         gsutil.copy_file(paths.build_log, build_log_path, args.compress)
     if exc_type:
-        raise exc_type, exc_value, exc_traceback  # pylint: disable=raising-bad-type
+        raise exc_type(exc_value).with_traceback(exc_traceback)  # pylint: disable=raising-bad-type
     if not success:
         # TODO(fejta/spxtr): we should distinguish infra and non-infra problems
         # by exit code and automatically retrigger after an infra-problem.
