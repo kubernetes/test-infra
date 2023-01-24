@@ -56,14 +56,14 @@ def parse_project(path):
     return None
 
 
-def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None, python3='python33'):
+def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None, python='python3'):
     """Execute janitor for target GCP project """
     # Multiple jobs can share the same project, woooo
     if project in CHECKED:
         return
     CHECKED.add(project)
 
-    cmd = [python3, test_infra('boskos/cmd/janitor/gcp_janitor.py'), '--project=%s' % project]
+    cmd = [python, test_infra('boskos/cmd/janitor/gcp_janitor.py'), '--project=%s' % project]
     cmd.append('--hour=%d' % hours)
     if dryrun:
         cmd.append('--dryrun')
