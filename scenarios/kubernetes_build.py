@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -88,7 +88,7 @@ def main(args):
     # pylint: disable=too-many-branches
     """Build and push kubernetes.
 
-    This is a python port of the kubernetes/hack/jenkins/build.sh script.
+    This is a python3 port of the kubernetes/hack/jenkins/build.sh script.
     """
     if os.path.split(os.getcwd())[-1] != 'kubernetes':
         print((
