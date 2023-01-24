@@ -1042,6 +1042,12 @@ repos:
         previously:
           - name: area/cluster-infra
       - color: 0052cc
+        description: Issues or PRs related to Kubernetes AWS infrastructure
+        name: area/infra/aws
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to monitoring of the Kubernetes project infrastructure
         name: area/infra/monitoring
         target: both
