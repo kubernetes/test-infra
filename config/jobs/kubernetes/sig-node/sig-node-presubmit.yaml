@@ -1707,11 +1707,11 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230123-d369720788-master
           resources:
             limits:
-              cpu: 2
-              memory: 2Gi
+              cpu: 4
+              memory: 6Gi
             requests:
-              cpu: 2
-              memory: 2Gi
+              cpu: 4
+              memory: 6Gi
           args:
             - --root=/go/src
             - "--job=$(JOB_NAME)"
