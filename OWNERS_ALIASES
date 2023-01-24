@@ -224,6 +224,7 @@ aliases:
   #   k/test-infra jobs and overall CI Signal
   #
   release-engineering-approvers:
+    - cici37 # Release Manager
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
     - jeremyrickard # SIG Chair / RelEng subproject owner / Release Manager
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
@@ -233,6 +234,7 @@ aliases:
     - Verolop # SIG Technical Lead / RelEng subproject owner / Release Manager
     - xmudrii # Release Manager
   release-engineering-reviewers:
+    - cici37 # Release Manager
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
     - jeremyrickard # SIG Chair / RelEng subproject owner / Release Manager
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
