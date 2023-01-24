@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -23,7 +23,7 @@ import os
 import shutil
 import string
 import tempfile
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import unittest
 import time
 
@@ -82,7 +82,7 @@ def fake_bomb(*a, **kw):
 
 def raise_urllib2_error(*_unused, **_unused2):
     """Always raise a urllib2.URLError"""
-    raise urllib2.URLError("test failure")
+    raise urllib.error.URLError("test failure")
 
 def always_kubernetes(*_unused, **_unused2):
     """Always return 'kubernetes'"""
@@ -299,13 +299,13 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             mode.add_file(temp.name)
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             mode.start([])
-        self.assertIn(('FOO', 'BAR'), self.envs.viewitems())
-        self.assertIn(('WORKSPACE', '/new/workspace'), self.envs.viewitems())
-        self.assertIn(('GOPATH', '/go/path'), self.envs.viewitems())
-        self.assertIn(('USER', 'prow'), self.envs.viewitems())
-        self.assertIn(('GOOS', 'linux'), self.envs.viewitems())
-        self.assertNotIn(('USER', 'jenkins'), self.envs.viewitems())
-        self.assertNotIn(('FOO', 'BAZ'), self.envs.viewitems())
+        self.assertIn(('FOO', 'BAR'), self.envs.items())
+        self.assertIn(('WORKSPACE', '/new/workspace'), self.envs.items())
+        self.assertIn(('GOPATH', '/go/path'), self.envs.items())
+        self.assertIn(('USER', 'prow'), self.envs.items())
+        self.assertIn(('GOOS', 'linux'), self.envs.items())
+        self.assertNotIn(('USER', 'jenkins'), self.envs.items())
+        self.assertNotIn(('FOO', 'BAZ'), self.envs.items())
 
     def test_parse_args_order_agnostic(self):
         args = kubernetes_e2e.parse_args([
