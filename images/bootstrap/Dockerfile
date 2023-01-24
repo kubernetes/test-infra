@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-gflags \
     python3-pip \
     python3-yaml \
+    python-is-python3 \
     rsync \
     unzip \
     wget \
