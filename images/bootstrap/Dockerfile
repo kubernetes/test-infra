@@ -26,6 +26,7 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # common util tools
+# https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
@@ -37,6 +38,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-client \
     pkg-config \
     procps \
+    python \
+    python-dev \
+    python-gflags \
+    python-openssl \
+    python-pip \
+    python-yaml \
     python3 \
     python3-distutils \
     python3-gflags \
@@ -49,6 +56,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
     && python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # Install gcloud
