@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:buster
+FROM debian:bullseye
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
@@ -26,24 +26,19 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # common util tools
-# https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
     curl \
     file \
     git \
+    iproute2 \
+    iputils-ping \
     jq \
     mercurial \
     openssh-client \
     pkg-config \
     procps \
-    python \
-    python-dev \
-    python-gflags \
-    python-openssl \
-    python-pip \
-    python-yaml \
     python3 \
     python3-distutils \
     python3-gflags \
