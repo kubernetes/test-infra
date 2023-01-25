@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -28,18 +28,18 @@ import sys
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print('Run:', cmd, file=sys.stderr)
+    print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
 def check_no_stdout(*cmd):
     """Log and run the command, suppress stdout & stderr, raising on errors."""
-    print('Run:', cmd, file=sys.stderr)
+    print >>sys.stderr, 'Run:', cmd
     null = open(os.devnull, 'w')
     subprocess.check_call(cmd, stdout=null, stderr=null)
 
 def check_output(*cmd):
     """Log and run the command, raising on errors, return output"""
-    print('Run:', cmd, file=sys.stderr)
+    print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
 def check_build_exists(gcs, suffix, fast):
@@ -47,7 +47,7 @@ def check_build_exists(gcs, suffix, fast):
         already exists in remote path
     """
     if not os.path.exists('hack/print-workspace-status.sh'):
-        print('hack/print-workspace-status.sh not found, continue', file=sys.stderr)
+        print >>sys.stderr, 'hack/print-workspace-status.sh not found, continue'
         return False
 
     version = ''
@@ -60,7 +60,7 @@ def check_build_exists(gcs, suffix, fast):
             version = match.group(1)
     except subprocess.CalledProcessError as exc:
         # fallback with doing a real build
-        print('Failed to get k8s version, continue: %s' % exc, file=sys.stderr)
+        print >>sys.stderr, 'Failed to get k8s version, continue: %s' % exc
         return False
 
     if version:
@@ -79,8 +79,8 @@ def check_build_exists(gcs, suffix, fast):
             check_no_stdout('gsutil', 'ls', gcs + "/bin")
             return True
         except subprocess.CalledProcessError as exc:
-            print((
-                'gcs path %s (or some files under it) does not exist yet, continue' % gcs), file=sys.stderr)
+            print >>sys.stderr, (
+                'gcs path %s (or some files under it) does not exist yet, continue' % gcs)
     return False
 
 
@@ -88,17 +88,17 @@ def main(args):
     # pylint: disable=too-many-branches
     """Build and push kubernetes.
 
-    This is a python3 port of the kubernetes/hack/jenkins/build.sh script.
+    This is a python port of the kubernetes/hack/jenkins/build.sh script.
     """
     if os.path.split(os.getcwd())[-1] != 'kubernetes':
-        print((
-            'Scenario should only run from either kubernetes directory!'), file=sys.stderr)
+        print >>sys.stderr, (
+            'Scenario should only run from either kubernetes directory!')
         sys.exit(1)
 
     # pre-check if target build exists in gcs bucket or not
     # if so, don't make duplicated builds
     if check_build_exists(args.release, args.suffix, args.fast):
-        print('build already exists, exit', file=sys.stderr)
+        print >>sys.stderr, 'build already exists, exit'
         sys.exit(0)
 
     env = {
@@ -129,7 +129,7 @@ def main(args):
         # with non-public registries.
         check_no_stdout('gcloud', 'auth', 'configure-docker')
 
-    for key, value in list(env.items()):
+    for key, value in env.items():
         os.environ[key] = value
     check('make', 'clean')
     if args.fast:
@@ -137,7 +137,7 @@ def main(args):
     else:
         check('make', 'release')
     output = check_output(args.push_build_script, *push_build_args)
-    print('Push build result: ', output, file=sys.stderr)
+    print >>sys.stderr, 'Push build result: ', output
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(

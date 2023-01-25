@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -26,8 +26,8 @@ import sys
 
 def check_with_log(*cmd):
     """Log and run the command, raising on errors."""
-    print('Run:', cmd, file=sys.stderr)
-    print(subprocess.check_call(cmd), file=sys.stderr)
+    print >>sys.stderr, 'Run:', cmd
+    print >>sys.stderr, subprocess.check_call(cmd)
 
 def check_no_log(*cmd):
     """Run the command, raising on errors, no logs"""
@@ -38,7 +38,7 @@ def check_no_log(*cmd):
 
 def check_output(*cmd):
     """Log and run the command, return output, raising on errors."""
-    print('Run:', cmd, file=sys.stderr)
+    print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd)
 
 
@@ -61,9 +61,9 @@ def main(target, buildfile):
             pwd = content_file.read()
 
     if not user or not pwd:
-        print('Logging info not exist', file=sys.stderr)
+        print >>sys.stderr, 'Logging info not exist'
         sys.exit(1)
-    print('Logging in as %r' % user, file=sys.stderr)
+    print >>sys.stderr, 'Logging in as %r' % user
     check_no_log('docker', 'login', '--username=%s' % user, '--password=%s' % pwd)
 
     os.environ.pop('DOCKER_USER', None)

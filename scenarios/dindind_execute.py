@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2018 The Kubernetes Authors.
 #
@@ -28,7 +28,7 @@ import sys
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print('Run:', cmd, file=sys.stderr)
+    print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
 
@@ -40,7 +40,7 @@ def main(envs, cmd):
 
     for env in envs:
         key, val = env.split('=', 1)
-        print('%s=%s' % (key, val), file=sys.stderr)
+        print >>sys.stderr, '%s=%s' % (key, val)
         os.environ[key] = val
     if not cmd:
         raise ValueError(cmd)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -27,7 +27,7 @@ import re
 import shutil
 import subprocess
 import sys
-import urllib.request, urllib.error, urllib.parse
+import urllib2
 import time
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
@@ -92,22 +92,22 @@ def test_infra(*paths):
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print('Run:', cmd, file=sys.stderr)
+    print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
 
 def check_output(*cmd):
     """Log and run the command, raising on errors, return output"""
-    print('Run:', cmd, file=sys.stderr)
+    print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd)
 
 
 def check_env(env, *cmd):
     """Log and run the command with a specific env, raising on errors."""
-    print('Environment:', file=sys.stderr)
+    print >>sys.stderr, 'Environment:'
     for key, value in sorted(env.items()):
-        print('%s=%s' % (key, value), file=sys.stderr)
-    print('Run:', cmd, file=sys.stderr)
+        print >>sys.stderr, '%s=%s' % (key, value)
+    print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd, env=env)
 
 
@@ -220,7 +220,7 @@ class LocalMode(object):
 
     def start(self, args):
         """Starts kubetest."""
-        print('starts with local mode', file=sys.stderr)
+        print >>sys.stderr, 'starts with local mode'
         env = {}
         env.update(self.os_env)
         env.update(self.env_files)
@@ -382,8 +382,8 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
 def read_gcs_path(gcs_path):
     """reads a gcs path (gs://...) by HTTP GET to storage.googleapis.com"""
     link = gcs_path.replace('gs://', 'https://storage.googleapis.com/')
-    loc = urllib.request.urlopen(link).read()
-    print("Read GCS Path: %s" % loc, file=sys.stderr)
+    loc = urllib2.urlopen(link).read()
+    print >>sys.stderr, "Read GCS Path: %s" % loc
     return loc
 
 def get_shared_gcs_path(gcs_shared, use_shared_build):
@@ -459,7 +459,7 @@ def main(args):
     if args.use_shared_build is not None:
         # find shared build location from GCS
         gcs_path = get_shared_gcs_path(args.gcs_shared, args.use_shared_build)
-        print('Getting shared build location from: '+gcs_path, file=sys.stderr)
+        print >>sys.stderr, 'Getting shared build location from: '+gcs_path
         # retry loop for reading the location
         attempts_remaining = 12
         while True:
@@ -470,10 +470,10 @@ def main(args):
                 args.kubetest_args.append('--extract=' + shared_build_gcs_path)
                 args.build = None
                 break
-            except urllib.error.URLError as err:
-                print('Failed to get shared build location: %s' % err, file=sys.stderr)
+            except urllib2.URLError as err:
+                print >>sys.stderr, 'Failed to get shared build location: %s' % err
                 if attempts_remaining > 0:
-                    print('Waiting 5 seconds and retrying...', file=sys.stderr)
+                    print >>sys.stderr, 'Waiting 5 seconds and retrying...'
                     time.sleep(5)
                 else:
                     raise RuntimeError('Failed to get shared build location too many times!')
@@ -551,7 +551,7 @@ def main(args):
 
     # TODO(fejta): delete this?
     mode.add_os_environment(*(
-        '%s=%s' % (k, v) for (k, v) in list(os.environ.items())))
+        '%s=%s' % (k, v) for (k, v) in os.environ.items()))
 
     mode.add_environment(
       # Boilerplate envs
@@ -709,13 +709,13 @@ def parse_args(args=None):
                 raise ValueError('HOME dir not set!')
             if not args.aws_ssh:
                 args.aws_ssh = '%s/.ssh/kube_aws_rsa' % home
-                print('-aws-ssh key not set. Defaulting to %s' % args.aws_ssh, file=sys.stderr)
+                print >>sys.stderr, '-aws-ssh key not set. Defaulting to %s' % args.aws_ssh
             if not args.aws_pub:
                 args.aws_pub = '%s/.ssh/kube_aws_rsa.pub' % home
-                print('--aws-pub key not set. Defaulting to %s' % args.aws_pub, file=sys.stderr)
+                print >>sys.stderr, '--aws-pub key not set. Defaulting to %s' % args.aws_pub
             if not args.aws_cred:
                 args.aws_cred = '%s/.aws/credentials' % home
-                print('--aws-cred not set. Defaulting to %s' % args.aws_cred, file=sys.stderr)
+                print >>sys.stderr, '--aws-cred not set. Defaulting to %s' % args.aws_cred
     return args
 
 

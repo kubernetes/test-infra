@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -66,7 +66,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         }
 
     def tearDown(self):
-        for _, stub in list(self.boiler.items()):
+        for _, stub in self.boiler.items():
             with stub:  # Leaving with restores things
                 pass
         self.callstack[:] = []
