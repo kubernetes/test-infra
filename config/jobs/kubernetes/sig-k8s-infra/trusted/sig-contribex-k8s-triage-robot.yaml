@@ -432,7 +432,7 @@ periodics:
     testgrid-tab-name: rotten-prs
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20230116-d4a02a2181
+    - image: gcr.io/k8s-prow/commenter:v20230124-17d9ffa086
       command:
       - commenter
       args:
@@ -489,7 +489,7 @@ periodics:
     testgrid-tab-name: stale-issues
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20230116-d4a02a2181
+    - image: gcr.io/k8s-prow/commenter:v20230124-17d9ffa086
       command:
       - commenter
       args:
@@ -653,7 +653,7 @@ periodics:
     testgrid-tab-name: re-triage
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:commenter:v20230116-d4a02a2181
+    - image: gcr.io/k8s-prow/commenter:v20230124-17d9ffa086
       command:
       - commenter
       args:
@@ -699,7 +699,7 @@ periodics:
     testgrid-tab-name: re-triage-important
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:commenter:v20230116-d4a02a2181
+    - image: gcr.io/k8s-prow/commenter:v20230124-17d9ffa086
       command:
       - commenter
       args:
@@ -746,7 +746,7 @@ periodics:
     testgrid-tab-name: re-triage-critical
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:commenter:v20230116-d4a02a2181
+    - image: gcr.io/k8s-prow/commenter:v20230124-17d9ffa086
       command:
       - commenter
       args:
