@@ -44,6 +44,8 @@ periodics:
       env:
         - name: PROJECT_NUMBER
           value: "80"
+        - name: MILESTONE
+          value: "v1.27"
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
