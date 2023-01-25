@@ -143,34 +143,3 @@ periodics:
     description: runs experiment/autobumper to create/update a PR that bumps prowjob images to latest published version
     testgrid-alert-email: k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '3'
-- name: ci-test-infra-autobump-prowjobs-for-auto-deploy
-  # This 1h after ci-k8sio-autobump-prow-build-clusters, 2h before ci-test-infra-autobump-prow-for-auto-deploy
-  cron: "30 15-20/5 * * 1-5"  # Bump with label `skip-review`. Run at 08:30 and 13:30 PDT (in UTC) Mon-Fri
-  cluster: k8s-infra-prow-build-trusted
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  spec:
-    containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230125-c8bfad3373
-      command:
-      - generic-autobumper
-      args:
-      - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
-      - --labels-override=skip-review # This label is used by tide for identifying trusted PR
-      volumeMounts:
-      - name: github
-        mountPath: /etc/github-token
-        readOnly: true
-    volumes:
-    - name: github
-      secret:
-        secretName: k8s-infra-ci-robot-github-token
-  annotations:
-    testgrid-dashboards: sig-testing-prow
-    testgrid-tab-name: autobump-prowjobs-for-auto-deploy
-    testgrid-alert-email: k8s-infra-oncall@google.com
-    testgrid-num-failures-to-alert: '2' # This could fail when it runs right in the middle of prow push, tolerate it once
-    description: runs autobumper to create/update a PR that bumps prowjob images to latest published version with label 'skip-review'
