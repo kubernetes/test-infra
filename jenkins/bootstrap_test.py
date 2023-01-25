@@ -111,7 +111,7 @@ class ReadAllTest(unittest.TestCase):
         return self.end
 
     def readline(self):
-        line = 'line %d\n' % self.number
+        line = b'line %d\n' % self.number
         self.number += 1
         return line
 
