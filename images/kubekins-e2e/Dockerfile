@@ -20,7 +20,7 @@ FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
 # gcr.io/k8s-staging-test-infra/bootstrap:v20230124-61b36115b7
 # except the autobumber will ignore the digest-only version
 # we will resume autobumping later when python2 vs 3 is sorted out
-FROM gcr.io/k8s-staging-test-infra/bootstrap@sha256:35443bdbc2a16b36ba52eaa43a946a1568fb3071c2f08af5586cad651f54c26
+FROM gcr.io/k8s-staging-test-infra/bootstrap@sha256:35443bdbc2a16b36ba52eaa43a946a1568fb3071c2f08af5586cad651f54c26d
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
