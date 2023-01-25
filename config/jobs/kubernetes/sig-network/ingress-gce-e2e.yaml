@@ -87,6 +87,7 @@ presubmits:
   kubernetes/ingress-gce:
   - name: pull-ingress-gce-test
     always_run: true
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -94,12 +95,7 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-master
-        args:
-        - --repo=k8s.io/ingress-gce=$(PULL_REFS)
-        - --root=/go/src/
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
+        command:
         - make
         - test
         # docker-in-docker needs privileged mode
