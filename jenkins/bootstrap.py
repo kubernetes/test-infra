@@ -65,6 +65,8 @@ def read_all(end, stream, append):
         if not line:
             return True  # Read everything
         # Strip \n at the end if any. Last line of file may not have one.
+        # decode bytes to string
+        line = line.decode()
         append(line.rstrip('\n'))
         # Is there more on the buffer?
         ret = select.select([stream.fileno()], [], [], 0.1)
