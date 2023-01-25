@@ -208,6 +208,14 @@ presubmits:
   - name: pull-kubernetes-e2e-gce
     cluster: k8s-infra-prow-build
     always_run: true
+    decorate: true
+    decoration_config:
+      timeout: 105m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     skip_branches:
       - release-\d+\.\d+ # per-release image
     annotations:
@@ -224,45 +232,40 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-        - args:
-            - --root=/go/src
-            - --repo=k8s.io/kubernetes=$(PULL_REFS)
-            - --repo=k8s.io/release
-            - --upload=gs://kubernetes-jenkins/pr-logs
-            - --timeout=105
-            - --scenario=kubernetes_e2e
-            - --
-            - --build=quick
-            - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.9
-            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
-            - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-            - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
-            - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-            - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
-            - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
-            - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-            - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
-            - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-            - --extract=local
-            - --gcp-master-image=ubuntu
-            - --gcp-node-image=ubuntu
-            - --gcp-zone=us-west1-b
-            - --ginkgo-parallel=30
-            - --provider=gce
-            - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-            - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-master
-          resources:
-            limits:
-              cpu: 4
-              memory: "14Gi"
-            requests:
-              cpu: 4
-              memory: "14Gi"
-          securityContext:
-            privileged: true
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+          - --build=quick
+          - --cluster=
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.9
+          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
+          - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+          - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+          - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
+          - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+          - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
+          - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --extract=local
+          - --gcp-master-image=ubuntu
+          - --gcp-node-image=ubuntu
+          - --gcp-zone=us-west1-b
+          - --ginkgo-parallel=30
+          - --provider=gce
+          - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+          - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+        resources:
+          limits:
+            cpu: 4
+            memory: "14Gi"
+          requests:
+            cpu: 4
+            memory: "14Gi"
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-gce-canary
     cluster: k8s-infra-prow-build
