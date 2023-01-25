@@ -365,7 +365,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), o
 	var lock sync.Mutex
 	var threads sync.WaitGroup
 	threads.Add(len(o.clusterConfigs))
-	for buildCluserName, buildClusterConfig := range o.clusterConfigs {
+	for buildClusterName, buildClusterConfig := range o.clusterConfigs {
 		go func(name string, config rest.Config) {
 			defer threads.Done()
 			mgr, err := manager.New(&config, options)
@@ -377,7 +377,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), o
 				return
 			}
 			res[name] = mgr
-		}(buildCluserName, buildClusterConfig)
+		}(buildClusterName, buildClusterConfig)
 	}
 	threads.Wait()
 
