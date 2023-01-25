@@ -42,7 +42,7 @@ periodics:
       command:
       - ./release-team/hack/sync-bug-triage-github-project-beta.sh
       env:
-        - name: GITHUB_PROJECT_BETA_NUMBER
+        - name: PROJECT_NUMBER
           value: "80"
         - name: GITHUB_TOKEN
           valueFrom:
