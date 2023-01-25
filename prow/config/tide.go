@@ -332,6 +332,7 @@ type tideQueryConfig struct {
 	MissingLabels          []string
 	Milestone              string
 	ReviewApprovedRequired bool
+	TenantIDs              []string
 }
 
 type tideQueryTarget struct {

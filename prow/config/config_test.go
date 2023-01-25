@@ -8918,11 +8918,12 @@ func TestProwConfigMergingProperties(t *testing.T) {
 // there is nothing that could be deduplicated. This is mostly to ensure we
 // don't forget to change our code when new fields get added to the type.
 func TestDeduplicateTideQueriesDoesntLoseData(t *testing.T) {
+	config := &Config{}
 	for i := 0; i < 100; i++ {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			query := TideQuery{}
 			fuzz.New().Fuzz(&query)
-			result, err := deduplicateTideQueries(TideQueries{query})
+			result, err := config.deduplicateTideQueries(TideQueries{query})
 			if err != nil {
 				t.Fatalf("error: %v", err)
 			}
@@ -8936,9 +8937,10 @@ func TestDeduplicateTideQueriesDoesntLoseData(t *testing.T) {
 
 func TestDeduplicateTideQueries(t *testing.T) {
 	testCases := []struct {
-		name     string
-		in       TideQueries
-		expected TideQueries
+		name                  string
+		in                    TideQueries
+		prowJobDefaultEntries []*ProwJobDefaultEntry
+		expected              TideQueries
 	}{
 		{
 			name: "No overlap",
@@ -8967,11 +8969,28 @@ func TestDeduplicateTideQueries(t *testing.T) {
 			},
 			expected: TideQueries{{Orgs: []string{"kubernetes", "kubernetes-priv"}, Labels: []string{"lgtm", "merge-me"}}},
 		},
+		{
+			name: "Queries with different tenantIds don't get deduplicated",
+			in: TideQueries{
+				{Repos: []string{"kubernetes/test-infra"}, Labels: []string{"merge-me"}},
+				{Repos: []string{"kubernetes/tenanted"}, Labels: []string{"merge-me"}},
+				{Repos: []string{"kubernetes/other"}, Labels: []string{"merge-me"}},
+			},
+			prowJobDefaultEntries: []*ProwJobDefaultEntry{
+				{OrgRepo: "kubernetes/tenanted", Config: &prowapi.ProwJobDefault{TenantID: "tenanted"}},
+			},
+			expected: TideQueries{
+				{Repos: []string{"kubernetes/tenanted"}, Labels: []string{"merge-me"}},
+				{Repos: []string{"kubernetes/test-infra", "kubernetes/other"}, Labels: []string{"merge-me"}},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := deduplicateTideQueries(tc.in)
+			config := &Config{}
+			config.ProwConfig.ProwJobDefaultEntries = append(config.ProwConfig.ProwJobDefaultEntries, tc.prowJobDefaultEntries...)
+			result, err := config.deduplicateTideQueries(tc.in)
 			if err != nil {
 				t.Fatalf("failed: %v", err)
 			}

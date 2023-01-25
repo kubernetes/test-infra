@@ -1779,7 +1779,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 	nc.ProwYAMLGetter = prowYAMLGetter
 	nc.ProwYAMLGetterWithDefaults = prowYAMLGetterWithDefaults
 
-	if deduplicatedTideQueries, err := deduplicateTideQueries(nc.Tide.Queries); err != nil {
+	if deduplicatedTideQueries, err := nc.deduplicateTideQueries(nc.Tide.Queries); err != nil {
 		logrus.WithError(err).Error("failed to deduplicate tide queriees")
 	} else {
 		nc.Tide.Queries = deduplicatedTideQueries
@@ -3407,7 +3407,7 @@ func sortStringSlice(s []string) []string {
 	return s
 }
 
-func deduplicateTideQueries(queries TideQueries) (TideQueries, error) {
+func (c Config) deduplicateTideQueries(queries TideQueries) (TideQueries, error) {
 	m := tideQueryMap{}
 	for _, query := range queries {
 		key := tideQueryConfig{
@@ -3418,6 +3418,7 @@ func deduplicateTideQueries(queries TideQueries) (TideQueries, error) {
 			MissingLabels:          sortStringSlice(query.MissingLabels),
 			Milestone:              query.Milestone,
 			ReviewApprovedRequired: query.ReviewApprovedRequired,
+			TenantIDs:              query.TenantIDs(c),
 		}
 		keyRaw, err := json.Marshal(key)
 		if err != nil {
