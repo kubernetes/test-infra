@@ -301,7 +301,7 @@ def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=Fa
     merge_date = int(commit_date(git, 'HEAD', call) or time.time())
 
     git_merge_env = os.environ.copy()
-    for ref, head in zip(refs, checkouts)[1:]:
+    for ref, head in list(zip(refs, checkouts))[1:]:
         merge_date += 1
         git_merge_env[GIT_AUTHOR_DATE_ENV] = str(merge_date)
         git_merge_env[GIT_COMMITTER_DATE_ENV] = str(merge_date)
