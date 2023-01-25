@@ -437,7 +437,7 @@ nodeK8sVersions:
   stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.22
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3ca-1.22
 
 nodeTestSuites:
   default:
