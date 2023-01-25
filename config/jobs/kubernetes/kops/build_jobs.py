@@ -764,7 +764,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.25', '1.24']:
+    for version in ['1.26', '1.25']:
         results.append(
             build_test(
                 k8s_version=version,
