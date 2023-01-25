@@ -96,7 +96,7 @@ presubmits:
         - --warnings=duplicate-job-refs
         - --warnings=unknown-fields-all
         - --warnings=non-decorated-jobs
-        - --warnings valid-decoration-config
+        - --warnings=valid-decoration-config
     annotations:
       testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-integration
