@@ -1,0 +1,119 @@
+presubmits:
+  kubernetes-sigs/cluster-api-addon-provider-helm:
+  - name: pull-cluster-api-addon-provider-helm-build-main
+    decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    always_run: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      serviceAccountName: prowjob-default-sa
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-1.26
+        command:
+        - runner.sh
+        - ./scripts/ci-build.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-build-main
+  - name: pull-cluster-api-addon-provider-helm-apidiff-main
+    decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    always_run: true
+    optional: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      serviceAccountName: prowjob-default-sa
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-apidiff.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-1.26
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-apidiff-main
+  - name: pull-cluster-api-addon-provider-helm-verify-main
+    decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      serviceAccountName: prowjob-default-sa
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-1.26
+        command:
+        - "runner.sh"
+        - ./scripts/ci-verify.sh
+        resources:
+          requests:
+            cpu: 7300m
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-verify-main
+  - name: pull-cluster-api-addon-provider-helm-test-main
+    decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    always_run: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      serviceAccountName: prowjob-default-sa
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-1.26
+        args:
+        - runner.sh
+        - ./scripts/ci-test.sh
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-test-main
+  - name: pull-cluster-api-addon-provider-helm-test-mink8s-main
+    decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+    path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
+    always_run: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      serviceAccountName: prowjob-default-sa
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-1.26
+        args:
+        - runner.sh
+        - ./scripts/ci-test.sh
+        env:
+        # This value determines the minimum Kubernetes
+        # supported version for Cluster API management cluster.
+        #
+        # To check the available envtest in Kubebuilder, please
+        # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
+        - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
+          value: "1.20.2"
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
+      testgrid-tab-name: caaph-pr-test-mink8s-main
