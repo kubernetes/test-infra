@@ -23,7 +23,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
       name: ""
       resources:
         limits:
@@ -65,7 +65,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
       name: ""
       resources:
         limits:
@@ -230,7 +230,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
       name: ""
       resources:
         limits:
@@ -314,7 +314,7 @@ periodics:
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
       name: ""
       resources:
         limits:
@@ -353,7 +353,7 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
       name: ""
       resources:
         limits:
@@ -385,7 +385,7 @@ periodics:
     - command:
       - make
       - test
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
       name: ""
       resources:
         limits:
@@ -427,7 +427,7 @@ periodics:
         value: /workspace/k8s.io/kubernetes
       - name: TYPECHECK_SERIAL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
       imagePullPolicy: Always
       name: ""
       resources:
@@ -581,7 +581,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]
         - --timeout=55m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           requests:
@@ -622,7 +622,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -671,7 +671,7 @@ presubmits:
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -731,7 +731,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -790,7 +790,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -851,7 +851,7 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=500m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -901,7 +901,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -949,7 +949,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu
         - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
         - --timeout=60m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           requests:
@@ -984,7 +984,7 @@ presubmits:
           value: release-1.26
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         imagePullPolicy: IfNotPresent
         name: ""
         resources:
@@ -1030,7 +1030,7 @@ presubmits:
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]
           --minStartupPods=8
         - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           requests:
@@ -1069,7 +1069,7 @@ presubmits:
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -1193,7 +1193,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -1272,7 +1272,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -1346,7 +1346,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -1419,7 +1419,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: main
         resources:
           limits:
@@ -1447,7 +1447,7 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -1595,7 +1595,7 @@ presubmits:
       - command:
         - make
         - test
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -1621,7 +1621,7 @@ presubmits:
         env:
         - name: WHAT
           value: typecheck typecheck-providerless
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: main
         resources:
           limits:
@@ -1656,7 +1656,7 @@ presubmits:
           value: release-1.26
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         imagePullPolicy: Always
         name: ""
         resources:
@@ -1694,7 +1694,7 @@ presubmits:
           value: release-1.26
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         imagePullPolicy: Always
         name: ""
         resources:
@@ -1764,7 +1764,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
@@ -1833,7 +1833,7 @@ presubmits:
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-61b36115b7-1.26
         name: ""
         resources:
           limits:
