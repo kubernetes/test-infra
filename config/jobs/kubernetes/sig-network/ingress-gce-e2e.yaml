@@ -103,6 +103,24 @@ presubmits:
         securityContext:
           privileged: true
 
+  - name: pull-ingress-gce-verify
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230124-157bf4e62c-master
+        command:
+        - runner.sh
+        - make
+        - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+
 postsubmits:
   kubernetes/ingress-gce:
   - name: ci-ingress-gce-image-push
