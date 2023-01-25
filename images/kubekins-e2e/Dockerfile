@@ -109,10 +109,7 @@ RUN if [ -n "${KIND_VERSION}" ]; then \
 # install kubetest2 binaries if a version is provided
 ARG KUBETEST2_VERSION
 RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
-    wget -q -O /usr/local/bin/kubetest2.tgz https://storage.googleapis.com/k8s-staging-kubetest2/${KUBETEST2_VERSION}/linux-amd64.tgz && \
-    tar -xzf /usr/local/bin/kubetest2.tgz -C /usr/local/bin && \
-    rm -f /usr/local/bin/kubetest2.tgz && \
-    chmod +x /usr/local/bin/kubetest2*; \
+    go install sigs.k8s.io/kubetest2/...@"${KUBETEST2_VERSION}"; \
     fi
 
 # configure dockerd to use mirror.gcr.io
