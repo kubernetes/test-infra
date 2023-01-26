@@ -364,8 +364,8 @@ class GSUtil(object):
             gen = ['-h', 'x-goog-if-generation-match:%s' % generation]
         else:
             gen = []
-        with tempfile.NamedTemporaryFile(prefix='gsutil_') as fp:
-            fp.write(json.dumps(jdict, indent=2))
+        with tempfile.NamedTemporaryFile(mode='wt', encoding='utf-8', prefix='gsutil_') as fp:
+            json.dumps(jdict, fp, indent=2)
             fp.flush()
             cmd = [
                 self.gsutil, '-q',
@@ -386,7 +386,7 @@ class GSUtil(object):
             headers += ['-h', 'Cache-Control:private, max-age=0, no-transform']
         if additional_headers:
             headers += additional_headers
-        with tempfile.NamedTemporaryFile(prefix='gsutil_') as fp:
+        with tempfile.NamedTemporaryFile(mode='wt', encoding='utf-8', prefix='gsutil_') as fp:
             fp.write(txt)
             fp.flush()
             cmd = [self.gsutil, '-q'] + headers + ['cp', fp.name, path]
