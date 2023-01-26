@@ -17,11 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-# gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
-# This is the last working image set by #28485
-# except the autobumber will ignore the digest-only version
-# we will resume autobumping later when python2 vs 3 is sorted out
-FROM gcr.io/k8s-staging-test-infra/bootstrap@sha256:4bf4459fbd1349804158e7645b4f515c1e7aa4b230b929df71d0fd75d25caa98
+FROM gcr.io/k8s-staging-test-infra/bootstrap:v20230126-f1a4452ec1
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
