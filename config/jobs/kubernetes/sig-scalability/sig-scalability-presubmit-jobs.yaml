@@ -791,7 +791,6 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/bootstrap:v20230124-cbf27089bd
         command:
         - runner.sh
-        - /workspace/scenarios/execute.py
         args:
         - /home/prow/go/src/k8s.io/perf-tests/util-images/presubmit.sh
         # docker-in-docker needs privileged mode
