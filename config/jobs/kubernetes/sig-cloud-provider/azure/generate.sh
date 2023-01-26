@@ -47,7 +47,6 @@ for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   kubernetes_version="latest"
   capz_release="release-1.7"
-  capz_release_presubmit="release-1.6"
 
   if [[ "${release}" == "master" ]]; then
     branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
@@ -85,7 +84,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: ${capz_release_presubmit}
+        base_ref: ${capz_release}
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -114,51 +113,6 @@ presubmits:
               cpu: 1
               memory: "4Gi"
 $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-disk)
-  - name: pull-kubernetes-e2e-capz-azure-disk-1-7
-    decorate: true
-    always_run: false
-    optional: true
-    run_if_changed: 'azure.*\.go'
-    path_alias: k8s.io/kubernetes
-    branches:
-      - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cluster-api-provider-azure
-        base_ref: release-1.7
-        path_alias: sigs.k8s.io/cluster-api-provider-azure
-        workdir: true
-      - org: kubernetes-sigs
-        repo: azuredisk-csi-driver
-        base_ref: master
-        path_alias: sigs.k8s.io/azuredisk-csi-driver
-    spec:
-      containers:
-        - image: ${kubekins_e2e_image}-master
-          command:
-            - runner.sh
-            - ./scripts/ci-entrypoint.sh
-          args:
-            - bash
-            - -c
-            - >-
-              cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
-              make e2e-test
-          env:
-            - name: AZURE_STORAGE_DRIVER
-              value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 1
-              memory: "4Gi"
-$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-disk-1-7)
   - name: pull-kubernetes-e2e-capz-azure-disk-vmss
     decorate: true
     always_run: false
@@ -175,7 +129,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: ${capz_release_presubmit}
+        base_ref: ${capz_release}
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -222,7 +176,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: ${capz_release_presubmit}
+        base_ref: ${capz_release}
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -268,7 +222,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: ${capz_release_presubmit}
+        base_ref: ${capz_release}
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -316,7 +270,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: ${capz_release_presubmit}
+      base_ref: ${capz_release}
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -337,43 +291,6 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
         - name: CONFORMANCE_NODES
           value: "25"
 $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-conformance)
-  - name: pull-kubernetes-e2e-capz-conformance-1-7
-    decorate: true
-    always_run: false
-    optional: true
-    run_if_changed: 'azure.*\.go'
-    path_alias: k8s.io/kubernetes
-    branches:
-      - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: release-1.7
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    spec:
-      containers:
-      - image: ${kubekins_e2e_image}-master
-        command:
-        - runner.sh
-        - ./scripts/ci-conformance.sh
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 1
-            memory: "4Gi"
-        env:
-        - name: KUBETEST_CONF_PATH
-          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
-        - name: CONFORMANCE_NODES
-          value: "25"
-$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-conformance-1-7)
   - name: pull-kubernetes-e2e-capz-ha-control-plane
     decorate: true
     decoration_config:

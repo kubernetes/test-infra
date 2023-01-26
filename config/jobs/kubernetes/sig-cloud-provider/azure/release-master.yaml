@@ -18,7 +18,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -51,56 +51,6 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-azure-disk-1-7
-    decorate: true
-    always_run: false
-    optional: true
-    run_if_changed: 'azure.*\.go'
-    path_alias: k8s.io/kubernetes
-    branches:
-      - master # TODO(releng): Remove once repo default branch has been renamed
-      - main
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cluster-api-provider-azure
-        base_ref: release-1.7
-        path_alias: sigs.k8s.io/cluster-api-provider-azure
-        workdir: true
-      - org: kubernetes-sigs
-        repo: azuredisk-csi-driver
-        base_ref: master
-        path_alias: sigs.k8s.io/azuredisk-csi-driver
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
-          command:
-            - runner.sh
-            - ./scripts/ci-entrypoint.sh
-          args:
-            - bash
-            - -c
-            - >-
-              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
-              make e2e-test
-          env:
-            - name: AZURE_STORAGE_DRIVER
-              value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              cpu: 1
-              memory: "4Gi"
-    annotations:
-      testgrid-dashboards: provider-azure-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-1-7
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-azure-disk-vmss
     decorate: true
     always_run: false
@@ -118,7 +68,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -170,7 +120,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -221,7 +171,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -274,48 +224,6 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
-        command:
-        - runner.sh
-        - ./scripts/ci-conformance.sh
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 1
-            memory: "4Gi"
-        env:
-        - name: KUBETEST_CONF_PATH
-          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
-        - name: CONFORMANCE_NODES
-          value: "25"
-    annotations:
-      testgrid-dashboards: provider-azure-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-capz-conformance
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-conformance-1-7
-    decorate: true
-    always_run: false
-    optional: true
-    run_if_changed: 'azure.*\.go'
-    path_alias: k8s.io/kubernetes
-    branches:
-      - master # TODO(releng): Remove once repo default branch has been renamed
-      - main
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
       base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
@@ -338,7 +246,7 @@ presubmits:
           value: "25"
     annotations:
       testgrid-dashboards: provider-azure-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-capz-conformance-1-7
+      testgrid-tab-name: pull-kubernetes-e2e-capz-conformance
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-num-columns-recent: '30'
   - name: pull-kubernetes-e2e-capz-ha-control-plane
