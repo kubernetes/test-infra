@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y \
     git \
     jq \
     wget \
-    python \
     python3 \
     python3-pip && \
     rm -rf /var/lib/apt/lists/*
