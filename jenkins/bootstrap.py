@@ -365,7 +365,7 @@ class GSUtil(object):
         else:
             gen = []
         with tempfile.NamedTemporaryFile(mode='wt', encoding='utf-8', prefix='gsutil_') as fp:
-            json.dumps(jdict, fp, indent=2)
+            json.dump(jdict, fp, indent=2)
             fp.flush()
             cmd = [
                 self.gsutil, '-q',
