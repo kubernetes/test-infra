@@ -58,7 +58,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
-RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
+# TODO: revert to floating latest stable pending gsutil 5.19 packaging
+# https://github.com/GoogleCloudPlatform/gsutil/issues/1663
+#
+# floating URL:
+# https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
+#
+# For now pinning to 413 with gsutil 5.17
+ARG GCLOUD_SDK_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-413.0.0-linux-x86_64.tar.gz
+RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
     /google-cloud-sdk/install.sh \
