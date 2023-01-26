@@ -40,7 +40,6 @@ periodics:
       - runner.sh
       args:
       - make
-      - --
       - --directory=/home/prow/go/src/k8s.io/perf-tests/golang
       # docker-in-docker needs privileged mode
       securityContext:
