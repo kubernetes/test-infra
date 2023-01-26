@@ -246,8 +246,8 @@ def cluster_name(cluster, tear_down_previous=False):
     else:
         suffix = '%s' % os.getenv('BUILD_ID', 0)
     if len(suffix) > 10:
-        suffix = hashlib.md5(suffix).hexdigest()[:10]
-    job_hash = hashlib.md5(os.getenv('JOB_NAME', '')).hexdigest()[:5]
+        suffix = hashlib.md5(suffix.encode('utf-8')).hexdigest()[:10]
+    job_hash = hashlib.md5(os.getenv('JOB_NAME', '').encode('utf-8')).hexdigest()[:5]
     return 'e2e-%s-%s' % (suffix, job_hash)
 
 
