@@ -21,7 +21,7 @@ extraFiles:
   - "config/jobs/README.md"
   - "releng/generate_tests.py"
   - "releng/test_config.yaml"
-  #- "images/kubekins-e2e/Dockerfile"
+  - "images/kubekins-e2e/Dockerfile"
 targetVersion: "latest"
 prefixes:
   - name: "k8s-testimages images"
