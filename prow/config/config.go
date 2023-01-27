@@ -3407,7 +3407,7 @@ func sortStringSlice(s []string) []string {
 	return s
 }
 
-func (c Config) deduplicateTideQueries(queries TideQueries) (TideQueries, error) {
+func (c *Config) deduplicateTideQueries(queries TideQueries) (TideQueries, error) {
 	m := tideQueryMap{}
 	for _, query := range queries {
 		key := tideQueryConfig{
@@ -3418,7 +3418,7 @@ func (c Config) deduplicateTideQueries(queries TideQueries) (TideQueries, error)
 			MissingLabels:          sortStringSlice(query.MissingLabels),
 			Milestone:              query.Milestone,
 			ReviewApprovedRequired: query.ReviewApprovedRequired,
-			TenantIDs:              query.TenantIDs(c),
+			TenantIDs:              query.TenantIDs(*c),
 		}
 		keyRaw, err := json.Marshal(key)
 		if err != nil {
