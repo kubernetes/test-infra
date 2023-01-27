@@ -154,7 +154,8 @@ periodics:
         -label:lifecycle/frozen
         -label:"help wanted"
         -label:"good first issue"
-        -label:"triage/accepted"
+        -label:triage/accepted
+        -label:priority/critical-urgent,priority/important-soon,priority/important-longterm
         label:lifecycle/rotten
       - --updated=720h
       - --token=/etc/github-token/token
