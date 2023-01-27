@@ -10,6 +10,13 @@
   "storage": {
     "files": [
       {
+        "path": "/etc/ssh-key-secret/ssh-public",
+        "contents": {
+          "source": "data:text/plain;base64,GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
+        },
+        "mode": 420
+      },
+      {
         "path": "/etc/zincati/config.d/90-disable-auto-updates.toml",
         "contents": {
           "source": "data:,%5Bupdates%5D%0Aenabled%20%3D%20false%0A"
