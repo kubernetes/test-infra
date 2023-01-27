@@ -678,6 +678,8 @@ periodics:
         - Close this issue with `/close`
 
         For more details on the triage process, see https://www.kubernetes.dev/docs/guide/issue-triage/
+
+        /remove-triage accepted
       - --template
       - --ceiling=10
       - --confirm
@@ -725,6 +727,8 @@ periodics:
         - Close this issue with `/close`
 
         For more details on the triage process, see https://www.kubernetes.dev/docs/guide/issue-triage/
+
+        /remove-triage accepted
       - --template
       - --ceiling=10
       - --confirm
@@ -772,6 +776,8 @@ periodics:
         - Close this issue with `/close`
 
         For more details on the triage process, see https://www.kubernetes.dev/docs/guide/issue-triage/
+
+        /remove-triage accepted
       - --template
       - --ceiling=10
       - --confirm
