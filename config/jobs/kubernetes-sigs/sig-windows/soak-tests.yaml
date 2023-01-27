@@ -1,21 +1,4 @@
 ---
-presets:
-- labels:
-    preset-azure-win-soak-test-creds: "true"
-  env:
-  - name: KUBECONFIG
-    value: "/root/.kube/win-soak-test"
-  volumeMounts:
-  - name: win-soak-test
-    mountPath: /root/.kube/win-soak-test
-  volumes:
-  - name: win-soak-test
-    secret:
-      secretName: win-soak-test
-      defaultMode: 420
-      items:
-      - key: win-soak-test
-        path: win-soak-test.kubeconfig
 presubmits:
   kubernetes/perf-tests:
   - name: soak-tests-capz-windows-2019
@@ -100,38 +83,45 @@ periodics:
     decorate: true
     path_alias: k8s.io/perf-tests
     labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-win-soak-test-creds: "true"
     extra_refs:
       - org: kubernetes
         repo: perf-tests
-        base_ref: "main"
+        base_ref: "master"
         path_alias: "k8s.io/perf-tests"
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
           command:
-            - ./run-e2e.sh
+            - runner.sh
           args:
             - bash
             - -c
             - >-
-              cluster-loader2
+              ./hack/ensure-azcli.sh &&
+              az keyvault secret show
+              --vault-name win-soak-test
+              --name win-soak-test-kubeconfig
+              --query value -o tsv | base64 --decode > /root/.kube/win-soak-test.kubeconfig &&
+              cd ${GOPATH}/src/k8s.io/perf-tests/ &&
+              ./run-e2e.sh cluster-loader2
+              --kubeconfig /root/.kube/win-soak-test.kubeconfig
               --testconfig=testing/windows-tests/config.yaml
               --provider=aks
               --report-dir=${ARTIFACTS}
               --v=2
-          securityContext:
-            privileged: true
           env:
             # clusterloader2 variables
             - name: ENABLE_PROMETHEUS_SERVER
               value: "true"
+            - name: TEAR_DOWN_PROMETHEUS_SERVER
+              value: "false"
             - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
               value: "true"
             - name: PROMETHEUS_APISERVER_SCRAPE_PORT
@@ -154,24 +144,27 @@ periodics:
       timeout: 8h
     labels:
       preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+        workdir: true
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
           command:
-            - az
+            - runner.sh
           args:
             - >-
+              ./hack/ensure-azcli.sh &&
+              az
               group
               delete
               --resource-group
               win-soak-test
               -y
-          securityContext:
-            privileged: true
     annotations:
       testgrid-dashboards: sig-windows-soak-tests
       testgrid-tab-name: delete-win-soak-test-cluster
@@ -209,14 +202,17 @@ periodics:
               --name win-soak-test-kubeconfig
               --vault-name win-soak-test
               --file ./kubeconfig
-              --encoding base64 &&
+              --encoding base64
+              --output none &&
               az group update
-              --tags DO-NOT-DELETE=$(date)
+              --tags DO-NOT-DELETE="$(date)"
               -n win-soak-test
           securityContext:
             privileged: true
           env:
             # CAPZ variables
+            - name: CLUSTER_NAME
+              value: win-soak-test
             - name: NODE_MACHINE_TYPE
               value: "Standard_D4s_v3"
             - name: TEST_WINDOWS
