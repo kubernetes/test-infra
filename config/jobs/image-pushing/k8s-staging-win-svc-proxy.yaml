@@ -8,6 +8,7 @@ postsubmits:
       decorate: true
       branches:
         - ^main$
+        - ^debug-image-build$   # temporary - used to debug issues running buildx in cloudbuild without polluting main's commit history
       spec:
         serviceAccountName: gcb-builder
         containers:
