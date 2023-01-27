@@ -12,7 +12,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -39,7 +39,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
         resources:
           requests:
             cpu: 7300m
@@ -62,7 +62,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.3
       testgrid-tab-name: capi-pr-apidiff-release-0-3
@@ -78,7 +78,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
         command:
         - "runner.sh"
         - "make"
@@ -101,7 +101,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -126,7 +126,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -158,7 +158,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230117-50d6df3625-master
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
