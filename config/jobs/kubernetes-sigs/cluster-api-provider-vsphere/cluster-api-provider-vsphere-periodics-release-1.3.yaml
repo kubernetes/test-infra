@@ -14,7 +14,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-5a9b5b67e0-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-1.23
           command:
             - runner.sh
           args:
@@ -52,7 +52,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-5a9b5b67e0-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-1.23
           command:
             - runner.sh
           args:

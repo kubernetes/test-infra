@@ -6,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-5a9b5b67e0-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -43,7 +43,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-5a9b5b67e0-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -99,7 +99,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-5a9b5b67e0-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
       imagePullPolicy: Always
       command:
       - runner.sh
