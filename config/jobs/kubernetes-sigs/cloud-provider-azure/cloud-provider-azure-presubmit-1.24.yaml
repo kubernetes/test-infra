@@ -45,7 +45,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.7
+          base_ref: release-1.6
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
@@ -70,7 +70,7 @@ presubmits:
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "1"
               - name: CLUSTER_TEMPLATE
-                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
       annotations:
@@ -95,7 +95,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.7
+          base_ref: release-1.6
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
         - org: kubernetes
@@ -151,7 +151,7 @@ presubmits:
       extra_refs:
         - org: kubernetes-sigs
           repo: cluster-api-provider-azure
-          base_ref: release-1.7
+          base_ref: release-1.6
           path_alias: sigs.k8s.io/cluster-api-provider-azure
           workdir: true
       spec:
