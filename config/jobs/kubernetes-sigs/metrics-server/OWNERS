@@ -3,3 +3,5 @@
 approvers:
 - s-urbaniak
 - serathius
+labels:
+- sig/instrumentation

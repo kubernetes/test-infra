@@ -8,7 +8,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
         command:
         - "runner.sh"
         args:
@@ -23,7 +23,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
         command:
         - "runner.sh"
         args:

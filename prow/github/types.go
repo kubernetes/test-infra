@@ -1260,6 +1260,7 @@ type GenericCommentEvent struct {
 type Milestone struct {
 	Title  string `json:"title"`
 	Number int    `json:"number"`
+	State  string `json:"state"`
 }
 
 // RepositoryCommit represents a commit in a repo.

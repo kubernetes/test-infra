@@ -69,13 +69,14 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "hack/verify_all.sh"
   - name: pull-gcp-filestore-csi-driver-kubernetes-integration
-    always_run: true
+    always_run: false
+    run_if_changed: '^(pkg\/|cmd\/|test\/|hack\/|vendor\/)'
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"

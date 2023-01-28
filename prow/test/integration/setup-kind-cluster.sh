@@ -138,6 +138,9 @@ nodes:
   - containerPort: 443
     hostPort: 443
     protocol: TCP
+  - containerPort: 32000
+    hostPort: 32000
+    protocol: TCP
   - containerPort: ${fakepubsub_node_port}
     hostPort: ${fakepubsub_node_port}
     protocol: TCP

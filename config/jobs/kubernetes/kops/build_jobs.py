@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -764,7 +764,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.25', '1.24']:
+    for version in ['1.26', '1.25']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -1177,6 +1177,16 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-cilium-etcd',
             networking='cilium-etcd',
             tab_name='e2e-gce-cilium-etcd',
+            always_run=False,
+            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+        ),
+        presubmit_test(
+            cloud='gce',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-ipalias',
+            networking='gce',
+            tab_name='e2e-gce',
             always_run=False,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),

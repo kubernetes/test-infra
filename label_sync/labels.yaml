@@ -806,7 +806,12 @@ repos:
         description: Issues or PRs related to the upstream marketing team
         name: area/contributor-comms
         target: both
-        addedBy: humans
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the annual reports
+        name: area/annual-reports
+        target: both
+        addedBy: label
   kubernetes/dns:
     labels:
       - color: 0052cc
@@ -1036,6 +1041,12 @@ repos:
         addedBy: anyone
         previously:
           - name: area/cluster-infra
+      - color: 0052cc
+        description: Issues or PRs related to Kubernetes AWS infrastructure
+        name: area/infra/aws
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to monitoring of the Kubernetes project infrastructure
         name: area/infra/monitoring

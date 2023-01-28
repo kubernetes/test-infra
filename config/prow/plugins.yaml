@@ -240,6 +240,7 @@ lgtm:
   - kubernetes/website
   - kubernetes-sigs/node-feature-discovery
   - kubernetes-sigs/cluster-api
+  - kubernetes-sigs/cluster-api-provider-azure
   store_tree_hash: true
 
 blockades:

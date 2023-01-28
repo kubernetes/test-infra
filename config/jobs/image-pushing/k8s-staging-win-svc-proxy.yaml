@@ -8,6 +8,7 @@ postsubmits:
       decorate: true
       branches:
         - ^main$
+        - ^debug-image-build$   # temporary - used to debug issues running buildx in cloudbuild without polluting main's commit history
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -15,7 +16,7 @@ postsubmits:
             command:
               - /run.sh
             args:
-              - --project=k8s-staging-windows-svc-proxy
-              - --scratch-bucket=gs://k8s-staging-windows-svc-proxy-gcb
+              - --project=k8s-staging-win-svc-proxy
+              - --scratch-bucket=gs://k8s-staging-win-svc-proxy-gcb
               - --env-passthrough=PULL_BASE_REF
               - .

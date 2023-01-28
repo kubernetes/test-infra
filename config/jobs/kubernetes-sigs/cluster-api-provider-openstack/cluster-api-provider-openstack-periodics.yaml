@@ -20,7 +20,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
@@ -42,7 +42,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
     testgrid-tab-name: periodic-e2e-test-main
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-openstack-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
     testgrid-alert-stale-results-hours: "48"
 - name: periodic-cluster-api-provider-openstack-conformance-test-main-with-k8s-ci-artifacts
@@ -70,7 +70,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
@@ -93,6 +93,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
     testgrid-tab-name: periodic-conformance-test-main
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-openstack-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
     testgrid-alert-stale-results-hours: "48"

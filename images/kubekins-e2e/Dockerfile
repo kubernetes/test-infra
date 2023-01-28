@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-staging-test-infra/bootstrap:v20221021-5771e8efb3
+FROM gcr.io/k8s-staging-test-infra/bootstrap:v20230126-215ae799eb
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -105,10 +105,7 @@ RUN if [ -n "${KIND_VERSION}" ]; then \
 # install kubetest2 binaries if a version is provided
 ARG KUBETEST2_VERSION
 RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
-    wget -q -O /usr/local/bin/kubetest2.tgz https://storage.googleapis.com/k8s-staging-kubetest2/${KUBETEST2_VERSION}/linux-amd64.tgz && \
-    tar -xzf /usr/local/bin/kubetest2.tgz -C /usr/local/bin && \
-    rm -f /usr/local/bin/kubetest2.tgz && \
-    chmod +x /usr/local/bin/kubetest2*; \
+    go install sigs.k8s.io/kubetest2/...@"${KUBETEST2_VERSION}"; \
     fi
 
 # configure dockerd to use mirror.gcr.io

@@ -519,6 +519,35 @@ deck:
 # DefaultJobTimeout this is default deadline for prow jobs. This value is used when
 # no timeout is configured at the job level. This value is set to 24 hours.
 default_job_timeout: 0s
+
+
+# Gangway contains configurations needed by the the Prow API server of the
+# same name. It encodes an allowlist of API clients and what kinds of Prow
+# Jobs they are authorized to trigger.
+gangway:
+    # AllowedApiClients encodes identifying information about API clients
+    # (AllowedApiClient). An AllowedApiClient has authority to trigger a subset
+    # of Prow Jobs.
+    allowed_api_clients:
+      - # AllowedJobsFilters contains information about what kinds of Prow jobs this
+        # API client is authorized to trigger.
+        allowed_jobs_filters:
+          - tenant_id: ' '
+
+        # ApiClientGcp contains GoogleCloudPlatform details about a web API client.
+        # We currently only support GoogleCloudPlatform but other cloud vendors are
+        # possible as additional fields in this struct.
+        gcp:
+            # EndpointApiConsumerNumber is the expected value of the
+            # x-endpoint-api-consumer-number HTTP metadata header. Typically this
+            # encodes the GCP Project number value, which uniquely identifies a GCP
+            # Project.
+            endpoint_api_consumer_number: ' '
+
+            # EndpointApiConsumerType is the expected value of the
+            # x-endpoint-api-consumer-type HTTP metadata header. Typically this will be
+            # "PROJECT".
+            endpoint_api_consumer_type: ' '
 gerrit:
     # DeckURL is the root URL of Deck. This is used to construct links to
     # job runs for a given CL.

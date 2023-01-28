@@ -79,7 +79,7 @@ func handlePR(gc githubClient, c config.Tide, pe github.PullRequestEvent) error 
 		return nil
 	}
 
-	return gc.CreateComment(owner, repo, num, plugins.FormatSimpleResponse(pe.PullRequest.User.Login, comment))
+	return gc.CreateComment(owner, repo, num, plugins.FormatSimpleResponse(comment))
 }
 
 func needsComment(c config.Tide, pe github.PullRequestEvent) (bool, string) {

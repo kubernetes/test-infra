@@ -267,7 +267,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 
 		if prLabels.Has(labels.DeprecationLabel) {
 			if !prLabels.Has(labels.ReleaseNoteLabelNeeded) {
-				comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteDeprecationBody)
+				comment := plugins.FormatSimpleResponse(releaseNoteDeprecationBody)
 				if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 					log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
 				}
@@ -280,7 +280,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 			if containsNoneCommand(comments) {
 				labelToAdd = labels.ReleaseNoteNone
 			} else if !prLabels.Has(labels.ReleaseNoteLabelNeeded) {
-				comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteBody)
+				comment := plugins.FormatSimpleResponse(releaseNoteBody)
 				if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 					log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
 				}

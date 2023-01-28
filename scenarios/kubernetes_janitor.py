@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -41,7 +41,7 @@ def test_infra(*paths):
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     subprocess.check_call(cmd)
 
 
@@ -101,7 +101,7 @@ PR_PROJECTS = {
 
 def check_predefine_jobs(jobs, ratelimit):
     """Handle predefined jobs"""
-    for project, expire in jobs.iteritems():
+    for project, expire in jobs.items():
         clean_project(project, hours=expire, ratelimit=ratelimit)
 
 def check_ci_jobs():
@@ -110,7 +110,7 @@ def check_ci_jobs():
         config = json.load(fp)
 
     match_re = re.compile(r'--gcp-project=(.+)')
-    for value in config.values():
+    for value in list(config.values()):
         clean_hours = 24
         found = None
         for arg in value.get('args', []):
@@ -123,7 +123,7 @@ def check_ci_jobs():
                 continue
             project = mat.group(1)
             if any(b in project for b in EXEMPT_PROJECTS):
-                print >>sys.stderr, 'Project %r is exempted in ci-janitor' % project
+                print('Project %r is exempted in ci-janitor' % project, file=sys.stderr)
                 continue
             found = project
         if found:
@@ -142,14 +142,14 @@ def main(mode, ratelimit, projects, age, artifacts, filt):
         check_ci_jobs()
 
     # Summary
-    print 'Janitor checked %d project, %d failed to clean up.' % (len(CHECKED), len(FAILED))
-    print HAS_JUNIT
+    print('Janitor checked %d project, %d failed to clean up.' % (len(CHECKED), len(FAILED)))
+    print(HAS_JUNIT)
     if artifacts:
         output = os.path.join(artifacts, 'junit_janitor.xml')
         if not HAS_JUNIT:
-            print 'Please install junit-xml (https://pypi.org/project/junit-xml/)'
+            print('Please install junit-xml (https://pypi.org/project/junit-xml/)')
         else:
-            print 'Generating junit output:'
+            print('Generating junit output:')
             tcs = []
             for project in CHECKED:
                 tc = TestCase(project, 'kubernetes_janitor')
@@ -162,7 +162,7 @@ def main(mode, ratelimit, projects, age, artifacts, filt):
             with open(output, 'w') as f:
                 TestSuite.to_file(f, [ts])
     if FAILED:
-        print >>sys.stderr, 'Failed projects: %r' % FAILED
+        print('Failed projects: %r' % FAILED, file=sys.stderr)
         exit(1)
 
 

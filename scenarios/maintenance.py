@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -25,7 +25,7 @@ import sys
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     subprocess.check_call(cmd)
 
 

@@ -20,10 +20,9 @@ periodics:
     testgrid-tab-name: snapshots-cleanup
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
       command:
       - runner.sh
-      - /workspace/scenarios/execute.py
       args:
       - $(GOPATH)/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots-boskos.sh
       # Command (list|delete)
@@ -61,10 +60,9 @@ periodics:
     # https://github.com/kubernetes/k8s.io/issues/2854
     serviceAccountName: boskos-janitor
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
       command:
       - runner.sh
-      - /workspace/scenarios/execute.py
       args:
       - $(GOPATH)/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
       # Command (list|delete)

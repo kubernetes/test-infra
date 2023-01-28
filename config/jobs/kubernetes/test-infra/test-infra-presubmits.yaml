@@ -53,7 +53,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20230113-8f2ffbe0d4
+      - image: gcr.io/k8s-prow/checkconfig:v20230127-c2d8597baa
         command:
         - checkconfig
         args:
@@ -72,6 +72,33 @@ presubmits:
         - --warnings=unknown-fields-all
     annotations:
       testgrid-dashboards: presubmits-test-infra
+  - name: pull-test-infra-prow-checkconfig-loose
+    optional: true
+    decorate: true
+    skip_report: true
+    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/checkconfig:v20230127-c2d8597baa
+        command:
+        - checkconfig
+        args:
+        - --config-path=config/prow/config.yaml
+        - --job-config-path=config/jobs
+        - --plugin-config=config/prow/plugins.yaml
+        - --warnings=mismatched-tide-lenient
+        - --warnings=tide-strict-branch
+        - --warnings=needs-ok-to-test
+        - --warnings=validate-owners
+        - --warnings=missing-trigger
+        - --warnings=validate-urls
+        - --warnings=unknown-fields
+        - --warnings=duplicate-job-refs
+        - --warnings=unknown-fields-all
+        - --warnings=non-decorated-jobs
+        - --warnings=valid-decoration-config
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-integration
     branches:
     - master
@@ -83,7 +110,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-test-infra
         command:
         - runner.sh
         args:
@@ -117,7 +144,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-test-infra
         command:
         - runner.sh
         args:
@@ -139,7 +166,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-test-infra
         command:
         - runner.sh
         args:
@@ -175,7 +202,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230111-cd1b3caf9c-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-test-infra
         command:
         - runner.sh
         args:

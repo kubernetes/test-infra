@@ -59,6 +59,7 @@ require (
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/hashicorp/golang-lru v0.5.4

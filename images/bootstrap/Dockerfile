@@ -26,24 +26,19 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # common util tools
-# https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
     curl \
     file \
     git \
+    iproute2 \
+    iputils-ping \
     jq \
     mercurial \
     openssh-client \
     pkg-config \
     procps \
-    python \
-    python-dev \
-    python-gflags \
-    python-openssl \
-    python-pip \
-    python-yaml \
     python3 \
     python3-distutils \
     python3-gflags \
@@ -56,7 +51,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
     && python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # Install gcloud
@@ -64,7 +58,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
-RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
+# TODO: revert to floating latest stable pending gsutil 5.19 packaging
+# https://github.com/GoogleCloudPlatform/gsutil/issues/1663
+#
+# floating URL:
+# https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
+#
+# For now pinning to 413 with gsutil 5.17
+ARG GCLOUD_SDK_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-413.0.0-linux-x86_64.tar.gz
+RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
     /google-cloud-sdk/install.sh \
@@ -106,7 +108,7 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce && \
+    apt-get install -y --no-install-recommends docker-ce=5:20.10.* && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
     && update-alternatives --set iptables /usr/sbin/iptables-legacy \

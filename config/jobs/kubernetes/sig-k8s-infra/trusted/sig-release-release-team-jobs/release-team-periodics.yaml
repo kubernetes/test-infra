@@ -24,3 +24,30 @@ periodics:
             secretKeyRef:
               name: k8s-release-enhancements-triage-github-token
               key: token
+- name: periodic-sync-bug-triage-github-project-beta-1-27
+  interval: 3h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-release-release-team-periodics
+    description: Periodically syncs the opted-in k/k issues on the Bug Triage Tracking GitHub Beta Project Board
+  extra_refs:
+  - org: kubernetes
+    repo: sig-release
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+      command:
+      - ./release-team/hack/sync-bug-triage-github-project-beta.sh
+      env:
+        - name: PROJECT_NUMBER
+          value: "80"
+        - name: MILESTONE
+          value: "v1.27"
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: k8s-release-bug-triage-github-token
+              key: token
