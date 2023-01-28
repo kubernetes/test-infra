@@ -8133,6 +8133,7 @@ deck:
     size_limit: 100000000
   tide_update_period: 10s
 default_job_timeout: 24h0m0s
+gangway: {}
 gerrit:
   ratelimit: 5
   tick_interval: 1m0s
@@ -8213,6 +8214,7 @@ deck:
     size_limit: 100000000
   tide_update_period: 10s
 default_job_timeout: 24h0m0s
+gangway: {}
 gerrit:
   ratelimit: 5
   tick_interval: 1m0s
@@ -8286,6 +8288,7 @@ deck:
     size_limit: 100000000
   tide_update_period: 10s
 default_job_timeout: 24h0m0s
+gangway: {}
 gerrit:
   ratelimit: 5
   tick_interval: 1m0s
@@ -8364,6 +8367,7 @@ deck:
     size_limit: 100000000
   tide_update_period: 10s
 default_job_timeout: 24h0m0s
+gangway: {}
 gerrit:
   ratelimit: 5
   tick_interval: 1m0s

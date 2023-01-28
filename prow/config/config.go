@@ -140,6 +140,11 @@ type ProwConfig struct {
 	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
 	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
 
+	// Gangway contains configurations needed by the the Prow API server of the
+	// same name. It encodes an allowlist of API clients and what kinds of Prow
+	// Jobs they are authorized to trigger.
+	Gangway Gangway `json:"gangway,omitempty"`
+
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
 
@@ -2127,6 +2132,10 @@ func (c *Config) validateComponentConfig() error {
 	}
 
 	if err := c.Deck.Validate(); err != nil {
+		return err
+	}
+
+	if err := c.Gangway.Validate(); err != nil {
 		return err
 	}
 
