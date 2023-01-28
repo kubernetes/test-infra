@@ -1242,7 +1242,7 @@ presubmits:
     # Not relevant for most PRs.
     always_run: false
     # This covers most of the code related to dynamic resource allocation.
-    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/dynamic-resource-allocation/
+    run_if_changed: /dra/|/dynamicresources/|/resourceclaim/|/resourceclass/|/podscheduling/|/dynamic-resource-allocation/|/pkg/apis/resource/|/api/resource/
     # The tests might still be flaky or this job might get triggered accidentally for
     # an unrelated PR.
     optional: true
