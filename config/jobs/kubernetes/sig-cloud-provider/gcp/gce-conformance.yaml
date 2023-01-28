@@ -26,7 +26,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\]
       - --timeout=200m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
       resources:
         limits:
           cpu: 1
@@ -59,7 +59,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
       securityContext:
         privileged: true
       resources:

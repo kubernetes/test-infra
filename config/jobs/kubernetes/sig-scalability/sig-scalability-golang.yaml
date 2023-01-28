@@ -83,7 +83,7 @@ periodics:
     testgrid-tab-name: golang-tip-k8s-1-23
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
