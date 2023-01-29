@@ -1108,7 +1108,7 @@ def generate_presubmits_network_plugins():
                                  '--zones=us-west-2a',
                                  ],
                     run_if_changed=run_if_changed,
-                    optional=optional,
+                    optional=True,
                 )
             )
     return results
