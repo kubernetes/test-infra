@@ -104,7 +104,7 @@ periodics:
             - bash
             - -c
             - >-
-              ./hack/parse-prow-creds.sh &&
+              source ./hack/parse-prow-creds.sh &&
               ./hack/ensure-azcli.sh &&
               az keyvault secret show
               --vault-name win-soak-test
@@ -161,7 +161,7 @@ periodics:
             - bash
             - -c
             - >-
-              ./hack/parse-prow-creds.sh &&
+              source ./hack/parse-prow-creds.sh &&
               ./hack/ensure-azcli.sh &&
               az
               group
