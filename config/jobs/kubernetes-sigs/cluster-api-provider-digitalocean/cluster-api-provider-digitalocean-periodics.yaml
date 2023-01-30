@@ -28,7 +28,9 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
     testgrid-tab-name: capdo-periodic-conformance
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-do-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
+
 - name: periodic-cluster-api-provider-digitalocean-conformance-ci-artifacts
   decorate: true
   decoration_config:
@@ -61,4 +63,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
     testgrid-tab-name: capdo-periodic-conformance-ci-artifacts
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-do-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
