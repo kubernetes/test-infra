@@ -109,10 +109,11 @@ periodics:
               az keyvault secret show
               --vault-name win-soak-test
               --name win-soak-test-kubeconfig
-              --query value -o tsv | base64 --decode > /root/.kube/win-soak-test.kubeconfig &&
+              --query value -o tsv | base64 --decode > ./kubeconfig &&
+              cp ./kubeconfig ${GOPATH}/src/k8s.io/perf-tests/kubeconfig &&
               cd ${GOPATH}/src/k8s.io/perf-tests/ &&
               ./run-e2e.sh cluster-loader2
-              --kubeconfig /root/.kube/win-soak-test.kubeconfig
+              --kubeconfig ${GOPATH}/src/k8s.io/perf-tests/kubeconfig
               --testconfig=testing/windows-tests/config.yaml
               --provider=aks
               --report-dir=${ARTIFACTS}
