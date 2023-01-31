@@ -28,7 +28,7 @@ presubmits:
                 value: "boskos.test-pods.svc.cluster.local"
               - name: AWS_REGION
                 value: "us-west-2"
-              - name: E2E_FOCUS
+              - name: GINKGO_FOCUS
                 value: "\\[ClusterClass\\]"
               # Parallelize tests
               - name: GINKGO_ARGS

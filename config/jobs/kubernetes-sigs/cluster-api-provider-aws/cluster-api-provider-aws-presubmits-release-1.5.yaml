@@ -191,7 +191,7 @@ presubmits:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
           env:
-            - name: E2E_FOCUS
+            - name: GINKGO_FOCUS
               value: "\\[PR-Blocking\\]"
             - name: BOSKOS_HOST
               value: "boskos.test-pods.svc.cluster.local"
