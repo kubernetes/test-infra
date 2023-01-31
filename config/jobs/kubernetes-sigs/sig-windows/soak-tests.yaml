@@ -82,6 +82,9 @@ periodics:
     cron: "0 * * * MON-SAT"
     decorate: true
     path_alias: k8s.io/perf-tests
+    tags:
+      - "perfDashPrefix: hourly-soak-tests-capz-windows-2019"
+      - "perfDashJobType: windows"
     labels:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
