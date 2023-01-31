@@ -28,4 +28,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
     testgrid-tab-name: capdo-periodic-conformance-release-1-1
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-do-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
