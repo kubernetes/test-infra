@@ -535,6 +535,12 @@ func unsetProblematicFields(issue *jira.Issue, responseBody string) (*jira.Issue
 	for field := range processedResponse.Errors {
 		delete(fieldsMap, field)
 	}
+	// Remove null value "customfields_" because they cause the server to return: 500 Internal Server Error
+	for field, value := range fieldsMap {
+		if strings.HasPrefix(field, "customfield_") && value == nil {
+			delete(fieldsMap, field)
+		}
+	}
 	issueMap["fields"] = fieldsMap
 	// turn back into jira.Issue type
 	marshalledFixedIssue, err := json.Marshal(issueMap)
