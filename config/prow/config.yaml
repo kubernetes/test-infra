@@ -572,6 +572,22 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cloud-provider-azure:
+          exclude:
+            - "^doc/" # don't protect branches created by release note github action
+          branches:
+            master:
+              protect: true
+            release-1.23:
+              protect: true
+            release-1.24:
+              protect: true
+            release-1.25:
+              protect: true
+            release-1.26:
+              protect: true
+            kubetest2-aks:
+              protect: true
         descheduler:
           branches:
             gh-pages:
