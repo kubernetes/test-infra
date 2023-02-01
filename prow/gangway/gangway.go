@@ -582,34 +582,35 @@ func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *conf
 type presubmitJobHandler struct {
 }
 
+func validateRefs(jobType *JobExecutionType, refs *prowcrd.Refs) error {
+	if refs == nil {
+		return errors.New("Refs must be supplied")
+	}
+	if len(refs.Org) == 0 {
+		return errors.New("org must be supplied")
+	}
+	if len(refs.Repo) == 0 {
+		return errors.New("repo must be supplied")
+	}
+	if len(refs.BaseSHA) == 0 {
+		return errors.New("at least 1 Pulls is required")
+	}
+	if len(refs.BaseRef) == 0 {
+		return errors.New("baseRef must be supplied")
+	}
+	if jobType == JobExecutionType_PRESUBMIT.Enum() && len(refs.Pulls) == 0 {
+		return errors.New("at least 1 Pulls is required")
+	}
+	return nil
+}
+
 func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
 	refs, err := ToCrdRefs(cjer.Refs)
 	if err != nil {
 		return
 	}
-	if refs == nil {
-		err = errors.New("Refs must be supplied")
-		return
-	}
-	if len(refs.Org) == 0 {
-		err = errors.New("org must be supplied")
-		return
-	}
-	if len(refs.Repo) == 0 {
-		err = errors.New("repo must be supplied")
-		return
-	}
-	if len(refs.Pulls) == 0 {
-		err = errors.New("at least 1 Pulls is required")
-		return
-	}
-	if len(refs.BaseSHA) == 0 {
-		err = errors.New("baseSHA must be supplied")
-		return
-	}
-	if len(refs.BaseRef) == 0 {
-		err = errors.New("baseRef must be supplied")
+	if err = validateRefs(&cjer.JobExecutionType, refs); err != nil {
 		return
 	}
 
@@ -686,24 +687,10 @@ type postsubmitJobHandler struct {
 func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// postsubmit jobs require Refs to be set
 	refs, err := ToCrdRefs(cjer.Refs)
-	if refs == nil {
-		err = errors.New("refs must be supplied")
+	if err != nil {
 		return
 	}
-	if len(refs.Org) == 0 {
-		err = errors.New("org must be supplied")
-		return
-	}
-	if len(refs.Repo) == 0 {
-		err = errors.New("repo must be supplied")
-		return
-	}
-	if len(refs.BaseSHA) == 0 {
-		err = errors.New("baseSHA must be supplied")
-		return
-	}
-	if len(refs.BaseRef) == 0 {
-		err = errors.New("baseRef must be supplied")
+	if err = validateRefs(&cjer.JobExecutionType, refs); err != nil {
 		return
 	}
 
