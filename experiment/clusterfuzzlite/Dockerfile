@@ -15,8 +15,8 @@
 FROM gcr.io/k8s-staging-test-infra/bootstrap:v20210913-fc7c4e84f6
 
 #TODO(mpherman) : Change to versioned once stable
-FROM gcr.io/oss-fuzz-base/cifuzz-base:latest
-COPY --from=gcr.io/oss-fuzz-base/cifuzz-base:latest /opt/oss-fuzz /opt/
+FROM gcr.io/oss-fuzz-base/cifuzz-base@sha256:de5eb4b2937831723cffd31d684b50442bc50f55b4a4019be83231f20270b2ba
+COPY --from=gcr.io/oss-fuzz-base/cifuzz-base /opt/oss-fuzz /opt/
 
 #
 # BEGIN: DOCKER IN DOCKER SETUP
