@@ -427,7 +427,7 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver

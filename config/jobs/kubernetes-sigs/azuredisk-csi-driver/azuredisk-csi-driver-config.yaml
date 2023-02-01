@@ -621,19 +621,19 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: KUBERNETES_VERSION
+            - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.23"
-            - name: WORKER_MACHINE_COUNT
+            - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
-            - name: EXTERNAL_E2E_TEST
+            - name: EXTERNAL_E2E_TEST # azuredisk-csi-driver config
               value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
@@ -725,17 +725,17 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
-            - name: KUBERNETES_VERSION
+            - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.23"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
@@ -776,21 +776,21 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_SERVER_VERSION
+            - name: WINDOWS_SERVER_VERSION # CAPZ config
               value: "windows-2022"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
-            - name: KUBERNETES_VERSION
+            - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.23"
-            - name: WORKER_MACHINE_COUNT
+            - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
@@ -829,9 +829,9 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
@@ -875,33 +875,33 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: TEST_CCM
+            - name: TEST_CCM # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_VMSS_FLEX
+            - name: TEST_VMSS_FLEX # azuredisk-csi-driver config
               value: "true"
-            - name: CONTROL_PLANE_MACHINE_COUNT
+            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
-            - name: KUBERNETES_VERSION
+            - name: KUBERNETES_VERSION # CAPZ config
               value: "latest"
-            - name: AZURE_LOADBALANCER_SKU
+            - name: AZURE_LOADBALANCER_SKU # azuredisk-csi-driver config
               value: "Standard"
-            - name: CLUSTER_PROVISIONING_TOOL
+            - name: CLUSTER_PROVISIONING_TOOL # azuredisk-csi-driver config
               value: "capz"
-            - name: CLUSTER_TEMPLATE
+            - name: CLUSTER_TEMPLATE # CAPZ config
               value: https://raw.githubusercontent.com/jackfrancis/cluster-api-provider-azure/vmss-flex-cloudprovider/templates/cluster-template-external-cloud-provider-machinepool.yaml
-            - name: CUSTOM_CLOUD_PROVIDER_CONFIG
+            - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
               value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
-            - name: ENABLE_VMSS_FLEX
+            - name: ENABLE_VMSS_FLEX # azuredisk-csi-driver config
               value: "true"
-            - name: ENABLE_MULTI_SLB
+            - name: ENABLE_MULTI_SLB # azuredisk-csi-driver config
               value: "false"
-            - name: PUT_VMSS_VM_BATCH_SIZE
+            - name: PUT_VMSS_VM_BATCH_SIZE # azuredisk-csi-driver config
               value: "0"
-            - name: LB_BACKEND_POOL_CONFIG_TYPE
+            - name: LB_BACKEND_POOL_CONFIG_TYPE # azuredisk-csi-driver config
               value: ""
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
