@@ -28,7 +28,7 @@
   "systemd": {
     "units": [
       {
-        "contents": "[Unit]\nDescription=Copy authorized keys\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c '/usr/bin/mkdir -m 0700 -p /home/prow/.ssh && /usr/bin/cat /etc/ssh-key-secret/ssh-public >> /home/prow/.ssh/authorized_keys && chown -R prow:prow /home/prow/.ssh && chmod 0600 /home/prow/.ssh/authorized_keys'\n\n[Install]\nWantedBy=multi-user.target\n",
+        "contents": "[Unit]\nDescription=Copy authorized keys\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c '/usr/bin/mkdir -m 0700 -p /home/core/.ssh && /usr/bin/cat /etc/ssh-key-secret/ssh-public >> /home/core/.ssh/authorized_keys && chown -R core:core /home/core/.ssh && chmod 0600 /home/core/.ssh/authorized_keys'\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "authorized-key.service"
       },
