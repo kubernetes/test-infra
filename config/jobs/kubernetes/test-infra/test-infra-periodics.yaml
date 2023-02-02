@@ -125,6 +125,8 @@ periodics:
         value: gs://prow-cifuzz-test/
       - name: CFL_PLATFORM
         value: prow
+      - name: LANGUAGE
+        value: go
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-cfl-coverage-report
