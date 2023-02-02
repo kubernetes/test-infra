@@ -1462,6 +1462,34 @@ presubmits:
     branches:
     - release-1.26
     cluster: k8s-infra-prow-build
+    context: pull-kubernetes-integration-go-compatibility
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-kubernetes-integration-go-compatibility
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - ./hack/jenkins/test-dockerized.sh
+        command:
+        - runner.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.26
+        name: ""
+        resources:
+          limits:
+            cpu: "6"
+            memory: 15Gi
+          requests:
+            cpu: "6"
+            memory: 15Gi
+        securityContext:
+          privileged: true
+  - always_run: true
+    branches:
+    - release-1.26
+    cluster: k8s-infra-prow-build
     context: pull-kubernetes-e2e-kind
     decorate: true
     decoration_config:
@@ -1589,6 +1617,30 @@ presubmits:
     labels:
       preset-service-account: "true"
     name: pull-kubernetes-unit
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.26
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 36Gi
+          requests:
+            cpu: "4"
+            memory: 36Gi
+  - always_run: true
+    branches:
+    - release-1.26
+    cluster: k8s-infra-prow-build
+    context: pull-kubernetes-unit-go-compatibility
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    name: pull-kubernetes-unit-go-compatibility
     path_alias: k8s.io/kubernetes
     spec:
       containers:
