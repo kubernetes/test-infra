@@ -1090,6 +1090,9 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
+        env:
+          - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+            value: "1"
   - name: pull-kubernetes-node-swap-ubuntu-serial
     cluster: k8s-infra-prow-build
     always_run: false
@@ -1183,7 +1186,6 @@ presubmits:
             value: /go
           - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
             value: "1"
-
 
   - name: pull-kubernetes-node-kubelet-credential-provider
     cluster: k8s-infra-prow-build
