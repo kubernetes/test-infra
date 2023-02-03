@@ -1458,7 +1458,8 @@ presubmits:
             memory: 15Gi
         securityContext:
           privileged: true
-  - always_run: true
+  - always_run: false
+    optional: true
     branches:
     - release-1.26
     cluster: k8s-infra-prow-build
@@ -1467,6 +1468,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
+    annotations:
+      description: run with GO_VERSION set to the original go version used for this branch
     name: pull-kubernetes-integration-go-compatibility
     path_alias: k8s.io/kubernetes
     spec:
@@ -1475,6 +1478,9 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
+        env:
+        - name: GO_VERSION
+          value: "1.19.4"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.26
         name: ""
         resources:
@@ -1632,7 +1638,8 @@ presubmits:
           requests:
             cpu: "4"
             memory: 36Gi
-  - always_run: true
+  - always_run: false
+    optional: true
     branches:
     - release-1.26
     cluster: k8s-infra-prow-build
@@ -1640,6 +1647,8 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
+    annotations:
+      description: run with GO_VERSION set to the original go version used for this branch
     name: pull-kubernetes-unit-go-compatibility
     path_alias: k8s.io/kubernetes
     spec:
@@ -1647,6 +1656,9 @@ presubmits:
       - command:
         - make
         - test
+        env:
+        - name: GO_VERSION
+          value: "1.19.4"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.26
         name: ""
         resources:

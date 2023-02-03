@@ -35,13 +35,15 @@ presubmits:
             memory: 15Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
-    always_run: true
+    always_run: false
+    optional: true
     decorate: true
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
       fork-per-release: "true"
       testgrid-dashboards: sig-testing-canaries
+      description: run with GO_VERSION set to the original go version used for this branch
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
@@ -51,6 +53,9 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
         command:
         - runner.sh
+        env:
+        - name: GO_VERSION
+          value: ""
         args:
         - ./hack/jenkins/test-dockerized.sh
         # docker-in-docker needs privileged mode
