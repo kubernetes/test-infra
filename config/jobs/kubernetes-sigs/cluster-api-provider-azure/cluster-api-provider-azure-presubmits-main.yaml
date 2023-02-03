@@ -484,6 +484,8 @@ presubmits:
         env:
           - name: TEST_WINDOWS
             value: "true"
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2022"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-ci-entrypoint-main
