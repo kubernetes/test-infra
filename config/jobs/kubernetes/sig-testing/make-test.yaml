@@ -35,6 +35,45 @@ presubmits:
             requests:
               cpu: 4
               memory: "36Gi"
+  - name: pull-kubernetes-unit-go-compatibility
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: sig-testing-canaries
+      description: run with GO_VERSION set to the original go version used for this branch
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    labels:
+      preset-service-account: "true"
+    optional: true
+    always_run: false
+    path_alias: k8s.io/kubernetes
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - make
+            - test
+          env:
+          - name: GO_VERSION
+            value: ""
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
   - name: pull-kubernetes-unit-experimental
     # try clonerefs with preclone
     decoration_config:

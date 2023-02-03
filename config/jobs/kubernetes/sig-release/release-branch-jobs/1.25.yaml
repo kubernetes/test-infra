@@ -1430,6 +1430,40 @@ presubmits:
             memory: 15Gi
         securityContext:
           privileged: true
+  - always_run: false
+    optional: true
+    branches:
+    - release-1.25
+    cluster: k8s-infra-prow-build
+    context: pull-kubernetes-integration-go-compatibility
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    annotations:
+      description: run with GO_VERSION set to the original go version used for this branch
+    name: pull-kubernetes-integration-go-compatibility
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - args:
+        - ./hack/jenkins/test-dockerized.sh
+        command:
+        - runner.sh
+        env:
+        - name: GO_VERSION
+          value: "1.19.1"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.25
+        name: ""
+        resources:
+          limits:
+            cpu: "6"
+            memory: 15Gi
+          requests:
+            cpu: "6"
+            memory: 15Gi
+        securityContext:
+          privileged: true
   - always_run: true
     branches:
     - release-1.25
@@ -1567,6 +1601,38 @@ presubmits:
       - command:
         - make
         - test
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.25
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 36Gi
+          requests:
+            cpu: "4"
+            memory: 36Gi
+      securityContext:
+        runAsUser: 2000
+  - always_run: false
+    optional: true
+    branches:
+    - release-1.25
+    cluster: k8s-infra-prow-build
+    context: pull-kubernetes-unit-go-compatibility
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    annotations:
+      description: run with GO_VERSION set to the original go version used for this branch
+    name: pull-kubernetes-unit-go-compatibility
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - command:
+        - make
+        - test
+        env:
+        - name: GO_VERSION
+          value: "1.19.1"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.25
         name: ""
         resources:
