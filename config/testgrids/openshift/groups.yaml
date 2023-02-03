@@ -49,6 +49,7 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.7-informing
   - redhat-openshift-okd-release-4.8-informing
   - redhat-openshift-okd-release-4.9-informing
+  - redhat-openshift-osd
   - redhat-openshift-presubmit-master-gcp
   - redhat-openshift-serverless
   - redhat-openshift-virtualization
