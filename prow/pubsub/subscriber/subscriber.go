@@ -26,7 +26,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowcrd "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gangway"
@@ -78,18 +77,13 @@ func (pe *ProwJobEvent) ToMessageOfType(t string) (*pubsub.Message, error) {
 	return &message, nil
 }
 
-// ProwJobClient mostly for testing.
-type ProwJobClient interface {
-	Create(context.Context, *prowcrd.ProwJob, metav1.CreateOptions) (*prowcrd.ProwJob, error)
-}
-
 // Subscriber handles Pub/Sub subscriptions, update metrics,
 // validates them using Prow Configuration and
 // use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
 	ConfigAgent              *config.Agent
 	Metrics                  *Metrics
-	ProwJobClient            ProwJobClient
+	ProwJobClient            gangway.ProwJobClient
 	Reporter                 reportClient
 	InRepoConfigCacheHandler *config.InRepoConfigCacheHandler
 }

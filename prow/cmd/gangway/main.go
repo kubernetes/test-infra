@@ -30,11 +30,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/pkg/flagutil"
-	prowcr "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -87,19 +84,6 @@ func (o *options) validate() error {
 	}
 
 	return utilerrors.NewAggregate(errs)
-}
-
-type kubeClient struct {
-	client prowv1.ProwJobInterface
-	dryRun bool
-}
-
-// Create creates a Prow Job CR in the Kubernetes cluster (Prow service cluster).
-func (c *kubeClient) Create(ctx context.Context, job *prowcr.ProwJob, o metav1.CreateOptions) (*prowcr.ProwJob, error) {
-	if c.dryRun {
-		return job, nil
-	}
-	return c.client.Create(ctx, job, o)
 }
 
 // interruptableServer is a wrapper type around the gRPC server, so that we can
@@ -156,10 +140,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
 	}
-	kubeClient := &kubeClient{
-		client: prowjobClient,
-		dryRun: o.dryRun,
-	}
 
 	// If we are provided credentials for Git hosts, use them. These credentials
 	// hold per-host information in them so it's safe to set them globally.
@@ -185,7 +165,7 @@ func main() {
 
 	gw := gangway.Gangway{
 		ConfigAgent:              configAgent,
-		ProwJobClient:            kubeClient,
+		ProwJobClient:            prowjobClient,
 		InRepoConfigCacheHandler: cacheGetter,
 	}
 

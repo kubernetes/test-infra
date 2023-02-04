@@ -49,12 +49,14 @@ type Gangway struct {
 	InRepoConfigCacheHandler *config.InRepoConfigCacheHandler
 }
 
-// ProwJobClient is mostly for testing (for calling into the low-level
-// Kubernetes API to check whether gangway behaved correctly).
+// ProwJobClient describes a Kubernetes client for the Prow Job CR. Unlike a
+// general-purpose client, it only expects 2 methods, Create() and Get().
 type ProwJobClient interface {
 	Create(context.Context, *prowcrd.ProwJob, metav1.CreateOptions) (*prowcrd.ProwJob, error)
+	Get(context.Context, string, metav1.GetOptions) (*prowcrd.ProwJob, error)
 }
 
+// CreateJobExecution triggers a new Prow job.
 func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecutionRequest) (*JobExecution, error) {
 	err, md := getHttpRequestHeaders(ctx)
 
@@ -97,6 +99,46 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecut
 	if err != nil {
 		logrus.WithError(err).Debugf("failed to create job %q", cjer.GetJobName())
 		return nil, err
+	}
+
+	return jobExec, nil
+}
+
+// GetJobExecution returns a Prow job execution. It currently does this by
+// looking at all of the existing Prow Job CR (custom resource) objects to find
+// a match, and then does a translation from the CR into our JobExecution type.
+// In the future this function will also perform a lookup in GCS or some other
+// more permanent location as a fallback.
+func (gw *Gangway) GetJobExecution(ctx context.Context, gjer *GetJobExecutionRequest) (*JobExecution, error) {
+	prowJobCR, err := gw.ProwJobClient.Get(context.TODO(), gjer.Id, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	var jobStatus JobExecutionStatus
+
+	// Translate ProwJobStatus.State in the Prow Job CR into a JobExecutionStatus.
+	switch prowJobCR.Status.State {
+	case prowcrd.TriggeredState:
+		jobStatus = JobExecutionStatus_TRIGGERED
+	case prowcrd.PendingState:
+		jobStatus = JobExecutionStatus_PENDING
+	case prowcrd.SuccessState:
+		jobStatus = JobExecutionStatus_SUCCESS
+	case prowcrd.FailureState:
+		jobStatus = JobExecutionStatus_FAILURE
+	case prowcrd.AbortedState:
+		jobStatus = JobExecutionStatus_ABORTED
+	case prowcrd.ErrorState:
+		jobStatus = JobExecutionStatus_ERROR
+	default:
+		jobStatus = JobExecutionStatus_JOB_EXECUTION_STATUS_UNSPECIFIED
+
+	}
+
+	jobExec := &JobExecution{
+		Id:        prowJobCR.Name,
+		JobStatus: jobStatus,
 	}
 
 	return jobExec, nil
