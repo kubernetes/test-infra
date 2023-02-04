@@ -620,7 +620,20 @@ func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *conf
 type presubmitJobHandler struct {
 }
 
+// validateRefs performs some basic checks for the associated Refs provided with
+// a Prow Job. This function is only meant to be used with the presubmit and
+// postsubmit types.
 func validateRefs(jobType JobExecutionType, refs *prowcrd.Refs) error {
+
+	switch jobType {
+	case JobExecutionType_PRESUBMIT:
+		break
+	case JobExecutionType_POSTSUBMIT:
+		break
+	default:
+		return fmt.Errorf("programmer error: validateRefs was used incorrectly for %q", jobType.String())
+	}
+
 	if refs == nil {
 		return errors.New("Refs must be supplied")
 	}
@@ -631,7 +644,7 @@ func validateRefs(jobType JobExecutionType, refs *prowcrd.Refs) error {
 		return errors.New("repo must be supplied")
 	}
 	if len(refs.BaseSHA) == 0 {
-		return errors.New("at least 1 Pulls is required")
+		return errors.New("baseSHA must be supplied")
 	}
 	if len(refs.BaseRef) == 0 {
 		return errors.New("baseRef must be supplied")
