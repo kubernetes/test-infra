@@ -33,7 +33,6 @@ import (
 	prowcrd "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/version"
 )
@@ -211,9 +210,9 @@ func getHttpRequestHeaders(ctx context.Context) (error, *metadata.MD) {
 	return nil, &md
 }
 
-// getDecoratedLoggerEntry turns on a new logger that captures all known
-// (interesting) HTTP headers of a gRPC request. We convert these headers into
-// log fields so that the logger can be very precise.
+// getDecoratedLoggerEntry captures all known (interesting) HTTP headers of a
+// gRPC request. We use these headers as log fields in the caller so that the
+// logs can be very precise.
 func getDecoratedLoggerEntry(allowedApiClient *config.AllowedApiClient, md *metadata.MD) (*logrus.Entry, error) {
 	cv, err := allowedApiClient.GetApiClientCloudVendor()
 	if err != nil {
@@ -237,12 +236,9 @@ func getDecoratedLoggerEntry(allowedApiClient *config.AllowedApiClient, md *meta
 	}
 	fields["component"] = version.Name
 
-	logrusutil.Init(&logrusutil.DefaultFieldsFormatter{
-		PrintLineNumber: true,
-		DefaultFields:   fields,
-	})
+	l := logrus.WithFields(fields)
 
-	return logrus.NewEntry(logrus.New()), nil
+	return l, nil
 }
 
 func (cjer *CreateJobExecutionRequest) Validate() error {
