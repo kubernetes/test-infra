@@ -41,7 +41,7 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 	case prowKeyType:
 		storageProvider, key, err := s.prowToGCS(key)
 		if err != nil {
-			logrus.Warningf("Failed to get gcs source for prow job: %v", err)
+			logrus.Debugf("Failed to get gcs source for prow job: %v", err)
 		}
 		gcsKey = fmt.Sprintf("%s://%s", storageProvider, key)
 	default:
