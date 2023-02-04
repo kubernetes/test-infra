@@ -364,7 +364,7 @@ type ReporterFunc func(pj *prowcrd.ProwJob, state prowcrd.ProwJobState, err erro
 
 func (cjer *CreateJobExecutionRequest) getJobHandler() (jobHandler, error) {
 	var jh jobHandler
-	switch cjer.JobExecutionType {
+	switch cjer.GetJobExecutionType() {
 	case JobExecutionType_PERIODIC:
 		jh = &periodicJobHandler{}
 	case JobExecutionType_PRESUBMIT:
@@ -372,7 +372,7 @@ func (cjer *CreateJobExecutionRequest) getJobHandler() (jobHandler, error) {
 	case JobExecutionType_POSTSUBMIT:
 		jh = &postsubmitJobHandler{}
 	default:
-		return nil, fmt.Errorf("unsupported JobExecutionType type: %s", cjer.JobExecutionType)
+		return nil, fmt.Errorf("unsupported JobExecutionType type: %s", cjer.GetJobExecutionType())
 	}
 
 	return jh, nil
@@ -429,8 +429,8 @@ func HandleProwJob(l *logrus.Entry,
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
-		l.WithError(err).WithField("name", cjer.JobName).Info("Failed getting prowjob spec")
-		prowJobCR = pjutil.NewProwJob(prowcrd.ProwJobSpec{}, nil, cjer.PodSpecOptions.Annotations)
+		l.WithError(err).WithField("name", cjer.GetJobName()).Info("Failed getting prowjob spec")
+		prowJobCR = pjutil.NewProwJob(prowcrd.ProwJobSpec{}, nil, cjer.GetPodSpecOptions().GetAnnotations())
 		if reporterFunc != nil {
 			reporterFunc(&prowJobCR, prowcrd.ErrorState, err)
 		}
@@ -484,11 +484,11 @@ func HandleProwJob(l *logrus.Entry,
 			// associated orgRepo. Then we can feed this orgRepo into
 			// mainConfig.GetProwJobDefault(orgRepo, '*') to get the tenantID from
 			// the main Config's "prowjob_default_entries" field.
-			switch cjer.JobExecutionType {
+			switch cjer.GetJobExecutionType() {
 			case JobExecutionType_POSTSUBMIT:
 				fallthrough
 			case JobExecutionType_PRESUBMIT:
-				orgRepo := fmt.Sprintf("%s/%s", cjer.Refs.Org, cjer.Refs.Repo)
+				orgRepo := fmt.Sprintf("%s/%s", cjer.GetRefs().GetOrg(), cjer.GetRefs().GetRepo())
 				jobTenantID = mainConfig.GetProwJobDefault(orgRepo, "*").TenantID
 			}
 		}
@@ -537,11 +537,11 @@ func HandleProwJob(l *logrus.Entry,
 	// field).
 	jobExec := &JobExecution{
 		Id:             prowJobCR.Name,
-		JobName:        cjer.JobName,
-		JobType:        cjer.JobExecutionType,
+		JobName:        cjer.GetJobName(),
+		JobType:        cjer.GetJobExecutionType(),
 		JobStatus:      JobExecutionStatus_TRIGGERED,
-		Refs:           cjer.Refs,
-		PodSpecOptions: cjer.PodSpecOptions,
+		Refs:           cjer.GetRefs(),
+		PodSpecOptions: cjer.GetPodSpecOptions(),
 	}
 
 	return jobExec, nil
@@ -560,7 +560,7 @@ func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *conf
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
 	for _, job := range mainConfig.AllPeriodics() {
-		if job.Name == cjer.JobName {
+		if job.Name == cjer.GetJobName() {
 			// Directly followed by break, so this is ok
 			// nolint: exportloopref
 			periodicJob = &job
@@ -568,7 +568,7 @@ func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *conf
 		}
 	}
 	if periodicJob == nil {
-		err = fmt.Errorf("failed to find associated periodic job %q", cjer.JobName)
+		err = fmt.Errorf("failed to find associated periodic job %q", cjer.GetJobName())
 		return
 	}
 
@@ -582,7 +582,7 @@ func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *conf
 type presubmitJobHandler struct {
 }
 
-func validateRefs(jobType *JobExecutionType, refs *prowcrd.Refs) error {
+func validateRefs(jobType JobExecutionType, refs *prowcrd.Refs) error {
 	if refs == nil {
 		return errors.New("Refs must be supplied")
 	}
@@ -598,7 +598,7 @@ func validateRefs(jobType *JobExecutionType, refs *prowcrd.Refs) error {
 	if len(refs.BaseRef) == 0 {
 		return errors.New("baseRef must be supplied")
 	}
-	if jobType == JobExecutionType_PRESUBMIT.Enum() && len(refs.Pulls) == 0 {
+	if jobType == JobExecutionType_PRESUBMIT && len(refs.Pulls) == 0 {
 		return errors.New("at least 1 Pulls is required")
 	}
 	return nil
@@ -606,11 +606,11 @@ func validateRefs(jobType *JobExecutionType, refs *prowcrd.Refs) error {
 
 func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
-	refs, err := ToCrdRefs(cjer.Refs)
+	refs, err := ToCrdRefs(cjer.GetRefs())
 	if err != nil {
 		return
 	}
-	if err = validateRefs(&cjer.JobExecutionType, refs); err != nil {
+	if err = validateRefs(cjer.GetJobExecutionType(), refs); err != nil {
 		return
 	}
 
@@ -620,7 +620,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *con
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
 	prefix := "https://"
-	if cjer.PodSpecOptions != nil && cjer.PodSpecOptions.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+	if cjer.GetPodSpecOptions() != nil && cjer.GetPodSpecOptions().Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
 		orgRepo = prefix + orgRepo
 	}
 	baseSHAGetter := func() (string, error) {
@@ -660,9 +660,9 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *con
 		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
 			continue
 		}
-		if job.Name == cjer.JobName {
+		if job.Name == cjer.GetJobName() {
 			if presubmitJob != nil {
-				err = fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", cjer.JobName, orgRepo)
+				err = fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", cjer.GetJobName(), orgRepo)
 				return
 			}
 			presubmitJob = &job
@@ -671,7 +671,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *con
 	// This also captures the case where fetching jobs from inrepoconfig failed.
 	// However doesn't not distinguish between this case and a wrong prow job name.
 	if presubmitJob == nil {
-		err = fmt.Errorf("failed to find associated presubmit job %q from orgRepo %q", cjer.JobName, orgRepo)
+		err = fmt.Errorf("failed to find associated presubmit job %q from orgRepo %q", cjer.GetJobName(), orgRepo)
 		return
 	}
 
@@ -686,11 +686,11 @@ type postsubmitJobHandler struct {
 
 func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// postsubmit jobs require Refs to be set
-	refs, err := ToCrdRefs(cjer.Refs)
+	refs, err := ToCrdRefs(cjer.GetRefs())
 	if err != nil {
 		return
 	}
-	if err = validateRefs(&cjer.JobExecutionType, refs); err != nil {
+	if err = validateRefs(cjer.GetJobExecutionType(), refs); err != nil {
 		return
 	}
 
@@ -700,7 +700,8 @@ func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *co
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
 	prefix := "https://"
-	if cjer.PodSpecOptions != nil && cjer.PodSpecOptions.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+	psoLabels := cjer.GetPodSpecOptions().GetLabels()
+	if psoLabels != nil && psoLabels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
 		orgRepo = prefix + orgRepo
 	}
 	baseSHAGetter := func() (string, error) {
@@ -727,9 +728,9 @@ func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *co
 		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
 			continue
 		}
-		if job.Name == cjer.JobName {
+		if job.Name == cjer.GetJobName() {
 			if postsubmitJob != nil {
-				return nil, nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", cjer.JobName, orgRepo)
+				return nil, nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", cjer.GetJobName(), orgRepo)
 			}
 			postsubmitJob = &job
 		}
@@ -737,7 +738,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *co
 	// This also captures the case where fetching jobs from inrepoconfig failed.
 	// However doesn't not distinguish between this case and a wrong prow job name.
 	if postsubmitJob == nil {
-		err = fmt.Errorf("failed to find associated postsubmit job %q from orgRepo %q", cjer.JobName, orgRepo)
+		err = fmt.Errorf("failed to find associated postsubmit job %q from orgRepo %q", cjer.GetJobName(), orgRepo)
 		return
 	}
 
