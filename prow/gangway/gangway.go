@@ -49,8 +49,8 @@ type Gangway struct {
 	InRepoConfigCacheHandler *config.InRepoConfigCacheHandler
 }
 
-// ProwJobClient is mostly for testing (for calling into the low-level
-// Kubernetes API to check whether gangway behaved correctly).
+// ProwJobClient describes a Kubernetes client for the Prow Job CR. Unlike a
+// general-purpose client, it only expects 2 methods, Create() and Get().
 type ProwJobClient interface {
 	Create(context.Context, *prowcrd.ProwJob, metav1.CreateOptions) (*prowcrd.ProwJob, error)
 	Get(context.Context, string, metav1.GetOptions) (*prowcrd.ProwJob, error)
