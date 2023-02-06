@@ -66,7 +66,7 @@ RUN rm -f $(which kubectl) && \
 # install go
 ARG GO_VERSION
 ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
-RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
+RUN wget -q "https://go.dev/dl/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     rm "${GO_TARBALL}"
 
