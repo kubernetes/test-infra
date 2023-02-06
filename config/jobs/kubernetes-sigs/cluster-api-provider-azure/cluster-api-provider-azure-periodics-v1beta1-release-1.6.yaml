@@ -1,78 +1,9 @@
 periodics:
-- name: periodic-cluster-api-provider-azure-conformance-v1beta1-release-1-6
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  interval: 24h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: release-1.7
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.25
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-conformance.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 2
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-v1beta1-release-1-6
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.6 (v1beta1)
-- name: periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts-release-1-6
-  decorate: true
-  decoration_config:
-    timeout: 4h
-  interval: 24h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-  extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: release-1.7
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.25
-        command:
-          - runner.sh
-        args:
-          - ./scripts/ci-conformance.sh
-        env:
-        - name: E2E_ARGS
-          value: "-kubetest.use-ci-artifacts"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 2
-            memory: "9Gi"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-conformance-k8s-ci-v1beta1-release-1-6
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.6 (v1beta1)
 - name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1-release-1-6
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 24h
+  interval: 72h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -81,7 +12,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.7
+      base_ref: release-1.6
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -102,11 +33,11 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-capi-e2e-v1beta1-release-1-6
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-- name: periodic-cluster-api-provider-azure-e2e-v1beta1
+- name: periodic-cluster-api-provider-azure-e2e-v1beta1-release-1-6
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 24h
+  interval: 72h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -115,7 +46,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.7
+      base_ref: release-1.6
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -140,7 +71,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 4h
-  interval: 24h
+  interval: 72h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -149,7 +80,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.7
+      base_ref: release-1.6
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
