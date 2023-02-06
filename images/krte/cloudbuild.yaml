@@ -9,7 +9,6 @@ steps:
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
     - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
-    - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
     - .
     dir: images/krte
@@ -26,7 +25,6 @@ substitutions:
   _K8S_RELEASE: stable
   _BAZEL_VERSION: 3.4.1
   _OLD_BAZEL_VERSION: 2.2.0
-  _UPGRADE_DOCKER: 'false'
   _CFSSL_VERSION: R1.2
 options:
   substitution_option: ALLOW_LOOSE

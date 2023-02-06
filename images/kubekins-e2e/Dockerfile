@@ -85,16 +85,6 @@ ARG OLD_BAZEL_VERSION
 COPY --from=old \
     /usr/local/lib/bazel/bin/bazel-real /usr/local/lib/bazel/bin/bazel-${OLD_BAZEL_VERSION}
 
-# if UPGRADE_DOCKER_ARG, then install the latest docker over whatever we have
-# in the base image.
-# TODO: after code freeze, roll out newer docker in the
-# base image and possibly remove this ...
-ARG UPGRADE_DOCKER_ARG=false
-RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
-    apt-get install -y --no-install-recommends docker-ce && \
-    rm -rf /var/lib/apt/lists/* && \
-    sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
-
 # install kind if a version is provided
 ARG KIND_VERSION
 RUN if [ -n "${KIND_VERSION}" ]; then \
