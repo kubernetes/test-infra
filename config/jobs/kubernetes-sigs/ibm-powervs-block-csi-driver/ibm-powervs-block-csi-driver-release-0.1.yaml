@@ -15,7 +15,7 @@ presubmits:
       - ^release-0.1
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.23
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230206-d7d71bff3b-1.23
          command:
          - runner.sh
          args:
@@ -39,7 +39,7 @@ presubmits:
       - ^release-0.1
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.23
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230206-d7d71bff3b-1.23
          command:
          - runner.sh
          args:
