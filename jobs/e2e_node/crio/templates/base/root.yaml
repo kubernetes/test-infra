@@ -1,0 +1,9 @@
+---
+variant: fcos
+version: 1.4.0
+storage:
+  files:
+    - path: /etc/zincati/config.d/90-disable-auto-updates.toml
+      contents:
+        local: 90-disable-auto-updates.toml
+      mode: 0644
