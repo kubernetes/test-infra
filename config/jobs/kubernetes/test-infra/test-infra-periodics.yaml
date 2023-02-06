@@ -65,7 +65,6 @@ periodics:
   spec:
     serviceAccountName: fuzz-test
     containers:
-      #TODO(mpherman) : Change to versioned once stable
     - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230201-4b504e83f1
       command:
         - runner.sh
