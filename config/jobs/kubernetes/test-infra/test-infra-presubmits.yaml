@@ -102,7 +102,7 @@ presubmits:
   - name: pull-test-infra-integration
     branches:
     - master
-    skip_if_only_changed: '^config/jobs/'
+    skip_if_only_changed: '(^config/jobs/)|(^images/)|(^scenarios/)|(^jenkins/)|(^kubetest/)'
     decorate: true
     labels:
       preset-service-account: "true"
