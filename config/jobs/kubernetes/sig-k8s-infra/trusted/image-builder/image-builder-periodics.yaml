@@ -11,7 +11,7 @@ periodics:
   spec:
     serviceAccountName: gcb-builder-cluster-api-gcp
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230206-d33fd1807d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
         args:
           - runner.sh
           - "./images/capi/scripts/ci-gce-nightly.sh"
