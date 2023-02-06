@@ -842,6 +842,30 @@ func TestPrepareMergeDetails(t *testing.T) {
 			CommitMessage: "what's changed",
 		},
 	}, {
+		name: "uses ExtractContent func for title",
+		tpl: config.TideMergeCommitTemplate{
+			Title: getTemplate("CommitTitle", `{{ .ExtractContent "^(?P<content>.+?)(\\s+\\|(\\s+[-\\w]+=[-.\\w/]+)+)?$" .Title }} (#{{ .Number }})`),
+			Body: getTemplate("CommitBody", `
+					{{- $body := print .Body -}}
+					{{- .ExtractContent "\x60\x60\x60commit-message\\r\\n(?P<content>.+)\\r\\n\x60\x60\x60" $body -}}
+				`),
+		},
+		pr: PullRequest{
+			Number:     githubql.Int(1),
+			Mergeable:  githubql.MergeableStateMergeable,
+			HeadRefOID: githubql.String("SHA"),
+			Repository: repository,
+			Title:      "my commit title | arg1=val1 arg2=val2",
+			Body:       "title\r\n```commit-message\r\nwhat's changed\r\n```\r\ncomment",
+		},
+		mergeMethod: "merge",
+		expected: github.MergeDetails{
+			SHA:           "SHA",
+			MergeMethod:   "merge",
+			CommitTitle:   "my commit title (#1)",
+			CommitMessage: "what's changed",
+		},
+	}, {
 		name: "combine all the func",
 		tpl: config.TideMergeCommitTemplate{
 			Title: getTemplate("CommitTitle", "{{ .Title }} (#{{ .Number }})"),
