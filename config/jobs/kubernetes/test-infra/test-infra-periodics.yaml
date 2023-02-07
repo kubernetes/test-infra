@@ -11,7 +11,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-test-infra
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
       command:
       - runner.sh
       args:
@@ -65,7 +65,7 @@ periodics:
   spec:
     serviceAccountName: fuzz-test
     containers:
-    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230201-4b504e83f1
+    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230206-c0c00fd127
       command:
         - runner.sh
       args:
@@ -106,7 +106,7 @@ periodics:
     serviceAccountName: fuzz-test
     containers:
       #TODO(mpherman) : Change to versioned once stable
-    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230201-4b504e83f1
+    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230206-c0c00fd127
       command:
         - runner.sh
       args:
@@ -147,7 +147,7 @@ periodics:
     serviceAccountName: fuzz-test
     containers:
       #TODO(mpherman) : Change to versioned once stable
-    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230201-4b504e83f1
+    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230206-c0c00fd127
       command:
         - runner.sh
       args:
