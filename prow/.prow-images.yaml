@@ -7,6 +7,7 @@ images:
   - dir: prow/cmd/exporter
   - dir: prow/cmd/gerrit
   - dir: prow/cmd/crier
+  - dir: prow/cmd/gangway
   - dir: prow/cmd/generic-autobumper
   - dir: prow/cmd/grandmatriarch
   - dir: prow/cmd/gcsupload
