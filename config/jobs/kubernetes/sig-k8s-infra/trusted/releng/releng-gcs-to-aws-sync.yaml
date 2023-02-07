@@ -29,7 +29,7 @@ periodics:
             - |
               aws sts get-caller-identity
               echo "initiating a sync between GCS and S3..."
-              ./hack/sync-to-s3.sh
+              ./hack/tools/sync-to-s3.sh
           env:
             - name: AWS_ROLE_ARN
               value: arn:aws:iam::513428760722:role/registry.k8s.io_s3writer
