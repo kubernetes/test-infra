@@ -81,6 +81,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -108,6 +109,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/src/github.com/org/repo"}},
+				cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/src/github.com/org/repo"}},
 				cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -136,6 +138,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir:         "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "user.name", "user"}},
 				retryCommand{
@@ -165,6 +168,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir:          "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "user.email", "user@go.com"}},
 				retryCommand{
@@ -195,6 +199,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir:        "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "http.cookiefile", "/cookie.txt"}},
 				retryCommand{
@@ -221,6 +226,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir:        "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -249,6 +255,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -275,6 +282,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@github.com/org/repo.git", "--tags", "--prune"}},
@@ -304,6 +312,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://x-access-token:xxxxx@github.com/org/repo.git", "--tags", "--prune"}},
@@ -332,6 +341,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "internet.com", "--tags", "--prune"}},
@@ -361,6 +371,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@internet.com", "--tags", "--prune"}},
@@ -390,6 +401,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/my/favorite/dir"}},
+				cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/my/favorite/dir"}},
 				cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -418,6 +430,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -448,6 +461,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -483,6 +497,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -518,6 +533,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -553,6 +569,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -589,6 +606,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
@@ -628,6 +646,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.enterprise.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "--tags", "--prune"}},
@@ -658,6 +677,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.enterprise.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "abcdef"}},
@@ -685,6 +705,7 @@ func TestCommandsForRefs(t *testing.T) {
 			dir: "/go",
 			expectedBase: []runnable{
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"config", "--global", "--add", "safe.directory", "/go/src/github.enterprise.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
 					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--depth", "2", "https://github.enterprise.com/org/repo.git", "abcdef"}},
