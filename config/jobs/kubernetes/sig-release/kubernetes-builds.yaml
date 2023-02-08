@@ -3,6 +3,7 @@ presubmits:
   - name: pull-kubernetes-cross
     optional: true
     always_run: false
+    run_if_changed: '(^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)'
     decorate: true
     labels:
       preset-dind-enabled: "true"
