@@ -509,6 +509,7 @@ periodics:
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        is:pr
         -repo:kubernetes-sigs/kind
         -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
