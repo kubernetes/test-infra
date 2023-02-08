@@ -942,9 +942,9 @@ func (g *gkeDeployer) Down() error {
 
 	operationNameBytes, err := control.Output(exec.Command(
 		"gcloud", g.containerArgs("operations", "list", "--project="+g.project,
-			g.location, "--format=value(name)", fmt.Sprintf("--filter=(status=RUNNING AND (targetLink ~ /clusters/%s$ OR targetLink ~ /clusters/%s/))", g.cluster, g.cluster))...))
+			g.location, "--format=value(name)", fmt.Sprintf("--filter=(status!=DONE AND (targetLink ~ /clusters/%s$ OR targetLink ~ /clusters/%s/))", g.cluster, g.cluster))...))
 	if err != nil {
-		return fmt.Errorf("failed to list RUNNING operations for cluster %s: %w", g.cluster, err)
+		return fmt.Errorf("failed to list not DONE operations for cluster %s: %w", g.cluster, err)
 	}
 
 	operationName := strings.TrimSpace(string(operationNameBytes))
