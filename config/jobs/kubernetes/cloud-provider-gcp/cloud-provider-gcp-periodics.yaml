@@ -323,17 +323,17 @@ periodics:
           export TEST_PACKAGE_VERSION="v1.25.0";
           echo "TEST_PACKAGE_VERSION - Falling back to v1.25.0";
         fi;
-        cd $REPO_ROOT
-        sed -i 's/^\s*k8s.io.*//g' go.mod
-        go work init .
-        go work use crd
-        go work use providers
-        go work use ${KUBE_SOURCE}
+        cd $REPO_ROOT;
+        sed -i 's/^\s*k8s.io.*//g' go.mod;
+        go work init .;
+        go work use crd;
+        go work use providers;
+        go work use ${KUBE_SOURCE};
         for i in ${KUBE_SOURCE}/staging/src/k8s.io/*; do
-            go work use ./$i
-        done
-        go work sync
-        cd -
+          go work use ./$i ;
+        done;
+        go work sync;
+        cd -;
         kubetest2 gce -v 2 --repo-root $REPO_ROOT \
           --build --up --down --test=ginkgo \
           --master-size n1-standard-2  \
