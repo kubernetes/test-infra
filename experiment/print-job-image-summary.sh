@@ -53,7 +53,7 @@ $(for i in $(image_include_exclude "gcr\.io/k8s-staging-test-infra" "^$" true | 
 "        - %-43s %s\n" "${i}" "$(image_include_exclude "gcr\.io/k8s-staging-test-infra/${i}" "^$")"; \
 done | sort -k3 -rg)
       - k8s-staging-the_rest                          $(image_include_exclude "gcr\.io/k8s-staging" "test-infra")
-      - k8s.gcr.io                                    $(image_include_exclude "k8s\.gcr\.io" "^$")
+      - registry.k8s.io                                    $(image_include_exclude "registry\.k8s\.io" "^$")
     - google.com gcp org
       - k8s-prow                                      $(image_include_exclude "gcr\.io/k8s-prow" "^$")
       - k8s-testimages                                $(image_include_exclude "gcr\.io/k8s-testimages" "^$")
