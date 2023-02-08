@@ -112,24 +112,33 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
-        name: promote-to-primary
+      - name: promote-to-primary
+        # TODO(justinsb): replace with released image once this is working
+        # Curently lacking S3 support - at least
+        #image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230208-v3.4.11-48-g689c0f3
         command:
         - /kpromo
         args:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
-        name: promote-to-mirrors
+      - name: promote-to-mirrors
+        # TODO(justinsb): replace with released image once this is working
+        # Curently lacking S3 support - at least
+        #image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230208-v3.4.11-48-g689c0f3
         command:
         - /kpromo
         args:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
-        name: promote-to-mirrors-staging
+      - name: promote-to-mirrors-staging
+        # TODO(justinsb): replace with released image once this is working
+        # Curently lacking S3 support - at least
+        #image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230208-v3.4.11-48-g689c0f3
         command:
         - /kpromo
         args:
