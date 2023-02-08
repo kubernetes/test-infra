@@ -94,3 +94,45 @@ presubmits:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
+  # WIP version of pull-k8sio-file-promo that adds mirroring to our replicas.
+  # Adds two extra containers to dry-run miroring for staging and production mirrors.
+  # TODO(justinsb): merge with pull-k8sio-file-promo once we are happy with it
+  - name: pull-k8sio-file-promo-with-mirroring
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
+      # Don't alert people on a WIP job
+      #testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+      #testgrid-num-failures-to-alert: '10'
+    decorate: true
+    skip_report: true # Don't report a WIP job on github
+    run_if_changed: '^artifacts\/(filestores|manifests)\/.*\/*.yaml'
+    max_concurrency: 10
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        name: promote-to-primary
+        command:
+        - /kpromo
+        args:
+        - run
+        - files
+        - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        name: promote-to-mirrors
+        command:
+        - /kpromo
+        args:
+        - run
+        - files
+        - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+        name: promote-to-mirrors-staging
+        command:
+        - /kpromo
+        args:
+        - run
+        - files
+        - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring-staging
