@@ -221,6 +221,12 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	var commands []runnable
 	commands = append(commands, cloneCommand{dir: "/", env: g.env, command: "mkdir", args: []string{"-p", g.cloneDir}})
 
+	// As of Git 2.35.2, running Git commands - or even parsing configuration - in a repo cloned by someone else
+	// is disallowed by default. It's almost certain that the UID of the clonerefs container run will differ from
+	// any future UIDs assigned to containers that interact with this repo, so we must mark this directory as safe
+	// so that jobs are allowed to interact with the repository.
+	commands = append(commands, g.gitCommand("config", "--global", "--add", "safe.directory", g.cloneDir))
+
 	commands = append(commands, g.gitCommand("init"))
 	if gitUserName != "" {
 		commands = append(commands, g.gitCommand("config", "user.name", gitUserName))
