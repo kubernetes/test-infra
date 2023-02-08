@@ -106,7 +106,7 @@ presubmits:
       #testgrid-num-failures-to-alert: '10'
     decorate: true
     skip_report: true # Don't report a WIP job on github
-    run_if_changed: '^artifacts\/(filestores|manifests)\/.*\/*.yaml'
+    run_if_changed: '^artifacts\/.*\/*.yaml'
     max_concurrency: 10
     branches:
     - ^main$
