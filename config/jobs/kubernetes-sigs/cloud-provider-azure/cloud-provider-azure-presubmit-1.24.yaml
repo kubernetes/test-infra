@@ -63,15 +63,15 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: TEST_CCM
+              - name: TEST_CCM # CAPZ config
                 value: "true"
-              - name: KUBERNETES_VERSION
+              - name: KUBERNETES_VERSION # CAPZ config
                 value: "latest-1.24"
-              - name: CONTROL_PLANE_MACHINE_COUNT
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
-              - name: CLUSTER_TEMPLATE
+              - name: CLUSTER_TEMPLATE # CAPZ config
                 value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
-              - name: AZURE_LOADBALANCER_SKU
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
                 value: "Standard"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-24-presubmit
@@ -119,15 +119,15 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: TEST_CCM
+              - name: TEST_CCM # CAPZ config
                 value: "true"
-              - name: AZURE_LOADBALANCER_SKU
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
                 value: "standard"
-              - name: KUBERNETES_VERSION
+              - name: KUBERNETES_VERSION # CAPZ config
                 value: "latest-1.24"
-              - name: GINKGO_ARGS
+              - name: GINKGO_ARGS # cloud-provider-azure config
                 value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
-              - name: CONTROL_PLANE_MACHINE_COUNT
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-24-presubmit
@@ -169,13 +169,13 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: TEST_CCM
+              - name: TEST_CCM # CAPZ config
                 value: "true"
-              - name: AZURE_LOADBALANCER_SKU
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
                 value: "standard"
-              - name: KUBERNETES_VERSION
+              - name: KUBERNETES_VERSION # CAPZ config
                 value: "latest-1.24"
-              - name: CONTROL_PLANE_MACHINE_COUNT
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-24-presubmit

@@ -38,7 +38,7 @@ presubmits:
               cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
               value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
           securityContext:
             privileged: true
@@ -88,9 +88,9 @@ presubmits:
               cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
               value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-            - name: EXP_MACHINE_POOL
+            - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
           securityContext:
             privileged: true
@@ -141,7 +141,7 @@ presubmits:
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
               value: "kubernetes.io/azure-file" # In-tree Azure file storage class
           securityContext:
             privileged: true
@@ -192,9 +192,9 @@ presubmits:
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
               value: "kubernetes.io/azure-file" # In-tree Azure file storage class
-            - name: EXP_MACHINE_POOL
+            - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
           securityContext:
             privileged: true
@@ -370,9 +370,9 @@ periodics:
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "latest"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
@@ -422,11 +422,11 @@ periodics:
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "latest"
-      - name: EXP_MACHINE_POOL
+      - name: EXP_MACHINE_POOL # CAPZ config
         value: "true"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
@@ -475,9 +475,9 @@ periodics:
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "latest"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
@@ -526,11 +526,11 @@ periodics:
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "latest"
-      - name: EXP_MACHINE_POOL
+      - name: EXP_MACHINE_POOL # CAPZ config
         value: "true"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
@@ -619,9 +619,9 @@ periodics:
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "latest"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
@@ -671,11 +671,11 @@ periodics:
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "latest"
-      - name: EXP_MACHINE_POOL
+      - name: EXP_MACHINE_POOL # CAPZ config
         value: "true"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
@@ -724,9 +724,9 @@ periodics:
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "latest"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
@@ -775,11 +775,11 @@ periodics:
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "latest"
-      - name: EXP_MACHINE_POOL
+      - name: EXP_MACHINE_POOL # CAPZ config
         value: "true"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
