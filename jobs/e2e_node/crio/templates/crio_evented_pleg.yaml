@@ -7,11 +7,38 @@ storage:
       contents:
         local: 90-disable-auto-updates.toml
       mode: 0644
+    - path: /etc/ssh-key-secret/ssh-public
+      contents:
+        inline: GCE_SSH_PUBLIC_KEY_FILE_CONTENT
+      mode: 0644
+    - path: /etc/crio/crio.conf.d/40-evented-pleg.conf
+      contents:
+        local: 40-evented-pleg.conf
+      mode: 0644
 kernel_arguments:
   should_exist:
     - systemd.unified_cgroup_hierarchy=0
 systemd:
   units:
+    - name: authorized-key.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Copy authorized keys
+        Before=crio-install.service
+        After=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c '\
+          /usr/bin/mkdir -m 0700 -p /home/core/.ssh && \
+          /usr/bin/cat /etc/ssh-key-secret/ssh-public \
+            >> /home/core/.ssh/authorized_keys && \
+          /usr/bin/chown -R core:core /home/core/.ssh && \
+          /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'
+
+        [Install]
+        WantedBy=multi-user.target
     - name: dbus-tools-install.service
       enabled: true
       contents: |

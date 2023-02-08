@@ -1,34 +1,6 @@
 ---
-variant: fcos
-version: 1.4.0
-storage:
-  files:
-    - path: /etc/zincati/config.d/90-disable-auto-updates.toml
-      contents:
-        local: 90-disable-auto-updates.toml
-      mode: 0644
-kernel_arguments:
-  should_exist:
-    - systemd.unified_cgroup_hierarchy=0
 systemd:
   units:
-    - name: dbus-tools-install.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Download and install dbus-tools.
-        Before=crio-install.service
-        After=network-online.target
-
-        [Service]
-        Type=oneshot
-        ExecStart=/usr/bin/rpm-ostree install \
-          --apply-live \
-          --allow-inactive \
-          dbus-tools
-
-        [Install]
-        WantedBy=multi-user.target
     - name: crio-install.service
       enabled: true
       contents: |

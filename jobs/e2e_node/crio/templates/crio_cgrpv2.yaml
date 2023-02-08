@@ -7,9 +7,6 @@ storage:
       contents:
         local: 90-disable-auto-updates.toml
       mode: 0644
-kernel_arguments:
-  should_exist:
-    - systemd.unified_cgroup_hierarchy=0
 systemd:
   units:
     - name: dbus-tools-install.service

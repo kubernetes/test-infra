@@ -12,13 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CONTAINER_RUNTIME ?= $(if $(shell which podman 2>/dev/null),podman,docker)
-
 all:
-	$(CONTAINER_RUNTIME) run \
-		-i \
-		--rm \
-		--pull always \
-		-v $(shell pwd):/w -w /w \
-		quay.io/coreos/butane:release \
-		-ps -d templates < templates/crio.yaml > crio.ign
+	templates/generate
