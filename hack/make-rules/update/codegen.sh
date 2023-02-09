@@ -37,17 +37,17 @@ source ./hack/build/setup-go.sh
 echo "Install codegen tools."
 cd "hack/tools"
 clientgen=${REPO_ROOT}/_bin/client-gen
-go build -o "${REPO_ROOT}/_bin/client-gen" k8s.io/code-generator/cmd/client-gen
+go build -o "${clientgen}" k8s.io/code-generator/cmd/client-gen
 deepcopygen=${REPO_ROOT}/_bin/deepcopy-gen
-go build -o "${REPO_ROOT}/_bin/deepcopy-gen" k8s.io/code-generator/cmd/deepcopy-gen
+go build -o "${deepcopygen}" k8s.io/code-generator/cmd/deepcopy-gen
 informergen=${REPO_ROOT}/_bin/informer-gen
-go build -o "${REPO_ROOT}/_bin/informer-gen" k8s.io/code-generator/cmd/informer-gen
+go build -o "${informergen}" k8s.io/code-generator/cmd/informer-gen
 listergen=${REPO_ROOT}/_bin/lister-gen
-go build -o "${REPO_ROOT}/_bin/lister-gen" k8s.io/code-generator/cmd/lister-gen
+go build -o "${listergen}" k8s.io/code-generator/cmd/lister-gen
 go_bindata=${REPO_ROOT}/_bin/go-bindata
-go build -o "${REPO_ROOT}/_bin/go-bindata" github.com/go-bindata/go-bindata/v3/go-bindata
+go build -o "${go_bindata}" github.com/go-bindata/go-bindata/v3/go-bindata
 controller_gen=${REPO_ROOT}/_bin/controller-gen
-go build -o "${REPO_ROOT}/_bin/controller-gen" sigs.k8s.io/controller-tools/cmd/controller-gen
+go build -o "${controller_gen}" sigs.k8s.io/controller-tools/cmd/controller-gen
 protoc_gen_go="${REPO_ROOT}/_bin/protoc-gen-go" # golang protobuf plugin
 GOBIN="${REPO_ROOT}/_bin" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 GOBIN="${REPO_ROOT}/_bin" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
