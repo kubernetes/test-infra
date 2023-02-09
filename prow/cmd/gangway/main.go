@@ -29,19 +29,26 @@ import (
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/gangway"
 	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/metrics"
-
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 )
+
+// Empty string represents the overall health of all gRPC services. See
+// https://github.com/grpc/grpc/blame/e699e0135e4d59e3763e7bdea5fff002cc2efab3/doc/health-checking.md#L64.
+const serviceNameForHealthCheckGrpc = ""
 
 type options struct {
 	client         prowflagutil.KubernetesOptions
@@ -161,7 +168,7 @@ func main() {
 	metrics.ExposeMetrics("gangway", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	// Start serving liveness endpoint /healthz.
-	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
+	healthHTTP := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	gw := gangway.Gangway{
 		ConfigAgent:              configAgent,
@@ -184,6 +191,18 @@ func main() {
 	gangway.RegisterProwServer(grpcServer, &gw)
 	grpc_prometheus.Register(grpcServer)
 
+	// Create gRPC health check endpoint and add it to our server. This can be
+	// used by the ESPv2 proxy container if Gangway is deployed for Cloud
+	// Endpoints.
+	//
+	// Note that this just configures our gRPC server to be able to respond to
+	// native gRPC health check requests. The actual serving of these health
+	// check requests will only happen when we finally call
+	// interrupts.ListenAndServe() down below.
+	healthcheckGrpc := health.NewServer()
+	healthgrpc.RegisterHealthServer(grpcServer, healthcheckGrpc)
+	healthcheckGrpc.SetServingStatus(serviceNameForHealthCheckGrpc, healthpb.HealthCheckResponse_SERVING)
+
 	// Register reflection service on gRPC server. This enables testing through
 	// clients that don't have the generated stubs baked in, such as grpcurl.
 	reflection.Register(grpcServer)
@@ -194,11 +213,13 @@ func main() {
 		port:       o.port,
 	}
 
-	// Start serving readiness endpoint /healthz/ready.
-	health.ServeReady()
+	// Start serving readiness endpoint /healthz/ready. Note that this is a
+	// workaround for older Kubernetes clusters (older than K8s 1.24) that do
+	// not support native gRPC health checks.
+	healthHTTP.ServeReady()
 
-	// Start serving requests! Note that ListenAndServe() does not block, while
-	// WaitForGracefulShutdown() does block.
+	// Start serving gRPC requests! Note that ListenAndServe() does not block,
+	// while WaitForGracefulShutdown() does block.
 	interrupts.ListenAndServe(s, o.gracePeriod)
 	interrupts.WaitForGracefulShutdown()
 	logrus.Info("Ended gracefully")
