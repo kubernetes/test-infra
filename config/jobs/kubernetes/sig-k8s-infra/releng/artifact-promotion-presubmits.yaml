@@ -116,7 +116,7 @@ presubmits:
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
         #image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
-        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230208-v3.4.11-48-g689c0f3
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230209-v3.4.11-54-ga7bc54b
         command:
         - /kpromo
         args:
@@ -127,7 +127,7 @@ presubmits:
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
         #image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
-        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230208-v3.4.11-48-g689c0f3
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230209-v3.4.11-54-ga7bc54b
         command:
         - /kpromo
         args:
@@ -138,7 +138,7 @@ presubmits:
         # TODO(justinsb): replace with released image once this is working
         # Curently lacking S3 support - at least
         #image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
-        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230208-v3.4.11-48-g689c0f3
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230209-v3.4.11-54-ga7bc54b
         command:
         - /kpromo
         args:
