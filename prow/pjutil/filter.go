@@ -29,6 +29,9 @@ import (
 
 var TestAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
 
+// TestRe provides the regex for `/test` command
+var TestRe = regexp.MustCompile(`(?m)^/test\s*?($|\s.*)`)
+
 // RetestRe provides the regex for `/retest`
 var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
