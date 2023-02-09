@@ -8,7 +8,7 @@ presubmits:
       testgrid-dashboards: sig-k8s-infra-k8sio
     decorate: true
     skip_report: false
-    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    run_if_changed: 'registry.k8s.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     max_concurrency: 10
     branches:
     - ^main$
@@ -19,7 +19,7 @@ presubmits:
         - /kpromo
         args:
         - cip
-        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
         - --use-prow-manifest-diff
         resources:
           limits:
@@ -36,7 +36,7 @@ presubmits:
     decorate: true
     optional: true
     skip_report: false
-    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    run_if_changed: 'registry.k8s.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     max_concurrency: 10
     branches:
     - ^vuln-check-test$
@@ -48,7 +48,7 @@ presubmits:
         - /kpromo
         args:
         - cip
-        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
         - --use-prow-manifest-diff
         - --vuln-severity-threshold=1
   # Check that changes to backup scripts are valid.

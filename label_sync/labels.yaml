@@ -1022,8 +1022,8 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: Code in k8s.gcr.io/
-        name: area/k8s.gcr.io
+        description: Code in registry.k8s.io/
+        name: area/registry.k8s.io
         target: both
         prowPlugin: label
         addedBy: anyone
