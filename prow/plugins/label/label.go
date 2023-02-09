@@ -37,6 +37,7 @@ const (
 
 var (
 	defaultLabels          = []string{"kind", "priority", "area"}
+	needsLabels            = []string{"kind", "priority", "sig", "triage"} // "needs-*"
 	commentRegex           = regexp.MustCompile(`(?s)<!--(.*?)-->`)
 	labelRegex             = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*?)\s*$`)
 	removeLabelRegex       = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*?)\s*$`)
@@ -168,6 +169,10 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 	if err != nil {
 		return err
 	}
+	issueLabels := make([]string, len(labels))
+	for i, l := range labels {
+		issueLabels[i] = l.Name
+	}
 
 	RepoLabelsExisting := sets.String{}
 	for _, l := range repoLabels {
@@ -196,6 +201,24 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 	// Get labels to add and labels to remove from regexp matches
 	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, labelFilter, &nonexistent)...)
 	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches), getLabelsFromGenericMatches(customRemoveLabelMatches, labelFilter, &nonexistent)...)
+
+	for _, needsCategory := range needsLabels {
+		needsLabel := fmt.Sprintf("needs-%s", needsCategory)
+		if !RepoLabelsExisting.Has(needsLabel) {
+			// Repo doesn't have the needs-* label.
+			continue
+		}
+		removed := labelsWithCategory(labelsToRemove, needsCategory)
+		if removed.Len() == 0 || labelsWithCategory(labelsToAdd, needsCategory).Len() > 0 {
+			// If a category is not being removed, or also being added, don't add needs-* label.
+			continue
+		}
+		if removed.IsSuperset(labelsWithCategory(issueLabels, needsCategory)) {
+			// If all the labels in a needed category are being removed, add the needs-* label.
+			labelsToAdd = append(labelsToAdd, needsLabel)
+		}
+	}
+
 	// Add labels
 	for _, labelToAdd := range labelsToAdd {
 		if github.HasLabel(labelToAdd, labels) {
@@ -334,4 +357,15 @@ func handleLabelAdd(gc githubClient, log *logrus.Entry, config plugins.Label, e 
 		}
 	}
 	return nil
+}
+
+func labelsWithCategory(labels []string, category string) sets.String {
+	categorized := sets.String{}
+	prefix := category + "/"
+	for _, s := range labels {
+		if strings.HasPrefix(s, prefix) {
+			categorized.Insert(s)
+		}
+	}
+	return categorized
 }
