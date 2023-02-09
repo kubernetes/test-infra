@@ -330,7 +330,7 @@ periodics:
         go work use providers;
         go work use ${KUBE_SOURCE};
         for i in ${KUBE_SOURCE}/staging/src/k8s.io/*; do
-          go work use ./$i ;
+          go work use $i ;
         done;
         go work sync;
         cd -;
