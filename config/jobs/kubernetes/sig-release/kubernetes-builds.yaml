@@ -3,12 +3,13 @@ presubmits:
   - name: pull-kubernetes-cross
     optional: true
     always_run: false
+    run_if_changed: '(^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)'
     decorate: true
     labels:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20230126-215ae799eb
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20230206-22f4807bdc
         command:
         - runner.sh
         args:

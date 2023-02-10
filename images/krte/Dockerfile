@@ -70,8 +70,8 @@ RUN echo "Installing Packages ..." \
             unzip \
         && rm -rf /var/lib/apt/lists/* \
     && echo "Installing Go ..." \
-        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"\
-        && curl -fsSL "https://storage.googleapis.com/golang/${GO_TARBALL}" --output "${GO_TARBALL}" \
+        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz" \
+        && curl -fsSL "https://go.dev/dl/${GO_TARBALL}" --output "${GO_TARBALL}" \
         && tar xzf "${GO_TARBALL}" -C /usr/local \
         && rm "${GO_TARBALL}"\
         && mkdir -p "${GOPATH}/bin" \
@@ -91,7 +91,7 @@ RUN echo "Installing Packages ..." \
             "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
             $(lsb_release -cs) stable" \
         && apt-get update \
-        && apt-get install -y --no-install-recommends docker-ce \
+        && apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin \
         && rm -rf /var/lib/apt/lists/* \
         && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
     && echo "Ensuring Legacy Iptables ..." \

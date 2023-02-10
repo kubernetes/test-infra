@@ -29,22 +29,26 @@ import (
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+
 	"k8s.io/test-infra/pkg/flagutil"
-	prowcr "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/gangway"
 	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/metrics"
-
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
 )
+
+// Empty string represents the overall health of all gRPC services. See
+// https://github.com/grpc/grpc/blame/e699e0135e4d59e3763e7bdea5fff002cc2efab3/doc/health-checking.md#L64.
+const serviceNameForHealthCheckGrpc = ""
 
 type options struct {
 	client         prowflagutil.KubernetesOptions
@@ -87,19 +91,6 @@ func (o *options) validate() error {
 	}
 
 	return utilerrors.NewAggregate(errs)
-}
-
-type kubeClient struct {
-	client prowv1.ProwJobInterface
-	dryRun bool
-}
-
-// Create creates a Prow Job CR in the Kubernetes cluster (Prow service cluster).
-func (c *kubeClient) Create(ctx context.Context, job *prowcr.ProwJob, o metav1.CreateOptions) (*prowcr.ProwJob, error) {
-	if c.dryRun {
-		return job, nil
-	}
-	return c.client.Create(ctx, job, o)
 }
 
 // interruptableServer is a wrapper type around the gRPC server, so that we can
@@ -156,10 +147,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
 	}
-	kubeClient := &kubeClient{
-		client: prowjobClient,
-		dryRun: o.dryRun,
-	}
 
 	// If we are provided credentials for Git hosts, use them. These credentials
 	// hold per-host information in them so it's safe to set them globally.
@@ -181,11 +168,11 @@ func main() {
 	metrics.ExposeMetrics("gangway", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	// Start serving liveness endpoint /healthz.
-	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
+	healthHTTP := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	gw := gangway.Gangway{
 		ConfigAgent:              configAgent,
-		ProwJobClient:            kubeClient,
+		ProwJobClient:            prowjobClient,
 		InRepoConfigCacheHandler: cacheGetter,
 	}
 
@@ -204,6 +191,18 @@ func main() {
 	gangway.RegisterProwServer(grpcServer, &gw)
 	grpc_prometheus.Register(grpcServer)
 
+	// Create gRPC health check endpoint and add it to our server. This can be
+	// used by the ESPv2 proxy container if Gangway is deployed for Cloud
+	// Endpoints.
+	//
+	// Note that this just configures our gRPC server to be able to respond to
+	// native gRPC health check requests. The actual serving of these health
+	// check requests will only happen when we finally call
+	// interrupts.ListenAndServe() down below.
+	healthcheckGrpc := health.NewServer()
+	healthgrpc.RegisterHealthServer(grpcServer, healthcheckGrpc)
+	healthcheckGrpc.SetServingStatus(serviceNameForHealthCheckGrpc, healthpb.HealthCheckResponse_SERVING)
+
 	// Register reflection service on gRPC server. This enables testing through
 	// clients that don't have the generated stubs baked in, such as grpcurl.
 	reflection.Register(grpcServer)
@@ -214,11 +213,13 @@ func main() {
 		port:       o.port,
 	}
 
-	// Start serving readiness endpoint /healthz/ready.
-	health.ServeReady()
+	// Start serving readiness endpoint /healthz/ready. Note that this is a
+	// workaround for older Kubernetes clusters (older than K8s 1.24) that do
+	// not support native gRPC health checks.
+	healthHTTP.ServeReady()
 
-	// Start serving requests! Note that ListenAndServe() does not block, while
-	// WaitForGracefulShutdown() does block.
+	// Start serving gRPC requests! Note that ListenAndServe() does not block,
+	// while WaitForGracefulShutdown() does block.
 	interrupts.ListenAndServe(s, o.gracePeriod)
 	interrupts.WaitForGracefulShutdown()
 	logrus.Info("Ended gracefully")

@@ -22,7 +22,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -82,6 +82,9 @@ periodics:
     cron: "0 * * * MON-SAT"
     decorate: true
     path_alias: k8s.io/perf-tests
+    tags:
+      - "perfDashPrefix: hourly-soak-tests-capz-windows-2019"
+      - "perfDashJobType: windows"
     labels:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
@@ -97,21 +100,23 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
           args:
             - bash
             - -c
             - >-
+              source ./hack/parse-prow-creds.sh &&
               ./hack/ensure-azcli.sh &&
               az keyvault secret show
               --vault-name win-soak-test
               --name win-soak-test-kubeconfig
-              --query value -o tsv | base64 --decode > /root/.kube/win-soak-test.kubeconfig &&
+              --query value -o tsv | base64 --decode > ./kubeconfig &&
+              cp ./kubeconfig ${GOPATH}/src/k8s.io/perf-tests/kubeconfig &&
               cd ${GOPATH}/src/k8s.io/perf-tests/ &&
               ./run-e2e.sh cluster-loader2
-              --kubeconfig /root/.kube/win-soak-test.kubeconfig
+              --kubeconfig ${GOPATH}/src/k8s.io/perf-tests/kubeconfig
               --testconfig=testing/windows-tests/config.yaml
               --provider=aks
               --report-dir=${ARTIFACTS}
@@ -153,11 +158,14 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
           args:
+            - bash
+            - -c
             - >-
+              source ./hack/parse-prow-creds.sh &&
               ./hack/ensure-azcli.sh &&
               az
               group
@@ -190,7 +198,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -258,7 +266,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh

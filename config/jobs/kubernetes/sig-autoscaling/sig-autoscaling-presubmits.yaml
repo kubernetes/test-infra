@@ -44,6 +44,69 @@ presubmits:
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=400m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         securityContext:
           privileged: true
+
+  - name: pull-kubernetes-e2e-autoscaling-hpa-cpu
+    annotations:
+      testgrid-dashboards: sig-autoscaling-hpa
+      testgrid-tab-name: gci-gce-autoscaling-hpa-cpu-pull
+    # TODO: set `always_run: true` once config confirmed to be correct
+    always_run: false
+    # TODO: set `optional: false` once tests not flaky
+    optional: true
+    run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/horizontal_pod_autoscaling|test\/e2e\/framework\/autoscaling\/)'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - args:
+        - --bare
+        - --timeout=260
+        - --scenario=kubernetes_e2e
+        - --
+        - --check-leaked-resources
+        - --provider=gce
+        - --gcp-zone=us-west1-b
+        - --gcp-node-image=gci
+        # Enable HPAContainerMetrics. Required for container metrics tests.
+        - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
+        - --extract=ci/latest
+        - --timeout=240m
+        - --test_args=--ginkgo.focus=\[Feature:HPA\]
+          --minStartupPods=8
+        - --ginkgo-parallel=1
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+
+  - name: pull-kubernetes-e2e-autoscaling-hpa-cm
+    annotations:
+      testgrid-dashboards: sig-autoscaling-hpa
+      testgrid-tab-name: gci-gce-autoscaling-hpa-cm-pull
+    # TODO: set `always_run: true` once config confirmed to be correct
+    always_run: false
+    # TODO: set `optional: false` once tests not flaky
+    optional: true
+    run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/custom_metrics_stackdriver_autoscaling.go$)'
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - args:
+        - --timeout=350
+        - --bare
+        - --scenario=kubernetes_e2e
+        - --
+        - --cluster=hpa
+        - --extract=ci/latest
+        - --gcp-node-image=gci
+        - --gcp-project=k8s-jkns-gci-autoscaling
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
+        - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
+        - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --timeout=300m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master

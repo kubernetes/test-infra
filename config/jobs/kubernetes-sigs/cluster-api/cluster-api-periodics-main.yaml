@@ -12,9 +12,10 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.26
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.26
       command:
-      - "./scripts/ci-test.sh"
+      - runner.sh
+      - ./scripts/ci-test.sh
       resources:
         requests:
           cpu: 7300m
@@ -36,9 +37,10 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.26
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.26
       command:
-      - "./scripts/ci-test.sh"
+      - runner.sh
+      - ./scripts/ci-test.sh
       env:
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
@@ -75,7 +77,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -113,7 +115,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-1.26
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.26
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"

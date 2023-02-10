@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -39,7 +39,7 @@ periodics:
 #     preset-k8s-ssh: "true"
 #   spec:
 #     containers:
-#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
 #       args:
 #       - --root=/go/src
 #       - --repo=k8s.io/kubernetes
@@ -72,7 +72,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -104,7 +104,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -136,7 +136,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -168,7 +168,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -200,7 +200,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -232,7 +232,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=120
@@ -264,7 +264,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=120
@@ -289,3 +289,46 @@ periodics:
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-hugepages
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Executes hugepages e2e tests"
+- name: ci-crio-cgroupv1-evented-pleg
+  interval: 3h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        args:
+          - --root=/go/src
+          - --repo=k8s.io/kubernetes
+          - --timeout=240
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --env=KUBE_SSH_USER=core
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock
+            --container-runtime-process-name=/usr/local/bin/crio
+            --container-runtime-pid-file=
+            --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true
+            --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service
+            --kubelet-cgroups=/system.slice/kubelet.service
+            --feature-gates=EventedPLEG=true" --extra-log="{\"name\":
+            \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]"
+            --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          - --timeout=180m
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-evented-pleg.yaml
+        env:
+          - name: GOPATH
+            value: /go
+          - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+            value: "1"
+  annotations:
+    testgrid-dashboards: sig-node-cri-o
+    testgrid-tab-name: ci-crio-cgroupv1-evented-pleg
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "OWNER: sig-node; runs NodeConformance e2e tests with crio master,
+      cgroup v1 and the evented pleg feature enabled"

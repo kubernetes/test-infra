@@ -94,7 +94,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -135,7 +135,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -180,7 +180,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -223,7 +223,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -266,7 +266,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -312,7 +312,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -357,7 +357,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -399,7 +399,7 @@ periodics:
 #     path_alias: sigs.k8s.io/azurefile-csi-driver
 #   spec:
 #     containers:
-#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
 #         command:
 #           - runner.sh
 #           - ./scripts/ci-entrypoint.sh
@@ -439,7 +439,7 @@ periodics:
     workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -466,6 +466,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-capz-windows-common-main: "true"
+    preset-capz-windows-2022: "true"
     preset-windows-private-registry-cred: "true"
   extra_refs:
   # Use Mark's fork/branch until image building issues are resolved
@@ -473,17 +474,12 @@ periodics:
     repo: cluster-api-provider-azure
     base_ref: windows-service-proxy
     path_alias: sigs.k8s.io/cluster-api-provider-azure
-  - org: kubernetes-sigs
-    repo: windows-testing
-    base_ref: master
-    path_alias: sigs.k8s.io/windows-testing
-    workdir: true
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230126-4c28746697-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
-          - "./capz/run-capz-e2e.sh"
+          - "./scripts/ci-conformance.sh"
         securityContext:
           privileged: true
         resources:

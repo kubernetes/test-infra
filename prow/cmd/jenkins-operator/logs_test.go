@@ -19,39 +19,36 @@ package main
 import "testing"
 
 func Test_getRealJenkinsLogPath(t *testing.T) {
-	type args struct {
-		path string
-	}
 	tests := []struct {
 		name    string
-		args    args
+		path    string
 		want    string
 		wantErr bool
 	}{
 		{
 			name: "flatten job",
-			args: args{path: "/job/abc/1/consoleText"},
+			path: "/job/abc/1/consoleText",
 			want: "/job/abc/1/consoleText",
 		},
 		{
 			name: "nested job",
-			args: args{path: "job/folder-l1/foleer-L2/the-job/1/consoleText"},
+			path: "job/folder-l1/foleer-L2/the-job/1/consoleText",
 			want: "job/folder-l1/job/foleer-L2/job/the-job/1/consoleText",
 		},
 		{
-			name: "nested job with lead splash",
-			args: args{path: "/job/folder-l1/foleer-L2/the-job/1/consoleText"},
+			name: "nested job with lead slash",
+			path: "/job/folder-l1/foleer-L2/the-job/1/consoleText",
 			want: "/job/folder-l1/job/foleer-L2/job/the-job/1/consoleText",
 		},
 		{
 			name:    "invalid nested job",
-			args:    args{path: "job/.folder-l1/foleer-L2/the-job./1/consoleText"},
+			path:    "job/.folder-l1/foleer-L2/the-job./1/consoleText",
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getRealJenkinsLogPath(tt.args.path)
+			got, err := getRealJenkinsLogPath(tt.path)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getRealJenkinsLogPath() error = %v, wantErr %v", err, tt.wantErr)
 				return

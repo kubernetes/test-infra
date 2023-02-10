@@ -13,10 +13,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20230127-c2d8597baa"
-        initupload: "gcr.io/k8s-prow/initupload:v20230127-c2d8597baa"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20230127-c2d8597baa"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20230127-c2d8597baa"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20230209-f319bbff04"
+        initupload: "gcr.io/k8s-prow/initupload:v20230209-f319bbff04"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20230209-f319bbff04"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20230209-f319bbff04"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -572,6 +572,22 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cloud-provider-azure:
+          exclude:
+            - "^doc/" # don't protect branches created by release note github action
+          branches:
+            master:
+              protect: true
+            release-1.23:
+              protect: true
+            release-1.24:
+              protect: true
+            release-1.25:
+              protect: true
+            release-1.26:
+              protect: true
+            kubetest2-aks:
+              protect: true
         descheduler:
           branches:
             gh-pages:

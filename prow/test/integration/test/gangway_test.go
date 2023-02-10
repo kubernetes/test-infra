@@ -19,21 +19,14 @@ package integration
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
-	coreapi "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/kubernetes"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/gangway"
+	gangwayGoogleClient "k8s.io/test-infra/prow/gangway/client/google"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/test/integration/internal/fakegitserver"
 )
@@ -70,11 +63,11 @@ presubmits:
 	CreateRepo1 := createGerritRepo("TestGangway1", fmt.Sprintf(ProwJobDecorated, "1", "1"))
 
 	tests := []struct {
-		name       string
-		repoSetups []fakegitserver.RepoSetup
-		metadata   []string
-		msg        *gangway.CreateJobExecutionRequest
-		want       string
+		name          string
+		repoSetups    []fakegitserver.RepoSetup
+		projectNumber string
+		msg           *gangway.CreateJobExecutionRequest
+		want          string
 	}{
 		{
 			name: "inrepoconfig-presubmit",
@@ -85,9 +78,7 @@ presubmits:
 					Overwrite: true,
 				},
 			},
-			metadata: []string{
-				"x-endpoint-api-consumer-type", "PROJECT",
-				"x-endpoint-api-consumer-number", "123"},
+			projectNumber: "123",
 			msg: &gangway.CreateJobExecutionRequest{
 				JobName:          "trigger-inrepoconfig-presubmit-via-gangway1",
 				JobExecutionType: gangway.JobExecutionType_PRESUBMIT,
@@ -122,10 +113,8 @@ this-is-from-repoTestGangway1
 `,
 		},
 		{
-			name: "mainconfig-periodic",
-			metadata: []string{
-				"x-endpoint-api-consumer-type", "PROJECT",
-				"x-endpoint-api-consumer-number", "123"},
+			name:          "mainconfig-periodic",
+			projectNumber: "123",
 			msg: &gangway.CreateJobExecutionRequest{
 				JobName:          "trigger-mainconfig-periodic-via-gangway1",
 				JobExecutionType: gangway.JobExecutionType_PERIODIC,
@@ -166,23 +155,17 @@ this-is-from-repoTestGangway1
 			t.Parallel()
 
 			// Set up a connection to gangway.
-			conn, err := grpc.Dial(":32000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+			c, err := gangwayGoogleClient.NewInsecure(":32000", tt.projectNumber)
 			if err != nil {
-				log.Fatalf("did not connect: %v", err)
+				t.Fatal(err)
 			}
-			defer conn.Close()
 
-			prowClient := gangway.NewProwClient(conn)
+			defer c.Close()
 
 			ctx := context.Background()
-			ctx = metadata.NewOutgoingContext(
-				ctx,
-				metadata.Pairs(tt.metadata...),
-			)
+			ctx = c.EmbedProjectNumber(ctx)
 
 			var prowjob prowjobv1.ProwJob
-			var prowjobList prowjobv1.ProwJobList
-			var podName *string
 
 			clusterContext := getClusterContext()
 			t.Logf("Creating client for cluster: %s", clusterContext)
@@ -190,11 +173,6 @@ this-is-from-repoTestGangway1
 			restConfig, err := NewRestConfig("", clusterContext)
 			if err != nil {
 				t.Fatalf("could not create restConfig: %v", err)
-			}
-
-			clientset, err := kubernetes.NewForConfig(restConfig)
-			if err != nil {
-				t.Fatalf("could not create Clientset: %v", err)
 			}
 
 			kubeClient, err := ctrlruntimeclient.New(restConfig, ctrlruntimeclient.Options{})
@@ -220,99 +198,19 @@ this-is-from-repoTestGangway1
 
 			// Use Prow API to create the job through gangway. This is a gRPC
 			// call.
-			jobExecution, err := prowClient.CreateJobExecution(ctx, tt.msg)
+			jobExecution, err := c.GRPC.CreateJobExecution(ctx, tt.msg)
 			if err != nil {
 				t.Fatalf("Failed to create job execution: %v", err)
 			}
 			fmt.Println(jobExecution)
 
-			// We expect the job to have succeeded. This is mostly copy/pasted
-			// from the pod-utils_test.go file next to this file.
-			//
-			// Testing that the job has succeeded is useful because if there are
-			// any refs defined, those refs need to be cloned as well. So it
-			// tests more components (clonerefs, initupload, etc). In this
-			// sense, the tests here can be thought of as a superset of the
-			// TestClonerefs test in pod-utils_test.go.
-			expectJobSuccess := func() (bool, error) {
-				err = kubeClient.List(ctx, &prowjobList, ctrlruntimeclient.MatchingLabels{"integration-test/uid": uid})
-				if err != nil {
-					t.Logf("failed getting prow job with label: %s", uid)
-					return false, nil
-				}
-				if len(prowjobList.Items) != 1 {
-					t.Logf("unexpected number of matching prow jobs: %d", len(prowjobList.Items))
-					return false, nil
-				}
-				prowjob = prowjobList.Items[0]
-				// The pod name should match the job name (this is another UID,
-				// distinct from the uid we generated above).
-				podName = &prowjob.Name
-				switch prowjob.Status.State {
-				case prowjobv1.SuccessState:
-					got, err := getPodLogs(clientset, "test-pods", *podName, &coreapi.PodLogOptions{Container: "test"})
-					if err != nil {
-						t.Errorf("failed getting logs for clonerefs")
-						return false, nil
-					}
-					if diff := cmp.Diff(got, tt.want); diff != "" {
-						return false, fmt.Errorf("actual logs differ from expected: %s", diff)
-					}
-					return true, nil
-				case prowjobv1.FailureState:
-					return false, fmt.Errorf("possible programmer error: prow job %s failed", *podName)
-				default:
-					return false, nil
-				}
-			}
-
-			// This is also mostly copy/pasted from pod-utils_test.go. The logic
-			// here deals with the case where the test fails (where we want to
-			// log as much as possible to make it easier to see why a test
-			// failed), or when the test succeeds (where we clean up the ProwJob
-			// that was created by sub).
+			// We expect the job to have succeeded.
 			timeout := 120 * time.Second
 			pollInterval := 500 * time.Millisecond
-			if waitErr := wait.Poll(pollInterval, timeout, expectJobSuccess); waitErr != nil {
-				if podName == nil {
-					t.Fatal("could not find test pod")
-				}
-				// Retrieve logs from clonerefs.
-				podLogs, err := getPodLogs(clientset, "test-pods", *podName, &coreapi.PodLogOptions{Container: "clonerefs"})
-				if err != nil {
-					t.Errorf("failed getting logs for clonerefs")
-				}
-				t.Logf("logs for clonerefs:\n\n%s\n\n", podLogs)
+			expectedStatus := gangway.JobExecutionStatus_SUCCESS
 
-				// If we got an error, show the failing prow job's test
-				// container (our test case's "got" and "expected" shell code).
-				pjPod := &coreapi.Pod{}
-				err = kubeClient.Get(ctx, ctrlruntimeclient.ObjectKey{
-					Namespace: "test-pods",
-					Name:      *podName,
-				}, pjPod)
-				if err != nil {
-					t.Errorf("failed getting prow job's pod %v; unable to determine why the test failed", *podName)
-					t.Error(err)
-					t.Fatal(waitErr)
-				}
-				// Error messages from clonerefs, initupload, entrypoint, or sidecar.
-				for _, containerStatus := range pjPod.Status.InitContainerStatuses {
-					terminated := containerStatus.State.Terminated
-					if terminated != nil && len(terminated.Message) > 0 {
-						t.Errorf("InitContainer %q: %s", containerStatus.Name, terminated.Message)
-					}
-				}
-				// Error messages from the test case's shell script (showing the
-				// git SHAs that we expected vs what we got).
-				for _, containerStatus := range pjPod.Status.ContainerStatuses {
-					terminated := containerStatus.State.Terminated
-					if terminated != nil && len(terminated.Message) > 0 {
-						t.Errorf("Container %s: %s", containerStatus.Name, terminated.Message)
-					}
-				}
-
-				t.Fatal(waitErr)
+			if err := c.WaitForJobExecutionStatus(ctx, jobExecution.Id, pollInterval, timeout, expectedStatus); err != nil {
+				t.Fatal(err)
 			} else {
 				// Only clean up the ProwJob if it succeeded (save the ProwJob for debugging if it failed).
 				t.Cleanup(func() {

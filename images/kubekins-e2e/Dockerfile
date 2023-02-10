@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-staging-test-infra/bootstrap:v20230126-215ae799eb
+FROM gcr.io/k8s-staging-test-infra/bootstrap:v20230206-22f4807bdc
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -66,7 +66,7 @@ RUN rm -f $(which kubectl) && \
 # install go
 ARG GO_VERSION
 ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
-RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
+RUN wget -q "https://go.dev/dl/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     rm "${GO_TARBALL}"
 
@@ -84,16 +84,6 @@ RUN bash /install-bazel.sh
 ARG OLD_BAZEL_VERSION
 COPY --from=old \
     /usr/local/lib/bazel/bin/bazel-real /usr/local/lib/bazel/bin/bazel-${OLD_BAZEL_VERSION}
-
-# if UPGRADE_DOCKER_ARG, then install the latest docker over whatever we have
-# in the base image.
-# TODO: after code freeze, roll out newer docker in the
-# base image and possibly remove this ...
-ARG UPGRADE_DOCKER_ARG=false
-RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
-    apt-get install -y --no-install-recommends docker-ce && \
-    rm -rf /var/lib/apt/lists/* && \
-    sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
 
 # install kind if a version is provided
 ARG KIND_VERSION

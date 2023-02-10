@@ -53,7 +53,7 @@ postsubmits:
     annotations:
       testgrid-dashboards: "sig-testing-images"
       testgrid-tab-name: "clusterfuzzlite-push"
-      description: builds and pushes the clusterfuzzlite image
+      description: builds and pushes the clusterfuzzlite image on change
     decorate: true
     branches:
     - ^master$
@@ -171,7 +171,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20230127-c2d8597baa
+      - image: gcr.io/k8s-prow/hmac:v20230209-f319bbff04
         command:
         - hmac
         args:
@@ -221,7 +221,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
         command:
         - runner.sh
         args:
@@ -387,7 +387,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20230127-c2d8597baa
+        image: gcr.io/k8s-prow/gencred:v20230209-f319bbff04
         command:
         - gencred
         args:
@@ -434,7 +434,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20230127-c2d8597baa
+      - image: gcr.io/k8s-prow/configurator:v20230209-f319bbff04
         command:
         - configurator
         args:
@@ -582,7 +582,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230127-c2d8597baa
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230209-f319bbff04
       command:
       - generic-autobumper
       args:
@@ -619,7 +619,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230127-c2d8597baa
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230209-f319bbff04
       command:
       - generic-autobumper
       args:
@@ -689,7 +689,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20230127-c2d8597baa
+      image: gcr.io/k8s-prow/branchprotector:v20230209-f319bbff04
       command:
       - branchprotector
       args:
@@ -723,7 +723,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20230127-c2d8597baa
+      image: gcr.io/k8s-prow/label_sync:v20230209-f319bbff04
       command:
       - label_sync
       args:
@@ -767,7 +767,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20230127-c2d8597baa
+      image: gcr.io/k8s-prow/gencred:v20230209-f319bbff04
       command:
       - gencred
       args:
@@ -806,6 +806,27 @@ periodics:
     testgrid-tab-name: rotate-legacy-default-build-sa-json-key
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Rotate legacy build cluster service account json key.
+# This job keeps the Prow Clusterfuzzlite image up to date.
+- cron: "30 1 1,15 * *"  # At 01:30 on day-of-month 1 and 15.
+  name: update-clusterfuzz-lite
+  cluster: test-infra-trusted
+  decorate: true
+  spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        command:
+        - /run.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - --build-dir=.
+        - experiment/clusterfuzzlite/'
+  annotations:
+      testgrid-dashboards: "sig-testing-images"
+      testgrid-tab-name: "clusterfuzzlite-update"
+      description: builds and pushes the clusterfuzzlite image regularly
+
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
 # Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
@@ -820,7 +841,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20230127-c2d8597baa
+    - image: gcr.io/k8s-prow/checkconfig:v20230209-f319bbff04
       command:
       - checkconfig
       args:

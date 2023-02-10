@@ -1,0 +1,17 @@
+---
+systemd:
+  units:
+    - name: allocate-1G-hugepages.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Allocate 1G hugepages.
+        After=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c '/usr/bin/echo 1 > \
+          /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages'
+
+        [Install]
+        WantedBy=multi-user.target

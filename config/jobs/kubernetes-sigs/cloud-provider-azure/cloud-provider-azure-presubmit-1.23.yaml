@@ -10,7 +10,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
             command:
               - runner.sh
             args:
@@ -50,7 +50,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -63,17 +63,17 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: TEST_CCM
+              - name: TEST_CCM # CAPZ config
                 value: "true"
-              - name: KUBERNETES_VERSION
+              - name: KUBERNETES_VERSION # CAPZ config
                 value: "latest-1.23"
-              - name: CONTROL_PLANE_MACHINE_COUNT
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
-              - name: CLUSTER_TEMPLATE
+              - name: CLUSTER_TEMPLATE # CAPZ config
                 value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
-              - name: AZURE_LOADBALANCER_SKU
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
                 value: "Standard"
-              - name: K8S_FEATURE_GATES
+              - name: K8S_FEATURE_GATES # cloud-provider-azure config
                 value: "MixedProtocolLBService=true"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
@@ -107,7 +107,7 @@ presubmits:
           workdir: false
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -121,15 +121,15 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: TEST_CCM
+              - name: TEST_CCM # CAPZ config
                 value: "true"
-              - name: AZURE_LOADBALANCER_SKU
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
                 value: "standard"
-              - name: KUBERNETES_VERSION
+              - name: KUBERNETES_VERSION # CAPZ config
                 value: "latest-1.23"
-              - name: GINKGO_ARGS
+              - name: GINKGO_ARGS # cloud-provider-azure config
                 value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
-              - name: CONTROL_PLANE_MACHINE_COUNT
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
@@ -158,7 +158,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -171,15 +171,15 @@ presubmits:
             securityContext:
               privileged: true
             env:
-              - name: TEST_CCM
+              - name: TEST_CCM # CAPZ config
                 value: "true"
-              - name: AZURE_LOADBALANCER_SKU
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
                 value: "standard"
-              - name: KUBERNETES_VERSION
+              - name: KUBERNETES_VERSION # CAPZ config
                 value: "latest-1.23"
-              - name: CONTROL_PLANE_MACHINE_COUNT
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
                 value: "1"
-              - name: K8S_FEATURE_GATES
+              - name: K8S_FEATURE_GATES # cloud-provider-azure config
                 value: "MixedProtocolLBService=true"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
@@ -196,7 +196,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
             command:
               - runner.sh
             args:
