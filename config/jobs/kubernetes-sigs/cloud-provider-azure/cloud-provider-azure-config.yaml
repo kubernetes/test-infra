@@ -70,7 +70,7 @@ presubmits:
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -298,7 +298,7 @@ presubmits:
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: ENABLE_MULTI_SLB # cloud-provider-azure config
@@ -392,7 +392,7 @@ periodics:
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-ipv6.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-ipv6-capz
@@ -796,7 +796,7 @@ periodics:
         - name: KUBERNETES_VERSION # CAPZ config
           value: "latest"
         - name: CLUSTER_TEMPLATE # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -858,7 +858,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -923,7 +923,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -990,7 +990,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
@@ -1054,7 +1054,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
         value: "1"
       - name: CLUSTER_TEMPLATE # CAPZ config
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/ad2785190025d1109f7e6d2a586ecd1fc7931b99/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
         value: "Standard"
       - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
