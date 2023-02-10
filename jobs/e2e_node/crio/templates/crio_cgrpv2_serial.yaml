@@ -9,7 +9,8 @@ storage:
       mode: 0644
     - path: /etc/ssh-key-secret/ssh-public
       contents:
-        inline: GCE_SSH_PUBLIC_KEY_FILE_CONTENT
+        # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
+        source: data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA==
       mode: 0644
 systemd:
   units:
