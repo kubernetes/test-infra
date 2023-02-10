@@ -1,7 +1,0 @@
----
-passwd:
-  users:
-    - name: prow
-      system: true
-      groups:
-        - sudo

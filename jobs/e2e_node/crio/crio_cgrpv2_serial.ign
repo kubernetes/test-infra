@@ -2,17 +2,6 @@
   "ignition": {
     "version": "3.3.0"
   },
-  "passwd": {
-    "users": [
-      {
-        "groups": [
-          "sudo"
-        ],
-        "name": "prow",
-        "system": true
-      }
-    ]
-  },
   "storage": {
     "files": [
       {
