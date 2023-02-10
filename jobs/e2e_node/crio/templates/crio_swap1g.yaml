@@ -12,6 +12,9 @@ storage:
         # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
         source: data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA==
       mode: 0644
+kernel_arguments:
+  should_exist:
+    - systemd.unified_cgroup_hierarchy=0
 systemd:
   units:
     - name: authorized-key.service
@@ -47,6 +50,20 @@ systemd:
           --apply-live \
           --allow-inactive \
           dbus-tools
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: swap-enable.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Enable swap on CoreOS
+        Before=crio-install.service
+        ConditionFirstBoot=no
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c \"sudo dd if=/dev/zero of=/var/swapfile count=1024 bs=1MiB && sudo chmod 600 /var/swapfile && sudo mkswap /var/swapfile && sudo swapon /var/swapfile && free -h\"
 
         [Install]
         WantedBy=multi-user.target
