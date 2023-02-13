@@ -1,0 +1,52 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-kind-kms
+    decorate: true
+    decoration_config:
+      timeout: 150m
+    always_run: false
+    optional: true # TODO (aramase): make this required and add run_if_changed once the job is passing
+    path_alias: k8s.io/kubernetes
+    branches:
+    - ^master$ # TODO(aramase): enable for release branches
+    labels:
+      # this is required because we want to run kind in docker
+      preset-dind-enabled: "true"
+      # this is required to make CNI installation to succeed for kind
+      preset-kind-volume-mounts: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-auth-encryption-at-rest
+      description: Runs conformance tests on a cluster with KMS encryption enabled
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - "/bin/bash"
+        - "-c"
+        - set -o errexit;
+          set -o nounset;
+          set -o pipefail;
+          set -o xtrace;
+          export GO111MODULE=on;
+          go install sigs.k8s.io/kind@v0.17.0;
+          go install sigs.k8s.io/kubetest2@latest;
+          go install sigs.k8s.io/kubetest2/kubetest2-kind@latest;
+          go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+          kubetest2 kind -v 5 \;
+            --build \;
+            --up \;
+            --down \;
+            --config test/e2e/testing-manifests/auth/encrypt/kind.yaml \;
+            --cluster-name kms \;
+            --test=ginkgo \;
+            -- \;
+            --focus-regex='\[Conformance\]' \;
+            --skip-regex='\[Serial\]' \;
+            --parallel 20 \;
+            --use-built-binaries # use the kubectl, e2e.test, and ginkgo binaries built during --build as opposed to from a GCS release tarball
