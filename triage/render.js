@@ -320,7 +320,19 @@ function renderCluster(top, cluster) {
     let [title, body] = makeGitHubIssue(id, text, owner, latestBuilds);
     title = encodeURIComponent(title);
     body = encodeURIComponent(body);
-    fileBug.href = `https://github.com/kubernetes/kubernetes/issues/new?body=${body}&title=${title}`;
+
+    // Open issue in kubernetes-sig/cluster-api repo for cluster api related CI issues.
+    let jobParams = (new URL(document.location)).searchParams;
+    let jobName = jobParams.get("job");
+
+    switch (jobName) {
+      case "periodic-cluster-api-e2e-main":
+        fileBug.href = `https://github.com/kubernetes-sigs/cluster-api/issues/new?body=${body}&title=${title}`;
+        break;
+      default:
+        fileBug.href = `https://github.com/kubernetes/kubernetes/issues/new?body=${body}&title=${title}`;
+        break;
+    }
   })
 
   var clusterJobs = addElement(list, 'li');
