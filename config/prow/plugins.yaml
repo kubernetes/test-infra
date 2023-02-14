@@ -501,7 +501,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.26: 1.26
+    dev-1.27: 1.27
 
 repo_milestone:
   # Default maintainer
