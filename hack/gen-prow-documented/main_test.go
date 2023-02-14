@@ -51,8 +51,6 @@ type FakeReporter struct {
 			expectedRawYaml: []byte(`# Context is the name of the GitHub status context for the job.
 # Defaults: the same as the name of the job.
 context: ' '
-
-
 # SkipReport skips commenting and setting status on GitHub.
 skip_report: true
 `),
