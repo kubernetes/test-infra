@@ -246,6 +246,45 @@ periodics:
           value: /go
         - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
           value: "1"
+
+- name: ci-kubernetes-fsquota-ubuntu
+  interval: 4h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-fsquota-ubuntu
+    description: "Run node e2e tests with fsquota environment on Ubuntu"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230127-9396ca613c-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config.yaml
+          - '--node-test-args=--feature-gates=LocalStorageCapacityIsolationFSQuotaMonitoring=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="LocalStorageCapacityIsolationQuota"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
 #  interval: 12h
