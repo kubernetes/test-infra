@@ -469,17 +469,21 @@ periodics:
     preset-capz-windows-2022: "true"
     preset-windows-private-registry-cred: "true"
   extra_refs:
-  # Use Mark's fork/branch until image building issues are resolved
-  - org: marosset
+  - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: windows-service-proxy
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+    workdir: true
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
-          - "./scripts/ci-conformance.sh"
+          - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
         resources:
@@ -489,10 +493,10 @@ periodics:
         env:
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
-          - name: CLUSTER_TEMPLATE
-            value: "test/ci/cluster-template-prow-windows-kpng.yaml"
+          - name: WINDOWS_KPNG
+            value: "true"
           - name: WINDOWS_CONTAINERD_URL
-            value: "https://github.com/kubernetes-sigs/sig-windows-tools/releases/download/windows-containerd-nightly/windows-containerd.tar.gz"
+            value: "https://github.com/containerd/containerd/releases/download/v1.7.0-beta.3/containerd-1.7.0-beta.3-windows-amd64.tar.gz"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
