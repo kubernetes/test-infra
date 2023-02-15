@@ -1683,7 +1683,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-apiserver-nodes
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-karpenter
   cron: '14 16-23/24 * * *'
   labels:
@@ -1712,7 +1712,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230208' --channel=alpha --networking=cilium --container-runtime=containerd --instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230208' --channel=alpha --networking=cilium --container-runtime=containerd --instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=Karpenter \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -1742,7 +1742,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204arm64
-    test.kops.k8s.io/extra_flags: --instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --instance-manager=karpenter --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/feature_flags: Karpenter
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
@@ -1752,7 +1752,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-karpenter
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-ipv6-karpenter
   cron: '55 7-23/24 * * *'
   labels:
@@ -1781,7 +1781,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230208' --channel=alpha --networking=cilium --container-runtime=containerd --instance-manager=karpenter --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230208' --channel=alpha --networking=cilium --container-runtime=containerd --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=Karpenter \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -1811,7 +1811,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204arm64
-    test.kops.k8s.io/extra_flags: --instance-manager=karpenter --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --instance-manager=karpenter --ipv6 --topology=private --bastion --master-size=c6g.xlarge --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/feature_flags: Karpenter
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
