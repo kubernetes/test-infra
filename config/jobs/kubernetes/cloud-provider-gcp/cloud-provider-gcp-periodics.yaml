@@ -333,3 +333,47 @@ periodics:
         go work sync;
         cd -;
         kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --master-size n1-standard-2 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --focus-regex='\[Conformance\]' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+
+- interval: 24h
+  cluster: k8s-infra-prow-build
+  name: ci-cloud-provider-gcp-e2e-scenario-kops-simple
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  annotations:
+    testgrid-tab-name: scenario kops-simple
+    testgrid-dashboards: provider-gcp-periodics
+    description: Runs the kops-simple scenario
+  labels:
+    preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-gcp
+    base_ref: master
+    path_alias: cloud-provider-gcp
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      resources:
+        limits:
+          cpu: 4
+          memory: 14Gi
+        requests:
+          cpu: 4
+          memory: 14Gi
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      command:
+      - runner.sh
+      args:
+      - "/bin/bash"
+      - "-c"
+      - cd /workspace/cloud-provider-gcp;
+        e2e/scenarios/kops-simple
