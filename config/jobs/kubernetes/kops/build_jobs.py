@@ -452,6 +452,22 @@ def generate_misc():
                    k8s_version='1.23',
                    extra_dashboards=['kops-misc']),
 
+        # A one-off scenario testing the artifacts-sandbox.k8s.io mirror
+        build_test(name_override="kops-artifacts-sandbox",
+                   runs_per_day=24,
+                   cloud="aws",
+                   k8s_version='stable',
+                   extra_dashboards=['kops-misc'],
+                   env={
+                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.26.0-beta.2/", # pylint: disable=line-too-long
+                       'KOPS_VERSION_A': "1.26.0-beta.2",
+                       'K8S_VERSION_A': "v1.24.0",
+                       'KOPS_VERSION_B': "1.26.0-beta.2",
+                       'K8S_VERSION_B': "v1.25.0",
+                       'KOPS_SKIP_E2E': '1',
+                       'KOPS_CONTROL_PLANE_SIZE': '3',
+                   }),
+
         # A one-off scenario testing arm64
         build_test(name_override="kops-scenario-arm64",
                    cloud="aws",
