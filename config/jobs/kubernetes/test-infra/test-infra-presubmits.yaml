@@ -217,7 +217,7 @@ presubmits:
   - name: pull-test-infra-verify-cri-o
     branches:
     - master
-    run_if_changed: '^jobs/e2e_node/crio/'
+    run_if_changed: 'jobs\/e2e_node\/crio\/'
     decorate: true
     labels:
       preset-service-account: "true"
@@ -232,6 +232,9 @@ presubmits:
         - verify
         - -C
         - jobs/e2e_node/crio
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-cri-o
