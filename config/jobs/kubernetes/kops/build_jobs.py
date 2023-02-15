@@ -710,6 +710,7 @@ def generate_misc():
                    runs_per_day=1,
                    extra_flags=[
                        "--instance-manager=karpenter",
+                       "--master-size=c6g.xlarge",
                    ],
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc"],
@@ -725,6 +726,7 @@ def generate_misc():
                        '--ipv6',
                        '--topology=private',
                        '--bastion',
+                       "--master-size=c6g.xlarge",
                    ],
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc", "kops-ipv6"],
@@ -1425,7 +1427,10 @@ def generate_presubmits_e2e():
             run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
             kops_channel="alpha",
-            extra_flags=["--instance-manager=karpenter"],
+            extra_flags=[
+                "--instance-manager=karpenter",
+                "--master-size=c6g.xlarge",
+            ],
             feature_flags=['Karpenter'],
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic' # pylint: disable=line-too-long
         ),
