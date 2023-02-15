@@ -275,10 +275,6 @@ periodics:
     repo: cloud-provider-gcp
     base_ref: master
     path_alias: k8s.io/cloud-provider-gcp
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
@@ -302,7 +298,6 @@ periodics:
         set -o nounset;
         set -o pipefail;
         set -o xtrace;
-        KUBE_SOURCE=$GOPATH/src/k8s.io/kubernetes;
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
@@ -324,7 +319,10 @@ periodics:
           echo "TEST_PACKAGE_VERSION - Falling back to v1.25.0";
         fi;
         cd $REPO_ROOT;
+        KUBE_VERSION=${KUBE_VERSION:-master};
+        KUBE_SOURCE=_src/k8s.io/kubernetes;
         sed -i 's/^\s*k8s.io.*//g' go.mod;
+        git clone --depth 1 --branch ${KUBE_VERSION} https://github.com/kubernetes/kubernetes ${KUBE_SOURCE};
         go work init .;
         go work use crd;
         go work use providers;
