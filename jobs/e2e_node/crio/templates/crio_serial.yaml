@@ -9,6 +9,7 @@ storage:
       mode: 0644
     - path: /etc/ssh-key-secret/ssh-public
       contents:
+        # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
         source: data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA==
       mode: 0644
 kernel_arguments:
@@ -65,15 +66,9 @@ systemd:
           /usr/bin/curl --fail --retry 5 \
             --retry-delay 3 --silent --show-error \
             -o /usr/local/crio-nodee2e-installer.sh  \
-            https://raw.githubusercontent.com/cri-o/cri-o/a8c9ddc773007c61074e224bd740ca3aecd7fecb/scripts/node_e2e_installer ;\
-          ln -s /usr/bin/runc /usr/local/bin/runc'
+            https://raw.githubusercontent.com/cri-o/cri-o/fa0d058141343ee38b8339ea41f580c361271372/scripts/node_e2e_installer && \
+          /usr/bin/ln -s /usr/bin/runc /usr/local/bin/runc'
         ExecStart=/usr/bin/bash /usr/local/crio-nodee2e-installer.sh
 
         [Install]
         WantedBy=multi-user.target
-passwd:
-  users:
-    - name: prow
-      system: true
-      groups:
-        - sudo

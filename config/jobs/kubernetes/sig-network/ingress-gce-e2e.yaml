@@ -106,6 +106,8 @@ presubmits:
   - name: pull-ingress-gce-verify
     always_run: true
     decorate: true
+    branches:
+    - master
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"

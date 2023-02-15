@@ -1,0 +1,7 @@
+images:
+  fedora:
+    image_family: fedora-coreos-stable
+    project: fedora-coreos-cloud
+    # Note the `/home/prow/go/src/k8s.io` path prefix compared to `/workspace`
+    # in image-config-cgrpv1-k8s-infra-prow-build.yaml
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/crio_k8s_infra_prow_build.ign"
