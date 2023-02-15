@@ -1502,7 +1502,31 @@ def generate_presubmits_e2e():
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
                 'KOPS_CONTROL_PLANE_SIZE': '3',
             }
-        )
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-upgrade-k123-ko125-to-k124-kolatest-karpenter",
+            optional=True,
+            distro='u2204arm64',
+            networking='cilium',
+            k8s_version='stable',
+            kops_channel='alpha',
+            feature_flags=['Karpenter'],
+            test_timeout_minutes=120,
+            run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
+            scenario='upgrade-ab',
+            extra_flags=[
+                "--instance-manager=karpenter",
+                "--master-size=c6g.xlarge",
+            ],
+            env={
+                'KOPS_VERSION_A': "1.25",
+                'K8S_VERSION_A': "v1.23.0",
+                'KOPS_VERSION_B': "latest",
+                'K8S_VERSION_B': "v1.24.0",
+                'KOPS_SKIP_E2E': '1',
+                'KOPS_CONTROL_PLANE_SIZE': '3',
+            }
+        ),
     ]
     return jobs
 
