@@ -74,7 +74,7 @@ periodics:
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
-        --comment=This PR [may require stable metrics review](https://git.k8s.io/community/sig-instrumentation/stable-metrics.md).
+        --comment=This PR [may require stable metrics review](https://git.k8s.io/community/contributors/devel/sig-instrumentation/metric-stability.md).
 
         Stable metrics are guaranteed to **not change**. Please review the documentation for the requirements and lifecycle of stable metrics and ensure that your metrics meet these guidelines.
       - --ceiling=10
