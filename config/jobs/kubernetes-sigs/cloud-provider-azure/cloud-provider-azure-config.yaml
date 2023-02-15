@@ -45,7 +45,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -161,7 +161,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes
@@ -221,7 +221,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -273,7 +273,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -358,7 +358,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
+      base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -412,7 +412,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
+      base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -515,7 +515,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
+      base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -573,7 +573,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -634,7 +634,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -704,7 +704,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -766,7 +766,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.6
+      base_ref: release-1.7
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -820,7 +820,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -884,7 +884,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -951,7 +951,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1016,7 +1016,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
