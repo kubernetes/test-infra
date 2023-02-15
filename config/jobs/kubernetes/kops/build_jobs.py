@@ -458,6 +458,7 @@ def generate_misc():
                    cloud="aws",
                    k8s_version='stable',
                    extra_dashboards=['kops-misc'],
+                   scenario='upgrade-ab',
                    env={
                        'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.26.0-beta.2/", # pylint: disable=line-too-long
                        'KOPS_VERSION_A': "1.26.0-beta.2",
