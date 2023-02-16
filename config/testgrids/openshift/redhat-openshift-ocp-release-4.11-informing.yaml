@@ -4872,7 +4872,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-from-stable-4.9-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-from-stable-4.9-e2e-aws-upgrade
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.11-console-aws
 - days_of_results: 60
