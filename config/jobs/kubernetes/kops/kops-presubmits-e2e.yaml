@@ -2388,6 +2388,8 @@ presubmits:
           value: "e2e-e0f2048229-326c9.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
+        - name: KOPS_EXTRA_FLAGS
+          value: "--instance-manager=karpenter --master-size=c6g.xlarge"
         - name: KOPS_IRSA
           value: "true"
         resources:
