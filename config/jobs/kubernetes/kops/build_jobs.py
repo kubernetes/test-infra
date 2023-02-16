@@ -448,7 +448,7 @@ def generate_grid():
 #############################
 def generate_misc():
     results = [
-        # A one-off scenario testing the k8s.gcr.io mirror
+        # A one-off scenario testing the registry.k8s.io mirror
         build_test(name_override="kops-scenario-gcr-mirror",
                    runs_per_day=24,
                    cloud="aws",
