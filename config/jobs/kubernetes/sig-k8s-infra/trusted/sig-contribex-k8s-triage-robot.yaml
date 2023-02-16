@@ -715,7 +715,7 @@ periodics:
         label:triage/accepted
         label:priority/critical-urgent
         is:issue
-      - --updated=2160h
+      - --updated=720h
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
