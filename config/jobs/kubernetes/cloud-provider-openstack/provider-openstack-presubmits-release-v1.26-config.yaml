@@ -31,7 +31,7 @@ presubmits:
               cpu: 1
     annotations:
       testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
-      testgrid-tab-name: presubmit-e2e-test
+      testgrid-tab-name: presubmit-e2e-test-release-1.26
 
   - name: openstack-cloud-csi-cinder-e2e-test-release-126
     labels:
@@ -64,7 +64,7 @@ presubmits:
               cpu: 1
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
-      testgrid-tab-name: presubmit-e2e-test
+      testgrid-tab-name: presubmit-e2e-test-release-1.26
 
   - name: openstack-cloud-csi-manila-e2e-test-release-126
     labels:
@@ -97,7 +97,7 @@ presubmits:
               cpu: 1
     annotations:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
-      testgrid-tab-name: presubmit-e2e-test
+      testgrid-tab-name: presubmit-e2e-test-release-1.26
 
   - name: openstack-cloud-csi-cinder-sanity-test-release-126
     always_run: false
@@ -115,7 +115,7 @@ presubmits:
         - test-cinder-csi-sanity
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
-      testgrid-tab-name: presubmit-sanity-test
+      testgrid-tab-name: presubmit-sanity-test-release-1.26
       description: Run cloud-provider-openstack csi sanity tests for cinder-csi-plugin
 
   - name: openstack-cloud-csi-manila-sanity-test-release-126
@@ -134,5 +134,5 @@ presubmits:
         - test-manila-csi-sanity
     annotations:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
-      testgrid-tab-name: presubmit-sanity-test
+      testgrid-tab-name: presubmit-sanity-test-release-1.26
       description: Run cloud-provider-openstack csi sanity tests for manila-csi-plugin
