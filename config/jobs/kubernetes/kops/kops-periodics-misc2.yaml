@@ -89,17 +89,13 @@ periodics:
     - command:
       - runner.sh
       args:
-      - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
+      - ./tests/e2e/scenarios/smoketest/run-test.sh
       env:
       - name: KOPS_BASE_URL
         value: "https://artifacts-sandbox.k8s.io/binaries/kops/1.26.0-beta.2/"
-      - name: KOPS_VERSION_A
-        value: "1.26.0-beta.2"
-      - name: K8S_VERSION_A
-        value: "v1.24.0"
-      - name: KOPS_VERSION_B
-        value: "1.26.0-beta.2"
-      - name: K8S_VERSION_B
+      - name: KOPS_VERSION
+        value: "v1.26.0-beta.2"
+      - name: K8S_VERSION
         value: "v1.25.0"
       - name: KOPS_SKIP_E2E
         value: "1"
