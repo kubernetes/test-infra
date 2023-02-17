@@ -457,7 +457,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-nightly-master
 - name: ci-kubernetes-e2e-capz-master-windows-service-proxy
-  interval: 48h
+  interval: 12h
   decorate: true
   decoration_config:
     timeout: 4h
