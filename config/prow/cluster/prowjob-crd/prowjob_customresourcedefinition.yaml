@@ -43874,6 +43874,10 @@ spec:
                   This field should always be the same as the ProwJob.ObjectMeta.Name
                   field.
                 type: string
+              prev_report_descriptions:
+                additionalProperties:
+                  type: string
+                type: object
               prev_report_states:
                 additionalProperties:
                   description: ProwJobState specifies whether the job is running

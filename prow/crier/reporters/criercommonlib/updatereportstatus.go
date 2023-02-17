@@ -53,11 +53,7 @@ func updateReportState(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entr
 		if err := pjclientset.Get(ctx, name, pj); err != nil {
 			return false, err
 		}
-		if pj.Status.PrevReportStates != nil &&
-			pj.Status.PrevReportStates[reporterName] == reportedState {
-			return true, nil
-		}
-		return false, nil
+		return !pj.NeedReportState(reporterName), nil
 	}); err != nil {
 		return fmt.Errorf("failed to wait for updated report status to be in lister: %w", err)
 	}
