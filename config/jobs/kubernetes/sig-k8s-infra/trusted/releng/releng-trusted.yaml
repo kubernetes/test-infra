@@ -157,6 +157,14 @@ periodics:
           value: /var/run/secrets/aws-iam-token/serviceaccount/token
         - name: AWS_REGION
           value: us-east-1
+      resources:
+        # We hash files as we upload them, so take a whole core
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
       volumeMounts:
         - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
           name: aws-iam-token
@@ -178,6 +186,14 @@ periodics:
           value: /var/run/secrets/aws-iam-token/serviceaccount/token
         - name: AWS_REGION
           value: us-east-1
+      resources:
+        # We hash files as we upload them, so take a whole core
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
       volumeMounts:
         - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
           name: aws-iam-token
