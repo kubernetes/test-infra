@@ -430,6 +430,10 @@ spec:
                   the job is evicted. If this field is unspecified or false, a new
                   pod will be created to replace the evicted one.
                 type: boolean
+              restart_on_unexpected_deletion:
+                description: RestartOnUnxpectedDeletion indicates that the ProwJob should be
+                  recreated if it is deleted unexpectedly (e.g. by node shutdown)
+                type: boolean
               extra_refs:
                 description: ExtraRefs are auxiliary repositories that need to be
                   cloned, determined from config

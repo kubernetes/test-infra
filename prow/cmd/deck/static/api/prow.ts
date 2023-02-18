@@ -98,6 +98,7 @@ export interface ProwJobSpec {
   context?: string;
   rerun_command?: string;
   max_concurrency?: number;
+  restart_on_unexpected_deletion?: boolean;
   error_on_eviction?: boolean;
   pod_spec?: PodSpec;
   build_spec?: object;

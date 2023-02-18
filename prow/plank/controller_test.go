@@ -1455,19 +1455,19 @@ func TestSyncPendingJob(t *testing.T) {
 			Name: "Pod deleted in running phase, job marked as errored",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "pod-deleted-in-unset-phase",
+					Name:      "pod-deleted-in-running-phase",
 					Namespace: "prowjobs",
 				},
 				Spec: prowapi.ProwJobSpec{},
 				Status: prowapi.ProwJobStatus{
 					State:   prowapi.PendingState,
-					PodName: "pod-deleted-in-unset-phase",
+					PodName: "pod-deleted-in-running-phase",
 				},
 			},
 			Pods: []v1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:              "pod-deleted-in-unset-phase",
+						Name:              "pod-deleted-in-running-phase",
 						Namespace:         "pods",
 						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
 						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
@@ -1479,6 +1479,41 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			ExpectedState:    prowapi.ErrorState,
 			ExpectedComplete: true,
+			ExpectedNumPods:  1,
+		},
+		{
+			Name: "Pod deleted in running phase with restart_on_unexpected_deletion enabled, pod finalizer gets cleaned up",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pod-deleted-in-running-phase",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type:                       prowapi.PostsubmitJob,
+					PodSpec:                    &v1.PodSpec{Containers: []v1.Container{{Name: "pod-deleted-in-running-phase", Env: []v1.EnvVar{}}}},
+					Refs:                       &prowapi.Refs{Org: "fejtaverse"},
+					RestartOnUnxpectedDeletion: true,
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "pod-deleted-in-running-phase",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "pod-deleted-in-running-phase",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Second)},
+						DeletionTimestamp: func() *metav1.Time { n := metav1.Now(); return &n }(),
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodRunning,
+					},
+				},
+			},
+			ExpectedState:    prowapi.PendingState,
+			ExpectedComplete: false,
 			ExpectedNumPods:  1,
 		},
 		{

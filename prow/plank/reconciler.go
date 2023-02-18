@@ -390,21 +390,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
 		// vanishes and we will silently re-create it in the next iteration.
 		r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got lost, deleting & next sync loop will restart pod")
-		client, ok := r.buildClients[pj.ClusterAlias()]
-		if !ok {
-			return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
-		}
-
-		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
-			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
-			oldPod := pod.DeepCopy()
-			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
-			if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
-				return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
-			}
-		}
-
-		return nil, nil
+		return nil, r.removePodFinalizer(ctx, pj, pod)
 	} else {
 		switch pod.Status.Phase {
 		case corev1.PodUnknown:
@@ -412,21 +398,11 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			// the node. Delete the old pod, this will fire an event that triggers
 			// a new reconciliation in which we will re-create the pod.
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pod is in unknown state, deleting & restarting pod")
-			client, ok := r.buildClients[pj.ClusterAlias()]
-			if !ok {
-				return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+			err := r.removePodFinalizer(ctx, pj, pod)
+			if err != nil {
+				return nil, err
 			}
-
-			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
-				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
-				oldPod := pod.DeepCopy()
-				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
-				if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
-					return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
-				}
-			}
-			r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
-			return nil, ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
+			return nil, r.deletePod(ctx, pj, "Deleted pod due to unknown state.")
 
 		case corev1.PodSucceeded:
 			pj.SetComplete()
@@ -459,7 +435,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 					pj.Status.State = prowv1.ErrorState
 					pj.Status.Description = "Pod scheduling timeout."
 					r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale unscheduled pod as errored.")
-					if err := r.deletePod(ctx, pj); err != nil {
+					if err := r.deletePod(ctx, pj, "Deleted pod due to unscheduled timeout."); err != nil {
 						return nil, fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 					}
 					break
@@ -476,7 +452,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 					pj.Status.State = prowv1.ErrorState
 					pj.Status.Description = "Pod pending timeout."
 					r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale pending pod as errored.")
-					if err := r.deletePod(ctx, pj); err != nil {
+					if err := r.deletePod(ctx, pj, "Deleted pod due to pending timeout."); err != nil {
 						return nil, fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 					}
 					break
@@ -493,7 +469,14 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			}
 		case corev1.PodRunning:
 			if pod.DeletionTimestamp != nil {
-				break
+				if pj.Spec.RestartOnUnxpectedDeletion {
+					// If the pod was running but got deleted due to a manual deletion or node shutdown eviction, remove the
+					// pod finalizer so the pod can be cleanly removed.  It will be re-created in the next cycle
+					r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pod is deleted while running, removing finalizer so pod can be deleted and re-created in next sync loop")
+					return nil, r.removePodFinalizer(ctx, pj, pod)
+				} else {
+					break
+				}
 			}
 			maxPodRunning := r.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
@@ -506,7 +489,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			pj.SetComplete()
 			pj.Status.State = prowv1.AbortedState
 			pj.Status.Description = "Pod running timeout."
-			if err := r.deletePod(ctx, pj); err != nil {
+			if err := r.deletePod(ctx, pj, "Deleted pod due to running timeout."); err != nil {
 				return nil, fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
 		default:
@@ -688,7 +671,7 @@ func (r *reconciler) pod(ctx context.Context, pj *prowv1.ProwJob) (*corev1.Pod, 
 	return pod, true, nil
 }
 
-func (r *reconciler) deletePod(ctx context.Context, pj *prowv1.ProwJob) error {
+func (r *reconciler) deletePod(ctx context.Context, pj *prowv1.ProwJob, message string) error {
 	buildClient, buildClientExists := r.buildClients[pj.ClusterAlias()]
 	if !buildClientExists {
 		return TerminalError(fmt.Errorf("no build client found for cluster %q", pj.ClusterAlias()))
@@ -705,7 +688,24 @@ func (r *reconciler) deletePod(ctx context.Context, pj *prowv1.ProwJob) error {
 		return fmt.Errorf("failed to delete pod: %w", err)
 	}
 
-	r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Deleted stale running pod.")
+	r.log.WithFields(pjutil.ProwJobFields(pj)).Info(message)
+	return nil
+}
+
+// Remove the kubernetes reporter finalizer from the pod that prevents it from being deleted.
+func (r *reconciler) removePodFinalizer(ctx context.Context, pj *prowv1.ProwJob, pod *corev1.Pod) error {
+	client, ok := r.buildClients[pj.ClusterAlias()]
+	if !ok {
+		return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+	}
+	if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+		// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
+		oldPod := pod.DeepCopy()
+		pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
+		if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
+			return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+		}
+	}
 	return nil
 }
 

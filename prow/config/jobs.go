@@ -106,6 +106,12 @@ type JobBase struct {
 	//   nil: results in config.PodNamespace (aka pod default)
 	//   empty: results in config.ProwJobNamespace (aka same as prowjob)
 	Namespace *string `json:"namespace,omitempty"`
+	// RestartOnUnxpectedDeletion indicates that the ProwJob should be restarted
+	// if the pod that is executing the job is deleted before the test container
+	// could finish.  If this field is true, a new pod will be created to replace
+	// the deleted one.  If not, the pod will be marked failed with a message
+	// "Pod got deleted unexpectedly"
+	RestartOnUnxpectedDeletion bool `json:"restart_on_unexpected_deletion,omitempty"`
 	// ErrorOnEviction indicates that the ProwJob should be completed and given
 	// the ErrorState status if the pod that is executing the job is evicted.
 	// If this field is unspecified or false, a new pod will be created to replace
