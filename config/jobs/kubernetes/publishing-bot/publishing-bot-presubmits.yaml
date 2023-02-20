@@ -6,7 +6,7 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.20
         command:
         - make
     annotations:
@@ -18,7 +18,7 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.20
         command:
         - make
         - test
@@ -36,7 +36,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.20
         command:
         - go
         args:
@@ -96,7 +96,7 @@ presubmits:
       path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.20
         command:
         - go
         args:
