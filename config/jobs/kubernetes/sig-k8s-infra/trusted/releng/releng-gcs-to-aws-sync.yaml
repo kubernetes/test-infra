@@ -10,7 +10,7 @@ periodics:
       testgrid-num-failures-to-alert: "1"
     extra_refs:
       - org: kubernetes
-        repo: registry.k8s.io
+        repo: k8s.io
         base_ref: main
     rerun_auth_config:
       github_team_slugs:
@@ -28,15 +28,17 @@ periodics:
             - -c
             - |
               aws sts get-caller-identity
+              git clone https://github.com/kubernetes/k8s.io /tmp/workspace/kubernetes/k8s.io
+              cd /tmp/workspace/kubernetes/k8s.io/registry.k8s.io
               echo "initiating a sync between GCS and S3..."
-              ./hack/tools/sync-to-s3.sh
+              ./hack/initial-copy-to-s3.sh
           env:
             - name: AWS_ROLE_ARN
               value: arn:aws:iam::513428760722:role/registry.k8s.io_s3writer
             - name: AWS_WEB_IDENTITY_TOKEN_FILE
               value: /var/run/secrets/aws-iam-token/serviceaccount/token
             - name: AWS_REGION
-              value: us-east-2
+              value: us-east-1
           volumeMounts:
             - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
               name: aws-iam-token
