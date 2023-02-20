@@ -332,9 +332,4 @@ periodics:
         done;
         go work sync;
         cd -;
-        kubetest2 gce -v 2 --repo-root $REPO_ROOT \
-          --build --up --down --test=ginkgo \
-          --master-size n1-standard-2  \
-          -- \
-          --test-package-version="${TEST_PACKAGE_VERSION}" \
-          --focus-regex='\[Conformance\]'
+        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --master-size n1-standard-2 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --focus-regex='\[Conformance\]' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
