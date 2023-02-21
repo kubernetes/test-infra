@@ -59,7 +59,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	// Skip comments not germane to this plugin
 	if !pjutil.RetestRe.MatchString(gc.Body) &&
 		!pjutil.RetestRequiredRe.MatchString(gc.Body) &&
-		!pjutil.OkToTestRe.MatchString(gc.Body) &&
+		!pjutil.CommentMakesPROkToTest(gc.Body) &&
 		!pjutil.TestAllRe.MatchString(gc.Body) &&
 		!pjutil.MayNeedHelpComment(gc.Body) {
 		matched := false
@@ -105,7 +105,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			return err
 		}
 	}
-	isOkToTest := HonorOkToTest(trigger) && pjutil.OkToTestRe.MatchString(gc.Body)
+	isOkToTest := HonorOkToTest(trigger) && pjutil.CommentMakesPROkToTest(gc.Body)
 	if isOkToTest && !github.HasLabel(labels.OkToTest, l) {
 		if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
 			return err
@@ -182,15 +182,16 @@ type GitHubClient interface {
 // FilterPresubmits determines which presubmits should run. We only want to
 // trigger jobs that should run, but the pool of jobs we filter to those that
 // should run depends on the type of trigger we just got:
-//  - if we get a /test foo, we only want to consider those jobs that match;
-//    jobs will default to run unless we can determine they shouldn't
-//  - if we got a /retest, we only want to consider those jobs that have
-//    already run and posted failing contexts to the PR or those jobs that
-//    have not yet run but would otherwise match /test all; jobs will default
-//    to run unless we can determine they shouldn't
-//  - if we got a /test all or an /ok-to-test, we want to consider any job
-//    that doesn't explicitly require a human trigger comment; jobs will
-//    default to not run unless we can determine that they should
+//   - if we get a /test foo, we only want to consider those jobs that match;
+//     jobs will default to run unless we can determine they shouldn't
+//   - if we got a /retest, we only want to consider those jobs that have
+//     already run and posted failing contexts to the PR or those jobs that
+//     have not yet run but would otherwise match /test all; jobs will default
+//     to run unless we can determine they shouldn't
+//   - if we got a /test all or an /ok-to-test, we want to consider any job
+//     that doesn't explicitly require a human trigger comment; jobs will
+//     default to not run unless we can determine that they should
+//
 // If a comment that we get matches more than one of the above patterns, we
 // consider the set of matching presubmits the union of the results from the
 // matching cases.

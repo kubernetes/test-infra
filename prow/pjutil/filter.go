@@ -35,10 +35,21 @@ var TestRe = regexp.MustCompile(`(?m)^/test\s*?($|\s.*)`)
 // RetestRe provides the regex for `/retest`
 var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
-// RetestRe provides the regex for `/retest-required`
+// RetestRequiredRe provides the regex for `/retest-required`
 var RetestRequiredRe = regexp.MustCompile(`(?m)^/retest-required\s*$`)
 
 var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
+
+var LGTMRe = regexp.MustCompile(`(?m)^/lgtm\s*$`)
+
+var ApproveRe = regexp.MustCompile(`(?m)^/approve\s*$`)
+
+// CommentMakesPROkToTest returns true if a comment's content indicates the user is allowing the PR to be tested
+// The most obvious case of this is using /ok-to-test, but /lgtm and /approve are also taken as implying the PR is
+// trusted for running tests
+func CommentMakesPROkToTest(comment string) bool {
+	return OkToTestRe.MatchString(comment) || LGTMRe.MatchString(comment) || ApproveRe.MatchString(comment)
+}
 
 // AvailablePresubmits returns 3 sets of presubmits:
 // 1. presubmits that can be run with '/test all' command.
@@ -80,10 +91,10 @@ func AvailablePresubmits(changes config.ChangedFilesProvider, branch string,
 }
 
 // Filter digests a presubmit config to determine if:
-//  - the presubmit matched the filter
-//  - we know that the presubmit is forced to run
-//  - what the default behavior should be if the presubmit
-//    runs conditionally and does not match trigger conditions
+//   - the presubmit matched the filter
+//   - we know that the presubmit is forced to run
+//   - what the default behavior should be if the presubmit
+//     runs conditionally and does not match trigger conditions
 type Filter interface {
 	ShouldRun(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool)
 	Name() string
@@ -291,7 +302,7 @@ func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body strin
 		}
 		filters = append(filters, NewRetestRequiredFilter(failedContexts, allContexts))
 	}
-	if (honorOkToTest && OkToTestRe.MatchString(body)) || TestAllRe.MatchString(body) {
+	if (honorOkToTest && CommentMakesPROkToTest(body)) || TestAllRe.MatchString(body) {
 		logger.Debug("Using test-all filter.")
 		filters = append(filters, NewTestAllFilter())
 	}
