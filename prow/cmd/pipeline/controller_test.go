@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -108,6 +109,17 @@ func (r *fakeReconciler) getPipelineRun(context, namespace, name string) (*pipel
 	return &p, nil
 }
 
+func (r *fakeReconciler) listProwJobs(namespace string) ([]*prowjobv1.ProwJob, error) {
+	logrus.Debugf("listProwJobs: namespace=%s", namespace)
+	pjs := []*prowjobv1.ProwJob{}
+	for _, v := range r.jobs {
+		if v.Namespace == namespace {
+			pjs = append(pjs, v.DeepCopy())
+		}
+	}
+	return pjs, nil
+}
+
 func (r *fakeReconciler) deletePipelineRun(context, namespace, name string) error {
 	logrus.Debugf("deletePipelineRun: ctx=%s, ns=%s, name=%s", context, namespace, name)
 	if namespace == errorDeletePipelineRun {
@@ -139,6 +151,11 @@ func (r *fakeReconciler) createPipelineRun(context, namespace string, p *pipelin
 
 func (r *fakeReconciler) pipelineID(pj prowjobv1.ProwJob) (string, string, error) {
 	return pipelineID, "", nil
+}
+
+func (r *fakeReconciler) cancelPipelineRun(context string, pr *pipelinev1beta1.PipelineRun) error {
+	pr.Spec.Status = pipelinev1beta1.PipelineRunSpecStatusCancelled
+	return nil
 }
 
 type fakeLimiter struct {
@@ -225,8 +242,10 @@ func TestEnqueueKey(t *testing.T) {
 }
 
 func TestReconcile(t *testing.T) {
+	duplicateAppendix := "-duplicate"
 	logrus.SetLevel(logrus.DebugLevel)
 	now := metav1.Now()
+	future := metav1.Time{Time: time.Now().Add(time.Minute)}
 	pipelineSpec := pipelinev1alpha1.PipelineRunSpec{}
 	noJobChange := func(pj prowjobv1.ProwJob, _ pipelinev1beta1.PipelineRun) prowjobv1.ProwJob {
 		return pj
@@ -242,6 +261,7 @@ func TestReconcile(t *testing.T) {
 		observedPipelineRun *pipelinev1beta1.PipelineRun
 		expectedJob         func(prowjobv1.ProwJob, pipelinev1beta1.PipelineRun) prowjobv1.ProwJob
 		expectedPipelineRun func(prowjobv1.ProwJob, pipelinev1beta1.PipelineRun) pipelinev1beta1.PipelineRun
+		duplicateStartTime  *metav1.Time
 		err                 bool
 	}{
 		{
@@ -262,6 +282,83 @@ func TestReconcile(t *testing.T) {
 					State:       prowjobv1.PendingState,
 					Description: descScheduling,
 					BuildID:     pipelineID,
+				}
+				return pj
+			},
+			expectedPipelineRun: func(pj prowjobv1.ProwJob, _ pipelinev1beta1.PipelineRun) pipelinev1beta1.PipelineRun {
+				pj.Spec.Type = prowjobv1.PeriodicJob
+				p, err := makePipelineRun(pj)
+				if err != nil {
+					panic(err)
+				}
+				return *p
+			},
+		},
+		{
+			name:               "new prow job followed by a newer duplicate does not create a pipeline",
+			duplicateStartTime: &future,
+			observedJob: &prowjobv1.ProwJob{
+				Status: prowjobv1.ProwJobStatus{
+					State:     prowjobv1.PendingState,
+					BuildID:   pipelineID,
+					StartTime: now,
+				},
+				Spec: prowjobv1.ProwJobSpec{
+					Agent:           prowjobv1.TektonAgent,
+					PipelineRunSpec: &pipelineSpec,
+					Job:             "foobar",
+				},
+			},
+			expectedJob: func(pj prowjobv1.ProwJob, _ pipelinev1beta1.PipelineRun) prowjobv1.ProwJob {
+				if !strings.Contains(pj.Name, duplicateAppendix) {
+					pj.Status = prowjobv1.ProwJobStatus{
+						StartTime:      now,
+						State:          prowjobv1.AbortedState,
+						Description:    descAborted,
+						BuildID:        pipelineID,
+						CompletionTime: &now,
+					}
+					return pj
+				}
+				pj.Status = prowjobv1.ProwJobStatus{
+					StartTime: future,
+					State:     prowjobv1.PendingState,
+					BuildID:   pipelineID + duplicateAppendix,
+				}
+				return pj
+			},
+		},
+		{
+			name:               "new prow job preceded by an older duplicate creates a pipeline",
+			duplicateStartTime: &now,
+			observedJob: &prowjobv1.ProwJob{
+				Status: prowjobv1.ProwJobStatus{
+					State:     prowjobv1.PendingState,
+					BuildID:   pipelineID,
+					StartTime: future,
+				},
+				Spec: prowjobv1.ProwJobSpec{
+					Agent:           prowjobv1.TektonAgent,
+					PipelineRunSpec: &pipelineSpec,
+					Job:             "foobar",
+				},
+			},
+			expectedJob: func(pj prowjobv1.ProwJob, _ pipelinev1beta1.PipelineRun) prowjobv1.ProwJob {
+				if !strings.Contains(pj.Name, duplicateAppendix) {
+					pj.Status = prowjobv1.ProwJobStatus{
+						StartTime:   future,
+						State:       prowjobv1.PendingState,
+						Description: descScheduling,
+						BuildID:     pipelineID,
+					}
+					return pj
+				}
+				pj.Status = prowjobv1.ProwJobStatus{
+					StartTime:      now,
+					State:          prowjobv1.AbortedState,
+					BuildID:        pipelineID + duplicateAppendix,
+					CompletionTime: &now,
+					Description:    descAborted,
 				}
 				return pj
 			},
@@ -718,9 +815,17 @@ func TestReconcile(t *testing.T) {
 			}
 
 			jk := toKey(fakePJCtx, fakePJNS, name)
+			jkDuplicate := toKey(fakePJCtx, fakePJNS, name+duplicateAppendix)
 			if j := tc.observedJob; j != nil {
 				j.Name = name
 				j.Spec.Type = prowjobv1.PeriodicJob
+				if tc.duplicateStartTime != nil {
+					duplicate := j.DeepCopy()
+					duplicate.Name = name + duplicateAppendix
+					duplicate.Status.StartTime = *tc.duplicateStartTime
+					duplicate.Status.BuildID = j.Status.BuildID + duplicateAppendix
+					r.jobs[jkDuplicate] = *duplicate
+				}
 				r.jobs[jk] = *j
 			}
 			pk := toKey(tc.context, tc.namespace, name)
@@ -733,6 +838,10 @@ func TestReconcile(t *testing.T) {
 			expectedJobs := map[string]prowjobv1.ProwJob{}
 			if j := tc.expectedJob; j != nil {
 				expectedJobs[jk] = j(r.jobs[jk], r.pipelines[pk])
+				if tc.duplicateStartTime != nil {
+					// use empty pipeline run as we don't care about the duplicate
+					expectedJobs[jkDuplicate] = j(r.jobs[jkDuplicate], pipelinev1beta1.PipelineRun{})
+				}
 			}
 			expectedPipelineRuns := map[string]pipelinev1beta1.PipelineRun{}
 			if p := tc.expectedPipelineRun; p != nil {
