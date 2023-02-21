@@ -38,17 +38,17 @@ var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 // RetestRequiredRe provides the regex for `/retest-required`
 var RetestRequiredRe = regexp.MustCompile(`(?m)^/retest-required\s*$`)
 
-var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
+var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 
-var LGTMRe = regexp.MustCompile(`(?m)^/lgtm\s*$`)
+var lgtmRe = regexp.MustCompile(`(?m)^/lgtm\s*$`)
 
-var ApproveRe = regexp.MustCompile(`(?m)^/approve\s*$`)
+var approveRe = regexp.MustCompile(`(?m)^/approve\s*$`)
 
 // CommentMakesPROkToTest returns true if a comment's content indicates the user is allowing the PR to be tested
 // The most obvious case of this is using /ok-to-test, but /lgtm and /approve are also taken as implying the PR is
 // trusted for running tests
 func CommentMakesPROkToTest(comment string) bool {
-	return OkToTestRe.MatchString(comment) || LGTMRe.MatchString(comment) || ApproveRe.MatchString(comment)
+	return okToTestRe.MatchString(comment) || lgtmRe.MatchString(comment) || approveRe.MatchString(comment)
 }
 
 // AvailablePresubmits returns 3 sets of presubmits:
