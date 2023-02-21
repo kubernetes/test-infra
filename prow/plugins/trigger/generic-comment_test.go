@@ -114,6 +114,24 @@ func TestHandleGenericComment(t *testing.T) {
 			ShouldBuild: false,
 		},
 		{
+			name: "Non-trusted member's LGTM.",
+
+			Author:      "untrusted-member",
+			Body:        "/lgtm",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: false,
+		},
+		{
+			name: "Non-trusted member's approval.",
+
+			Author:      "untrusted-member",
+			Body:        "/approve",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: false,
+		},
+		{
 			name:        "accept /test from non-trusted member if PR author is trusted",
 			Author:      "untrusted-member",
 			PRAuthor:    "trusted-member",
@@ -177,6 +195,46 @@ func TestHandleGenericComment(t *testing.T) {
 
 			Author:      "trusted-member",
 			Body:        "looks great, thanks!\n/ok-to-test \r",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: true,
+			AddedLabels: issueLabels(labels.OkToTest),
+		},
+		{
+			name: "Trusted member's LGTM",
+
+			Author:      "trusted-member",
+			Body:        "looks great, thanks!\n/lgtm",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: true,
+			AddedLabels: issueLabels(labels.OkToTest),
+		},
+		{
+			name: "Trusted member's LGTM, trailing space.",
+
+			Author:      "trusted-member",
+			Body:        "looks great, thanks!\n/lgtm \r",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: true,
+			AddedLabels: issueLabels(labels.OkToTest),
+		},
+		{
+			name: "Trusted member's approval",
+
+			Author:      "trusted-member",
+			Body:        "looks great, thanks!\n/approve",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: true,
+			AddedLabels: issueLabels(labels.OkToTest),
+		},
+		{
+			name: "Trusted member's approval, trailing space.",
+
+			Author:      "trusted-member",
+			Body:        "looks great, thanks!\n/approve \r",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
