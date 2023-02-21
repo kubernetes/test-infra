@@ -181,6 +181,26 @@ func TestHandleGenericComment(t *testing.T) {
 			IgnoreOkToTest: true,
 		},
 		{
+			name: "Trusted member's LGTM, IgnoreOkToTest",
+
+			Author:         "trusted-member",
+			Body:           "/lgtm",
+			State:          "open",
+			IsPR:           true,
+			ShouldBuild:    false,
+			IgnoreOkToTest: true,
+		},
+		{
+			name: "Trusted member's approval, IgnoreOkToTest",
+
+			Author:         "trusted-member",
+			Body:           "/approve",
+			State:          "open",
+			IsPR:           true,
+			ShouldBuild:    false,
+			IgnoreOkToTest: true,
+		},
+		{
 			name: "Trusted member's ok to test",
 
 			Author:      "trusted-member",
