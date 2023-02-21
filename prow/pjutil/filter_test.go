@@ -576,6 +576,110 @@ func TestPresubmitFilter(t *testing.T) {
 			expected: [][]bool{{true, false, false}, {true, false, false}, {true, false, false}, {false, false, false}},
 		},
 		{
+			name:          "/lgtm comment honored for ok to test selects all tests that don't need an explicit trigger",
+			body:          "/lgtm",
+			honorOkToTest: true,
+			org:           "org",
+			repo:          "repo",
+			ref:           "ref",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "always-runs",
+					},
+					AlwaysRun: true,
+					Reporter: config.Reporter{
+						Context: "always-runs",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "sometimes",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-triggered",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-triggered",
+					},
+					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
+					RerunCommand: "/test trigger",
+				},
+			},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {true, false, false}, {false, false, false}},
+		},
+		{
+			name:          "/approve comment honored for ok to test selects all tests that don't need an explicit trigger",
+			body:          "/approve",
+			honorOkToTest: true,
+			org:           "org",
+			repo:          "repo",
+			ref:           "ref",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "always-runs",
+					},
+					AlwaysRun: true,
+					Reporter: config.Reporter{
+						Context: "always-runs",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						RunIfChanged: "sometimes",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-changed",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-changed",
+					},
+					RegexpChangeMatcher: config.RegexpChangeMatcher{
+						SkipIfOnlyChanged: "sometimes",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "runs-if-triggered",
+					},
+					Reporter: config.Reporter{
+						Context: "runs-if-triggered",
+					},
+					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
+					RerunCommand: "/test trigger",
+				},
+			},
+			expected: [][]bool{{true, false, false}, {true, false, false}, {true, false, false}, {false, false, false}},
+		},
+		{
 			name:          "not honored ok-to-test comment selects no tests",
 			body:          "/ok-to-test",
 			honorOkToTest: false,
