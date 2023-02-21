@@ -206,8 +206,8 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
-  kubernetes-sigs/cluster-api-provider-operator:
-    - name: post-cluster-api-provider-operator-push-images
+  kubernetes-sigs/cluster-api-operator:
+    - name: post-cluster-api-operator-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
