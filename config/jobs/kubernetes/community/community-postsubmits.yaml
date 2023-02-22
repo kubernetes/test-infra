@@ -1,0 +1,24 @@
+# kubernetes/community postsubmits
+postsubmits:
+  kubernetes/community:
+  - name: generate-sigs
+    branches:
+    - ^master$
+    decorate: true
+    path_alias: k8s.io/community
+    always_run: false
+    run_if_changed: '^sigs.yaml'
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: golang:1.18
+        command:
+        - make
+        args:
+        - generate-dockerized
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-contribex-org
