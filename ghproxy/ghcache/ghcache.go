@@ -317,11 +317,15 @@ func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, erro
 // reach the cache layer in order to force the caching policy we require.
 //
 // By default github responds to PR requests with:
-//    Cache-Control: private, max-age=60, s-maxage=60
+//
+//	Cache-Control: private, max-age=60, s-maxage=60
+//
 // Which means the httpcache would not consider anything stale for 60 seconds.
 // However, we want to always revalidate cache entries using ETags and last
 // modified times so this RoundTripper overrides response headers to:
-//    Cache-Control: no-cache
+//
+//	Cache-Control: no-cache
+//
 // This instructs the cache to store the response, but always consider it stale.
 type upstreamTransport struct {
 	roundTripper http.RoundTripper
@@ -339,6 +343,12 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 
 	reqStartTime := time.Now()
 	// Don't modify request, just pass to roundTripper.
+
+	// Make sure we don't have duplicate github enterprise api paths in our request URL.
+	// This fixes pagination related issues that our github client doesn't solve for
+	// ghproxy cached requests.
+	req.URL.Path = strings.ReplaceAll(req.URL.Path, "api/v3/api/v3", "api/v3")
+
 	resp, err := u.roundTripper.RoundTrip(req)
 	if err != nil {
 		ghmetrics.CollectRequestTimeoutMetrics(tokenBudgetName, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
