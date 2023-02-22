@@ -25,10 +25,16 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   extra_refs:
-  - base_ref: release-1.7
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
     repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: release-1.24
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - command:
@@ -64,6 +70,12 @@ periodics:
     repo: cluster-api-provider-azure
     base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: release-1.24
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.24

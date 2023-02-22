@@ -260,6 +260,11 @@ presubmits:
       preset-azure-cred-only: "true"
     branches:
     - ^main$
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
@@ -294,6 +299,11 @@ presubmits:
       preset-azure-cred-only: "true"
     branches:
     - ^main$
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
@@ -334,6 +344,11 @@ presubmits:
       preset-azure-cred-only: "true"
     branches:
     - ^main$
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
