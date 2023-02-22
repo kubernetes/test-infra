@@ -23,10 +23,10 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
-    always_run: true
     optional: true
     branches:
     - ^release-1.3$
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -67,9 +67,9 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
-    always_run: true
     branches:
     - ^release-1.3$
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -88,9 +88,9 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
-    always_run: true
     branches:
     - ^release-1.3$
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -122,7 +122,7 @@ presubmits:
     branches:
     - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -153,7 +153,7 @@ presubmits:
     branches:
     - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -186,7 +186,7 @@ presubmits:
     branches:
     - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
