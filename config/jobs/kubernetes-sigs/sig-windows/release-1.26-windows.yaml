@@ -16,10 +16,16 @@ periodics:
   decoration_config:
     timeout: 4h0m0s
   extra_refs:
-  - base_ref: release-1.7
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
     repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: release-1.26
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   interval: 24h
   labels:
     preset-azure-cred-only: "true"
