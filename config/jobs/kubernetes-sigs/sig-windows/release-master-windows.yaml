@@ -83,6 +83,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
     preset-capz-windows-common-main: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-latest: "true"
