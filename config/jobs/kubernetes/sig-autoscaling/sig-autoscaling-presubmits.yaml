@@ -55,6 +55,8 @@ presubmits:
     # TODO: set `optional: false` once tests not flaky
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 310m
     run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/horizontal_pod_autoscaling|test\/e2e\/framework\/autoscaling\/)'
     labels:
       preset-service-account: "true"
@@ -72,11 +74,9 @@ presubmits:
         # Enable HPAContainerMetrics. Required for container metrics tests.
         - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
         - --extract=ci/latest
-        - --timeout=240m
-        - --test_args=--ginkgo.focus=\[Feature:HPA\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:HPA\] --minStartupPods=8
         - --ginkgo-parallel=1
-        - --timeout=260m
+        - --timeout=300m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
 
   - name: pull-kubernetes-e2e-autoscaling-hpa-cm
@@ -86,6 +86,8 @@ presubmits:
     # TODO: set `optional: false` once tests not flaky
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 310m
     run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/custom_metrics_stackdriver_autoscaling.go$)'
     labels:
       preset-service-account: "true"
