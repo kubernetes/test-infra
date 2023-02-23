@@ -248,7 +248,7 @@ periodics:
           value: "1"
 
 - name: ci-kubernetes-fsquota-ubuntu
-  interval: 4h
+  interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-dashboards: sig-node-kubelet
