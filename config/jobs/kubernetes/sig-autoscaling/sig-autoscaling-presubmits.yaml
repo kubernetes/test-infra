@@ -55,7 +55,9 @@ presubmits:
     # TODO: set `optional: false` once tests not flaky
     optional: true
     decorate: true
-    run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/horizontal_pod_autoscaling|test\/e2e\/framework\/autoscaling\/)'
+    # TODO: replace always_run with run_if_changed once config stable
+    always_run: false
+    # run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/horizontal_pod_autoscaling|test\/e2e\/framework\/autoscaling\/)'
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -86,7 +88,9 @@ presubmits:
     # TODO: set `optional: false` once tests not flaky
     optional: true
     decorate: true
-    run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/custom_metrics_stackdriver_autoscaling.go$)'
+    # TODO: replace always_run with run_if_changed once config stable
+    always_run: false
+    # run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/horizontal_pod_autoscaling|test\/e2e\/framework\/autoscaling\/)'
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
