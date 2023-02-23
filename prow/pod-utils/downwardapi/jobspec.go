@@ -105,17 +105,31 @@ const (
 	pullRefsEnv    = "PULL_REFS"
 	pullNumberEnv  = "PULL_NUMBER"
 	pullPullShaEnv = "PULL_PULL_SHA"
+
+	// Starting from Git 2.35.2, running commands or parsing configuration in a repository cloned by
+	// others is prohibited by default. The UID of the clonerefs container will differ from
+	// any future UIDs assigned to containers that interact with the repository. Adding a git env values
+	// to the git will allow the command to run without error, working in previous mode.
+	gitConfigCount            = "GIT_CONFIG_COUNT"
+	gitConfigCountValue       = "1"
+	gitConfigKey              = "GIT_CONFIG_KEY_0"
+	gitConfigKeySafeDirectory = "safe.directory"
+	gitConfigValue            = "GIT_CONFIG_VALUE_0"
+	gitConfigValueStar        = "*"
 )
 
 // EnvForSpec returns a mapping of environment variables
 // to their values that should be available for a job spec
 func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env := map[string]string{
-		ci:           "true",
-		jobNameEnv:   spec.Job,
-		buildIDEnv:   spec.BuildID,
-		prowJobIDEnv: spec.ProwJobID,
-		jobTypeEnv:   string(spec.Type),
+		ci:             "true",
+		jobNameEnv:     spec.Job,
+		buildIDEnv:     spec.BuildID,
+		prowJobIDEnv:   spec.ProwJobID,
+		jobTypeEnv:     string(spec.Type),
+		gitConfigCount: gitConfigCountValue,
+		gitConfigKey:   gitConfigKeySafeDirectory,
+		gitConfigValue: gitConfigValueStar,
 	}
 
 	// for backwards compatibility, we provide the build ID

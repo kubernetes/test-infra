@@ -907,9 +907,10 @@ func TestMakeResourcesAlpha1(t *testing.T) {
 				return pj
 			},
 			pipelineRun: func(pr pipelinev1beta1.PipelineRun) pipelinev1beta1.PipelineRun {
-				pr.Spec.Params[4].Value = pipelinev1beta1.ArrayOrString{
-					Type:      pipelinev1beta1.ParamTypeString,
-					StringVal: string(prowjobv1.PresubmitJob),
+				for i, r := range pr.Spec.Params {
+					if r.Name == "JOB_TYPE" {
+						pr.Spec.Params[i].Value.StringVal = string(prowjobv1.PresubmitJob)
+					}
 				}
 				pr.Spec.Params = append(pr.Spec.Params,
 					pipelinev1beta1.Param{
@@ -1090,6 +1091,27 @@ func TestMakeResourcesAlpha1(t *testing.T) {
 					},
 				},
 				{
+					Name: "GIT_CONFIG_COUNT",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: "1",
+					},
+				},
+				{
+					Name: "GIT_CONFIG_KEY_0",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: "safe.directory",
+					},
+				},
+				{
+					Name: "GIT_CONFIG_VALUE_0",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: "*",
+					},
+				},
+				{
 					Name: "JOB_NAME",
 					Value: pipelinev1alpha1.ArrayOrString{
 						Type:      pipelinev1alpha1.ParamTypeString,
@@ -1166,9 +1188,10 @@ func TestMakeResourcesBeta1(t *testing.T) {
 				return pj
 			},
 			pipelineRun: func(pr pipelinev1beta1.PipelineRun) pipelinev1beta1.PipelineRun {
-				pr.Spec.Params[4].Value = pipelinev1beta1.ArrayOrString{
-					Type:      pipelinev1beta1.ParamTypeString,
-					StringVal: string(prowjobv1.PresubmitJob),
+				for i, r := range pr.Spec.Params {
+					if r.Name == "JOB_TYPE" {
+						pr.Spec.Params[i].Value.StringVal = string(prowjobv1.PresubmitJob)
+					}
 				}
 				pr.Spec.Params = append(pr.Spec.Params,
 					pipelinev1beta1.Param{
@@ -1348,6 +1371,27 @@ func TestMakeResourcesBeta1(t *testing.T) {
 					Value: pipelinev1alpha1.ArrayOrString{
 						Type:      pipelinev1alpha1.ParamTypeString,
 						StringVal: "true",
+					},
+				},
+				{
+					Name: "GIT_CONFIG_COUNT",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: "1",
+					},
+				},
+				{
+					Name: "GIT_CONFIG_KEY_0",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: "safe.directory",
+					},
+				},
+				{
+					Name: "GIT_CONFIG_VALUE_0",
+					Value: pipelinev1alpha1.ArrayOrString{
+						Type:      pipelinev1alpha1.ParamTypeString,
+						StringVal: "*",
 					},
 				},
 				{
