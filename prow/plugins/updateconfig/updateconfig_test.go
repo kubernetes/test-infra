@@ -102,6 +102,9 @@ var remoteFiles = map[string]map[string]string{
 	"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
 		defaultBranch: "old-removed-config",
 	},
+	"dir/subdir/even.yaml": {
+		"12345": "even SHA256",
+	},
 }
 
 func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string) git.ClientFactory {
@@ -1431,6 +1434,67 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					"prow/*.yaml": {
 						Name:             "config",
 						UseFullPathAsKey: true,
+					},
+				},
+			},
+		},
+		{
+			name:        "Partitioned ConfigMaps actually partition",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "dir/subdir/fejta.yaml",
+					Status:    "added",
+					Additions: 1,
+				},
+				{
+					Filename:  "dir/subdir/fejtaverse/sig-foo/added.yaml",
+					Status:    "added",
+					Additions: 1,
+				},
+				{
+					Filename:  "dir/subdir/even.yaml",
+					Status:    "added",
+					Additions: 1,
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-1",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"even.yaml": "even SHA256",
+						"VERSION":   "12345",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-2",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"fejta.yaml": "new-fejta-config",
+						"added.yaml": "new-added-config",
+						"VERSION":    "12345",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"dir/**/*.yaml": {
+						PartitionedNames: []string{"job-config-part-1", "job-config-part-2"},
 					},
 				},
 			},
