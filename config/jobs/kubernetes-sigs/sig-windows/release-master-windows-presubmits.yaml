@@ -109,7 +109,6 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common-main: "true"
-      preset-capz-containerd-latest: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -132,6 +131,8 @@ presubmits:
             value: "windows-2022"
           - name: HYPERV
             value: "true"
+          - name: WINDOWS_CONTAINERD_URL
+            value: "https://github.com/containerd/containerd/releases/download/v1.7.0-beta.4/containerd-1.7.0-beta.4-windows-amd64.tar.gz"
           - name: GINKGO_FOCUS
             value: \[sig-windows\] # run just a subset to speed up testing time
     annotations:
