@@ -314,7 +314,6 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
