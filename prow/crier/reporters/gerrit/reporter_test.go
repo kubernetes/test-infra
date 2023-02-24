@@ -2189,6 +2189,14 @@ func TestMultipleWorks(t *testing.T) {
 				if _, ok := pj.Status.PrevReportStates["gerrit-reporter"]; !ok {
 					t.Fatalf("PrevReportStates should have been set. Got: %v", pj.Status.PrevReportStates)
 				}
+
+				if pj.Status.PrevReportDescriptions == nil {
+					t.Fatalf("PrevReportDescriptions should have been set")
+				}
+
+				if _, ok := pj.Status.PrevReportDescriptions["gerrit-reporter"]; !ok {
+					t.Fatalf("PrevReportDescriptions should have been set. Got: %v", pj.Status.PrevReportDescriptions)
+				}
 			}
 		})
 	}

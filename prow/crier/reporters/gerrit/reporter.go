@@ -308,8 +308,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 			return nil, nil, fmt.Errorf("failed to get prowjob %s: %w", pjObjKey.String(), err)
 		}
-		if pj.Status.PrevReportStates[c.GetName()] == pj.Status.State &&
-			pj.Status.PrevReportDescriptions[c.GetName()] == pj.Status.Description {
+		if !pj.NeedReportState(c.GetName()) {
 			logger.Info("Already reported by other threads.")
 			return nil, nil, nil
 		}

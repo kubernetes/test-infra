@@ -32,7 +32,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
-func updateReportState(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entry, reportedState prowv1.ProwJobState, pjclientset ctrlruntimeclient.Client, reporterName string) error {
+func updateReportState(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entry, reportedState prowv1.ProwJobState, reportedDescription string, pjclientset ctrlruntimeclient.Client, reporterName string) error {
 	// update pj report status
 	newpj := pj.DeepCopy()
 	// we set omitempty on PrevReportStates, so here we need to init it if is nil
@@ -40,6 +40,11 @@ func updateReportState(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entr
 		newpj.Status.PrevReportStates = map[string]prowv1.ProwJobState{}
 	}
 	newpj.Status.PrevReportStates[reporterName] = reportedState
+	// we set omitempty on PrevReportDescriptions, so here we need to init it if is nil
+	if newpj.Status.PrevReportDescriptions == nil {
+		newpj.Status.PrevReportDescriptions = map[string]string{}
+	}
+	newpj.Status.PrevReportDescriptions[reporterName] = reportedDescription
 
 	if err := pjclientset.Patch(ctx, newpj, ctrlruntimeclient.MergeFrom(pj)); err != nil {
 		return fmt.Errorf("failed to patch: %w", err)
@@ -62,10 +67,12 @@ func updateReportState(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entr
 
 func UpdateReportStateWithRetries(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entry, pjclientset ctrlruntimeclient.Client, reporterName string) error {
 	reportState := pj.Status.State
+	reportDescription := pj.Status.Description
 	log = log.WithFields(logrus.Fields{
-		"prowjob":   pj.Name,
-		"jobName":   pj.Spec.Job,
-		"jobStatus": reportState,
+		"prowjob":        pj.Name,
+		"jobName":        pj.Spec.Job,
+		"jobStatus":      reportState,
+		"jobDescription": reportDescription,
 	})
 	// We have to retry here, if we return we lose the information that we already reported this job.
 	if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
@@ -76,7 +83,7 @@ func UpdateReportStateWithRetries(ctx context.Context, pj *prowv1.ProwJob, log *
 		}
 		// Must not wrap until we have kube 1.19, otherwise the RetryOnConflict won't recognize conflicts
 		// correctly
-		return updateReportState(ctx, pj, log, reportState, pjclientset, reporterName)
+		return updateReportState(ctx, pj, log, reportState, reportDescription, pjclientset, reporterName)
 	}); err != nil {
 		// Very subpar, we will report again. But even if we didn't do that now, we would do so
 		// latest when crier gets restarted. In an ideal world, all reporters are idempotent and
