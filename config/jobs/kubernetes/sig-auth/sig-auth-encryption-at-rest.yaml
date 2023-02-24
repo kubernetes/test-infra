@@ -45,6 +45,7 @@ presubmits:
           for binary in kubectl e2e.test ginkgo; do
             cp -f _output/local/go/bin/${binary} _output/dockerized/bin/linux/amd64/${binary};
           done;
+          test/e2e/testing-manifests/auth/encrypt/setup-cluster-prereqs.sh;
           kubetest2 kind -v 5 \;
             --build \;
             --up \;
