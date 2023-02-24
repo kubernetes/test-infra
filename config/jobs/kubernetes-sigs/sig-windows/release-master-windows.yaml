@@ -30,7 +30,7 @@ presets:
     preset-capz-containerd-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.6.8/containerd-1.6.8-windows-amd64.tar.gz"
+    value: "https://github.com/containerd/containerd/releases/download/v1.6.18/containerd-1.6.18-windows-amd64.tar.gz"
 - labels:
     preset-capz-serial-slow: "true"
   env:
