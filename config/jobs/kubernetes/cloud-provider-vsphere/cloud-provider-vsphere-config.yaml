@@ -259,6 +259,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     branches:
     - ^master$
+    - ^release-.*$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
