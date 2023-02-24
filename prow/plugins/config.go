@@ -500,6 +500,12 @@ type Slack struct {
 type ConfigMapSpec struct {
 	// Name of ConfigMap
 	Name string `json:"name"`
+	// PartitionedNames is a slice of names of ConfigMaps that the keys should be balanced across.
+	// This is useful when no explicit key is given and file names/paths are used as keys instead.
+	// This is used to work around the 1MB ConfigMap size limit by spreading the keys across multiple
+	// separate ConfigMaps.
+	// PartitionedNames is mutually exclusive with the "Name" field.
+	PartitionedNames []string `json:"partitioned_names,omitempty"`
 	// Key is the key in the ConfigMap to update with the file contents.
 	// If no explicit key is given, the basename of the file will be used unless
 	// use_full_path_as_key: true is set, in which case the full filepath relative
@@ -571,10 +577,11 @@ func (cu *ConfigUpdater) resolve() error {
 		}
 
 		cu.Maps[k] = ConfigMapSpec{
-			Name:     v.Name,
-			Key:      v.Key,
-			GZIP:     v.GZIP,
-			Clusters: clusters,
+			Name:             v.Name,
+			PartitionedNames: v.PartitionedNames,
+			Key:              v.Key,
+			GZIP:             v.GZIP,
+			Clusters:         clusters,
 		}
 	}
 
@@ -1146,10 +1153,23 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 	updater.SetDefaults()
 	configMapKeys := map[ConfigMapID]sets.String{}
 	for file, config := range updater.Maps {
+		// Check that Name and PartitionedNames are mutually exclusive
+		if config.Name != "" && len(config.PartitionedNames) > 0 {
+			return errors.New("'name' and 'partitioned_names' are mutually exclusive in the config_updater plugin configuration")
+		}
+		name := config.Name
+		if name == "" {
+			name = strings.Join(config.PartitionedNames, ",")
+		}
+		// Check that PartitionedNames doesn't use too many partitions.
+		if len(config.PartitionedNames) > 256 {
+			return fmt.Errorf("the PartitionedNames field in config_updater plugin config currently supports a maximum of 256 partitions, but you have %d defined", len(config.PartitionedNames))
+		}
+		// Check that keys are not associated with multiple files.
 		for cluster, namespaces := range config.Clusters {
 			for _, namespace := range namespaces {
 				cmID := ConfigMapID{
-					Name:      config.Name,
+					Name:      name,
 					Namespace: namespace,
 					Cluster:   cluster,
 				}
@@ -1161,7 +1181,7 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 
 				if _, ok := configMapKeys[cmID]; ok {
 					if configMapKeys[cmID].Has(key) {
-						return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
+						return fmt.Errorf("key %s in configmap %s updated with more than one file", key, name)
 					}
 					configMapKeys[cmID].Insert(key)
 				} else {
