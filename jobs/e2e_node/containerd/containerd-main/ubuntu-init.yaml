@@ -1,0 +1,31 @@
+#cloud-config
+# This bootstraps a public ubuntu 2204 image from scratch.
+runcmd:
+  - echo "Test run from /tmp folder, remounting it"
+  - mount /tmp /tmp -o remount,exec,suid
+
+  - echo "Downloading containerd"
+  - 'pushd /tmp && curl -fsSLO https://download.docker.com/linux/ubuntu/dists/jammy/pool/stable/amd64/containerd.io_1.6.9-1_amd64.deb && dpkg -i containerd.io_1.6.9-1_amd64.deb && popd'
+
+  - echo "This will configure built-in containerd for k8s tests. Containerd version is:"
+  - ctr version # current version of containerd
+
+  - echo "Download and install CNI configuration to /home/containerd"
+  - mkdir -p /home/containerd
+  - mount --bind /home/containerd /home/containerd
+  - mount -o remount,exec /home/containerd
+  - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -o /home/containerd/cni.template https://raw.githubusercontent.com/kubernetes/test-infra/master/jobs/e2e_node/containerd/cni.template '
+
+  - echo "Download and install CNI to /home/containerd"
+  - 'curl -sSL --fail --retry 5 --retry-delay 3 --silent --show-error -o /home/containerd/cni.tgz https://storage.googleapis.com/k8s-artifacts-cni/release/v1.0.1/cni-plugins-linux-amd64-v1.0.1.tgz'
+  - tar xzf /home/containerd/cni.tgz -C /home/containerd --overwrite
+
+  - echo "Set containerd configuration"
+  - mkdir -p /etc/containerd
+  - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -o /etc/containerd/config.toml https://raw.githubusercontent.com/kubernetes/test-infra/master/jobs/e2e_node/containerd/config.toml'
+  - 'curl --fail --retry 5 --retry-delay 3 --silent --show-error -o /etc/containerd/env https://raw.githubusercontent.com/kubernetes/test-infra/master/jobs/e2e_node/containerd/containerd-main/env'
+
+  - echo "Restarting containerd"
+  - systemctl restart containerd
+
+  - echo "Configuration complete"
