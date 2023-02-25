@@ -160,8 +160,8 @@ github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRF
 github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d/go.mod h1:rBZYJk541a8SKzHPHnH3zbiI+7dagKZ0cgpgrD7Fyho=
 github.com/alvaroaleman/httpcache v0.0.0-20210618195546-ab9a1a3f8a38 h1:ML+zGuJv9er8cg0N8D8edCNOwqI/Kb3WoV6VsIV93SU=
 github.com/alvaroaleman/httpcache v0.0.0-20210618195546-ab9a1a3f8a38/go.mod h1:R4sf/p+3TZ6dvs7BxjxjozS7lIpzKtuS4jmQt4egJfU=
-github.com/andygrunwald/go-gerrit v0.0.0-20230208122044-15d9b4422724 h1:0TvOoEps4QAHGCJ3+x2y46RaK6+hvLAO18RyvvSwECs=
-github.com/andygrunwald/go-gerrit v0.0.0-20230208122044-15d9b4422724/go.mod h1:SeP12EkHZxEVjuJ2HZET304NBtHGG2X6w2Gzd0QXAZw=
+github.com/andygrunwald/go-gerrit v0.0.0-20210709065208-9d38b0be0268 h1:7gokoTWteZhP1t2f0OzrFFXlyL8o0+b0r4ZaRV9PXOs=
+github.com/andygrunwald/go-gerrit v0.0.0-20210709065208-9d38b0be0268/go.mod h1:aqcjwEnmLLSalFNYR0p2ttnEXOVVRctIzsUMHbEcruU=
 github.com/andygrunwald/go-jira v1.14.0 h1:7GT/3qhar2dGJ0kq8w0d63liNyHOnxZsUZ9Pe4+AKBI=
 github.com/andygrunwald/go-jira v1.14.0/go.mod h1:KMo2f4DgMZA1C9FdImuLc04x4WQhn5derQpnsuBFgqE=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239 h1:kFOfPq6dUM1hTo4JG6LR5AXSUEsOjtdm0kw0FtQtMJA=
