@@ -602,7 +602,7 @@ func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, p
 
 	var opt gerrit.QueryChangeOptions
 	opt.Query = append(opt.Query, strings.Join(append(additionalFilters, "project:"+project), "+"))
-	opt.AdditionalFields = []string{"ALL_REVISIONS", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES", "LABELS"}
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES", "LABELS"}
 
 	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
 	var start int
