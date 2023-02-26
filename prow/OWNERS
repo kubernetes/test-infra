@@ -1,6 +1,5 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 reviewers:
-  - alvaroaleman
   - cblecker
   - cjwagner
   - matthyx
@@ -9,7 +8,6 @@ reviewers:
   - stevekuznetsov
   - droslean
 approvers:
-  - alvaroaleman
   - cblecker
   - cjwagner
   - petr-muller
@@ -18,5 +16,6 @@ approvers:
 emeritus_approvers:
   - spxtr # 2018-09-17
   - fejta
+  - alvaroaleman
 labels:
   - area/prow
