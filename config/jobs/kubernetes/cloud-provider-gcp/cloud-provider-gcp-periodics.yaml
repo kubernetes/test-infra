@@ -334,7 +334,7 @@ periodics:
         cd -;
         kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --master-size n1-standard-2 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --focus-regex='\[Conformance\]' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
 
-- interval: 24h
+- interval: 1h # Temporarily run very frequently while we get it working
   cluster: k8s-infra-prow-build
   name: ci-cloud-provider-gcp-e2e-scenario-kops-simple
   decorate: true
@@ -357,6 +357,10 @@ periodics:
     repo: kops
     base_ref: master
     path_alias: kops
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
@@ -375,5 +379,10 @@ periodics:
       args:
       - "/bin/bash"
       - "-c"
-      - cd /workspace/cloud-provider-gcp;
+      - set -o errexit;
+        set -o nounset;
+        set -o pipefail;
+        set -o xtrace;
+        cd $GOPATH/src/cloud-provider-gcp;
+        e2e/add-kubernetes-to-workspace.sh;
         e2e/scenarios/kops-simple
