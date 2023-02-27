@@ -355,7 +355,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
     branches:
     - ^release-1.*
     extra_refs:
