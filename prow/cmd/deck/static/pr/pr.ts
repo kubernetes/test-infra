@@ -5,7 +5,7 @@ import {Label, PullRequest, UserData} from '../api/pr';
 import {ProwJob, ProwJobList, ProwJobState} from '../api/prow';
 import {Blocker, TideData, TidePool, TideQuery as ITideQuery} from '../api/tide';
 import {getCookieByName, tidehistory} from '../common/common';
-import {relativeURL} from "../common/urls";
+import {parseQuery, relativeURL} from "../common/urls";
 
 declare const tideData: TideData;
 declare const allBuilds: ProwJobList;
@@ -553,11 +553,15 @@ function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: Va
   prTitleText.classList.add("pr-title-text");
   prTitle.appendChild(prTitleText);
 
-  const pool = tidePools.filter((p) => {
-    const repo = `${p.Org}/${p.Repo}`;
-    return pr.Repository.NameWithOwner === repo && pr.BaseRef.Name === p.Branch;
-  });
-  let tidePoolLabel = createTidePoolLabel(pr, pool[0]);
+  let tidePoolLabel;
+  if (tidePools && tidePools.length) {
+    const pool = tidePools.filter((p) => {
+      const repo = `${p.Org}/${p.Repo}`;
+      return pr.Repository.NameWithOwner === repo && pr.BaseRef.Name === p.Branch;
+    });
+    tidePoolLabel = createTidePoolLabel(pr, pool[0]);
+  }
+
   if (!tidePoolLabel) {
     tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, authorConflict, milestoneConflict);
   }
@@ -806,11 +810,8 @@ function fillDetail(selector: string, data?: string[] | string): void {
  * @param query
  * @returns {HTMLElement}
  */
-function createQueryDetailsBtn(query: ProcessedQuery): HTMLTableDataCellElement {
-  const mergeIcon = document.createElement("td");
-  mergeIcon.classList.add("merge-table-icon");
-
-  const iconButton = createIcon("information", "Clicks to see query details", [], true);
+function createQueryDetailsBtn(query: ProcessedQuery): HTMLElement {
+  const iconButton = createIcon("information", "Click to see query details", [], true);
   /* eslint-disable  @typescript-eslint/no-unnecessary-type-assertion */
   const dialog = document.querySelector("#query-dialog")! as HTMLDialogElement;
 
@@ -830,15 +831,14 @@ function createQueryDetailsBtn(query: ProcessedQuery): HTMLTableDataCellElement 
     }));
     dialog.showModal();
   });
-  mergeIcon.appendChild(iconButton);
 
-  return mergeIcon;
+  return iconButton;
 }
 
 /**
  * Creates merge requirement table for queries.
  */
-function createQueriesTable(prLabels: {Label: Label}[], queries: ProcessedQuery[]): HTMLTableElement {
+function createQueriesTable(prLabels: { Label: Label }[], query: ProcessedQuery): HTMLTableElement {
   const table = document.createElement("table");
   table.classList.add("merge-table");
   const thead = document.createElement("thead");
@@ -867,13 +867,10 @@ function createQueriesTable(prLabels: {Label: Label}[], queries: ProcessedQuery[
   const col3 = document.createElement("td");
 
   const body = document.createElement("tbody");
-  queries.forEach((query) => {
     const row = document.createElement("tr");
     row.appendChild(createMergeLabelCell(query.labels, true));
     row.appendChild(createMergeLabelCell(query.missingLabels));
-    row.appendChild(createQueryDetailsBtn(query));
     body.appendChild(row);
-  });
 
   tableRow.appendChild(col1);
   tableRow.appendChild(col2);
@@ -888,13 +885,13 @@ function createQueriesTable(prLabels: {Label: Label}[], queries: ProcessedQuery[
 /**
  * Creates the merge label requirement status.
  */
-function createMergeLabelStatus(prLabels: {Label: Label}[] = [], queries: ProcessedQuery[]): HTMLElement {
+function createMergeLabelStatus(prLabels: { Label: Label }[] = [], query: ProcessedQuery): HTMLElement {
   const statusContainer = document.createElement("div");
   statusContainer.classList.add("status-container");
   const status = document.createElement("div");
   statusContainer.appendChild(status);
-  if (queries.length > 0) {
-    const labelConflict = !hasResolvedLabels(queries[0]);
+  if (query) {
+    const labelConflict = !hasResolvedLabels(query);
     if (labelConflict) {
       status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
       status.appendChild(document.createTextNode("Does not meet label requirements"));
@@ -919,7 +916,7 @@ function createMergeLabelStatus(prLabels: {Label: Label}[] = [], queries: Proces
     status.classList.add("status", "expandable");
     status.appendChild(arrowIcon);
 
-    const queriesTable = createQueriesTable(prLabels, queries);
+    const queriesTable = createQueriesTable(prLabels, query);
     if (!labelConflict) {
       queriesTable.classList.add("hidden");
       arrowIcon.textContent = "expand_more";
@@ -1010,24 +1007,38 @@ function createGenericConflictStatus(pr: PullRequest, hasConflict: boolean, mess
   return statusContainer;
 }
 
-function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: ProcessedQuery[],
-  mergeable: boolean, branchConflict: boolean,
-  authorConflict: boolean, milestoneConflict: boolean): HTMLElement {
-  const cardBody = document.createElement("div");
+function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], mergeable: boolean): HTMLElement {
+  const cardBodyHeading = document.createElement("div");
   const title = document.createElement("h3");
   title.textContent = pr.Title;
+  cardBodyHeading.appendChild(title);
+  cardBodyHeading.appendChild(createJobStatus(builds));
+  cardBodyHeading.appendChild(createMergeConflictStatus(mergeable));
 
-  cardBody.classList.add("mdl-card__supporting-text");
-  cardBody.appendChild(title);
-  cardBody.appendChild(createJobStatus(builds));
-  const nodes = pr.Labels && pr.Labels.Nodes ? pr.Labels.Nodes : [];
-  cardBody.appendChild(createMergeLabelStatus(nodes, queries));
-  cardBody.appendChild(createMergeConflictStatus(mergeable));
-  cardBody.appendChild(createGenericConflictStatus(pr, branchConflict, `Merging into branch ${pr.BaseRef.Name} is currently forbidden`));
-  if (queries.length) {
-    cardBody.appendChild(createGenericConflictStatus(pr, authorConflict, `Only merges with author ${queries[0].author} are currently allowed`));
-    cardBody.appendChild(createGenericConflictStatus(pr, milestoneConflict, `Only merges into milestone ${queries[0].milestone} are currently allowed`));
+  return cardBodyHeading;
+}
+
+function createPRCardBodyQueryInfo(pr: PullRequest, builds: UnifiedContext[], query: ProcessedQuery, branchConflict: boolean,
+                          authorConflict: boolean, milestoneConflict: boolean, multipleQueries: boolean, queryNumber: number): HTMLElement {
+  const cardBody = document.createElement("div");
+  if (query) {
+    const queryTitle = document.createElement("h6")
+    let title = "Merge Query";
+    if (multipleQueries) {
+      title += " " + queryNumber;
+    }
+    queryTitle.textContent = title;
+    queryTitle.appendChild(createQueryDetailsBtn(query));
+    cardBody.appendChild(queryTitle)
   }
+  const nodes = pr.Labels && pr.Labels.Nodes ? pr.Labels.Nodes : [];
+  cardBody.appendChild(createMergeLabelStatus(nodes, query));
+  cardBody.appendChild(createGenericConflictStatus(pr, branchConflict, `Merging into branch ${pr.BaseRef.Name} is currently forbidden`));
+  if (query) {
+    cardBody.appendChild(createGenericConflictStatus(pr, authorConflict, `Only merges with author ${query.author} are currently allowed`));
+    cardBody.appendChild(createGenericConflictStatus(pr, milestoneConflict, `Only merges into milestone ${query.milestone} are currently allowed`));
+  }
+
   return cardBody;
 }
 
@@ -1164,16 +1175,51 @@ function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: P
   // priority (success)
   builds.sort(compareJobFn);
   prCard.classList.add("pr-card", "mdl-card");
+
   const hasMatchingQuery = queries.length > 0;
   const mergeConflict = pr.Mergeable ? pr.Mergeable === "CONFLICTING" : false;
-  const branchConflict = !!((pr.BaseRef && pr.BaseRef.Name && hasMatchingQuery) &&
-        ((queries[0].excludedBranches && queries[0].excludedBranches!.indexOf(pr.BaseRef.Name) !== -1) ||
-            (queries[0].includedBranches && queries[0].includedBranches!.indexOf(pr.BaseRef.Name) === -1)));
-  const authorConflict = hasMatchingQuery && queries[0].author ? (!pr.Author || !pr.Author.Login || normLogin(pr.Author.Login) !== normLogin(queries[0].author)) : false;
-  const milestoneConflict = hasMatchingQuery && queries[0].milestone ? (!pr.Milestone || !pr.Milestone.Title || pr.Milestone.Title !== queries[0].milestone) : false;
-  const labelConflict = hasMatchingQuery ? !hasResolvedLabels(queries[0]) : false;
-  prCard.appendChild(createPRCardTitle(pr, tidePools, jobVagueState(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, authorConflict, milestoneConflict));
-  prCard.appendChild(createPRCardBody(pr, builds, queries, mergeConflict, branchConflict, authorConflict, milestoneConflict));
+  let branchConflicts, authorConflicts, milestoneConflicts, labelConflicts = 0;
+  const prCardBody = document.createElement("div");
+  prCardBody.classList.add("mdl-card__supporting-text");
+  prCardBody.appendChild(createPRCardBody(pr, builds, mergeConflict));
+  if (queries.length) {
+    queries.forEach((query, index) => {
+      let branchConflict = false;
+      if (!!((pr.BaseRef && pr.BaseRef.Name && hasMatchingQuery) &&
+        ((query.excludedBranches && query.excludedBranches!.indexOf(pr.BaseRef.Name) !== -1) ||
+          (query.includedBranches && query.includedBranches!.indexOf(pr.BaseRef.Name) === -1)))) {
+        branchConflicts++;
+        branchConflict = true;
+      }
+
+      let authorConflict = false;
+      if (hasMatchingQuery && query.author && (!pr.Author || !pr.Author.Login || normLogin(pr.Author.Login) !== normLogin(query.author))) {
+        authorConflicts++;
+        authorConflict = true;
+      }
+
+      let milestoneConflict = false;
+      if (hasMatchingQuery && query.milestone && (!pr.Milestone || !pr.Milestone.Title || pr.Milestone.Title !== query.milestone)) {
+        milestoneConflicts++;
+        milestoneConflict = true;
+      }
+
+      if (hasMatchingQuery && !hasResolvedLabels(query)) {
+        labelConflicts++;
+      }
+
+      const multipleQueries = queries.length > 1;
+      const queryNumber = queries.length > 0 ? index + 1 : 0;
+      prCardBody.appendChild(createPRCardBodyQueryInfo(pr, builds, query, branchConflict, authorConflict, milestoneConflict, multipleQueries, queryNumber));
+    });
+  } else {
+    prCardBody.appendChild(createPRCardBodyQueryInfo(pr, builds, null, false, false, false, false, 0));
+  }
+  const prCardTitle = document.createElement("div");
+  prCardTitle.appendChild(createPRCardTitle(pr, tidePools, jobVagueState(builds), !hasMatchingQuery, labelConflicts > 0, mergeConflict, branchConflicts > 0, authorConflicts > 0, milestoneConflicts > 0));
+  prCard.appendChild(prCardTitle);
+  prCard.appendChild(prCardBody);
+
   return prCard;
 }
 

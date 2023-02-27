@@ -81,7 +81,7 @@ local config = {
 
   // How many work days prow hasn't been bumped, the alert rule using this value
   // understands to adjust based on day of week so weekends are considered.
-  prowImageStaleByDays: {daysStale: 2, eventDuration: '24h'},
+  prowImageStaleByDays: {daysStale: 7, eventDuration: '24h'},
 
   kubernetesExternalSecretServiceAccount: "kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com",
 };

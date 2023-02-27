@@ -151,8 +151,6 @@ func main() {
 
 	o := parseOptions()
 
-	defer interrupts.WaitForGracefulShutdown()
-
 	pprof.Instrument(o.instrumentationOptions)
 
 	configAgent, err := o.config.ConfigAgent()

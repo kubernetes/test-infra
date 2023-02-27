@@ -11,7 +11,7 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -31,7 +31,7 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -39,6 +39,7 @@ postsubmits:
           # images are pushed to.
           - --project=k8s-staging-infra-tools
           - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+          - --with-git-dir
           - .
   kubernetes/k8s.io:
     - name: post-k8sio-push-image-octodns-docker
@@ -52,7 +53,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
             command:
               - /run.sh
             args:
@@ -73,7 +74,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
             command:
               - /run.sh
             args:
@@ -94,7 +95,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
             command:
               - /run.sh
             args:
@@ -115,7 +116,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
             command:
               - /run.sh
             args:

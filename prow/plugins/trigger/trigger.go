@@ -104,9 +104,13 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: `The trigger plugin starts tests in reaction to commands and pull request events. It is responsible for ensuring that test jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
-<br>Trigger starts jobs automatically when a new trusted PR is created or when an untrusted PR becomes trusted, but it can also be used to start jobs manually via the '/test' command.
-<br>The '/retest' command can be used to rerun jobs that have reported failure.`,
+		Description: `The trigger plugin starts jobs in reaction to various events.
+<br>Presubmit jobs are run automatically on pull requests that are trusted and not in a draft state with file changes matching the file filters and targeting a branch matching the branch filters.
+<br>A pull request is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
+<br>Trigger will not automatically start jobs for a PR in draft state, and if a PR is changed to draft it cancels pending jobs.
+<br>If jobs are not run automatically for a PR because it is not trusted or is in draft state, a trusted user can still start jobs manually via the '/test' command.
+<br>The '/retest' command can be used to rerun jobs that have reported failure.
+<br>Trigger starts postsubmit jobs when commits are pushed if the filters on the job match files and branches affected by that push.`,
 		Config:  configInfo,
 		Snippet: yamlSnippet,
 	}
@@ -316,6 +320,13 @@ func RunRequestedWithLabels(c Client, pr *github.PullRequest, baseSHA string, re
 
 func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, labels map[string]string, millisecondOverride ...time.Duration) error {
 	var errors []error
+
+	// If the PR is not mergeable (e.g. due to merge conflicts),we will not trigger any jobs,
+	// to reduce the load on resources and reduce spam comments which will lead to a better review experience.
+	if pr.Mergable != nil && !*pr.Mergable {
+		return nil
+	}
+
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
 		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID, labels)

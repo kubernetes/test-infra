@@ -128,6 +128,9 @@ func TestFilter(t *testing.T) {
 				{
 					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
 				},
+				{
+					Orgs: []string{"kubernetes-test"},
+				},
 			},
 			pools: []tide.Pool{
 				{Org: "kubernetes", Repo: "test-infra"},
@@ -147,6 +150,15 @@ func TestFilter(t *testing.T) {
 			expectedQueries: []config.TideQuery{
 				{
 					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver"},
+				},
+				{
+					Orgs: []string{"kubernetes-test"},
 				},
 			},
 			expectedPools: []tide.Pool{
@@ -310,6 +322,12 @@ func TestFilter(t *testing.T) {
 			expectedQueries: []config.TideQuery{
 				{
 					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver"},
 				},
 			},
 			expectedPools: []tide.Pool{
@@ -674,6 +692,12 @@ func TestFilter(t *testing.T) {
 			expectedQueries: []config.TideQuery{
 				{
 					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver"},
 				},
 			},
 			expectedPools: []tide.Pool{

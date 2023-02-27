@@ -236,16 +236,25 @@ func (ta *tideAgent) filterQueries(queries []config.TideQuery) []config.TideQuer
 	filtered := make([]config.TideQuery, 0, len(queries))
 	for _, qc := range queries {
 		curIDs := qc.TenantIDs(*ta.cfg())
-		needsHide := false
+		var exposedRepos []string
 		for _, repo := range qc.Repos {
-			if matches(repo, ta.hiddenRepos()) {
-				needsHide = true
-				break
+			if !matches(repo, ta.hiddenRepos()) {
+				exposedRepos = append(exposedRepos, repo)
 			}
 		}
 		orgRepoID := ""
-		if match := ta.filter(orgRepoID, sets.NewString(curIDs...), needsHide); match {
-			filtered = append(filtered, qc)
+		if len(exposedRepos) < len(qc.Repos) { // If there are hidden repos
+			if match := ta.filter(orgRepoID, sets.NewString(curIDs...), true); match {
+				filtered = append(filtered, qc)
+				continue
+			} else { // If the hidden repos result in this query being filtered out, then we should remove them and try the rest
+				qc.Repos = exposedRepos
+			}
+		}
+		if len(qc.Repos) > 0 || len(qc.Orgs) > 0 {
+			if match := ta.filter(orgRepoID, sets.NewString(curIDs...), false); match {
+				filtered = append(filtered, qc)
+			}
 		}
 	}
 	return filtered

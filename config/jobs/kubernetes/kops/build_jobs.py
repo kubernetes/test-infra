@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -147,6 +147,8 @@ def build_test(cloud='aws',
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         env['KUBE_SSH_USER'] = kops_ssh_user
+        if extra_flags is not None:
+            env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
 
@@ -284,6 +286,8 @@ def presubmit_test(branch='master',
         env['CLOUD_PROVIDER'] = cloud
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
+        if extra_flags is not None:
+            env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
 
@@ -451,6 +455,21 @@ def generate_misc():
                    # Latest runs with a staging AWS CCM, not available in registry.k8s.io
                    k8s_version='1.23',
                    extra_dashboards=['kops-misc']),
+
+        # A one-off scenario testing the artifacts-sandbox.k8s.io mirror
+        build_test(name_override="kops-artifacts-sandbox",
+                   runs_per_day=24,
+                   cloud="aws",
+                   k8s_version='stable',
+                   extra_dashboards=['kops-misc'],
+                   scenario='smoketest',
+                   env={
+                       'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.26.0-beta.2/", # pylint: disable=line-too-long
+                       'KOPS_VERSION': "v1.26.0-beta.2",
+                       'K8S_VERSION': "v1.25.0",
+                       'KOPS_SKIP_E2E': '1',
+                       'KOPS_CONTROL_PLANE_SIZE': '3',
+                   }),
 
         # A one-off scenario testing arm64
         build_test(name_override="kops-scenario-arm64",
@@ -710,6 +729,7 @@ def generate_misc():
                    runs_per_day=1,
                    extra_flags=[
                        "--instance-manager=karpenter",
+                       "--master-size=c6g.xlarge",
                    ],
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc"],
@@ -725,6 +745,7 @@ def generate_misc():
                        '--ipv6',
                        '--topology=private',
                        '--bastion',
+                       "--master-size=c6g.xlarge",
                    ],
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc", "kops-ipv6"],
@@ -764,7 +785,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.25', '1.24']:
+    for version in ['1.26', '1.25']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -968,6 +989,7 @@ def generate_upgrades():
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades'],
                        runs_per_day=8,
+                       test_timeout_minutes=120,
                        scenario='upgrade-ab',
                        env=env,
                        )
@@ -983,6 +1005,7 @@ def generate_upgrades():
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades-many-addons'],
+                       test_timeout_minutes=120,
                        runs_per_day=4,
                        scenario='upgrade-ab',
                        env=addonsenv,
@@ -1175,6 +1198,16 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-cilium-etcd',
             networking='cilium-etcd',
             tab_name='e2e-gce-cilium-etcd',
+            always_run=False,
+            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+        ),
+        presubmit_test(
+            cloud='gce',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-ipalias',
+            networking='gce',
+            tab_name='e2e-gce',
             always_run=False,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
@@ -1413,7 +1446,10 @@ def generate_presubmits_e2e():
             run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             networking="cilium",
             kops_channel="alpha",
-            extra_flags=["--instance-manager=karpenter"],
+            extra_flags=[
+                "--instance-manager=karpenter",
+                "--master-size=c6g.xlarge",
+            ],
             feature_flags=['Karpenter'],
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic' # pylint: disable=line-too-long
         ),
@@ -1457,6 +1493,7 @@ def generate_presubmits_e2e():
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
+            test_timeout_minutes=120,
             run_if_changed=r'^upup\/(models\/cloudup\/resources\/addons\/|pkg\/fi\/cloudup\/bootstrapchannelbuilder\/)', # pylint: disable=line-too-long
             scenario='upgrade-ab',
             env={
@@ -1468,7 +1505,31 @@ def generate_presubmits_e2e():
                 'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
                 'KOPS_CONTROL_PLANE_SIZE': '3',
             }
-        )
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-upgrade-k123-ko125-to-k124-kolatest-karpenter",
+            optional=True,
+            distro='u2204arm64',
+            networking='cilium',
+            k8s_version='stable',
+            kops_channel='alpha',
+            feature_flags=['Karpenter'],
+            test_timeout_minutes=120,
+            run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
+            scenario='upgrade-ab',
+            extra_flags=[
+                "--instance-manager=karpenter",
+                "--master-size=c6g.xlarge",
+            ],
+            env={
+                'KOPS_VERSION_A': "1.25",
+                'K8S_VERSION_A': "v1.23.0",
+                'KOPS_VERSION_B': "latest",
+                'K8S_VERSION_B': "v1.24.0",
+                'KOPS_SKIP_E2E': '1',
+                'KOPS_CONTROL_PLANE_SIZE': '3',
+            }
+        ),
     ]
     return jobs
 

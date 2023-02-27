@@ -6,7 +6,7 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.20
         command:
         - make
     annotations:
@@ -18,7 +18,7 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.20
         command:
         - make
         - test
@@ -36,7 +36,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.20
         command:
         - go
         args:
@@ -55,7 +55,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20221010-3da4a9c21a
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
             - /run.sh
           args:
@@ -96,7 +96,7 @@ presubmits:
       path_alias: k8s.io/publishing-bot
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.20
         command:
         - go
         args:

@@ -1,0 +1,17 @@
+---
+systemd:
+  units:
+    - name: swap-enable.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Enable swap on CoreOS
+        Before=crio-install.service
+        ConditionFirstBoot=no
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c \"sudo dd if=/dev/zero of=/var/swapfile count=1024 bs=1MiB && sudo chmod 600 /var/swapfile && sudo mkswap /var/swapfile && sudo swapon /var/swapfile && free -h\"
+
+        [Install]
+        WantedBy=multi-user.target

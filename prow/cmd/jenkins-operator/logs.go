@@ -19,12 +19,15 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/jenkins"
 )
+
+var reJenkinsJobURL = regexp.MustCompile(`^(/?job)/([A-Za-z0-9-._]([A-Za-z0-9-._/]*[A-Za-z0-9-_])?)/(\d+)/consoleText$`)
 
 func handleLog(jc *jenkins.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -44,10 +47,16 @@ func handleLog(jc *jenkins.Client) http.HandlerFunc {
 			return
 		}
 
-		log, err := jc.GetSkipMetrics(r.URL.Path)
+		realPath, err := getRealJenkinsLogPath(r.URL.Path)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
-			logrus.WithError(err).Warning(fmt.Sprintf("Cannot get logs from Jenkins (GET %s).", r.URL.Path))
+			return
+		}
+
+		log, err := jc.GetSkipMetrics(realPath)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
+			logrus.WithError(err).Warning(fmt.Sprintf("Cannot get logs from Jenkins (GET %s).", realPath))
 			return
 		}
 
@@ -55,4 +64,19 @@ func handleLog(jc *jenkins.Client) http.HandlerFunc {
 			logrus.WithError(err).Warning("Error writing log.")
 		}
 	}
+}
+
+func getRealJenkinsLogPath(path string) (string, error) {
+	jobMatches := reJenkinsJobURL.FindStringSubmatch(path)
+	if len(jobMatches) != 5 {
+		return "", fmt.Errorf("job URL path not match regexp pattern: ^%s$", reJenkinsJobURL)
+	}
+
+	realPath := fmt.Sprintf("%s/%s/%s/consoleText",
+		jobMatches[1],
+		strings.Join(strings.Split(jobMatches[2], "/"), "/job/"),
+		jobMatches[4],
+	)
+
+	return realPath, nil
 }

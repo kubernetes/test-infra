@@ -30,7 +30,7 @@ presets:
     preset-capz-containerd-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.6.8/containerd-1.6.8-windows-amd64.tar.gz"
+    value: "https://github.com/containerd/containerd/releases/download/v1.6.18/containerd-1.6.18-windows-amd64.tar.gz"
 - labels:
     preset-capz-serial-slow: "true"
   env:
@@ -83,6 +83,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
     preset-capz-windows-common-main: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-latest: "true"
@@ -90,11 +91,17 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -133,9 +140,14 @@ periodics:
     base_ref: master
     path_alias: sigs.k8s.io/windows-testing
     workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -178,9 +190,14 @@ periodics:
     base_ref: master
     path_alias: sigs.k8s.io/windows-testing
     workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -221,9 +238,14 @@ periodics:
     base_ref: master
     path_alias: sigs.k8s.io/windows-testing
     workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -264,9 +286,14 @@ periodics:
     base_ref: master
     path_alias: sigs.k8s.io/windows-testing
     workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -310,9 +337,14 @@ periodics:
     base_ref: master
     path_alias: k8s.io/windows-testing
     workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -357,7 +389,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -399,7 +431,7 @@ periodics:
 #     path_alias: sigs.k8s.io/azurefile-csi-driver
 #   spec:
 #     containers:
-#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
 #         command:
 #           - runner.sh
 #           - ./scripts/ci-entrypoint.sh
@@ -430,16 +462,21 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.6
+    base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: windows-testing
     base_ref: master
     path_alias: k8s.io/windows-testing
     workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -456,3 +493,53 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-nightly-master
+- name: ci-kubernetes-e2e-capz-master-windows-service-proxy
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-capz-windows-common-main: "true"
+    preset-capz-windows-2022: "true"
+    preset-windows-private-registry-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        command:
+          - "runner.sh"
+          - "./capz/run-capz-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+        env:
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2022"
+          - name: WINDOWS_KPNG
+            value: "true"
+          - name: WINDOWS_CONTAINERD_URL
+            value: "https://github.com/containerd/containerd/releases/download/v1.7.0-beta.3/containerd-1.7.0-beta.3-windows-amd64.tar.gz"
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: capz-master-windows-service-proxy

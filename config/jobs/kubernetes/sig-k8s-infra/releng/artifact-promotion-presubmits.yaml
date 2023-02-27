@@ -14,7 +14,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
         command:
         - /kpromo
         args:
@@ -43,7 +43,7 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-vuln-scanning
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
         command:
         - /kpromo
         args:
@@ -87,10 +87,58 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
         command:
         - /kpromo
         args:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
+  # WIP version of pull-k8sio-file-promo that adds mirroring to our replicas.
+  # Adds two extra containers to dry-run miroring for staging and production mirrors.
+  # TODO(justinsb): merge with pull-k8sio-file-promo once we are happy with it
+  - name: pull-k8sio-file-promo-with-mirroring
+    annotations:
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
+      # Don't alert people on a WIP job
+      #testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+      #testgrid-num-failures-to-alert: '10'
+    decorate: true
+    skip_report: true # Don't report a WIP job on github
+    run_if_changed: '^artifacts\/.*\/*.yaml'
+    max_concurrency: 10
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - name: promote-to-primary
+        # TODO(justinsb): replace with released image once this is working
+        # Curently lacking S3 support - at least
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230209-v3.4.11-54-ga7bc54b@sha256:c075e38f1aba081824a3afc1cce63f1b0571f201de9b72397ab1000bb627420b
+        command:
+        - /kpromo
+        args:
+        - run
+        - files
+        - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
+      - name: promote-to-mirrors
+        # TODO(justinsb): replace with released image once this is working
+        # Curently lacking S3 support - at least
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230209-v3.4.11-54-ga7bc54b@sha256:c075e38f1aba081824a3afc1cce63f1b0571f201de9b72397ab1000bb627420b
+        command:
+        - /kpromo
+        args:
+        - run
+        - files
+        - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring
+      - name: promote-to-mirrors-staging
+        # TODO(justinsb): replace with released image once this is working
+        # Curently lacking S3 support - at least
+        image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230209-v3.4.11-54-ga7bc54b@sha256:c075e38f1aba081824a3afc1cce63f1b0571f201de9b72397ab1000bb627420b
+        command:
+        - /kpromo
+        args:
+        - run
+        - files
+        - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring-staging

@@ -187,14 +187,14 @@ func (o Owners) GetOwnersSet() sets.String {
 	var newFilenames []string
 	for _, toApprove := range o.filenames {
 		ownersFile := o.repo.FindApproverOwnersForFile(toApprove)
-		// If the ownersfile for toApprove is in the parent folder and has AllowFolderCreation enabled, we purge
+		// If the ownersfile for toApprove is in the parent folder and has IsAutoApproveUnownedSubfolders enabled, we purge
 		// the file from our filenames list, because it doesn't need approval
 		if strings.Contains(filepath.Dir(filepath.Dir(toApprove)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
 			continue
-		} else {
-			owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
-			newFilenames = append(newFilenames, toApprove)
 		}
+		owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
+		newFilenames = append(newFilenames, toApprove)
+
 	}
 	o.filenames = newFilenames
 	o.removeSubdirs(owners)
@@ -641,13 +641,13 @@ This pull-request has been approved by:{{range $index, $approval := .ap.ListAppr
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
 {{ if len .ap.SuggestedCCs -}}
 {{- if len .ap.AssignedCCs -}}
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} for approval by writing `+"`/assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} for approval. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- else -}}
-**Once this PR has been reviewed and has the lgtm label**, please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} for approval by writing `+"`/assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
+**Once this PR has been reviewed and has the lgtm label**, please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} for approval. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- end}}
 {{- else -}}
 {{- if len .ap.AssignedCCs -}}
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} by writing `+"`/assign {{range $index, $cc := .ap.AssignedCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}}. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- end}}
 {{- end}}
 {{- end}}

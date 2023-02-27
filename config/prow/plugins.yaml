@@ -239,6 +239,8 @@ lgtm:
   - kubernetes/kubernetes
   - kubernetes/website
   - kubernetes-sigs/node-feature-discovery
+  - kubernetes-sigs/cluster-api
+  - kubernetes-sigs/cluster-api-provider-azure
   store_tree_hash: true
 
 blockades:
@@ -328,8 +330,8 @@ branch_cleaner:
     # ```
     # branches in this allow map would be exempt from branch gc
     # even if the branches are already merged into the target branch
-    preserved_branches:
-        "kubernetes-sigs/cloud-provider-azure": ["master", "gh-pages", "release-1.1", "release-1.0", "release-1.23", "release-1.24", "release-0.7", "release-0.6", "release-0.5", "release-0.1"]
+  preserved_branches:
+    kubernetes-sigs/cloud-provider-azure: ["master", "release-1.1", "release-1.0", "release-1.23", "release-1.24", "release-1.25", "release-1.26", "release-0.7", "release-0.6", "release-0.5", "release-0.1", "kubetest2-aks"]
 
 slack:
   mergewarnings:
@@ -405,16 +407,12 @@ slack:
     - k8s-ci-robot
   - repos:
     - kubernetes/sig-release
-    channels:
-    - release-management
-    exempt_users:
-    - k8s-ci-robot
-  - repos:
     - kubernetes/release
     channels:
     - release-management
     exempt_users:
     - k8s-ci-robot
+    - dependabot[bot]
   - repos:
     - kubernetes/k8s.io
     channels:
@@ -483,10 +481,9 @@ milestone_applier:
     release-0.7: v0.7.x
     release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.7
+    main: v1.8
+    release-1.7: v1.7
     release-1.6: v1.6
-    release-1.5: v1.5
-    release-1.4: v1.4
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -504,7 +501,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.26: 1.26
+    dev-1.27: 1.27
 
 repo_milestone:
   # Default maintainer
@@ -797,7 +794,7 @@ require_matching_label:
   repo: kustomize
   issues: true
   prs: false
-  regexp: ^triage/accepted$
+  regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
 
@@ -1328,6 +1325,7 @@ plugins:
     - milestonestatus
     - override
     - require-matching-label
+    - release-note
 
   kubernetes-sigs/cluster-api-provider-azure:
     plugins:

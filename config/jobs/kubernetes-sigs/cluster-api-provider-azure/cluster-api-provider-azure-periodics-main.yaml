@@ -15,7 +15,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
         command:
           - runner.sh
         args:
@@ -41,14 +41,21 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
       base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
         command:
           - runner.sh
         args:
@@ -85,7 +92,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
       command:
         - runner.sh
       args:
@@ -119,7 +126,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
         command:
           - runner.sh
         args:
@@ -154,7 +161,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
       command:
         - runner.sh
       args:
@@ -189,7 +196,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
       command:
         - runner.sh
       args:
@@ -223,7 +230,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
       command:
         - runner.sh
       args:

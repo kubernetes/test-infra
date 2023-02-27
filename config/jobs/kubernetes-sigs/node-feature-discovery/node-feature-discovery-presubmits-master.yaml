@@ -11,7 +11,7 @@ presubmits:
       description: "Verify source code of node-feature-discovery: check formatting, lint etc."
     spec:
       containers:
-      - image: golang:1.19
+      - image: golang:1.20
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-verify-docs-master
@@ -39,6 +39,6 @@ presubmits:
       description: "Build node-feature-discovery binaries"
     spec:
       containers:
-      - image: golang:1.19
+      - image: golang:1.20
         command:
         - scripts/test-infra/build.sh

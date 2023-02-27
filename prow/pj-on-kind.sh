@@ -78,8 +78,16 @@ function parseArgs() {
 function ensureInstall() {
   # Install kind and set up cluster if not already done.
   if ! command -v kind >/dev/null 2>&1; then
+    # Extract the minor version from xx.{minor_version}.xx version format
+    go_minor_version=$(go version | { read _ _ v _; TMP=${v#*.}; echo ${TMP%.*}; }; )
+    echo "Current Go minor version: $go_minor_version"
     echo "Installing kind..."
-    GO111MODULE="on" go get sigs.k8s.io/kind@v0.16.0
+    if [[ $go_minor_version -ge 18 ]]; then
+      # `go get` is fully deprecated in Go 1.18, so use `go install` for version >= 18.
+      GO111MODULE="on" go install sigs.k8s.io/kind@v0.17.0
+    else
+      GO111MODULE="on" go get sigs.k8s.io/kind@v0.17.0
+    fi
   fi
   local found="false"
   for clust in $(kind get clusters); do

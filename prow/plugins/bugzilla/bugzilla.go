@@ -544,18 +544,20 @@ type querySearch struct {
 	Edges []queryEdge
 }
 
-/* emailToLoginQuery is a graphql query struct that should result in this graphql query:
-   {
-     search(type: USER, query: "email", first: 5) {
-       edges {
-         node {
-           ... on User {
-             login
-           }
-         }
-       }
-     }
-   }
+/*
+emailToLoginQuery is a graphql query struct that should result in this graphql query:
+
+	{
+	  search(type: USER, query: "email", first: 5) {
+	    edges {
+	      node {
+	        ... on User {
+	          login
+	        }
+	      }
+	    }
+	  }
+	}
 */
 type emailToLoginQuery struct {
 	Search querySearch `graphql:"search(type:USER query:$email first:5)"`
@@ -612,7 +614,11 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 	}
 	// cherrypicks follow a different pattern than normal validation
 	if e.cherrypick {
-		return handleCherrypick(e, gc, bc, options, log)
+		if *options.EnableBackporting {
+			return handleCherrypick(e, gc, bc, options, log)
+		} else {
+			return nil
+		}
 	}
 
 	var needsValidLabel, needsInvalidLabel bool

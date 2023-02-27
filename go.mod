@@ -13,7 +13,7 @@ replace (
 	github.com/gregjones/httpcache => github.com/alvaroaleman/httpcache v0.0.0-20210618195546-ab9a1a3f8a38
 
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
-	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -59,6 +59,7 @@ require (
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/hashicorp/golang-lru v0.5.4

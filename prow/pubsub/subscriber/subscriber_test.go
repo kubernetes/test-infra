@@ -18,7 +18,6 @@ package subscriber
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -37,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/gangway"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
 
@@ -277,6 +277,7 @@ func TestHandleMessage(t *testing.T) {
 					Attributes: map[string]string{
 						ProwEventType: "unsupported",
 					},
+					Data: []byte("{}"),
 				},
 			},
 			config: &config.Config{},
@@ -287,7 +288,9 @@ func TestHandleMessage(t *testing.T) {
 			name:      "NoEventType",
 			eventType: PeriodicProwJobEvent,
 			msg: &pubSubMessage{
-				Message: pubsub.Message{},
+				Message: pubsub.Message{
+					Data: []byte("{}"),
+				},
 			},
 			config: &config.Config{},
 			err:    "unable to find \"prow.k8s.io/pubsub.EventType\" from the attributes",
@@ -580,17 +583,23 @@ func TestHandlePeriodicJob(t *testing.T) {
 			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
 			fr := fakeReporter{}
+			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true)
+			cacheHandler, _ := config.NewInRepoConfigCacheHandler(100, ca, gitClient, 1)
 			s := Subscriber{
-				Metrics:       NewMetrics(),
-				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(ca.Config().ProwJobNamespace),
-				ConfigAgent:   ca,
-				Reporter:      &fr,
+				Metrics:                  NewMetrics(),
+				ProwJobClient:            fakeProwJobClient.ProwV1().ProwJobs(ca.Config().ProwJobNamespace),
+				ConfigAgent:              ca,
+				InRepoConfigCacheHandler: cacheHandler,
+				Reporter:                 &fr,
 			}
-			m, err := json.Marshal(tc.pe)
+			l := logrus.NewEntry(logrus.New())
+
+			cjer, err := s.peToCjer(l, tc.pe, PeriodicProwJobEvent, "fakeSubsciprtionName")
 			if err != nil {
-				t.Fatal(err)
+				t1.Error("programmer error: could not convert ProwJobEvent to CreateJobExecutionRequest")
 			}
-			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, m, "", PeriodicProwJobEvent, tc.allowedClusters)
+
+			_, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, nil, false, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())

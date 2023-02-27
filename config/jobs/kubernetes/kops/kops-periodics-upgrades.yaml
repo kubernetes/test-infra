@@ -10,9 +10,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -42,7 +43,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -72,9 +73,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -106,7 +108,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -136,9 +138,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -176,7 +179,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -206,9 +209,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -238,7 +242,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -268,9 +272,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -306,7 +311,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -336,9 +341,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -370,7 +376,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -400,9 +406,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -440,7 +447,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -470,9 +477,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -502,7 +510,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -532,9 +540,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -570,7 +579,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -600,9 +609,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -634,7 +644,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -664,9 +674,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -704,7 +715,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -734,9 +745,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -766,7 +778,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -796,9 +808,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -834,7 +847,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -864,9 +877,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -898,7 +912,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -928,9 +942,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -968,7 +983,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -998,9 +1013,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1030,7 +1046,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1060,9 +1076,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1098,7 +1115,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1128,9 +1145,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1162,7 +1180,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1192,9 +1210,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1232,7 +1251,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1262,9 +1281,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1296,7 +1316,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1326,9 +1346,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1366,7 +1387,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1396,9 +1417,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1430,7 +1452,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1460,9 +1482,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1500,7 +1523,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1530,9 +1553,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1564,7 +1588,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1594,9 +1618,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1634,7 +1659,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1664,9 +1689,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1698,7 +1724,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1728,9 +1754,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1768,7 +1795,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1798,9 +1825,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1830,7 +1858,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1860,9 +1888,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1898,7 +1927,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1928,9 +1957,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -1962,7 +1992,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1992,9 +2022,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2032,7 +2063,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2062,9 +2093,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2096,7 +2128,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2126,9 +2158,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2166,7 +2199,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2196,9 +2229,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2230,7 +2264,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2260,9 +2294,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2300,7 +2335,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2330,9 +2365,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2364,7 +2400,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2394,9 +2430,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2434,7 +2471,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2464,9 +2501,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2498,7 +2536,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2528,9 +2566,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2568,7 +2607,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2598,9 +2637,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2632,7 +2672,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2662,9 +2702,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2702,7 +2743,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2732,9 +2773,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2766,7 +2808,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2796,9 +2838,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2836,7 +2879,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2866,9 +2909,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2900,7 +2944,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2930,9 +2974,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -2970,7 +3015,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3000,9 +3045,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -3032,7 +3078,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3062,9 +3108,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -3100,7 +3147,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3130,9 +3177,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -3162,7 +3210,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3192,9 +3240,10 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
     preset-dind-enabled: "true"
+  max_concurrency: 1
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -3230,7 +3279,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       imagePullPolicy: Always
       resources:
         limits:

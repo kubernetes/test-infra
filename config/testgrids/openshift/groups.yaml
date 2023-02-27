@@ -15,6 +15,8 @@ dashboard_groups:
   - redhat-openshift-ocp-release-4.12-informing
   - redhat-openshift-ocp-release-4.13-blocking
   - redhat-openshift-ocp-release-4.13-informing
+  - redhat-openshift-ocp-release-4.14-blocking
+  - redhat-openshift-ocp-release-4.14-informing
   - redhat-openshift-ocp-release-4.2-blocking
   - redhat-openshift-ocp-release-4.2-informing
   - redhat-openshift-ocp-release-4.3-blocking
@@ -42,6 +44,8 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.12-informing
   - redhat-openshift-okd-release-4.13-blocking
   - redhat-openshift-okd-release-4.13-informing
+  - redhat-openshift-okd-release-4.14-blocking
+  - redhat-openshift-okd-release-4.14-informing
   - redhat-openshift-okd-release-4.3-informing
   - redhat-openshift-okd-release-4.4-informing
   - redhat-openshift-okd-release-4.5-informing
@@ -49,10 +53,10 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.7-informing
   - redhat-openshift-okd-release-4.8-informing
   - redhat-openshift-okd-release-4.9-informing
+  - redhat-openshift-osd
   - redhat-openshift-presubmit-master-gcp
   - redhat-openshift-serverless
   - redhat-openshift-virtualization
-  - redhat-osd
   - redhat-quay
   - redhat-single-node
   - redhat-stackrox-merge

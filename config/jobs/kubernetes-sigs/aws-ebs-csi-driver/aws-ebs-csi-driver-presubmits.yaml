@@ -1,5 +1,29 @@
 presubmits:
   kubernetes-sigs/aws-ebs-csi-driver:
+  - name: pull-aws-ebs-csi-driver-test-helm-chart
+    always_run: true
+    decorate: true
+    skip_branches:
+    - gh-pages
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-helm-chart
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: test-helm-chart
+      description: aws ebs csi driver test helm chart on pull request
+      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-verify
     always_run: true
     decorate: true
@@ -9,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -29,7 +53,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -51,7 +75,7 @@ presubmits:
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -75,7 +99,7 @@ presubmits:
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -88,30 +112,6 @@ presubmits:
       testgrid-tab-name: pull-e2e-test-multi-az
       description: aws ebs csi driver e2e test on mutiple AZs on pull request
       testgrid-num-columns-recent: '30'
-  - name: pull-aws-ebs-csi-driver-migration-test
-    always_run: true
-    decorate: true
-    skip_branches:
-    - gh-pages
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-aws-credential-aws-oss-testing: "true"
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
-          command:
-            - runner.sh
-          args:
-            - make
-            - test-e2e-migration
-          securityContext:
-            privileged: true
-    annotations:
-      testgrid-dashboards: provider-aws-ebs-csi-driver
-      testgrid-tab-name: pull-migration-test
-      description: aws ebs csi driver migration test on pull request
-      testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-external-test
     always_run: true
     decorate: true
@@ -123,7 +123,7 @@ presubmits:
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
           args:
@@ -147,7 +147,7 @@ presubmits:
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
           args:

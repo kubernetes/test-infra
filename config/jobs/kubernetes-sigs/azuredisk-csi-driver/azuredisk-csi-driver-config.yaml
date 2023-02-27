@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -81,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -112,7 +112,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -161,7 +161,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -198,47 +198,43 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
+      - master
     labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-      workdir: true
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.7
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.23
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration.json
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        # Specific test args
-        - --test-azure-disk-csi-driver
-        securityContext:
-          privileged: true
-        env:
-          - name: AZURE_STORAGE_DRIVER
-            value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-          - name: TEST_MIGRATION
-            value: "true"
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: AZURE_STORAGE_DRIVER
+              value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
+            - name: TEST_MIGRATION
+              value: "true"
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D2s_v3"
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
+              value: "true"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration
@@ -264,7 +260,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -319,7 +315,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -374,7 +370,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -426,7 +422,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -471,7 +467,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -501,7 +497,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -554,7 +550,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -603,12 +599,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -621,19 +617,19 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: KUBERNETES_VERSION
-              value: "latest-1.23"
-            - name: WORKER_MACHINE_COUNT
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.25"
+            - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
-            - name: EXTERNAL_E2E_TEST
+            - name: EXTERNAL_E2E_TEST # azuredisk-csi-driver config
               value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
@@ -660,7 +656,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -707,12 +703,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -725,18 +721,18 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
-            - name: KUBERNETES_VERSION
-              value: "latest-1.23"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.26"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -758,12 +754,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -776,21 +772,21 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_SERVER_VERSION
+            - name: WINDOWS_SERVER_VERSION # CAPZ config
               value: "windows-2022"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
-            - name: KUBERNETES_VERSION
-              value: "latest-1.23"
-            - name: WORKER_MACHINE_COUNT
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.24"
+            - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
@@ -811,12 +807,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -829,9 +825,9 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
@@ -862,7 +858,7 @@ presubmits:
         workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -875,33 +871,33 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: TEST_CCM
+            - name: TEST_CCM # CAPZ config
               value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
-            - name: TEST_VMSS_FLEX
+            - name: TEST_VMSS_FLEX # azuredisk-csi-driver config
               value: "true"
-            - name: CONTROL_PLANE_MACHINE_COUNT
+            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
-            - name: KUBERNETES_VERSION
+            - name: KUBERNETES_VERSION # CAPZ config
               value: "latest"
-            - name: AZURE_LOADBALANCER_SKU
+            - name: AZURE_LOADBALANCER_SKU # azuredisk-csi-driver config
               value: "Standard"
-            - name: CLUSTER_PROVISIONING_TOOL
+            - name: CLUSTER_PROVISIONING_TOOL # azuredisk-csi-driver config
               value: "capz"
-            - name: CLUSTER_TEMPLATE
+            - name: CLUSTER_TEMPLATE # CAPZ config
               value: https://raw.githubusercontent.com/jackfrancis/cluster-api-provider-azure/vmss-flex-cloudprovider/templates/cluster-template-external-cloud-provider-machinepool.yaml
-            - name: CUSTOM_CLOUD_PROVIDER_CONFIG
+            - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
               value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
-            - name: ENABLE_VMSS_FLEX
+            - name: ENABLE_VMSS_FLEX # azuredisk-csi-driver config
               value: "true"
-            - name: ENABLE_MULTI_SLB
+            - name: ENABLE_MULTI_SLB # azuredisk-csi-driver config
               value: "false"
-            - name: PUT_VMSS_VM_BATCH_SIZE
+            - name: PUT_VMSS_VM_BATCH_SIZE # azuredisk-csi-driver config
               value: "0"
-            - name: LB_BACKEND_POOL_CONFIG_TYPE
+            - name: LB_BACKEND_POOL_CONFIG_TYPE # azuredisk-csi-driver config
               value: ""
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver

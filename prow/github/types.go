@@ -586,10 +586,17 @@ type RequiredPullRequestReviews struct {
 	DismissStaleReviews          bool                   `json:"dismiss_stale_reviews"`
 	RequireCodeOwnerReviews      bool                   `json:"require_code_owner_reviews"`
 	RequiredApprovingReviewCount int                    `json:"required_approving_review_count"`
+	BypassRestrictions           *BypassRestrictions    `json:"bypass_pull_request_allowances"`
 }
 
 // DismissalRestrictions exposes restrictions in github for an activity to people/teams.
 type DismissalRestrictions struct {
+	Users []User `json:"users,omitempty"`
+	Teams []Team `json:"teams,omitempty"`
+}
+
+// BypassRestrictions exposes bypass option in github for a pull request to people/teams.
+type BypassRestrictions struct {
 	Users []User `json:"users,omitempty"`
 	Teams []Team `json:"teams,omitempty"`
 }
@@ -634,6 +641,7 @@ type RequiredPullRequestReviewsRequest struct {
 	DismissStaleReviews          bool                         `json:"dismiss_stale_reviews"`
 	RequireCodeOwnerReviews      bool                         `json:"require_code_owner_reviews"`
 	RequiredApprovingReviewCount int                          `json:"required_approving_review_count"`
+	BypassRestrictions           BypassRestrictionsRequest    `json:"bypass_pull_request_allowances"`
 }
 
 // DismissalRestrictionsRequest tells github to restrict an activity to people/teams.
@@ -642,6 +650,18 @@ type RequiredPullRequestReviewsRequest struct {
 // This is needed by dismissal_restrictions to distinguish
 // do not restrict (empty object) and restrict everyone (nil user/teams list)
 type DismissalRestrictionsRequest struct {
+	// Users is a list of user logins
+	Users *[]string `json:"users,omitempty"`
+	// Teams is a list of team slugs
+	Teams *[]string `json:"teams,omitempty"`
+}
+
+// BypassRestrictionsRequest tells github to restrict PR bypass activity to people/teams.
+//
+// Use *[]string in order to distinguish unset and empty list.
+// This is needed by bypass_pull_request_allowances to distinguish
+// do not restrict (empty object) and restrict everyone (nil user/teams list)
+type BypassRestrictionsRequest struct {
 	// Users is a list of user logins
 	Users *[]string `json:"users,omitempty"`
 	// Teams is a list of team slugs
@@ -1240,6 +1260,7 @@ type GenericCommentEvent struct {
 type Milestone struct {
 	Title  string `json:"title"`
 	Number int    `json:"number"`
+	State  string `json:"state"`
 }
 
 // RepositoryCommit represents a commit in a repo.

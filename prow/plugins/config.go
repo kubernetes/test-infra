@@ -48,8 +48,10 @@ const (
 
 // Configuration is the top-level serialization target for plugin Configuration.
 type Configuration struct {
-	// Plugins is a map of repositories (eg "k/k") to lists of
-	// plugin names.
+	// Plugins is a map of organizations (eg "o") or repositories
+	// (eg "o/r") to lists of enabled plugin names.
+	// If it is defined on both organization and repository levels, the list of enabled
+	// plugin names for the repository is the merging list of the two levels.
 	// You can find a comprehensive list of the default available plugins here
 	// https://github.com/kubernetes/test-infra/tree/master/prow/plugins
 	// note that you're also able to add external plugins.
@@ -498,6 +500,12 @@ type Slack struct {
 type ConfigMapSpec struct {
 	// Name of ConfigMap
 	Name string `json:"name"`
+	// PartitionedNames is a slice of names of ConfigMaps that the keys should be balanced across.
+	// This is useful when no explicit key is given and file names/paths are used as keys instead.
+	// This is used to work around the 1MB ConfigMap size limit by spreading the keys across multiple
+	// separate ConfigMaps.
+	// PartitionedNames is mutually exclusive with the "Name" field.
+	PartitionedNames []string `json:"partitioned_names,omitempty"`
 	// Key is the key in the ConfigMap to update with the file contents.
 	// If no explicit key is given, the basename of the file will be used unless
 	// use_full_path_as_key: true is set, in which case the full filepath relative
@@ -569,10 +577,11 @@ func (cu *ConfigUpdater) resolve() error {
 		}
 
 		cu.Maps[k] = ConfigMapSpec{
-			Name:     v.Name,
-			Key:      v.Key,
-			GZIP:     v.GZIP,
-			Clusters: clusters,
+			Name:             v.Name,
+			PartitionedNames: v.PartitionedNames,
+			Key:              v.Key,
+			GZIP:             v.GZIP,
+			Clusters:         clusters,
 		}
 	}
 
@@ -1144,10 +1153,23 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 	updater.SetDefaults()
 	configMapKeys := map[ConfigMapID]sets.String{}
 	for file, config := range updater.Maps {
+		// Check that Name and PartitionedNames are mutually exclusive
+		if config.Name != "" && len(config.PartitionedNames) > 0 {
+			return errors.New("'name' and 'partitioned_names' are mutually exclusive in the config_updater plugin configuration")
+		}
+		name := config.Name
+		if name == "" {
+			name = strings.Join(config.PartitionedNames, ",")
+		}
+		// Check that PartitionedNames doesn't use too many partitions.
+		if len(config.PartitionedNames) > 256 {
+			return fmt.Errorf("the PartitionedNames field in config_updater plugin config currently supports a maximum of 256 partitions, but you have %d defined", len(config.PartitionedNames))
+		}
+		// Check that keys are not associated with multiple files.
 		for cluster, namespaces := range config.Clusters {
 			for _, namespace := range namespaces {
 				cmID := ConfigMapID{
-					Name:      config.Name,
+					Name:      name,
 					Namespace: namespace,
 					Cluster:   cluster,
 				}
@@ -1159,7 +1181,7 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 
 				if _, ok := configMapKeys[cmID]; ok {
 					if configMapKeys[cmID].Has(key) {
-						return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
+						return fmt.Errorf("key %s in configmap %s updated with more than one file", key, name)
 					}
 					configMapKeys[cmID].Insert(key)
 				} else {
@@ -1477,6 +1499,10 @@ func (s *BugzillaBugState) Matches(bug *bugzilla.Bug) bool {
 type BugzillaBranchOptions struct {
 	// ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
 	ExcludeDefaults *bool `json:"exclude_defaults,omitempty"`
+
+	// EnableBackporting enables functionality to create new backport bugs for
+	// cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+	EnableBackporting *bool
 
 	// ValidateByDefault determines whether a validation check is run for all pull
 	// requests by default

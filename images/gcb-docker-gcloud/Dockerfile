@@ -45,8 +45,12 @@ RUN gcloud config set core/disable_usage_reporting true && \
 # Install docker Buildx for fast docker builds
 ENV HOME=/root
 RUN mkdir -p  $HOME/.docker/cli-plugins \
-    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.9.1/buildx-v0.9.1.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
+    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.10.2/buildx-v0.10.2.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
     && chmod a+x $HOME/.docker/cli-plugins/docker-buildx
+# Link link /root/.docker to /builder/home/.docker because the default home for cloudbuild jobs is /builder/home
+# and this will make in uncessarry for each cloudbuild.yaml file in K8s project to specify HOME=/root
+RUN mkdir -p /builder/home \
+    && ln -s /root/.docker /builder/home/.docker
 
 # Copy qemu static binaries.
 COPY --from=qemu-image /usr/bin /qemu-bin

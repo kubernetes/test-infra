@@ -18,9 +18,44 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
+        args:
+        - ./hack/jenkins/test-dockerized.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 15Gi
+          requests:
+            cpu: 6
+            memory: 15Gi
+  - name: pull-kubernetes-integration-go-compatibility
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: sig-testing-canaries
+      description: run with GO_VERSION set to the original go version used for this branch
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        command:
+        - runner.sh
+        env:
+        - name: GO_VERSION
+          value: ""
         args:
         - ./hack/jenkins/test-dockerized.sh
         # docker-in-docker needs privileged mode
@@ -49,7 +84,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-go-canary
         command:
         - runner.sh
         args:
@@ -86,7 +121,7 @@ periodics:
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       command:
       - runner.sh
       args:

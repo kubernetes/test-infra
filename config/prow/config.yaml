@@ -13,10 +13,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20221220-5c7fbe528a"
-        initupload: "gcr.io/k8s-prow/initupload:v20221220-5c7fbe528a"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20221220-5c7fbe528a"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20221220-5c7fbe528a"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20230224-60dadd267c"
+        initupload: "gcr.io/k8s-prow/initupload:v20230224-60dadd267c"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20230224-60dadd267c"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20230224-60dadd267c"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -222,7 +222,6 @@ slack_reporter_configs:
     report_template: 'Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>'
 
 branch-protection:
-  allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
   orgs:
     kubernetes:
       protect: true
@@ -465,52 +464,7 @@ branch-protection:
             teams:
             - stage-bots
         website:
-          protect: false # TODO(fejta): protect all branches soon
-          branches:
-            master:
-              protect: true
-            release-1.4:
-              protect: true
-            release-1.5:
-              protect: true
-            release-1.6:
-              protect: true
-            release-1.7:
-              protect: true
-            release-1.8:
-              protect: true
-            release-1.9:
-              protect: true
-            release-1.10:
-              protect: true
-            release-1.11:
-              protect: true
-            release-1.12:
-              protect: true
-            release-1.13:
-              protect: true
-            release-1.14:
-              protect: true
-            release-1.15:
-              protect: true
-            release-1.16:
-              protect: true
-            release-1.17:
-              protect: true
-            release-1.18:
-              protect: true
-            release-1.19:
-              protect: true
-            release-1.20:
-              protect: true
-            release-1.21:
-              protect: true
-            release-1.22:
-              protect: true
-            release-1.23:
-              protect: true
-            release-1.24:
-              protect: true
+          protect: true
     kubernetes-client:
       protect: true
       required_status_checks:
@@ -572,6 +526,22 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cloud-provider-azure:
+          exclude:
+            - "^doc/" # don't protect branches created by release note github action
+          branches:
+            master:
+              protect: true
+            release-1.23:
+              protect: true
+            release-1.24:
+              protect: true
+            release-1.25:
+              protect: true
+            release-1.26:
+              protect: true
+            kubetest2-aks:
+              protect: true
         descheduler:
           branches:
             gh-pages:
@@ -583,10 +553,7 @@ branch-protection:
         kernel-module-management:
           required_status_checks:
             contexts:
-              - Prebuilt kernel module
-              - Prebuilt kernel module - two nodes
-              - In-cluster build
-              - Container image CRD variable
+              - in-cluster-build
         kube-batch:
           required_status_checks:
             contexts:
@@ -947,7 +914,9 @@ presets:
   env:
     - name: REGISTRY
       value: capzci.azurecr.io
-    - name: LOCAL_ONLY
+    - name: LOCAL_ONLY # This variable is used for backwards compatibility, can be removed once CAPZ v1.7.0+ is used in all jobs
+      value: "false"
+    - name: USE_LOCAL_KIND_REGISTRY
       value: "false"
 - labels:
     preset-azure-cred-only: "true"

@@ -2,19 +2,21 @@
 
 reviewers:
 - andyzhangx
-- brendandburns
+- CecileRobertMichon
+- feiskyer
+- jackfrancis
+- karataliu
+- marosset
+- mboersma
+approvers:
+- andyzhangx
 - CecileRobertMichon
 - feiskyer
 - karataliu
-- khenidak
-approvers:
-- andyzhangx
-- brendandburns
-- feiskyer
-- karataliu
-- khenidak
 emeritus_approvers:
+- brendandburns
 - chewong
+- khenidak
 
 labels:
 - area/provider/azure

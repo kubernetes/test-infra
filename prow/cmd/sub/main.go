@@ -26,12 +26,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/test-infra/pkg/flagutil"
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -82,18 +79,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	return o
 }
 
-type kubeClient struct {
-	client prowv1.ProwJobInterface
-	dryRun bool
-}
-
-func (c *kubeClient) Create(ctx context.Context, job *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
-	if c.dryRun {
-		return job, nil
-	}
-	return c.client.Create(ctx, job, o)
-}
-
 func main() {
 	logrusutil.ComponentInit()
 
@@ -110,10 +95,6 @@ func main() {
 	prowjobClient, err := o.client.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
-	}
-	kubeClient := &kubeClient{
-		client: prowjobClient,
-		dryRun: o.dryRun,
 	}
 
 	promMetrics := subscriber.NewMetrics()
@@ -145,7 +126,7 @@ func main() {
 	s := &subscriber.Subscriber{
 		ConfigAgent:              configAgent,
 		Metrics:                  promMetrics,
-		ProwJobClient:            kubeClient,
+		ProwJobClient:            prowjobClient,
 		Reporter:                 pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 		InRepoConfigCacheHandler: cacheGetter,
 	}

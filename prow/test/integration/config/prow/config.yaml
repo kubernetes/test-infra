@@ -21,6 +21,10 @@ prowjob_default_entries:
     repo: 'testRepo'
     config:
       tenant_id: 'tester'
+  - cluster: '*'
+    repo: "https://fakegitserver.default/repo/some/org/gangway-test-repo-1"
+    config:
+      tenant_id: 'well-behaved-tenant-for-gangway'
 
 gerrit:
   tick_interval: 1s
@@ -61,3 +65,20 @@ in_repo_config:
    "fakegitserver.default/repo/repo3": true
    "fakegitserver.default/repo/org1/repo4": true
    "fakegitserver.default/repo/org1/repo5": true
+   "fakegitserver.default/repo/some/org/gangway-test-repo-1": true
+
+# Allowlist of Prow API clients.
+gangway:
+  allowed_api_clients:
+  - gcp:
+      # This translates to the expected `x-endpoint-api-consumer-type` HTTP
+      # metadata header.
+      endpoint_api_consumer_type: "PROJECT"
+      # This translates to the expected `x-endpoint-api-consumer-number` HTTP
+      # metadata header.
+      endpoint_api_consumer_number: "123"
+
+    # We don't want this client to be able to trigger *all* jobs. So instead we
+    # limit its scope to only certain jobs defined for specific subsets of jobs.
+    allowed_jobs_filters:
+    - tenant_id: "well-behaved-tenant-for-gangway"

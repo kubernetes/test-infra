@@ -11,7 +11,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -35,7 +35,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -60,7 +60,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -84,7 +84,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -116,7 +116,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -163,7 +163,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -211,7 +211,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -262,7 +262,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -305,7 +305,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -336,7 +336,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -388,7 +388,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -442,7 +442,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -487,12 +487,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -505,19 +505,17 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azurefile-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
-              value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: KUBERNETES_VERSION
+            - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.23"
-            - name: WORKER_MACHINE_COUNT
+            - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
-            - name: EXTERNAL_E2E_TEST_SMB
+            - name: EXTERNAL_E2E_TEST_SMB # azurefile-csi-driver config
               value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
@@ -542,7 +540,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         - kubetest
@@ -587,12 +585,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -605,17 +603,15 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azurefile-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
-              value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: KUBERNETES_VERSION
+            - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.23"
-            - name: WORKER_MACHINE_COUNT
+            - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
@@ -636,12 +632,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -654,19 +650,17 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: WINDOWS
+            - name: WINDOWS # azurefile-csi-driver config
               value: "true"
-            - name: TEST_WINDOWS
+            - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_SERVER_VERSION
+            - name: WINDOWS_SERVER_VERSION # CAPZ config
               value: "windows-2022"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
-              value: "true"
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
-            - name: DISABLE_ZONE
+            - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
-            - name: KUBERNETES_VERSION
+            - name: KUBERNETES_VERSION # CAPZ config
               value: "latest-1.23"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
@@ -674,6 +668,111 @@ presubmits:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2022
       description: "Run E2E tests on a capz Windows 2022 cluster for Azure File CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-e2e-capz-windows-2019-hostprocess
+    decorate: true
+    always_run: false
+    optional: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.7
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: WINDOWS # azurefile-csi-driver config
+              value: "true"
+            - name: TEST_WINDOWS # CAPZ config
+              value: "true"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # azurefile-csi-driver config
+              value: "true"
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D4s_v3"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.23"
+            - name: WORKER_MACHINE_COUNT # CAPZ config
+              value: "0" # Don't create any linux worker nodes
+    annotations:
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
+      testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2019-hostprocess
+      description: "Run E2E tests on a capz Windows 2019 Host-Process cluster for Azure File CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-e2e-capz-windows-2022-hostprocess
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.7
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: WINDOWS # azurefile-csi-driver config
+              value: "true"
+            - name: TEST_WINDOWS # CAPZ config
+              value: "true"
+            - name: WINDOWS_SERVER_VERSION # CAPZ config
+              value: "windows-2022"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # azurefile-csi-driver config
+              value: "true"
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D4s_v3"
+            - name: DISABLE_ZONE # azurefile-csi-driver config
+              value: "true"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.23"
+            - name: WORKER_MACHINE_COUNT
+              value: "0" # Don't create any linux worker nodes
+    annotations:
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
+      testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2022-hostprocess
+      description: "Run E2E tests on a capz Windows 2022 Host-Process cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-capz
     decorate: true
@@ -689,12 +788,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -707,7 +806,7 @@ presubmits:
           securityContext:
             privileged: true
           env:
-            - name: NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver

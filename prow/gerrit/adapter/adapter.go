@@ -45,7 +45,7 @@ import (
 
 const (
 	inRepoConfigRetries = 2
-	inRepoConfigFailed  = "Unable to get inRepoConfig. This could be due to a merge conflict or a flake. If a merge conflict, please rebase and fix conflicts. Otherwise try again with /test all"
+	inRepoConfigFailed  = "Unable to get inRepoConfig. This could be due to a merge conflict (please resolve them), an inRepoConfig parsing error (incorrect formatting) in the .prow directory or .prow.yaml file, or a flake. For possible flakes, try again with /test all"
 )
 
 var gerritMetrics = struct {
@@ -101,19 +101,19 @@ type gerritClient interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config                   config.Getter
-	prowJobClient            prowJobClient
-	gc                       gerritClient
-	tracker                  LastSyncTracker
-	projectsOptOutHelp       map[string]sets.String
-	lock                     sync.RWMutex
-	cookieFilePath           string
-	configAgent              *config.Agent
-	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler
-	inRepoConfigFailures     map[string]bool
-	instancesWithWorker      map[string]bool
-	latestMux                sync.Mutex
-	workerPoolSize           int
+	config                      config.Getter
+	prowJobClient               prowJobClient
+	gc                          gerritClient
+	tracker                     LastSyncTracker
+	projectsOptOutHelp          map[string]sets.String
+	lock                        sync.RWMutex
+	cookieFilePath              string
+	configAgent                 *config.Agent
+	inRepoConfigCacheHandler    *config.InRepoConfigCacheHandler
+	inRepoConfigFailuresTracker map[string]bool
+	instancesWithWorker         map[string]bool
+	latestMux                   sync.Mutex
+	workerPoolSize              int
 }
 
 type LastSyncTracker interface {
@@ -140,17 +140,17 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 	c := &Controller{
-		prowJobClient:            prowJobClient,
-		config:                   cfg,
-		gc:                       gerritClient,
-		tracker:                  lastSyncTracker,
-		projectsOptOutHelp:       projectsOptOutHelpMap,
-		cookieFilePath:           cookiefilePath,
-		configAgent:              ca,
-		inRepoConfigCacheHandler: inRepoConfigCacheHandler,
-		inRepoConfigFailures:     map[string]bool{},
-		instancesWithWorker:      make(map[string]bool),
-		workerPoolSize:           workerPoolSize,
+		prowJobClient:               prowJobClient,
+		config:                      cfg,
+		gc:                          gerritClient,
+		tracker:                     lastSyncTracker,
+		projectsOptOutHelp:          projectsOptOutHelpMap,
+		cookieFilePath:              cookiefilePath,
+		configAgent:                 ca,
+		inRepoConfigCacheHandler:    inRepoConfigCacheHandler,
+		inRepoConfigFailuresTracker: map[string]bool{},
+		instancesWithWorker:         make(map[string]bool),
+		workerPoolSize:              workerPoolSize,
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -395,22 +395,26 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 func (c *Controller) handleInRepoConfigError(err error, instance string, change gerrit.ChangeInfo) error {
 	key := fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)
 	if err != nil {
-		// If we have not already recorded this failure send an error essage
-		if failed, ok := c.inRepoConfigFailures[key]; !ok || !failed {
-			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, inRepoConfigFailed, nil); setReviewWerr != nil {
+		// Only report back to Gerrit if we have not reported previously.
+		if _, alreadyReported := c.inRepoConfigFailuresTracker[key]; !alreadyReported {
+			msg := fmt.Sprintf("%s: %v", inRepoConfigFailed, err)
+			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, msg, nil); setReviewWerr != nil {
 				return fmt.Errorf("failed to get inRepoConfig and failed to set Review to notify user: %v and %v", err, setReviewWerr)
 			}
-			c.inRepoConfigFailures[key] = true
+			// The boolean value here is meaningless as we use the tracker as a
+			// set data structure, not as a hashmap where values actually
+			// matter. We just use a bool for simplicity.
+			c.inRepoConfigFailuresTracker[key] = true
 		}
 
 		// We do not want to return that there was an error processing change. If we are unable to get inRepoConfig we do not process. This is expected behavior.
 		return nil
 	}
 
-	// If failed in the past but passes now, allow future failures to send message
-	if _, ok := c.inRepoConfigFailures[key]; ok {
-		c.inRepoConfigFailures[key] = false
-	}
+	// If we are passing now, remove any record of previous failures in our
+	// tracker to allow future failures to send an error message back to Gerrit
+	// (through this same function).
+	delete(c.inRepoConfigFailuresTracker, key)
 	return nil
 }
 

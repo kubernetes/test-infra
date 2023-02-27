@@ -38,7 +38,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master"
 kubekins_e2e_image="${tmp/\-master/}"
 installCSIdrivers=""
 installCSIAzureFileDrivers=""
@@ -46,16 +46,18 @@ installCSIAzureFileDrivers=""
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   kubernetes_version="latest"
-  capz_release="release-1.6"
+  capz_release="release-1.7"
 
   if [[ "${release}" == "master" ]]; then
     branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
     branch_name="master"
+    ccm_branch="master"
     capz_periodic_branch_name="main"
   else
     branch="release-${release}"
     branch_name="release-${release}"
     kubernetes_version+="-${release}"
+    ccm_branch="release-${release}"
     capz_periodic_branch_name=${capz_release}
   fi
 
@@ -104,7 +106,7 @@ presubmits:
               cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
               value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
           securityContext:
             privileged: true
@@ -149,9 +151,9 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
               cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
               value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-            - name: EXP_MACHINE_POOL
+            - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
           securityContext:
             privileged: true
@@ -197,7 +199,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
               cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
               value: "kubernetes.io/azure-file" # In-tree Azure file storage class
           securityContext:
             privileged: true
@@ -243,9 +245,9 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
               cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
               make e2e-test
           env:
-            - name: AZURE_STORAGE_DRIVER
+            - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
               value: "kubernetes.io/azure-file" # In-tree Azure file storage class
-            - name: EXP_MACHINE_POOL
+            - name: EXP_MACHINE_POOL # CAPZ config
               value: "true"
           securityContext:
             privileged: true
@@ -341,11 +343,18 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: ${capz_periodic_branch_name}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: ${ccm_branch}
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: ${kubekins_e2e_image}-master
@@ -407,9 +416,9 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "${kubernetes_version}"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
@@ -459,11 +468,11 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "${kubernetes_version}"
-      - name: EXP_MACHINE_POOL
+      - name: EXP_MACHINE_POOL # CAPZ config
         value: "true"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
@@ -512,9 +521,9 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "${kubernetes_version}"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
@@ -563,11 +572,11 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "${kubernetes_version}"
-      - name: EXP_MACHINE_POOL
+      - name: EXP_MACHINE_POOL # CAPZ config
         value: "true"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
@@ -593,14 +602,21 @@ EOF
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: ${capz_release}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: ${ccm_branch}
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -647,7 +663,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -659,9 +675,9 @@ EOF
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "${kubernetes_version}"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
@@ -699,7 +715,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -711,11 +727,11 @@ EOF
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "${kubernetes_version}"
-      - name: EXP_MACHINE_POOL
+      - name: EXP_MACHINE_POOL # CAPZ config
         value: "true"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
@@ -753,7 +769,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -764,9 +780,9 @@ EOF
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "${kubernetes_version}"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
@@ -804,7 +820,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -815,11 +831,11 @@ EOF
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: KUBERNETES_VERSION
+      - name: KUBERNETES_VERSION # CAPZ config
         value: "${kubernetes_version}"
-      - name: EXP_MACHINE_POOL
+      - name: EXP_MACHINE_POOL # CAPZ config
         value: "true"
-      - name: AZURE_STORAGE_DRIVER
+      - name: AZURE_STORAGE_DRIVER # azuredisk-csi-driver config
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true

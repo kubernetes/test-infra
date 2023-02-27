@@ -87,21 +87,38 @@ presubmits:
   kubernetes/ingress-gce:
   - name: pull-ingress-gce-test
     always_run: true
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
-        args:
-        - --repo=k8s.io/ingress-gce=$(PULL_REFS)
-        - --root=/go/src/
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        command:
+        - runner.sh
         - make
         - test
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+
+  - name: pull-ingress-gce-verify
+    always_run: true
+    decorate: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        command:
+        - runner.sh
+        - make
+        - verify
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -115,7 +132,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -143,7 +160,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       args:
       - --timeout=340
       - --bare
@@ -175,7 +192,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
       args:
       - --timeout=340
       - --bare

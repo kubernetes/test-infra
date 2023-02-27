@@ -15,19 +15,14 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     extra_refs:
-      # This needs to be uncommented when we switch to periodic job.
-      # - org: kubernetes
-      #   repo: perf-tests
-      #   base_ref: "main"
-      #   path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -83,6 +78,167 @@ presubmits:
       description: "Run clusterloader2 tests on a capz Windows 2019 cluster"
       testgrid-num-columns-recent: '30'
 periodics:
+  - name: hourly-soak-tests-capz-windows-2019
+    cron: "0 * * * MON-SAT"
+    decorate: true
+    path_alias: k8s.io/perf-tests
+    tags:
+      - "perfDashPrefix: hourly-soak-tests-capz-windows-2019"
+      - "perfDashJobType: windows"
+    labels:
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes
+        repo: perf-tests
+        base_ref: "master"
+        path_alias: "k8s.io/perf-tests"
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - >-
+              source ./hack/parse-prow-creds.sh &&
+              ./hack/ensure-azcli.sh &&
+              az keyvault secret show
+              --vault-name win-soak-test
+              --name win-soak-test-kubeconfig
+              --query value -o tsv | base64 --decode > ./kubeconfig &&
+              cp ./kubeconfig ${GOPATH}/src/k8s.io/perf-tests/kubeconfig &&
+              cd ${GOPATH}/src/k8s.io/perf-tests/ &&
+              ./run-e2e.sh cluster-loader2
+              --kubeconfig ${GOPATH}/src/k8s.io/perf-tests/kubeconfig
+              --testconfig=testing/windows-tests/config.yaml
+              --provider=aks
+              --report-dir=${ARTIFACTS}
+              --v=2
+          env:
+            # clusterloader2 variables
+            - name: ENABLE_PROMETHEUS_SERVER
+              value: "true"
+            - name: TEAR_DOWN_PROMETHEUS_SERVER
+              value: "false"
+            - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+              value: "true"
+            - name: PROMETHEUS_APISERVER_SCRAPE_PORT
+              value: "6443"
+            - name: PROMETHEUS_SCRAPE_WINDOWS_NODE_EXPORTER
+              value: "true"
+            - name: CL2_PROMETHEUS_TOLERATE_MASTER
+              value: "true"
+            - name: CL2_POD_COUNT
+              value: "10"
+    annotations:
+      testgrid-dashboards: sig-windows-soak-tests
+      testgrid-tab-name: hourly-soak-tests-capz-windows-2019
+      description: "Run clusterloader2 tests every hour on a capz Windows 2019 cluster"
+      testgrid-num-columns-recent: '30'
+  - name: delete-win-soak-test-cluster
+    cron: "0 0 * * SUN"
+    decorate: true
+    decoration_config:
+      timeout: 8h
+    labels:
+      preset-service-account: "true"
+      preset-azure-cred-only: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - >-
+              source ./hack/parse-prow-creds.sh &&
+              ./hack/ensure-azcli.sh &&
+              az
+              group
+              delete
+              --resource-group
+              win-soak-test
+              -y
+    annotations:
+      testgrid-dashboards: sig-windows-soak-tests
+      testgrid-tab-name: delete-win-soak-test-cluster
+      description: "Delete win-soak-test cluster"
+      testgrid-num-columns-recent: '30'
+
+  - name: build-win-soak-test-cluster
+    cron: "0 1 * * SUN"
+    decorate: true
+    decoration_config:
+      timeout: 8h
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              az keyvault secret set
+              --name win-soak-test-kubeconfig
+              --vault-name win-soak-test
+              --file ./kubeconfig
+              --encoding base64
+              --output none &&
+              az group update
+              --tags DO-NOT-DELETE="$(date)"
+              -n win-soak-test
+          securityContext:
+            privileged: true
+          env:
+            # CAPZ variables
+            - name: CLUSTER_NAME
+              value: win-soak-test
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D4s_v3"
+            - name: TEST_WINDOWS
+              value: "true"
+            - name: KUBERNETES_VERSION
+              value: "latest"
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "1"
+            - name: WORKER_MACHINE_COUNT
+              value: "0" # Don't create linux worker nodes
+            - name: SKIP_CLEANUP # Do not delete workload cluster
+              value: "true"
+    annotations:
+      testgrid-dashboards: sig-windows-soak-tests
+      testgrid-tab-name: build-win-soak-test-cluster
+      description: "Build win-soak-test cluster"
+      testgrid-num-columns-recent: '30'
+
   - interval: 24h
     name: periodic-soak-tests-capz-windows-2019
     decorate: true
@@ -105,12 +261,12 @@ periodics:
         path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.6
+        base_ref: release-1.7
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh

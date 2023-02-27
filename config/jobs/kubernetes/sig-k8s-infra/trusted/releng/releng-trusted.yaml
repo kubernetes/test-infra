@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
         command:
         - /kpromo
         args:
@@ -44,7 +44,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
         command:
         - /kpromo
         args:
@@ -110,7 +110,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
       command:
       - /kpromo
       args:
@@ -122,6 +122,95 @@ periodics:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '2'
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+
+# Copy artifacts to mirrors (periodic drift correction)
+- interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  name: ci-k8sio-file-promo-mirrors
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
+  spec:
+    serviceAccountName: k8s-infra-promoter
+    containers:
+    - name: promote-to-mirrors
+      image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
+      command:
+      - /kpromo
+      args:
+      - run
+      - files
+      - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring
+      - --confirm
+      - --use-service-account
+      env:
+        - name: AWS_ROLE_ARN
+          value: arn:aws:iam::354561287328:role/artifacts.k8s.io_s3writer
+        - name: AWS_WEB_IDENTITY_TOKEN_FILE
+          value: /var/run/secrets/aws-iam-token/serviceaccount/token
+        - name: AWS_REGION
+          value: us-east-1
+      resources:
+        # We hash files as we upload them, so take a whole core
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
+      volumeMounts:
+        - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
+          name: aws-iam-token
+          readOnly: true
+    - name: promote-to-mirrors-staging
+      image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
+      command:
+      - /kpromo
+      args:
+      - run
+      - files
+      - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/mirroring-staging
+      - --confirm
+      - --use-service-account
+      env:
+        - name: AWS_ROLE_ARN
+          value: arn:aws:iam::354561287328:role/artifacts.k8s.io_s3writer
+        - name: AWS_WEB_IDENTITY_TOKEN_FILE
+          value: /var/run/secrets/aws-iam-token/serviceaccount/token
+        - name: AWS_REGION
+          value: us-east-1
+      resources:
+        # We hash files as we upload them, so take a whole core
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
+      volumeMounts:
+        - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
+          name: aws-iam-token
+          readOnly: true
+    volumes:
+    - name: aws-iam-token
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            audience: sts.amazonaws.com
+            expirationSeconds: 86400
+            path: token
+  annotations:
+    testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
+    #testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    #testgrid-num-failures-to-alert: '2'
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
@@ -152,7 +241,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
       command:
       - /kpromo
       args:

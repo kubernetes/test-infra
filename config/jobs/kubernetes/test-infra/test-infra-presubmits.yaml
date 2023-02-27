@@ -37,7 +37,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:v20221004-0320f4818c
+      - image: gcr.io/k8s-testimages/gubernator:v20230111-cd1b3caf9c
         command:
         - ./gubernator/test-gubernator.sh
         env:
@@ -53,7 +53,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20221220-5c7fbe528a
+      - image: gcr.io/k8s-prow/checkconfig:v20230224-60dadd267c
         command:
         - checkconfig
         args:
@@ -72,10 +72,37 @@ presubmits:
         - --warnings=unknown-fields-all
     annotations:
       testgrid-dashboards: presubmits-test-infra
+  - name: pull-test-infra-prow-checkconfig-loose
+    optional: true
+    decorate: true
+    skip_report: true
+    run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-prow/checkconfig:v20230224-60dadd267c
+        command:
+        - checkconfig
+        args:
+        - --config-path=config/prow/config.yaml
+        - --job-config-path=config/jobs
+        - --plugin-config=config/prow/plugins.yaml
+        - --warnings=mismatched-tide-lenient
+        - --warnings=tide-strict-branch
+        - --warnings=needs-ok-to-test
+        - --warnings=validate-owners
+        - --warnings=missing-trigger
+        - --warnings=validate-urls
+        - --warnings=unknown-fields
+        - --warnings=duplicate-job-refs
+        - --warnings=unknown-fields-all
+        - --warnings=non-decorated-jobs
+        - --warnings=valid-decoration-config
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-integration
     branches:
     - master
-    skip_if_only_changed: '^config/jobs/'
+    skip_if_only_changed: '(^config/jobs/)|(^images/)|(^scenarios/)|(^jenkins/)|(^kubetest/)'
     decorate: true
     labels:
       preset-service-account: "true"
@@ -83,7 +110,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
         command:
         - runner.sh
         args:
@@ -117,7 +144,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
         command:
         - runner.sh
         args:
@@ -139,7 +166,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
         command:
         - runner.sh
         args:
@@ -175,7 +202,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
         command:
         - runner.sh
         args:
@@ -187,3 +214,27 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-test
+  - name: pull-test-infra-verify-cri-o
+    branches:
+    - master
+    run_if_changed: 'jobs\/e2e_node\/crio\/'
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+        - -C
+        - jobs/e2e_node/crio
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: verify-cri-o

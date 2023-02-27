@@ -19,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -37,7 +37,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
         - name: CSI_PROW_TESTS
@@ -67,7 +67,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -76,7 +76,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_SNAPSHOTTER_VERSION
@@ -110,7 +110,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -128,7 +128,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
         - name: CSI_PROW_TESTS
@@ -158,7 +158,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -167,7 +167,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_SNAPSHOTTER_VERSION
@@ -201,7 +201,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -219,7 +219,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
         - name: CSI_PROW_TESTS
@@ -253,7 +253,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -262,7 +262,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_SNAPSHOTTER_VERSION
@@ -296,7 +296,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -314,7 +314,7 @@ presubmits:
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
           value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.10.0"
+          value: "v1.11.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
         - name: CSI_PROW_TESTS
@@ -341,7 +341,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -376,7 +376,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221223-736a4da5ba-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
         command:
         - runner.sh
         args:
@@ -398,6 +398,8 @@ presubmits:
         # The other jobs test against the unmodified deployment for
         # that Kubernetes version, i.e. with the original RBAC rules.
         - name: UPDATE_RBAC_RULES
+          value: "true"
+        - name: VOLUME_MODE_CONVERSION_TESTS
           value: "true"
         # docker-in-docker needs privileged mode
         securityContext:

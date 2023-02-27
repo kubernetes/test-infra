@@ -199,7 +199,7 @@ func TestHandleInRepoConfigError(t *testing.T) {
 			name:             "Resolved error sends error again, resend review",
 			err:              errors.New("InRepoConfigError"),
 			expectedReview:   true,
-			startingFailures: map[string]bool{changeHash: false},
+			startingFailures: map[string]bool{},
 			expectedFailures: map[string]bool{changeHash: true},
 		},
 		{
@@ -207,15 +207,15 @@ func TestHandleInRepoConfigError(t *testing.T) {
 			err:              nil,
 			expectedReview:   false,
 			startingFailures: map[string]bool{changeHash: true},
-			expectedFailures: map[string]bool{changeHash: false},
+			expectedFailures: map[string]bool{},
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			gc := &fgc{reviews: 0}
 			controller := &Controller{
-				inRepoConfigFailures: tc.startingFailures,
-				gc:                   gc,
+				inRepoConfigFailuresTracker: tc.startingFailures,
+				gc:                          gc,
 			}
 
 			ret := controller.handleInRepoConfigError(tc.err, instanceName, change)
@@ -228,7 +228,7 @@ func TestHandleInRepoConfigError(t *testing.T) {
 			if !tc.expectedReview && gc.reviews != 0 {
 				t.Error("expected no reviews and got one")
 			}
-			if diff := cmp.Diff(tc.expectedFailures, controller.inRepoConfigFailures, cmpopts.SortSlices(func(a, b string) bool {
+			if diff := cmp.Diff(tc.expectedFailures, controller.inRepoConfigFailuresTracker, cmpopts.SortSlices(func(a, b string) bool {
 				return a < b
 			})); diff != "" {
 				t.Fatalf("expected failures mismatch. got(+), want(-):\n%s", diff)
@@ -3075,12 +3075,12 @@ func TestProcessChange(t *testing.T) {
 			var gc fgc
 			gc.instanceMap = tc.instancesMap
 			c := &Controller{
-				config:                   fca.Config,
-				prowJobClient:            fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
-				gc:                       &gc,
-				tracker:                  &fakeSync{val: fakeLastSync},
-				inRepoConfigCacheHandler: cache,
-				inRepoConfigFailures:     make(map[string]bool),
+				config:                      fca.Config,
+				prowJobClient:               fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
+				gc:                          &gc,
+				tracker:                     &fakeSync{val: fakeLastSync},
+				inRepoConfigCacheHandler:    cache,
+				inRepoConfigFailuresTracker: make(map[string]bool),
 			}
 
 			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)

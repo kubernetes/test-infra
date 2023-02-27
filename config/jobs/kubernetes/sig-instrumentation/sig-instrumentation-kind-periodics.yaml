@@ -3,6 +3,8 @@ periodics:
   cluster: k8s-infra-prow-build
   # This combines tests from ci-kubernetes-kind-conformance and sig-storage
   # and runs them with JSON output in all components which support that.
+  # Also enables contextual logging and (to get more coverage) dynamic
+  # resource allocation.
   name: ci-kubernetes-kind-e2e-json-logging
   annotations:
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind
@@ -26,12 +28,20 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20221223-736a4da5ba-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230207-ce569a5e37-master
       command:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      # The modified e2e-k8s.sh with support for FEATURE_GATES and RUNTIME_CONFIG comes from
+      # https://github.com/kubernetes-sigs/kind/pull/3023. Once that PR is merged and a
+      # kind release is done, pulling it separately via curl can be removed.
+      - >
+        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
+        curl -sSL https://github.com/pohly/kind/raw/e2e-feature-gates/hack/ci/e2e-k8s.sh >$(which e2e-k8s.sh) &&
+        chmod u+x $(which e2e-k8s.sh) &&
+        e2e-k8s.sh
+
       env:
       # Options from https://github.com/kubernetes-sigs/kind/blob/d1eecc46e30cac9d35cd32dc52677ef75ec22e18/hack/ci/e2e-k8s.sh#L79-L83
       - name: CLUSTER_LOG_FORMAT
@@ -39,11 +49,15 @@ periodics:
       - name: KIND_CLUSTER_LOG_LEVEL
         # Default is 4, but we want to exercise more log calls and get more output.
         value: "10"
+      - name: FEATURE_GATES
+        value: '{"DynamicResourceAllocation":true,"ContextualLogging":true}'
+      - name: RUNTIME_CONFIG
+        value: '{"resource.k8s.io/v1alpha1":"true"}'
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
       - name: FOCUS
-        value: \[Conformance\]|\[Driver:.csi-hostpath\]
+        value: \[Conformance\]|\[Driver:.csi-hostpath\]|DynamicResourceAllocation
       # TODO(bentheelder): reduce the skip list further
       # NOTE: this skip list is from the standard periodic kind job, just to ensure
       # we don't accidentally select any of these

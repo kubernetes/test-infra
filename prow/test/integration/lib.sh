@@ -59,6 +59,7 @@ declare -rA PROW_IMAGES=(
   # Actual Prow components.
   [crier]=prow/cmd/crier
   [deck]=prow/cmd/deck
+  [gangway]=prow/cmd/gangway
   [gerrit]=prow/cmd/gerrit
   [hook]=prow/cmd/hook
   [horologium]=prow/cmd/horologium
@@ -87,6 +88,7 @@ declare -rA PROW_IMAGES=(
 declare -rA PROW_IMAGES_TO_COMPONENTS=(
   [crier]=crier
   [deck]="deck,deck-tenanted"
+  [gangway]=gangway
   [gerrit]=gerrit
   [hook]=hook
   [horologium]=horologium
@@ -233,6 +235,14 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   WAIT_FOR_RESOURCE_clusterrolebindings,webhook-server,default
   WAIT_FOR_RESOURCE_serviceaccounts,webhook-server,default
   WAIT_webhook-server
+
+  gangway_rbac.yaml
+  gangway_service.yaml
+  gangway_deployment.yaml
+  WAIT_FOR_RESOURCE_roles,gangway,default
+  WAIT_FOR_RESOURCE_rolebindings,gangway,default
+  WAIT_FOR_RESOURCE_serviceaccounts,gangway,default
+  WAIT_gangway
 
   sub.yaml
   WAIT_FOR_RESOURCE_roles,sub,default
