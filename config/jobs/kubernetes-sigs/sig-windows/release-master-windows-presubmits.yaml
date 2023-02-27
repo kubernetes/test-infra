@@ -93,6 +93,51 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-containerd-extension
+  - name: pull-e2e-run-capz-sh-containerd-windows-2022-hyperv
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'helpers/hyper-v-mutating-webhook/.*'
+    decoration_config:
+      timeout: 3h
+    path_alias: k8s.io/windows-testing
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-windows-private-registry-cred: "true"
+      preset-capz-windows-common-main: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+          command:
+            - "runner.sh"
+            - "./capz/run-capz-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+          env:
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2022"
+          - name: HYPERV
+            value: "true"
+          - name: WINDOWS_CONTAINERD_URL
+            value: "https://github.com/containerd/containerd/releases/download/v1.7.0-beta.4/containerd-1.7.0-beta.4-windows-amd64.tar.gz"
+          - name: GINKGO_FOCUS
+            value: \[sig-windows\] # run just a subset to speed up testing time
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-e2e-run-capz-sh-containerd-windows-2022-hyperv
   - name: pull-e2e-capz-containerd-windows-2022-extension-gmsa
     decorate: true
     always_run: false

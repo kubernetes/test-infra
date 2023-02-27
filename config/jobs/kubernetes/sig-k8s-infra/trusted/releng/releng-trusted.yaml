@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
         command:
         - /kpromo
         args:
@@ -44,7 +44,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
         command:
         - /kpromo
         args:
@@ -110,7 +110,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
       command:
       - /kpromo
       args:
@@ -141,10 +141,7 @@ periodics:
     serviceAccountName: k8s-infra-promoter
     containers:
     - name: promote-to-mirrors
-      # TODO(justinsb): replace with released image once this is working
-      # Curently lacking S3 support - at least
-      #image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
-      image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230209-v3.4.11-54-ga7bc54b
+      image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
       command:
       - /kpromo
       args:
@@ -160,15 +157,20 @@ periodics:
           value: /var/run/secrets/aws-iam-token/serviceaccount/token
         - name: AWS_REGION
           value: us-east-1
+      resources:
+        # We hash files as we upload them, so take a whole core
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
       volumeMounts:
         - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
           name: aws-iam-token
           readOnly: true
     - name: promote-to-mirrors-staging
-      # TODO(justinsb): replace with released image once this is working
-      # Curently lacking S3 support - at least
-      #image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
-      image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20230209-v3.4.11-54-ga7bc54b
+      image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
       command:
       - /kpromo
       args:
@@ -184,6 +186,14 @@ periodics:
           value: /var/run/secrets/aws-iam-token/serviceaccount/token
         - name: AWS_REGION
           value: us-east-1
+      resources:
+        # We hash files as we upload them, so take a whole core
+        requests:
+          cpu: 1
+          memory: "2Gi"
+        limits:
+          cpu: 1
+          memory: "2Gi"
       volumeMounts:
         - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
           name: aws-iam-token
@@ -231,7 +241,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.11-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.12-1
       command:
       - /kpromo
       args:

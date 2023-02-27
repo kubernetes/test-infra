@@ -275,10 +275,6 @@ periodics:
     repo: cloud-provider-gcp
     base_ref: master
     path_alias: k8s.io/cloud-provider-gcp
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
@@ -302,7 +298,6 @@ periodics:
         set -o nounset;
         set -o pipefail;
         set -o xtrace;
-        KUBE_SOURCE=$GOPATH/src/k8s.io/kubernetes;
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
@@ -324,7 +319,10 @@ periodics:
           echo "TEST_PACKAGE_VERSION - Falling back to v1.25.0";
         fi;
         cd $REPO_ROOT;
+        KUBE_VERSION=${KUBE_VERSION:-master};
+        KUBE_SOURCE=_src/k8s.io/kubernetes;
         sed -i 's/^\s*k8s.io.*//g' go.mod;
+        git clone --depth 1 --branch ${KUBE_VERSION} https://github.com/kubernetes/kubernetes ${KUBE_SOURCE};
         go work init .;
         go work use crd;
         go work use providers;
@@ -334,9 +332,57 @@ periodics:
         done;
         go work sync;
         cd -;
-        kubetest2 gce -v 2 --repo-root $REPO_ROOT \
-          --build --up --down --test=ginkgo \
-          --master-size n1-standard-2  \
-          -- \
-          --test-package-version="${TEST_PACKAGE_VERSION}" \
-          --focus-regex='\[Conformance\]'
+        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --master-size n1-standard-2 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --focus-regex='\[Conformance\]' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+
+- interval: 1h # Temporarily run very frequently while we get it working
+  cluster: k8s-infra-prow-build
+  name: ci-cloud-provider-gcp-e2e-scenario-kops-simple
+  decorate: true
+  decoration_config:
+    timeout: 80m
+  annotations:
+    testgrid-tab-name: scenario kops-simple
+    testgrid-dashboards: provider-gcp-periodics
+    description: Runs the kops-simple scenario
+  labels:
+    preset-dind-enabled: "true"
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-gcp
+    base_ref: master
+    path_alias: cloud-provider-gcp
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: kops
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+      resources:
+        limits:
+          cpu: 4
+          memory: 14Gi
+        requests:
+          cpu: 4
+          memory: 14Gi
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      command:
+      - runner.sh
+      args:
+      - "/bin/bash"
+      - "-c"
+      - set -o errexit;
+        set -o nounset;
+        set -o pipefail;
+        set -o xtrace;
+        cd $GOPATH/src/cloud-provider-gcp;
+        e2e/add-kubernetes-to-workspace.sh;
+        e2e/scenarios/kops-simple

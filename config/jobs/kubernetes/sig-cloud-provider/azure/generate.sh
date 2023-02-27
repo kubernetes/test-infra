@@ -51,11 +51,13 @@ for release in "$@"; do
   if [[ "${release}" == "master" ]]; then
     branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
     branch_name="master"
+    ccm_branch="master"
     capz_periodic_branch_name="main"
   else
     branch="release-${release}"
     branch_name="release-${release}"
     kubernetes_version+="-${release}"
+    ccm_branch="release-${release}"
     capz_periodic_branch_name=${capz_release}
   fi
 
@@ -341,11 +343,18 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: ${capz_periodic_branch_name}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: ${ccm_branch}
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: ${kubekins_e2e_image}-master
@@ -593,11 +602,18 @@ EOF
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: ${capz_release}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: ${ccm_branch}
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master

@@ -142,7 +142,7 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 		})
 	}
 
-	for cm, data := range updateconfig.FilterChanges(configUpdater, changes, defaultNamespace, logrus.NewEntry(logrus.StandardLogger())) {
+	for cm, data := range updateconfig.FilterChanges(configUpdater, changes, defaultNamespace, bootstrapMode, logrus.NewEntry(logrus.StandardLogger())) {
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
 		configMapClient, err := updateconfig.GetConfigMapClient(client.CoreV1(), cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
 		if err != nil {

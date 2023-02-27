@@ -534,19 +534,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		}
 	case client.New:
 		logger := logger.WithField("status", client.New)
-		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
-		if !ok {
-			lastUpdate = time.Now()
-			logger.WithField("lastUpdate", lastUpdate).Warnf("lastUpdate not found, falling back to now")
-		}
-		if shouldSkipChangeProcessing(change, lastUpdate) {
-			logger.WithFields(logrus.Fields{
-				"project":  change.Project,
-				"changeID": change.ChangeID,
-			}).Debug("No code change since last update.")
-			return nil
-		}
-
 		var presubmits []config.Presubmit
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
@@ -590,6 +577,12 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		if err != nil {
 			// This would happen if authenticateOnce hasn't done register this instance yet
 			return fmt.Errorf("account not found for %q: %w", instance, err)
+		}
+
+		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
+		if !ok {
+			lastUpdate = time.Now()
+			logger.WithField("lastUpdate", lastUpdate).Warnf("lastUpdate not found, falling back to now")
 		}
 
 		revision := change.Revisions[change.CurrentRevision]
@@ -697,29 +690,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	}
 
 	return nil
-}
-
-// shouldSkipChangeProcessing returns true if the revisions in the change after
-// last repo update does not contain code change or valid test related comments.
-func shouldSkipChangeProcessing(change client.ChangeInfo, lastUpdate time.Time) bool {
-	// this should not happen
-	if change.Revisions == nil {
-		return false
-	}
-
-	for _, message := range currentMessages(change, lastUpdate) {
-		if pjutil.RetestRe.MatchString(message.Message) || pjutil.TestRe.MatchString(message.Message) {
-			return false
-		}
-	}
-
-	for _, rev := range change.Revisions {
-		if rev.Created.Time.After(lastUpdate) && rev.Kind != gerrit.NoCodeChange {
-			return false
-		}
-	}
-
-	return true
 }
 
 // isProjectOptOutHelp returns if the project is opt-out from getting help

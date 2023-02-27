@@ -52,11 +52,11 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
-    always_run: true
     optional: true
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.1$
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -94,10 +94,10 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
-    always_run: true
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.1$
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -116,10 +116,10 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
-    always_run: true
     branches:
     # The script this job runs is not in all branches.
     - ^release-1.1$
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:

@@ -149,45 +149,66 @@ dashboards:
     test_group_name: branch-ci-stackrox-stackrox-master-merge-ui-unit-tests
   name: redhat-stackrox-merge
 test_groups:
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-nongroovy-e2e-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-nongroovy-e2e-tests
   name: branch-ci-stackrox-stackrox-master-merge-gke-nongroovy-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-postgres-qa-e2e-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-postgres-qa-e2e-tests
   name: branch-ci-stackrox-stackrox-master-merge-gke-postgres-qa-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-qa-e2e-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-qa-e2e-tests
   name: branch-ci-stackrox-stackrox-master-merge-gke-qa-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-ui-e2e-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-ui-e2e-tests
   name: branch-ci-stackrox-stackrox-master-merge-gke-ui-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-postgres-ui-e2e-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-postgres-ui-e2e-tests
   name: branch-ci-stackrox-stackrox-master-merge-gke-postgres-ui-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-upgrade-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-upgrade-tests
   name: branch-ci-stackrox-stackrox-master-merge-gke-upgrade-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-postgres-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-postgres-tests
   name: branch-ci-stackrox-stackrox-master-merge-go-postgres-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-unit-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-unit-tests
   name: branch-ci-stackrox-stackrox-master-merge-go-unit-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-unit-tests-release
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-unit-tests-release
   name: branch-ci-stackrox-stackrox-master-merge-go-unit-tests-release
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-grouped-static-checks
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-grouped-static-checks
   name: branch-ci-stackrox-stackrox-master-merge-grouped-static-checks
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-integration-unit-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-integration-unit-tests
   name: branch-ci-stackrox-stackrox-master-merge-integration-unit-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-local-roxctl-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-local-roxctl-tests
   name: branch-ci-stackrox-stackrox-master-merge-local-roxctl-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-mitre-bundles-checks
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-mitre-bundles-checks
   name: branch-ci-stackrox-stackrox-master-merge-mitre-bundles-checks
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-openshift-oldest-operator-e2e-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-openshift-oldest-operator-e2e-tests
   name: branch-ci-stackrox-stackrox-master-merge-openshift-oldest-operator-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-openshift-newest-operator-e2e-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-openshift-newest-operator-e2e-tests
   name: branch-ci-stackrox-stackrox-master-merge-openshift-newest-operator-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-openshift-penultimate-qa-e2e-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-openshift-penultimate-qa-e2e-tests
   name: branch-ci-stackrox-stackrox-master-merge-openshift-penultimate-qa-e2e-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-policy-checks
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-policy-checks
   name: branch-ci-stackrox-stackrox-master-merge-policy-checks
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-push-and-release
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-push-and-release
   name: branch-ci-stackrox-stackrox-master-merge-push-and-release
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-shell-unit-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-shell-unit-tests
   name: branch-ci-stackrox-stackrox-master-merge-shell-unit-tests
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-style-checks
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-style-checks
   name: branch-ci-stackrox-stackrox-master-merge-style-checks
-- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-ui-unit-tests
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-ui-unit-tests
   name: branch-ci-stackrox-stackrox-master-merge-ui-unit-tests

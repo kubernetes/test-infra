@@ -147,6 +147,8 @@ def build_test(cloud='aws',
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         env['KUBE_SSH_USER'] = kops_ssh_user
+        if extra_flags is not None:
+            env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
 
@@ -284,6 +286,8 @@ def presubmit_test(branch='master',
         env['CLOUD_PROVIDER'] = cloud
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
+        if extra_flags is not None:
+            env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
 
@@ -458,13 +462,11 @@ def generate_misc():
                    cloud="aws",
                    k8s_version='stable',
                    extra_dashboards=['kops-misc'],
-                   scenario='upgrade-ab',
+                   scenario='smoketest',
                    env={
                        'KOPS_BASE_URL': "https://artifacts-sandbox.k8s.io/binaries/kops/1.26.0-beta.2/", # pylint: disable=line-too-long
-                       'KOPS_VERSION_A': "1.26.0-beta.2",
-                       'K8S_VERSION_A': "v1.24.0",
-                       'KOPS_VERSION_B': "1.26.0-beta.2",
-                       'K8S_VERSION_B': "v1.25.0",
+                       'KOPS_VERSION': "v1.26.0-beta.2",
+                       'K8S_VERSION': "v1.25.0",
                        'KOPS_SKIP_E2E': '1',
                        'KOPS_CONTROL_PLANE_SIZE': '3',
                    }),

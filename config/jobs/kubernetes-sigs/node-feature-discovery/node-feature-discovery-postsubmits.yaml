@@ -13,7 +13,7 @@ postsubmits:
       testgrid-alert-email: markus.lehtonen@intel.com,feruzjon.muyassarov@intel.com
     spec:
       containers:
-      - image: golang:1.19
+      - image: golang:1.20
         command:
         - bash
         args:

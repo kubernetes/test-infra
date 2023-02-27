@@ -553,11 +553,15 @@ function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: Va
   prTitleText.classList.add("pr-title-text");
   prTitle.appendChild(prTitleText);
 
-  const pool = tidePools.filter((p) => {
-    const repo = `${p.Org}/${p.Repo}`;
-    return pr.Repository.NameWithOwner === repo && pr.BaseRef.Name === p.Branch;
-  });
-  let tidePoolLabel = createTidePoolLabel(pr, pool[0]);
+  let tidePoolLabel;
+  if (tidePools && tidePools.length) {
+    const pool = tidePools.filter((p) => {
+      const repo = `${p.Org}/${p.Repo}`;
+      return pr.Repository.NameWithOwner === repo && pr.BaseRef.Name === p.Branch;
+    });
+    tidePoolLabel = createTidePoolLabel(pr, pool[0]);
+  }
+
   if (!tidePoolLabel) {
     tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, authorConflict, milestoneConflict);
   }

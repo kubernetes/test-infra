@@ -171,7 +171,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20230215-1f9eebbd96
+      - image: gcr.io/k8s-prow/hmac:v20230224-60dadd267c
         command:
         - hmac
         args:
@@ -387,7 +387,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20230215-1f9eebbd96
+        image: gcr.io/k8s-prow/gencred:v20230224-60dadd267c
         command:
         - gencred
         args:
@@ -434,7 +434,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20230215-1f9eebbd96
+      - image: gcr.io/k8s-prow/configurator:v20230224-60dadd267c
         command:
         - configurator
         args:
@@ -582,7 +582,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230215-1f9eebbd96
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230224-60dadd267c
       command:
       - generic-autobumper
       args:
@@ -619,7 +619,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230215-1f9eebbd96
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230224-60dadd267c
       command:
       - generic-autobumper
       args:
@@ -689,7 +689,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20230215-1f9eebbd96
+      image: gcr.io/k8s-prow/branchprotector:v20230224-60dadd267c
       command:
       - branchprotector
       args:
@@ -723,7 +723,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20230215-1f9eebbd96
+      image: gcr.io/k8s-prow/label_sync:v20230224-60dadd267c
       command:
       - label_sync
       args:
@@ -767,7 +767,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20230215-1f9eebbd96
+      image: gcr.io/k8s-prow/gencred:v20230224-60dadd267c
       command:
       - gencred
       args:
@@ -793,13 +793,18 @@ periodics:
     - name: gcloud
       image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
       command:
-      - bash
-        - -c
-        -
-            temp_file="$(mktemp)"
-            && gcloud iam service-accounts keys create "${temp_file}" --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com --key-file-type=json
-            && gcloud secrets versions add default-k8s-build-cluster-service-account-key --data-file=${temp_file} --project=k8s-prow-builds
-            && for key_id in $(gcloud iam service-accounts keys list --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com --managed-by=user --created-before=$(date +%Y-%m-%d -d "90 days ago") --format="value(KEY_ID)"); do gcloud iam service-accounts keys delete "$key_id" -q --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com;done
+      - /bin/bash
+      args:
+      - -c
+      - |
+        set -euo pipefail
+
+        temp_file="$(mktemp)"
+        gcloud iam service-accounts keys create "${temp_file}" --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com --key-file-type=json
+        gcloud secrets versions add default-k8s-build-cluster-service-account-key --data-file="${temp_file}" --project=k8s-prow-builds
+        for key_id in $(gcloud iam service-accounts keys list --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com --managed-by=user --created-before=$(date +%Y-%m-%d -d "90 days ago") --format="value(KEY_ID)"); do
+          gcloud iam service-accounts keys delete "${key_id}" -q --iam-account=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
+        done
   annotations:
     testgrid-num-failures-to-alert: '3'
     testgrid-dashboards: sig-testing-misc
@@ -841,7 +846,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20230215-1f9eebbd96
+    - image: gcr.io/k8s-prow/checkconfig:v20230224-60dadd267c
       command:
       - checkconfig
       args:
