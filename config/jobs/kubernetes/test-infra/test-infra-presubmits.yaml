@@ -53,7 +53,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20230214-c3164ec13a
+      - image: gcr.io/k8s-prow/checkconfig:v20230224-60dadd267c
         command:
         - checkconfig
         args:
@@ -79,7 +79,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20230214-c3164ec13a
+      - image: gcr.io/k8s-prow/checkconfig:v20230224-60dadd267c
         command:
         - checkconfig
         args:
@@ -214,3 +214,27 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-test
+  - name: pull-test-infra-verify-cri-o
+    branches:
+    - master
+    run_if_changed: 'jobs\/e2e_node\/crio\/'
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+        - -C
+        - jobs/e2e_node/crio
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: verify-cri-o

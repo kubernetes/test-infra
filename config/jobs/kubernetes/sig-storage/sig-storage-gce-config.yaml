@@ -210,7 +210,7 @@ periodics:
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.9
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.18
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
       - --gcp-zone=us-west1-b
       - --provider=gce
@@ -238,7 +238,7 @@ periodics:
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.9
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.18
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
       - --gcp-zone=us-west1-b
       - --provider=gce

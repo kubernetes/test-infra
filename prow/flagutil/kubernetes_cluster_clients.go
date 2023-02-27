@@ -390,12 +390,12 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), o
 		// example API server upgrade caused connection problem.
 		go func() {
 			for {
-				for buildCluserName, buildClusterConfig := range o.clusterConfigs {
-					if _, ok := res[buildCluserName]; ok {
+				for buildClusterName, buildClusterConfig := range o.clusterConfigs {
+					if _, ok := res[buildClusterName]; ok {
 						continue
 					}
 					if _, err := manager.New(&buildClusterConfig, options); err == nil {
-						logrus.WithField("build-cluster", buildCluserName).Info("Build cluster that failed to connect initially now worked.")
+						logrus.WithField("build-cluster", buildClusterName).Info("Build cluster that failed to connect initially now worked.")
 						callBack()
 					}
 				}

@@ -14,3 +14,7 @@
 
 all:
 	templates/generate
+
+.PHONY: verify
+verify: all
+	./tree_status

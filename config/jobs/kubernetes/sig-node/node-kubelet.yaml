@@ -34,7 +34,7 @@ periodics:
             cpu: 4
             memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-release-blocking, sig-node-containerd, sig-release-master-informing
+    testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking, sig-node-containerd
     testgrid-tab-name: ci-node-e2e
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run node-e2e tests (+NodeConformance, -Flaky|Slow|Serial)"
@@ -248,7 +248,7 @@ periodics:
           value: "1"
 
 - name: ci-kubernetes-fsquota-ubuntu
-  interval: 4h
+  interval: 24h
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-dashboards: sig-node-kubelet
