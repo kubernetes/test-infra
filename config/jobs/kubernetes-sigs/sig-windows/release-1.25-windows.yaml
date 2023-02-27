@@ -18,6 +18,7 @@ periodics:
     timeout: 4h0m0s
   labels:
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
     preset-capz-containerd-latest: "true"
     preset-capz-windows-2019: "true"
     preset-capz-windows-common-125: "true"
@@ -61,6 +62,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
     preset-capz-windows-common-125: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-latest: "true"
