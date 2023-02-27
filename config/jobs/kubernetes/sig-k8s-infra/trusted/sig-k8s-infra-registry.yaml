@@ -10,7 +10,7 @@ periodics:
       testgrid-num-failures-to-alert: "1"
     extra_refs:
       - org: kubernetes
-        repo: registry.kk8s.io
+        repo: registry.k8s.io
         base_ref: main
     rerun_auth_config:
       github_team_slugs:
