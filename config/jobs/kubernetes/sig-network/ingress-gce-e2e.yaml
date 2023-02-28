@@ -146,11 +146,11 @@ postsubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: sig-network-ingress-gce-e2e
       testgrid-tab-name: ingress-gce-image-push
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+
 periodics:
 - name: ci-ingress-gce-e2e
   interval: 6h
@@ -178,11 +178,11 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
-
   annotations:
     testgrid-dashboards: sig-network-ingress-gce-e2e
     testgrid-tab-name: ingress-gce-e2e
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+
 - name: ci-ingress-gce-e2e-canary
   cluster: k8s-infra-prow-build
   interval: 6h
