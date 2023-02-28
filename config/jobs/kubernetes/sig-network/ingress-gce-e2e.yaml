@@ -123,6 +123,37 @@ presubmits:
         securityContext:
           privileged: true
 
+  - name: pull-ingress-gce-e2e
+    always_run: false
+    decorate: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        - hack/run-e2e-gce.sh
+
 postsubmits:
   kubernetes/ingress-gce:
   - name: ci-ingress-gce-image-push
