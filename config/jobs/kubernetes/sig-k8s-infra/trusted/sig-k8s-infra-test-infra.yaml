@@ -29,7 +29,7 @@ postsubmits:
 
 periodics:
 - name: metrics-bigquery
-  cron: "03 0-23/3 * * *"  # like interval: 6h, but explicitly starting at 00:03 UTC
+  cron: "03 0-23/12 * * *"  # like interval: 12h, but explicitly starting at 00:03 UTC
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
