@@ -5,7 +5,6 @@ dashboard_groups:
     - sig-node-kubelet
     - sig-node-containerd
     - sig-node-cri-o
-    - sig-node-cos
     - sig-node-dynamic-resource-allocation
     - sig-node-presubmits
     # These dashboards are for out-of-tree SIG Node projects
@@ -62,7 +61,6 @@ dashboards:
     test_group_name: post-security-profiles-operator-push-image
     base_options: width=10
 
-- name: sig-node-cos
 - name: sig-node-dynamic-resource-allocation
   dashboard_tab:
   - name: pull-kind-dra
