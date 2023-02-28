@@ -123,6 +123,37 @@ presubmits:
         securityContext:
           privileged: true
 
+  - name: pull-ingress-gce-e2e
+    always_run: false
+    decorate: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        - hack/run-e2e-gce.sh
+
 postsubmits:
   kubernetes/ingress-gce:
   - name: ci-ingress-gce-image-push
@@ -146,11 +177,11 @@ postsubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: sig-network-ingress-gce-e2e
       testgrid-tab-name: ingress-gce-image-push
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+
 periodics:
 - name: ci-ingress-gce-e2e
   interval: 6h
@@ -178,11 +209,11 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
-
   annotations:
     testgrid-dashboards: sig-network-ingress-gce-e2e
     testgrid-tab-name: ingress-gce-e2e
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+
 - name: ci-ingress-gce-e2e-canary
   cluster: k8s-infra-prow-build
   interval: 6h
