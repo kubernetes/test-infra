@@ -5,7 +5,13 @@ presubmits:
     decoration_config:
       timeout: 150m
     always_run: false
-    optional: true # TODO (aramase): make this required and add run_if_changed once the job is passing
+    optional: true
+    # run only if the following files are modified:
+    # - staging/src/k8s.io/apiserver/pkg/storage/value/
+    # - staging/src/k8s.io/kms/
+    # - staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/
+    # - test/e2e/testing-manifests/auth/encrypt/
+    run_if_changed: 'staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/'
     path_alias: k8s.io/kubernetes
     branches:
     - ^master$ # TODO(aramase): enable for release branches
