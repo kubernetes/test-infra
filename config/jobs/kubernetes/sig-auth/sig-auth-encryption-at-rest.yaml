@@ -36,3 +36,36 @@ presubmits:
         - "/bin/bash"
         - "-c"
         - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
+
+periodics:
+- interval: 12h
+  name: periodic-kubernetes-e2e-kind-kms
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  labels:
+    # this is required because we want to run kind in docker
+    preset-dind-enabled: "true"
+    # this is required to make CNI installation to succeed for kind
+    preset-kind-volume-mounts: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  annotations:
+    testgrid-dashboards: sig-auth-encryption-at-rest
+    description: Runs conformance tests on a cluster with KMS encryption enabled at periodic intervals
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      command:
+      - runner.sh
+      args:
+      - "/bin/bash"
+      - "-c"
+      - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
