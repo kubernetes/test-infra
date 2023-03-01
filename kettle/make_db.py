@@ -184,8 +184,9 @@ class GCSClient:
                         continue
                     yield job, build
             return
+        exclude_jobs = self.metadata.get('exclude_jobs', [])
         for job in self._get_jobs():
-            if job in self.metadata.get('exclude_jobs', []):
+            if exclude_jobs and re.findall(r"(?=("+'|'.join(exclude_jobs)+r"))", job):
                 continue
             have = 0
             precise, builds = self._get_builds(job, build_limit)

@@ -15,3 +15,4 @@ gs://kubernetes-jenkins/logs/:
   exclude_jobs:
     - ci-test-infra-benchmark-demo
     - ci-kubernetes-coverage-unit
+    - ".*(flaky|flake).*"

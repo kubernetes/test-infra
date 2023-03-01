@@ -123,6 +123,15 @@ class GCSClientTest(unittest.TestCase):
         self.client.metadata = {'exclude_jobs': ['fake']}
         self.assertEqual([], list(self.client.get_builds(set())))
 
+    def test_get_builds_exclude_list_match_using_regexp(self):
+        # special case: job is in excluded list
+        self.client.metadata = {'exclude_jobs': ['.*(flaky|flake|fake).*']}
+        self.assertEqual([], list(self.client.get_builds(set())))
+        # special case: job is in excluded list
+        self.client.metadata = {'exclude_jobs': ['.*(flaky|flake).*']}
+        self.assertEqual([('fake', '123'), ('fake', '122')], list(self.client.get_builds(set())))
+
+
 class MainTest(unittest.TestCase):
     """End-to-end test of the main function's output."""
     JOBS_DIR = GCSClientTest.JOBS_DIR
