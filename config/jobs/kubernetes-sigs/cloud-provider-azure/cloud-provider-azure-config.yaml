@@ -229,13 +229,14 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
           command:
           - runner.sh
-          args:
           - ./scripts/ci-entrypoint.sh
+          args:
           - bash
           - -c
           - >-
-            cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
-            make test-ccm-e2e
+            pushd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+            make test-ccm-e2e &&
+            popd
           securityContext:
             privileged: true
           env:
