@@ -16,6 +16,9 @@
 {{- else -}}
   is still running
 {{- end}} after {{.Elapsed}}. (<a href="#" id="show-table-link">more info</a>)</p>
+{{if lt .Elapsed 0}}
+<p class="test-summary">WARNING: The elapsed duration ({{.Elapsed}}) is negative. This can be caused by another process outside of Prow writing into the finished.json file. The file currently has a completion time of {{.FinishedTime}}.</p>
+{{end}}
 {{if .Hint -}}
 <p class="test-summary failure-hint">{{.Hint}}</p>
 {{end -}}
