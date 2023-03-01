@@ -335,46 +335,46 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	opts := config.LgtmFor(rc.repo.Owner.Login, rc.repo.Name)
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
-		if err := removeLGTMAndRequestReview(gc, org, repoName, number, getLogins(assignees), opts.StoreTreeHash); err != nil {
-			return err
-		}
-		if opts.StoreTreeHash {
-			cp.PruneComments(func(comment github.IssueComment) bool {
-				return addLGTMLabelNotificationRe.MatchString(comment.Body)
-			})
-		}
+		return removeLGTMAndRequestReview(gc, opts, cp, org, repoName, number, getLogins(assignees))
 	} else if !hasLGTM && wantLGTM {
 		log.Info("Adding LGTM label.")
-		if err := gc.AddLabel(org, repoName, number, LGTMLabel); err != nil {
-			return err
-		}
-		if !stickyLgtm(log, gc, config, opts, issueAuthor, org) {
-			if opts.StoreTreeHash {
-				pr, err := gc.GetPullRequest(org, repoName, number)
-				if err != nil {
-					log.WithError(err).Error("Failed to get pull request.")
-				}
-				commit, err := gc.GetSingleCommit(org, repoName, pr.Head.SHA)
-				if err != nil {
-					log.WithField("sha", pr.Head.SHA).WithError(err).Error("Failed to get commit.")
-				}
-				treeHash := commit.Commit.Tree.SHA
-				log.WithField("tree", treeHash).Info("Adding comment to store tree-hash.")
-				if err := gc.CreateComment(org, repoName, number, fmt.Sprintf(addLGTMLabelNotification, treeHash)); err != nil {
-					log.WithError(err).Error("Failed to add comment.")
-				}
-			}
-			// Delete the LGTM removed noti after the LGTM label is added.
-			cp.PruneComments(func(comment github.IssueComment) bool {
-				return strings.Contains(comment.Body, removeLGTMLabelNoti)
-			})
-		}
+		return increaseLGTM(gc, opts, cp, log, org, repoName, number, issueAuthor)
 	}
 
 	return nil
 }
 
-func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lgtm *plugins.Lgtm, author, org string) bool {
+func increaseLGTM(gc githubClient, opts *plugins.Lgtm, cp commentPruner, log *logrus.Entry, org, repo string, number int, issueAuthor string) error {
+	if err := gc.AddLabel(org, repo, number, LGTMLabel); err != nil {
+		return err
+	}
+
+	if !stickyLgtm(log, gc, opts, issueAuthor, org) {
+		if opts.StoreTreeHash {
+			pr, err := gc.GetPullRequest(org, repo, number)
+			if err != nil {
+				log.WithError(err).Error("Failed to get pull request.")
+			}
+			commit, err := gc.GetSingleCommit(org, repo, pr.Head.SHA)
+			if err != nil {
+				log.WithField("sha", pr.Head.SHA).WithError(err).Error("Failed to get commit.")
+			}
+			treeHash := commit.Commit.Tree.SHA
+			log.WithField("tree", treeHash).Info("Adding comment to store tree-hash.")
+			if err := gc.CreateComment(org, repo, number, fmt.Sprintf(addLGTMLabelNotification, treeHash)); err != nil {
+				log.WithError(err).Error("Failed to add comment.")
+			}
+		}
+		// Delete the LGTM removed noti after the LGTM label is added.
+		cp.PruneComments(func(comment github.IssueComment) bool {
+			return strings.Contains(comment.Body, removeLGTMLabelNoti)
+		})
+	}
+
+	return nil
+}
+
+func stickyLgtm(log *logrus.Entry, gc githubClient, lgtm *plugins.Lgtm, author, org string) bool {
 	if lgtm.StickyLgtmTeam == "" {
 		return false
 	}
@@ -418,7 +418,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	number := pe.PullRequest.Number
 
 	opts := config.LgtmFor(org, repo)
-	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org) {
+	if stickyLgtm(log, gc, opts, pe.PullRequest.User.Login, org) {
 		// If the author is trusted, skip tree hash verification and LGTM removal.
 		return nil
 	}
@@ -468,7 +468,8 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		}
 	}
 
-	if err := removeLGTMAndRequestReview(gc, org, repo, number, getLogins(pe.PullRequest.Assignees), opts.StoreTreeHash); err != nil {
+	if err := removeLGTMAndRequestReview(gc, opts, nil, /* no need to prune comments */
+		org, repo, number, getLogins(pe.PullRequest.Assignees)); err != nil {
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
@@ -478,18 +479,25 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
 }
 
-func removeLGTMAndRequestReview(gc githubClient, org, repo string, number int, logins []string, storeTreeHash bool) error {
+func removeLGTMAndRequestReview(gc githubClient, opts *plugins.Lgtm, cp commentPruner, org, repo string, number int, logins []string) error {
 	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
 	// Re-request review because LGTM has been removed only if storeTreeHash enabled.
 	// TODO(mpherman): Surface User errors to PR
-	if storeTreeHash {
+	if opts.StoreTreeHash {
 		if err := gc.RequestReview(org, repo, number, logins); err != nil {
 			return fmt.Errorf("failed to re-request review")
 		}
+
+		if cp != nil {
+			cp.PruneComments(func(comment github.IssueComment) bool {
+				return addLGTMLabelNotificationRe.MatchString(comment.Body)
+			})
+		}
 	}
+
 	return nil
 }
 
