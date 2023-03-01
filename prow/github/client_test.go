@@ -2111,8 +2111,15 @@ func TestListRepoTeams(t *testing.T) {
 }
 func TestListIssueEvents(t *testing.T) {
 	ts := simpleTestServer(t, "/repos/org/repo/issues/1/events", []ListedIssueEvent{
-		{Event: IssueActionLabeled},
-		{Event: IssueActionClosed},
+		{
+			ID:       1,
+			Event:    IssueActionClosed,
+			CommitID: "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+		},
+		{
+			ID:    2,
+			Event: IssueActionOpened,
+		},
 	}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
@@ -2123,11 +2130,14 @@ func TestListIssueEvents(t *testing.T) {
 		t.Errorf("Expected two events, found %d: %v", len(events), events)
 		return
 	}
-	if events[0].Event != IssueActionLabeled {
+	if events[0].Event != IssueActionClosed {
 		t.Errorf("Wrong event for index 0: %v", events[0])
 	}
-	if events[1].Event != IssueActionClosed {
+	if events[1].Event != IssueActionOpened {
 		t.Errorf("Wrong event for index 1: %v", events[1])
+	}
+	if events[0].CommitID != "6dcb09b5b57875f334f61aebed695e2e4193db5e" {
+		t.Errorf("Wrong commit id for index 0: %v", events[0])
 	}
 }
 
