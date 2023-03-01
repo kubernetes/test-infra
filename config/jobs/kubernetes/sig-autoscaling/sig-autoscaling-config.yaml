@@ -7,7 +7,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -38,7 +38,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -69,7 +69,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -100,7 +100,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -131,7 +131,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       args:
       - --repo=k8s.io/autoscaler=master
       - --root=/go/src
@@ -184,7 +184,7 @@ periodics:
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
@@ -211,7 +211,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
@@ -246,7 +246,7 @@ periodics:
       - --runtime-config=scheduling.k8s.io/v1alpha1=true
       - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-cluster-autoscaler
@@ -273,7 +273,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
       - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
 
   annotations:
     testgrid-dashboards: sig-autoscaling-hpa
@@ -301,7 +301,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
         --minStartupPods=8
       - --ginkgo-parallel=1
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
 
   annotations:
     # TODO: add to release blocking dashboards once run is successful

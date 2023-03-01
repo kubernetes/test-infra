@@ -13,7 +13,7 @@ presubmits:
       max_concurrency: 3
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
             args:
               - runner.sh
               - "./images/capi/scripts/ci-ova.sh"
