@@ -12,7 +12,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+      - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
         command:
         - ./hack/verify-boilerplate.sh
     annotations:
@@ -30,7 +30,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+      - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
         command:
         - ./hack/verify-codegen.sh
     annotations:
@@ -47,7 +47,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+      - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
         command:
         - ./hack/verify-lualint.sh
     annotations:
@@ -66,7 +66,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
+      - image: registry.k8s.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
         command:
         - make
         - lua-test
