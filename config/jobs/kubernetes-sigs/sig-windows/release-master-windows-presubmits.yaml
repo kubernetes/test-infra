@@ -134,7 +134,9 @@ presubmits:
           - name: WINDOWS_CONTAINERD_URL
             value: "https://github.com/containerd/containerd/releases/download/v1.7.0-beta.4/containerd-1.7.0-beta.4-windows-amd64.tar.gz"
           - name: GINKGO_FOCUS
-            value: \[sig-windows\] # run just a subset to speed up testing time
+            value: \[Feature:WindowsHyperVContainers\] # run just a subset to speed up testing time
+          - name: GINKGO_SKIP
+            value: \[LinuxOnly\] #must set some value otherwise default is used.  The focus of WindowsHyperVContainers will select just those tests
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-run-capz-sh-containerd-windows-2022-hyperv
