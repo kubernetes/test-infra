@@ -261,10 +261,10 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
       args:
       - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.22
+      - --repo=k8s.io/kubernetes=release-1.25
       - --repo=github.com/containerd/containerd=release/1.5
       - --timeout=90
       - --scenario=kubernetes_e2e
@@ -298,10 +298,10 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         args:
           - --root=/go/src
-          - --repo=k8s.io/kubernetes=release-1.23
+          - --repo=k8s.io/kubernetes=master
           - --repo=github.com/containerd/containerd=release/1.6
           - --timeout=90
           - --scenario=kubernetes_e2e
@@ -335,10 +335,10 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
       args:
       - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.22
+      - --repo=k8s.io/kubernetes=release-1.25
       - --repo=github.com/containerd/containerd=release/1.5
       - --timeout=90
       - --scenario=kubernetes_e2e
@@ -372,10 +372,10 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         args:
           - --root=/go/src
-          - --repo=k8s.io/kubernetes=release-1.23
+          - --repo=k8s.io/kubernetes=master
           - --repo=github.com/containerd/containerd=release/1.6
           - --timeout=90
           - --scenario=kubernetes_e2e
