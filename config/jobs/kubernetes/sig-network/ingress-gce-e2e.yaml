@@ -94,7 +94,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - make
@@ -114,7 +114,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - make
@@ -122,6 +122,38 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+
+  - name: pull-ingress-gce-e2e
+    always_run: false
+    optional: true
+    decorate: true
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        - hack/run-e2e-gce.sh
 
 postsubmits:
   kubernetes/ingress-gce:
@@ -132,7 +164,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -146,11 +178,11 @@ postsubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-
     annotations:
       testgrid-dashboards: sig-network-ingress-gce-e2e
       testgrid-tab-name: ingress-gce-image-push
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+
 periodics:
 - name: ci-ingress-gce-e2e
   interval: 6h
@@ -160,7 +192,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       args:
       - --timeout=340
       - --bare
@@ -178,48 +210,50 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
-
   annotations:
     testgrid-dashboards: sig-network-ingress-gce-e2e
     testgrid-tab-name: ingress-gce-e2e
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+
 - name: ci-ingress-gce-e2e-canary
   cluster: k8s-infra-prow-build
+  decorate: true
   interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-ingress-master-yaml: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: cloud-provider-gcp
+    base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      command:
+      - runner.sh
       args:
-      - --timeout=340
-      - --bare
-      - --scenario=kubernetes_e2e
+      - kubetest2
+      - gce
+      - -v=2
+      - --ingress-gce-image=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
+      - --legacy-mode # indicate that we are using kubernetes/cloud-provider-gcp
+      - --build
+      - --up
+      - --down
+      - --enable-cache-mutation-detector # Panic if anything mutates a shared informer cache
+      - --test=ginkgo
       - --
-      - --check-leaked-resources
-      - --cluster=
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:nightly
-      - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
-      - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
-      - --env=KUBE_GCE_NODE_IPAM_MODE=RangeAllocator
-      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
-      - --env=CLOUD_PROVIDER_FLAG=external
-      - --env=ENABLE_AUTH_PROVIDER_GCP=true
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=1
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
-      - --timeout=320m
+      - --focus-regex=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress \
+      - --skip-regex=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\] \
+      - --use-built-binaries # use the kubectl, e2e.test, and ginkgo binaries built during --build as opposed to from a GCS release tarball
       resources:
         limits:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 9Gi
         requests:
-          cpu: 2
-          memory: 4Gi
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: ingress-gce-e2e-canary

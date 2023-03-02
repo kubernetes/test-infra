@@ -171,7 +171,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20230224-60dadd267c
+      - image: gcr.io/k8s-prow/hmac:v20230301-6893d98ee8
         command:
         - hmac
         args:
@@ -221,7 +221,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-test-infra
         command:
         - runner.sh
         args:
@@ -387,7 +387,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20230224-60dadd267c
+        image: gcr.io/k8s-prow/gencred:v20230301-6893d98ee8
         command:
         - gencred
         args:
@@ -434,7 +434,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20230224-60dadd267c
+      - image: gcr.io/k8s-prow/configurator:v20230301-6893d98ee8
         command:
         - configurator
         args:
@@ -582,7 +582,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230224-60dadd267c
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230301-6893d98ee8
       command:
       - generic-autobumper
       args:
@@ -619,7 +619,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230224-60dadd267c
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230301-6893d98ee8
       command:
       - generic-autobumper
       args:
@@ -689,7 +689,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20230224-60dadd267c
+      image: gcr.io/k8s-prow/branchprotector:v20230301-6893d98ee8
       command:
       - branchprotector
       args:
@@ -723,7 +723,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20230224-60dadd267c
+      image: gcr.io/k8s-prow/label_sync:v20230301-6893d98ee8
       command:
       - label_sync
       args:
@@ -767,7 +767,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20230224-60dadd267c
+      image: gcr.io/k8s-prow/gencred:v20230301-6893d98ee8
       command:
       - gencred
       args:
@@ -846,7 +846,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20230224-60dadd267c
+    - image: gcr.io/k8s-prow/checkconfig:v20230301-6893d98ee8
       command:
       - checkconfig
       args:

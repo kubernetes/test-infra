@@ -6,7 +6,7 @@ presubmits:
     path_alias: "sigs.k8s.io/release-utils"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.18-bullseye
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
         imagePullPolicy: Always
         command:
         - go
@@ -25,7 +25,7 @@ presubmits:
     path_alias: "sigs.k8s.io/release-utils"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.18-bullseye
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
         imagePullPolicy: Always
         command:
         - go

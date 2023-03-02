@@ -6,11 +6,12 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
@@ -27,13 +28,11 @@ presubmits:
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
-    branches:
-    - master
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
@@ -52,12 +51,13 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
@@ -76,12 +76,13 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
@@ -100,6 +101,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -112,7 +114,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -149,6 +151,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -161,7 +164,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -198,7 +201,8 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-      - master
+    - master
+    - release-1.26
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -212,7 +216,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -246,6 +250,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -260,7 +265,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -301,6 +306,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -315,7 +321,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -356,8 +362,6 @@ presubmits:
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     optional: true
-    branches:
-    - master
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -370,7 +374,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -408,8 +412,6 @@ presubmits:
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     optional: true
-    branches:
-    - master
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -422,7 +424,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -463,11 +465,12 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
@@ -483,8 +486,6 @@ presubmits:
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     optional: true
-    branches:
-    - master
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -497,7 +498,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -538,6 +539,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -550,7 +552,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -590,7 +592,8 @@ presubmits:
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-      - master
+    - master
+    - release-1.26
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -604,7 +607,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -642,6 +645,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
+    - release-1.26
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -656,7 +660,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         - kubetest
@@ -694,7 +698,8 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-      - master
+    - master
+    - release-1.26
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -708,7 +713,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -745,7 +750,8 @@ presubmits:
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-      - master
+    - master
+    - release-1.26
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -759,7 +765,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -798,7 +804,8 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-      - master
+    - master
+    - release-1.26
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -812,7 +819,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -839,7 +846,8 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-      - master
+    - master
+    - release-1.26
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -858,7 +866,7 @@ presubmits:
         workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh

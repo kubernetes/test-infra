@@ -13,5 +13,6 @@ gs://kubernetes-jenkins/logs/:
   prefix: ""
   sequential: false
   exclude_jobs:
-    - ci-test-infra-benchmark-demo
-    - ci-kubernetes-coverage-unit
+    - ^ci-test-infra-benchmark-demo$
+    - ^ci-kubernetes-coverage-unit$
+    - ".*(flaky|flake).*"

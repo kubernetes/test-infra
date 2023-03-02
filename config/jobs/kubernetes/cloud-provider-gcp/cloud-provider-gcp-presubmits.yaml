@@ -15,7 +15,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - /bin/bash
         args:
@@ -48,7 +48,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
           args:
@@ -77,13 +77,62 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
           args:
           - "/bin/bash"
           - "-c"
           - ./crd/hack/verify-codegen.sh
+
+  - name: pull-cloud-provider-gcp-scenario-kops-simple
+    always_run: false # While we're debugging
+    decorate: true
+    decoration_config:
+      timeout: 80m
+    path_alias: cloud-provider-gcp
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: Runs the kops-simple scenario against PRs
+      testgrid-num-columns-recent: '30'
+    labels:
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kops
+      base_ref: master
+      path_alias: kops
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 14Gi
+          requests:
+            cpu: 4
+            memory: 14Gi
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - "/bin/bash"
+        - "-c"
+        - set -o errexit;
+          set -o nounset;
+          set -o pipefail;
+          set -o xtrace;
+          cd $GOPATH/src/cloud-provider-gcp;
+          e2e/add-kubernetes-to-workspace.sh;
+          e2e/scenarios/kops-simple
 
   - name: cloud-provider-gcp-e2e-full
     always_run: true
@@ -101,7 +150,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -149,7 +198,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
             - runner.sh
           args:

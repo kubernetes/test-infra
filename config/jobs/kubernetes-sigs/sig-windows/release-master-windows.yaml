@@ -101,7 +101,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -147,7 +147,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -197,7 +197,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -245,7 +245,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -293,7 +293,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -344,7 +344,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -389,7 +389,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
@@ -431,7 +431,7 @@ periodics:
 #     path_alias: sigs.k8s.io/azurefile-csi-driver
 #   spec:
 #     containers:
-#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
 #         command:
 #           - runner.sh
 #           - ./scripts/ci-entrypoint.sh
@@ -476,7 +476,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -522,7 +522,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"

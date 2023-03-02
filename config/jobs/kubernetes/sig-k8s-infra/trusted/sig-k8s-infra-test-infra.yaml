@@ -29,7 +29,7 @@ postsubmits:
 
 periodics:
 - name: metrics-bigquery
-  cron: "03 0-23/3 * * *"  # like interval: 6h, but explicitly starting at 00:03 UTC
+  cron: "03 0-23/12 * * *"  # like interval: 12h, but explicitly starting at 00:03 UTC
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
@@ -53,7 +53,7 @@ periodics:
   spec:
     serviceAccountName: k8s-metrics
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220427-c2db0f69b7
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20230210-b7f08bba13
       args:
       - ./metrics/bigquery.py
       - --bucket=gs://k8s-metrics
@@ -61,7 +61,7 @@ periodics:
       - --jq=/usr/bin/jq
 
 - name: ci-test-infra-triage
-  interval: 30m
+  interval: 12h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   decoration_config:
@@ -124,7 +124,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230224-60dadd267c
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230301-6893d98ee8
       command:
       - generic-autobumper
       args:

@@ -5,7 +5,13 @@ presubmits:
     decoration_config:
       timeout: 150m
     always_run: false
-    optional: true # TODO (aramase): make this required and add run_if_changed once the job is passing
+    optional: true
+    # run only if the following files are modified:
+    # - staging/src/k8s.io/apiserver/pkg/storage/value/
+    # - staging/src/k8s.io/kms/
+    # - staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/
+    # - test/e2e/testing-manifests/auth/encrypt/
+    run_if_changed: 'staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/'
     path_alias: k8s.io/kubernetes
     branches:
     - ^master$ # TODO(aramase): enable for release branches
@@ -20,41 +26,46 @@ presubmits:
       description: Runs conformance tests on a cluster with KMS encryption enabled
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
         command:
         - runner.sh
-        # The build e2e.test, ginkgo and kubectl binaries + copy to dockerized dir is
-        # because of https://github.com/kubernetes-sigs/kubetest2/issues/184
         args:
         - "/bin/bash"
         - "-c"
-        - set -o errexit;
-          set -o nounset;
-          set -o pipefail;
-          set -o xtrace;
-          export GO111MODULE=on;
-          go install sigs.k8s.io/kind@v0.17.0;
-          go install sigs.k8s.io/kubetest2@latest;
-          go install sigs.k8s.io/kubetest2/kubetest2-kind@latest;
-          go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-          make all WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/v2/ginkgo cmd/kubectl";
-          mkdir -p _output/dockerized/bin/linux/amd64;
-          for binary in kubectl e2e.test ginkgo; do
-            cp -f _output/local/go/bin/${binary} _output/dockerized/bin/linux/amd64/${binary};
-          done;
-          test/e2e/testing-manifests/auth/encrypt/setup-cluster-prereqs.sh;
-          kubetest2 kind -v 5 \;
-            --build \;
-            --up \;
-            --down \;
-            --config test/e2e/testing-manifests/auth/encrypt/kind.yaml \;
-            --cluster-name kms \;
-            --test=ginkgo \;
-            -- \;
-            --focus-regex='\[Conformance\]' \;
-            --skip-regex='\[Serial\]' \;
-            --parallel 20 \;
-            --use-built-binaries # use the kubectl, e2e.test, and ginkgo binaries built during --build as opposed to from a GCS release tarball
+        - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
+
+periodics:
+- interval: 12h
+  name: periodic-kubernetes-e2e-kind-kms
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  labels:
+    # this is required because we want to run kind in docker
+    preset-dind-enabled: "true"
+    # this is required to make CNI installation to succeed for kind
+    preset-kind-volume-mounts: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  annotations:
+    testgrid-dashboards: sig-auth-encryption-at-rest
+    description: Runs conformance tests on a cluster with KMS encryption enabled at periodic intervals
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      command:
+      - runner.sh
+      args:
+      - "/bin/bash"
+      - "-c"
+      - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh

@@ -20,7 +20,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       resources:
         limits:
           cpu: 4
@@ -84,7 +84,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       resources:
         limits:
           cpu: 4
@@ -148,7 +148,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       resources:
         limits:
           cpu: 4
@@ -212,7 +212,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       resources:
         limits:
           cpu: 4
@@ -256,84 +256,6 @@ periodics:
         fi;
         kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --node-size n1-standard-4 --master-size n1-standard-8 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --test-args='--minStartupPods=8 --ginkgo.flakeAttempts=3 --enabled-volume-drivers=gcepd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
 
-- interval: 12h
-  cluster: k8s-infra-prow-build
-  name: ci-cloud-provider-gcp-kubernetes-latest
-  decorate: true
-  decoration_config:
-    timeout: 150m
-  annotations:
-    testgrid-tab-name: Conformance - Cloud Provider GCP - Kubernetes - master
-    testgrid-dashboards: provider-gcp-periodics
-    description: Runs conformance tests using kubetest2 against cloud-provider-gcp master on GCE using kubernetes master
-  labels:
-    preset-dind-enabled: "true"
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: cloud-provider-gcp
-    base_ref: master
-    path_alias: k8s.io/cloud-provider-gcp
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
-      resources:
-        limits:
-          cpu: 4
-          memory: 14Gi
-        requests:
-          cpu: 4
-          memory: 14Gi
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      command:
-      - runner.sh
-      args:
-      - "/bin/bash"
-      - "-c"
-      # TODO: Use published release tars for cloud-provider-gcp if/once they exist
-      - set -o errexit;
-        set -o nounset;
-        set -o pipefail;
-        set -o xtrace;
-        REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
-        cd;
-        if [[ -f "${REPO_ROOT}/.bazelversion" ]]; then
-          export BAZEL_VERSION=$(cat "${REPO_ROOT}/.bazelversion");
-          echo "BAZEL_VERSION set to ${BAZEL_VERSION}";
-        else
-          export BAZEL_VERSION="5.3.0";
-          echo "BAZEL_VERSION - Falling back to 5.3.0";
-        fi;
-        /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
-        go install sigs.k8s.io/kubetest2@latest;
-        go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-        go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-        if [[ -f "${REPO_ROOT}/ginko-test-package-version.env" ]]; then
-          export TEST_PACKAGE_VERSION=$(cat "${REPO_ROOT}/ginko-test-package-version.env");
-          echo "TEST_PACKAGE_VERSION set to ${TEST_PACKAGE_VERSION}";
-        else
-          export TEST_PACKAGE_VERSION="v1.25.0";
-          echo "TEST_PACKAGE_VERSION - Falling back to v1.25.0";
-        fi;
-        cd $REPO_ROOT;
-        KUBE_VERSION=${KUBE_VERSION:-master};
-        KUBE_SOURCE=_src/k8s.io/kubernetes;
-        sed -i 's/^\s*k8s.io.*//g' go.mod;
-        git clone --depth 1 --branch ${KUBE_VERSION} https://github.com/kubernetes/kubernetes ${KUBE_SOURCE};
-        go work init .;
-        go work use crd;
-        go work use providers;
-        go work use ${KUBE_SOURCE};
-        for i in ${KUBE_SOURCE}/staging/src/k8s.io/*; do
-          go work use $i ;
-        done;
-        go work sync;
-        cd -;
-        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --master-size n1-standard-2 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --focus-regex='\[Conformance\]' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
-
 - interval: 1h # Temporarily run very frequently while we get it working
   cluster: k8s-infra-prow-build
   name: ci-cloud-provider-gcp-e2e-scenario-kops-simple
@@ -363,7 +285,7 @@ periodics:
     path_alias: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20221207-9bb38b7b14-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       resources:
         limits:
           cpu: 4

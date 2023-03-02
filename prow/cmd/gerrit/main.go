@@ -51,6 +51,7 @@ type options struct {
 	storage                prowflagutil.StorageClientOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	changeWorkerPoolSize   int
+	retryAttempts          int
 }
 
 func (o *options) validate() error {
@@ -88,6 +89,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
 	fs.IntVar(&o.changeWorkerPoolSize, "change-worker-pool-size", 1, "Number of workers processing changes for each instance.")
+	fs.IntVar(&o.retryAttempts, "retry-attempts", 10, "Number of times a job process will retry if failed")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
@@ -133,7 +135,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, cacheGetter)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, o.retryAttempts, cacheGetter)
 
 	logrus.Infof("Starting gerrit fetcher")
 

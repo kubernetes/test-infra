@@ -14,7 +14,7 @@ presubmits:
       description: Build test in ibm-vpc-block-csi-driver repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       description: Unit tests in ibm-vpc-block-csi-driver repo.
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.19.6
         command:
         - make
         args:
@@ -51,7 +51,7 @@ presubmits:
       description: ibm-vpc-block-csi-driver basic code verification.
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.19.6
         command:
         - make
         args:
@@ -69,7 +69,7 @@ presubmits:
       description: ibm-vpc-block-csi-driver sanity execution.
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.19.6
         command:
         - make
         args:
