@@ -11,7 +11,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -37,7 +37,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-make-main
@@ -56,7 +56,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-apidiff-main
@@ -71,7 +71,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -89,7 +89,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -110,7 +110,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230207-192d5afee3-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
         command:
           - runner.sh
         args:
