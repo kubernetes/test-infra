@@ -7,11 +7,12 @@ presubmits:
     always_run: false
     optional: true
     # run only if the following files are modified:
+    # - go.mod
     # - staging/src/k8s.io/apiserver/pkg/storage/value/
     # - staging/src/k8s.io/kms/
     # - staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/
     # - test/e2e/testing-manifests/auth/encrypt/
-    run_if_changed: 'staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/'
+    run_if_changed: 'go.mod|staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/'
     path_alias: k8s.io/kubernetes
     branches:
     - ^master$ # TODO(aramase): enable for release branches
