@@ -43,11 +43,11 @@ presubmits:
     decorate: true
     cluster: k8s-infra-prow-build
     skip_branches:
-    - release-\d+.\d+ # per-release job
+    - .* # per-release job
     labels:
       preset-service-account: "true"
     optional: true
-    always_run: false
+    always_run: true
     path_alias: k8s.io/kubernetes
     spec:
       # unit tests have no business requiring root or doing privileged operations

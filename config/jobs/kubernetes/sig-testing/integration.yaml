@@ -35,11 +35,11 @@ presubmits:
             memory: 15Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
-    always_run: false
+    always_run: true
     optional: true
     decorate: true
     skip_branches:
-    - release-\d+.\d+ # per-release job
+    - .* # per-release job
     annotations:
       fork-per-release: "true"
       testgrid-dashboards: sig-testing-canaries

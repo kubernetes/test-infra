@@ -1458,7 +1458,7 @@ presubmits:
             memory: 15Gi
         securityContext:
           privileged: true
-  - always_run: false
+  - always_run: true
     optional: true
     branches:
     - release-1.26
@@ -1638,7 +1638,7 @@ presubmits:
           requests:
             cpu: "4"
             memory: 36Gi
-  - always_run: false
+  - always_run: true
     optional: true
     branches:
     - release-1.26
