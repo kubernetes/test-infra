@@ -96,7 +96,7 @@ func TestFlags(t *testing.T) {
 				dryRun:                 false,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 				changeWorkerPoolSize:   1,
-				retryAttempts:          10,
+				retryAttempts:          3,
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
