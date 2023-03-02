@@ -19,7 +19,6 @@ package adapter
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -165,45 +164,50 @@ func fakeProwYAMLGetter(
 }
 
 func TestHandleInRepoConfigError(t *testing.T) {
-	changeinfo := gerrit.ChangeInfo{ChangeID: "1", CurrentRevision: "1"}
+	change := gerrit.ChangeInfo{ID: "1", CurrentRevision: "1"}
 	instanceName := "instance"
-	changeHash := createChangeKey(instanceName, changeinfo.ChangeID, changeinfo.CurrentRevision)
+	changeHash := fmt.Sprintf("%s%s%s", instanceName, change.ID, change.CurrentRevision)
 	cases := []struct {
 		name             string
 		err              error
-		startingFailures map[string]*Change
-		expectedFailures map[string]*Change
+		startingFailures map[string]bool
+		expectedFailures map[string]bool
 		expectedReview   bool
-		prevAttepmts     int
 	}{
 		{
 			name:             "No error. Do not send message",
 			expectedReview:   false,
-			startingFailures: map[string]*Change{},
-			expectedFailures: map[string]*Change{},
+			startingFailures: map[string]bool{},
+			expectedFailures: map[string]bool{},
 			err:              nil,
 		},
 		{
 			name:             "First time error send review",
 			err:              errors.New("InRepoConfigError"),
 			expectedReview:   true,
-			startingFailures: map[string]*Change{},
-			expectedFailures: map[string]*Change{changeHash: {changeInfo: changeinfo, attempts: 1, instance: instanceName}},
+			startingFailures: map[string]bool{},
+			expectedFailures: map[string]bool{changeHash: true},
 		},
 		{
-			name:             "second time error do not send review, update attempts",
+			name:             "second time error do not send review",
 			err:              errors.New("InRepoConfigError"),
 			expectedReview:   false,
-			prevAttepmts:     1,
-			startingFailures: map[string]*Change{changeHash: {changeInfo: changeinfo, attempts: 1, instance: instanceName}},
-			expectedFailures: map[string]*Change{changeHash: {changeInfo: changeinfo, attempts: 2, instance: instanceName}},
+			startingFailures: map[string]bool{changeHash: true},
+			expectedFailures: map[string]bool{changeHash: true},
+		},
+		{
+			name:             "Resolved error sends error again, resend review",
+			err:              errors.New("InRepoConfigError"),
+			expectedReview:   true,
+			startingFailures: map[string]bool{},
+			expectedFailures: map[string]bool{changeHash: true},
 		},
 		{
 			name:             "Resolved error changes Failures map",
 			err:              nil,
 			expectedReview:   false,
-			startingFailures: map[string]*Change{changeHash: {changeInfo: changeinfo, attempts: 1, instance: instanceName}},
-			expectedFailures: map[string]*Change{},
+			startingFailures: map[string]bool{changeHash: true},
+			expectedFailures: map[string]bool{},
 		},
 	}
 	for _, tc := range cases {
@@ -214,7 +218,7 @@ func TestHandleInRepoConfigError(t *testing.T) {
 				gc:                          gc,
 			}
 
-			ret := controller.handleInRepoConfigError(tc.err, &Change{changeInfo: changeinfo, attempts: tc.prevAttepmts, instance: instanceName})
+			ret := controller.handleInRepoConfigError(tc.err, instanceName, change)
 			if ret != nil {
 				t.Errorf("handleInRepoConfigError returned with non nil error")
 			}
@@ -224,8 +228,10 @@ func TestHandleInRepoConfigError(t *testing.T) {
 			if !tc.expectedReview && gc.reviews != 0 {
 				t.Error("expected no reviews and got one")
 			}
-			if !reflect.DeepEqual(tc.expectedFailures, controller.inRepoConfigFailuresTracker) {
-				t.Fatalf("expected failures does not match with inRepoConfigFailuresTracker")
+			if diff := cmp.Diff(tc.expectedFailures, controller.inRepoConfigFailuresTracker, cmpopts.SortSlices(func(a, b string) bool {
+				return a < b
+			})); diff != "" {
+				t.Fatalf("expected failures mismatch. got(+), want(-):\n%s", diff)
 			}
 		})
 	}
@@ -3074,10 +3080,10 @@ func TestProcessChange(t *testing.T) {
 				gc:                          &gc,
 				tracker:                     &fakeSync{val: fakeLastSync},
 				inRepoConfigCacheHandler:    cache,
-				inRepoConfigFailuresTracker: make(map[string]*Change),
+				inRepoConfigFailuresTracker: make(map[string]bool),
 			}
 
-			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, &Change{changeInfo: tc.change})
+			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)
 			if tc.wantError {
 				if err == nil {
 					t.Fatal("Expected error, got nil.")
