@@ -31,9 +31,6 @@ dashboards:
     base_options: width=10
     alert_options:
       alert_mail_to_addresses: bentheelder+alerts@google.com, antonio.ojea.garcia@gmail.com
-  - name: pull-kubernetes-e2e-gce-100-performance
-    test_group_name: pull-kubernetes-e2e-gce-100-performance
-    base_options: width=10
   - name: pull-kubernetes-node-e2e-containerd
     test_group_name: pull-kubernetes-node-e2e-containerd
     base_options: width=10

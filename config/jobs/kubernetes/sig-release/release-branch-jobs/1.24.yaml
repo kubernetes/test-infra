@@ -1060,7 +1060,7 @@ presubmits:
           requests:
             cpu: "4"
             memory: 6Gi
-  - always_run: true
+  - always_run: false
     branches:
     - release-1.24
     cluster: k8s-infra-prow-build
