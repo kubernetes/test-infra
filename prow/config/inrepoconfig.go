@@ -118,7 +118,7 @@ func prowYAMLGetter(
 	}
 
 	log.WithField("merge-strategy", mergeMethod).Debug("Using merge strategy.")
-	if err := ensureHeadCommits(repo, headSHAs...); err != nil {
+	if err := ensureCommits(repo, baseSHA, headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to fetch headSHAs: %v", err)
 	}
 	if err := repo.MergeAndCheckout(baseSHA, string(mergeMethod), headSHAs...); err != nil {
@@ -128,7 +128,14 @@ func prowYAMLGetter(
 	return ReadProwYAML(log, repo.Directory(), false)
 }
 
-func ensureHeadCommits(repo git.RepoClient, headSHAs ...string) error {
+func ensureCommits(repo git.RepoClient, baseSHA string, headSHAs ...string) error {
+	//Ensure baseSHA exists.
+	if exists, _ := repo.CommitExists(baseSHA); !exists {
+		if err := repo.Fetch(baseSHA); err != nil {
+			return fmt.Errorf("failed to fetch baseSHA: %s: %v", baseSHA, err)
+		}
+	}
+	//Ensure headSHAs exist
 	for _, sha := range headSHAs {
 		// This is best effort. No need to check for error
 		if exists, _ := repo.CommitExists(sha); !exists {
