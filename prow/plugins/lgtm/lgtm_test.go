@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/utils/strings/slices"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -156,16 +157,18 @@ var reviewers = map[string]layeredsets.String{
 
 func TestLGTMComment(t *testing.T) {
 	var testcases = []struct {
-		name          string
-		body          string
-		commenter     string
-		hasLGTM       bool
-		shouldToggle  bool
-		shouldComment bool
-		shouldAssign  bool
-		skipCollab    bool
-		storeTreeHash bool
-		shouldRequest bool
+		name               string
+		body               string
+		commenter          string
+		needsMoreLGTMLabel string
+		needsReviewCount   int
+		hasLGTM            bool
+		shouldToggle       bool
+		shouldComment      bool
+		shouldAssign       bool
+		skipCollab         bool
+		storeTreeHash      bool
+		shouldRequest      bool
 	}{
 		{
 			name:         "non-lgtm comment",
@@ -189,6 +192,25 @@ func TestLGTMComment(t *testing.T) {
 			hasLGTM:       false,
 			shouldToggle:  true,
 			shouldComment: true,
+		},
+		{
+			name:               "LGTM comment by reviewer, no lgtm on pr, need 1 more lgtm",
+			body:               "/LGTM",
+			commenter:          "collab1",
+			hasLGTM:            false,
+			needsMoreLGTMLabel: "needs-1-more-lgtm",
+			needsReviewCount:   2,
+			shouldToggle:       true,
+			shouldComment:      true,
+		},
+		{
+			name:             "LGTM comment by reviewer, no lgtm on pr, need 2 more lgtm",
+			body:             "/LGTM",
+			commenter:        "collab1",
+			hasLGTM:          false,
+			needsReviewCount: 2,
+			shouldToggle:     false,
+			shouldComment:    false,
 		},
 		{
 			name:         "lgtm comment by reviewer, lgtm on pr",
@@ -375,101 +397,109 @@ func TestLGTMComment(t *testing.T) {
 	}
 	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
 	for _, tc := range testcases {
-		t.Logf("Running scenario %q", tc.name)
-		fc := fakegithub.NewFakeClient()
-		fc.IssueComments = make(map[int][]github.IssueComment)
-		fc.PullRequests = map[int]*github.PullRequest{
-			5: {
-				Base: github.PullRequestBranch{
-					Ref: "master",
+		t.Run(tc.name, func(t *testing.T) {
+			t.Logf("Running scenario %q", tc.name)
+			fc := fakegithub.NewFakeClient()
+			fc.IssueComments = make(map[int][]github.IssueComment)
+			fc.PullRequests = map[int]*github.PullRequest{
+				5: {
+					Base: github.PullRequestBranch{
+						Ref: "master",
+					},
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
 				},
-				Head: github.PullRequestBranch{
-					SHA: SHA,
+			}
+			fc.PullRequestChanges = map[int][]github.PullRequestChange{
+				5: {
+					{Filename: "doc/README.md"},
 				},
-			},
-		}
-		fc.PullRequestChanges = map[int][]github.PullRequestChange{
-			5: {
-				{Filename: "doc/README.md"},
-			},
-		}
-		fc.Collaborators = []string{"collab1", "collab2"}
-		e := &github.GenericCommentEvent{
-			Action:      github.GenericCommentActionCreated,
-			IssueState:  "open",
-			IsPR:        true,
-			Body:        tc.body,
-			User:        github.User{Login: tc.commenter},
-			IssueAuthor: github.User{Login: "author"},
-			Number:      5,
-			Assignees:   []github.User{{Login: "collab1"}, {Login: "assignee1"}},
-			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			HTMLURL:     "<url>",
-		}
-		if tc.hasLGTM {
-			fc.IssueLabelsAdded = []string{"org/repo#5:" + LGTMLabel}
-		}
-		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
-		pc := &plugins.Configuration{}
-		if tc.skipCollab {
-			pc.Owners.SkipCollaborators = []string{"org/repo"}
-		}
-		pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
-			Repos:         []string{"org/repo"},
-			StoreTreeHash: true,
-		})
-		fp := &fakePruner{
-			GitHubClient:  fc,
-			IssueComments: fc.IssueComments[5],
-		}
-		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
-			t.Errorf("didn't expect error from lgtmComment: %v", err)
-			continue
-		}
-		if tc.shouldAssign {
-			found := false
-			for _, a := range fc.AssigneesAdded {
-				if a == fmt.Sprintf("%s/%s#%d:%s", "org", "repo", 5, tc.commenter) {
-					found = true
-					break
-				}
 			}
-			if !found || len(fc.AssigneesAdded) != 1 {
-				t.Errorf("should have assigned %s but added assignees are %s", tc.commenter, fc.AssigneesAdded)
+			fc.Collaborators = []string{"collab1", "collab2"}
+			e := &github.GenericCommentEvent{
+				Action:      github.GenericCommentActionCreated,
+				IssueState:  "open",
+				IsPR:        true,
+				Body:        tc.body,
+				User:        github.User{Login: tc.commenter},
+				IssueAuthor: github.User{Login: "author"},
+				Number:      5,
+				Assignees:   []github.User{{Login: "collab1"}, {Login: "assignee1"}},
+				Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+				HTMLURL:     "<url>",
 			}
-		} else if len(fc.AssigneesAdded) != 0 {
-			t.Errorf("should not have assigned anyone but assigned %s", fc.AssigneesAdded)
-		}
-		if tc.shouldToggle {
 			if tc.hasLGTM {
-				if len(fc.IssueLabelsRemoved) == 0 {
-					t.Error("should have removed LGTM.")
-				} else if len(fc.IssueLabelsAdded) > 1 {
-					t.Error("should not have added LGTM.")
-				}
-			} else {
-				if len(fc.IssueLabelsAdded) == 0 {
-					t.Error("should have added LGTM.")
-				} else if len(fc.IssueLabelsRemoved) > 0 {
-					t.Error("should not have removed LGTM.")
-				}
+				fc.IssueLabelsAdded = []string{"org/repo#5:" + LGTMLabel}
 			}
-		} else if len(fc.IssueLabelsRemoved) > 0 {
-			t.Error("should not have removed LGTM.")
-		} else if (tc.hasLGTM && len(fc.IssueLabelsAdded) > 1) || (!tc.hasLGTM && len(fc.IssueLabelsAdded) > 0) {
-			t.Error("should not have added LGTM.")
-		}
-		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
-			t.Error("should have commented.")
-		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
-			t.Error("should not have commented.")
-		}
-		if tc.shouldRequest && len(fc.ReviewersRequested) == 0 {
-			t.Error("should have re-requested reviewers")
-		}
-		if !tc.shouldRequest && len(fc.ReviewersRequested) > 0 {
-			t.Errorf("should not have re-requested reviewers, but requested these reviewers %v", fc.ReviewersRequested)
-		}
+			if tc.needsMoreLGTMLabel != "" {
+				fc.IssueLabelsAdded = []string{"org/repo#5:" + tc.needsMoreLGTMLabel}
+			}
+			oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
+			pc := &plugins.Configuration{}
+			if tc.skipCollab {
+				pc.Owners.SkipCollaborators = []string{"org/repo"}
+			}
+			lgtmPluginCfg := plugins.Lgtm{
+				Repos:         []string{"org/repo"},
+				StoreTreeHash: true,
+			}
+			if tc.needsReviewCount > 0 {
+				lgtmPluginCfg.ReviewerCount = &tc.needsReviewCount
+			}
+			pc.Lgtm = append(pc.Lgtm, lgtmPluginCfg)
+			fp := &fakePruner{
+				GitHubClient:  fc,
+				IssueComments: fc.IssueComments[5],
+			}
+			if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
+				t.Errorf("didn't expect error from lgtmComment: %v", err)
+			}
+			if tc.shouldAssign {
+				found := false
+				for _, a := range fc.AssigneesAdded {
+					if a == fmt.Sprintf("%s/%s#%d:%s", "org", "repo", 5, tc.commenter) {
+						found = true
+						break
+					}
+				}
+				if !found || len(fc.AssigneesAdded) != 1 {
+					t.Errorf("should have assigned %s but added assignees are %s", tc.commenter, fc.AssigneesAdded)
+				}
+			} else if len(fc.AssigneesAdded) != 0 {
+				t.Errorf("should not have assigned anyone but assigned %s", fc.AssigneesAdded)
+			}
+			if tc.shouldToggle {
+				if tc.hasLGTM {
+					if !isLGTMLabelRemoved(fc.IssueLabelsRemoved, "org", "repo", 5) {
+						t.Error("should have removed LGTM.")
+					} else if isLGTMLabelAdded(fc.IssueLabelsAdded, "org", "repo", 5, tc.hasLGTM) {
+						t.Error("should not have added LGTM.")
+					}
+				} else {
+					if !isLGTMLabelAdded(fc.IssueLabelsAdded, "org", "repo", 5, tc.hasLGTM) {
+						t.Error("should have added LGTM.")
+					} else if isLGTMLabelRemoved(fc.IssueLabelsRemoved, "org", "repo", 5) {
+						t.Error("should not have removed LGTM.")
+					}
+				}
+			} else if isLGTMLabelRemoved(fc.IssueLabelsRemoved, "org", "repo", 5) {
+				t.Error("should not have removed LGTM.")
+			} else if isLGTMLabelAdded(fc.IssueLabelsAdded, "org", "repo", 5, tc.hasLGTM) {
+				t.Error("should not have added LGTM.")
+			}
+			if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
+				t.Error("should have commented.")
+			} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
+				t.Error("should not have commented.")
+			}
+			if tc.shouldRequest && len(fc.ReviewersRequested) == 0 {
+				t.Error("should have re-requested reviewers")
+			}
+			if !tc.shouldRequest && len(fc.ReviewersRequested) > 0 {
+				t.Errorf("should not have re-requested reviewers, but requested these reviewers %v", fc.ReviewersRequested)
+			}
+		})
 	}
 }
 
@@ -807,19 +837,19 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			if tc.hasLGTM {
 				if len(fc.IssueLabelsRemoved) == 0 {
 					t.Errorf("For case %s, should have removed LGTM.", tc.name)
-				} else if len(fc.IssueLabelsAdded) > 1 {
+				} else if isLGTMLabelAdded(fc.IssueLabelsAdded, "org", "repo", 5, tc.hasLGTM) {
 					t.Errorf("For case %s, should not have added LGTM.", tc.name)
 				}
 			} else {
 				if len(fc.IssueLabelsAdded) == 0 {
 					t.Errorf("For case %s, should have added LGTM.", tc.name)
-				} else if len(fc.IssueLabelsRemoved) > 0 {
+				} else if isLGTMLabelRemoved(fc.IssueLabelsRemoved, "org", "repo", 5) {
 					t.Errorf("For case %s, should not have removed LGTM.", tc.name)
 				}
 			}
-		} else if len(fc.IssueLabelsRemoved) > 0 {
+		} else if isLGTMLabelRemoved(fc.IssueLabelsRemoved, "org", "repo", 5) {
 			t.Errorf("For case %s, should not have removed LGTM.", tc.name)
-		} else if (tc.hasLGTM && len(fc.IssueLabelsAdded) > 1) || (!tc.hasLGTM && len(fc.IssueLabelsAdded) > 0) {
+		} else if isLGTMLabelAdded(fc.IssueLabelsAdded, "org", "repo", 5, tc.hasLGTM) {
 			t.Errorf("For case %s, should not have added LGTM.", tc.name)
 		}
 		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
@@ -1408,4 +1438,18 @@ func TestHelpProvider(t *testing.T) {
 			}
 		})
 	}
+}
+
+func isLGTMLabelRemoved(issueLabelsRemoved []string, owner, repo string, number int) bool {
+	lgtmLabel := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, LGTMLabel)
+
+	return len(issueLabelsRemoved) > 0 && slices.Contains(issueLabelsRemoved, lgtmLabel)
+}
+
+func isLGTMLabelAdded(issueLabelsAdded []string, owner, repo string, number int, hasLGTM bool) bool {
+	lgtmLabel := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, LGTMLabel)
+	if hasLGTM {
+		return len(issueLabelsAdded) > 1 && slices.Contains(issueLabelsAdded, lgtmLabel)
+	}
+	return len(issueLabelsAdded) > 0 && slices.Contains(issueLabelsAdded, lgtmLabel)
 }
