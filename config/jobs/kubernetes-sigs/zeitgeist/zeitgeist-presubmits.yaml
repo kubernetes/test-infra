@@ -45,11 +45,11 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: zeitgeist-verify
