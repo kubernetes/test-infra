@@ -42,6 +42,7 @@ presubmits:
     - .* # per-release job
     annotations:
       fork-per-release: "true"
+      fork-per-release-replacements: "GO_VERSION= -> GO_VERSION={{.GoVersion}}"
       testgrid-dashboards: sig-testing-canaries
       description: run with GO_VERSION set to the original go version used for this branch
     path_alias: k8s.io/kubernetes

@@ -216,8 +216,9 @@ accomplish this, eg:
 # from test-infra root
 $ go run ./releng/config-forker \
   --job-config $(pwd)/config/jobs \
-  --version 1.15 \
-  --output $(pwd)/config/jobs/kubernetes/sig-release/release-branch-jobs/1.15.yaml
+  --version 1.27 \
+  --go-version 1.20.2 \
+  --output $(pwd)/config/jobs/kubernetes/sig-release/release-branch-jobs/1.27.yaml
 ```
 
 [prow.k8s.io]: https://prow.k8s.io
