@@ -1420,7 +1420,7 @@ presubmits:
             memory: 15Gi
         securityContext:
           privileged: true
-  - always_run: false
+  - always_run: true
     optional: true
     branches:
     - release-1.24
@@ -1602,7 +1602,7 @@ presubmits:
             memory: 36Gi
       securityContext:
         runAsUser: 2000
-  - always_run: false
+  - always_run: true
     optional: true
     branches:
     - release-1.24

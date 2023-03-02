@@ -22,6 +22,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -165,7 +166,7 @@ func TestPerformArgReplacements(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := performReplacement(tc.args, "1.15", tc.replacements)
+			result, err := performReplacement(tc.args, templateVars{Version: "1.15"}, tc.replacements)
 			if err != nil {
 				if !tc.expectErr {
 					t.Fatalf("Unexpected error: %v", err)
@@ -528,7 +529,7 @@ func TestGeneratePresubmits(t *testing.T) {
 					Name: "pull-replace-some-things",
 					Annotations: map[string]string{
 						forkAnnotation:                 "true",
-						replacementAnnotation:          "foo -> {{.Version}}",
+						replacementAnnotation:          "foo -> {{.Version}}, GO_VERSION= -> GO_VERSION={{.GoVersion}}",
 						"testgrid-generate-test-group": "true",
 						"some-annotation":              "yup",
 					},
@@ -538,7 +539,7 @@ func TestGeneratePresubmits(t *testing.T) {
 								Image:   "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-master",
 								Command: []string{"--arg1=test", "--something=foo"},
 								Args:    []string{"--repo=k8s.io/kubernetes", "--something=foo"},
-								Env:     []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
+								Env:     []v1.EnvVar{{Name: "BRANCH", Value: "master"}, {Name: "GO_VERSION"}},
 							},
 						},
 					},
@@ -618,7 +619,7 @@ func TestGeneratePresubmits(t *testing.T) {
 								Image:   "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-1.15",
 								Command: []string{"--arg1=test", "--something=1.15"},
 								Args:    []string{"--repo=k8s.io/kubernetes", "--something=1.15"},
-								Env:     []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
+								Env:     []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}, {Name: "GO_VERSION", Value: "1.20.2"}},
 							},
 						},
 					},
@@ -633,7 +634,7 @@ func TestGeneratePresubmits(t *testing.T) {
 		},
 	}
 
-	result, err := generatePresubmits(config.JobConfig{PresubmitsStatic: presubmits}, "1.15")
+	result, err := generatePresubmits(config.JobConfig{PresubmitsStatic: presubmits}, templateVars{Version: "1.15", GoVersion: "1.20.2"})
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -682,7 +683,7 @@ func TestGeneratePeriodics(t *testing.T) {
 				Annotations: map[string]string{
 					forkAnnotation:             "true",
 					periodicIntervalAnnotation: "6h 12h 24h 24h",
-					replacementAnnotation:      "stable -> {{.Version}}",
+					replacementAnnotation:      "stable -> {{.Version}}, GO_VERSION= -> GO_VERSION={{.GoVersion}}",
 				},
 				Spec: &v1.PodSpec{
 					Containers: []v1.Container{
@@ -690,7 +691,7 @@ func TestGeneratePeriodics(t *testing.T) {
 							Image:   "gcr.io/k8s-testinfra/kubekins-e2e:blahblahblah-master",
 							Command: []string{"--args1=test", "--version=stable"},
 							Args:    []string{"--repo=k8s.io/kubernetes", "--version=stable"},
-							Env:     []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
+							Env:     []v1.EnvVar{{Name: "BRANCH", Value: "master"}, {Name: "GO_VERSION"}},
 						},
 					},
 				},
@@ -756,7 +757,7 @@ func TestGeneratePeriodics(t *testing.T) {
 							Image:   "gcr.io/k8s-testinfra/kubekins-e2e:blahblahblah-1.15",
 							Command: []string{"--args1=test", "--version=1.15"},
 							Args:    []string{"--repo=k8s.io/kubernetes=release-1.15", "--version=1.15"},
-							Env:     []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
+							Env:     []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}, {Name: "GO_VERSION", Value: "1.20.2"}},
 						},
 					},
 				},
@@ -776,7 +777,7 @@ func TestGeneratePeriodics(t *testing.T) {
 		},
 	}
 
-	result, err := generatePeriodics(config.JobConfig{Periodics: periodics}, "1.15")
+	result, err := generatePeriodics(config.JobConfig{Periodics: periodics}, templateVars{Version: "1.15", GoVersion: "1.20.2"})
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -829,7 +830,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Name: "post-replace-some-things-master",
 					Annotations: map[string]string{
 						forkAnnotation:        "true",
-						replacementAnnotation: "foo -> {{.Version}}",
+						replacementAnnotation: "foo -> {{.Version}}, GO_VERSION= -> GO_VERSION={{.GoVersion}}",
 						"some-annotation":     "yup",
 					},
 					Spec: &v1.PodSpec{
@@ -838,7 +839,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 								Image:   "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-master",
 								Command: []string{"--args1=test", "--something=foo"},
 								Args:    []string{"--repo=k8s.io/kubernetes", "--something=foo"},
-								Env:     []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
+								Env:     []v1.EnvVar{{Name: "BRANCH", Value: "master"}, {Name: "GO_VERSION"}},
 							},
 						},
 					},
@@ -904,7 +905,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 								Image:   "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-1.15",
 								Command: []string{"--args1=test", "--something=1.15"},
 								Args:    []string{"--repo=k8s.io/kubernetes", "--something=1.15"},
-								Env:     []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
+								Env:     []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}, {Name: "GO_VERSION", Value: "1.20.2"}},
 							},
 						},
 					},
@@ -916,7 +917,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 		},
 	}
 
-	result, err := generatePostsubmits(config.JobConfig{PostsubmitsStatic: postsubmits}, "1.15")
+	result, err := generatePostsubmits(config.JobConfig{PostsubmitsStatic: postsubmits}, templateVars{Version: "1.15", GoVersion: "1.20.2"})
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
