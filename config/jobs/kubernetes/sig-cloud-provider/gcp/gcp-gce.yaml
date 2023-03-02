@@ -688,7 +688,7 @@ periodics:
     testgrid-alert-email: release-team@kubernetes.io
     description: Uses kubetest to run e2e tests (+Feature:many, -many) against a cluster created with cluster/kube-up.sh
 
-- interval: 30m
+- interval: 12h
   name: ci-kubernetes-e2e-gci-gce-flaky-repro
   cluster: k8s-infra-prow-build
   labels:
@@ -724,7 +724,7 @@ periodics:
     testgrid-tab-name: gce-cos-master-flaky-repro
     description: Same config as ci-kubernetes-e2e-gci-gce but with Flaky tests included, intended to reproduce conditions that cause flakes to appear
 
-- interval: 30m
+- interval: 12h
   name: ci-kubernetes-e2e-gci-gce-flaky
   labels:
     preset-service-account: "true"
@@ -748,7 +748,7 @@ periodics:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-flaky
 
-- interval: 30m
+- interval: 12h
   name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
   labels:
     preset-service-account: "true"
