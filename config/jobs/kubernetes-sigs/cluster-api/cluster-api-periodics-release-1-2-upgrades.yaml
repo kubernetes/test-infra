@@ -5,6 +5,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -52,6 +56,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -99,6 +107,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -146,6 +158,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -193,6 +209,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -241,6 +261,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -289,6 +313,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -336,6 +364,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
