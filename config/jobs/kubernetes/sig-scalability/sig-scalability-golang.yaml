@@ -52,7 +52,7 @@ periodics:
           cpu: 4
           memory: "16Gi"
 
-- interval: 4h
+- interval: 24h
   name: ci-golang-tip-k8s-1-23
   cluster: k8s-infra-prow-build
   tags:
