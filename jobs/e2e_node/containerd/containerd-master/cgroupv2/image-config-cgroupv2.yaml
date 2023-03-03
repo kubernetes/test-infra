@@ -1,7 +1,0 @@
-images:
-  cos-stable:
-    # Using cos-beta to pick up COS-M93 which uses 5.10 kernel which includes cgroupv2 stat metrics.
-    # See https://github.com/kubernetes/kubernetes/issues/103759
-    image_family: cos-beta
-    project: cos-cloud
-    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-master/cgroupv2/env-cgroupv2,gci-update-strategy=update_disabled"

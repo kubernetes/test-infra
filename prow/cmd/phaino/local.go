@@ -385,7 +385,7 @@ func setupKubeconfig(volumeMounts, envs map[string]string) {
 		envs[kubeconfigEnvKey] = kubeconfigEnvVarVal
 		var inexistentKubeconfigFiles []string
 		for _, f := range strings.Split(kubeconfigEnvVarVal, string(os.PathListSeparator)) {
-			if _, err := os.Stat(f); !os.IsNotExist(err) {
+			if _, err := os.Stat(f); os.IsNotExist(err) {
 				inexistentKubeconfigFiles = append(inexistentKubeconfigFiles, f)
 			}
 		}

@@ -16,13 +16,57 @@ presubmits:
     spec:
       # unit tests have no business requiring root or doing privileged operations
       securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - make
             - test
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+  - name: pull-kubernetes-unit-go-compatibility
+    annotations:
+      fork-per-release: "true"
+      fork-per-release-replacements: "GO_VERSION= -> GO_VERSION={{.GoVersion}}"
+      testgrid-dashboards: sig-testing-canaries
+      description: run with GO_VERSION set to the original go version used for this branch
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - .* # per-release job
+    labels:
+      preset-service-account: "true"
+    optional: true
+    always_run: true
+    path_alias: k8s.io/kubernetes
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+            - make
+            - test
+          env:
+          - name: GO_VERSION
+            value: ""
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
@@ -55,14 +99,11 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - make
             - test
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
@@ -79,8 +120,6 @@ presubmits:
       testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
     decorate: true
     cluster: k8s-infra-prow-build
-    skip_branches:
-    - release-\d+.\d+ # per-release job
     labels:
       preset-service-account: "true"
     always_run: false
@@ -89,10 +128,14 @@ presubmits:
     spec:
       # unit tests have no business requiring root or doing privileged operations
       securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-go-canary
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - make
             - test
@@ -125,10 +168,14 @@ periodics:
     spec:
       # unit tests have no business requiring root or doing privileged operations
       securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - make
             - test
@@ -140,89 +187,34 @@ periodics:
             requests:
               cpu: 4
               memory: "36Gi"
-  - interval: 1h
-    name: ci-kubernetes-generate-make-test-cache
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-    decorate: true
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-    spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
-          command:
-            - runner.sh
-            - bash
-          args:
-            - -c
-            - |
-              result=0
-              # Run the tests as usual
-              time make test KUBE_TIMEOUT=--timeout=600s || result=$?
-              # Send the cache off to gcs
-              time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
-              time gsutil cp cache.tar.gz gs://kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz || result=$?
-              exit $result
-  - interval: 15m
-    name: ci-kubernetes-cached-make-test
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-    decorate: true
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
-          command:
-            - runner.sh
-            - bash
-          args:
-            - -c
-            - |
-              # Restore the cache
-              time curl https://storage.googleapis.com/kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz -o cache.tar.gz
-              mkdir -p _output/local/go/
-              time tar -xzf cache.tar.gz -C _output/local/go
-              # Run tests as usual
-              time make test KUBE_TIMEOUT=--timeout=600s
-  - interval: 6h
-    name: ci-kubernetes-generate-make-test-count10
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-    decorate: true
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-    spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
-          command:
-            - runner.sh
-            - bash
-            - -c
-          args:
-            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=600s GOFLAGS=-count=10'
+
+# Disabled on 2022-02-28 because the job is consistently failing or skipping all tests
+#  - interval: 6h
+#    name: ci-kubernetes-generate-make-test-count10
+#    annotations:
+#      testgrid-dashboards: sig-testing-canaries
+#    decorate: true
+#    extra_refs:
+#      - org: kubernetes
+#        repo: kubernetes
+#        base_ref: master
+#        path_alias: k8s.io/kubernetes
+#    labels:
+#      preset-service-account: "true"
+#    spec:
+#      # unit tests have no business requiring root or doing privileged operations
+#      securityContext:
+#        # NOTE: these are arbitrary non-root values. They don't exist in the
+#        # image and don't need to, the unit tests should only write to TMPDIR
+#        runAsUser: 2001
+#        runAsGroup: 2010
+#      containers:
+#        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+#          securityContext:
+#            allowPrivilegeEscalation: false
+#          command:
+#            - runner.sh
+#            - bash
+#            - -c
+#          args:
+#            - 'make test KUBE_RACE=-race KUBE_TIMEOUT=--timeout=600s GOFLAGS=-count=10'

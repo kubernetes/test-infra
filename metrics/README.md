@@ -95,15 +95,9 @@ the metric name and persist for a year after their creation. Additionally,
 the latest filtered results for a metric are stored in the root of the
 k8s-metrics bucket and named with the format `METRICNAME-latest.json`.
 
-If a config specifies the optional jq filter used to create influxdb timeseries
-data points, then the job will use the filter to generate timeseries points from
-the raw query results.
-
-At one point, these points were uploaded to a system called velodrome, which had an influxdb instance where they can be used to create graphs and tables, but velodrome is no longer in existence.  This may be revised in the future.
-
 ## Query structure
 
-The `query` is written in `Standard SQL` which is really [BigQuery Standard SQL](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax) that allows for working with arrays/repeated fields. Each sub-query, from the most indented out, will build a subtable that the outer query runs against. Any one of the sub query blocks can be run independently from the BigQuery console or opionally added to a test query config and run via the same `bigquery.py` line above.
+The `query` is written in `Standard SQL` which is really [BigQuery Standard SQL](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax) that allows for working with arrays/repeated fields. Each sub-query, from the most indented out, will build a subtable that the outer query runs against. Any one of the sub query blocks can be run independently from the BigQuery console or optionally added to a test query config and run via the same `bigquery.py` line above.
 
 ## Consistency
 

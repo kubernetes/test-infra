@@ -4,6 +4,7 @@ periodics:
 # This should be the same as ci-kubernetes-kind-conformance
 - interval: 3h
   name: ci-audit-kind-conformance
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -18,7 +19,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211005-ca067fbd9f-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
       command:
         - wrapper.sh
         - bash
@@ -37,12 +38,15 @@ periodics:
       securityContext:
         privileged: true
       resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        limits:
+          cpu: 2000m
           memory: "9000Mi"
+        requests:
           # during the tests more like 3-20m is used
           cpu: 2000m
+          memory: "9000Mi"
   annotations:
     testgrid-dashboards: sig-arch-conformance
     testgrid-tab-name: kind-conformance-audit

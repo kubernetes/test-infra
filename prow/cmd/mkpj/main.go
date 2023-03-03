@@ -21,7 +21,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
@@ -38,7 +37,7 @@ type options struct {
 	jobName     string
 	config      configflagutil.ConfigOptions
 	triggerJob  bool
-	outputPath  string
+	failWithJob bool
 	kubeOptions prowflagutil.KubernetesOptions
 	baseRef     string
 	baseSha     string
@@ -57,7 +56,7 @@ type options struct {
 
 func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJobSpec) {
 	for fullRepoName, ps := range conf.PresubmitsStatic {
-		org, repo, err := splitRepoName(fullRepoName)
+		org, repo, err := config.SplitRepoName(fullRepoName)
 		if err != nil {
 			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
 			continue
@@ -79,7 +78,7 @@ func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJ
 		}
 	}
 	for fullRepoName, ps := range conf.PostsubmitsStatic {
-		org, repo, err := splitRepoName(fullRepoName)
+		org, repo, err := config.SplitRepoName(fullRepoName)
 		if err != nil {
 			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
 			continue
@@ -210,6 +209,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
 	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
+	fs.BoolVar(&o.failWithJob, "fail-with-job", false, "Exit with a non-zero exit code if the triggered job fails")
 	o.config.AddFlags(fs)
 	o.kubeOptions.AddFlags(fs)
 	o.github.AddFlags(fs)
@@ -267,19 +267,9 @@ func main() {
 		return
 	}
 
-	if err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
+	if succeeded, err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
 		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
+	} else if !succeeded && o.failWithJob {
+		os.Exit(1)
 	}
-}
-
-func splitRepoName(repo string) (string, string, error) {
-	// Normalize repo name to remove http:// or https://, this is the case for some
-	// of the gerrit instances.
-	repo = strings.TrimPrefix(repo, "http://")
-	repo = strings.TrimPrefix(repo, "https://")
-	s := strings.SplitN(repo, "/", 2)
-	if len(s) != 2 {
-		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)
-	}
-	return s[0], s[1], nil
 }

@@ -18,7 +18,6 @@ package statusreconciler
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"sort"
@@ -217,7 +216,7 @@ func TestSave(t *testing.T) {
 			}
 
 			if statusURI != "" {
-				buf, err := ioutil.ReadFile(statusURI)
+				buf, err := os.ReadFile(statusURI)
 				if err != nil {
 					t.Fatalf("%s: unexpected error reading status file: %v", tc.name, err)
 				}
@@ -233,7 +232,7 @@ func TestSave(t *testing.T) {
 }
 
 func getConfigFile(t *testing.T, config config.Config) (string, func()) {
-	tempFile, err := ioutil.TempFile("/tmp", "prow-test")
+	tempFile, err := os.CreateTemp("/tmp", "prow-test")
 	if err != nil {
 		t.Fatalf("failed to get tempfile: %v", err)
 	}

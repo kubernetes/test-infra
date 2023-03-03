@@ -17,7 +17,7 @@ limitations under the License.
 package gcsupload
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -106,8 +106,12 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				},
 			},
 			extra: map[string]gcs.UploadFunc{
-				"something": gcs.DataUpload(strings.NewReader("data")),
-				"else":      gcs.DataUpload(strings.NewReader("data")),
+				"something": gcs.DataUpload(func() (io.ReadCloser, error) {
+					return io.NopCloser(strings.NewReader("data")), nil
+				}),
+				"else": gcs.DataUpload(func() (io.ReadCloser, error) {
+					return io.NopCloser(strings.NewReader("data")), nil
+				}),
 			},
 			expected: []string{
 				"pr-logs/directory/job/build.txt",
@@ -123,16 +127,17 @@ func TestOptions_AssembleTargets(t *testing.T) {
 			name:    "literal files should be uploaded under job dir",
 			jobType: prowapi.PresubmitJob,
 			options: Options{
-				Items: []string{"something", "else"},
+				Items: []string{"something", "else", "escape#me"},
 				GCSConfiguration: &prowapi.GCSConfiguration{
 					PathStrategy: prowapi.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
-			paths: []string{"something", "else", "notforupload"},
+			paths: []string{"something", "else", "notforupload", "escape#me/", "escape#me/foo"},
 			expected: []string{
 				"pr-logs/pull/org_repo/1/job/build/something",
 				"pr-logs/pull/org_repo/1/job/build/else",
+				"pr-logs/pull/org_repo/1/job/build/escape%23me/foo",
 				"pr-logs/directory/job/build.txt",
 				"pr-logs/directory/job/latest-build.txt",
 				"pr-logs/pull/org_repo/1/job/latest-build.txt",
@@ -203,15 +208,7 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				BuildID: "build",
 			}
 
-			tmpDir, err := ioutil.TempDir("", testCase.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", testCase.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", testCase.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			for _, testPath := range testCase.paths {
 				if strings.HasSuffix(testPath, "/") {
@@ -292,6 +289,15 @@ func TestBuilderForStrategy(t *testing.T) {
 				{org: "org", repo: "repo"}:  "",
 				{org: "org", repo: "repo2"}: "repo2",
 				{org: "org2", repo: "repo"}: "org2_repo",
+			},
+		},
+		{
+			name:        "gerrit",
+			strategy:    prowapi.PathStrategyLegacy,
+			defaultOrg:  "org",
+			defaultRepo: "repo",
+			expectedPaths: map[info]string{
+				{org: "https://org", repo: "repo/sub"}: "org_repo_sub",
 			},
 		},
 	}

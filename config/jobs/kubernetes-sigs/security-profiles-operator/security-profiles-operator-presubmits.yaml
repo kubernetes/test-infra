@@ -1,0 +1,99 @@
+presubmits:
+  kubernetes-sigs/security-profiles-operator:
+  - name: pull-security-profiles-operator-build
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    spec:
+      containers:
+      - image: golang:1.20
+        command:
+        - hack/pull-security-profiles-operator-build
+
+  - name: pull-security-profiles-operator-verify
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    spec:
+      containers:
+      - image: golang:1.20
+        command:
+        - hack/pull-security-profiles-operator-verify
+
+  - name: pull-security-profiles-operator-test-unit
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    spec:
+      containers:
+      - image: golang:1.20
+        command:
+        - hack/pull-security-profiles-operator-test-unit
+
+  - name: pull-security-profiles-operator-build-image
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        securityContext:
+          privileged: true  # for dind
+        resources:
+          requests:
+            memory: 9000Mi
+            cpu: 7500m
+        command:
+        - runner.sh
+        args:
+        - hack/pull-security-profiles-operator-build-image
+
+  - name: pull-security-profiles-operator-test-e2e
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-num-columns-recent: '30'
+      testgrid-create-test-group: 'true'
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        securityContext:
+          privileged: true  # for dind
+        resources:
+          requests:
+            memory: 9000Mi
+            cpu: 7500m
+          limits:
+            memory: 10000Mi
+            cpu: 7500m
+        command:
+        - runner.sh
+        args:
+        - hack/pull-security-profiles-operator-test-e2e
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log/audit
+          readOnly: true
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log/audit
+          type: Directory

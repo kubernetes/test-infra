@@ -6,6 +6,7 @@
 
 {{define "body"}}
 {{$pod:=.PodReport.Pod}}
+{{$podLink:=.PodLink}}
 <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect" id="podinfo">
   <div class="mdl-tabs__tab-bar">
     <a href="#pod-panel" data-preserve-anchor="true" class="mdl-tabs__tab">Pod</a>
@@ -24,6 +25,12 @@
         <td class="mdl-data-table__cell--non-numeric">Pod name</td>
         <td class="mdl-data-table__cell--non-numeric literal">{{$pod.Name}}</td>
       </tr>
+      {{if ne $podLink ""}}
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Pod Link</td>
+        <td class="mdl-data-table__cell--non-numeric literal"><a href="{{$podLink}}">Click to pod</a></td>
+      </tr>
+      {{end}}
       <tr>
         <td class="mdl-data-table__cell--non-numeric">Start time</td>
         <td class="mdl-data-table__cell--non-numeric">{{$pod.Status.StartTime}}</td>

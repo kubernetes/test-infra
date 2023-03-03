@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,7 +27,9 @@ import (
 	"time"
 
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowgithub "k8s.io/test-infra/prow/github"
@@ -66,6 +69,17 @@ const (
 	ErrorState ProwJobState = "error"
 )
 
+// GetAllProwJobStates returns all possible job states.
+func GetAllProwJobStates() []ProwJobState {
+	return []ProwJobState{
+		TriggeredState,
+		PendingState,
+		SuccessState,
+		FailureState,
+		AbortedState,
+		ErrorState}
+}
+
 // ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
 type ProwJobAgent string
 
@@ -85,7 +99,7 @@ const (
 
 const (
 	// StartedStatusFile is the JSON file that stores information about the build
-	// at the start ob the build. See testgrid/metadata/job.go for more details.
+	// at the start of the build. See testgrid/metadata/job.go for more details.
 	StartedStatusFile = "started.json"
 
 	// FinishedStatusFile is the JSON file that stores information about the build
@@ -94,6 +108,9 @@ const (
 
 	// ProwJobFile is the JSON file that stores the prowjob information.
 	ProwJobFile = "prowjob.json"
+
+	// CloneRecordFile is the JSON file that stores clone records of a prowjob.
+	CloneRecordFile = "clone-records.json"
 )
 
 // +genclient
@@ -155,7 +172,9 @@ type ProwJobSpec struct {
 	// trigger this job on their pull request
 	RerunCommand string `json:"rerun_command,omitempty"`
 	// MaxConcurrency restricts the total number of instances
-	// of this job that can run in parallel at once
+	// of this job that can run in parallel at once. This is
+	// a separate mechanism to JobQueueName and the lowest max
+	// concurrency is selected from these two.
 	// +kubebuilder:validation:Minimum=0
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
 	// ErrorOnEviction indicates that the ProwJob should be completed and given
@@ -175,6 +194,11 @@ type ProwJobSpec struct {
 	// a pipeline-crd resource
 	// https://github.com/tektoncd/pipeline
 	PipelineRunSpec *pipelinev1alpha1.PipelineRunSpec `json:"pipeline_run_spec,omitempty"`
+
+	// TektonPipelineRunSpec provides the basis for running the test as
+	// a pipeline-crd resource
+	// https://github.com/tektoncd/pipeline
+	TektonPipelineRunSpec *TektonPipelineRunSpec `json:"tekton_pipeline_run_spec,omitempty"`
 
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
@@ -196,6 +220,43 @@ type ProwJobSpec struct {
 	// ProwJobDefault holds configuration options provided as defaults
 	// in the Prow config
 	ProwJobDefault *ProwJobDefault `json:"prowjob_defaults,omitempty"`
+
+	// JobQueueName is an optional field with name of a queue defining
+	// max concurrency. When several jobs from the same queue try to run
+	// at the same time, the number of them that is actually started is
+	// limited by JobQueueCapacities (part of Plank's config). If
+	// this field is left undefined inifinite concurrency is assumed.
+	// This behaviour may be superseded by MaxConcurrency field, if it
+	// is set to a constraining value.
+	JobQueueName string `json:"job_queue_name,omitempty"`
+}
+
+func (pjs ProwJobSpec) HasPipelineRunSpec() bool {
+	if pjs.TektonPipelineRunSpec != nil && pjs.TektonPipelineRunSpec.V1Beta1 != nil {
+		return true
+	}
+	if pjs.PipelineRunSpec != nil {
+		return true
+	}
+	return false
+}
+
+func (pjs ProwJobSpec) GetPipelineRunSpec() (*pipelinev1beta1.PipelineRunSpec, error) {
+	var found *pipelinev1beta1.PipelineRunSpec
+	if pjs.TektonPipelineRunSpec != nil {
+		found = pjs.TektonPipelineRunSpec.V1Beta1
+	}
+	if found == nil && pjs.PipelineRunSpec != nil {
+		var spec pipelinev1beta1.PipelineRunSpec
+		if err := pjs.PipelineRunSpec.ConvertTo(context.TODO(), &spec); err != nil {
+			return nil, err
+		}
+		found = &spec
+	}
+	if found == nil {
+		return nil, errors.New("pipeline run spec not found")
+	}
+	return found, nil
 }
 
 type GitHubTeamSlug struct {
@@ -258,13 +319,9 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 		}
 	}
 	for _, ghts := range rac.GitHubTeamSlugs {
-		team, err := cli.GetTeamBySlug(ghts.Slug, ghts.Org)
+		member, err := cli.TeamBySlugHasMember(ghts.Org, ghts.Slug, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch team with slug %s and org %s: %w", ghts.Slug, ghts.Org, err)
-		}
-		member, err := cli.TeamHasMember(org, team.ID, user)
-		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v: %w", team, err)
+			return false, fmt.Errorf("GitHub failed to check if team with slug %s has member %s: %w", ghts.Slug, user, err)
 		}
 		if member {
 			return true, nil
@@ -305,10 +362,21 @@ type ReporterConfig struct {
 type SlackReporterConfig struct {
 	Host              string         `json:"host,omitempty"`
 	Channel           string         `json:"channel,omitempty"`
-	JobStatesToReport []ProwJobState `json:"job_states_to_report"`
+	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
 	ReportTemplate    string         `json:"report_template,omitempty"`
+	// Report is derived from JobStatesToReport, it's used for differentiating
+	// nil from empty slice, as yaml roundtrip by design can't tell the
+	// difference when omitempty is supplied.
+	// See https://github.com/kubernetes/test-infra/pull/24168 for details
+	// Priority-wise, it goes by following order:
+	// - `report: true/false`` in job config
+	// - `JobStatesToReport: <anything including empty slice>` in job config
+	// - `report: true/false`` in global config
+	// - `JobStatesToReport:` in global config
+	Report *bool `json:"report,omitempty"`
 }
 
+// ApplyDefault is called by jobConfig.ApplyDefault(globalConfig)
 func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackReporterConfig {
 	if src == nil && def == nil {
 		return nil
@@ -329,11 +397,15 @@ func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackRep
 	if merged.Host == "" {
 		merged.Host = def.Host
 	}
+	// Note: `job_states_to_report: []` also results in JobStatesToReport == nil
 	if merged.JobStatesToReport == nil {
 		merged.JobStatesToReport = def.JobStatesToReport
 	}
 	if merged.ReportTemplate == "" {
 		merged.ReportTemplate = def.ReportTemplate
+	}
+	if merged.Report == nil {
+		merged.Report = def.Report
 	}
 	return &merged
 }
@@ -424,6 +496,14 @@ type DecorationConfig struct {
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+	// GitHubAPIEndpoints are the endpoints of GitHub APIs.
+	GitHubAPIEndpoints []string `json:"github_api_endpoints,omitempty"`
+	// GitHubAppID is the ID of GitHub App, which is going to be used for fetching a private
+	// repository.
+	GitHubAppID string `json:"github_app_id,omitempty"`
+	// GitHubAppPrivateKeySecret is a Kubernetes secret that contains the GitHub App private key,
+	// which is going to be used for fetching a private repository.
+	GitHubAppPrivateKeySecret *GitHubAppPrivateKeySecret `json:"github_app_private_key_secret,omitempty"`
 
 	// CensorSecrets enables censoring output logs and artifacts.
 	CensorSecrets *bool `json:"censor_secrets,omitempty"`
@@ -434,6 +514,14 @@ type DecorationConfig struct {
 	// UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
 	// hope that the test process exits cleanly before starting an upload.
 	UploadIgnoresInterrupts *bool `json:"upload_ignores_interrupts,omitempty"`
+
+	// SetLimitEqualsMemoryRequest sets memory limit equal to request.
+	SetLimitEqualsMemoryRequest *bool `json:"set_limit_equals_memory_request,omitempty"`
+	// DefaultMemoryRequest is the default requested memory on a test container.
+	// If SetLimitEqualsMemoryRequest is also true then the Limit will also be
+	// set the same as this request. Could be overridden by memory request
+	// defined explicitly on prowjob.
+	DefaultMemoryRequest *resource.Quantity `json:"default_memory_request,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -495,7 +583,6 @@ func (g *CensoringOptions) ApplyDefault(def *CensoringOptions) *CensoringOptions
 		merged.ExcludeDirectories = def.ExcludeDirectories
 	}
 	return &merged
-
 }
 
 // Resources holds resource requests and limits for
@@ -536,8 +623,17 @@ func (u *Resources) ApplyDefault(def *Resources) *Resources {
 type OauthTokenSecret struct {
 	// Name is the name of a kubernetes secret.
 	Name string `json:"name,omitempty"`
-	// Key is the a key of the corresponding kubernetes secret that
+	// Key is the key of the corresponding kubernetes secret that
 	// holds the value of the OAuth token.
+	Key string `json:"key,omitempty"`
+}
+
+// GitHubAppPrivateKeySecret holds the information of the GitHub App private key's secret name and key.
+type GitHubAppPrivateKeySecret struct {
+	// Name is the name of a kubernetes secret.
+	Name string `json:"name,omitempty"`
+	// Key is the key of the corresponding kubernetes secret that
+	// holds the value of the GitHub App private key.
 	Key string `json:"key,omitempty"`
 }
 
@@ -611,12 +707,29 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	if merged.OauthTokenSecret == nil {
 		merged.OauthTokenSecret = def.OauthTokenSecret
 	}
+	if len(merged.GitHubAPIEndpoints) == 0 {
+		merged.GitHubAPIEndpoints = def.GitHubAPIEndpoints
+	}
+	if merged.GitHubAppID == "" {
+		merged.GitHubAppID = def.GitHubAppID
+	}
+	if merged.GitHubAppPrivateKeySecret == nil {
+		merged.GitHubAppPrivateKeySecret = def.GitHubAppPrivateKeySecret
+	}
 	if merged.CensorSecrets == nil {
 		merged.CensorSecrets = def.CensorSecrets
 	}
 
 	if merged.UploadIgnoresInterrupts == nil {
 		merged.UploadIgnoresInterrupts = def.UploadIgnoresInterrupts
+	}
+
+	if merged.SetLimitEqualsMemoryRequest == nil {
+		merged.SetLimitEqualsMemoryRequest = def.SetLimitEqualsMemoryRequest
+	}
+
+	if merged.DefaultMemoryRequest == nil {
+		merged.DefaultMemoryRequest = def.DefaultMemoryRequest
 	}
 
 	return &merged
@@ -988,11 +1101,23 @@ func (r Refs) String() string {
 	return strings.Join(rs, ",")
 }
 
+func (r Refs) OrgRepoString() string {
+	if r.Repo != "" {
+		return r.Org + "/" + r.Repo
+	}
+	return r.Org
+}
+
 // JenkinsSpec is optional parameters for Jenkins jobs.
 // Currently, the only parameter supported is for telling
 // jenkins-operator that the job is generated by the https://go.cloudbees.com/docs/plugins/github-branch-source/#github-branch-source plugin
 type JenkinsSpec struct {
 	GitHubBranchSourceJob bool `json:"github_branch_source_job,omitempty"`
+}
+
+// TektonPipelineRunSpec is optional parameters for Tekton pipeline jobs.
+type TektonPipelineRunSpec struct {
+	V1Beta1 *pipelinev1beta1.PipelineRunSpec `json:"v1beta1,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

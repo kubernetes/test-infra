@@ -1020,6 +1020,69 @@ func TestJobURL(t *testing.T) {
 	}
 }
 
+func TestSetReportDefault(t *testing.T) {
+	tests := []struct {
+		name     string
+		spec     *prowapi.ProwJobSpec
+		wantSpec *prowapi.ProwJobSpec
+	}{
+		{
+			name: "base-case",
+			spec: &prowapi.ProwJobSpec{
+				ReporterConfig: &prowapi.ReporterConfig{
+					Slack: &prowapi.SlackReporterConfig{
+						JobStatesToReport: []prowapi.ProwJobState{},
+					},
+				},
+			},
+			wantSpec: &prowapi.ProwJobSpec{
+				ReporterConfig: &prowapi.ReporterConfig{
+					Slack: &prowapi.SlackReporterConfig{
+						JobStatesToReport: []prowapi.ProwJobState{},
+						Report:            boolPtr(false),
+					},
+				},
+			},
+		},
+		{
+			name: "to-report",
+			spec: &prowapi.ProwJobSpec{
+				ReporterConfig: &prowapi.ReporterConfig{
+					Slack: &prowapi.SlackReporterConfig{
+						JobStatesToReport: []prowapi.ProwJobState{prowapi.AbortedState},
+					},
+				},
+			},
+			wantSpec: &prowapi.ProwJobSpec{
+				ReporterConfig: &prowapi.ReporterConfig{
+					Slack: &prowapi.SlackReporterConfig{
+						JobStatesToReport: []prowapi.ProwJobState{prowapi.AbortedState},
+						Report:            boolPtr(true),
+					},
+				},
+			},
+		},
+		{
+			name: "no-slack-report",
+			spec: &prowapi.ProwJobSpec{
+				ReporterConfig: &prowapi.ReporterConfig{},
+			},
+			wantSpec: &prowapi.ProwJobSpec{
+				ReporterConfig: &prowapi.ReporterConfig{},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			setReportDefault(tc.spec)
+			if diff := cmp.Diff(tc.wantSpec, tc.spec); diff != "" {
+				t.Fatalf("Spec mismatch. Want(-), got(+):\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestCreateRefs(t *testing.T) {
 	pr := github.PullRequest{
 		Number:  42,

@@ -20,11 +20,11 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -241,17 +241,21 @@ func TestFetchArtifacts_GCS(t *testing.T) {
 	testAf := NewStorageArtifactFetcher(io.NewGCSOpener(fakeGCSClient), cfg, false)
 	maxSize := int64(500e6)
 	testCases := []struct {
-		name         string
-		artifactName string
-		source       string
-		expectedSize int64
-		expectErr    bool
+		name             string
+		artifactName     string
+		source           string
+		expectedSize     int64
+		expectedMetadata map[string]string
+		expectErr        bool
 	}{
 		{
 			name:         "Fetch build-log.txt from valid source",
 			artifactName: "build-log.txt",
 			source:       "test-bucket/logs/example-ci-run/403",
 			expectedSize: 25,
+			expectedMetadata: map[string]string{
+				"foo": "bar",
+			},
 		},
 		{
 			name:         "Fetch build-log.txt from invalid source",
@@ -264,6 +268,9 @@ func TestFetchArtifacts_GCS(t *testing.T) {
 			artifactName: "build-log.txt",
 			source:       "gs://test-bucket/logs/example-ci-run/403",
 			expectedSize: 25,
+			expectedMetadata: map[string]string{
+				"foo": "bar",
+			},
 		},
 		{
 			name:         "Fetch build-log.txt from invalid source",
@@ -274,21 +281,33 @@ func TestFetchArtifacts_GCS(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		artifact, err := testAf.Artifact(context.Background(), tc.source, tc.artifactName, maxSize)
-		if err != nil {
-			t.Errorf("Failed to get artifacts: %v", err)
-		}
-		size, err := artifact.Size()
-		if err != nil && !tc.expectErr {
-			t.Fatalf("%s failed getting size for artifact %s, err: %v", tc.name, artifact.JobPath(), err)
-		}
-		if err == nil && tc.expectErr {
-			t.Errorf("%s expected error, got no error", tc.name)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			artifact, err := testAf.Artifact(context.Background(), tc.source, tc.artifactName, maxSize)
+			if err != nil {
+				t.Errorf("Failed to get artifacts: %v", err)
+			}
+			size, err := artifact.Size()
+			if err != nil && !tc.expectErr {
+				t.Fatalf("Failed getting size for artifact %s, err: %v", artifact.JobPath(), err)
+			}
+			if err == nil && tc.expectErr {
+				t.Error("Expected error, got no error")
+			}
 
-		if size != tc.expectedSize {
-			t.Errorf("%s expected artifact with size %d but got %d", tc.name, tc.expectedSize, size)
-		}
+			if size != tc.expectedSize {
+				t.Errorf("Expected artifact with size %d but got %d", tc.expectedSize, size)
+			}
+			meta, err := artifact.Metadata()
+			if err != nil && !tc.expectErr {
+				t.Fatalf("Failed getting metadata for artifact %s, err: %v", artifact.JobPath(), err)
+			}
+			if err == nil && tc.expectErr {
+				t.Errorf("Expected error, got no error")
+			}
+			if diff := cmp.Diff(tc.expectedMetadata, meta); diff != "" {
+				t.Errorf("Metadata got unexpected diff (-want +got):\n%s", diff)
+			}
+		})
 	}
 }
 
@@ -389,7 +408,7 @@ RU5EIFBSSVZBVEUgS0VZLS0tLS1cbgo=`)
 		t.Run(tc.name, func(t *testing.T) {
 			var path string
 			if tc.fakeCreds != "" {
-				fp, err := ioutil.TempFile("", "fake-creds")
+				fp, err := os.CreateTemp("", "fake-creds")
 				if err != nil {
 					t.Fatalf("Failed to create fake creds: %v", err)
 				}

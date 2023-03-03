@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -41,6 +42,8 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/plank"
+
+	_ "k8s.io/test-infra/prow/version"
 )
 
 var allControllers = sets.NewString(plank.ControllerName)
@@ -48,11 +51,9 @@ var allControllers = sets.NewString(plank.ControllerName)
 type options struct {
 	totURL string
 
-	config                  configflagutil.ConfigOptions
-	buildCluster            string
-	selector                string
-	leaderElectionNamespace string
-	enabledControllers      prowflagutil.Strings
+	config             configflagutil.ConfigOptions
+	selector           string
+	enabledControllers prowflagutil.Strings
 
 	dryRun                 bool
 	kubernetes             prowflagutil.KubernetesOptions
@@ -82,7 +83,7 @@ func (o *options) Validate() error {
 	o.github.AllowAnonymous = true
 
 	var errs []error
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.config, &o.storage} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config, &o.storage} {
 		if err := group.Validate(o.dryRun); err != nil {
 			errs = append(errs, err)
 		}
@@ -115,6 +116,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort) // Start liveness endpoint
 	pprof.Instrument(o.instrumentationOptions)
 
 	configAgent, err := o.config.ConfigAgent()
@@ -148,18 +150,26 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
+	buildClusterManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
+		// The watch apimachinery doesn't support restarts, so just exit the
+		// binary if a build cluster can be connected later .
+		func() {
+			logrus.Info("Build cluster that failed to connect initially now worked, exiting to trigger a restart.")
+			interrupts.Terminate()
+		},
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
 		},
 	)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to construct build cluster managers. Is there a bad entry in the kubeconfig secret?")
+		logrus.WithError(err).Error("Failed to construct build cluster managers. Please check that the kubeconfig secrets are correct, and that RBAC roles on the build cluster allow Prow's service account to list pods on it.")
 	}
 
-	for _, buildManager := range buildManagers {
-		if err := mgr.Add(buildManager); err != nil {
-			logrus.WithError(err).Fatal("Failed to add build cluster manager to main manager")
+	for buildClusterName, buildClusterManager := range buildClusterManagers {
+		if err := mgr.Add(buildClusterManager); err != nil {
+			logrus.WithError(err).WithFields(logrus.Fields{
+				"cluster": buildClusterName,
+			}).Fatalf("Failed to add build cluster manager to main manager")
 		}
 	}
 
@@ -178,15 +188,22 @@ func main() {
 	}
 
 	enabledControllersSet := sets.NewString(o.enabledControllers.Strings()...)
+	knownClusters, err := o.kubernetes.KnownClusters(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to resolve known clusters in kubeconfig.")
+	}
 
 	if enabledControllersSet.Has(plank.ControllerName) {
-		if err := plank.Add(mgr, buildManagers, cfg, opener, o.totURL, o.selector); err != nil {
+		if err := plank.Add(mgr, buildClusterManagers, knownClusters, cfg, opener, o.totURL, o.selector); err != nil {
 			logrus.WithError(err).Fatal("Failed to add plank to manager")
 		}
 	}
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("plank", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
+	// Serve readiness endpoint
+	health.ServeReady()
+
 	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}

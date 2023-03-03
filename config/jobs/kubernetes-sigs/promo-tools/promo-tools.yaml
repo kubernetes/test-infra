@@ -15,13 +15,15 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
         - "./test-e2e/cip/e2e-entrypoint-from-container.sh"
         env:
         - name: CIP_E2E_KEY_FILE
+          value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
           value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
         volumeMounts:
         - name: k8s-cip-test-prod-service-account-creds
@@ -52,7 +54,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
@@ -60,6 +62,8 @@ presubmits:
         env:
         - name: CIP_E2E_KEY_FILE
           value: "/etc/k8s-gcr-audit-test-prod-service-account/service-account.json"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/etc/k8s-cip-test-prod-service-account/service-account.json"
         volumeMounts:
         - name: k8s-gcr-audit-test-prod-service-account-creds
           mountPath: /etc/k8s-gcr-audit-test-prod-service-account
@@ -84,7 +88,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
             - /run.sh
           args:
@@ -120,7 +124,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - "make"
         args:
@@ -139,7 +143,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
         imagePullPolicy: Always
         command:
         - make

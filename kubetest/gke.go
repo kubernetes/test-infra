@@ -24,10 +24,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -50,6 +50,8 @@ var (
 	gkeShape                       = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8", "ExtraArgs": []}}`)
 	gkeCreateArgs                  = flag.String("gke-create-args", "", "(gke only) (deprecated, use a modified --gke-create-command') Additional arguments passed directly to 'gcloud container clusters create'")
 	gkeCommandGroup                = flag.String("gke-command-group", "", "(gke only) Use a different gcloud track (e.g. 'alpha') for all 'gcloud container' commands. Note: This is added to --gke-create-command on create. You should only use --gke-command-group if you need to change the gcloud track for *every* gcloud container command.")
+	gkeGcloudCommand               = flag.String("gke-gcloud-command", "gcloud", "(gke only) gcloud command used to create a cluster. Modify if you need to pass custom gcloud to create cluster.")
+	gkeGcloudArgs                  = flag.String("gke-gcloud-args", "", "(gke only) Additional arguments to custom gcloud command.")
 	gkeCreateCommand               = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
 	gkeCustomSubnet                = flag.String("gke-custom-subnet", "", "(gke only) if specified, we create a custom subnet with the specified options and use it for the gke cluster. The format should be '<subnet-name> --region=<subnet-gcp-region> --range=<subnet-cidr> <any other optional params>'.")
 	gkeSubnetMode                  = flag.String("gke-subnet-mode", "auto", "(gke only) subnet creation mode of the GKE cluster network.")
@@ -62,6 +64,8 @@ var (
 	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 	gkeDownTimeout                 = flag.Duration("gke-down-timeout", 1*time.Hour, "(gke only) Timeout for gcloud container clusters delete call. Defaults to 1 hour which matches gcloud's default.")
 	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
+	gkeDumpConfigMaps              = flag.String("gke-dump-configmaps", "[]", `(gke-only) A JSON description of ConfigMaps to dump as part of gathering cluster logs. Note: --dump or --dump-pre-test-logs flags must also be set. Example: '[{"Name":"my-map", "Namespace":"default", "DataKey":"my-data-key"}]`)
+	gkeDumpAdditionalLogsCmd       = flag.String("gke-dump-additional-logs-cmd", "", "(gke-only) if set, run this command to dump cluster logs.")
 
 	// poolReTemplate matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -79,10 +83,17 @@ type gkeNodePool struct {
 	ExtraArgs   []string
 }
 
+type gkeConfigMap struct {
+	Name      string
+	Namespace string
+	DataKey   string
+}
+
 type gkeDeployer struct {
 	project                     string
 	zone                        string
 	region                      string
+	locationRaw                 string
 	location                    string
 	additionalZones             string
 	nodeLocations               string
@@ -103,6 +114,7 @@ type gkeDeployer struct {
 	singleZoneNodeInstanceGroup bool
 	sshProxyInstanceName        string
 	poolRe                      *regexp.Regexp
+	dumpedConfigMaps            []gkeConfigMap
 
 	setup          bool
 	kubecfg        string
@@ -141,9 +153,11 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 	if zone != "" {
 		g.zone = zone
+		g.locationRaw = zone
 		g.location = "--zone=" + zone
 	} else if region != "" {
 		g.region = region
+		g.locationRaw = region
 		g.location = "--region=" + region
 	}
 
@@ -190,7 +204,8 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 
 	g.commandGroup = strings.Fields(*gkeCommandGroup)
 
-	g.createCommand = append([]string{}, g.commandGroup...)
+	g.createCommand = append([]string{}, strings.Fields(*gkeGcloudArgs)...)
+	g.createCommand = append(g.createCommand, g.commandGroup...)
 	g.createCommand = append(g.createCommand, strings.Fields(*gkeCreateCommand)...)
 	createArgs := strings.Fields(*gkeCreateArgs)
 	if len(createArgs) > 0 {
@@ -226,7 +241,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 
 	// Override kubecfg to a temporary file rather than trashing the user's.
-	f, err := ioutil.TempFile("", "gke-kubecfg")
+	f, err := os.CreateTemp("", "gke-kubecfg")
 	if err != nil {
 		return nil, err
 	}
@@ -295,6 +310,11 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	g.singleZoneNodeInstanceGroup = *gkeSingleZoneNodeInstanceGroup
 	g.sshProxyInstanceName = sshProxyInstanceName
 
+	err = json.Unmarshal([]byte(*gkeDumpConfigMaps), &g.dumpedConfigMaps)
+	if err != nil {
+		return nil, fmt.Errorf("--gke-dump-configmaps must be valid JSON, unmarshal error: %v, JSON: %q", err, *gkeDumpConfigMaps)
+	}
+
 	return g, nil
 }
 
@@ -311,6 +331,12 @@ func (g *gkeDeployer) Up() error {
 			return err
 		}
 	}
+
+	// Export network name for gke kubemark clusters.
+	if err := os.Setenv("GKE_NETWORK", g.network); err != nil {
+		return err
+	}
+
 	// Create a custom subnet in that network if it was asked for.
 	if *gkeCustomSubnet != "" {
 		customSubnetFields := strings.Fields(*gkeCustomSubnet)
@@ -384,7 +410,7 @@ func (g *gkeDeployer) Up() error {
 	}
 
 	args = append(args, g.cluster)
-	if err := control.FinishRunning(exec.Command("gcloud", args...)); err != nil {
+	if err := control.FinishRunning(exec.Command(*gkeGcloudCommand, args...)); err != nil {
 		return fmt.Errorf("error creating cluster: %w", err)
 	}
 	for poolName, pool := range g.shape {
@@ -411,6 +437,11 @@ func (g *gkeDeployer) IsUp() error {
 	return isUp(g)
 }
 
+func (g *gkeDeployer) dumpLogs() error {
+	cmdLineTokenized := strings.Fields(os.ExpandEnv(*gkeDumpAdditionalLogsCmd))
+	return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
+}
+
 // DumpClusterLogs for GKE generates a small script that wraps
 // log-dump.sh with the appropriate shell-fu to get the cluster
 // dumped.
@@ -418,6 +449,15 @@ func (g *gkeDeployer) IsUp() error {
 // TODO(zmerlynn): This whole path is really gross, but this seemed
 // the least gross hack to get this done.
 func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
+	var errs []error
+	if *gkeDumpAdditionalLogsCmd != "" {
+		if err := g.dumpLogs(); err != nil {
+			// Save error for later and carry on
+			errs = append(errs, err)
+			log.Printf("Failed to dump additional cluster logs: %v", err)
+		}
+	}
+
 	// gkeLogDumpTemplate is a template of a shell script where
 	// - %[1]s is the project
 	// - %[2]s is the zone
@@ -439,12 +479,14 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 `
 	// Prevent an obvious injection.
 	if strings.Contains(localPath, "'") || strings.Contains(gcsPath, "'") {
-		return fmt.Errorf("%q or %q contain single quotes - nice try", localPath, gcsPath)
+		errs = append(errs, fmt.Errorf("%q or %q contain single quotes - nice try", localPath, gcsPath))
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
 
 	// Generate a slice of filters to be OR'd together below
 	if err := g.getInstanceGroups(); err != nil {
-		return err
+		errs = append(errs, err)
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
 	perZoneFilters := make(map[string][]string)
 	for _, ig := range g.instanceGroups {
@@ -463,6 +505,7 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 	// Try to setup cluster access if it's possible. If credentials are already set, this will be no-op. Access to
 	// GKE cluster is required for log-exporter.
 	if err := g.getKubeConfig(); err != nil {
+		errs = append(errs, err)
 		log.Printf("error while setting up kubeconfig: %v", err)
 	}
 
@@ -487,8 +530,44 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 		}
 	}
 	if len(errorMessages) > 0 {
-		return fmt.Errorf("errors while dumping logs: %s", strings.Join(errorMessages, ", "))
+		errs = append(errs, fmt.Errorf("errors while dumping logs: %s", strings.Join(errorMessages, ", ")))
+		return wrapErrors("DumpClusterLogs", errs...)
 	}
+
+	// Fetch any ConfigMap data fields that were requested to be dumped
+	errorMessages = nil
+	dumpValues := make(map[string]string)
+	for _, cm := range g.dumpedConfigMaps {
+		cmd := exec.Command("kubectl", "get", fmt.Sprintf("ConfigMaps/%s", cm.Name), "-n", cm.Namespace, "-o", fmt.Sprintf("jsonpath={.data.%s}", cm.DataKey))
+		log.Printf("Running: %s", cmd)
+		out, err := cmd.Output()
+		if err != nil {
+			errorMessages = append(errorMessages, util.ExecError(err))
+			continue
+		}
+		jsonKey := strings.Join([]string{cm.Namespace, cm.Name, cm.DataKey}, ".")
+		dumpValues[jsonKey] = string(out)
+	}
+	if len(errorMessages) > 0 {
+		errs = append(errs, fmt.Errorf("errors while dumping ConfigMaps: %s", strings.Join(errorMessages, ", ")))
+		return wrapErrors("DumpClusterLogs", errs...)
+	}
+
+	jsonDump, err := json.Marshal(dumpValues)
+	if err != nil {
+		errs = append(errs, err)
+		return wrapErrors("DumpClusterLogs", errs...)
+	}
+
+	if err := os.WriteFile(filepath.Join(localPath, "gke-configmap.json"), jsonDump, 0644); err != nil {
+		errs = append(errs, err)
+		return wrapErrors("DumpClusterLogs", errs...)
+	}
+
+	if len(errs) > 0 {
+		return wrapErrors("DumpClusterLogs", errs...)
+	}
+
 	return nil
 }
 
@@ -543,7 +622,6 @@ func (g *gkeDeployer) setupBastion() error {
 		output, err := exec.Command("gcloud", "compute", "instances", "list",
 			"--filter="+filter,
 			"--format=value(name,zone)",
-			"--limit=1",
 			"--project="+g.project).Output()
 		if err != nil {
 			return fmt.Errorf("listing instances failed: %s", util.ExecError(err))
@@ -551,8 +629,9 @@ func (g *gkeDeployer) setupBastion() error {
 		if len(output) == 0 {
 			continue
 		}
+		instances := strings.Split(string(output), "\n")
 		// Proxy instance found
-		fields := strings.Split(strings.TrimSpace(string(output)), "\t")
+		fields := strings.Split(strings.TrimSpace(string(instances[0])), "\t")
 		if len(fields) != 2 {
 			return fmt.Errorf("error parsing instances list output %q", output)
 		}
@@ -600,6 +679,11 @@ func (g *gkeDeployer) getKubeConfig() error {
 // would be nice to handle this elsewhere, and not with env
 // variables. c.f. kubernetes/test-infra#3330.
 func (g *gkeDeployer) setupEnv() error {
+	// If we don't have instance groups we won't be able to set env variables anyway
+	if len(g.instanceGroups) == 0 {
+		return nil
+	}
+
 	// If singleZoneNodeInstanceGroup is true, set NODE_INSTANCE_GROUP to the
 	// names of instance groups that are in the same zone as the lexically first
 	// instance group. Otherwise set NODE_INSTANCE_GROUP to the names of all
@@ -621,10 +705,8 @@ func (g *gkeDeployer) ensureFirewall() error {
 	if g.network == "default" {
 		return nil
 	}
-	firewall, err := g.getClusterFirewall()
-	if err != nil {
-		return fmt.Errorf("error getting unique firewall: %w", err)
-	}
+	firewall := g.getClusterFirewall()
+
 	if control.NoOutput(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
 		"--project="+g.project,
 		"--format=value(name)")) == nil {
@@ -633,6 +715,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 	}
 	log.Printf("Couldn't describe firewall '%s', assuming it doesn't exist and creating it", firewall)
 
+	var err error
 	var tagOut []byte
 	if *gkeNodeTagFromFirewallRules {
 		tagOut, err = exec.Command("gcloud", "compute", "firewall-rules", "list",
@@ -643,7 +726,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 		if err != nil {
 			return fmt.Errorf("firewall-rules list failed: %s", util.ExecError(err))
 		}
-	} else {
+	} else if len(g.instanceGroups) > 0 {
 		tagOut, err = exec.Command("gcloud", "compute", "instances", "list",
 			"--project="+g.project,
 			"--filter=metadata.created-by ~ "+g.instanceGroups[0].path,
@@ -652,6 +735,8 @@ func (g *gkeDeployer) ensureFirewall() error {
 		if err != nil {
 			return fmt.Errorf("instances list failed: %s", util.ExecError(err))
 		}
+	} else {
+		return fmt.Errorf("either node tag or instance group must be present to create firewall")
 	}
 	tag := strings.TrimSpace(string(tagOut))
 	if tag == "" {
@@ -702,8 +787,9 @@ func (g *gkeDeployer) getInstanceGroupsFromGcloud() (string, error) {
 
 func (g *gkeDeployer) parseInstanceGroupsFromGcloud(igs string) ([]*ig, error) {
 	igURLs := strings.Split(strings.TrimSpace(igs), ";")
-	if len(igURLs) == 0 {
-		return nil, fmt.Errorf("no instance group URLs returned by gcloud, output %q", string(igs))
+	if len(igURLs) == 0 || len(strings.TrimSpace(igs)) == 0 {
+		fmt.Printf("warning: no instance group URLs returned by gcloud, output %q", string(igs))
+		return nil, nil
 	}
 	sort.Strings(igURLs)
 	var instanceGroups []*ig
@@ -717,15 +803,10 @@ func (g *gkeDeployer) parseInstanceGroupsFromGcloud(igs string) ([]*ig, error) {
 	return instanceGroups, nil
 }
 
-func (g *gkeDeployer) getClusterFirewall() (string, error) {
-	if err := g.getInstanceGroups(); err != nil {
-		return "", err
-	}
+func (g *gkeDeployer) getClusterFirewall() string {
 	// We want to ensure that there's an e2e-ports-* firewall rule
-	// that maps to the cluster nodes, but the target tag for the
-	// nodes can be slow to get. Use the hash from the lexically first
-	// node pool instead.
-	return "e2e-ports-" + g.instanceGroups[0].uniq, nil
+	// that maps to the cluster nodes,
+	return fmt.Sprintf("e2e-ports-%s-%s", g.cluster, g.locationRaw)
 }
 
 // This function ensures that all firewall-rules are deleted from specific network.
@@ -848,12 +929,34 @@ func (g *gkeDeployer) cleanupNat() error {
 }
 
 func (g *gkeDeployer) Down() error {
-	firewall, err := g.getClusterFirewall()
-	if err != nil {
-		// This is expected if the cluster doesn't exist.
+	g.instanceGroups = nil
+
+	clusterExistsBytes, err := control.Output(exec.Command("gcloud", g.containerArgs("clusters",
+		"list", "--project="+g.project, fmt.Sprintf("--filter=(name=%s AND location=%s)", g.cluster, g.locationRaw))...))
+	if strings.TrimSpace(string(clusterExistsBytes)) == "" {
 		return nil
 	}
-	g.instanceGroups = nil
+	if err != nil {
+		return fmt.Errorf("failed to list clusters in project %s with filter (name=%s AND location=%s): %w", g.project, g.cluster, g.locationRaw, err)
+	}
+
+	operationNameBytes, err := control.Output(exec.Command(
+		"gcloud", g.containerArgs("operations", "list", "--project="+g.project,
+			g.location, "--format=value(name)", fmt.Sprintf("--filter=(status!=DONE AND (targetLink ~ /clusters/%s$ OR targetLink ~ /clusters/%s/))", g.cluster, g.cluster))...))
+	if err != nil {
+		return fmt.Errorf("failed to list not DONE operations for cluster %s: %w", g.cluster, err)
+	}
+
+	operationName := strings.TrimSpace(string(operationNameBytes))
+	if operationName != "" {
+		log.Printf("Found RUNNING operation %q blocking cluster deletion. Will wait for its completion.", operationName)
+		err := control.FinishRunning(exec.Command(
+			"gcloud", g.containerArgs("operations", "wait", "--project="+g.project,
+				g.location, operationName)...))
+		if err != nil {
+			return fmt.Errorf("error waiting for operation %s to finish: %w", operationName, err)
+		}
+	}
 
 	// We best-effort try all of these and report errors as appropriate.
 	errCluster := control.FinishRunning(exec.Command(
@@ -869,6 +972,7 @@ func (g *gkeDeployer) Down() error {
 		return nil
 	}
 
+	firewall := g.getClusterFirewall()
 	var errFirewall error
 	if control.NoOutput(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
 		"--project="+g.project,
@@ -942,3 +1046,7 @@ func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 }
 
 func (g *gkeDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
+
+func wrapErrors(stage string, errs ...error) error {
+	return fmt.Errorf("%s encountered %d errors: %v", stage, len(errs), errs)
+}

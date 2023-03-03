@@ -17,38 +17,56 @@ limitations under the License.
 package clonerefs
 
 import (
-	"io/ioutil"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/json"
+	"encoding/pem"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path"
 	"path/filepath"
 	"reflect"
 	"sync"
 	"testing"
+	"time"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
 func TestRun(t *testing.T) {
+	srcRoot := t.TempDir()
 
-	srcRoot, err := ioutil.TempDir("", "clonerefs_unittest")
-	if err != nil {
-		t.Fatalf("Error while creating temp dir: %v.", err)
-	}
-	defer os.RemoveAll(srcRoot)
-
-	oauthTokenDir, err := ioutil.TempDir("", "oauth")
-	if err != nil {
-		t.Fatalf("Error while creating oauth token dir: %v.", err)
-	}
-	defer os.RemoveAll(oauthTokenDir)
-
+	oauthTokenDir := t.TempDir()
 	oauthTokenFilePath := filepath.Join(oauthTokenDir, "oauth-token")
 	oauthTokenValue := []byte("12345678")
-	if err := ioutil.WriteFile(oauthTokenFilePath, oauthTokenValue, 0644); err != nil {
+	if err := os.WriteFile(oauthTokenFilePath, oauthTokenValue, 0644); err != nil {
 		t.Fatalf("Error while create oauth token file: %v", err)
 	}
+
+	githubAppDir := t.TempDir()
+	githubAppPrivateKeyFilePath := filepath.Join(githubAppDir, "private-key.pem")
+	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		t.Fatalf("Error while create github app private key file: %v", err)
+	}
+	githubAppPrivateKeyValue := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+	})
+	if err := os.WriteFile(githubAppPrivateKeyFilePath, githubAppPrivateKeyValue, 0644); err != nil {
+		t.Fatalf("Error while create github app private key file: %v", err)
+	}
+
+	githubAppOrg := "kubernetes"
+	githubAppToken := "github-app-token"
+	mockGitHubAppServer := httptest.NewServer(mockGitHubAppHandler(githubAppOrg, githubAppToken))
+	defer mockGitHubAppServer.Close()
 
 	type cloneRec struct {
 		refs        prowapi.Refs
@@ -56,15 +74,36 @@ func TestRun(t *testing.T) {
 		user, email string
 		cookiePath  string
 		env         []string
-		oauthToken  string
+		authUser    string
+		authToken   string
+		authError   error
 	}
 
 	var recordedClones []cloneRec
 	var lock sync.Mutex
 	cloneFuncOld := cloneFunc
-	cloneFunc = func(refs prowapi.Refs, root, user, email, cookiePath string, env []string, oauthToken string) clone.Record {
+	cloneFunc = func(refs prowapi.Refs, root, user, email, cookiePath string, env []string, userGenerator github.UserGenerator, tokenGenerator github.TokenGenerator) clone.Record {
 		lock.Lock()
 		defer lock.Unlock()
+		var (
+			authUser  string
+			authToken string
+			authError error
+		)
+		if userGenerator != nil {
+			user, err := userGenerator()
+			if err != nil {
+				authError = err
+			}
+			authUser = user
+		}
+		if tokenGenerator != nil {
+			token, err := tokenGenerator(refs.Org)
+			if err != nil {
+				authError = err
+			}
+			authToken = token
+		}
 		recordedClones = append(recordedClones, cloneRec{
 			refs:       refs,
 			root:       root,
@@ -72,7 +111,9 @@ func TestRun(t *testing.T) {
 			email:      email,
 			cookiePath: cookiePath,
 			env:        env,
-			oauthToken: oauthToken,
+			authUser:   authUser,
+			authToken:  authToken,
+			authError:  authError,
 		})
 		return clone.Record{}
 	}
@@ -223,7 +264,60 @@ func TestRun(t *testing.T) {
 					user:       "me",
 					email:      "me@domain.com",
 					cookiePath: "cookies/path",
-					oauthToken: "12345678",
+					authToken:  "12345678",
+				},
+			},
+		},
+		{
+			name: "single PR clone with GitHub App",
+			opts: Options{
+				GitHubAPIEndpoints: []string{
+					mockGitHubAppServer.URL,
+				},
+				GitHubAppID:             "123456",
+				GitHubAppPrivateKeyFile: githubAppPrivateKeyFilePath,
+				SrcRoot:                 srcRoot,
+				Log:                     path.Join(srcRoot, "log.txt"),
+				GitUserName:             "me",
+				GitUserEmail:            "me@domain.com",
+				CookiePath:              "cookies/path",
+				GitRefs: []prowapi.Refs{
+					{
+						Org:       githubAppOrg,
+						Repo:      "test-infra",
+						BaseRef:   "master",
+						PathAlias: "k8s.io/test-infra",
+						Pulls: []v1.Pull{
+							{
+								Number: 5,
+								SHA:    "FEEDDAD",
+							},
+						},
+						SkipSubmodules: true,
+					},
+				},
+			},
+			expectedClones: []cloneRec{
+				{
+					refs: prowapi.Refs{
+						Org:       "kubernetes",
+						Repo:      "test-infra",
+						BaseRef:   "master",
+						PathAlias: "k8s.io/test-infra",
+						Pulls: []v1.Pull{
+							{
+								Number: 5,
+								SHA:    "FEEDDAD",
+							},
+						},
+						SkipSubmodules: true,
+					},
+					root:       srcRoot,
+					user:       "me",
+					email:      "me@domain.com",
+					cookiePath: "cookies/path",
+					authUser:   "x-access-token",
+					authToken:  githubAppToken,
 				},
 			},
 		},
@@ -255,7 +349,6 @@ func TestRun(t *testing.T) {
 			if rec, exp := len(recordedClones), len(tc.expectedClones); rec != exp {
 				t.Errorf("recordedClones has length %d and expectedClones has length %d", rec, exp)
 			}
-
 		})
 	}
 }
@@ -315,4 +408,33 @@ func TestNeedsGlobalCookiePath(t *testing.T) {
 			}
 		})
 	}
+}
+
+func mockGitHubAppHandler(org, token string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/app":
+			json.NewEncoder(w).Encode(github.App{
+				Slug: "slug",
+			})
+		case "/app/installations":
+			json.NewEncoder(w).Encode([]github.AppInstallation{
+				{
+					ID: 1,
+					Account: github.User{
+						Login: org,
+					},
+				},
+			})
+		case "/app/installations/1/access_tokens":
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(&github.AppInstallationToken{
+				Token:     token,
+				ExpiresAt: time.Now().Add(time.Minute),
+			})
+		default:
+			fmt.Println(r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
 }

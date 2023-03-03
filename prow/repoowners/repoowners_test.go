@@ -18,7 +18,6 @@ package repoowners
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -1188,11 +1187,7 @@ func TestExpandAliases(t *testing.T) {
 }
 
 func TestSaveSimpleConfig(t *testing.T) {
-	dir, err := ioutil.TempDir("", "simpleConfig")
-	if err != nil {
-		t.Errorf("unexpected error when creating temp dir")
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	tests := []struct {
 		name     string
@@ -1225,7 +1220,7 @@ reviewers:
 		if err != nil {
 			t.Errorf("unexpected error when writing simple config")
 		}
-		b, err := ioutil.ReadFile(file)
+		b, err := os.ReadFile(file)
 		if err != nil {
 			t.Errorf("unexpected error when reading file: %s", file)
 		}
@@ -1244,11 +1239,7 @@ reviewers:
 }
 
 func TestSaveFullConfig(t *testing.T) {
-	dir, err := ioutil.TempDir("", "fullConfig")
-	if err != nil {
-		t.Errorf("unexpected error when creating temp dir")
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 
 	tests := []struct {
 		name     string
@@ -1287,7 +1278,7 @@ options: {}
 		if err != nil {
 			t.Errorf("unexpected error when writing full config")
 		}
-		b, err := ioutil.ReadFile(file)
+		b, err := os.ReadFile(file)
 		if err != nil {
 			t.Errorf("unexpected error when reading file: %s", file)
 		}
@@ -1331,4 +1322,27 @@ func TestCacheDoesntRace(t *testing.T) {
 	go func() { cache.getEntry(key); wg.Done() }()
 
 	wg.Wait()
+}
+
+func TestRepoOwners_AllOwners(t *testing.T) {
+	expectedOwners := []string{"alice", "bob", "cjwagner", "matthyx", "mml"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			"":                    regexpAll("cjwagner"),
+			"src":                 regexpAll(),
+			"src/dir":             regexpAll("bob"),
+			"src/dir/conformance": regexpAll("mml"),
+			"src/dir/subdir":      regexpAll("alice", "bob"),
+			"vendor":              regexpAll("alice"),
+		},
+		reviewers: map[string]map[*regexp.Regexp]sets.String{
+			"":               regexpAll("alice", "bob"),
+			"src/dir":        regexpAll("alice", "matthyx"),
+			"src/dir/subdir": regexpAll("alice", "bob"),
+		},
+	}
+	foundOwners := ro.AllOwners()
+	if !foundOwners.Equal(sets.NewString(expectedOwners...)) {
+		t.Errorf("Expected Owners: %v\tFound Owners: %v ", expectedOwners, foundOwners.List())
+	}
 }

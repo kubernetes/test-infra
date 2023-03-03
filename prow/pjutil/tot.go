@@ -18,7 +18,7 @@ package pjutil
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -104,7 +104,7 @@ func GetBuildID(name, totURL string) (string, error) {
 			continue
 		}
 		var buf []byte
-		buf, err = ioutil.ReadAll(resp.Body)
+		buf, err = io.ReadAll(resp.Body)
 		if err == nil {
 			return string(buf), nil
 		}

@@ -18,7 +18,7 @@ package lgtm
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -45,6 +45,10 @@ type fakeOwnersClient struct {
 	reviewers map[string]layeredsets.String
 }
 
+func (f *fakeOwnersClient) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (repoowners.RepoOwner, error) {
+	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
+}
+
 var _ repoowners.Interface = &fakeOwnersClient{}
 
 func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
@@ -59,10 +63,22 @@ func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Int
 	return f
 }
 
+func (f *fakeOwnersClient) ForPlugin(string) repoowners.Interface {
+	return f
+}
+
+func (f *fakeOwnersClient) Used() bool {
+	return true
+}
+
 type fakeRepoOwners struct {
 	approvers   map[string]layeredsets.String
 	reviewers   map[string]layeredsets.String
 	dirDenylist []*regexp.Regexp
+}
+
+func (f *fakeRepoOwners) AllOwners() sets.String {
+	return sets.String{}
 }
 
 func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames {
@@ -104,7 +120,7 @@ func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.SimpleConfig{}, err
 	}
@@ -121,7 +137,7 @@ func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, er
 		}
 	}
 
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return repoowners.FullConfig{}, err
 	}
@@ -149,6 +165,7 @@ func TestLGTMComment(t *testing.T) {
 		shouldAssign  bool
 		skipCollab    bool
 		storeTreeHash bool
+		shouldRequest bool
 	}{
 		{
 			name:         "non-lgtm comment",
@@ -196,6 +213,7 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle:  true,
 			shouldAssign:  false,
 			shouldComment: false,
+			shouldRequest: true,
 		},
 		{
 			name:          "remove lgtm by author",
@@ -205,6 +223,7 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle:  true,
 			shouldAssign:  false,
 			shouldComment: false,
+			shouldRequest: true,
 		},
 		{
 			name:          "lgtm comment by non-reviewer",
@@ -259,6 +278,7 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle:  true,
 			shouldComment: false,
 			shouldAssign:  true,
+			shouldRequest: true,
 		},
 		{
 			name:          "remove lgtm by non-reviewer",
@@ -268,6 +288,7 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle:  true,
 			shouldComment: false,
 			shouldAssign:  true,
+			shouldRequest: true,
 		},
 		{
 			name:          "lgtm cancel by rando",
@@ -288,32 +309,36 @@ func TestLGTMComment(t *testing.T) {
 			shouldAssign:  false,
 		},
 		{
-			name:         "lgtm cancel comment by reviewer",
-			body:         "/lgtm cancel",
-			commenter:    "collab1",
-			hasLGTM:      true,
-			shouldToggle: true,
+			name:          "lgtm cancel comment by reviewer",
+			body:          "/lgtm cancel",
+			commenter:     "collab1",
+			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldRequest: true,
 		},
 		{
-			name:         "remove-lgtm comment by reviewer",
-			body:         "/remove-lgtm",
-			commenter:    "collab1",
-			hasLGTM:      true,
-			shouldToggle: true,
+			name:          "remove-lgtm comment by reviewer",
+			body:          "/remove-lgtm",
+			commenter:     "collab1",
+			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldRequest: true,
 		},
 		{
-			name:         "lgtm cancel comment by reviewer, with trailing space",
-			body:         "/lgtm cancel \r",
-			commenter:    "collab1",
-			hasLGTM:      true,
-			shouldToggle: true,
+			name:          "lgtm cancel comment by reviewer, with trailing space",
+			body:          "/lgtm cancel \r",
+			commenter:     "collab1",
+			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldRequest: true,
 		},
 		{
-			name:         "remove lgtm comment by reviewer, with trailing space",
-			body:         "/remove-lgtm \r",
-			commenter:    "collab1",
-			hasLGTM:      true,
-			shouldToggle: true,
+			name:          "remove lgtm comment by reviewer, with trailing space",
+			body:          "/remove-lgtm \r",
+			commenter:     "collab1",
+			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldRequest: true,
 		},
 		{
 			name:         "lgtm cancel comment by reviewer, no lgtm",
@@ -438,6 +463,12 @@ func TestLGTMComment(t *testing.T) {
 			t.Error("should have commented.")
 		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
 			t.Error("should not have commented.")
+		}
+		if tc.shouldRequest && len(fc.ReviewersRequested) == 0 {
+			t.Error("should have re-requested reviewers")
+		}
+		if !tc.shouldRequest && len(fc.ReviewersRequested) > 0 {
+			t.Errorf("should not have re-requested reviewers, but requested these reviewers %v", fc.ReviewersRequested)
 		}
 	}
 }
@@ -815,6 +846,8 @@ func TestHandlePullRequest(t *testing.T) {
 		trustedTeam        string
 
 		expectNoComments bool
+
+		shouldRequest bool
 	}{
 		{
 			name: "pr_synchronize, no RemoveLabel error",
@@ -833,9 +866,15 @@ func TestHandlePullRequest(t *testing.T) {
 					Head: github.PullRequestBranch{
 						SHA: SHA,
 					},
+					Assignees: []github.User{
+						{
+							Login: "TestReviewer",
+						},
+					},
 				},
 			},
 			IssueLabelsRemoved: []string{LGTMLabel},
+			shouldRequest:      true,
 			issueComments: map[int][]github.IssueComment{
 				101: {
 					{
@@ -864,6 +903,11 @@ func TestHandlePullRequest(t *testing.T) {
 						Login: "sig-lead",
 					},
 					MergeSHA: &SHA,
+					Assignees: []github.User{
+						{
+							Login: "TestReviewer",
+						},
+					},
 				},
 			},
 			trustedTeam:      "Leads",
@@ -887,9 +931,15 @@ func TestHandlePullRequest(t *testing.T) {
 						Login: "sig-lead",
 					},
 					MergeSHA: &SHA,
+					Assignees: []github.User{
+						{
+							Login: "TestReviewer",
+						},
+					},
 				},
 			},
 			IssueLabelsRemoved: []string{LGTMLabel},
+			shouldRequest:      true,
 			issueComments: map[int][]github.IssueComment{
 				101: {
 					{
@@ -918,9 +968,15 @@ func TestHandlePullRequest(t *testing.T) {
 						Login: "sig-lead",
 					},
 					MergeSHA: &SHA,
+					Assignees: []github.User{
+						{
+							Login: "TestReviewer",
+						},
+					},
 				},
 			},
 			IssueLabelsRemoved: []string{LGTMLabel},
+			shouldRequest:      true,
 			issueComments: map[int][]github.IssueComment{
 				101: {
 					{
@@ -956,6 +1012,11 @@ func TestHandlePullRequest(t *testing.T) {
 					Head: github.PullRequestBranch{
 						SHA: SHA,
 					},
+					Assignees: []github.User{
+						{
+							Login: "TestReviewer",
+						},
+					},
 				},
 			},
 			issueComments: map[int][]github.IssueComment{
@@ -985,9 +1046,15 @@ func TestHandlePullRequest(t *testing.T) {
 					Head: github.PullRequestBranch{
 						SHA: SHA,
 					},
+					Assignees: []github.User{
+						{
+							Login: "TestReviewer",
+						},
+					},
 				},
 			},
 			IssueLabelsRemoved: []string{LGTMLabel},
+			shouldRequest:      true,
 			issueComments: map[int][]github.IssueComment{
 				101: {
 					{
@@ -1017,6 +1084,11 @@ func TestHandlePullRequest(t *testing.T) {
 					Head: github.PullRequestBranch{
 						SHA: SHA,
 					},
+					Assignees: []github.User{
+						{
+							Login: "TestReviewer",
+						},
+					},
 				},
 			},
 			issueComments: map[int][]github.IssueComment{
@@ -1032,6 +1104,37 @@ func TestHandlePullRequest(t *testing.T) {
 				},
 			},
 			expectNoComments: true,
+		},
+		{
+			name: "pr_synchronize, no RemoveLabel error, no assignees; no requested reviewers",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					Head: github.PullRequestBranch{
+						SHA: SHA,
+					},
+				},
+			},
+			IssueLabelsRemoved: []string{LGTMLabel},
+			shouldRequest:      false,
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body: removeLGTMLabelNoti,
+						User: github.User{Login: fakegithub.Bot},
+					},
+				},
+			},
+			expectNoComments: false,
 		},
 	}
 	for _, c := range cases {
@@ -1093,6 +1196,12 @@ func TestHandlePullRequest(t *testing.T) {
 			}
 			if !c.expectNoComments && len(fakeGitHub.IssueCommentsAdded) == 0 {
 				t.Fatalf("expected comments but got none")
+			}
+			if c.shouldRequest && len(fakeGitHub.ReviewersRequested) == 0 {
+				t.Error("should have re-requested reviewers")
+			}
+			if !c.shouldRequest && len(fakeGitHub.ReviewersRequested) > 0 {
+				t.Errorf("should not have re-requested reviewers, but requested these reviewers %v", fakeGitHub.ReviewersRequested)
 			}
 		})
 	}

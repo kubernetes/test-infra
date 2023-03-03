@@ -884,7 +884,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 				if !tc.err {
 					t.Errorf("unexpected error: %v", err)
 				}
-			case err == nil && tc.err:
+			case tc.err:
 				t.Errorf("failed to receive an error")
 			default:
 				normalize(actual)

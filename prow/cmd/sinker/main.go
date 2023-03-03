@@ -46,7 +46,7 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil"
-	"k8s.io/test-infra/prow/version"
+	_ "k8s.io/test-infra/prow/version"
 )
 
 type options struct {
@@ -141,6 +141,12 @@ func main() {
 	}
 
 	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
+		// The watch apimachinery doesn't support restarts, so just exit the
+		// binary if a build cluster can be connected later .
+		func() {
+			logrus.Info("Build cluster that failed to connect initially now worked, exiting to trigger a restart.")
+			interrupts.Terminate()
+		},
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
 		},
@@ -176,7 +182,6 @@ func main() {
 
 type controller struct {
 	ctx           context.Context
-	cancel        context.CancelFunc
 	logger        *logrus.Entry
 	prowJobClient ctrlruntimeclient.Client
 	podClients    map[string]ctrlruntimeclient.Client
@@ -457,7 +462,6 @@ func (c *controller) clean() {
 	for k, v := range metrics.prowJobsCleaningErrors {
 		sinkerMetrics.prowJobsCleaningErrors.WithLabelValues(k).Set(float64(v))
 	}
-	version.GatherProwVersion(c.logger)
 	c.logger.Info("Sinker reconciliation complete.")
 }
 

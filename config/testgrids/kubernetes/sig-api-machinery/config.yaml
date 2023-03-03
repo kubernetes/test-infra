@@ -2,6 +2,7 @@ dashboard_groups:
 - name: sig-api-machinery
   dashboard_names:
     - sig-api-machinery-gce-gke
+    - sig-api-machinery-gengo
     - sig-api-machinery-kube-storage-version-migrator
     - sig-api-machinery-structured-merge-diff
     - sig-api-machinery-kubebuilder
@@ -37,4 +38,5 @@ dashboards:
 - name: sig-api-machinery-kube-storage-version-migrator
 - name: sig-api-machinery-structured-merge-diff
 - name: sig-api-machinery-kubebuilder
+- name: sig-api-machinery-gengo
 - name: sig-api-machinery-network-proxy

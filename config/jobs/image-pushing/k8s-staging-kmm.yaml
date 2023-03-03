@@ -1,0 +1,21 @@
+postsubmits:
+  kubernetes-sigs/kernel-module-management:
+    - name: post-kernel-module-management-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-node-image-pushes, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kmm
+              - --scratch-bucket=gs://k8s-staging-kmm-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .

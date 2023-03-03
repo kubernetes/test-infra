@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -114,7 +113,7 @@ func validate(pj prowapi.ProwJob) error {
 
 func readPJ(reader io.ReadCloser) (*prowapi.ProwJob, error) {
 	var pj prowapi.ProwJob
-	buf, err := ioutil.ReadAll(reader)
+	buf, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("read: %w", err)
 	}

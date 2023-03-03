@@ -5,9 +5,7 @@ presubmits:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
         preset-cluster-api-provider-vsphere-e2e-config: "true"
-        preset-cloud-provider-vsphere-e2e-config: "true"
       decorate: true
-      optional: true
       decoration_config:
         timeout: 1h
       run_if_changed: 'images/capi/(Makefile|ansible\.cfg)|images/capi/ansible/.*|images/capi/scripts/ci-ova\.sh|images/capi/packer/(config|goss|ova)/.*|images/capi/hack/ensure-(ansible|packer|goss).*'
@@ -15,7 +13,7 @@ presubmits:
       max_concurrency: 3
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
             args:
               - runner.sh
               - "./images/capi/scripts/ci-ova.sh"

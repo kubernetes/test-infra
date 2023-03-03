@@ -21,20 +21,18 @@ import (
 	"flag"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
-	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -42,106 +40,61 @@ import (
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 )
 
-var (
-	flagOptions *options
-)
-
 type options struct {
-	client                flagutil.KubernetesOptions
-	github                flagutil.GitHubOptions
-	port                  int
-	pushSecretFile        string
-	inRepoConfigCacheSize int
+	client         prowflagutil.KubernetesOptions
+	github         prowflagutil.GitHubOptions
+	port           int
+	cookiefilePath string
 
-	config       configflagutil.ConfigOptions
-	pluginConfig string
+	config configflagutil.ConfigOptions
 
 	dryRun                 bool
 	gracePeriod            time.Duration
-	instrumentationOptions flagutil.InstrumentationOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
-type kubeClient struct {
-	client prowv1.ProwJobInterface
-	dryRun bool
-}
-
-func (c *kubeClient) Create(ctx context.Context, job *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
-	if c.dryRun {
-		return job, nil
+func (o *options) validate() error {
+	var errs []error
+	for _, group := range []flagutil.OptionGroup{&o.client, &o.github, &o.instrumentationOptions, &o.config} {
+		if err := group.Validate(o.dryRun); err != nil {
+			errs = append(errs, err)
+		}
 	}
-	return c.client.Create(ctx, job, o)
+
+	return utilerrors.NewAggregate(errs)
 }
 
-func init() {
-	flagOptions = &options{config: configflagutil.ConfigOptions{ConfigPath: "/etc/config/config.yaml"}}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
+	fs.IntVar(&o.port, "port", 80, "HTTP Port.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
+	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for github or anonymous")
+	for _, group := range []flagutil.OptionGroup{&o.client, &o.github, &o.instrumentationOptions, &o.config} {
+		group.AddFlags(fs)
+	}
 
-	fs.IntVar(&flagOptions.port, "port", 80, "HTTP Port.")
-	fs.StringVar(&flagOptions.pushSecretFile, "push-secret-file", "", "Path to Pub/Sub Push secret file.")
+	fs.Parse(args)
 
-	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	fs.IntVar(&flagOptions.inRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
-
-	flagOptions.config.AddFlags(fs)
-	flagOptions.client.AddFlags(fs)
-	flagOptions.github.AddFlags(fs)
-	flagOptions.instrumentationOptions.AddFlags(fs)
-
-	fs.Parse(os.Args[1:])
+	return o
 }
 
 func main() {
 	logrusutil.ComponentInit()
 
-	configAgent, err := flagOptions.config.ConfigAgent()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
+	if err := o.validate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
+	}
+
+	configAgent, err := o.config.ConfigAgent()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	var tokens []string
-	if flagOptions.pushSecretFile != "" {
-		tokens = append(tokens, flagOptions.pushSecretFile)
-	}
-	if flagOptions.github.TokenPath != "" {
-		tokens = append(tokens, flagOptions.github.TokenPath)
-	}
-	if err := secret.Add(tokens...); err != nil {
-		logrus.WithError(err).Fatal("failed to start secret agent")
-	}
-	tokenGenerator := secret.GetTokenGenerator(flagOptions.pushSecretFile)
-
-	// If we need to use a GitClient (for inrepoconfig), then we must use a
-	// InRepoConfigCache.
-	var cache *config.InRepoConfigCache
-	var gitClientFactory git.ClientFactory
-	if flagOptions.github.TokenPath != "" {
-		gitClient, err := flagOptions.github.GitClient(flagOptions.dryRun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting Git client.")
-		}
-		gitClientFactory = git.ClientFactoryFrom(gitClient)
-
-		// Initialize cache for fetching Presubmit and Postsubmit information. If
-		// the cache cannot be initialized, exit with an error.
-		cache, err = config.NewInRepoConfigCache(
-			flagOptions.inRepoConfigCacheSize,
-			configAgent,
-			config.NewInRepoConfigGitCache(gitClientFactory))
-		// If we cannot initialize the cache, exit with an error.
-		if err != nil {
-			logrus.WithField("in-repo-config-cache-size", flagOptions.inRepoConfigCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
-		}
-	}
-
-	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
+	prowjobClient, err := o.client.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
-	}
-	kubeClient := &kubeClient{
-		client: prowjobClient,
-		dryRun: flagOptions.dryRun,
 	}
 
 	promMetrics := subscriber.NewMetrics()
@@ -149,37 +102,48 @@ func main() {
 	defer interrupts.WaitForGracefulShutdown()
 
 	// Expose prometheus and pprof metrics
-	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
-	pprof.Instrument(flagOptions.instrumentationOptions)
+	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
+	pprof.Instrument(o.instrumentationOptions)
+
+	// If we are provided credentials for Git hosts, use them. These credentials
+	// hold per-host information in them so it's safe to set them globally.
+	if o.cookiefilePath != "" {
+		cmd := exec.Command("git", "config", "--global", "http.cookiefile", o.cookiefilePath)
+		if err := cmd.Run(); err != nil {
+			logrus.WithError(err).Fatal("unable to set cookiefile")
+		}
+	}
+
+	gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Git client.")
+	}
+	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, configAgent, gitClient, o.config.InRepoConfigCacheCopies)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
+	}
 
 	s := &subscriber.Subscriber{
-		ConfigAgent:       configAgent,
-		InRepoConfigCache: cache,
-		Metrics:           promMetrics,
-		ProwJobClient:     kubeClient,
-		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		ConfigAgent:              configAgent,
+		Metrics:                  promMetrics,
+		ProwJobClient:            prowjobClient,
+		Reporter:                 pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		InRepoConfigCacheHandler: cacheGetter,
 	}
 
+	subMux := http.NewServeMux()
 	// Return 200 on / for health checks.
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-
-	// Setting up Push Server
-	logrus.Info("Setting up Push Server")
-	pushServer := &subscriber.PushServer{
-		Subscriber:     s,
-		TokenGenerator: tokenGenerator,
-	}
-	http.Handle("/push", pushServer)
+	subMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 
 	// Setting up Pull Server
 	logrus.Info("Setting up Pull Server")
 	pullServer := subscriber.NewPullServer(s)
 	interrupts.Run(func(ctx context.Context) {
 		if err := pullServer.Run(ctx); err != nil {
-			logrus.WithError(err).Error("Failed to run Pull Server")
+			logrus.WithError(err).Fatal("Failed to run Pull Server")
 		}
 	})
 
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(flagOptions.port)}
-	interrupts.ListenAndServe(httpServer, flagOptions.gracePeriod)
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: subMux}
+	interrupts.ListenAndServe(httpServer, o.gracePeriod)
 }

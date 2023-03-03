@@ -19,7 +19,6 @@ package main
 import (
 	"errors"
 	"flag"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -94,7 +93,7 @@ func (g *osFileGetter) GetFile(filename string) ([]byte, error) {
 		candidatePath := filepath.Join(root, filename)
 		if _, err := os.Stat(candidatePath); err == nil {
 			// we found the file under this root
-			return ioutil.ReadFile(candidatePath)
+			return os.ReadFile(candidatePath)
 		} else if !os.IsNotExist(err) {
 			// record this for later in case we can't find the file
 			loadErr = err
@@ -114,7 +113,7 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 
 		versionFilePath := filepath.Join(sourcePath, config.ConfigVersionFileName)
 		if _, errAccess := os.Stat(versionFilePath); errAccess == nil {
-			content, err := ioutil.ReadFile(versionFilePath)
+			content, err := os.ReadFile(versionFilePath)
 			if err != nil {
 				logrus.WithError(err).Warn("failed to read versionfile")
 			} else if version == "" {
@@ -143,7 +142,7 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 		})
 	}
 
-	for cm, data := range updateconfig.FilterChanges(configUpdater, changes, defaultNamespace, logrus.NewEntry(logrus.StandardLogger())) {
+	for cm, data := range updateconfig.FilterChanges(configUpdater, changes, defaultNamespace, bootstrapMode, logrus.NewEntry(logrus.StandardLogger())) {
 		logger := logrus.WithFields(logrus.Fields{"configmap": map[string]string{"name": cm.Name, "namespace": cm.Namespace, "cluster": cm.Cluster}})
 		configMapClient, err := updateconfig.GetConfigMapClient(client.CoreV1(), cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
 		if err != nil {

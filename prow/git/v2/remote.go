@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 )
 
 // RemoteResolverFactory knows how to construct remote resolvers for
@@ -142,5 +144,23 @@ func (f *pathResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 	return func() (string, error) {
 		return path.Join(f.baseDir, org, repo), nil
+	}
+}
+
+// gerritResolverFactory is meant to be used by Gerrit only. It's so different
+// from GitHub that there is no way any of the remotes logic can be shared
+// between these two providers. The resulting CentralRemote and PublishRemote
+// are both the clone URI.
+type gerritResolverFactory struct{}
+
+func (f *gerritResolverFactory) CentralRemote(org, repo string) RemoteResolver {
+	return func() (string, error) {
+		return gerritsource.CloneURIFromOrgRepo(org, repo), nil
+	}
+}
+
+func (f *gerritResolverFactory) PublishRemote(org, repo string) RemoteResolver {
+	return func() (string, error) {
+		return gerritsource.CloneURIFromOrgRepo(org, repo), nil
 	}
 }

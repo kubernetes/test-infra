@@ -1,0 +1,22 @@
+postsubmits:
+  kubernetes-sigs/windows-service-proxy:
+    - name: post-windows-service-proxy-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-windows-push-images, sig-k8s-infra-gcb
+        testgrid-tab-name: post-windows-service-proxy-push-images
+      decorate: true
+      branches:
+        - ^main$
+        - ^debug-image-build$   # temporary - used to debug issues running buildx in cloudbuild without polluting main's commit history
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-win-svc-proxy
+              - --scratch-bucket=gs://k8s-staging-win-svc-proxy-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

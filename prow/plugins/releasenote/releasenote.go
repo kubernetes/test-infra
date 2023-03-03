@@ -52,7 +52,7 @@ var (
 
 	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
-	noneRe        = regexp.MustCompile(`(?i)^\W*NONE\W*$`)
+	noneRe        = regexp.MustCompile(`(?i)^\W*(NONE|NO)\W*$`)
 
 	allRNLabels = []string{
 		labels.ReleaseNoteNone,
@@ -256,6 +256,10 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body, prLabels)
 
 	if labelToAdd == labels.ReleaseNoteLabelNeeded {
+		//Do not add do not merge label when the PR is merged
+		if pr.PullRequest.Merged {
+			return nil
+		}
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
 			return clearStaleComments(gc, log, pr, prLabels, nil)
@@ -263,7 +267,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 
 		if prLabels.Has(labels.DeprecationLabel) {
 			if !prLabels.Has(labels.ReleaseNoteLabelNeeded) {
-				comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteDeprecationBody)
+				comment := plugins.FormatSimpleResponse(releaseNoteDeprecationBody)
 				if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 					log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
 				}
@@ -276,7 +280,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 			if containsNoneCommand(comments) {
 				labelToAdd = labels.ReleaseNoteNone
 			} else if !prLabels.Has(labels.ReleaseNoteLabelNeeded) {
-				comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteBody)
+				comment := plugins.FormatSimpleResponse(releaseNoteBody)
 				if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 					log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
 				}

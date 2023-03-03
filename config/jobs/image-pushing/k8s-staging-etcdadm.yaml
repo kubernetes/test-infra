@@ -5,16 +5,21 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-etcdadm, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 20m
+        grace_period: 5m
       branches:
         - ^master$
         - ^release-.*
-        # Build tags also
+        # Build (root) tags also
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+        # Build etcd-manager tags
+        - ^etcd-manager/.*$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
             command:
               - /run.sh
             args:

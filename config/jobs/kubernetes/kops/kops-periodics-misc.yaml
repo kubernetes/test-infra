@@ -6,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-experimental
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -24,15 +24,13 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
     testgrid-tab-name: kops-build
     testgrid-alert-email: release-team@kubernetes.io
-- name: e2e-kops-do-calico
+- name: e2e-kops-do-calico-gossip
   cron: '54 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-do-credential: "true"
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
@@ -45,7 +43,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-experimental
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -59,15 +57,14 @@ periodics:
           --up --down \
           --cloud-provider=digitalocean \
           --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
-          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --override=cluster.spec.kubeAPIServer.serviceAccountIssuer=https://kubernetes.default" \
+          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
-          --test-package-marker=stable-1.21.txt \
+          --test-package-marker=stable.txt \
           --parallel 15 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*NodePort.*listening.*same.*port|TCP.CLOSE_WAIT|should.*run.*through.*the.*lifecycle.*of.*Pods.*and.*PodStatus"
       resources:
         limits:
           memory: "3Gi"
@@ -76,10 +73,67 @@ periodics:
           memory: "3Gi"
   annotations:
     test.kops.k8s.io/cloud: digitalocean
-    test.kops.k8s.io/k8s_version: '1.21'
-    test.kops.k8s.io/kops_channel: stable
-    test.kops.k8s.io/kops_version: '1.21'
+    test.kops.k8s.io/k8s_version: 'stable'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: 'calico'
-    testgrid-dashboards: google-aws, kops-1.21, kops-k8s-1.21, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
-    testgrid-tab-name: e2e-kops-do-calico
+    testgrid-tab-name: e2e-kops-do-calico-gossip
+- name: e2e-kops-do-calico-fqdn
+  cron: '54 2-20/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-do-credential: "true"
+    preset-do-spaces-credential: "true"
+    preset-do-ssh: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+          make test-e2e-install
+          kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=digitalocean \
+          --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+          --create-args "--networking=calico --node-count=3 --master-count=3" \
+          --cluster-name=e2e-b284d3e83b-4c997.test-cncf-do.k8s.io \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-package-marker=stable.txt \
+          --parallel 15 \
+      resources:
+        limits:
+          memory: "3Gi"
+        requests:
+          cpu: "2"
+          memory: "3Gi"
+  annotations:
+    test.kops.k8s.io/cloud: digitalocean
+    test.kops.k8s.io/k8s_version: 'stable'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: 'calico'
+    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: e2e-kops-do-calico-fqdn

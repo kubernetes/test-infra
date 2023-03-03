@@ -63,17 +63,17 @@ local config = {
 
   // Boskos endpoints to be monitored
   boskosResourcetypes: [
-    # TODO(chaodaiG after 05/18/2021): drop instance. https://github.com/kubernetes/test-infra/pull/20888
-    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "aws-account", friendly: "AWS account"},
-    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gce-project", friendly: "GCE project"},
-    {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "gce-project", friendly: "GCE project (k8s-infra)"},
-    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gpu-project", friendly: "GPU project"},
-    {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "gpu-project", friendly: "GPU project (k8s-infra)"},
-    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "ingress-project", friendly: "Ingress project"},
-    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "node-e2e-project", friendly: "Node e2e project"},
-    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "scalability-project", friendly: "Scalability project"},
-    {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "scalability-project", friendly: "Scalability project (k8s-infra)"},
-    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
+    {job: "k8s-prow-builds-new-boskos", type: "aws-account", friendly: "AWS account"},
+    {job: "k8s-prow-builds-new-boskos", type: "gce-project", friendly: "GCE project"},
+    {job: "k8s-infra-prow-builds-boskos", type: "gce-project", friendly: "GCE project (k8s-infra)"},
+    {job: "k8s-prow-builds-new-boskos", type: "gpu-project", friendly: "GPU project"},
+    {job: "k8s-infra-prow-builds-boskos", type: "gpu-project", friendly: "GPU project (k8s-infra)"},
+    {job: "k8s-prow-builds-new-boskos", type: "ingress-project", friendly: "Ingress project"},
+    {job: "k8s-prow-builds-new-boskos", type: "node-e2e-project", friendly: "Node e2e project"},
+    {job: "k8s-prow-builds-new-boskos", type: "scalability-project", friendly: "Scalability project"},
+    {job: "k8s-infra-prow-builds-boskos", type: "scalability-project", friendly: "Scalability project (k8s-infra)"},
+    {job: "k8s-prow-builds-new-boskos", type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
+    {job: "k8s-prow-builds-new-boskos", type: "scalability-presubmit-5k-project", friendly: "Scalability presubmit project (5k)"}
   ],
 
   // How long we go during work hours without seeing a webhook before alerting.
@@ -81,7 +81,7 @@ local config = {
 
   // How many work days prow hasn't been bumped, the alert rule using this value
   // understands to adjust based on day of week so weekends are considered.
-  prowImageStaleByDays: {daysStale: 2, eventDuration: '24h'},
+  prowImageStaleByDays: {daysStale: 7, eventDuration: '24h'},
 
   kubernetesExternalSecretServiceAccount: "kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com",
 };

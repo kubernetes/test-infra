@@ -1,22 +1,21 @@
 # See the OWNERS docs at https://go.k8s.io/owners
-
-approvers:
-  - alvaroaleman
-  - cblecker
-  - cjwagner
-  - fejta
-  - stevekuznetsov
-emeritus_approvers:
-  - spxtr # 2018-09-17
 reviewers:
-  - alvaroaleman
   - cblecker
   - cjwagner
-  - clarketm
-  - fejta
   - matthyx
   - michelle192837
   - petr-muller
   - stevekuznetsov
+  - droslean
+approvers:
+  - cblecker
+  - cjwagner
+  - petr-muller
+  - stevekuznetsov
+  - droslean
+emeritus_approvers:
+  - spxtr # 2018-09-17
+  - fejta
+  - alvaroaleman
 labels:
   - area/prow

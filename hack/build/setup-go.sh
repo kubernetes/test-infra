@@ -14,12 +14,10 @@
 # limitations under the License.
 
 # script to setup go version with gimme as needed
-set -o errexit
-set -o nounset
-set -o pipefail
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd )"
-cd "${REPO_ROOT}"
+# Ensure running from root dir
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
+trap "popd >/dev/null 2>&1" EXIT
+pushd "${REPO_ROOT}" >/dev/null 2>&1
 
 # read go-version file unless GO_VERSION is set
 GO_VERSION="${GO_VERSION:-"$(cat .go-version)"}"

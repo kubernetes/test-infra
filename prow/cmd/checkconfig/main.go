@@ -23,11 +23,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	stdio "io"
 	"io/fs"
-	"io/ioutil"
 	"net/url"
 	"os"
+	"path"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -57,6 +59,7 @@ import (
 	"k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
+	labelplugin "k8s.io/test-infra/prow/plugins/label"
 	"k8s.io/test-infra/prow/plugins/lgtm"
 	ownerslabel "k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
@@ -72,10 +75,12 @@ type options struct {
 	prowYAMLRepoName string
 	prowYAMLPath     string
 
-	warnings        flagutil.Strings
-	excludeWarnings flagutil.Strings
-	strict          bool
-	expensive       bool
+	warnings               flagutil.Strings
+	excludeWarnings        flagutil.Strings
+	requiredJobAnnotations flagutil.Strings
+	strict                 bool
+	expensive              bool
+	includeDefaultWarnings bool
 
 	github  flagutil.GitHubOptions
 	storage flagutil.StorageClientOptions
@@ -109,11 +114,15 @@ const (
 	missingTriggerWarning                         = "missing-trigger"
 	validateURLsWarning                           = "validate-urls"
 	unknownFieldsWarning                          = "unknown-fields"
+	unknownFieldsAllWarning                       = "unknown-fields-all" // Superset of "unknown-fields" that includes validating job config.
 	verifyOwnersFilePresence                      = "verify-owners-presence"
 	validateClusterFieldWarning                   = "validate-cluster-field"
 	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
 	validateUnmanagedBranchConfigHasNoSubconfig   = "validate-unmanaged-branchconfig-has-no-subconfig"
 	validateGitHubAppInstallationWarning          = "validate-github-app-installation"
+	validateLabelWarning                          = "validate-label"
+	requiredJobAnnotationsWarning                 = "required-job-annotations"
+	periodicDefaultCloneWarning                   = "periodic-default-clone-config"
 
 	defaultHourlyTokens = 3000
 	defaultAllowedBurst = 100
@@ -136,10 +145,21 @@ var defaultWarnings = []string{
 	validateClusterFieldWarning,
 	validateSupplementalProwConfigOrgRepoHirarchy,
 	validateUnmanagedBranchConfigHasNoSubconfig,
+	validateLabelWarning,
+	requiredJobAnnotationsWarning,
+	periodicDefaultCloneWarning,
 }
 
 var expensiveWarnings = []string{
 	verifyOwnersFilePresence,
+}
+
+var optionalWarnings = []string{
+	validDecorationConfigWarning,
+	// It would be nice to make "unknown-fields-all" a default, but difficult to do due to K8s configs.
+	// https://github.com/kubernetes/test-infra/pull/21075#issuecomment-862550510
+	unknownFieldsAllWarning,
+	validateGitHubAppInstallationWarning,
 }
 
 var throttlerDefaults = flagutil.ThrottlerDefaults(defaultHourlyTokens, defaultAllowedBurst)
@@ -148,7 +168,7 @@ func getAllWarnings() []string {
 	var all []string
 	all = append(all, defaultWarnings...)
 	all = append(all, expensiveWarnings...)
-	all = append(all, validateGitHubAppInstallationWarning)
+	all = append(all, optionalWarnings...)
 
 	return all
 }
@@ -163,11 +183,6 @@ func (o *options) DefaultAndValidate() error {
 
 	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
 		return errors.New("--prow-yaml-repo-path requires --prow-yaml-repo-name to be set")
-	}
-	if o.prowYAMLRepoName != "" {
-		if o.prowYAMLPath == "" {
-			o.prowYAMLPath = fmt.Sprintf("/home/prow/go/src/github.com/%s/.prow.yaml", o.prowYAMLRepoName)
-		}
 	}
 	for _, warning := range o.warnings.Strings() {
 		found := false
@@ -196,11 +211,13 @@ func parseOptions() (options, error) {
 func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	o.pluginsConfig.CheckUnknownPlugins = true
 	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
-	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
+	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Omit to look for either .prow.yaml or a .prow directory in the current working directory (recommended).")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
+	flag.Var(&o.requiredJobAnnotations, "required-job-annotations", "Required annotation names that job has to include in a definition. Use repeatedly to provide a list of required annotations")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
+	flag.BoolVar(&o.includeDefaultWarnings, "include-default-warnings", false, "If set force inclusion of default warning set. Normally this is inferred based on a lack of '--warnings' flags.")
 	o.github.AddCustomizedFlags(flag, throttlerDefaults)
 	o.github.AllowAnonymous = true
 	o.config.AddFlags(flag)
@@ -234,20 +251,19 @@ func main() {
 	} else {
 		logrus.Info("checkconfig passes without any error!")
 	}
-
 }
 
 func validate(o options) error {
 	// use all warnings by default
-	if len(o.warnings.Strings()) == 0 {
+	if len(o.warnings.Strings()) == 0 || o.includeDefaultWarnings {
 		if o.expensive {
-			o.warnings = flagutil.NewStrings(getAllWarnings()...)
+			o.warnings = flagutil.NewStrings(append(o.warnings.Strings(), getAllWarnings()...)...)
 		} else {
-			o.warnings = flagutil.NewStrings(defaultWarnings...)
+			o.warnings = flagutil.NewStrings(append(o.warnings.Strings(), defaultWarnings...)...)
 		}
 	}
 	if o.github.AppID != "" && o.github.AppPrivateKeyPath != "" {
-		o.warnings.Set(validateGitHubAppInstallationWarning)
+		o.warnings.Add(validateGitHubAppInstallationWarning)
 	}
 
 	configAgent, err := o.config.ConfigAgent()
@@ -257,7 +273,7 @@ func validate(o options) error {
 	cfg := configAgent.Config()
 
 	if o.prowYAMLRepoName != "" {
-		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName); err != nil {
+		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName, o.warningEnabled(unknownFieldsAllWarning)); err != nil {
 			return fmt.Errorf("error validating .prow.yaml: %w", err)
 		}
 	}
@@ -321,6 +337,11 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(periodicDefaultCloneWarning) {
+		if err := validatePeriodicDefaultCloneConfig(cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if o.warningEnabled(needsOkToTestWarning) {
 		if err := validateNeedsOkToTestLabel(cfg); err != nil {
 			errs = append(errs, err)
@@ -346,8 +367,16 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	}
-	if o.warningEnabled(unknownFieldsWarning) {
-		cfgBytes, err := ioutil.ReadFile(o.config.ConfigPath)
+	// If both "unknown-fields" and "unknown-fields-all" are enabled, just run "unknown-fields-all" validation
+	// since it is a superset. This will avoid duplicate warnings.
+	unknownAllEnabled := o.warningEnabled(unknownFieldsAllWarning)
+	unknownEnabled := o.warningEnabled(unknownFieldsWarning)
+	if unknownAllEnabled {
+		if _, err := config.LoadStrict(o.config.ConfigPath, o.config.JobConfigPath, nil, ""); err != nil {
+			errs = append(errs, err)
+		}
+	} else if unknownEnabled {
+		cfgBytes, err := os.ReadFile(o.config.ConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
@@ -355,8 +384,8 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	}
-	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
-		pcfgBytes, err := ioutil.ReadFile(o.pluginsConfig.PluginConfigPath)
+	if pcfg != nil && (unknownEnabled || unknownAllEnabled) {
+		pcfgBytes, err := os.ReadFile(o.pluginsConfig.PluginConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
 		}
@@ -407,6 +436,18 @@ func validate(o options) error {
 		}
 	}
 
+	if pcfg != nil && o.warningEnabled(validateLabelWarning) {
+		if err := verifyLabelPlugin(pcfg.Label); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if o.warningEnabled(requiredJobAnnotationsWarning) {
+		if err := validateRequiredJobAnnotations(o.requiredJobAnnotations.Strings(), cfg.JobConfig); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
 	return utilerrors.NewAggregate(errs)
 }
 func policyIsStrict(p config.Policy) bool {
@@ -435,7 +476,8 @@ func strictBranchesConfig(c config.ProwConfig) (*orgRepoConfig, error) {
 				for branchName := range repo.Branches {
 					branch, err := repo.GetBranch(branchName)
 					if err != nil {
-						return nil, err
+						return nil, fmt.Errorf("error for repo=%s/%s and branch=%s: %w",
+							orgName, repoName, branchName, err)
 					}
 					if policyIsStrict(branch.Policy) {
 						strict = true
@@ -559,6 +601,17 @@ func validateJobExtraRefs(cfg config.JobConfig) error {
 			if err := config.ValidateRefs(repo, presubmit.JobBase); err != nil {
 				validationErrs = append(validationErrs, err)
 			}
+		}
+	}
+	return utilerrors.NewAggregate(validationErrs)
+}
+
+func validatePeriodicDefaultCloneConfig(cfg config.JobConfig) error {
+	var validationErrs []error
+	for _, job := range cfg.Periodics {
+		// Top level clone configs don't make sense for periodics jobs.
+		if job.CloneDepth != 0 || job.CloneURI != "" || job.PathAlias != "" {
+			validationErrs = append(validationErrs, fmt.Errorf("periodic jobs might clone 0, 1, or more repos, top level `clone_depth`, `clone_uri`, and `path_alias` don't have any effect. Name: %q", job.Name))
 		}
 	}
 	return utilerrors.NewAggregate(validationErrs)
@@ -1028,6 +1081,36 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 	return nil
 }
 
+func verifyLabelPlugin(label plugins.Label) error {
+	var orgReposWithEmptyLabelConfig []string
+	var errs []error
+	restrictedAndAdditionalLabels := make(map[string][]string)
+	for orgRepo, restrictedLabels := range label.RestrictedLabels {
+		for _, restrictedLabel := range restrictedLabels {
+			if label.IsRestrictedLabelInAdditionalLables(restrictedLabel.Label) {
+				restrictedAndAdditionalLabels[restrictedLabel.Label] = append(restrictedAndAdditionalLabels[restrictedLabel.Label], orgRepo)
+			}
+			if restrictedLabel.Label == "" {
+				orgReposWithEmptyLabelConfig = append(orgReposWithEmptyLabelConfig, orgRepo)
+			}
+		}
+	}
+
+	for label, repos := range restrictedAndAdditionalLabels {
+		sort.Strings(repos)
+		errs = append(errs,
+			fmt.Errorf("the following orgs or repos have configuration of label plugin using the restricted label %s which is also configured as an additional label: %s", label, strings.Join(repos, ", ")))
+	}
+
+	if len(orgReposWithEmptyLabelConfig) > 0 {
+		sort.Strings(orgReposWithEmptyLabelConfig)
+		errs = append(errs, fmt.Errorf("the following orgs or repos have configuration of %s plugin using the empty string as label name in restricted labels: %s",
+			labelplugin.PluginName, strings.Join(orgReposWithEmptyLabelConfig, ", "),
+		))
+	}
+	return utilerrors.NewAggregate(errs)
+}
+
 func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	configuredRepos := sets.NewString()
 	for orgRepo := range cfg.JobConfig.PresubmitsStatic {
@@ -1046,24 +1129,24 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	return nil
 }
 
-func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) error {
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return fmt.Errorf("failed to read file %q: %w", filePath, err)
+func validateInRepoConfig(cfg *config.Config, filepath, repoIdentifier string, strict bool) error {
+	var dir string
+	var err error
+	// Unfortunately we must continue to support the filepath arg for existing uses.
+	if filepath != "" {
+		dir = path.Dir(filepath)
+	} else {
+		if dir, err = os.Getwd(); err != nil {
+			return fmt.Errorf("failed to get current working directory")
 		}
-		return nil
 	}
-
-	prowYAML := &config.ProwYAML{}
-	if err := yaml.Unmarshal(data, prowYAML); err != nil {
-		return fmt.Errorf("failed to deserialize content of %q: %w", filePath, err)
+	prowYAML, err := config.ReadProwYAML(logrus.WithField("repo", repoIdentifier), dir, strict)
+	if err != nil {
+		return fmt.Errorf("failed to read Prow YAML: %w", err)
 	}
-
 	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
-		return fmt.Errorf("failed to validate .prow.yaml: %w", err)
+		return fmt.Errorf("failed to validate Prow YAML: %w", err)
 	}
-
 	return nil
 }
 
@@ -1124,8 +1207,8 @@ func validateJobCluster(job config.JobBase, statuses map[string]plank.ClusterSta
 		if !ok {
 			return fmt.Errorf("job configuration for %q specifies unknown 'cluster' value %q", job.Name, job.Cluster)
 		}
-		if status == plank.ClusterStatusUnreachable {
-			return fmt.Errorf("job configuration for %q specifies cluster %q which cannot be reached from Plank", job.Name, job.Cluster)
+		if status != plank.ClusterStatusReachable {
+			logrus.Warnf("Job configuration for %q specifies cluster %q which cannot be reached from Plank. Status: %q", job.Name, job.Cluster, status)
 		}
 	}
 	return nil
@@ -1142,7 +1225,7 @@ func validateCluster(cfg *config.Config, opener io.Opener) error {
 			logrus.Warnf("Build cluster status file location was specified, but could not be found: %v. This is expected when the location is first configured, before plank creates the file.", err)
 		} else {
 			defer reader.Close()
-			b, err := ioutil.ReadAll(reader)
+			b, err := stdio.ReadAll(reader)
 			if err != nil {
 				return fmt.Errorf("error reading build cluster status file: %w", err)
 			}
@@ -1301,31 +1384,48 @@ func validateAdditionalConfigIsInOrgRepoDirectoryStructure(root string, filesyst
 func validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(bp config.BranchProtection) error {
 	var errs []error
 	if bp.Unmanaged != nil && *bp.Unmanaged {
-		if doesUnmanagedBranchprotectionPolicyHaveSettings(bp.Policy) {
+		if doesUnmanagedBranchprotectionPolicyHaveSettings(bp.Policy) && !bp.HasManagedOrgs() && !bp.HasManagedRepos() && !bp.HasManagedBranches() {
 			errs = append(errs, errors.New("branch protection is globally set to unmanaged, but has configuration"))
 		}
-		for org := range bp.Orgs {
-			errs = append(errs, fmt.Errorf("branch protection config is globally set to unmanaged but has configuration for org %s", org))
+		for orgName, org := range bp.Orgs {
+			// The global level setting is overridden by a lower level
+			if org.HasManagedRepos() {
+				continue
+			}
+			for _, repo := range org.Repos {
+				if repo.HasManagedBranches() {
+					continue
+				}
+			}
+			errs = append(errs, fmt.Errorf("branch protection config is globally set to unmanaged but has configuration for org %s without setting the org to unmanaged: false", orgName))
 		}
 	}
 	for orgName, orgConfig := range bp.Orgs {
 		if orgConfig.Unmanaged != nil && *orgConfig.Unmanaged {
-			if doesUnmanagedBranchprotectionPolicyHaveSettings(orgConfig.Policy) {
+			if doesUnmanagedBranchprotectionPolicyHaveSettings(orgConfig.Policy) && !orgConfig.HasManagedRepos() && !orgConfig.HasManagedBranches() {
 				errs = append(errs, fmt.Errorf("branch protection config for org %s is set to unmanaged, but it defines settings", orgName))
 			}
-			for repo := range orgConfig.Repos {
-				errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is defined, but branch protection is unmanaged for org %s", orgName, repo, orgName))
+			for repoName, repo := range orgConfig.Repos {
+				// The org level setting is overridden by a lower level
+				if repo.HasManagedBranches() {
+					continue
+				}
+				errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is defined, but branch protection is unmanaged for org %s without setting the repo to unmanaged: false", orgName, repoName, orgName))
 			}
 		}
 
 		for repoName, repoConfig := range orgConfig.Repos {
 			if repoConfig.Unmanaged != nil && *repoConfig.Unmanaged {
-				if doesUnmanagedBranchprotectionPolicyHaveSettings(repoConfig.Policy) {
+				if doesUnmanagedBranchprotectionPolicyHaveSettings(repoConfig.Policy) && !repoConfig.HasManagedBranches() {
 					errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is set to unmanaged, but it defines settings", orgName, repoName))
 				}
 
-				for branchName := range repoConfig.Branches {
-					errs = append(errs, fmt.Errorf("branch protection for repo %s/%s is set to unmanaged, but it defines settings for branch %s", orgName, repoName, branchName))
+				for branchName, branch := range repoConfig.Branches {
+					// The repo level setting is overridden by a lower level
+					if branch.Policy.Managed() {
+						continue
+					}
+					errs = append(errs, fmt.Errorf("branch protection for repo %s/%s is set to unmanaged, but it defines settings for branch %s without setting the branch to unmanaged: false", orgName, repoName, branchName))
 				}
 
 			}
@@ -1391,5 +1491,39 @@ func validateGitHubAppIsInstalled(client ghAppListingClient, allRepos sets.Strin
 		}
 	}
 
+	return utilerrors.NewAggregate(errs)
+}
+
+func validateRequiredJobAnnotations(a []string, c config.JobConfig) error {
+	validator := func(job config.JobBase, annotations []string) error {
+		var errs []error
+		for _, annotation := range annotations {
+			if _, ok := job.Annotations[annotation]; !ok {
+				errs = append(errs, fmt.Errorf(annotation))
+			}
+		}
+		return utilerrors.NewAggregate(errs)
+	}
+	var errs []error
+
+	for _, presubmits := range c.PresubmitsStatic {
+		for _, presubmit := range presubmits {
+			if err := validator(presubmit.JobBase, a); err != nil {
+				errs = append(errs, fmt.Errorf("job '%s' is missing required annotations: %w", presubmit.Name, err))
+			}
+		}
+	}
+	for _, postsubmits := range c.PostsubmitsStatic {
+		for _, postsubmit := range postsubmits {
+			if err := validator(postsubmit.JobBase, a); err != nil {
+				errs = append(errs, fmt.Errorf("job '%s' is missing required annotations: %w", postsubmit.Name, err))
+			}
+		}
+	}
+	for _, periodic := range c.Periodics {
+		if err := validator(periodic.JobBase, a); err != nil {
+			errs = append(errs, fmt.Errorf("job '%s' is missing required annotations: %w", periodic.Name, err))
+		}
+	}
 	return utilerrors.NewAggregate(errs)
 }

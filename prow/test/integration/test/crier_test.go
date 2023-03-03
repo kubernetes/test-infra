@@ -71,7 +71,10 @@ func TestReportGHStatus(t *testing.T) {
 				t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
 			}
 
-			githubClient := github.NewClient(func() []byte { return nil }, func([]byte) []byte { return nil }, github.DefaultGraphQLEndpoint, "http://localhost/fakeghserver")
+			githubClient, err := github.NewClient(func() []byte { return nil }, func([]byte) []byte { return nil }, github.DefaultGraphQLEndpoint, "http://localhost/fakeghserver")
+			if err != nil {
+				t.Fatalf("failed to construct GitHub client: %v", err)
+			}
 
 			ctx := context.Background()
 

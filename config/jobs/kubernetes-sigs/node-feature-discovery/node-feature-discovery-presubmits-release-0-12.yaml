@@ -1,0 +1,44 @@
+presubmits:
+  kubernetes-sigs/node-feature-discovery:
+  - name: pull-node-feature-discovery-verify-release-0-12
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    branches:
+    - ^release-0.12
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: verify-release-0.12
+      description: "Verify source code of node-feature-discovery: check formatting, lint etc."
+    spec:
+      containers:
+      - image: golang:1.19
+        command:
+        - scripts/test-infra/verify.sh
+  - name: pull-node-feature-discovery-verify-docs-release-0-12
+    run_if_changed: "^docs/"
+    branches:
+    - ^release-0.12
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: verify-docs-release-0.12
+      description: "Verify documentation sources"
+    spec:
+      containers:
+      - image: ruby:slim
+        command:
+        - scripts/test-infra/mdlint.sh
+  - name: pull-node-feature-discovery-build-release-0-12
+    skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    branches:
+    - ^release-0.12
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: build-release-0.12
+      description: "Build node-feature-discovery binaries"
+    spec:
+      containers:
+      - image: golang:1.19
+        command:
+        - scripts/test-infra/build.sh

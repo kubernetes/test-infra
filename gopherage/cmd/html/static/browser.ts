@@ -17,9 +17,9 @@ limitations under the License.
 import {Coverage, parseCoverage} from './parser';
 import {enumerate, map} from './utils';
 
-declare const embeddedProfiles: Array<{path: string, content: string}>;
+declare const embeddedProfiles: {path: string, content: string}[];
 
-let coverageFiles: Array<{name: string, coverage: Coverage}> = [];
+let coverageFiles: {name: string, coverage: Coverage}[] = [];
 let gPrefix = '';
 
 function filenameForDisplay(path: string): string {
@@ -28,7 +28,7 @@ function filenameForDisplay(path: string): string {
   return withoutSuffix;
 }
 
-function loadEmbeddedProfiles(): Array<{name: string, coverage: Coverage}> {
+function loadEmbeddedProfiles(): {name: string, coverage: Coverage}[] {
   return embeddedProfiles.map(({path, content}) => ({
     coverage: parseCoverage(content),
     name: filenameForDisplay(path),
@@ -60,7 +60,7 @@ function updateBreadcrumb(): void {
     if (!part) {
       continue;
     }
-    prefixSoFar += part + '/';
+    prefixSoFar += `${part  }/`;
     const node = document.createElement('a');
     node.href = `#${prefixSoFar}`;
     node.innerText = part;
@@ -70,39 +70,39 @@ function updateBreadcrumb(): void {
 }
 
 function coveragesForPrefix(coverages: Coverage[], prefix: string):
-    Iterable<{c: Array<{v: number | string, f?: string}>}> {
+Iterable<{c: {v: number | string, f?: string}[]}> {
   const m =
       mergeMaps(map(coverages, (c) => c.getCoverageForPrefix(prefix).children));
   const keys = Array.from(m.keys());
   keys.sort();
   console.log(m);
   return map(
-      keys,
-      (k) => ({
-        c: [({v: k} as {v: number | string, f?: string})].concat(
-            m.get(k)!.map((x, i) => {
-              if (!x) {
-                return {v: ''};
-              }
-              const next = m.get(k)![i + 1];
-              const coverage = x.coveredStatements / x.totalStatements;
-              let arrow = '';
-              if (next) {
-                const nextCoverage =
+    keys,
+    (k) => ({
+      c: [({v: k} as {v: number | string, f?: string})].concat(
+        m.get(k)!.map((x, i) => {
+          if (!x) {
+            return {v: ''};
+          }
+          const next = m.get(k)![i + 1];
+          const coverage = x.coveredStatements / x.totalStatements;
+          let arrow = '';
+          if (next) {
+            const nextCoverage =
                     next.coveredStatements / next.totalStatements;
-                if (coverage > nextCoverage) {
-                  arrow = '▲';
-                } else if (coverage < nextCoverage) {
-                  arrow = '▼';
-                }
-              }
-              const percentage = `${(coverage * 100).toFixed(1)}%`;
-              return {
-                f: `<span class="arrow">${arrow}</span> ${percentage}`,
-                v: coverage,
-              };
-            })),
-      }));
+            if (coverage > nextCoverage) {
+              arrow = '▲';
+            } else if (coverage < nextCoverage) {
+              arrow = '▼';
+            }
+          }
+          const percentage = `${(coverage * 100).toFixed(1)}%`;
+          return {
+            f: `<span class="arrow">${arrow}</span> ${percentage}`,
+            v: coverage,
+          };
+        })),
+    }));
 }
 
 function mergeMaps<T, U>(maps: Iterable<Map<T, U>>): Map<T, U[]> {
@@ -125,9 +125,9 @@ function mergeMaps<T, U>(maps: Iterable<Map<T, U>>): Map<T, U[]> {
 
 function drawTable(): void {
   const rows = Array.from(
-      coveragesForPrefix(coverageFiles.map((x) => x.coverage), gPrefix));
+    coveragesForPrefix(coverageFiles.map((x) => x.coverage), gPrefix));
   const cols = coverageFiles.map(
-      (x, i) => ({id: `file-${i}`, label: x.name, type: 'number'}));
+    (x, i) => ({id: `file-${i}`, label: x.name, type: 'number'}));
   const dataTable = new google.visualization.DataTable({
     cols: [
       {id: 'child', label: 'File', type: 'string'},

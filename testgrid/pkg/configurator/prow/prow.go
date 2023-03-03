@@ -44,6 +44,8 @@ const testgridNumFailuresToAlertAnnotation = "testgrid-num-failures-to-alert"
 const testgridDaysOfResultsAnnotation = "testgrid-days-of-results"
 const testgridInCellMetric = "testgrid-in-cell-metric"
 const testGridDisableProwJobAnalysis = "testgrid-disable-prowjob-analysis"
+const testgridBaseOptionsAnnotation = "testgrid-base-options"
+const testgridBrokenColumnThreshold = "testgrid-broken-column-threshold"
 const descriptionAnnotation = "description"
 const minPresubmitNumColumnsRecent = 20
 
@@ -141,22 +143,6 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 		testGroup.NumColumnsRecent = minPresubmitNumColumnsRecent
 	}
 
-	if srh, ok := j.Annotations[testgridAlertStaleResultsHoursAnnotation]; ok {
-		srhInt, err := strconv.ParseInt(srh, 10, 32)
-		if err != nil {
-			return fmt.Errorf("%s value %q is not a valid integer", testgridAlertStaleResultsHoursAnnotation, srh)
-		}
-		testGroup.AlertStaleResultsHours = int32(srhInt)
-	}
-
-	if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
-		nftaInt, err := strconv.ParseInt(nfta, 10, 32)
-		if err != nil {
-			return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
-		}
-		testGroup.NumFailuresToAlert = int32(nftaInt)
-	}
-
 	if dora, ok := j.Annotations[testgridDaysOfResultsAnnotation]; ok {
 		doraInt, err := strconv.ParseInt(dora, 10, 32)
 		if err != nil {
@@ -177,8 +163,30 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 		testGroup.DisableProwjobAnalysis = dpaBool
 	}
 
+	if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
+		nftaInt, err := strconv.ParseInt(nfta, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
+		}
+		testGroup.NumFailuresToAlert = int32(nftaInt) //nolint // The updater (and tabulator, when a feature flag is not set) still depend on the test group field.
+	}
+
 	if tn, ok := j.Annotations[testgridTabNameAnnotation]; ok {
 		tabName = tn
+	}
+
+	var baseOptions string
+	if bo, ok := j.Annotations[testgridBaseOptionsAnnotation]; ok {
+		baseOptions = bo
+	}
+
+	var brokenColumnThreshold float32
+	if bct, ok := j.Annotations[testgridBrokenColumnThreshold]; ok {
+		bctFloat, err := strconv.ParseFloat(bct, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid float", testgridBrokenColumnThreshold, bct)
+		}
+		brokenColumnThreshold = float32(bctFloat)
 	}
 
 	description := pac.TabDescriptionForProwJob(j)
@@ -221,12 +229,31 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 				CodeSearchUrlTemplate: codeSearchLinkTemplate,
 				OpenBugTemplate:       openBugLinkTemplate,
 				OpenTestTemplate:      openTestLinkTemplate,
+				BaseOptions:           baseOptions,
+				BrokenColumnThreshold: brokenColumnThreshold,
 			}
 			if firstDashboard {
 				firstDashboard = false
 				if emails, ok := j.Annotations[testgridEmailAnnotation]; ok {
-					dt.AlertOptions = &configpb.DashboardTabAlertOptions{AlertMailToAddresses: emails}
+					initAlertOptions(dt)
+					dt.AlertOptions.AlertMailToAddresses = emails
 				}
+			}
+			if srh, ok := j.Annotations[testgridAlertStaleResultsHoursAnnotation]; ok {
+				srhInt, err := strconv.ParseInt(srh, 10, 32)
+				if err != nil {
+					return fmt.Errorf("%s value %q is not a valid integer", testgridAlertStaleResultsHoursAnnotation, srh)
+				}
+				initAlertOptions(dt)
+				dt.AlertOptions.AlertStaleResultsHours = int32(srhInt)
+			}
+			if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
+				nftaInt, err := strconv.ParseInt(nfta, 10, 32)
+				if err != nil {
+					return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
+				}
+				initAlertOptions(dt)
+				dt.AlertOptions.NumFailuresToAlert = int32(nftaInt)
 			}
 			if dc != nil {
 				yamlcfg.ReconcileDashboardTab(dt, dc.DefaultDashboardTab)
@@ -236,6 +263,12 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 	}
 
 	return nil
+}
+
+func initAlertOptions(dt *configpb.DashboardTab) {
+	if dt.AlertOptions == nil {
+		dt.AlertOptions = &configpb.DashboardTabAlertOptions{}
+	}
 }
 
 // sortPeriodics sorts all periodics by name (ascending).

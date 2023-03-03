@@ -45,16 +45,18 @@ func TestDiskCachePruning(t *testing.T) {
 		maxConcurrency:      25,
 		pushGatewayInterval: time.Minute,
 		upstreamParsed:      &url.URL{},
+		timeout:             30,
 	}
 
 	now := time.Now()
+	github.TimeNow = func() time.Time { return now }
 
 	// Five minutes so the test has sufficient time to finish
 	// but also sufficient room until the app token which is
 	// always valid for 10 minutes expires.
 	expiryDuration := 5 * time.Minute
 	roundTripper := func(r *http.Request) (*http.Response, error) {
-		t.Logf("got a reequest for path %s", r.URL.Path)
+		t.Logf("got a request for path %s", r.URL.Path)
 		switch r.URL.Path {
 		case "/app":
 			return jsonResponse(github.App{Slug: "app-slug"}, 200)
@@ -76,7 +78,7 @@ func TestDiskCachePruning(t *testing.T) {
 
 	server := httptest.NewServer(proxy(o, httpRoundTripper(roundTripper), time.Hour))
 	t.Cleanup(server.Close)
-	_, _, client := github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
+	_, _, client, err := github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
 		MaxRetries:      1,
 		Censor:          func(b []byte) []byte { return b },
 		AppID:           "123",
@@ -84,6 +86,9 @@ func TestDiskCachePruning(t *testing.T) {
 		Bases:           []string{server.URL},
 		GraphqlEndpoint: server.URL,
 	})
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 
 	if _, err := client.GetRef("org", "repo", "dev"); err != nil {
 		t.Fatalf("GetRef failed: %v", err)
@@ -94,7 +99,7 @@ func TestDiskCachePruning(t *testing.T) {
 		t.Fatalf("failed to get number of cache paritions: %v", err)
 	}
 	if numberPartitions != 2 {
-		t.Errorf("expected two cache paritions, one for the app and one for the app installation, got %d", numberPartitions)
+		t.Fatalf("expected two cache paritions, one for the app and one for the app installation, got %d", numberPartitions)
 	}
 
 	ghcache.Prune(cacheDir, func() time.Time { return now.Add(expiryDuration).Add(time.Second) })

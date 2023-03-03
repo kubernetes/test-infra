@@ -28,8 +28,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
-	"k8s.io/test-infra/prow/github"
 )
 
 // TideQueries is a TideQuery slice.
@@ -81,8 +81,31 @@ type TidePriority struct {
 
 // Tide is config for the tide pool.
 type Tide struct {
+	Gerrit *TideGerritConfig `json:"gerrit,omitempty"`
 	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
 	SyncPeriod *metav1.Duration `json:"sync_period,omitempty"`
+	// MaxGoroutines is the maximum number of goroutines spawned inside the
+	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
+	// positive number.
+	MaxGoroutines int `json:"max_goroutines,omitempty"`
+	// BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
+	// integer batch size limit as the value. Use "*" as key to set a global default.
+	// Special values:
+	//  0 => unlimited batch size
+	// -1 => batch merging disabled :(
+	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
+	// PrioritizeExistingBatches configures on org or org/repo level if Tide should continue
+	// testing pre-existing batches instead of immediately including new PRs as they become
+	// eligible. Continuing on an old batch allows to re-use all existing test results whereas
+	// starting a new one requires to start new instances of all tests.
+	// Use '*' as key to set this globally. Defaults to true.
+	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
+
+	TideGitHubConfig `json:",inline"`
+}
+
+// TideGitHubConfig is the tide config for GitHub.
+type TideGitHubConfig struct {
 	// StatusUpdatePeriod specifies how often Tide will update GitHub status contexts.
 	// Defaults to the value of SyncPeriod.
 	StatusUpdatePeriod *metav1.Duration `json:"status_update_period,omitempty"`
@@ -92,7 +115,7 @@ type Tide struct {
 
 	// A key/value pair of an org/repo as the key and merge method to override
 	// the default method of merge. Valid options are squash, rebase, and merge.
-	MergeType map[string]github.PullRequestMergeType `json:"merge_method,omitempty"`
+	MergeType map[string]types.PullRequestMergeType `json:"merge_method,omitempty"`
 
 	// A key/value pair of an org/repo as the key and Go template to override
 	// the default merge commit title and/or message. Template is passed the
@@ -139,11 +162,6 @@ type Tide struct {
 	// Leave this blank to disable this feature.
 	MergeLabel string `json:"merge_label,omitempty"`
 
-	// MaxGoroutines is the maximum number of goroutines spawned inside the
-	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
-	// positive number.
-	MaxGoroutines int `json:"max_goroutines,omitempty"`
-
 	// TideContextPolicyOptions defines merge options for context. If not set it will infer
 	// the required and optional contexts from the prow jobs configured and use the github
 	// combined status; otherwise it may apply the branch protection setting or let user
@@ -162,17 +180,18 @@ type Tide struct {
 	// the highest priority.
 	Priority []TidePriority `json:"priority,omitempty"`
 
-	// PrioritizeExistingBatches configures on org or org/repo level if Tide should continue
-	// testing pre-existing batches instead of immediately including new PRs as they become
-	// eligible. Continuing on an old batch allows to re-use all existing test results whereas
-	// starting a new one requires to start new instances of all tests.
-	// Use '*' as key to set this globally. Defaults to true.
-	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
-
 	// DisplayAllQueriesInStatus controls if Tide should mention all queries in the status it
 	// creates. The default is to only mention the one to which we are closest (Calculated
 	// by total number of requirements - fulfilled number of requirements).
 	DisplayAllQueriesInStatus bool `json:"display_all_tide_queries_in_status,omitempty"`
+}
+
+// TideGerritConfig contains all Gerrit related configurations for tide.
+type TideGerritConfig struct {
+	Queries GerritOrgRepoConfigs `json:"queries"`
+	// RateLimit defines how many changes to query per gerrit API call
+	// default is 5.
+	RateLimit int `json:"ratelimit,omitempty"`
 }
 
 func (t *Tide) mergeFrom(additional *Tide) error {
@@ -226,14 +245,14 @@ func (t *Tide) BatchSizeLimit(repo OrgRepo) int {
 
 // MergeMethod returns the merge method to use for a repo. The default of merge is
 // returned when not overridden.
-func (t *Tide) MergeMethod(repo OrgRepo) github.PullRequestMergeType {
+func (t *Tide) MergeMethod(repo OrgRepo) types.PullRequestMergeType {
 	v, ok := t.MergeType[repo.String()]
 	if !ok {
 		if ov, found := t.MergeType[repo.Org]; found {
 			return ov
 		}
 
-		return github.MergeMerge
+		return types.MergeMerge
 	}
 
 	return v
@@ -313,6 +332,7 @@ type tideQueryConfig struct {
 	MissingLabels          []string
 	Milestone              string
 	ReviewApprovedRequired bool
+	TenantIDs              []string
 }
 
 type tideQueryTarget struct {

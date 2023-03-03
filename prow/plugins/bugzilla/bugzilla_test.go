@@ -1433,7 +1433,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPick:          true,
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
-			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1, EnableBackporting: &yes},
 			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been cloned as [Bugzilla bug 124](www.bugzilla/show_bug.cgi?id=124). Retitling PR to link against new bug.
 /retitle [v1] Bug 124: fixed it!
 
@@ -1457,7 +1457,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPick:          true,
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
-			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1, EnableBackporting: &yes},
 			expectedComment: `org/repo#1:@user: Error creating a cherry-pick bug in Bugzilla: failed to check the state of cherrypicked pull request at https://github.com/org/repo/pull/1: pull request number 1 does not exist.
 Please contact an administrator to resolve this issue, then request a bug refresh with <code>/bugzilla refresh</code>.
 
@@ -1481,7 +1481,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPick:          true,
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
-			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1, EnableBackporting: &yes},
 			expectedComment: `org/repo#1:@user: An error was encountered searching for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
@@ -1513,7 +1513,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPick:          true,
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
-			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1, EnableBackporting: &yes},
 			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
@@ -1547,7 +1547,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPick:          true,
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
-			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1, EnableBackporting: &yes},
 			expectedComment: `org/repo#1:@user: An error was encountered cloning bug for cherrypick for bug 123 on the Bugzilla server at www.bugzilla. No known errors were detected, please see the full error message for details.
 
 <details><summary>Full error message.</summary>
@@ -1581,7 +1581,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPick:          true,
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
-			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1, EnableBackporting: &yes},
 			expectedComment: `org/repo#1:@user: Detected clone of [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) with correct target release. Retitling PR to link to clone:
 /retitle [v1] Bug 124: fixed it!
 
@@ -1606,7 +1606,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPick:          true,
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
-			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1, EnableBackporting: &yes},
 			expectedComment: `org/repo#1:@user: [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been cloned as [Bugzilla bug 125](www.bugzilla/show_bug.cgi?id=125). Retitling PR to link against new bug.
 /retitle [v1] Bug 125: fixed it!
 
@@ -1635,7 +1635,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			cherryPick:          true,
 			cherryPickFromPRNum: 1,
 			cherryPickTo:        "v1",
-			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1},
+			options:             plugins.BugzillaBranchOptions{TargetRelease: &v1, EnableBackporting: &yes},
 			expectedSubComponents: map[int]map[string][]string{
 				123: {
 					"TestComponent": {
@@ -2325,6 +2325,14 @@ func TestIsBugAllowed(t *testing.T) {
 			},
 			groups:   []string{"other"},
 			expected: false,
+		},
+		{
+			name: "a subset of groups matching is allowed",
+			bug: &bugzilla.Bug{
+				Groups: []string{"whoa", "really"},
+			},
+			groups:   []string{"whoa", "really", "cool"},
+			expected: true,
 		},
 	}
 	for _, testCase := range testCases {

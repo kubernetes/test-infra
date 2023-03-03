@@ -31,8 +31,6 @@ import (
 // When merging policies, a nil value results in inheriting the parent policy.
 type Policy struct {
 	// Unmanaged makes us not manage the branchprotection.
-	// Careful: Contrary to all other settings, this can _not_ be overridden
-	// on a lower level and is always inherited.
 	Unmanaged *bool `json:"unmanaged,omitempty"`
 	// Protect overrides whether branch protection is enabled if set.
 	Protect *bool `json:"protect,omitempty"`
@@ -58,6 +56,11 @@ type Policy struct {
 	Include []string `json:"include,omitempty"`
 }
 
+// Managed returns true if Unmanaged is false in the policy
+func (p Policy) Managed() bool {
+	return p.Unmanaged != nil && !*p.Unmanaged
+}
+
 func (p Policy) defined() bool {
 	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequiredPullRequestReviews != nil ||
 		p.RequiredLinearHistory != nil || p.AllowForcePushes != nil || p.AllowDeletions != nil
@@ -77,19 +80,36 @@ type ContextPolicy struct {
 // Any nil values inherit the policy from the parent, otherwise bool/ints are overridden.
 // Non-empty lists are appended to parent lists.
 type ReviewPolicy struct {
-	// Restrictions appends users/teams that are allowed to merge
-	DismissalRestrictions *Restrictions `json:"dismissal_restrictions,omitempty"`
+	// DismissalRestrictions appends users/teams that are allowed to merge
+	DismissalRestrictions *DismissalRestrictions `json:"dismissal_restrictions,omitempty"`
 	// DismissStale overrides whether new commits automatically dismiss old reviews if set
 	DismissStale *bool `json:"dismiss_stale_reviews,omitempty"`
 	// RequireOwners overrides whether CODEOWNERS must approve PRs if set
 	RequireOwners *bool `json:"require_code_owner_reviews,omitempty"`
 	// Approvals overrides the number of approvals required if set (set to 0 to disable)
 	Approvals *int `json:"required_approving_review_count,omitempty"`
+	// BypassRestrictions appends users/teams that are allowed to bypass PR restrictions
+	BypassRestrictions *BypassRestrictions `json:"bypass_pull_request_allowances,omitempty"`
+}
+
+// DismissalRestrictions limits who can merge
+// Users and Teams items are appended to parent lists.
+type DismissalRestrictions struct {
+	Users []string `json:"users,omitempty"`
+	Teams []string `json:"teams,omitempty"`
+}
+
+// BypassRestrictions defines who can bypass PR restrictions
+// Users and Teams items are appended to parent lists.
+type BypassRestrictions struct {
+	Users []string `json:"users,omitempty"`
+	Teams []string `json:"teams,omitempty"`
 }
 
 // Restrictions limits who can merge
-// Users and Teams items are appended to parent lists.
+// Apps, Users and Teams items are appended to parent lists.
 type Restrictions struct {
+	Apps  []string `json:"apps,omitempty"`
 	Users []string `json:"users,omitempty"`
 	Teams []string `json:"teams,omitempty"`
 }
@@ -144,10 +164,37 @@ func mergeReviewPolicy(parent, child *ReviewPolicy) *ReviewPolicy {
 		return child
 	}
 	return &ReviewPolicy{
-		DismissalRestrictions: mergeRestrictions(parent.DismissalRestrictions, child.DismissalRestrictions),
+		DismissalRestrictions: mergeDismissalRestrictions(parent.DismissalRestrictions, child.DismissalRestrictions),
 		DismissStale:          selectBool(parent.DismissStale, child.DismissStale),
 		RequireOwners:         selectBool(parent.RequireOwners, child.RequireOwners),
 		Approvals:             selectInt(parent.Approvals, child.Approvals),
+		BypassRestrictions:    mergeBypassRestrictions(parent.BypassRestrictions, child.BypassRestrictions),
+	}
+}
+
+func mergeDismissalRestrictions(parent, child *DismissalRestrictions) *DismissalRestrictions {
+	if child == nil {
+		return parent
+	}
+	if parent == nil {
+		return child
+	}
+	return &DismissalRestrictions{
+		Users: unionStrings(parent.Users, child.Users),
+		Teams: unionStrings(parent.Teams, child.Teams),
+	}
+}
+
+func mergeBypassRestrictions(parent, child *BypassRestrictions) *BypassRestrictions {
+	if child == nil {
+		return parent
+	}
+	if parent == nil {
+		return child
+	}
+	return &BypassRestrictions{
+		Users: unionStrings(parent.Users, child.Users),
+		Teams: unionStrings(parent.Teams, child.Teams),
 	}
 }
 
@@ -159,6 +206,7 @@ func mergeRestrictions(parent, child *Restrictions) *Restrictions {
 		return child
 	}
 	return &Restrictions{
+		Apps:  unionStrings(parent.Apps, child.Apps),
 		Users: unionStrings(parent.Users, child.Users),
 		Teams: unionStrings(parent.Teams, child.Teams),
 	}
@@ -203,6 +251,38 @@ type BranchProtection struct {
 
 func isPolicySet(p Policy) bool {
 	return !apiequality.Semantic.DeepEqual(p, Policy{})
+}
+
+// HasManagedBranches returns true if the global branch protector's config has managed branches
+func (bp BranchProtection) HasManagedBranches() bool {
+	for _, org := range bp.Orgs {
+		if org.HasManagedBranches() {
+			return true
+		}
+	}
+	return false
+}
+
+// HasManagedOrgs returns true if the global branch protector's config has managed orgs
+func (bp BranchProtection) HasManagedOrgs() bool {
+	for _, org := range bp.Orgs {
+		if org.Policy.Managed() {
+			return true
+		}
+	}
+	return false
+}
+
+// HasManagedRepos returns true if the global branch protector's config has managed repos
+func (bp BranchProtection) HasManagedRepos() bool {
+	for _, org := range bp.Orgs {
+		for _, repo := range org.Repos {
+			if repo.Policy.Managed() {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (bp *BranchProtection) merge(additional *BranchProtection) error {
@@ -296,6 +376,26 @@ type Org struct {
 	Repos  map[string]Repo `json:"repos,omitempty"`
 }
 
+// HasManagedRepos returns true if the org has managed repos
+func (o Org) HasManagedRepos() bool {
+	for _, repo := range o.Repos {
+		if repo.Policy.Managed() {
+			return true
+		}
+	}
+	return false
+}
+
+// HasManagedBranches returns true if the org has managed branches
+func (o Org) HasManagedBranches() bool {
+	for _, repo := range o.Repos {
+		if repo.HasManagedBranches() {
+			return true
+		}
+	}
+	return false
+}
+
 // GetRepo returns the repo config after merging in any org policies.
 func (o Org) GetRepo(name string) *Repo {
 	r, ok := o.Repos[name]
@@ -313,13 +413,23 @@ type Repo struct {
 	Branches map[string]Branch `json:"branches,omitempty"`
 }
 
+// HasManagedBranches returns true if the repo has managed branches
+func (r Repo) HasManagedBranches() bool {
+	for _, branch := range r.Branches {
+		if branch.Policy.Managed() {
+			return true
+		}
+	}
+	return false
+}
+
 // GetBranch returns the branch config after merging in any repo policies.
 func (r Repo) GetBranch(name string) (*Branch, error) {
 	b, ok := r.Branches[name]
 	if ok {
 		b.Policy = r.Apply(b.Policy)
-		if b.Protect == nil {
-			return nil, errors.New("defined branch policies must set protect")
+		if b.Protect == nil && (b.Unmanaged == nil || !*b.Unmanaged) {
+			return nil, errors.New("defined branch policies must set protect or unmanaged=true")
 		}
 	} else {
 		b.Policy = r.Policy
@@ -344,11 +454,11 @@ func (c *Config) GetBranchProtection(org, repo, branch string, presubmits []Pres
 		return nil, err
 	}
 
-	return c.GetPolicy(org, repo, branch, *b, presubmits)
+	return c.GetPolicy(org, repo, branch, *b, presubmits, nil)
 }
 
 // GetPolicy returns the protection policy for the branch, after merging in presubmits.
-func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Presubmit) (*Policy, error) {
+func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Presubmit, protectedOnGitHub *bool) (*Policy, error) {
 	policy := b.Policy
 
 	// Automatically require contexts from prow which must always be present
@@ -356,6 +466,11 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies != nil && *c.BranchProtection.AllowDisabledJobPolicies {
+				if protectedOnGitHub != nil && *protectedOnGitHub {
+					logrus.WithField("branch", fmt.Sprintf("%s/%s/%s", org, repo, branch)).
+						Warn("'protect: false' configuration causes branchprotector to not manage branch protection settings at all. " +
+							"If this a desired behavior, use 'unmanaged: true' instead.")
+				}
 				return nil, nil
 			}
 			return nil, fmt.Errorf("required prow jobs require branch protection")
@@ -448,7 +563,7 @@ func (c *Config) unprotectedBranches(presubmits map[string][]Presubmit) []string
 				if err != nil {
 					continue
 				}
-				policy, err := c.GetPolicy(orgName, repoName, branchName, *b, []Presubmit{})
+				policy, err := c.GetPolicy(orgName, repoName, branchName, *b, []Presubmit{}, nil)
 				if err != nil || policy == nil {
 					continue
 				}

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2017 The Kubernetes Authors.
 #
@@ -41,7 +41,7 @@ def test_infra(*paths):
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     subprocess.check_call(cmd)
 
 
@@ -56,14 +56,14 @@ def parse_project(path):
     return None
 
 
-def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None):
+def clean_project(project, hours=24, dryrun=False, ratelimit=None, filt=None, python='python3'):
     """Execute janitor for target GCP project """
     # Multiple jobs can share the same project, woooo
     if project in CHECKED:
         return
     CHECKED.add(project)
 
-    cmd = ['python', test_infra('boskos/cmd/janitor/gcp_janitor.py'), '--project=%s' % project]
+    cmd = [python, test_infra('boskos/cmd/janitor/gcp_janitor.py'), '--project=%s' % project]
     cmd.append('--hour=%d' % hours)
     if dryrun:
         cmd.append('--dryrun')
@@ -99,13 +99,9 @@ PR_PROJECTS = {
     'k8s-jkns-pr-gce-gpus': 3,
 }
 
-SCALE_PROJECT = {
-    'k8s-presubmit-scale': 3,
-}
-
 def check_predefine_jobs(jobs, ratelimit):
     """Handle predefined jobs"""
-    for project, expire in jobs.iteritems():
+    for project, expire in jobs.items():
         clean_project(project, hours=expire, ratelimit=ratelimit)
 
 def check_ci_jobs():
@@ -114,7 +110,7 @@ def check_ci_jobs():
         config = json.load(fp)
 
     match_re = re.compile(r'--gcp-project=(.+)')
-    for value in config.values():
+    for value in list(config.values()):
         clean_hours = 24
         found = None
         for arg in value.get('args', []):
@@ -127,10 +123,8 @@ def check_ci_jobs():
                 continue
             project = mat.group(1)
             if any(b in project for b in EXEMPT_PROJECTS):
-                print >>sys.stderr, 'Project %r is exempted in ci-janitor' % project
+                print('Project %r is exempted in ci-janitor' % project, file=sys.stderr)
                 continue
-            if project in PR_PROJECTS or project in SCALE_PROJECT:
-                continue # CI janitor skips all PR jobs
             found = project
         if found:
             clean_project(found, clean_hours)
@@ -140,8 +134,6 @@ def main(mode, ratelimit, projects, age, artifacts, filt):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS, ratelimit)
-    elif mode == 'scale':
-        check_predefine_jobs(SCALE_PROJECT, ratelimit)
     elif mode == 'custom':
         projs = str.split(projects, ',')
         for proj in projs:
@@ -150,14 +142,14 @@ def main(mode, ratelimit, projects, age, artifacts, filt):
         check_ci_jobs()
 
     # Summary
-    print 'Janitor checked %d project, %d failed to clean up.' % (len(CHECKED), len(FAILED))
-    print HAS_JUNIT
+    print('Janitor checked %d project, %d failed to clean up.' % (len(CHECKED), len(FAILED)))
+    print(HAS_JUNIT)
     if artifacts:
         output = os.path.join(artifacts, 'junit_janitor.xml')
         if not HAS_JUNIT:
-            print 'Please install junit-xml (https://pypi.org/project/junit-xml/)'
+            print('Please install junit-xml (https://pypi.org/project/junit-xml/)')
         else:
-            print 'Generating junit output:'
+            print('Generating junit output:')
             tcs = []
             for project in CHECKED:
                 tc = TestCase(project, 'kubernetes_janitor')
@@ -170,7 +162,7 @@ def main(mode, ratelimit, projects, age, artifacts, filt):
             with open(output, 'w') as f:
                 TestSuite.to_file(f, [ts])
     if FAILED:
-        print >>sys.stderr, 'Failed projects: %r' % FAILED
+        print('Failed projects: %r' % FAILED, file=sys.stderr)
         exit(1)
 
 
@@ -181,7 +173,7 @@ if __name__ == '__main__':
     VERBOSE = False
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--mode', default='ci', choices=['ci', 'pr', 'scale', 'custom'],
+        '--mode', default='ci', choices=['ci', 'pr', 'custom'],
         help='Which type of projects to clear')
     PARSER.add_argument(
         '--ratelimit', type=int,

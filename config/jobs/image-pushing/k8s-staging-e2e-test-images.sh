@@ -74,6 +74,7 @@ for image in "${IMAGES[@]}"; do
           - aojea
           - chewong
           - claudiubelu
+          - mkumatag
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
@@ -81,11 +82,13 @@ for image in "${IMAGES[@]}"; do
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/${image//\//\\/}\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
             command:
               - /run.sh
             args:
@@ -125,6 +128,7 @@ periodics:
         - aojea
         - chewong
         - claudiubelu
+        - mkumatag
     # Since the servercore image is updated once per month, we only need to build this
     # cache once per month.
     interval: 744h
@@ -141,7 +145,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
             - /run.sh
           args:

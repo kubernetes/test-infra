@@ -1,0 +1,119 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gerrit
+  namespace: default
+  labels:
+    app: gerrit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gerrit
+  template:
+    metadata:
+      labels:
+        app: gerrit
+    spec:
+      terminationGracePeriodSeconds: 30
+      serviceAccountName: gerrit
+      containers:
+      - name: gerrit
+        image: localhost:5001/gerrit
+        args:
+        - --config-path=/etc/config/config.yaml
+        - --job-config-path=/etc/job-config
+        - --last-sync-fallback=/etc/last-sync-fallback/last-sync-fallback
+        - --cache-dir-base=/etc/cache
+        - --cookiefile=/etc/cookies/cookies
+        ports:
+        - name: metrics
+          containerPort: 9090
+        volumeMounts:
+        - name: job-config
+          mountPath: /etc/job-config
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: last-sync-fallback
+          mountPath: /etc/last-sync-fallback
+        - name: cache
+          mountPath: /etc/cache
+        - name: cookies
+          mountPath: /etc/cookies
+          readOnly: true
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+        lifecycle:
+          postStart:
+            exec:
+              command: ["bin/sh", "-c", "touch /etc/last-sync-fallback/last-sync-fallback & echo {} > /etc/last-sync-fallback/last-sync-fallback"]
+      volumes:
+      - name: config
+        configMap:
+          name: config
+      - name: job-config
+        configMap:
+          name: job-config
+      - name: last-sync-fallback
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      - name: cookies
+        secret:
+          defaultMode: 420
+          secretName: http-cookiefile
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name:  gerrit
+  namespace: default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: "gerrit"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: "gerrit"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - get
+      - list
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+      - get
+      - update
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: "gerrit"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "gerrit"
+subjects:
+- kind: ServiceAccount
+  name: "gerrit"

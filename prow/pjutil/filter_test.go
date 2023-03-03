@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -97,9 +98,9 @@ func TestTestAllFilter(t *testing.T) {
 			if err := config.SetPresubmitRegexes(testCase.presubmits); err != nil {
 				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)
 			}
-			filter := TestAllFilter()
+			filter := NewTestAllFilter()
 			for i, presubmit := range testCase.presubmits {
-				actualFiltered, actualForced, actualDefault := filter(presubmit)
+				actualFiltered, actualForced, actualDefault := filter.ShouldRun(presubmit)
 				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]
 				if actualFiltered != expectedFiltered {
 					t.Errorf("%s: filter did not evaluate correctly, expected %v but got %v for %v", testCase.name, expectedFiltered, actualFiltered, presubmit.Name)
@@ -117,11 +118,31 @@ func TestTestAllFilter(t *testing.T) {
 
 func TestCommandFilter(t *testing.T) {
 	var testCases = []struct {
-		name       string
-		body       string
-		presubmits []config.Presubmit
-		expected   [][]bool
+		name         string
+		body         string
+		half         int
+		presubmits   []config.Presubmit
+		expected     [][]bool
+		expectedName string
 	}{
+		{
+			name: "loose-trigger",
+			body: "something/test job-abcdefg",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "trigger",
+					},
+					Trigger:      `/test job-a`,
+					RerunCommand: "/test job-a", // rerun command has to be set when trigger is set.
+				},
+			},
+			// Loose trigger without `^` and `$` means it would match the text
+			// from anywhere in the message. For example a comment like:
+			// `something/test job-abcdefg` would match this job.
+			expected:     [][]bool{{true, true, true}},
+			expectedName: "command-filter: something/test job-abcdefg",
+		},
 		{
 			name: "command filter matches jobs whose triggers match the body",
 			body: "/test trigger",
@@ -141,7 +162,27 @@ func TestCommandFilter(t *testing.T) {
 					RerunCommand: "/test other-trigger",
 				},
 			},
-			expected: [][]bool{{true, true, true}, {false, false, true}},
+			expected:     [][]bool{{true, true, true}, {false, false, true}},
+			expectedName: "command-filter: /test trigger",
+		},
+		{
+			name: "truncate-name",
+			body: `/test trigger
+fill in random content so that it exceeds the limit of half*2 chars`,
+			half: 10,
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "trigger",
+					},
+					Trigger:      `(?m)^/test (?:.*? )?trigger(?: .*?)?$`,
+					RerunCommand: "/test trigger",
+				},
+			},
+			expected: [][]bool{{true, true, true}},
+			expectedName: `command-filter: /test trig
+...
+lf*2 chars`,
 		},
 	}
 
@@ -153,9 +194,12 @@ func TestCommandFilter(t *testing.T) {
 			if err := config.SetPresubmitRegexes(testCase.presubmits); err != nil {
 				t.Fatalf("%s: could not set presubmit regexes: %v", testCase.name, err)
 			}
-			filter := CommandFilter(testCase.body)
+			filter := NewCommandFilter(testCase.body)
+			if testCase.half > 0 {
+				filter.half = testCase.half
+			}
 			for i, presubmit := range testCase.presubmits {
-				actualFiltered, actualForced, actualDefault := filter(presubmit)
+				actualFiltered, actualForced, actualDefault := filter.ShouldRun(presubmit)
 				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]
 				if actualFiltered != expectedFiltered {
 					t.Errorf("%s: filter did not evaluate correctly, expected %v but got %v for %v", testCase.name, expectedFiltered, actualFiltered, presubmit.Name)
@@ -166,6 +210,9 @@ func TestCommandFilter(t *testing.T) {
 				if actualDefault != expectedDefault {
 					t.Errorf("%s: filter did not determine default correctly, expected %v but got %v for %v", testCase.name, expectedDefault, actualDefault, presubmit.Name)
 				}
+			}
+			if diff := cmp.Diff(testCase.expectedName, filter.Name()); diff != "" {
+				t.Errorf("Name mismatch. Want(-), got(+):\n%s", diff)
 			}
 		})
 	}
@@ -191,8 +238,10 @@ func TestFilterPresubmits(t *testing.T) {
 	}{
 		{
 			name: "nothing matches, nothing to run or skip",
-			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
-				return false, false, false
+			filter: &ArbitraryFilter{
+				override: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+					return false, false, false
+				},
 			},
 			presubmits: []config.Presubmit{{
 				JobBase:  config.JobBase{Name: "ignored"},
@@ -207,8 +256,10 @@ func TestFilterPresubmits(t *testing.T) {
 		},
 		{
 			name: "everything matches and is forced to run, nothing to skip",
-			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
-				return true, true, true
+			filter: &ArbitraryFilter{
+				override: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+					return true, true, true
+				},
 			},
 			presubmits: []config.Presubmit{{
 				JobBase:  config.JobBase{Name: "should-trigger"},
@@ -229,8 +280,10 @@ func TestFilterPresubmits(t *testing.T) {
 		},
 		{
 			name: "error detecting if something should run, nothing to run or skip",
-			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
-				return true, false, false
+			filter: &ArbitraryFilter{
+				override: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+					return true, false, false
+				},
 			},
 			presubmits: []config.Presubmit{{
 				JobBase:             config.JobBase{Name: "errors"},
@@ -246,8 +299,10 @@ func TestFilterPresubmits(t *testing.T) {
 		},
 		{
 			name: "error detecting if something should run, nothing to skip",
-			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
-				return true, false, false
+			filter: &ArbitraryFilter{
+				override: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+					return true, false, false
+				},
 			},
 			presubmits: []config.Presubmit{{
 				JobBase:             config.JobBase{Name: "errors"},
@@ -263,8 +318,10 @@ func TestFilterPresubmits(t *testing.T) {
 		},
 		{
 			name: "some things match and are forced to run, nothing to skip",
-			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
-				return p.Name == "should-trigger", true, true
+			filter: &ArbitraryFilter{
+				override: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+					return p.Name == "should-trigger", true, true
+				},
 			},
 			presubmits: []config.Presubmit{{
 				JobBase:  config.JobBase{Name: "should-trigger"},
@@ -282,8 +339,10 @@ func TestFilterPresubmits(t *testing.T) {
 		},
 		{
 			name: "everything matches and some things are forced to run, others should be skipped",
-			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
-				return true, p.Name == "should-trigger", p.Name == "should-trigger"
+			filter: &ArbitraryFilter{
+				override: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+					return true, p.Name == "should-trigger", p.Name == "should-trigger"
+				},
 			},
 			presubmits: []config.Presubmit{{
 				JobBase:  config.JobBase{Name: "should-trigger"},
@@ -310,8 +369,10 @@ func TestFilterPresubmits(t *testing.T) {
 		},
 		{
 			name: "everything matches and some that are forces to run supercede some that are skipped due to shared contexts",
-			filter: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
-				return true, p.Name == "should-trigger", p.Name == "should-trigger"
+			filter: &ArbitraryFilter{
+				override: func(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+					return true, p.Name == "should-trigger", p.Name == "should-trigger"
+				},
 			},
 			presubmits: []config.Presubmit{{
 				JobBase:  config.JobBase{Name: "should-trigger"},
@@ -949,7 +1010,7 @@ func TestPresubmitFilter(t *testing.T) {
 				t.Errorf("%s: expected no error creating the filter, but got one: %v", testCase.name, err)
 			}
 			for i, presubmit := range testCase.presubmits {
-				actualFiltered, actualForced, actualDefault := filter(presubmit)
+				actualFiltered, actualForced, actualDefault := filter.ShouldRun(presubmit)
 				expectedFiltered, expectedForced, expectedDefault := testCase.expected[i][0], testCase.expected[i][1], testCase.expected[i][2]
 				if actualFiltered != expectedFiltered {
 					t.Errorf("%s: filter did not evaluate correctly, expected %v but got %v for %v", testCase.name, expectedFiltered, actualFiltered, presubmit.Name)

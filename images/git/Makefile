@@ -13,9 +13,9 @@
 # limitations under the License.
 
 push-prod:
-	bazel run //images/builder -- --project=k8s-prow --scratch-bucket=gs://k8s-testimages-scratch images/git
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-prow --scratch-bucket=gs://k8s-testimages-scratch images/git
 
 push:
-	bazel run //images/builder -- --allow-dirty images/git
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --allow-dirty images/git
 
 .PHONY: push push-prod

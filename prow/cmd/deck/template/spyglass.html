@@ -6,7 +6,9 @@
   var lensArtifacts = {{.LensArtifacts}};
   var lensIndexes = {{.LensIndexes}};
   var rerunCreatesJob = {{.ReRunCreatesJob}};
+  var prowJob = {{.ProwJob}};
   var prowJobName = {{.ProwJobName}};
+  var prowJobState = {{.ProwJobState}};
 </script>
 <script type="text/javascript" src="/static/spyglass_bundle.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/spyglass/spyglass.css">
@@ -41,7 +43,7 @@
     <div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{$config.Title}}</h3></div>
     <div id="{{$config.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
       <img src="/static/kubernetes-wheel.svg" alt="loading spinner" class="loading-spinner is-active lens-card-loading" id="{{$config.Name}}-loading">
-      <iframe class="lens-container" style="visibility: hidden;" id="iframe-{{$index}}" sandbox="allow-scripts allow-top-navigation allow-popups" data-lens-index="{{$index}}" data-lens-name="{{$config.Name}}"{{if $config.HideTitle}} data-hide-title="true"{{end}}></iframe>
+      <iframe class="lens-container" style="visibility: hidden;" id="iframe-{{$index}}" sandbox="allow-scripts allow-top-navigation allow-popups allow-same-origin" data-lens-index="{{$index}}" data-lens-name="{{$config.Name}}"{{if $config.HideTitle}} data-hide-title="true"{{end}}></iframe>
     </div>
   </div>
   {{end}}
@@ -51,5 +53,5 @@
 {{template "page" (settings mobileUnfriendly darkMode "spyglass" .)}}
 
 <div id="rerun">
-  <div id="rerun-content"></div>
+  <div class="modal-content"></div>
 </div>

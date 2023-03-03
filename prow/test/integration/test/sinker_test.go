@@ -68,7 +68,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -108,7 +108,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -149,7 +149,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -191,7 +191,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -214,7 +214,7 @@ func TestDeletePod(t *testing.T) {
 					Containers: []corev1.Container{
 						{
 							Name:  "alpine",
-							Image: "localhost:5000/alpine",
+							Image: "localhost:5001/alpine",
 							Args: []string{
 								"sleep",
 								"1000000",
@@ -282,12 +282,10 @@ func TestDeletePod(t *testing.T) {
 				}
 			}
 
-			// Make sure pod is deleted, it'll take roughly 1 minutes
-			// Don't care about the outcome, will check later
-			t.Logf("Wait for sinker deleting pod or timeout in 1 minutes: %s", pod.Name)
-			var exist bool
+			// Make sure pod is deleted.
+			t.Logf("Wait for sinker deleting pod or timeout in 1 minute: %s", pod.Name)
+			var scheduled_for_deletion bool
 			wait.Poll(time.Second, 1*time.Minute, func() (bool, error) {
-				exist = false
 				pods := &corev1.PodList{}
 				err = kubeClient.List(ctx, pods, ctrlruntimeclient.InNamespace(testpodNamespace))
 				if err != nil {
@@ -295,26 +293,26 @@ func TestDeletePod(t *testing.T) {
 				}
 				for _, p := range pods.Items {
 					if p.Name == pod.Name {
-						exist = true
 						if p.ObjectMeta.DeletionTimestamp != nil { // Pod scheduled to deletion
-							exist = false
+							scheduled_for_deletion = true
+							break
 						}
 					}
 				}
-				return !exist, nil
+				return scheduled_for_deletion, nil
 			})
 			// Check for the error of `List` call.
 			if err != nil {
 				t.Fatal(err)
 			}
-			t.Logf("Pod %s exist: %v", pod.Name, exist)
-			if want, got := tt.wantPodDeleted, !exist; want != got {
-				t.Fatalf("Want pod deleted: %v. Got deleted: %v", want, got)
+			t.Logf("Pod %s scheduled for deletion: %v", pod.Name, scheduled_for_deletion)
+			if want, got := tt.wantPodDeleted, scheduled_for_deletion; want != got {
+				t.Fatalf("wantPodDeleted: %v, but got scheduled_for_deletion: %v", want, got)
 			}
 
 			// Check for prowjob deletion.
+			var prowjob_exists bool
 			if prowjob != nil {
-				exist = false
 				pjs := &prowjobv1.ProwJobList{}
 				err = kubeClient.List(ctx, pjs, ctrlruntimeclient.InNamespace(defaultNamespace))
 				if err != nil {
@@ -322,11 +320,12 @@ func TestDeletePod(t *testing.T) {
 				}
 				for _, pj := range pjs.Items {
 					if pj.Name == prowjob.Name {
-						exist = true
+						prowjob_exists = true
+						break
 					}
 				}
-				if tt.wantJobDeleted && exist {
-					t.Fatalf("Pod exisentce mismatch. Want: %v, got: %v", tt.wantJobDeleted, exist)
+				if tt.wantJobDeleted && prowjob_exists {
+					t.Fatalf("Wanted ProwJob deletion, but it still exists")
 				}
 			}
 		})

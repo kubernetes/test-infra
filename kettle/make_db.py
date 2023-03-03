@@ -184,8 +184,9 @@ class GCSClient:
                         continue
                     yield job, build
             return
+        exclude_jobs = self.metadata.get('exclude_jobs', [])
         for job in self._get_jobs():
-            if job in self.metadata.get('exclude_jobs', []):
+            if exclude_jobs and re.findall(r"(?=("+'|'.join(exclude_jobs)+r"))", job):
                 continue
             have = 0
             precise, builds = self._get_builds(job, build_limit)
@@ -240,11 +241,11 @@ def get_all_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
     """
     gcs = client_class(jobs_dir, metadata)
 
-    print(f'Loading builds from {jobs_dir}')
+    logging.info('Loading builds from %s', jobs_dir)
     sys.stdout.flush()
 
     builds_have = db.get_existing_builds(jobs_dir)
-    print(f'already have {len(builds_have)} builds')
+    logging.info('already have %d builds', len(builds_have))
     sys.stdout.flush()
 
     jobs_and_builds = gcs.get_builds(builds_have, build_limit)
@@ -264,7 +265,7 @@ def get_all_builds(db, jobs_dir, metadata, threads, client_class, build_limit):
         for n, (build_dir, started, finished) in enumerate(builds_iterator):
             if not build_dir:
                 continue # skip builds that raised exceptions
-            print(f'inserting build: {build_dir}')
+            logging.info('inserting build: %s', build_dir)
             if started or finished:
                 db.insert_build(build_dir, started, finished)
             if n % 200 == 0:
@@ -324,17 +325,30 @@ def download_junit(db, threads, client_class):
         pool.join()
 
 
-def main(db, jobs_dirs, threads, get_junit, build_limit, client_class=GCSClient):
+def main(db, jobs_dirs, threads, get_junit, build_limit, skip_gcs, client_class=GCSClient):
     """Collect test info in matching jobs."""
-    get_all_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
-                   threads, client_class, build_limit)
-    for bucket, metadata in jobs_dirs.items():
-        if not bucket.endswith('/'):
-            bucket += '/'
-        get_all_builds(db, bucket, metadata, threads, client_class, build_limit)
+    setup_logging()
+    if not skip_gcs:
+        get_all_builds(db, 'gs://kubernetes-jenkins/pr-logs', {'pr': True},
+                       threads, client_class, build_limit)
+        for bucket, metadata in jobs_dirs.items():
+            if not bucket.endswith('/'):
+                bucket += '/'
+            get_all_builds(db, bucket, metadata, threads, client_class, build_limit)
     if get_junit:
         download_junit(db, threads, client_class)
 
+def setup_logging():
+    """Initialize logging to screen"""
+    # See https://docs.python.org/2/library/logging.html#logrecord-attributes
+    # [IWEF]mmdd HH:MM:SS.mmm] msg
+    fmt = '%(levelname).1s%(asctime)s.%(msecs)03d] %(message)s'  # pylint: disable=line-too-long
+    datefmt = '%m%d %H:%M:%S'
+    logging.basicConfig(
+        level=logging.INFO,
+        format=fmt,
+        datefmt=datefmt,
+    )
 
 def get_options(argv):
     """Process command line arguments."""
@@ -356,6 +370,11 @@ def get_options(argv):
         help='Download JUnit results from each build'
     )
     parser.add_argument(
+        '--skip-gcs',
+        action='store_true',
+        help='Scrape GCS for latest builds'
+    )
+    parser.add_argument(
         '--buildlimit',
         help='maximum number of runs within each job to pull, \
          all jobs will be collected if unset or 0',
@@ -374,4 +393,5 @@ if __name__ == '__main__':
         OPTIONS.threads,
         OPTIONS.junit,
         OPTIONS.buildlimit,
+        OPTIONS.skip_gcs,
         )

@@ -1,10 +1,6 @@
 # BooleanField comment
 boolean: true
-
-
 # IntegerField comment
 integer: 1
-
-
 # StringField comment
 string: string

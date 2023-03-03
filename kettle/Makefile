@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include ../Makefile.base.mk
+# Makefile.base.mk requires REPO_ROOT to be set
+REPO_ROOT:=${CURDIR}/..
+
 IMG = gcr.io/k8s-testimages/kettle
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
@@ -24,10 +28,10 @@ get-cluster-credentials:
 	kubectl config use-context gke_k8s-gubernator_us-west1-b_g8r || gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 push-prod:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --build-dir=. kettle/
+	../../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --build-dir=. kettle/
 
 push:
-	bazel run //images/builder -- --project=k8s-testimages --allow-dirty --build-dir=. kettle/
+	../../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-testimages --allow-dirty --build-dir=. kettle/
 
 deploy: get-cluster-credentials
 	sed "s/:latest/:$(TAG)/g" deployment.yaml | kubectl apply -f - --record
@@ -44,5 +48,18 @@ update-staging: get-cluster-credentials
 rollback: get-cluster-credentials
 	kubectl rollout undo deployments/kettle
 
+test-make-db: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./kettle/make_db_test.py
 
-.PHONY: all push
+test-model: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./kettle/model_test.py
+
+test-stream: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./kettle/stream_test.py
+
+test-make-json: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./kettle/make_json_test.py
+
+test: test-make-db test-model test-stream test-make-json
+
+.PHONY: all push test-make-db

@@ -9,6 +9,8 @@ reviewers:
 - figo
 - akutz
 - yastij
+- lubronzhan
+- HanFa
 approvers:
 - baludontu
 - divyenpatel
@@ -18,6 +20,8 @@ approvers:
 - figo
 - akutz
 - yastij
+- lubronzhan
+- HanFa
 emeritus_approvers:
 - abrarshivani
 - kerneltime

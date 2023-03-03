@@ -1,0 +1,55 @@
+presets:
+- labels:
+    preset-capz-windows-common-126: "true"
+  env:
+  - name: "KUBERNETES_VERSION"
+    value: "latest-1.26"
+  - name: E2E_ARGS
+    value: "-kubetest.use-ci-artifacts"
+  - name: WINDOWS
+    value: "true"
+  - name: AZURE_NODE_MACHINE_TYPE
+    value: "Standard_D4s_v3"
+periodics:
+- name: ci-kubernetes-e2e-capz-master-containerd-windows-1-26
+  decorate: true
+  decoration_config:
+    timeout: 4h0m0s
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: release-1.26
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  interval: 24h
+  labels:
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-capz-containerd-latest: "true"
+    preset-capz-windows-2019: "true"
+    preset-capz-windows-common-126: "true"
+    preset-capz-windows-parallel: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - ./scripts/ci-conformance.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+      name: ""
+      resources:
+        requests:
+          cpu: "2"
+          memory: 9Gi
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-release-1.26-informing, sig-windows-signal,  sig-windows-1.26-release
+    testgrid-tab-name: capz-windows-containerd-1.26

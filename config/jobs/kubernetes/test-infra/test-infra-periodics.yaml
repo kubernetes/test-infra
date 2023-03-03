@@ -1,5 +1,5 @@
 periodics:
-- name: ci-test-infra-bazel
+- name: ci-test-infra-continuous-test
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -7,25 +7,25 @@ periodics:
     base_ref: master
   interval: 1h
   labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
+    # Enable dind for linters that required docker to run, for example typescript.
+    preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-test-infra
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-test-infra
       command:
-      - hack/bazel.sh
+      - runner.sh
       args:
+      - make
       - test
-      - --config=ci
-      - --nobuild_tests_only
-      - //...
-      env:
-      - name: BAZEL_FETCH_PLEASE
-        value: //...
+      - verify
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
   annotations:
     testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: ci-bazel
-    description: Runs bazel test //... on the test-infra repo every hour
+    testgrid-tab-name: continuous
+    testgrid-broken-column-threshold: '0.5'
+    description: Runs `make test verify` on the test-infra repo every hour
 
 - name: metrics-kettle
   interval: 1h
@@ -37,7 +37,7 @@ periodics:
   spec:
     serviceAccountName: triage
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20211001-c920b4c552
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20230210-b7f08bba13
       args:
       - ./kettle/monitor.py
       - --stale=6
@@ -50,6 +50,7 @@ periodics:
     testgrid-alert-stale-results-hours: '12'
     testgrid-dashboards: sig-testing-misc
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-broken-column-threshold: '0.5'
     description: Monitors Kettle's BigQuery database freshness.
 
 - name: test-infra-fuzz
@@ -62,8 +63,9 @@ periodics:
     base_ref: master
   interval: 1h
   spec:
+    serviceAccountName: fuzz-test
     containers:
-    - image: gcr.io/k8s-testimages/ci_fuzz:v20211006-0046171
+    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230206-c0c00fd127
       command:
         - runner.sh
       args:
@@ -73,17 +75,100 @@ periodics:
       securityContext:
         privileged: true
       env:
-      - name: REPOSITORY
+      - name: MODE
+        value: batch
+      - name: REPO_NAME
         value: test-infra
-      - name: PROJECT_SRC_PATH
-        value: .
       - name: SANITIZER
         value: 'address'
-      - name: WORKSPACE
-        value: /logs/artifacts
-      - name: DOCKER_IN_DOCKER
-        value: "true"
+      - name: CLOUD_BUCKET
+        value: gs://prow-cifuzz-test/
+      - name: CFL_PLATFORM
+        value: prow
+      - name: LANGUAGE
+        value: go
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-fuzz
+    testgrid-broken-column-threshold: '0.5'
     description: Runs clusterfuzzlite every hour
+
+- name: test-infra-cfl-coverage-report
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  interval: 12h
+  spec:
+    serviceAccountName: fuzz-test
+    containers:
+      #TODO(mpherman) : Change to versioned once stable
+    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230206-c0c00fd127
+      command:
+        - runner.sh
+      args:
+        - python3
+        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      env:
+      - name: MODE
+        value: coverage
+      - name: REPO_NAME
+        value: test-infra
+      - name: SANITIZER
+        value: 'coverage'
+      - name: CLOUD_BUCKET
+        value: gs://prow-cifuzz-test/
+      - name: CFL_PLATFORM
+        value: prow
+      - name: LANGUAGE
+        value: go
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: test-infra-cfl-coverage-report
+    testgrid-broken-column-threshold: '0.5'
+    description: Runs clusterfuzzlite coverage report every day
+
+- name: test-infra-cfl-prune
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  interval: 12h
+  spec:
+    serviceAccountName: fuzz-test
+    containers:
+      #TODO(mpherman) : Change to versioned once stable
+    - image: gcr.io/k8s-testimages/clusterfuzzlite:v20230206-c0c00fd127
+      command:
+        - runner.sh
+      args:
+        - python3
+        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      env:
+      - name: MODE
+        value: prune
+      - name: REPO_NAME
+        value: test-infra
+      - name: CLOUD_BUCKET
+        value: gs://prow-cifuzz-test/
+      - name: CFL_PLATFORM
+        value: prow
+      - name: LANGUAGE
+        value: go
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: test-infra-cfl-prune
+    testgrid-broken-column-threshold: '0.5'
+    description: Runs clusterfuzzlite corpora prune every day

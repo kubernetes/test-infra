@@ -17,55 +17,21 @@ limitations under the License.
 package util
 
 import (
-	"errors"
-	"net/http"
 	"testing"
 	"time"
 
-	"google.golang.org/api/googleapi"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/testutil"
 )
 
-func TestIsErrUnexpected(t *testing.T) {
-	tests := []struct {
-		name       string
-		err        error
-		unexpected bool
-	}{
-		{
-			name:       "standard errors are unexpected",
-			err:        errors.New("this is just a normal error"),
-			unexpected: true,
-		},
-		{
-			name:       "nil errors are expected",
-			err:        nil,
-			unexpected: false,
-		},
-		{
-			name:       "googleapi errors other than Precondition Failed are unexpected",
-			err:        &googleapi.Error{Code: http.StatusNotFound},
-			unexpected: true,
-		},
-		{
-			name:       "Precondition Failed googleapi errors are expected",
-			err:        &googleapi.Error{Code: http.StatusPreconditionFailed},
-			unexpected: false,
-		},
-	}
+type fca struct {
+	c config.Config
+}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			result := isErrUnexpected(tc.err)
-			if result != tc.unexpected {
-				t.Errorf("Expected isErrUnexpected() to return %v, got %v", tc.unexpected, result)
-			}
-		})
-	}
+func (ca fca) Config() *config.Config {
+	return &ca.c
 }
 
 func TestGetJobDestination(t *testing.T) {
@@ -193,7 +159,7 @@ func TestGetJobDestination(t *testing.T) {
 			for k, v := range tc.defaultGcsConfigs {
 				decorationConfigs[k] = &prowv1.DecorationConfig{GCSConfiguration: v}
 			}
-			cfg := testutil.Fca{C: config.Config{
+			cfg := fca{c: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
 						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(decorationConfigs),

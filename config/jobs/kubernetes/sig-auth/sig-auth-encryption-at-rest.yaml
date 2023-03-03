@@ -1,0 +1,72 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-kind-kms
+    decorate: true
+    decoration_config:
+      timeout: 150m
+    always_run: false
+    optional: true
+    # run only if the following files are modified:
+    # - go.mod
+    # - staging/src/k8s.io/apiserver/pkg/storage/value/
+    # - staging/src/k8s.io/kms/
+    # - staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/
+    # - test/e2e/testing-manifests/auth/encrypt/
+    run_if_changed: 'go.mod|staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/'
+    path_alias: k8s.io/kubernetes
+    branches:
+    - ^master$ # TODO(aramase): enable for release branches
+    labels:
+      # this is required because we want to run kind in docker
+      preset-dind-enabled: "true"
+      # this is required to make CNI installation to succeed for kind
+      preset-kind-volume-mounts: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-auth-encryption-at-rest
+      description: Runs conformance tests on a cluster with KMS encryption enabled
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - "/bin/bash"
+        - "-c"
+        - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
+
+periodics:
+- interval: 12h
+  name: periodic-kubernetes-e2e-kind-kms
+  decorate: true
+  decoration_config:
+    timeout: 150m
+  labels:
+    # this is required because we want to run kind in docker
+    preset-dind-enabled: "true"
+    # this is required to make CNI installation to succeed for kind
+    preset-kind-volume-mounts: "true"
+    preset-k8s-ssh: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  annotations:
+    testgrid-dashboards: sig-auth-encryption-at-rest
+    description: Runs conformance tests on a cluster with KMS encryption enabled at periodic intervals
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      command:
+      - runner.sh
+      args:
+      - "/bin/bash"
+      - "-c"
+      - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh

@@ -13,6 +13,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: metrics
     scheme: http
   namespaceSelector:
@@ -32,6 +33,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: metrics
     scheme: http
   namespaceSelector:
@@ -51,6 +53,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: metrics
     scheme: http
   namespaceSelector:
@@ -70,6 +73,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: metrics
     scheme: http
   namespaceSelector:
@@ -89,6 +93,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: metrics
     scheme: http
   namespaceSelector:
@@ -108,6 +113,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: metrics
     scheme: http
   namespaceSelector:
@@ -127,6 +133,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: metrics
     scheme: http
   namespaceSelector:
@@ -146,6 +153,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: metrics
     scheme: http
   namespaceSelector:
@@ -166,6 +174,7 @@ metadata:
 spec:
   podMetricsEndpoints:
   - interval: 30s
+    scrapeTimeout: 30s
     port: prometheus
     scheme: http
   namespaceSelector:

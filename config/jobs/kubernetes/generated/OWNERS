@@ -2,11 +2,10 @@
 
 reviewers:
 - release-engineering-reviewers
-- justaugustus
 approvers:
 - release-engineering-approvers
-- justaugustus
 emeritus_approvers:
+- justaugustus    # 2021-11-15: https://github.com/kubernetes/test-infra/pull/24328
 - Katharine
 - krzyzacy
 - yguo0905

@@ -17,17 +17,21 @@ limitations under the License.
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
+	gitignore "github.com/denormal/go-gitignore"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"sigs.k8s.io/yaml"
 )
@@ -45,6 +49,10 @@ type ProwYAML struct {
 	Presets     []Preset     `json:"presets"`
 	Presubmits  []Presubmit  `json:"presubmits"`
 	Postsubmits []Postsubmit `json:"postsubmits"`
+
+	// ProwIgnored is a well known, unparsed field where non-Prow fields can
+	// be defined without conflicting with unknown field validation.
+	ProwIgnored *json.RawMessage `json:"prow_ignored,omitempty"`
 }
 
 // ProwYAMLGetter is used to retrieve a ProwYAML. Tests should provide
@@ -100,15 +108,54 @@ func prowYAMLGetter(
 		return nil, err
 	}
 
-	mergeMethod := c.Tide.MergeMethod(orgRepo)
-	log.Debugf("Using merge strategy %q.", mergeMethod)
+	// TODO(mpherman): This is to hopefully mittigate issue with gerrit merges. Need to come up with a solution that checks
+	// each CLs merge strategy as they can differ. ifNecessary is just the gerrit default
+	var mergeMethod types.PullRequestMergeType
+	if gerritsource.IsGerritOrg(identifier) {
+		mergeMethod = types.MergeIfNecessary
+	} else {
+		mergeMethod = c.Tide.MergeMethod(orgRepo)
+	}
+
+	log.WithField("merge-strategy", mergeMethod).Debug("Using merge strategy.")
+	if err := ensureCommits(repo, baseSHA, headSHAs...); err != nil {
+		return nil, fmt.Errorf("failed to fetch headSHAs: %v", err)
+	}
 	if err := repo.MergeAndCheckout(baseSHA, string(mergeMethod), headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to merge: %w", err)
 	}
 
-	prowYAML := &ProwYAML{}
+	return ReadProwYAML(log, repo.Directory(), false)
+}
 
-	prowYAMLDirPath := path.Join(repo.Directory(), inRepoConfigDirName)
+func ensureCommits(repo git.RepoClient, baseSHA string, headSHAs ...string) error {
+	//Ensure baseSHA exists.
+	if exists, _ := repo.CommitExists(baseSHA); !exists {
+		if err := repo.Fetch(baseSHA); err != nil {
+			return fmt.Errorf("failed to fetch baseSHA: %s: %v", baseSHA, err)
+		}
+	}
+	//Ensure headSHAs exist
+	for _, sha := range headSHAs {
+		// This is best effort. No need to check for error
+		if exists, _ := repo.CommitExists(sha); !exists {
+			if err := repo.Fetch(sha); err != nil {
+				return fmt.Errorf("failed to fetch headSHA: %s: %v", sha, err)
+			}
+		}
+	}
+	return nil
+}
+
+// ReadProwYAML parses the .prow.yaml file or .prow directory, no commit checkout or defaulting is included.
+func ReadProwYAML(log *logrus.Entry, dir string, strict bool) (*ProwYAML, error) {
+	prowYAML := &ProwYAML{}
+	var opts []yaml.JSONOpt
+	if strict {
+		opts = append(opts, yaml.DisallowUnknownFields)
+	}
+
+	prowYAMLDirPath := path.Join(dir, inRepoConfigDirName)
 	log.Debugf("Attempting to read config files under %q.", prowYAMLDirPath)
 	if fileInfo, err := os.Stat(prowYAMLDirPath); !os.IsNotExist(err) && err == nil && fileInfo.IsDir() {
 		mergeProwYAML := func(a, b *ProwYAML) *ProwYAML {
@@ -119,19 +166,27 @@ func prowYAMLGetter(
 
 			return c
 		}
-
-		err := filepath.Walk(prowYAMLDirPath, func(p string, info os.FileInfo, err error) error {
+		prowIgnore, err := gitignore.NewRepositoryWithFile(dir, ProwIgnoreFileName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create `%s` parser: %w", ProwIgnoreFileName, err)
+		}
+		err = filepath.Walk(prowYAMLDirPath, func(p string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 			if !info.IsDir() && (filepath.Ext(p) == ".yaml" || filepath.Ext(p) == ".yml") {
+				// Use 'Match' directly because 'Ignore' and 'Include' don't work properly for repositories.
+				match := prowIgnore.Match(p)
+				if match != nil && match.Ignore() {
+					return nil
+				}
 				log.Debugf("Reading YAML file %q", p)
-				bytes, err := ioutil.ReadFile(p)
+				bytes, err := os.ReadFile(p)
 				if err != nil {
 					return err
 				}
 				partialProwYAML := &ProwYAML{}
-				if err := yaml.Unmarshal(bytes, partialProwYAML); err != nil {
+				if err := yaml.Unmarshal(bytes, partialProwYAML, opts...); err != nil {
 					return fmt.Errorf("failed to unmarshal %q: %w", p, err)
 				}
 				prowYAML = mergeProwYAML(prowYAML, partialProwYAML)
@@ -146,13 +201,13 @@ func prowYAMLGetter(
 			return nil, fmt.Errorf("reading %q: %w", prowYAMLDirPath, err)
 		}
 		log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")
-		prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
+		prowYAMLFilePath := path.Join(dir, inRepoConfigFileName)
 		if _, err := os.Stat(prowYAMLFilePath); err == nil {
-			bytes, err := ioutil.ReadFile(prowYAMLFilePath)
+			bytes, err := os.ReadFile(prowYAMLFilePath)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read %q: %w", prowYAMLDirPath, err)
 			}
-			if err := yaml.Unmarshal(bytes, prowYAML); err != nil {
+			if err := yaml.Unmarshal(bytes, prowYAML, opts...); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal %q: %w", prowYAMLDirPath, err)
 			}
 		} else {
@@ -161,7 +216,6 @@ func prowYAMLGetter(
 			}
 		}
 	}
-
 	return prowYAML, nil
 }
 
@@ -194,10 +248,10 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 	if err := defaultPostsubmits(p.Postsubmits, p.Presets, c, identifier); err != nil {
 		return err
 	}
-	if err := validatePresubmits(append(p.Presubmits, c.PresubmitsStatic[identifier]...), c.PodNamespace); err != nil {
+	if err := c.validatePresubmits(append(p.Presubmits, c.GetPresubmitsStatic(identifier)...)); err != nil {
 		return err
 	}
-	if err := validatePostsubmits(append(p.Postsubmits, c.PostsubmitsStatic[identifier]...), c.PodNamespace); err != nil {
+	if err := c.validatePostsubmits(append(p.Postsubmits, c.GetPostsubmitsStatic(identifier)...)); err != nil {
 		return err
 	}
 
@@ -260,8 +314,13 @@ func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, erro
 					return nil, nil
 				}
 			}
-			// Don't unlock the client unless we get an error or the consumer indicates they are done by Clean()ing.
-			if err := client.Fetch(); err != nil {
+			// Don't unlock the client unless we get an error or the consumer
+			// indicates they are done by Clean()ing.
+			// This fetch operation is repeated executed in the clone repo,
+			// which fails if there is a commit being deleted from remote. This
+			// is a corner case, but when it happens it would be really
+			// annoying, adding `--prune` tag here for mitigation.
+			if err := client.Fetch("--prune"); err != nil {
 				client.Unlock()
 				return nil, err
 			}
@@ -313,4 +372,22 @@ func (rc *skipCleanRepoClient) Clean() error {
 	// Skip cleaning and unlock to allow reuse as a cached entry.
 	rc.Mutex.Unlock()
 	return nil
+}
+
+// ContainsInRepoConfigPath indicates whether the specified list of changed
+// files (repo relative paths) includes a file that might be an inrepo config file.
+//
+// This function could report a false positive as it doesn't consider .prowignore files.
+// It is designed to be used to help short circuit when we know a change doesn't touch
+// the inrepo config.
+func ContainsInRepoConfigPath(files []string) bool {
+	for _, file := range files {
+		if file == inRepoConfigFileName {
+			return true
+		}
+		if strings.HasPrefix(file, inRepoConfigDirName+"/") {
+			return true
+		}
+	}
+	return false
 }

@@ -190,7 +190,7 @@ See [Main Output](#main-output). This is only a subset of the main output.
 
 ## Updating JS dependencies for the web page
 
-See: `package.json` + `bazel run @yarn//:yarn install`
+See: `package.json` + `./hack/build/ensure-node_modules.sh`
 
 ## Deployment
 Triage runs as static HTML hosted in GCS that is updated as part of a [Prow Periodic](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml#L27).
@@ -200,4 +200,4 @@ To update the triage image run `make push` from `./triage` which will trigger a 
 To update Triage frontend in Production or Staging manually run `make push-static` or `make push-staging` respectively. Otherwise it is updated on postsubmit via [post-test-infra-upload-triage](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L616).
 
 ### Staging
-   To acces staging see [Triage Staging](https://storage.googleapis.com/k8s-triage/staging).
+   To access staging see [Triage Staging](https://storage.googleapis.com/k8s-triage/staging).

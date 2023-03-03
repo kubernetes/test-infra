@@ -47,7 +47,6 @@ var (
 		"k8s-jkns-pr-kubemark",
 		"k8s-jkns-pr-node-e2e",
 		"k8s-jkns-pr-gce-gpus",
-		"k8s-presubmit-scale",
 		// k8s-infra projects, can't be cleaned by k8s-prow serviceaccounts
 		"k8s-infra-e2e-scale-5k-project",
 		"k8s-infra-e2e-gpu-project",

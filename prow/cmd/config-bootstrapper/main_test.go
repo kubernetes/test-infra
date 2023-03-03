@@ -29,7 +29,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/plugins"
@@ -89,13 +88,41 @@ func testRun(clients localgit.Clients, t *testing.T) {
 		t.Fatalf("Add commit: %v", err)
 	}
 
+	if err := lg.MakeFakeRepo("org", "partition-test"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.Checkout("org", "partition-test", defaultBranch); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+
+	if err := lg.AddCommit("org", "partition-test", map[string][]byte{
+		"config/foo.yaml": []byte(`#foo.yaml`),
+		"config/bar.yaml": []byte(`#bar.yaml`),
+		"config/baz.yaml": []byte(`#baz.yaml`),
+	}); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+
+	if err := lg.MakeFakeRepo("org", "partition-test2"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.Checkout("org", "partition-test2", defaultBranch); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+
+	if err := lg.AddCommit("org", "partition-test2", map[string][]byte{
+		"config/foo.yaml": []byte(`#foo.yaml`),
+		"config/bar.yaml": []byte(`#bar.yaml`),
+	}); err != nil {
+		t.Fatalf("Add commit: %v", err)
+	}
+
 	testcases := []struct {
-		name                      string
-		sourcePaths               []string
-		defaultNamespace          string
-		configUpdater             plugins.ConfigUpdater
-		buildClusterCoreV1Clients map[string]corev1.CoreV1Interface
-		expected                  int
+		name             string
+		sourcePaths      []string
+		defaultNamespace string
+		configUpdater    plugins.ConfigUpdater
+		expected         int
 
 		existConfigMaps    []runtime.Object
 		expectedConfigMaps []*coreapi.ConfigMap
@@ -122,6 +149,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "multikey-config",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{},
 				},
@@ -131,6 +162,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "multikey-config",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{
 						"VERSION":  "some-git-sha",
@@ -171,6 +206,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "multikey-config",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{},
 				},
@@ -180,6 +219,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "multikey-config",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{
 						"VERSION":  "some-git-sha",
@@ -191,6 +234,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "other",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{
 						"VERSION":        "some-git-sha",
@@ -201,6 +248,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "bar",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{
 						"VERSION":        "some-git-sha",
@@ -224,6 +275,184 @@ func testRun(clients localgit.Clients, t *testing.T) {
 				},
 			},
 			expected: 1,
+		},
+		{
+			name:             "PartitionedNames properly partitions",
+			sourcePaths:      []string{filepath.Join(lg.Dir, "org/partition-test")},
+			defaultNamespace: defaultNamespace,
+			configUpdater: plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"config/**/*.yaml": {
+						PartitionedNames: []string{"job-config-part-1", "job-config-part-2"},
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-1",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"foo.yaml": "#foo.yaml",
+						"bar.yaml": "#bar.yaml",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-2",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"baz.yaml": "#baz.yaml",
+					},
+				},
+			},
+		},
+		{
+			name:             "PartitionedNames file moves between partitions properly",
+			sourcePaths:      []string{filepath.Join(lg.Dir, "org/partition-test")},
+			defaultNamespace: defaultNamespace,
+			configUpdater: plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"config/**/*.yaml": {
+						PartitionedNames: []string{"job-config-part-1", "job-config-part-2"},
+					},
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-1",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"foo.yaml": "#foo.yaml",
+					},
+				},
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-2",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"baz.yaml":       "#baz.yaml",
+						"barbarbar.yaml": "#bar.yaml",
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-1",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"foo.yaml": "#foo.yaml",
+						"bar.yaml": "#bar.yaml",
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-2",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"baz.yaml": "#baz.yaml",
+					},
+				},
+			},
+		},
+		{
+			name:             "PartitionedNames: emptied partition is properly wiped",
+			sourcePaths:      []string{filepath.Join(lg.Dir, "org/partition-test2")},
+			defaultNamespace: defaultNamespace,
+			configUpdater: plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"config/**/*.yaml": {
+						PartitionedNames: []string{"job-config-part-1", "job-config-part-2"},
+					},
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-1",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"foo.yaml": "#foo.yaml",
+					},
+				},
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-2",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"barbarbar.yaml": "#bar.yaml",
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-1",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{
+						"foo.yaml": "#foo.yaml",
+						"bar.yaml": "#bar.yaml", // renamed from barbarbar.yaml
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "job-config-part-2",
+						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
+					},
+					Data: map[string]string{},
+				},
+			},
 		},
 	}
 

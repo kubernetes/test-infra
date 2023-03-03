@@ -125,3 +125,69 @@ periodics:
       - auth
       - list
 ```
+
+### Migrate Prow Job to Use Workload Identity
+
+> **Note: Workload identity works best with pod utilities**: Migrate to use pod
+> utilities if there is no `decoration: true` on your job, and come back to this
+> doc once that's done.
+
+#### Background
+
+Prow jobs run in kubernetes pods, and each pod is responsible for uploading artifacts
+to designated remote storage location(e.g. GCS), this upload is done by a
+container called `sidecar`. To be able to upload to GCS, `sidecar` container
+will need to way to authenticate to GCP, which was historically done by GCP
+service account key(normally stored as `service-account` secret in build
+clusters), this key is mounted onto `sidecar` container by prow, which it uses
+for authenticating with GCP.
+
+Workload identity is a keyless solution from GCP that appears to be more secure
+than storing keys, and Prow also supports this by running the entire pod
+with a service account that has GCS operation permission.
+
+To migrate from using GCP service account keys to workload identity, there are
+two different scenarios, and the steps are different. The differentiator is
+whether the prow job itself directly interacts with GCP or not, if any of the
+following config is in the job then it's very likely that the answer is yes:
+
+```
+volumes:
+  - name: <DOES_NOT_MATTER>
+    secret:
+      secretName: service-account
+```
+
+```
+labels:
+  preset-service-account: "true"
+```
+
+#### Migration Steps when Not Interacting with GCP
+
+Add the following sections on the prow job config:
+```
+decoration_config:
+  gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+spec:
+  # This account exists in "default" build cluster for now, for any other build cluster it
+  # can be set up by following the steps from the top of this script.
+  serviceAccountName: prowjob-default-sa
+```
+
+See [example PR of
+migration](https://github.com/kubernetes/test-infra/pull/26374).
+
+#### Migration Steps when Interacting with GCP
+
+1. Inspect the test process/script invoked by the prow job, remove any logic
+   that assumes the existence of GCP service account key file, or the
+   environment variable of `GOOGLE_APPLICATION_CREDENTIALS` before migrating.
+
+1. Creating new GCP service account with necessary GCP IAM permissions, and set
+   up workload identity with the new service account by following [Kubernetes
+   service account](#kubernetes-service-account) and [GCP service
+   account](#gcp-service-account) above.
+
+1. Modify prow job config by adding the sections similar to above, replacing the
+   service account name with the new service account name.

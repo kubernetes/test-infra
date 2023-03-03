@@ -20,8 +20,9 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -93,7 +94,7 @@ type OSFileGetter struct {
 }
 
 func (g *OSFileGetter) GetFile(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filepath.Join(g.Root, filename))
+	return os.ReadFile(filepath.Join(g.Root, filename))
 }
 
 // Update updates the configmap with the data from the identified files.
@@ -106,14 +107,25 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 		return fmt.Errorf("failed to fetch current state of configmap: %w", getErr)
 	}
 
+	labels := map[string]string{
+		"app.kubernetes.io/name":      "prow",
+		"app.kubernetes.io/component": "updateconfig-plugin",
+	}
+
 	if cm == nil || isNotFound {
 		cm = &coreapi.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
+				Labels:    labels,
 			},
 		}
 	}
+
+	if cm.ObjectMeta.Labels == nil {
+		cm.ObjectMeta.Labels = labels
+	}
+
 	if cm.Data == nil || bootstrap {
 		cm.Data = map[string]string{}
 	}
@@ -180,6 +192,9 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 		for _, data := range cm.Data {
 			size += float64(len(data))
 		}
+		for _, data := range cm.BinaryData {
+			size += float64(len(data))
+		}
 		// in a strict sense this can race to update the value with other goroutines
 		// handling other events, but as events are serialized due to the fact that
 		// merges are serial in repositories, this is effectively not an issue here
@@ -197,8 +212,12 @@ type ConfigMapUpdate struct {
 
 // FilterChanges determines which of the changes are relevant for config updating, returning mapping of
 // config map to key to filename to update that key from.
-func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange, defaultNamespace string, log *logrus.Entry) map[plugins.ConfigMapID][]ConfigMapUpdate {
+func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange, defaultNamespace string, bootstrap bool, log *logrus.Entry) map[plugins.ConfigMapID][]ConfigMapUpdate {
 	toUpdate := map[plugins.ConfigMapID][]ConfigMapUpdate{}
+
+	// Keep track of partitioned ConfigMaps that may need to be updated when bootstrapping
+	requireUpdate := map[plugins.ConfigMapID]bool{}
+	haveUpdate := map[plugins.ConfigMapID]bool{}
 	for _, change := range changes {
 		var cm plugins.ConfigMapSpec
 		found := false
@@ -225,7 +244,21 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 		// Yes, update the configmap with the contents of this file
 		for cluster, namespaces := range cm.Clusters {
 			for _, ns := range namespaces {
-				id := plugins.ConfigMapID{Name: cm.Name, Namespace: ns, Cluster: cluster}
+				idForKey := func(_ string) plugins.ConfigMapID {
+					return plugins.ConfigMapID{Name: cm.Name, Namespace: ns, Cluster: cluster}
+				}
+				if len(cm.PartitionedNames) > 0 {
+					idForKey = func(k string) plugins.ConfigMapID {
+						// Choose a name from PartitionedNames based on 'k'.
+						name := cm.PartitionedNames[int(sha256.Sum256([]byte(k))[0])%len(cm.PartitionedNames)]
+						for _, pn := range cm.PartitionedNames {
+							requireUpdate[plugins.ConfigMapID{Name: pn, Namespace: ns, Cluster: cluster}] = true
+						}
+						id := plugins.ConfigMapID{Name: name, Namespace: ns, Cluster: cluster}
+						haveUpdate[id] = true
+						return id
+					}
+				}
 				key := cm.Key
 				if key == "" {
 					if cm.UseFullPathAsKey {
@@ -243,9 +276,11 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 						}
 						// not setting the filename field will cause the key to be
 						// deleted
+						id := idForKey(oldKey)
 						toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: oldKey})
 					}
 				}
+				id := idForKey(key)
 				if change.Status == github.PullRequestFileRemoved {
 					toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key})
 				} else {
@@ -255,6 +290,17 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 					}
 					toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: key, Filename: change.Filename, GZIP: gzip})
 				}
+			}
+		}
+	}
+	if bootstrap {
+		// If we're in bootstrap mode and a partition is completely emptied we won't have any updates for it
+		// so the 'Update' function won't be able to remove the unrecognized keys (all of them) since it
+		// will never consider the ConfigMap. Removing an arbitrary key ensures `Update` processes this
+		// ConfigMap and gets a chance to remove all the keys.
+		for id := range requireUpdate {
+			if !haveUpdate[id] {
+				toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: ""})
 			}
 		}
 	}
@@ -314,7 +360,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
-	toUpdate := FilterChanges(config, changes, defaultNamespace, log)
+	toUpdate := FilterChanges(config, changes, defaultNamespace, bootstrapMode, log)
 	log.WithFields(logrus.Fields{
 		"configmaps_to_update": len(toUpdate),
 		"changes":              len(changes),

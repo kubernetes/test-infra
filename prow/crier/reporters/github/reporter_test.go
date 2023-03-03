@@ -26,13 +26,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
 
@@ -91,7 +89,7 @@ func TestShouldReport(t *testing.T) {
 			pj: v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritReportLabel: "plus-one-this-gerrit-label-please",
+						kube.GerritReportLabel: "plus-one-this-gerrit-label-please",
 					},
 				},
 				Spec: v1.ProwJobSpec{
@@ -169,18 +167,6 @@ func TestPresumitReportingLocks(t *testing.T) {
 	}()
 
 	wg.Wait()
-}
-
-func TestShardedLockCleanup(t *testing.T) {
-	t.Parallel()
-	sl := &shardedLock{mapLock: semaphore.NewWeighted(1), locks: map[simplePull]*semaphore.Weighted{}}
-	key := simplePull{"org", "repo", 1}
-	sl.locks[key] = semaphore.NewWeighted(1)
-	sl.cleanup()
-	if _, exists := sl.locks[key]; exists {
-		t.Error("lock didn't get cleaned up")
-	}
-
 }
 
 func TestReport(t *testing.T) {

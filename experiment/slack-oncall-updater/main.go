@@ -20,9 +20,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -32,13 +32,15 @@ import (
 // and clicking "Copy user ID".
 var githubToSlack = map[string]string{
 	"amwat":          "U9B1P2UGP",
+	"benjaminkazemi": "U03B4SNKVRT",
 	"bentheelder":    "U1P7T516X",
 	"chaodaig":       "U010XUQ9VPE",
 	"chases2":        "UJ9R0FWD6",
 	"cjwagner":       "U4QFZFMCM",
-	"e-blackwelder":  "U011FF4QHAN",
 	"fejta":          "U0E2KHQ13",
+	"juanfescobar":   "U021LQ1C0PJ",
 	"katharine":      "UBTBNJ6GL",
+	"listx":          "UFCU8S8P3",
 	"michelle192837": "U3TRY5WV7",
 	"mpherman2":      "U01AJA1N8NL",
 	"mushuee":        "U013TPFJWC8",
@@ -102,7 +104,7 @@ func updateGroupMembership(token, groupID, userID string) error {
 }
 
 func getTokenFromPath(path string) (string, error) {
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("couldn't open file: %w", err)
 	}

@@ -21,14 +21,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 	"regexp"
-	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	coreapi "k8s.io/api/core/v1"
-	"sigs.k8s.io/yaml"
-
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
@@ -71,59 +70,6 @@ func TestMain(m *testing.M) {
 	c = conf
 
 	os.Exit(m.Run())
-}
-
-func TestReporterConfigRoundtrip(t *testing.T) {
-	tests := []struct {
-		content    string
-		expectedPJ JobBase
-	}{
-		{
-			content: `name: abc
-reporter_config:
-  slack:
-    job_states_to_report: []`,
-			expectedPJ: JobBase{
-				Name: "abc",
-				ReporterConfig: &prowapi.ReporterConfig{
-					Slack: &prowapi.SlackReporterConfig{
-						JobStatesToReport: []prowapi.ProwJobState{},
-					},
-				},
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run("a", func(t *testing.T) {
-			// Unmarshal straight should pass
-			var pj JobBase
-			if err := yaml.Unmarshal([]byte(tc.content), &pj); err != nil {
-				t.Fatal(err)
-			}
-			if diff := cmp.Diff(tc.expectedPJ, pj); diff != "" {
-				t.Fatal("Failed unmarshal straight:\n\n", diff)
-			}
-
-			// Marshal (roundtrip)
-			marshalFromUnmarshal, err := yaml.Marshal(pj)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if diff := cmp.Diff(tc.content, strings.TrimSpace(string(marshalFromUnmarshal))); diff != "" {
-				t.Fatal("Failed marshal back to original: \n\n", diff)
-			}
-
-			// Unmarshal again (roundtrip)
-			var secondPj JobBase
-			if err := yaml.Unmarshal([]byte(marshalFromUnmarshal), &secondPj); err != nil {
-				t.Fatal(err)
-			}
-			if diff := cmp.Diff(tc.expectedPJ, secondPj); diff != "" {
-				t.Fatal("Failed restore:\n\n", diff)
-			}
-		})
-	}
 }
 
 func TestPresubmits(t *testing.T) {
@@ -1490,6 +1436,182 @@ func TestUtilityConfigValidation(t *testing.T) {
 			}
 			if err := tc.uc.Validate(); err == nil && !tc.valid {
 				t.Fatalf("Validation error expected: %v", err)
+			}
+		})
+	}
+}
+
+func TestJobBase_HasPipelineRunSpec(t *testing.T) {
+	type fields struct {
+		PipelineRunSpec       *pipelinev1alpha1.PipelineRunSpec
+		TektonPipelineRunSpec *prowapi.TektonPipelineRunSpec
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{{
+		name: "none set",
+		want: false,
+	}, {
+		name: "PipelineRunSpec set",
+		fields: fields{
+			PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{},
+		},
+		want: true,
+	}, {
+		name: "TektonPipelineRunSpec set",
+		fields: fields{
+			TektonPipelineRunSpec: &prowapi.TektonPipelineRunSpec{},
+		},
+		want: false,
+	}, {
+		name: "TektonPipelineRunSpec.V1VBeta1 set",
+		fields: fields{
+			TektonPipelineRunSpec: &prowapi.TektonPipelineRunSpec{
+				V1Beta1: &pipelinev1beta1.PipelineRunSpec{},
+			},
+		},
+		want: true,
+	}, {
+		name: "both set",
+		fields: fields{
+			PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{},
+			TektonPipelineRunSpec: &prowapi.TektonPipelineRunSpec{
+				V1Beta1: &pipelinev1beta1.PipelineRunSpec{},
+			},
+		},
+		want: true,
+	}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jb := JobBase{
+				PipelineRunSpec:       tt.fields.PipelineRunSpec,
+				TektonPipelineRunSpec: tt.fields.TektonPipelineRunSpec,
+			}
+			if got := jb.HasPipelineRunSpec(); got != tt.want {
+				t.Errorf("JobBase.HasPipelineRunSpec() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestJobBase_GetPipelineRunSpec(t *testing.T) {
+	type fields struct {
+		PipelineRunSpec       *pipelinev1alpha1.PipelineRunSpec
+		TektonPipelineRunSpec *prowapi.TektonPipelineRunSpec
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    *pipelinev1beta1.PipelineRunSpec
+		wantErr bool
+	}{
+		{
+			name: "none set",
+			fields: fields{
+				PipelineRunSpec:       nil,
+				TektonPipelineRunSpec: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "only PipelineRunSpec set",
+			fields: fields{
+				PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
+					ServiceAccountName: "robot",
+					Resources: []pipelinev1alpha1.PipelineResourceBinding{
+						{
+							Name:        "implicit git resource",
+							ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "abc"},
+						},
+					},
+				},
+				TektonPipelineRunSpec: nil,
+			},
+			want: &pipelinev1beta1.PipelineRunSpec{
+				ServiceAccountName: "robot",
+				Resources: []pipelinev1beta1.PipelineResourceBinding{
+					{
+						Name:        "implicit git resource",
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "abc"},
+					},
+				},
+			},
+		},
+		{
+			name: "only TektonPipelineRunSpec set",
+			fields: fields{
+				PipelineRunSpec: nil,
+				TektonPipelineRunSpec: &prowapi.TektonPipelineRunSpec{
+					V1Beta1: &pipelinev1beta1.PipelineRunSpec{
+						ServiceAccountName: "robot",
+						Resources: []pipelinev1beta1.PipelineResourceBinding{
+							{
+								Name:        "implicit git resource",
+								ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "abc"},
+							},
+						},
+					},
+				},
+			},
+			want: &pipelinev1beta1.PipelineRunSpec{
+				ServiceAccountName: "robot",
+				Resources: []pipelinev1beta1.PipelineResourceBinding{
+					{
+						Name:        "implicit git resource",
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "abc"},
+					},
+				},
+			},
+		},
+		{
+			name: "PipelineRunSpec and TektonPipelineRunSpec set",
+			fields: fields{
+				PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
+					ServiceAccountName: "robot",
+					Resources: []pipelinev1alpha1.PipelineResourceBinding{
+						{
+							Name:        "implicit git resource",
+							ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "abc"},
+						},
+					},
+				},
+				TektonPipelineRunSpec: &prowapi.TektonPipelineRunSpec{
+					V1Beta1: &pipelinev1beta1.PipelineRunSpec{
+						ServiceAccountName: "robot",
+						Resources: []pipelinev1beta1.PipelineResourceBinding{
+							{
+								Name:        "implicit git resource",
+								ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "def"},
+							},
+						},
+					},
+				},
+			},
+			want: &pipelinev1beta1.PipelineRunSpec{
+				ServiceAccountName: "robot",
+				Resources: []pipelinev1beta1.PipelineResourceBinding{
+					{
+						Name:        "implicit git resource",
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "def"},
+					},
+				},
+			},
+		}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			jb := JobBase{
+				PipelineRunSpec:       tt.fields.PipelineRunSpec,
+				TektonPipelineRunSpec: tt.fields.TektonPipelineRunSpec,
+			}
+			got, err := jb.GetPipelineRunSpec()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("JobBase.GetPipelineRunSpec() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JobBase.GetPipelineRunSpec() = %v, want %v", got, tt.want)
 			}
 		})
 	}

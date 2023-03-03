@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"testing"
 	"time"
 
@@ -30,11 +31,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/testutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	"k8s.io/test-infra/prow/io/fakeopener"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
+
+type fca struct {
+	c config.Config
+}
+
+func (ca fca) Config() *config.Config {
+	return &ca.c
+}
 
 func TestShouldReport(t *testing.T) {
 	tests := []struct {
@@ -112,7 +122,7 @@ func TestShouldReport(t *testing.T) {
 				pj.Status.PendingTime = &metav1.Time{}
 			}
 
-			kgr := internalNew(testutil.Fca{}.Config, nil, nil, 1.0, false)
+			kgr := New(fca{}.Config, nil, nil, 1.0, false)
 			shouldReport := kgr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 			if shouldReport != tc.shouldReport {
 				t.Errorf("Expected ShouldReport() to return %v, but got %v", tc.shouldReport, shouldReport)
@@ -368,7 +378,7 @@ func TestReportPodInfo(t *testing.T) {
 				pj.Status.State = tc.pjState
 			}
 
-			fca := testutil.Fca{C: config.Config{ProwConfig: config.ProwConfig{
+			fca := fca{c: config.Config{ProwConfig: config.ProwConfig{
 				PodNamespace: "test-pods",
 				Plank: config.Plank{
 					DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
@@ -393,8 +403,8 @@ func TestReportPodInfo(t *testing.T) {
 				patchData: tc.expectedPatch,
 				patchType: types.MergePatchType,
 			}
-			author := &testutil.TestAuthor{}
-			reporter := internalNew(fca.Config, author, rg, 1.0, tc.dryRun)
+			fakeOpener := &fakeopener.FakeOpener{}
+			reporter := New(fca.Config, fakeOpener, rg, 1.0, tc.dryRun)
 			reconcileResult, err := reporter.report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 
 			if tc.expectErr {
@@ -402,25 +412,35 @@ func TestReportPodInfo(t *testing.T) {
 					t.Fatal("Expected an error, but didn't get one")
 				}
 				return
-			} else if err != nil {
+			}
+			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
 			if diff := cmp.Diff(reconcileResult, tc.expectedReconcileResult); diff != "" {
-				t.Errorf("reconcileResult differs from expected reconcileResult: %s", diff)
-			}
-
-			if !tc.expectReport {
-				if author.AlreadyUsed {
-					t.Fatalf("Expected nothing to be written, but something was written to %q:\n\n%s", author.Path, string(author.Content))
-				}
-				return
+				t.Fatalf("reconcileResult differs from expected reconcileResult: %s", diff)
 			}
 
 			var result PodReport
-			err = json.Unmarshal(author.Content, &result)
-			if err != nil {
-				t.Fatalf("Couldn't unmarshal reported JSON: %v", err)
+			var content []byte
+			if fakeOpener.Buffer != nil {
+				content, err = io.ReadAll(fakeOpener.Buffer["gs://kubernetes-jenkins/some-prefix/logs/12345/podinfo.json"])
+				if err != nil {
+					t.Fatalf("Failed read content: %v", err)
+				}
+
+				if len(content) > 0 {
+					if err = json.Unmarshal(content, &result); err != nil {
+						t.Fatalf("Couldn't unmarshal reported JSON: %v", err)
+					}
+				}
+			}
+
+			if !tc.expectReport {
+				if len(content) > 0 {
+					t.Fatalf("Expected nothing to be written, but something was written: %s", string(content))
+				}
+				return
 			}
 
 			if !cmp.Equal(result.Pod, tc.pod) {

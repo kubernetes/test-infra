@@ -1,0 +1,23 @@
+postsubmits:
+  kubernetes/enhancements:
+    - name: post-push-kep-manifest
+      cluster: k8s-infra-prow-build-trusted
+      branches:
+      - ^master$
+      decorate: true
+      max_concurrency: 1
+      spec:
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20230111-cd1b3caf9c
+          command:
+            - sh
+            - "-c"
+            - "export PATH=$PATH:$GOPATH/bin && ./hack/push-manifest.sh"
+          env:
+            - name: KEPS_BUCKET
+              value: "gs://k8s-keps"
+        serviceAccountName: k8s-keps
+      annotations:
+        testgrid-dashboards: sig-arch-enhancements
+        testgrid-tab-name: push-kep-manifest
+        description: 'Generates the KEP Manifest and pushes to the KEPS Bucket'

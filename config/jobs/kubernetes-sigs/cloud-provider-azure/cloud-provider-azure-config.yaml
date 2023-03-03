@@ -1,7 +1,7 @@
 presubmits:
   kubernetes-sigs/cloud-provider-azure:
   - name: pull-cloud-provider-azure-check
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
@@ -10,137 +10,143 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
         - make
         - test-check
+        resources:
+          limits:
+            memory: "9Gi"
+            cpu: "2"
+          requests:
+            memory: "9Gi"
+            cpu: "2"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-check
       description: "Run lint check tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
-  # pull-cloud-provider-azure-e2e runs kubernetes conformance tests.
-  - name: pull-cloud-provider-azure-e2e
-    always_run: true
+  # pull-cloud-provider-azure-e2e-ccm-vmss-capz runs Azure specific e2e tests on vmss.
+  - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azureclients/v2/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     decoration_config:
-      timeout: 5h
+      timeout: 4h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
-    - master
+      - master
     labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.21
-      path_alias: k8s.io/kubernetes
-      workdir: true
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.7
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --build=quick
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-agentpoolcount=2
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.21
-        - --aksengine-mastervmsize=Standard_DS2_v2
-        - --aksengine-agentvmsize=Standard_D4s_v3
-        - --aksengine-ccm
-        - --aksengine-cnm
-        - --aksengine-deploy-custom-k8s
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-        # Specific test args
-        - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
-        - --ginkgo-parallel=30
-        securityContext:
-          privileged: true
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+          command:
+          - runner.sh
+          args:
+          - ./scripts/ci-entrypoint.sh
+          - bash
+          - -c
+          - >-
+            cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+            make test-ccm-e2e
+          securityContext:
+            privileged: true
+          env:
+            - name: TEST_CCM # CAPZ config
+              value: "true"
+            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+              value: "1"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest"
+            - name: CLUSTER_TEMPLATE # CAPZ config
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+            - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+              value: "Standard"
+            - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+              value: "capz"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
-      testgrid-tab-name: pr-cloud-provider-azure-e2e
-      description: "Run Kubernetes e2e tests for cloud-provider-azure."
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz
+      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
-  # pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb runs Azure specific e2e tests with VMSS and basic loadbalancer.
-  - name: pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb
-    always_run: true
+  # pull-cloud-provider-azure-e2e-ccm-vmssflex-capz runs Azure specific e2e tests on vmssflex.
+  - name: pull-cloud-provider-azure-e2e-ccm-vmssflex-capz
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azureclients/v2/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     decoration_config:
-      timeout: 5h
+      timeout: 4h
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
-    - master
+      - master
     labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
     extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.21
-      path_alias: k8s.io/kubernetes
-      workdir: true
+      - org: jackfrancis
+        repo: cluster-api-provider-azure
+        base_ref: vmss-flex-cloudprovider
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --build=quick
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --provider=skeleton
-        - --deployment=aksengine
-        - --aksengine-agentpoolcount=2
-        - --aksengine-admin-username=azureuser
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.21
-        - --aksengine-mastervmsize=Standard_DS2_v2
-        - --aksengine-agentvmsize=Standard_D4s_v3
-        - --aksengine-ccm
-        - --aksengine-cnm
-        - --aksengine-deploy-custom-k8s
-        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-basic-lb.json
-        - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-        # Specific test args
-        - --test-ccm
-        - --ginkgo-parallel=30
-        securityContext:
-          privileged: true
-        env:
-        - name: AZURE_LOADBALANCER_SKU
-          value: "basic"
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+          command:
+          - runner.sh
+          args:
+          - ./scripts/ci-entrypoint.sh
+          - bash
+          - -c
+          - >-
+            cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+            make test-ccm-e2e
+          securityContext:
+            privileged: true
+          env:
+            - name: TEST_CCM # CAPZ config
+              value: "true"
+            - name: TEST_VMSS_FLEX # cloud-provider-azure config
+              value: "true"
+            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+              value: "1"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest"
+            - name: CLUSTER_TEMPLATE # CAPZ config
+              value: https://raw.githubusercontent.com/jackfrancis/cluster-api-provider-azure/vmss-flex-cloudprovider/templates/cluster-template-external-cloud-provider-machinepool.yaml
+            - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+              value: "Standard"
+            - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+              value: "capz"
+            - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
+              value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
+            - name: ENABLE_VMSS_FLEX # cloud-provider-azure config
+              value: "true"
+            - name: ENABLE_MULTI_SLB # cloud-provider-azure config
+              value: "false"
+            - name: PUT_VMSS_VM_BATCH_SIZE # cloud-provider-azure config
+              value: "0"
+            - name: LB_BACKEND_POOL_CONFIG_TYPE # cloud-provider-azure config
+              value: ""
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
-      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-basic-lb
-      description: "Runs Azure specific tests (VMSS + basic LB) with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmssflex-capz
+      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmssflex, using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
-    # pull-cloud-provider-azure-e2e-ccm runs Azure specific e2e tests.
-  - name: pull-cloud-provider-azure-e2e-ccm
-    always_run: true
+  # pull-cloud-provider-azure-e2e-capz runs kubernetes conformance tests.
+  - name: pull-cloud-provider-azure-e2e-capz
+    skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^pkg/azureclients/v2/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     decoration_config:
       timeout: 5h
@@ -148,118 +154,112 @@ presubmits:
     branches:
       - master
     labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
     extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.7
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
       - org: kubernetes
         repo: kubernetes
-        base_ref: release-1.21
+        base_ref: master
         path_alias: k8s.io/kubernetes
-        workdir: true
+        workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
-            - runner.sh
-            - kubetest
+          - runner.sh
           args:
-            # Generic e2e test args
-            - --test
-            - --up
-            - --down
-            - --build=quick
-            - --dump=$(ARTIFACTS)
-            # Azure-specific test args
-            - --provider=skeleton
-            - --deployment=aksengine
-            - --aksengine-agentpoolcount=2
-            - --aksengine-admin-username=azureuser
-            - --aksengine-creds=$(AZURE_CREDENTIALS)
-            - --aksengine-orchestratorRelease=1.21
-            - --aksengine-mastervmsize=Standard_DS2_v2
-            - --aksengine-agentvmsize=Standard_D4s_v3
-            - --aksengine-ccm
-            - --aksengine-cnm
-            - --aksengine-deploy-custom-k8s
-            - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-            - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-            - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-            # Specific test args
-            - --test-ccm
-            - --ginkgo-parallel=30
+          - ./scripts/ci-entrypoint.sh
+          - bash
+          - -c
+          - >-
+            cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+            cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+            make test-e2e-capz
           securityContext:
             privileged: true
           env:
-            - name: AZURE_LOADBALANCER_SKU
+            - name: TEST_CCM # CAPZ config
+              value: "true"
+            - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "standard"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest"
+            - name: GINKGO_ARGS # cloud-provider-azure config
+              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+              value: "1"
+            - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+              value: "capz"
+            - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+              value: "30"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
-      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm
-      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-capz
+      description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
       testgrid-num-columns-recent: '30'
-    # pull-cloud-provider-azure-e2e-ccm-vmss runs Azure specific e2e tests with vmss.
-  - name: pull-cloud-provider-azure-e2e-ccm-vmss
-    always_run: true
-    decorate: true
-    decoration_config:
-      timeout: 5h
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    branches:
-      - master
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: release-1.21
-        path_alias: k8s.io/kubernetes
-        workdir: true
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
-          command:
-            - runner.sh
-            - kubetest
-          args:
-            # Generic e2e test args
-            - --test
-            - --up
-            - --down
-            - --build=quick
-            - --dump=$(ARTIFACTS)
-            # Azure-specific test args
-            - --provider=skeleton
-            - --deployment=aksengine
-            - --aksengine-agentpoolcount=2
-            - --aksengine-admin-username=azureuser
-            - --aksengine-creds=$(AZURE_CREDENTIALS)
-            - --aksengine-orchestratorRelease=1.21
-            - --aksengine-mastervmsize=Standard_DS2_v2
-            - --aksengine-agentvmsize=Standard_D4s_v3
-            - --aksengine-ccm
-            - --aksengine-cnm
-            - --aksengine-deploy-custom-k8s
-            - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-            - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
-            - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-            # Specific test args
-            - --test-ccm
-            - --ginkgo-parallel=30
-          securityContext:
-            privileged: true
-          env:
-            - name: AZURE_LOADBALANCER_SKU
-              value: "standard"
-    annotations:
-      testgrid-dashboards: provider-azure-cloud-provider-azure
-      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss
-      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-      testgrid-num-columns-recent: '30'
+  # pull-cloud-provider-azure-e2e-ccm-capz runs Azure specific e2e tests.
   - name: pull-cloud-provider-azure-e2e-ccm-capz
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azureclients/v2/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.7
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+          command:
+          - runner.sh
+          - ./scripts/ci-entrypoint.sh
+          args:
+          - bash
+          - -c
+          - >-
+            pushd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+            make test-ccm-e2e &&
+            popd
+          securityContext:
+            privileged: true
+          env:
+            - name: TEST_CCM # CAPZ config
+              value: "true"
+            - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+              value: "standard"
+            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+              value: "1"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest"
+            - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+              value: "capz"
+    annotations:
+      testgrid-dashboards: provider-azure-cloud-provider-azure
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
+      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
+      testgrid-num-columns-recent: '30'
+  # pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz runs Azure specific e2e tests with cloud controller manager and IP-based load balancer backend pools.
+  - name: pull-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
+    always_run: false
+    optional: true
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azureclients/v2/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     decoration_config:
       timeout: 3h
@@ -274,35 +274,57 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-0.5
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
           command:
-          - runner.sh
+            - runner.sh
           args:
-          - ./scripts/ci-entrypoint.sh
-          - bash
-          - -c
-          - >-
-            cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
-            make test-ccm-e2e
+            - ./scripts/ci-entrypoint.sh
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+              make test-ccm-e2e
           securityContext:
             privileged: true
           env:
-            - name: TEST_CCM
+            - name: TEST_CCM # CAPZ config
               value: "true"
-            - name: AZURE_LOADBALANCER_SKU
-              value: "standard"
+            - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+              value: "1"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest"
+            - name: CLUSTER_TEMPLATE # CAPZ config
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+            - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+              value: "Standard"
+            - name: ENABLE_MULTI_SLB # cloud-provider-azure config
+              value: "false"
+            - name: PUT_VMSS_VM_BATCH_SIZE # cloud-provider-azure config
+              value: "0"
+            - name: LB_BACKEND_POOL_CONFIG_TYPE # cloud-provider-azure config
+              value: "nodeIP"
+            - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
+              value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
+            - name: CCM_E2E_ARGS # cloud-provider-azure config
+              value: "-ginkgo.skip=\"\\[Serial\\]\\[Slow\\]|Private\\slink\\sservice|\\[MultipleAgentPools\\]\""
+            - name: LABEL_FILTER # cloud-provider-azure config
+              value: "!Serial && !Slow && !PLS && !Multi-Nodepool"
+            - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+              value: "capz"
+            - name: ENABLE_VMSS_FLEX # cloud-provider-azure config
+              value: "false"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
-      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
-      description: "Runs Azure specific tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
+      testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
+      description: "Runs Azure specific e2e tests with cloud controller manager and IP-based load balancer backend pools."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-unit
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     path_alias: sigs.k8s.io/cloud-provider-azure
     branches:
@@ -311,7 +333,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
         args:
@@ -323,702 +345,723 @@ presubmits:
       description: "Run unit tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
 periodics:
-- interval: 24h
-  # cloud-provider-azure-master runs Azure specific tests periodically.
-  name: cloud-provider-azure-master
+- cron: '0 16 * * *'  # Run at 16:00 UTC everyday
+  # cloud-provider-azure-master-ipv6-capz runs Azure specific tests periodically using a stable capz release in an IPv6 single stack cluster.
+  name: cloud-provider-azure-master-ipv6-capz
   decorate: true
   decoration_config:
     timeout: 5h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.21
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test-ccm
-      - --ginkgo-parallel=30
-      env:
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-master
-    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
-  # cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
-  name: cloud-provider-azure-autoscaling
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.21
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-autoscaler.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test-ccm
-      - --ginkgo-parallel=1
-      securityContext:
-        privileged: true
-      env:
-      - name: CCM_E2E_ARGS
-        value: "-ginkgo.focus=autoscaler"
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-autoscaling
-    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs node autoscaling tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
-  # cloud-provider-azure-autoscaling-multipool runs node autoscaling tests with multiple nodepools periodically.
-  name: cloud-provider-azure-autoscaling-multipool
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.21
-      path_alias: k8s.io/kubernetes
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.7
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
     - org: kubernetes-sigs
       repo: cloud-provider-azure
       base_ref: master
       path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_F2
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-autoscaler-multi-nodepool.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test-ccm
-      - --ginkgo-parallel=1
-      securityContext:
-        privileged: true
-      env:
-      - name: CCM_E2E_ARGS
-        value: "-ginkgo.focus=autoscaler"
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "v1.25.3"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+        - name: CLUSTER_TEMPLATE # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-ipv6.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-autoscaling-multipool
+    testgrid-tab-name: cloud-provider-azure-master-ipv6-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs node multiple nodepools autoscaling tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
-  # cloud-provider-azure-conformance runs Kubernetes conformance tests periodically.
-  name: cloud-provider-azure-conformance
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in an IPv6 single stack cluster."
+- cron: '0 16 * * *'  # Run at 16:00 UTC everyday
+  # cloud-provider-azure-master-capz runs Azure specific tests periodically using a stable capz release.
+  name: cloud-provider-azure-master-capz
   decorate: true
   decoration_config:
     timeout: 5h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.7
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "latest"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-master-capz
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release."
+- cron: '0 16 * * *'  # Run at 16:00 UTC everyday
+  # cloud-provider-azure-master-capz runs Azure specific tests periodically using capz:main.
+  name: cloud-provider-azure-master-capz-main
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "latest"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-master-capz-main
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using capz:main."
+- cron: '0 16 * * *'  # Run at 16:00 UTC everyday
+  name: cloud-provider-azure-ccm-windows-capz
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.7
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: TEST_WINDOWS # CAPZ config
+          value: "true"
+        - name: WINDOWS_SERVER_VERSION # CAPZ config
+          value: "windows-2022"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "latest"
+        - name: WORKER_MACHINE_COUNT # CAPZ config
+          value: "0"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-ccm-windows-capz
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "[Windows] Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
+- cron: '0 17 * * *'  # Run at 17:00 UTC everyday
+  # cloud-provider-azure-conformance-capz runs Kubernetes conformance tests periodically.
+  name: cloud-provider-azure-conformance-capz
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: master
     path_alias: k8s.io/kubernetes
+    workdir: false
   - org: kubernetes-sigs
     repo: cloud-provider-azure
     base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       command:
       - runner.sh
-      - kubetest
       args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
-      - --ginkgo-parallel=30
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
       securityContext:
         privileged: true
+      env:
+      - name: TEST_CCM # CAPZ config
+        value: "true"
+      - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+        value: "standard"
+      - name: KUBERNETES_VERSION # CAPZ config
+        value: "latest"
+      - name: GINKGO_ARGS # cloud-provider-azure config
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+        value: "1"
+      - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+        value: "capz"
+      - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+        value: "30"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-conformance
+    testgrid-tab-name: cloud-provider-azure-conformance-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
-  # cloud-provider-azure-slow runs Kubernetes slow tests periodically.
-  name: cloud-provider-azure-slow
+- cron: '0 17 * * *'  # Run at 17:00 UTC everyday
+  name: cloud-provider-azure-conformance-windows-capz
   decorate: true
   decoration_config:
     timeout: 5h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: master
     path_alias: k8s.io/kubernetes
+    workdir: false
   - org: kubernetes-sigs
     repo: cloud-provider-azure
     base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       command:
       - runner.sh
-      - kubetest
       args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/e2e-slow.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-      - --ginkgo-parallel=4
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
       securityContext:
         privileged: true
+      env:
+      - name: TEST_CCM # CAPZ config
+        value: "true"
+      - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+        value: "standard"
+      - name: KUBERNETES_VERSION # CAPZ config
+        value: "latest"
+      - name: GINKGO_ARGS # cloud-provider-azure config
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[LinuxOnly\] --node-os-distro=windows --report-dir=/logs/artifacts --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+        value: "1"
+      - name: TEST_WINDOWS # CAPZ config
+        value: "true"
+      - name: WORKER_MACHINE_COUNT # CAPZ config
+        value: "0"
+      - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+        value: "capz"
+      - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+        value: "3"
+      - name: GINKGO_TOLERATE_FLAKES # cloud-provider-azure config
+        value: "y"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-slow
+    testgrid-tab-name: cloud-provider-azure-conformance-windows-capz
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "[Windows] Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
+- cron: '0 17 * * *'  # Run at 17:00 UTC everyday
+  # cloud-provider-azure-slow-capz runs Kubernetes slow tests periodically.
+  name: cloud-provider-azure-slow-capz
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: false
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      command:
+      - runner.sh
+      args:
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
+      securityContext:
+        privileged: true
+      env:
+      - name: TEST_CCM # CAPZ config
+        value: "true"
+      - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+        value: "standard"
+      - name: KUBERNETES_VERSION # CAPZ config
+        value: "latest"
+      - name: GINKGO_ARGS # cloud-provider-azure config
+        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --report-dir=/logs/artifacts --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+        value: "1"
+      - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+        value: "capz"
+      - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+        value: "4"
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-slow-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
-  # cloud-provider-azure-serial runs Kubernetes serial tests periodically.
-  name: cloud-provider-azure-serial
+- cron: '0 18 * * *'  # Run at 18:00 UTC everyday
+  # cloud-provider-azure-master-vmss-capz runs Azure specific tests periodically using a stable capz release on vmss.
+  name: cloud-provider-azure-master-vmss-capz
   decorate: true
   decoration_config:
     timeout: 5h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
     preset-dind-enabled: "true"
-    preset-k8s-ssh: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.7
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "latest"
+        - name: CLUSTER_TEMPLATE # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "Standard"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-master-vmss-capz
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss using a stable capz release."
+- cron: '0 18 * * *'  # Run at 18:00 UTC everyday
+  # cloud-provider-azure-conformance-vmss-capz runs Kubernetes conformance tests periodically on vmss.
+  name: cloud-provider-azure-conformance-vmss-capz
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: master
     path_alias: k8s.io/kubernetes
-  - org: kubernetes
+    workdir: false
+  - org: kubernetes-sigs
     repo: cloud-provider-azure
     base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       command:
       - runner.sh
-      - kubetest
       args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_D4s_v3
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(KUBE_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-serial.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run
-      - --ginkgo-parallel=1
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
       securityContext:
         privileged: true
       env:
-      - name: KUBE_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # Requires preset-k8s-ssh label
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # Requires preset-k8s-ssh label
-      - name: KUBE_SSH_USER
-        value: azureuser
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
+      - name: TEST_CCM # CAPZ config
+        value: "true"
+      - name: KUBERNETES_VERSION # CAPZ config
+        value: "latest"
+      - name: GINKGO_ARGS # cloud-provider-azure config
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+        value: "1"
+      - name: CLUSTER_TEMPLATE # CAPZ config
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+      - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+        value: "Standard"
+      - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+        value: "capz"
+      - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+        value: "30"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-serial
+    testgrid-tab-name: cloud-provider-azure-conformance-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs Kubernetes serial tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
-  # cloud-provider-azure-master-vmss runs Azure specific tests periodically on VMSS.
-  name: cloud-provider-azure-master-vmss
+    description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
+- cron: '0 19 * * *'  # Run at 19:00 UTC everyday
+  # cloud-provider-azure-conformance-serial-vmss-capz runs Kubernetes conformance serial tests periodically on vmss.
+  name: cloud-provider-azure-conformance-serial-vmss-capz
   decorate: true
   decoration_config:
     timeout: 5h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: master
     path_alias: k8s.io/kubernetes
+    workdir: false
   - org: kubernetes-sigs
     repo: cloud-provider-azure
     base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       command:
       - runner.sh
-      - kubetest
       args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test-ccm
-      - --ginkgo-parallel=30
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
+      securityContext:
+        privileged: true
       env:
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
-      securityContext:
-        privileged: true
+      - name: TEST_CCM # CAPZ config
+        value: "true"
+      - name: KUBERNETES_VERSION # CAPZ config
+        value: "latest"
+      - name: GINKGO_ARGS # cloud-provider-azure config
+        # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
+        value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run|In-tree.Volumes|RuntimeClass.should.run.a.Pod.requesting.a.RuntimeClass.with.scheduling.with.taints|Multi-AZ.Clusters.should.spread.the.pods.of.a.replication.controller.across.zones|Multi-AZ.Clusters.should.spread.the.pods.of.a.service.across.zones|Should.test.that.pv.used.in.a.pod.that.is.deleted.while.the.kubelet.is.down.cleans.up.when.the.kubelet.returns|Should.test.that.pv.used.in.a.pod.that.is.force.deleted.while.the.kubelet.is.down.cleans.up.when.the.kubelet.returns|Should.test.that.pv.written.before.kubelet.restart.is.readable.after.restart|subPath.should.unmount.if.pod.is.force.deleted.while.kubelet.is.down|subPath.should.unmount.if.pod.is.gracefully.deleted.while.kubelet.is.down|Should.test.that.pv.written.before.kubelet.restart.is.readable.after.restart --report-dir=/logs/artifacts --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+        value: "1"
+      - name: CLUSTER_TEMPLATE # CAPZ config
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+      - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+        value: "Standard"
+      - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+        value: "capz"
+      - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+        value: "1"
+      - name: GINKGO_TOLERATE_FLAKES # cloud-provider-azure config
+        value: "y"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-master-vmss
+    testgrid-tab-name: cloud-provider-azure-conformance-serial-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
-- interval: 24h
-  # cloud-provider-azure-conformance-vmss runs Kubernetes conformance tests periodically on VMSS.
-  name: cloud-provider-azure-conformance-vmss
+    description: "Runs Kubernetes serial conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
+- cron: '0 19 * * *'  # Run at 19:00 UTC everyday
+  # cloud-provider-azure-conformance-multiple-zones-vmss-capz runs Kubernetes conformance tests periodically on vmss multiple zones.
+  name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
   decorate: true
   decoration_config:
     timeout: 5h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: master
     path_alias: k8s.io/kubernetes
+    workdir: false
   - org: kubernetes-sigs
     repo: cloud-provider-azure
     base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       command:
       - runner.sh
-      - kubetest
       args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
-      - --ginkgo-parallel=30
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
       securityContext:
         privileged: true
+      env:
+      - name: TEST_CCM # CAPZ config
+        value: "true"
+      - name: KUBERNETES_VERSION # CAPZ config
+        value: "latest"
+      - name: GINKGO_ARGS # cloud-provider-azure config
+        # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
+        value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes|ephemeral.should.support.expansion.of.pvcs.created.for.ephemeral.pvcs --report-dir=/logs/artifacts --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+        value: "1"
+      - name: CLUSTER_TEMPLATE # CAPZ config
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
+      - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+        value: "Standard"
+      - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+        value: "capz"
+      - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+        value: "30"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-conformance-vmss
+    testgrid-tab-name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
-- interval: 24h
-  # cloud-provider-azure-slow-vmss runs Kubernetes slow tests periodically on VMSS.
-  name: cloud-provider-azure-slow-vmss
+    description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss multiple zones."
+- cron: '0 19 * * *'  # Run at 19:00 UTC everyday
+  # cloud-provider-azure-slow-vmss-capz runs Kubernetes slow tests periodically.
+  name: cloud-provider-azure-slow-vmss-capz
   decorate: true
   decoration_config:
     timeout: 5h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.7
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.21
+    base_ref: master
     path_alias: k8s.io/kubernetes
+    workdir: false
   - org: kubernetes-sigs
     repo: cloud-provider-azure
     base_ref: master
     path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       command:
       - runner.sh
-      - kubetest
       args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-      - --ginkgo-parallel=4
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
       securityContext:
         privileged: true
+      env:
+      - name: TEST_CCM # CAPZ config
+        value: "true"
+      - name: KUBERNETES_VERSION # CAPZ config
+        value: "latest"
+      - name: GINKGO_ARGS # cloud-provider-azure config
+        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --report-dir=/logs/artifacts --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+        value: "1"
+      - name: CLUSTER_TEMPLATE # CAPZ config
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+      - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+        value: "Standard"
+      - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+        value: "capz"
+      - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+        value: "30"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-slow-vmss
+    testgrid-tab-name: cloud-provider-azure-slow-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
-- interval: 24h
-  # cloud-provider-azure-multiple-zones runs Kubernetes multiple availability zones tests periodically.
-  name: cloud-provider-azure-multiple-zones
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.21
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.21
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-multi-zones.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy
-      - --ginkgo-parallel=15
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-multiple-zones
-    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs Kubernetes multiple availability zones tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on VMSS."
-
-# conformance test against kubernetes master branch with `azure` ipv6
-- interval: 24h
-  name: ci-kubernetes-azure-conformance-ipv6
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.22
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-ipv6.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --ginkgo-parallel=30
-      # TODO (aramase) remove oidc issuer test from skip after changes in aks-engine/switch to capz for IPv6 jobs
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|ServiceAccountIssuerDiscovery.should.support.OIDC.discovery.of.service.account.issuer
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: ci-kubernetes-azure-conformance-ipv6
-    description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 azure cluster
-    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    testgrid-num-columns-recent: '3'
-
-# scalability tests
-- interval: 24h
-  name: ci-kubernetes-kubemark-100-azure-test
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-scalability
-    testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
-    testgrid-num-failures-to-alert: '1'
-    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled."
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      - --up
-      - --deployment=aksengine
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --build-with-kubemark=true
-      - --build=none
-      - --provider=skeleton
-      - --kubemark-build-script-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/build-kubemark.sh
-      - --kubemark-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/kubemark-cluster.json
-      - --external-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/external-cluster.json
-      - --hollow-nodes-deployment-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/hollow-node.yaml
-      - --clusterloader2-bin-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/clusterloader2/clusterloader-Linux
-      - --kubemark-size=100
-      - --kubemark-location=eastus2
-      securityContext:
-        privileged: true
+    description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."

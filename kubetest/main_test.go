@@ -19,7 +19,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -63,26 +62,20 @@ func TestWriteMetadata(t *testing.T) {
 
 	writeTmpMetadataSource := func(filePath string, md mdata) {
 		outputBytes, _ := json.MarshalIndent(md, "", "  ")
-		if err := ioutil.WriteFile(filePath, outputBytes, 0644); err != nil {
+		if err := os.WriteFile(filePath, outputBytes, 0644); err != nil {
 			t.Fatalf("write to %q: %v", filePath, err)
 		}
 	}
 
 	for _, tc := range cases {
-		topDir, err := ioutil.TempDir("", "TestWriteMetadata")
-
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		defer os.RemoveAll(topDir) // Stack up all the cleanups
+		topDir := t.TempDir()
 
 		dumpDir := filepath.Join(topDir, "artifacts")
 		if err := os.Mkdir(dumpDir, 0755); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := ioutil.WriteFile(filepath.Join(topDir, "version"), []byte(tc.version+"\n"), 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(topDir, "version"), []byte(tc.version+"\n"), 0644); err != nil {
 			t.Fatalf("write %q/version: %v", topDir, err)
 		}
 		sourceNames := []string{}

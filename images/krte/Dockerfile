@@ -16,7 +16,7 @@
 # NOTE: we attempt to avoid unnecessary tools and image layers while
 # supporting kubernetes builds, kind installation, etc.
 
-FROM debian:buster
+FROM debian:bullseye
 
 # arg that specifies the image name (for debugging)
 ARG IMAGE_ARG
@@ -41,8 +41,8 @@ COPY wrapper.sh /usr/local/bin/
 
 # Install tools needed to:
 # - install docker
-# - build kind (dockerized)
-# - build kubernetes (dockerized, or with bazel)
+# - build kind
+# - build kubernetes
 #
 # TODO: the `sed` is a bit of a hack, look into alternatives.
 # Why this exists: `docker service start` on debian runs a `cgroupfs_mount` method,
@@ -64,16 +64,14 @@ RUN echo "Installing Packages ..." \
             mercurial \
             pkg-config \
             procps \
-            python \
-            python-dev \
-            python-pip \
+            python3 \
             rsync \
             software-properties-common \
             unzip \
         && rm -rf /var/lib/apt/lists/* \
     && echo "Installing Go ..." \
-        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"\
-        && curl -fsSL "https://storage.googleapis.com/golang/${GO_TARBALL}" --output "${GO_TARBALL}" \
+        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz" \
+        && curl -fsSL "https://go.dev/dl/${GO_TARBALL}" --output "${GO_TARBALL}" \
         && tar xzf "${GO_TARBALL}" -C /usr/local \
         && rm "${GO_TARBALL}"\
         && mkdir -p "${GOPATH}/bin" \
@@ -93,7 +91,7 @@ RUN echo "Installing Packages ..." \
             "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
             $(lsb_release -cs) stable" \
         && apt-get update \
-        && apt-get install -y --no-install-recommends docker-ce \
+        && apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin \
         && rm -rf /var/lib/apt/lists/* \
         && sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
     && echo "Ensuring Legacy Iptables ..." \

@@ -4,16 +4,13 @@ aliases:
   - chaodaiG
   - chases2
   - cjwagner
-  - e-blackwelder
-  - fejta
   - listx
   - michelle192837
   - mpherman2
 
   # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
   build-admins:
-    - amwat
-    - BenTheElder
+    - BenjaminKazemi
     - MushuEE
     - spiffxp
 
@@ -33,8 +30,7 @@ aliases:
   sig-apps-leads:
     - janetkuo
     - kow3ns
-    - mattfarina
-    - prydonius
+    - soltysh
   sig-architecture-leads:
     - derekwaynecarr
     - dims
@@ -44,11 +40,13 @@ aliases:
     - enj
     - liggitt
     - mikedanese
-    - tallclair
+    - ritazh
   sig-autoscaling-leads:
+    - gjtempleton
     - mwielgus
   sig-cli-leads:
-    - pwittrock
+    - KnVerey
+    - eddiezane
     - seans3
     - soltysh
   sig-cloud-provider-leads:
@@ -58,20 +56,21 @@ aliases:
     - fabriziopandini
     - justinsb
     - neolit123
-    - timothysc
+    - vincepri
   sig-contributor-experience-leads:
-    - castrojo
+    - alisondy
     - cblecker
     - mrbobbytables
     - nikhita
   sig-docs-leads:
-    - irvifa
+    - divya-mohan0209
     - jimangel
-    - kbarnard10
     - kbhawkey
+    - onlydole
     - sftim
   sig-instrumentation-leads:
-    - brancz
+    - dashpole
+    - dgrisonnet
     - ehashman
     - logicalhan
   sig-k8s-infra-leads:
@@ -80,8 +79,8 @@ aliases:
     - spiffxp
     - thockin
   sig-multicluster-leads:
+    - jeremyot
     - pmorie
-    - quinton-hoole
   sig-network-leads:
     - caseydavenport
     - dcbw
@@ -95,16 +94,21 @@ aliases:
     - justaugustus
     - puerco
     - saschagrunert
+    - Verolop
   sig-scalability-leads:
-    - mm4tt
+    - marseel
     - shyamjvs
     - wojtek-t
   sig-scheduling-leads:
     - Huang-Wei
     - ahg-g
+    - alculquicondor
+  sig-security-leads:
+    - IanColdwater
+    - tabbysable
   sig-service-catalog-leads:
     - jberkhahn
-    - mszostok
+    - jhvhs
   sig-storage-leads:
     - jsafrane
     - msau42
@@ -113,7 +117,10 @@ aliases:
   sig-testing-leads:
     - BenTheElder
     - alvaroaleman
+    - aojea
     - cjwagner
+    - michelle192837
+    - pohly
     - spiffxp
     - stevekuznetsov
   sig-ui-leads:
@@ -121,21 +128,17 @@ aliases:
     - maciaszczykm
     - shu-mutou
   sig-usability-leads:
-    - Rajakavitha1
     - hpandeycodeit
+    - morengab
     - tashimi
-    - vllry
   sig-windows-leads:
-    - benmoss
-    - ddebroy
+    - claudiubelu
+    - jayunit100
+    - jsturtevant
     - marosset
-    - michmike
-  wg-apply-leads:
-    - lavalamp
-  wg-component-standard-leads:
-    - mtaufen
-    - stealthybox
-    - sttts
+  wg-api-expression-leads:
+    - apelisse
+    - kwiesmueller
   wg-data-protection-leads:
     - xing-yang
     - yuxiangqian
@@ -143,29 +146,19 @@ aliases:
     - cantbewong
     - cindyxing
     - dejanb
-  wg-lts-leads:
-    - imkin
-    - quinton-hoole
-    - tpepper
-    - youngnick
-  wg-machine-learning-leads:
-    - k82cn
-    - kow3ns
-    - vishh
   wg-multitenancy-leads:
     - srampal
     - tashimi
   wg-policy-leads:
-    - ericavonb
-    - hannibalhuang
-  wg-resource-management-leads:
-    - derekwaynecarr
-    - vishh
-  wg-security-audit-leads:
-    - aasmall
-    - cji
-    - jaybeale
-    - joelsmith
+    - JimBugwadia
+    - rficcaglia
+  wg-reliability-leads:
+    - deads2k
+    - stevekuznetsov
+    - wojtek-t
+  wg-structured-logging-leads:
+    - pohly
+    - serathius
   ug-big-data-leads:
     - erikerlandson
     - foxish
@@ -176,35 +169,34 @@ aliases:
     - mylesagray
     - phenixblue
   committee-code-of-conduct:
-    - AevaOnline
     - celestehorgan
     - karenhchu
-    - tashimi
+    - palnabarun
     - tpepper
-  committee-product-security:
+    - vllry
+  committee-security-response:
     - cjcullen
     - joelsmith
-    - jonpulsifer
-    - liggitt
     - lukehinds
-    - philips
+    - micahhausler
+    - swamymsft
+    - tabbysable
     - tallclair
   committee-steering:
+    - bentheelder
     - cblecker
-    - derekwaynecarr
-    - dims
-    - nikhita
+    - justaugustus
+    - mrbobbytables
     - parispittman
-    - spiffxp
-    - timothysc
+    - palnabarun
+    - tpepper
 ## BEGIN CUSTOM CONTENT
   provider-aws:
-    - d-nishi
     - justinsb
-    - kris-nova
+    - nckturner
+    - wongma7
   provider-azure:
     - craiglpeters
-    - justaugustus
     - feiskyer
     - khenidak
   provider-gcp:
@@ -233,16 +225,21 @@ aliases:
   #
   release-engineering-approvers:
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
+    - jeremyrickard # SIG Chair / RelEng subproject owner / Release Manager
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
+    - palnabarun # Release Manager
     - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
+    - Verolop # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - xmudrii # Release Manager
   release-engineering-reviewers:
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
+    - jeremyrickard # SIG Chair / RelEng subproject owner / Release Manager
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
+    - palnabarun # Release Manager
     - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
+    - Verolop # SIG Technical Lead / RelEng subproject owner / Release Manager
     - xmudrii # Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
@@ -258,24 +255,22 @@ aliases:
     - mrbobbytables # subproject owner
 
   # copied from sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
-  cluster-api-admins:
-    - detiber
-    - justinsb
-    - davidewatson
-    - vincepri
   cluster-api-vsphere-maintainers:
     - frapposelli
     - yastij
     - randomvariable
+    - srm09
   # end sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
 
   # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
   controller-runtime-admins:
   - vincepri
   - mengqiy
+  - joelanford
 
   controller-runtime-maintainers:
   - vincepri
+  - joelanford
 
   controller-runtime-approvers:
   - gerred
@@ -291,8 +286,10 @@ aliases:
 
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
+  - camilamacedo86
   - mengqiy
   - estroz
+  - joelanford
 
   kubebuilder-reviewers:
   - alexeldeib
@@ -317,3 +314,23 @@ aliases:
     - listx
     - puerco
     - saschagrunert
+
+  publishing-bot-approvers:
+    - cpanato
+    - dims
+    - justaugustus
+    - nikhita
+    - puerco
+    - saschagrunert
+    - sttts
+  publishing-bot-reviewers:
+    - cpanato
+    - dims
+    - justaugustus
+    - nikhita
+    - palnabarun
+    - puerco
+    - saschagrunert
+    - sttts
+    - Verolop
+    - xmudrii

@@ -20,9 +20,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
+	"time"
 
+	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/pod-utils/clone"
+
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // JobSpec is the full downward API that we expose to
@@ -164,6 +170,9 @@ func EnvForType(jobType prowapi.ProwJobType) []string {
 
 // getRevisionFromRef returns a ref or sha from a refs object
 func getRevisionFromRef(refs *prowapi.Refs) string {
+	if refs == nil {
+		return ""
+	}
 	if len(refs.Pulls) > 0 {
 		return refs.Pulls[0].SHA
 	}
@@ -176,22 +185,74 @@ func getRevisionFromRef(refs *prowapi.Refs) string {
 }
 
 // GetRevisionFromSpec returns a main ref or sha from a spec object
-func GetRevisionFromSpec(spec *JobSpec) string {
-	if spec.Refs != nil {
-		return getRevisionFromRef(spec.Refs)
-	} else if len(spec.ExtraRefs) > 0 {
-		return getRevisionFromRef(&spec.ExtraRefs[0])
-	}
-	return ""
+func GetRevisionFromSpec(jobSpec *JobSpec) string {
+	return GetRevisionFromRefs(jobSpec.Refs, jobSpec.ExtraRefs)
 }
 
-// MainRefs determines the main refs under test, if there are any
-func (s *JobSpec) MainRefs() *prowapi.Refs {
-	if s.Refs != nil {
-		return s.Refs
+func GetRevisionFromRefs(refs *prowapi.Refs, extra []prowapi.Refs) string {
+	return getRevisionFromRef(mainRefs(refs, extra))
+}
+
+func mainRefs(refs *prowapi.Refs, extra []prowapi.Refs) *prowapi.Refs {
+	if refs != nil {
+		return refs
 	}
-	if len(s.ExtraRefs) > 0 {
-		return &s.ExtraRefs[0]
+	if len(extra) > 0 {
+		return &extra[0]
 	}
 	return nil
+}
+
+func PjToStarted(pj *prowv1.ProwJob, cloneRecords []clone.Record) metadata.Started {
+	return refsToStarted(pj.Spec.Refs, pj.Spec.ExtraRefs, cloneRecords, pj.Status.StartTime.Unix())
+}
+
+func SpecToStarted(spec *JobSpec, cloneRecords []clone.Record) metadata.Started {
+	return refsToStarted(spec.Refs, spec.ExtraRefs, cloneRecords, time.Now().Unix())
+}
+
+// refsToStarted translate refs into a Started struct
+// optionally overwrite RepoVersion with provided cloneRecords
+func refsToStarted(refs *prowapi.Refs, extraRefs []prowapi.Refs, cloneRecords []clone.Record, startTime int64) metadata.Started {
+	var version string
+
+	started := metadata.Started{
+		Timestamp: startTime,
+	}
+
+	if mainRefs := mainRefs(refs, extraRefs); mainRefs != nil {
+		version = shaForRefs(*mainRefs, cloneRecords)
+	}
+
+	if version == "" {
+		version = GetRevisionFromRefs(refs, extraRefs)
+	}
+
+	started.DeprecatedRepoVersion = version
+	started.RepoCommit = version
+
+	if refs != nil && len(refs.Pulls) > 0 {
+		started.Pull = strconv.Itoa(refs.Pulls[0].Number)
+	}
+
+	started.Repos = map[string]string{}
+
+	if refs != nil {
+		started.Repos[refs.Org+"/"+refs.Repo] = refs.String()
+	}
+	for _, ref := range extraRefs {
+		started.Repos[ref.Org+"/"+ref.Repo] = ref.String()
+	}
+
+	return started
+}
+
+// shaForRefs finds the resolved SHA after cloning and merging for the given refs
+func shaForRefs(refs prowv1.Refs, cloneRecords []clone.Record) string {
+	for _, record := range cloneRecords {
+		if reflect.DeepEqual(refs, record.Refs) {
+			return record.FinalSHA
+		}
+	}
+	return ""
 }

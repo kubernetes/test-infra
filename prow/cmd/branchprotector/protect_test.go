@@ -67,30 +67,6 @@ func TestOptions_Validate(t *testing.T) {
 			},
 			expectedErr: false,
 		},
-		{
-			name: "legacy override default tokens allowed only when new-style options are default)",
-			opt: options{
-				config: configflagutil.ConfigOptions{
-					ConfigPath: "dummy",
-				},
-				tokens:     5000,
-				tokenBurst: 200,
-				github:     flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
-			},
-			expectedErr: false,
-		},
-		{
-			name: "legacy override default tokens not allowed with new-style options",
-			opt: options{
-				config: configflagutil.ConfigOptions{
-					ConfigPath: "dummy",
-				},
-				tokens:     5000,
-				tokenBurst: 200,
-				github:     flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens + 100, ThrottleAllowBurst: defaultBurst + 10},
-			},
-			expectedErr: true,
-		},
 	}
 
 	for _, testCase := range testCases {
@@ -110,6 +86,7 @@ type fakeClient struct {
 	deleted           map[string]bool
 	updated           map[string]github.BranchProtectionRequest
 	branchProtections map[string]github.BranchProtection
+	appInstallations  []github.AppInstallation
 	collaborators     []github.User
 	teams             []github.Team
 }
@@ -186,6 +163,10 @@ func (c *fakeClient) RemoveBranchProtection(org, repo, branch string) error {
 	ctx := org + "/" + repo + "=" + branch
 	c.deleted[ctx] = true
 	return nil
+}
+
+func (c *fakeClient) ListAppInstallationsForOrg(org string) ([]github.AppInstallation, error) {
+	return c.appInstallations, nil
 }
 
 func (c *fakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
@@ -315,9 +296,11 @@ func TestProtect(t *testing.T) {
 		archived               string
 		expected               []requirements
 		branchProtections      map[string]github.BranchProtection
+		appInstallations       []github.AppInstallation
 		collaborators          []github.User
 		teams                  []github.Team
 		skipVerifyRestrictions bool
+		enableAppsRestrictions bool
 		errors                 int
 
 		enabled func(org, repo string) bool
@@ -736,8 +719,17 @@ branch-protection:
 			},
 		},
 		{
-			name:     "all modern fields",
-			branches: []string{"all/modern=master"},
+			name:                   "all modern fields",
+			branches:               []string{"all/modern=master"},
+			enableAppsRestrictions: true,
+			appInstallations: []github.AppInstallation{
+				{
+					AppSlug: "content-app",
+					Permissions: github.InstallationPermissions{
+						Contents: string(github.Write),
+					},
+				},
+			},
 			collaborators: []github.User{
 				{
 					Login:       "cindy",
@@ -773,7 +765,16 @@ branch-protection:
       teams:
       - oncall
       - sres
+    bypass_pull_request_allowances:
+     users:
+     - bypass_bob
+     - bypass_jane
+     teams:
+     - bypass_oncall
+     - bypass_sres
   restrictions:
+    apps:
+    - content-app
     teams:
     - config-team
     users:
@@ -802,12 +803,17 @@ branch-protection:
 							DismissStaleReviews:          false,
 							RequireCodeOwnerReviews:      true,
 							RequiredApprovingReviewCount: 3,
-							DismissalRestrictions: github.RestrictionsRequest{
+							DismissalRestrictions: github.DismissalRestrictionsRequest{
 								Users: &[]string{"bob", "jane"},
 								Teams: &[]string{"oncall", "sres"},
 							},
+							BypassRestrictions: github.BypassRestrictionsRequest{
+								Users: &[]string{"bypass_bob", "bypass_jane"},
+								Teams: &[]string{"bypass_oncall", "bypass_sres"},
+							},
 						},
 						Restrictions: &github.RestrictionsRequest{
+							Apps:  &[]string{"content-app"},
 							Users: &[]string{"cindy"},
 							Teams: &[]string{"config-team", "org-team"},
 						},
@@ -874,8 +880,17 @@ branch-protection:
 			},
 		},
 		{
-			name:     "do not make update request if the branch is already up-to-date",
-			branches: []string{"kubernetes/test-infra=master"},
+			name:                   "do not make update request if the branch is already up-to-date",
+			enableAppsRestrictions: true,
+			branches:               []string{"kubernetes/test-infra=master"},
+			appInstallations: []github.AppInstallation{
+				{
+					AppSlug: "content-app",
+					Permissions: github.InstallationPermissions{
+						Contents: string(github.Write),
+					},
+				},
+			},
 			collaborators: []github.User{
 				{
 					Login:       "cindy",
@@ -906,6 +921,103 @@ branch-protection:
       teams:
       - oncall
       - sres
+    bypass_pull_request_allowances:
+      users:
+      - bypass_bob
+      - bypass_jane
+      teams:
+      - bypass_oncall
+      - bypass_sres
+  restrictions:
+    apps:
+    - content-app
+    teams:
+    - config-team
+    users:
+    - cindy
+  protect: true
+  orgs:
+    kubernetes:
+      repos:
+        test-infra:
+`,
+			branchProtections: map[string]github.BranchProtection{
+				"kubernetes/test-infra=master": {
+					EnforceAdmins: github.EnforceAdmins{Enabled: true},
+					RequiredStatusChecks: &github.RequiredStatusChecks{
+						Strict:   true,
+						Contexts: []string{"config-presubmit"},
+					},
+					RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+						DismissStaleReviews:          false,
+						RequireCodeOwnerReviews:      true,
+						RequiredApprovingReviewCount: 3,
+						DismissalRestrictions: &github.DismissalRestrictions{
+							Users: []github.User{{Login: "bob"}, {Login: "jane"}},
+							Teams: []github.Team{{Slug: "oncall"}, {Slug: "sres"}},
+						},
+						BypassRestrictions: &github.BypassRestrictions{
+							Users: []github.User{{Login: "bypass_bob"}, {Login: "bypass_jane"}},
+							Teams: []github.Team{{Slug: "bypass_oncall"}, {Slug: "bypass_sres"}},
+						},
+					},
+					Restrictions: &github.Restrictions{
+						Apps:  []github.App{{Slug: "content-app"}},
+						Users: []github.User{{Login: "cindy"}},
+						Teams: []github.Team{{Slug: "config-team"}},
+					},
+				},
+			},
+		},
+		// TODO: consider harmonizing apps handling with teams and users
+		{
+			name:     "do not make update request if the only change is a unspecified app request",
+			branches: []string{"kubernetes/test-infra=master"},
+			appInstallations: []github.AppInstallation{
+				{
+					AppSlug: "content-app",
+					Permissions: github.InstallationPermissions{
+						Contents: string(github.Write),
+					},
+				},
+			},
+			collaborators: []github.User{
+				{
+					Login:       "cindy",
+					Permissions: github.RepoPermissions{Push: true},
+				},
+			},
+			teams: []github.Team{
+				{
+					Slug:       "config-team",
+					Permission: github.RepoPush,
+				},
+			},
+			config: `
+branch-protection:
+  enforce_admins: true
+  required_status_checks:
+    contexts:
+    - config-presubmit
+    strict: true
+  required_pull_request_reviews:
+    required_approving_review_count: 3
+    dismiss_stale: false
+    require_code_owner_reviews: true
+    dismissal_restrictions:
+      users:
+      - bob
+      - jane
+      teams:
+      - oncall
+      - sres
+    bypass_pull_request_allowances:
+      users:
+      - bypass_bob
+      - bypass_jane
+      teams:
+      - bypass_oncall
+      - bypass_sres
   restrictions:
     teams:
     - config-team
@@ -928,12 +1040,17 @@ branch-protection:
 						DismissStaleReviews:          false,
 						RequireCodeOwnerReviews:      true,
 						RequiredApprovingReviewCount: 3,
-						DismissalRestrictions: &github.Restrictions{
+						DismissalRestrictions: &github.DismissalRestrictions{
 							Users: []github.User{{Login: "bob"}, {Login: "jane"}},
 							Teams: []github.Team{{Slug: "oncall"}, {Slug: "sres"}},
 						},
+						BypassRestrictions: &github.BypassRestrictions{
+							Users: []github.User{{Login: "bypass_bob"}, {Login: "bypass_jane"}},
+							Teams: []github.Team{{Slug: "bypass_oncall"}, {Slug: "bypass_sres"}},
+						},
 					},
 					Restrictions: &github.Restrictions{
+						Apps:  []github.App{{Slug: "content-app"}},
 						Users: []github.User{{Login: "cindy"}},
 						Teams: []github.Team{{Slug: "config-team"}},
 					},
@@ -1049,14 +1166,19 @@ branch-protection:
 			},
 		},
 		{
-			name:     "do not make update request if the team or collaborator is not authorized",
-			branches: []string{"org/unauthorized-collaborator=master", "org/unauthorized-team=master"},
+			name:                   "do not make update request if the app, team or collaborator is not authorized",
+			branches:               []string{"org/unauthorized-app=master", "org/unauthorized-collaborator=master", "org/unauthorized-team=master"},
+			enableAppsRestrictions: true,
 			config: `
 branch-protection:
   protect: true
   orgs:
     org:
       repos:
+        unauthorized-app:
+          restrictions:
+            apps:
+            - nocontent-app  
         unauthorized-collaborator:
           restrictions:
             users:
@@ -1322,6 +1444,76 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:                   "existing app restrictions with apps restrictions feature flag disabled",
+			branches:               []string{"org/apps-restrictions-disabled=master"},
+			enableAppsRestrictions: false,
+			appInstallations: []github.AppInstallation{
+				{
+					AppSlug: "content-app",
+					Permissions: github.InstallationPermissions{
+						Contents: string(github.Write),
+					},
+				},
+			},
+			collaborators: []github.User{
+				{
+					Login:       "cindy",
+					Permissions: github.RepoPermissions{Push: true},
+				},
+			},
+			teams: []github.Team{
+				{
+					Slug:       "org-team",
+					Permission: github.RepoPush,
+				},
+			},
+			config: `
+branch-protection:
+  protect: true
+  restrictions:
+    users:
+    - cindy
+  orgs:
+    org:
+      restrictions:
+        teams:
+        - org-team
+`,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "apps-restrictions-disabled",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+						Restrictions: &github.RestrictionsRequest{
+							Apps:  nil,
+							Users: &[]string{"cindy"},
+							Teams: &[]string{"org-team"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:                   "configured app restrictions with app restriction feature gate disabled",
+			branches:               []string{"org/apps-restrictions-disabled=master"},
+			enableAppsRestrictions: false,
+			config: `
+branch-protection:
+  protect: true
+  restrictions:
+    users:
+    - cindy
+  orgs:
+    org:
+      restrictions:
+        apps:
+        - content-app
+`,
+			errors: 1,
+		},
 	}
 
 	for _, tc := range cases {
@@ -1345,6 +1537,7 @@ branch-protection:
 				branches:          branches,
 				repos:             map[string][]github.Repo{},
 				branchProtections: tc.branchProtections,
+				appInstallations:  tc.appInstallations,
 				collaborators:     tc.collaborators,
 				teams:             tc.teams,
 			}
@@ -1363,14 +1556,15 @@ branch-protection:
 				tc.enabled = func(org, repo string) bool { return true }
 			}
 			p := protector{
-				client:             &fc,
-				cfg:                &cfg,
-				errors:             Errors{},
-				updates:            make(chan requirements),
-				done:               make(chan []error),
-				completedRepos:     make(map[string]bool),
-				verifyRestrictions: !tc.skipVerifyRestrictions,
-				enabled:            tc.enabled,
+				client:                 &fc,
+				cfg:                    &cfg,
+				errors:                 Errors{},
+				updates:                make(chan requirements),
+				done:                   make(chan []error),
+				completedRepos:         make(map[string]bool),
+				verifyRestrictions:     !tc.skipVerifyRestrictions,
+				enableAppsRestrictions: tc.enableAppsRestrictions,
+				enabled:                tc.enabled,
 			}
 			go func() {
 				p.protect()
@@ -1586,12 +1780,17 @@ func TestEqualBranchProtection(t *testing.T) {
 					DismissStaleReviews:          true,
 					RequireCodeOwnerReviews:      true,
 					RequiredApprovingReviewCount: 1,
-					DismissalRestrictions: &github.Restrictions{
+					DismissalRestrictions: &github.DismissalRestrictions{
+						Users: []github.User{{Login: "user"}},
+						Teams: []github.Team{{Slug: "team"}},
+					},
+					BypassRestrictions: &github.BypassRestrictions{
 						Users: []github.User{{Login: "user"}},
 						Teams: []github.Team{{Slug: "team"}},
 					},
 				},
 				Restrictions: &github.Restrictions{
+					Apps:  []github.App{{Slug: "app"}},
 					Users: []github.User{{Login: "user"}},
 					Teams: []github.Team{{Slug: "team"}},
 				},
@@ -1606,7 +1805,67 @@ func TestEqualBranchProtection(t *testing.T) {
 					DismissStaleReviews:          true,
 					RequireCodeOwnerReviews:      true,
 					RequiredApprovingReviewCount: 1,
-					DismissalRestrictions: github.RestrictionsRequest{
+					DismissalRestrictions: github.DismissalRestrictionsRequest{
+						Users: &[]string{"user"},
+						Teams: &[]string{"team"},
+					},
+					BypassRestrictions: github.BypassRestrictionsRequest{
+						Users: &[]string{"user"},
+						Teams: &[]string{"team"},
+					},
+				},
+				Restrictions: &github.RestrictionsRequest{
+					Apps:  &[]string{"app"},
+					Users: &[]string{"user"},
+					Teams: &[]string{"team"},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "apps unspecified in request is not considered as change",
+			state: &github.BranchProtection{
+				RequiredStatusChecks: &github.RequiredStatusChecks{
+					Strict:   true,
+					Contexts: []string{"a", "b", "c"},
+				},
+				EnforceAdmins: github.EnforceAdmins{
+					Enabled: true,
+				},
+				RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+					DismissStaleReviews:          true,
+					RequireCodeOwnerReviews:      true,
+					RequiredApprovingReviewCount: 1,
+					DismissalRestrictions: &github.DismissalRestrictions{
+						Users: []github.User{{Login: "user"}},
+						Teams: []github.Team{{Slug: "team"}},
+					},
+					BypassRestrictions: &github.BypassRestrictions{
+						Users: []github.User{{Login: "user"}},
+						Teams: []github.Team{{Slug: "team"}},
+					},
+				},
+				Restrictions: &github.Restrictions{
+					Apps:  []github.App{{Slug: "app"}},
+					Users: []github.User{{Login: "user"}},
+					Teams: []github.Team{{Slug: "team"}},
+				},
+			},
+			request: &github.BranchProtectionRequest{
+				RequiredStatusChecks: &github.RequiredStatusChecks{
+					Strict:   true,
+					Contexts: []string{"a", "b", "c"},
+				},
+				EnforceAdmins: &yes,
+				RequiredPullRequestReviews: &github.RequiredPullRequestReviewsRequest{
+					DismissStaleReviews:          true,
+					RequireCodeOwnerReviews:      true,
+					RequiredApprovingReviewCount: 1,
+					DismissalRestrictions: github.DismissalRestrictionsRequest{
+						Users: &[]string{"user"},
+						Teams: &[]string{"team"},
+					},
+					BypassRestrictions: github.BypassRestrictionsRequest{
 						Users: &[]string{"user"},
 						Teams: &[]string{"team"},
 					},
@@ -1617,6 +1876,17 @@ func TestEqualBranchProtection(t *testing.T) {
 				},
 			},
 			expected: true,
+		},
+		{
+			name: "AllowForcePushes is recognized",
+			state: &github.BranchProtection{
+				AllowForcePushes: github.AllowForcePushes{
+					Enabled: false,
+				},
+			},
+			request: &github.BranchProtectionRequest{
+				AllowForcePushes: true,
+			},
 		},
 	}
 
@@ -1811,7 +2081,11 @@ func TestEqualRequiredPullRequestReviews(t *testing.T) {
 				DismissStaleReviews:          true,
 				RequireCodeOwnerReviews:      true,
 				RequiredApprovingReviewCount: 1,
-				DismissalRestrictions: &github.Restrictions{
+				DismissalRestrictions: &github.DismissalRestrictions{
+					Users: []github.User{{Login: "user"}},
+					Teams: []github.Team{{Slug: "team"}},
+				},
+				BypassRestrictions: &github.BypassRestrictions{
 					Users: []github.User{{Login: "user"}},
 					Teams: []github.Team{{Slug: "team"}},
 				},
@@ -1820,7 +2094,11 @@ func TestEqualRequiredPullRequestReviews(t *testing.T) {
 				DismissStaleReviews:          true,
 				RequireCodeOwnerReviews:      true,
 				RequiredApprovingReviewCount: 1,
-				DismissalRestrictions: github.RestrictionsRequest{
+				DismissalRestrictions: github.DismissalRestrictionsRequest{
+					Users: &[]string{"user"},
+					Teams: &[]string{"team"},
+				},
+				BypassRestrictions: github.BypassRestrictionsRequest{
 					Users: &[]string{"user"},
 					Teams: &[]string{"team"},
 				},
@@ -1875,7 +2153,11 @@ func TestEqualRequiredPullRequestReviews(t *testing.T) {
 				DismissStaleReviews:          true,
 				RequireCodeOwnerReviews:      true,
 				RequiredApprovingReviewCount: 1,
-				DismissalRestrictions: &github.Restrictions{
+				DismissalRestrictions: &github.DismissalRestrictions{
+					Users: []github.User{{Login: "user"}},
+					Teams: []github.Team{{Slug: "team"}},
+				},
+				BypassRestrictions: &github.BypassRestrictions{
 					Users: []github.User{{Login: "user"}},
 					Teams: []github.Team{{Slug: "team"}},
 				},
@@ -1884,7 +2166,11 @@ func TestEqualRequiredPullRequestReviews(t *testing.T) {
 				DismissStaleReviews:          true,
 				RequireCodeOwnerReviews:      true,
 				RequiredApprovingReviewCount: 1,
-				DismissalRestrictions: github.RestrictionsRequest{
+				DismissalRestrictions: github.DismissalRestrictionsRequest{
+					Users: &[]string{"other"},
+					Teams: &[]string{"team"},
+				},
+				BypassRestrictions: github.BypassRestrictionsRequest{
 					Users: &[]string{"other"},
 					Teams: &[]string{"team"},
 				},
@@ -1895,6 +2181,176 @@ func TestEqualRequiredPullRequestReviews(t *testing.T) {
 
 	for _, testCase := range testCases {
 		if actual, expected := equalRequiredPullRequestReviews(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestEqualDismissalRestrictions(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		state    *github.DismissalRestrictions
+		request  *github.DismissalRestrictionsRequest
+		expected bool
+	}{
+		{
+			name:     "neither set matches",
+			expected: true,
+		},
+		{
+			name:     "request unset doesn't match",
+			state:    &github.DismissalRestrictions{},
+			expected: false,
+		},
+		{
+			name: "matching requests work",
+			state: &github.DismissalRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.DismissalRestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "user login casing is ignored",
+			state: &github.DismissalRestrictions{
+				Users: []github.User{{Login: "User"}, {Login: "OTHer"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.DismissalRestrictionsRequest{
+				Users: &[]string{"uSer", "oThER"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "not matching on users",
+			state: &github.DismissalRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.DismissalRestrictionsRequest{
+				Users: &[]string{"other"},
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+		{
+			name: "not matching on team",
+			state: &github.DismissalRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.DismissalRestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"other"},
+			},
+			expected: false,
+		},
+		{
+			name:     "both unset",
+			request:  &github.DismissalRestrictionsRequest{},
+			expected: true,
+		},
+		{
+			name: "partially unset",
+			request: &github.DismissalRestrictionsRequest{
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalDismissalRestrictions(testCase.state, testCase.request), testCase.expected; actual != expected {
+			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestEqualBypassRestrictions(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		state    *github.BypassRestrictions
+		request  *github.BypassRestrictionsRequest
+		expected bool
+	}{
+		{
+			name:     "neither set matches",
+			expected: true,
+		},
+		{
+			name:     "request unset doesn't match",
+			state:    &github.BypassRestrictions{},
+			expected: false,
+		},
+		{
+			name: "matching requests work",
+			state: &github.BypassRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.BypassRestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "user login casing is ignored",
+			state: &github.BypassRestrictions{
+				Users: []github.User{{Login: "User"}, {Login: "OTHer"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.BypassRestrictionsRequest{
+				Users: &[]string{"uSer", "oThER"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "not matching on users",
+			state: &github.BypassRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.BypassRestrictionsRequest{
+				Users: &[]string{"other"},
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+		{
+			name: "not matching on team",
+			state: &github.BypassRestrictions{
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.BypassRestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"other"},
+			},
+			expected: false,
+		},
+		{
+			name:     "both unset",
+			request:  &github.BypassRestrictionsRequest{},
+			expected: true,
+		},
+		{
+			name: "partially unset",
+			request: &github.BypassRestrictionsRequest{
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := equalBypassRestrictions(testCase.state, testCase.request), testCase.expected; actual != expected {
 			t.Errorf("%s: didn't compute equality correctly, expected %v got %v", testCase.name, expected, actual)
 		}
 	}
@@ -1919,10 +2375,12 @@ func TestEqualRestrictions(t *testing.T) {
 		{
 			name: "matching requests work",
 			state: &github.Restrictions{
+				Apps:  []github.App{{Slug: "app"}},
 				Users: []github.User{{Login: "user"}},
 				Teams: []github.Team{{Slug: "team"}},
 			},
 			request: &github.RestrictionsRequest{
+				Apps:  &[]string{"app"},
 				Users: &[]string{"user"},
 				Teams: &[]string{"team"},
 			},
@@ -1965,6 +2423,20 @@ func TestEqualRestrictions(t *testing.T) {
 			expected: false,
 		},
 		{
+			name: "not matching on app",
+			state: &github.Restrictions{
+				Apps:  []github.App{{Slug: "app"}},
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.RestrictionsRequest{
+				Apps:  &[]string{"other"},
+				Users: &[]string{"user"},
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+		{
 			name:     "both unset",
 			request:  &github.RestrictionsRequest{},
 			expected: true,
@@ -1972,6 +2444,34 @@ func TestEqualRestrictions(t *testing.T) {
 		{
 			name: "partially unset",
 			request: &github.RestrictionsRequest{
+				Teams: &[]string{"team"},
+			},
+			expected: false,
+		},
+		// TODO: consider harmonizing apps handling with teams and users
+		{
+			name: "app request unset",
+			state: &github.Restrictions{
+				Apps:  []github.App{{Slug: "app"}},
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.RestrictionsRequest{
+				Users: &[]string{"user"},
+				Teams: &[]string{"team"},
+			},
+			expected: true,
+		},
+		{
+			name: "app request is empty list",
+			state: &github.Restrictions{
+				Apps:  []github.App{{Slug: "app"}},
+				Users: []github.User{{Login: "user"}},
+				Teams: []github.Team{{Slug: "team"}},
+			},
+			request: &github.RestrictionsRequest{
+				Apps:  &[]string{},
+				Users: &[]string{"user"},
 				Teams: &[]string{"team"},
 			},
 			expected: false,
@@ -1987,12 +2487,22 @@ func TestEqualRestrictions(t *testing.T) {
 
 func TestValidateRequest(t *testing.T) {
 	var testCases = []struct {
-		name          string
-		request       *github.BranchProtectionRequest
-		collaborators []string
-		teams         []string
-		errs          []error
+		name             string
+		request          *github.BranchProtectionRequest
+		appInstallations []string
+		collaborators    []string
+		teams            []string
+		errs             []error
 	}{
+		{
+			name: "restrict to unauthorized apps results in error",
+			request: &github.BranchProtectionRequest{
+				Restrictions: &github.RestrictionsRequest{
+					Apps: &[]string{"bar"},
+				},
+			},
+			errs: []error{fmt.Errorf("the following apps are not authorized for %s/%s: [%s]", "org", "repo", "bar")},
+		},
 		{
 			name: "restrict to unathorized collaborator results in error",
 			request: &github.BranchProtectionRequest{
@@ -2012,23 +2522,77 @@ func TestValidateRequest(t *testing.T) {
 			errs: []error{fmt.Errorf("the following teams are not authorized for %s/%s: [%s]", "org", "repo", "bar")},
 		},
 		{
-			name: "authorized user and team result in no errors",
+			name: "authorized app, user and team result in no errors",
 			request: &github.BranchProtectionRequest{
 				Restrictions: &github.RestrictionsRequest{
+					Apps:  &[]string{"foobar"},
 					Users: &[]string{"foo"},
 					Teams: &[]string{"bar"},
 				},
 			},
-			collaborators: []string{"foo"},
-			teams:         []string{"bar"},
+			appInstallations: []string{"foobar"},
+			collaborators:    []string{"foo"},
+			teams:            []string{"bar"},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			errs := validateRestrictions("org", "repo", tc.request, tc.collaborators, tc.teams)
+			errs := validateRestrictions("org", "repo", tc.request, tc.appInstallations, tc.collaborators, tc.teams)
 			if !reflect.DeepEqual(errs, tc.errs) {
 				t.Errorf("%s: errors %v != expected %v", tc.name, errs, tc.errs)
+			}
+		})
+	}
+}
+
+func TestAuthorizedApps(t *testing.T) {
+	var testCases = []struct {
+		name             string
+		appInstallations []github.AppInstallation
+		expected         []string
+	}{
+		{
+			name: "AppInstallations with content read is not included",
+			appInstallations: []github.AppInstallation{
+				{
+					AppSlug: "foo",
+					Permissions: github.InstallationPermissions{
+						Contents: string(github.Read),
+					},
+				},
+			},
+		},
+		{
+			name: "AppInstallations with content read is included",
+			appInstallations: []github.AppInstallation{
+				{
+					AppSlug: "foo",
+					Permissions: github.InstallationPermissions{
+						Contents: string(github.Write),
+					},
+				},
+			},
+			expected: []string{"foo"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := fakeClient{appInstallations: tc.appInstallations}
+			p := protector{
+				client: &fc,
+				errors: Errors{},
+			}
+
+			apps, err := p.authorizedApps("org")
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			sort.Strings(tc.expected)
+			sort.Strings(apps)
+			if !reflect.DeepEqual(tc.expected, apps) {
+				t.Errorf("expected: %v, got: %v", tc.expected, apps)
 			}
 		})
 	}

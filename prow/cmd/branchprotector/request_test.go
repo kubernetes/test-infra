@@ -91,7 +91,11 @@ func TestMakeReviews(t *testing.T) {
 				Approvals:     &one,
 				RequireOwners: &yes,
 				DismissStale:  &yes,
-				DismissalRestrictions: &branchprotection.Restrictions{
+				DismissalRestrictions: &branchprotection.DismissalRestrictions{
+					Users: []string{"fred", "jane"},
+					Teams: []string{"megacorp", "startup"},
+				},
+				BypassRestrictions: &branchprotection.BypassRestrictions{
 					Users: []string{"fred", "jane"},
 					Teams: []string{"megacorp", "startup"},
 				},
@@ -100,7 +104,11 @@ func TestMakeReviews(t *testing.T) {
 				RequiredApprovingReviewCount: 1,
 				RequireCodeOwnerReviews:      true,
 				DismissStaleReviews:          true,
-				DismissalRestrictions: github.RestrictionsRequest{
+				DismissalRestrictions: github.DismissalRestrictionsRequest{
+					Teams: &[]string{"megacorp", "startup"},
+					Users: &[]string{"fred", "jane"},
+				},
+				BypassRestrictions: github.BypassRestrictionsRequest{
 					Teams: &[]string{"megacorp", "startup"},
 					Users: &[]string{"fred", "jane"},
 				},
@@ -120,9 +128,10 @@ func TestMakeRequest(t *testing.T) {
 	yes := true
 	no := false
 	cases := []struct {
-		name     string
-		policy   branchprotection.Policy
-		expected github.BranchProtectionRequest
+		name                    string
+		disableAppsRestrictions bool
+		policy                  branchprotection.Policy
+		expected                github.BranchProtectionRequest
 	}{
 		{
 			name: "Empty works",
@@ -131,7 +140,7 @@ func TestMakeRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "teams != nil => users != nil",
+			name: "teams != nil => apps != nil, users != nil",
 			policy: branchprotection.Policy{
 				Restrictions: &branchprotection.Restrictions{
 					Teams: []string{"hello"},
@@ -140,13 +149,14 @@ func TestMakeRequest(t *testing.T) {
 			expected: github.BranchProtectionRequest{
 				EnforceAdmins: &no,
 				Restrictions: &github.RestrictionsRequest{
+					Apps:  &[]string{},
 					Teams: &[]string{"hello"},
 					Users: &[]string{},
 				},
 			},
 		},
 		{
-			name: "users != nil => teams != nil",
+			name: "users != nil => apps != nil, teams != nil",
 			policy: branchprotection.Policy{
 				Restrictions: &branchprotection.Restrictions{
 					Users: []string{"there"},
@@ -155,8 +165,43 @@ func TestMakeRequest(t *testing.T) {
 			expected: github.BranchProtectionRequest{
 				EnforceAdmins: &no,
 				Restrictions: &github.RestrictionsRequest{
+					Apps:  &[]string{},
 					Users: &[]string{"there"},
 					Teams: &[]string{},
+				},
+			},
+		},
+		{
+			name: "apps != nil => users != nil, teams != nil",
+			policy: branchprotection.Policy{
+				Restrictions: &branchprotection.Restrictions{
+					Apps: []string{"friends"},
+				},
+			},
+			expected: github.BranchProtectionRequest{
+				EnforceAdmins: &no,
+				Restrictions: &github.RestrictionsRequest{
+					Apps:  &[]string{"friends"},
+					Users: &[]string{},
+					Teams: &[]string{},
+				},
+			},
+		},
+		{
+			name:                    "apps restrictions disabled works",
+			disableAppsRestrictions: true,
+			policy: branchprotection.Policy{
+				Restrictions: &branchprotection.Restrictions{
+					Teams: []string{"hello"},
+					Users: []string{"there"},
+				},
+			},
+			expected: github.BranchProtectionRequest{
+				EnforceAdmins: &no,
+				Restrictions: &github.RestrictionsRequest{
+					Apps:  nil,
+					Teams: &[]string{"hello"},
+					Users: &[]string{"there"},
 				},
 			},
 		},
@@ -178,7 +223,7 @@ func TestMakeRequest(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual := makeRequest(tc.policy)
+			actual := makeRequest(tc.policy, !tc.disableAppsRestrictions)
 			expected := tc.expected
 			if !reflect.DeepEqual(actual, expected) {
 				t.Errorf("actual %+v != expected %+v", actual, expected)

@@ -1,0 +1,84 @@
+deck:
+  rerun_auth_configs:
+    '*':
+      allow_anyone: true
+
+sinker:
+  resync_period: 5s
+  max_prowjob_age: 48h
+  max_pod_age: 48h
+  terminated_pod_ttl: 30m
+
+horologium:
+  tick_interval: 1s
+
+prowjob_namespace: default
+pod_namespace: test-pods
+log_level: debug
+
+prowjob_default_entries:
+  - cluster: '*'
+    repo: 'testRepo'
+    config:
+      tenant_id: 'tester'
+  - cluster: '*'
+    repo: "https://fakegitserver.default/repo/some/org/gangway-test-repo-1"
+    config:
+      tenant_id: 'well-behaved-tenant-for-gangway'
+
+gerrit:
+  tick_interval: 1s
+  org_repos_config:
+  - org: http://fakegerritserver
+    repos:
+    - gerrit-test-infra-0
+    - gerrit-test-infra-1
+    - gerrit-test-infra-2
+
+plank:
+  default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: localhost:5001/clonerefs-ssl-disabled:latest
+        # By default, use the version of initupload that has
+        # STORAGE_EMULATOR_HOST set to fakegcsserver.
+        initupload: localhost:5001/initupload-fakegcsserver:latest
+        entrypoint: localhost:5001/entrypoint:latest
+        sidecar: localhost:5001/sidecar:latest
+      gcs_configuration:
+        bucket: "bucket-foo"
+        path_strategy: "legacy"
+        default_org: "org-foo"
+        default_repo: "repo-foo"
+
+# fakepubsub will read this config and create all necessary subscriptions.
+pubsub_subscriptions:
+  "project1":
+  - "subscription1" # Subscribed to "topic1".
+
+in_repo_config:
+  enabled:
+   "org1/repo1": true
+   "fakegitserver.default/repo/repo2": true
+   "fakegitserver.default/repo/repo3": true
+   "fakegitserver.default/repo/org1/repo4": true
+   "fakegitserver.default/repo/org1/repo5": true
+   "fakegitserver.default/repo/some/org/gangway-test-repo-1": true
+
+# Allowlist of Prow API clients.
+gangway:
+  allowed_api_clients:
+  - gcp:
+      # This translates to the expected `x-endpoint-api-consumer-type` HTTP
+      # metadata header.
+      endpoint_api_consumer_type: "PROJECT"
+      # This translates to the expected `x-endpoint-api-consumer-number` HTTP
+      # metadata header.
+      endpoint_api_consumer_number: "123"
+
+    # We don't want this client to be able to trigger *all* jobs. So instead we
+    # limit its scope to only certain jobs defined for specific subsets of jobs.
+    allowed_jobs_filters:
+    - tenant_id: "well-behaved-tenant-for-gangway"

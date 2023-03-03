@@ -19,7 +19,7 @@ package slack
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -118,7 +118,7 @@ func (sl *Client) postMessage(url string, uv *url.Values) error {
 	}
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	apiResponse := struct {
 		Ok    bool   `json:"ok"`
 		Error string `json:"error"`
@@ -147,7 +147,7 @@ func (sl *Client) WriteMessage(text, channel string) error {
 	uv.Add("text", text)
 
 	if err := sl.postMessage(chatPostMessage, uv); err != nil {
-		return fmt.Errorf("failed to post message to #%s: %w", channel, err)
+		return fmt.Errorf("failed to post message to %s: %w", channel, err)
 	}
 	return nil
 }

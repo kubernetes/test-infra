@@ -5,14 +5,16 @@ dashboard_groups:
   dashboard_names:
   - sig-release-master-blocking
   - sig-release-master-informing
+  - sig-release-1.26-blocking
+  - sig-release-1.26-informing
+  - sig-release-1.25-blocking
+  - sig-release-1.25-informing
+  - sig-release-1.24-blocking
+  - sig-release-1.24-informing
+  - sig-release-1.23-blocking
+  - sig-release-1.23-informing
   - sig-release-1.22-blocking
   - sig-release-1.22-informing
-  - sig-release-1.21-blocking
-  - sig-release-1.21-informing
-  - sig-release-1.20-blocking
-  - sig-release-1.20-informing
-  - sig-release-1.19-blocking
-  - sig-release-1.19-informing
   - sig-release-releng-blocking
   - sig-release-releng-informing
   - sig-release-releng-presubmits
@@ -20,24 +22,23 @@ dashboard_groups:
   - sig-release-publishing-bot
   - sig-release-release-notes-presubmits
   - sig-release-job-config-errors
+  - sig-release-release-team-periodics
 
 # Dashboards
 
 dashboards:
 - name: sig-release-master-blocking
 - name: sig-release-master-informing
-  dashboard_tab:
-  - name: Conformance - OpenStack
-    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-    description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
+- name: sig-release-1.26-blocking
+- name: sig-release-1.26-informing
+- name: sig-release-1.25-blocking
+- name: sig-release-1.25-informing
+- name: sig-release-1.24-blocking
+- name: sig-release-1.24-informing
+- name: sig-release-1.23-blocking
+- name: sig-release-1.23-informing
 - name: sig-release-1.22-blocking
 - name: sig-release-1.22-informing
-- name: sig-release-1.21-blocking
-- name: sig-release-1.21-informing
-- name: sig-release-1.20-blocking
-- name: sig-release-1.20-informing
-- name: sig-release-1.19-blocking
-- name: sig-release-1.19-informing
 - name: sig-release-releng-blocking
 - name: sig-release-releng-informing
 - name: sig-release-releng-presubmits
@@ -67,3 +68,4 @@ dashboards:
     test_group_name: pull-release-notes-test
     base_options: width=10
 - name: sig-release-job-config-errors
+- name: sig-release-release-team-periodics

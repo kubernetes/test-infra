@@ -20,7 +20,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -73,13 +73,13 @@ func main() {
 
 	var rawJob []byte
 	if o.prowJobPath == "-" {
-		raw, err := ioutil.ReadAll(os.Stdin)
+		raw, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not read ProwJob YAML from stdin.")
 		}
 		rawJob = raw
 	} else {
-		raw, err := ioutil.ReadFile(o.prowJobPath)
+		raw, err := os.ReadFile(o.prowJobPath)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not open ProwJob YAML.")
 		}
@@ -112,7 +112,7 @@ func main() {
 		if outDir == "" {
 			prefix := strings.Join([]string{"prowjob-out", job.Spec.Job, o.buildID}, "-")
 			logrus.Infof("Creating temp directory for job output in %q with prefix %q.", os.TempDir(), prefix)
-			outDir, err = ioutil.TempDir("", prefix)
+			outDir, err = os.MkdirTemp("", prefix)
 			if err != nil {
 				logrus.WithError(err).Fatal("Could not create temp directory for job output.")
 			}

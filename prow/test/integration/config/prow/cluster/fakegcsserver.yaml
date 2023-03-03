@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: fakegcsserver
+  labels:
+    app: fakegcsserver
+spec:
+  selector:
+    matchLabels:
+      app: fakegcsserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fakegcsserver
+    spec:
+      containers:
+      - name: fakegcsserver
+        image: localhost:5001/fakegcsserver
+        args:
+        - --config-path=/etc/config/config.yaml
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: fakegcsserver
+  namespace: default
+  name: fakegcsserver
+spec:
+  ports:
+  - name: main
+    port: 80
+    targetPort: 8888
+    protocol: TCP
+  selector:
+    app: fakegcsserver
+  type: ClusterIP

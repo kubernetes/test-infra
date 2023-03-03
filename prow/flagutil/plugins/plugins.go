@@ -30,6 +30,7 @@ type PluginOptions struct {
 	SupplementalPluginsConfigDirs            flagutil.Strings
 	SupplementalPluginsConfigsFileNameSuffix string
 	CheckUnknownPlugins                      bool
+	SkipResolveConfigUpdater                 bool
 }
 
 func (o *PluginOptions) AddFlags(fs *flag.FlagSet) {
@@ -44,7 +45,7 @@ func (o *PluginOptions) Validate(_ bool) error {
 
 func (o *PluginOptions) PluginAgent() (*plugins.ConfigAgent, error) {
 	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.PluginConfigPath, o.SupplementalPluginsConfigDirs.Strings(), o.SupplementalPluginsConfigsFileNameSuffix, o.CheckUnknownPlugins); err != nil {
+	if err := pluginAgent.Start(o.PluginConfigPath, o.SupplementalPluginsConfigDirs.Strings(), o.SupplementalPluginsConfigsFileNameSuffix, o.CheckUnknownPlugins, o.SkipResolveConfigUpdater); err != nil {
 		return nil, fmt.Errorf("failed to start plugins agent: %w", err)
 	}
 

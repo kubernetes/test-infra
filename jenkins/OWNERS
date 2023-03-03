@@ -2,12 +2,11 @@
 
 reviewers:
 - cjwagner
-- fejta
 approvers:
 - cjwagner
-- fejta
 emeritus_approvers:
 - krzyzacy
+- fejta
 
 labels:
 - area/jenkins

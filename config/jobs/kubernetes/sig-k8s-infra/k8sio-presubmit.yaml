@@ -21,6 +21,35 @@ presubmits:
         env:
         - name: GO111MODULE
           value: "on"
+  - name: pull-k8sio-terraform-org-kubernetes-io
+    annotations:
+      description: verify terraform files for kubernetes.io Organization
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-tab-name: pull-k8sio-terraform-kubernetes-io
+      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-num-failures-to-alert: '1'
+    decorate: true
+    max_concurrency: 1
+    cluster: k8s-infra-prow-build
+    path_alias: k8s.io/k8s.io
+    run_if_changed: 'infra\/gcp\/terraform\/(modules|k8s-infra-kubernetes-io)\/.*.tf'
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+        command:
+        - hack/verify-terraform.sh
+        args:
+        - infra/gcp/terraform/k8s-infra-kubernetes-io
+        resources:
+          limits:
+            cpu: 1
+            memory: "512Mi"
+          requests:
+            cpu: 1
+            memory: "512Mi"
   - name: pull-k8sio-terraform-kubernetes-public
     annotations:
       description: verify terraform files for GKE cluster aaa
@@ -43,6 +72,35 @@ presubmits:
         - hack/verify-terraform.sh
         args:
         - infra/gcp/terraform/kubernetes-public
+        resources:
+          limits:
+            cpu: 1
+            memory: "512Mi"
+          requests:
+            cpu: 1
+            memory: "512Mi"
+  - name: pull-k8sio-terraform-monitoring
+    annotations:
+      description: verify terraform files for GCP monitoring resources
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-tab-name: pull-k8sio-terraform-monitoring
+      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-num-failures-to-alert: '1'
+    decorate: true
+    max_concurrency: 1
+    cluster: k8s-infra-prow-build
+    path_alias: k8s.io/k8s.io
+    run_if_changed: 'infra\/gcp\/terraform\/(modules|k8s-infra-monitoring)\/.*.tf'
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+        command:
+        - hack/verify-terraform.sh
+        args:
+        - infra/gcp/terraform/k8s-infra-monitoring
         resources:
           limits:
             cpu: 1
@@ -138,6 +196,7 @@ presubmits:
             cpu: 1
             memory: "512Mi"
   - name: pull-k8sio-verify
+    cluster: k8s-infra-prow-build
     annotations:
       testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-tab-name: pull-k8sio-verify
@@ -148,3 +207,24 @@ presubmits:
       - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - ./hack/verify.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: "512Mi"
+          requests:
+            cpu: 1
+            memory: "512Mi"
+  - name: pull-k8sio-dns-validate-config
+    run_if_changed: "^dns/"
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-tab-name: pull-k8sio-dns-validate-config
+    decorate: true
+    spec:
+      containers:
+        - image: registry.k8s.io/infra-tools/octodns:v20220319-97d14a558
+          command:
+            - bash
+          args:
+            - -c
+            - "cd dns && make validate-config"

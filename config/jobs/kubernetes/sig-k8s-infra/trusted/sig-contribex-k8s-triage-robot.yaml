@@ -10,9 +10,9 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20211012-ba1fa86530
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       # pull requests against master branches in the kubernetes org labeled kind/api-change
       # exclude PRs that are in progress, held, or need rebase (typically aren't ready for API review).
@@ -48,6 +48,45 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
+- name: ci-k8s-triage-robot-stable-metrics
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Adds stable metrics review documentation to area/stable-metrics PRs
+    testgrid-tab-name: stable-metrics-help
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
+      command:
+      - commenter
+      args:
+      # pull requests against master branches in the kubernetes org labeled area/stable-metrics
+      # exclude PRs that already have the comment text
+      - |-
+        --query=org:kubernetes
+        is:pr
+        base:master
+        label:area/stable-metrics
+        NOT "documentation for the requirements and lifecycle of stable metrics"
+      - --updated=5m
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This PR [may require stable metrics review](https://git.k8s.io/community/contributors/devel/sig-instrumentation/metric-stability.md).
+
+        Stable metrics are guaranteed to **not change**. Please review the documentation for the requirements and lifecycle of stable metrics and ensure that your metrics meet these guidelines.
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
 - name: ci-k8s-triage-robot-cla
   interval: 10m
   cluster: k8s-infra-prow-build-trusted
@@ -58,9 +97,9 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20211012-ba1fa86530
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
@@ -79,6 +118,7 @@ periodics:
         Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
 
         /check-cla
+        /easycla
       - --template
       - --ceiling=10
       - --confirm
@@ -90,26 +130,87 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
-- name: ci-k8s-triage-robot-close
+- name: ci-k8s-triage-robot-close-issues
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Closes rotten issues after 30d of inactivity
-    testgrid-tab-name: close
+    testgrid-tab-name: close-issues
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20211012-ba1fa86530
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        is:issue
         -repo:kubernetes-sigs/kind
+        -label:lifecycle/frozen
+        -label:"help wanted"
+        -label:"good first issue"
+        -label:triage/accepted
+        -label:priority/critical-urgent,priority/important-soon,priority/important-longterm
+        label:lifecycle/rotten
+      - --updated=720h
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
+
+        This bot triages issues according to the following rules:
+        - After 90d of inactivity, `lifecycle/stale` is applied
+        - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
+
+        You can:
+        - Reopen this issue with `/reopen`
+        - Mark this issue as fresh with `/remove-lifecycle rotten`
+        - Offer to help out with [Issue Triage][1]
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /close not-planned
+
+        [1]: https://www.kubernetes.dev/docs/guide/issue-triage/
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+- name: ci-k8s-triage-robot-close-prs
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Closes rotten PRs after 30d of inactivity
+    testgrid-tab-name: close-prs
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        is:pr
+        -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -118,14 +219,14 @@ periodics:
       - |-
         --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
 
-        This bot triages issues and PRs according to the following rules:
+        This bot triages PRs according to the following rules:
         - After 90d of inactivity, `lifecycle/stale` is applied
         - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
-        - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the PR is closed
 
         You can:
-        - Reopen this issue or PR with `/reopen`
-        - Mark this issue or PR as fresh with `/remove-lifecycle rotten`
+        - Reopen this PR with `/reopen`
+        - Mark this PR as fresh with `/remove-lifecycle rotten`
         - Offer to help out with [Issue Triage][1]
 
         Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
@@ -154,9 +255,9 @@ periodics:
     description: Automatically /retest for approved PRs that are failing tests
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20211012-ba1fa86530
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=is:pr
@@ -212,43 +313,48 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
-- name: ci-k8s-triage-robot-rotten
+- name: ci-k8s-triage-robot-rotten-issues
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: Adds lifecycle/rotten to stale issues after 30d of inactivity
-    testgrid-tab-name: rotten
+    testgrid-tab-name: rotten-issues
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20211012-ba1fa86530
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        is:issue
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
-        label:lifecycle/stale
         -label:lifecycle/rotten
+        -label:"help wanted"
+        -label:"good first issue"
+        -label:"triage/accepted"
+        label:lifecycle/stale
       - --updated=720h
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
-        --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
+        --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues.
 
-        This bot triages issues and PRs according to the following rules:
+        This bot triages un-triaged issues according to the following rules:
         - After 90d of inactivity, `lifecycle/stale` is applied
         - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
         - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
 
         You can:
-        - Mark this issue or PR as fresh with `/remove-lifecycle rotten`
-        - Close this issue or PR with `/close`
+        - Mark this issue as fresh with `/remove-lifecycle rotten`
+        - Close this issue with `/close`
         - Offer to help out with [Issue Triage][1]
 
         Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
@@ -267,26 +373,145 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
-- name: ci-k8s-triage-robot-stale
+- name: ci-k8s-triage-robot-rotten-prs
   interval: 1h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
-    description: Adds lifecycle/stale to issues after 90d of inactivity
-    testgrid-tab-name: stale
+    description: Adds lifecycle/rotten to stale PRs after 30d of inactivity
+    testgrid-tab-name: rotten-prs
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20211012-ba1fa86530
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        is:pr
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
+        -label:lifecycle/frozen
+        -label:lifecycle/rotten
+        label:lifecycle/stale
+      - --updated=720h
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all PRs.
+
+        This bot triages PRs according to the following rules:
+        - After 90d of inactivity, `lifecycle/stale` is applied
+        - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the PR is closed
+
+        You can:
+        - Mark this PR as fresh with `/remove-lifecycle rotten`
+        - Close this PR with `/close`
+        - Offer to help out with [Issue Triage][1]
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /lifecycle rotten
+
+        [1]: https://www.kubernetes.dev/docs/guide/issue-triage/
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+- name: ci-k8s-triage-robot-stale-issues
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Adds lifecycle/stale to issues after 90d of inactivity
+    testgrid-tab-name: stale-issues
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        is:issue
+        -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
+        -label:lifecycle/frozen
+        -label:lifecycle/stale
+        -label:lifecycle/rotten
+        -label:"help wanted"
+        -label:"good first issue"
+        -label:"triage/accepted"
+      - --updated=2160h
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=The Kubernetes project currently lacks enough contributors to adequately respond to all issues.
+
+        This bot triages un-triaged issues according to the following rules:
+        - After 90d of inactivity, `lifecycle/stale` is applied
+        - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
+
+        You can:
+        - Mark this issue as fresh with `/remove-lifecycle stale`
+        - Close this issue with `/close`
+        - Offer to help out with [Issue Triage][1]
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /lifecycle stale
+
+        [1]: https://www.kubernetes.dev/docs/guide/issue-triage/
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+- name: ci-k8s-triage-robot-stale-prs
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Adds lifecycle/stale to PRs after 90d of inactivity
+    testgrid-tab-name: stale-prs
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        is:pr
+        -repo:kubernetes-sigs/kind
+        -repo:kubernetes/ingress-nginx
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
@@ -294,17 +519,16 @@ periodics:
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
-        --comment=The Kubernetes project currently lacks enough contributors to adequately respond to all issues and PRs.
+        --comment=The Kubernetes project currently lacks enough contributors to adequately respond to all PRs.
 
-        This bot triages issues and PRs according to the following rules:
+        This bot triages PRs according to the following rules:
         - After 90d of inactivity, `lifecycle/stale` is applied
         - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
-        - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the PR is closed
 
         You can:
-        - Mark this issue or PR as fresh with `/remove-lifecycle stale`
-        - Mark this issue or PR as rotten with `/lifecycle rotten`
-        - Close this issue or PR with `/close`
+        - Mark this PR as fresh with `/remove-lifecycle stale`
+        - Close this PR with `/close`
         - Offer to help out with [Issue Triage][1]
 
         Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
@@ -333,9 +557,9 @@ periodics:
     testgrid-tab-name: thaw-prs
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20211012-ba1fa86530
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
@@ -371,6 +595,152 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
+- name: ci-k8s-triage-robot-retriage
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Removes the triage/accepted label after 1 year of inactivity
+    testgrid-tab-name: re-triage
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
+        label:triage/accepted
+        -label:priority/important-soon
+        -label:priority/critical-urgent
+        is:issue
+      - --updated=8760h
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This issue has not been updated in over 1 year, and should be re-triaged.
+
+        You can:
+        - Confirm that this issue is still relevant with `/triage accepted` (org members only)
+        - Close this issue with `/close`
+
+        For more details on the triage process, see https://www.kubernetes.dev/docs/guide/issue-triage/
+
+        /remove-triage accepted
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+- name: ci-k8s-triage-robot-retriage-important
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Removes the triage/accepted label on important issues after 3 months of inactivity
+    testgrid-tab-name: re-triage-important
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
+        label:triage/accepted
+        label:priority/important-soon
+        is:issue
+      - --updated=2160h
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This issue is labeled with `priority/important-soon` but has not been updated in over 90 days, and should be re-triaged.
+        Important-soon issues must be staffed and worked on either currently, or very soon, ideally in time for the next release.
+
+        You can:
+        - Confirm that this issue is still relevant with `/triage accepted` (org members only)
+        - Deprioritize it with `/priority important-longterm` or `/priority backlog`
+        - Close this issue with `/close`
+
+        For more details on the triage process, see https://www.kubernetes.dev/docs/guide/issue-triage/
+
+        /remove-triage accepted
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+- name: ci-k8s-triage-robot-retriage-critical
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Removes the triage/accepted label on critical issues after 1 month of inactivity
+    testgrid-tab-name: re-triage-critical
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20230302-61dc1e3a0d
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
+        label:triage/accepted
+        label:priority/critical-urgent
+        is:issue
+      - --updated=720h
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This issue is labeled with `priority/critical-urgent` but has not been updated in over 30 days, and should be re-triaged.
+        Critical-urgent issues must be actively worked on as someone's top priority right now.
+
+        You can:
+        - Confirm that this issue is still relevant with `/triage accepted` (org members only)
+        - Deprioritize it with `/priority {important-soon, important-longterm, backlog}`
+        - Close this issue with `/close`
+
+        For more details on the triage process, see https://www.kubernetes.dev/docs/guide/issue-triage/
+
+        /remove-triage accepted
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
 - name: issue-creator
   interval: 24h
   cluster: k8s-infra-prow-build-trusted
@@ -382,9 +752,9 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20211012-ba1fa86530
+    - image: gcr.io/k8s-prow/issue-creator:v20230302-61dc1e3a0d
       command:
-      - /app/robots/issue-creator/app.binary
+      - issue-creator
       args:
       - --dry-run=false
       - --alsologtostderr
@@ -412,13 +782,9 @@ periodics:
     description: files bugs for SECURITY_CONTACTS
     testgrid-tab-name: secping
   extra_refs:
-  - base_ref: master
-    org: jessfraz
+  - base_ref: main
+    org: justaugustus
     repo: secping
-  - org: fejta
-    repo: go-github
-    base_ref: master
-    path_alias: github.com/jessfraz/go-github # https://github.com/google/go-github/pull/1076
   spec:
     containers:
     - command:
@@ -432,7 +798,7 @@ periodics:
       env:
       - name: GO111MODULE
         value: "on"
-      image: golang:1.11
+      image: golang:latest
       volumeMounts:
       - name: token
         mountPath: /etc/github-token

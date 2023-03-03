@@ -21,7 +21,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
+	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
@@ -31,24 +31,54 @@ const (
 	pluginName = "branchcleaner"
 )
 
+var (
+	preservedBranchesMsg = "The preserved branches for repo %s is %v"
+)
+
 func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
 
-func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
+func helpProvider(config *plugins.Configuration, enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
+	msgForPreservedBranches := func(repo string, branches []string) string {
+		return fmt.Sprintf(preservedBranchesMsg, repo, branches)
+	}
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		BranchCleaner: plugins.BranchCleaner{
+			PreservedBranches: map[string][]string{
+				"kubernetes/kubernetes": {"master"},
+				"kubernetes-sigs":       {"master"},
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	return &pluginhelp.PluginHelp{
-		Description: "The branchcleaner plugin automatically deletes source branches for merged PRs between two branches on the same repository. This is helpful to keep repos that don't allow forking clean."}, nil
+		Description: "The branchcleaner plugin automatically deletes source branches for merged PRs between two branches on the same repository. This is helpful to keep repos that don't allow forking clean.",
+		Config: func(repos []prowconfig.OrgRepo) map[string]string {
+			configMap := make(map[string]string)
+			for _, repo := range repos {
+				preservedBranches, exists := config.BranchCleaner.PreservedBranches[repo.String()]
+				if exists {
+					configMap[repo.String()] = msgForPreservedBranches(repo.String(), preservedBranches)
+				}
+			}
+			return configMap
+		}(enabledRepos),
+		Snippet: yamlSnippet,
+	}, err
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, pre)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.BranchCleaner, pre)
 }
 
 type githubClient interface {
 	DeleteRef(owner, repo, ref string) error
 }
 
-func handle(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) error {
+func handle(gc githubClient, log *logrus.Entry, config plugins.BranchCleaner, pre github.PullRequestEvent) error {
 	// Only consider closed PRs that got merged
 	if pre.Action != github.PullRequestActionClosed || !pre.PullRequest.Merged {
 		return nil
@@ -56,8 +86,13 @@ func handle(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) err
 
 	pr := pre.PullRequest
 
-	//Only consider PRs from the same repo
+	// Only consider PRs from the same repo
 	if pr.Base.Repo.FullName != pr.Head.Repo.FullName {
+		return nil
+	}
+
+	// skip preserved branches
+	if config.IsPreservedBranch(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.Ref) {
 		return nil
 	}
 

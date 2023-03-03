@@ -1,0 +1,86 @@
+apiVersion: prow.k8s.io/v1
+kind: ProwJob
+metadata:
+  annotations:
+    prow.k8s.io/context: ''
+    prow.k8s.io/job: ci-k8s-infra-build-cluster-prow-build
+    testgrid-alert-email: 'k8s-infra-alerts@kubernetes.io, k8s-infra-prow-oncall@kubernetes.io'
+    testgrid-dashboards: sig-k8s-infra-prow
+    testgrid-num-failures-to-alert: '6'
+    testgrid-tab-name: gke-prow-build-heartbeat
+  creationTimestamp: '2022-07-18T20:30:22Z'
+  generation: 7
+  labels:
+    prow.k8s.io/build-id: '1549129474832863232'
+    prow.k8s.io/context: ''
+    prow.k8s.io/id: test-job2
+    prow.k8s.io/job: ci-k8s-infra-build-cluster-prow-build
+    prow.k8s.io/refs.base_ref: master
+    prow.k8s.io/refs.org: kubernetes
+    prow.k8s.io/refs.repo: test-infra
+    prow.k8s.io/type: periodic
+    foo: bar
+    admission-webhook: enabled
+  name: test-job2
+  namespace: default
+  resourceVersion: '1085091611'
+  uid: 35197a85-9518-41a9-bc60-66ec48cfcf5f
+spec:
+  agent: tekton-pipeline
+  cluster: k8s-infra-prow-build
+  decoration_config:
+    gcs_configuration:
+      bucket: kubernetes-jenkins
+      default_org: kubernetes
+      default_repo: kubernetes
+      path_strategy: legacy
+    gcs_credentials_secret: service-account
+    grace_period: 15m0s
+    resources:
+      clonerefs:
+        requests:
+          cpu: 100m
+      initupload:
+        requests:
+          cpu: 100m
+      place_entrypoint:
+        requests:
+          cpu: 100m
+      sidecar:
+        requests:
+          cpu: 100m
+    timeout: 2h0m0s
+    utility_images:
+      clonerefs: localhost:5001/clonerefs-ssl-disabled:latest
+      initupload: localhost:5001/initupload:latest
+      entrypoint: localhost:5001/entrypoint:latest
+      sidecar: localhost:5001/sidecar:latest
+  extra_refs:
+    - base_ref: master
+      org: kubernetes
+      repo: test-infra
+  job: ci-k8s-infra-build-cluster-prow-build
+  max_concurrency: 1
+  namespace: test-pods
+  pod_spec:
+    containers:
+      - args:
+          - Everything is fine!
+        command:
+          - echo
+        env:
+          - name: GOPROXY
+            value: 'https://proxy.golang.org'
+        image: 'gcr.io/k8s-staging-infra-tools/k8s-infra:latest'
+        name: ''
+        resources:
+          limits:
+            cpu: 100m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 512Mi
+  prowjob_defaults:
+    tenant_id: GlobalDefaultID
+  report: true
+  type: periodic

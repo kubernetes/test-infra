@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 import Color from "color";
-import {Coverage, parseCoverage} from 'io_k8s_test_infra/gopherage/cmd/html/static/parser';
 import {inflate} from "pako/lib/inflate";
+import {Coverage, parseCoverage} from '../../../../gopherage/cmd/html/static/parser';
 
 declare const COVERAGE_FILE: string;
 declare const RENDERED_COVERAGE_URL: string;

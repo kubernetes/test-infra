@@ -25,19 +25,17 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,8 +51,6 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
-	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
@@ -252,7 +248,7 @@ func TestHandleLog(t *testing.T) {
 			} else {
 				resp := rr.Result()
 				defer resp.Body.Close()
-				if body, err := ioutil.ReadAll(resp.Body); err != nil {
+				if body, err := io.ReadAll(resp.Body); err != nil {
 					t.Errorf("Error reading response body: %v", err)
 				} else if string(body) != "hello" {
 					t.Errorf("Unexpected body: got %s.", string(body))
@@ -324,7 +320,7 @@ func TestHandleProwJobs(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -393,7 +389,7 @@ func TestProwJob(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -417,202 +413,6 @@ func (a *fakeAuthenticatedUserIdentifier) LoginForRequester(requester, token str
 	return a.login, nil
 }
 
-// TestRerun just checks that the result can be unmarshaled properly, has an
-// updated status, and has equal spec.
-func TestRerun(t *testing.T) {
-	testCases := []struct {
-		name                string
-		login               string
-		authorized          []string
-		allowAnyone         bool
-		rerunCreatesJob     bool
-		shouldCreateProwJob bool
-		httpCode            int
-		httpMethod          string
-	}{
-		{
-			name:                "Handler returns ProwJob",
-			login:               "authorized",
-			authorized:          []string{"authorized", "alsoauthorized"},
-			allowAnyone:         false,
-			rerunCreatesJob:     true,
-			shouldCreateProwJob: true,
-			httpCode:            http.StatusOK,
-			httpMethod:          http.MethodPost,
-		},
-		{
-			name:                "User not authorized to create prow job",
-			login:               "random-dude",
-			authorized:          []string{"authorized", "alsoauthorized"},
-			allowAnyone:         false,
-			rerunCreatesJob:     true,
-			shouldCreateProwJob: false,
-			httpCode:            http.StatusOK,
-			httpMethod:          http.MethodPost,
-		},
-		{
-			name:                "RerunCreatesJob set to false, should not create prow job",
-			login:               "authorized",
-			authorized:          []string{"authorized", "alsoauthorized"},
-			allowAnyone:         true,
-			rerunCreatesJob:     false,
-			shouldCreateProwJob: false,
-			httpCode:            http.StatusOK,
-			httpMethod:          http.MethodGet,
-		},
-		{
-			name:                "Allow anyone set to true, creates job",
-			login:               "ugh",
-			authorized:          []string{"authorized", "alsoauthorized"},
-			allowAnyone:         true,
-			rerunCreatesJob:     true,
-			shouldCreateProwJob: true,
-			httpCode:            http.StatusOK,
-			httpMethod:          http.MethodPost,
-		},
-		{
-			name:                "Direct rerun disabled, post request",
-			login:               "authorized",
-			authorized:          []string{"authorized", "alsoauthorized"},
-			allowAnyone:         true,
-			rerunCreatesJob:     false,
-			shouldCreateProwJob: false,
-			httpCode:            http.StatusMethodNotAllowed,
-			httpMethod:          http.MethodPost,
-		},
-		{
-			name:                "User permitted on specific job",
-			login:               "authorized",
-			authorized:          []string{},
-			allowAnyone:         false,
-			rerunCreatesJob:     true,
-			shouldCreateProwJob: true,
-			httpCode:            http.StatusOK,
-			httpMethod:          http.MethodPost,
-		},
-		{
-			name:                "User on permitted team",
-			login:               "sig-lead",
-			authorized:          []string{},
-			allowAnyone:         false,
-			rerunCreatesJob:     true,
-			shouldCreateProwJob: true,
-			httpCode:            http.StatusOK,
-			httpMethod:          http.MethodPost,
-		},
-		{
-			name:                "Org member permitted for presubmits",
-			login:               "org-member",
-			authorized:          []string{},
-			allowAnyone:         false,
-			rerunCreatesJob:     true,
-			shouldCreateProwJob: true,
-			httpCode:            http.StatusOK,
-			httpMethod:          http.MethodPost,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			fakeProwJobClient := fake.NewSimpleClientset(&prowapi.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "wowsuch",
-					Namespace: "prowjobs",
-				},
-				Spec: prowapi.ProwJobSpec{
-					Job:  "whoa",
-					Type: prowapi.PresubmitJob,
-					Refs: &prowapi.Refs{
-						Org:  "org",
-						Repo: "repo",
-						Pulls: []prowapi.Pull{
-							{
-								Number: 1,
-								Author: tc.login,
-							},
-						},
-					},
-					RerunAuthConfig: &prowapi.RerunAuthConfig{
-						AllowAnyone:   false,
-						GitHubUsers:   []string{"authorized", "alsoauthorized"},
-						GitHubTeamIDs: []int{42},
-					},
-				},
-				Status: prowapi.ProwJobStatus{
-					State: prowapi.PendingState,
-				},
-			})
-			authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
-				return &prowapi.RerunAuthConfig{
-					AllowAnyone: tc.allowAnyone,
-					GitHubUsers: tc.authorized,
-				}
-			}
-
-			req, err := http.NewRequest(tc.httpMethod, "/rerun?prowjob=wowsuch", nil)
-			if err != nil {
-				t.Fatalf("Error making request: %v", err)
-			}
-			req.AddCookie(&http.Cookie{
-				Name:    "github_login",
-				Value:   tc.login,
-				Path:    "/",
-				Expires: time.Now().Add(time.Hour * 24 * 30),
-				Secure:  true,
-			})
-			mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
-			session, err := sessions.GetRegistry(req).Get(mockCookieStore, "access-token-session")
-			if err != nil {
-				t.Fatalf("Error making access token session: %v", err)
-			}
-			session.Values["access-token"] = &oauth2.Token{AccessToken: "validtoken"}
-
-			rr := httptest.NewRecorder()
-			mockConfig := &githuboauth.Config{
-				CookieStore: mockCookieStore,
-			}
-			goa := githuboauth.NewAgent(mockConfig, &logrus.Entry{})
-			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
-			rc := fakegithub.NewFakeClient()
-			rc.OrgMembers = map[string][]string{"org": {"org-member"}}
-			pca := plugins.NewFakeConfigAgent()
-			handler := handleRerun(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), tc.rerunCreatesJob, authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/rerun"))
-			handler.ServeHTTP(rr, req)
-			if rr.Code != tc.httpCode {
-				t.Fatalf("Bad error code: %d", rr.Code)
-			}
-
-			if tc.shouldCreateProwJob {
-				pjs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
-				if err != nil {
-					t.Fatalf("failed to list prowjobs: %v", err)
-				}
-				if numPJs := len(pjs.Items); numPJs != 2 {
-					t.Errorf("expected to get two prowjobs, got %d", numPJs)
-				}
-
-			} else if !tc.rerunCreatesJob && tc.httpCode == http.StatusOK {
-				resp := rr.Result()
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					t.Fatalf("Error reading response body: %v", err)
-				}
-				var res prowapi.ProwJob
-				if err := yaml.Unmarshal(body, &res); err != nil {
-					t.Fatalf("Error unmarshaling: %v", err)
-				}
-				if res.Spec.Job != "whoa" {
-					t.Errorf("Wrong job, expected \"whoa\", got \"%s\"", res.Spec.Job)
-				}
-				if res.Status.State != prowapi.TriggeredState {
-					t.Errorf("Wrong state, expected \"%v\", got \"%v\"", prowapi.TriggeredState, res.Status.State)
-				}
-			}
-		})
-	}
-}
-
 func TestTide(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		pools := []tide.Pool{
@@ -630,8 +430,10 @@ func TestTide(t *testing.T) {
 	ca.Set(&config.Config{
 		ProwConfig: config.ProwConfig{
 			Tide: config.Tide{
-				Queries: []config.TideQuery{
-					{Repos: []string{"prowapi.netes/test-infra"}},
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: []config.TideQuery{
+						{Repos: []string{"prowapi.netes/test-infra"}},
+					},
 				},
 			},
 		},
@@ -665,7 +467,7 @@ func TestTide(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -728,7 +530,7 @@ func TestTideHistory(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -774,7 +576,7 @@ func TestHelp(t *testing.T) {
 		}
 		resp := rr.Result()
 		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("Error reading response body: %v", err)
 		}
@@ -795,14 +597,37 @@ func TestHelp(t *testing.T) {
 
 func Test_gatherOptions(t *testing.T) {
 	cases := []struct {
-		name     string
-		args     map[string]string
-		del      sets.String
-		expected func(*options)
-		err      bool
+		name       string
+		args       map[string]string
+		del        sets.String
+		koDataPath string
+		expected   func(*options)
+		err        bool
 	}{
 		{
 			name: "minimal flags work",
+			expected: func(o *options) {
+				o.timeoutListingProwJobs = 30
+			},
+		},
+		{
+			name: "default static files location",
+			expected: func(o *options) {
+				o.timeoutListingProwJobs = 30
+				o.spyglassFilesLocation = "/lenses"
+				o.staticFilesLocation = "/static"
+				o.templateFilesLocation = "/template"
+			},
+		},
+		{
+			name:       "ko data path",
+			koDataPath: "ko-data",
+			expected: func(o *options) {
+				o.timeoutListingProwJobs = 30
+				o.spyglassFilesLocation = "ko-data/lenses"
+				o.staticFilesLocation = "ko-data/static"
+				o.templateFilesLocation = "ko-data/template"
+			},
 		},
 		{
 			name: "explicitly set --config-path",
@@ -811,6 +636,7 @@ func Test_gatherOptions(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.config.ConfigPath = "/random/value"
+				o.timeoutListingProwJobs = 30
 			},
 		},
 		{
@@ -837,12 +663,20 @@ func Test_gatherOptions(t *testing.T) {
 		ghoptions.AllowAnonymous = true
 		ghoptions.AllowDirectAccess = true
 		t.Run(tc.name, func(t *testing.T) {
+			oldKoDataPath := os.Getenv("KO_DATA_PATH")
+			if err := os.Setenv("KO_DATA_PATH", tc.koDataPath); err != nil {
+				t.Fatalf("Failed set env var KO_DATA_PATH: %v", err)
+			}
+			defer os.Setenv("KO_DATA_PATH", oldKoDataPath)
+
 			expected := &options{
 				config: configflagutil.ConfigOptions{
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
@@ -925,8 +759,10 @@ func TestHandleConfig(t *testing.T) {
 				},
 			},
 			Tide: config.Tide{
-				Queries: []config.TideQuery{
-					{Repos: []string{"prowapi.netes/test-infra"}},
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: []config.TideQuery{
+						{Repos: []string{"prowapi.netes/test-infra"}},
+					},
 				},
 			},
 		},
@@ -949,7 +785,7 @@ func TestHandleConfig(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -991,7 +827,7 @@ func TestHandlePluginConfig(t *testing.T) {
 	}
 	resp := rr.Result()
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Error reading response body: %v", err)
 	}
@@ -1155,56 +991,96 @@ func TestHandleGitHubLink(t *testing.T) {
 	}
 }
 
-func TestCanTriggerJob(t *testing.T) {
-	t.Parallel()
-	org := "org"
-	trustedUser := "trusted"
-	untrustedUser := "untrusted"
-
-	pcfg := &plugins.Configuration{
-		Triggers: []plugins.Trigger{{Repos: []string{org}}},
-	}
-	pcfgGetter := func() *plugins.Configuration { return pcfg }
-
-	ghc := fakegithub.NewFakeClient()
-	ghc.OrgMembers = map[string][]string{org: {trustedUser}}
-
-	pj := prowapi.ProwJob{
-		Spec: prowapi.ProwJobSpec{
-			Refs: &prowapi.Refs{
-				Org:   org,
-				Repo:  "repo",
-				Pulls: []prowapi.Pull{{Author: trustedUser}},
-			},
-			Type: prowapi.PresubmitJob,
-		},
-	}
-	testCases := []struct {
-		name          string
-		user          string
-		expectAllowed bool
+func TestHandleGitProviderLink(t *testing.T) {
+	tests := []struct {
+		name  string
+		query string
+		want  string
 	}{
 		{
-			name:          "Unauthorized user can not rerun",
-			user:          untrustedUser,
-			expectAllowed: false,
+			name:  "github-commit",
+			query: "target=commit&repo=bar&commit=abc123",
+			want:  "https://github.mycompany.com/bar/commit/abc123",
 		},
 		{
-			name:          "Authorized user can re-run",
-			user:          trustedUser,
-			expectAllowed: true,
+			name:  "github-branch",
+			query: "target=branch&repo=bar&branch=main",
+			want:  "https://github.mycompany.com/bar/tree/main",
+		},
+		{
+			name:  "github-pr",
+			query: "target=pr&repo=bar&number=2",
+			want:  "https://github.mycompany.com/bar/pull/2",
+		},
+		{
+			name:  "github-pr-with-quote",
+			query: "target=pr&repo='bar'&number=2",
+			want:  "https://github.mycompany.com/bar/pull/2",
+		},
+		{
+			name:  "github-author",
+			query: "target=author&author=chaodaiG",
+			want:  "https://github.mycompany.com/chaodaiG",
+		},
+		{
+			name:  "github-author-withquote",
+			query: "target=author&repo='bar'&author=chaodaiG",
+			want:  "https://github.mycompany.com/chaodaiG",
+		},
+		{
+			name:  "github-invalid",
+			query: "target=invalid&repo=bar&commit=abc123",
+			want:  "/",
+		},
+		{
+			name:  "gerrit-commit",
+			query: "target=commit&repo='https://foo-review.abc/bar'&commit=abc123",
+			want:  "https://foo.abc/bar/+/abc123",
+		},
+		{
+			name:  "gerrit-commit",
+			query: "target=prcommit&repo='https://foo-review.abc/bar'&commit=abc123",
+			want:  "https://foo.abc/bar/+/abc123",
+		},
+		{
+			name:  "gerrit-branch",
+			query: "target=branch&repo='https://foo-review.abc/bar'&branch=main",
+			want:  "https://foo.abc/bar/+/refs/heads/main",
+		},
+		{
+			name:  "gerrit-pr",
+			query: "target=pr&repo='https://foo-review.abc/bar'&number=2",
+			want:  "https://foo-review.abc/c/bar/+/2",
+		},
+		{
+			name:  "gerrit-invalid",
+			query: "target=invalid&repo='https://foo-review.abc/bar'&commit=abc123",
+			want:  "/",
 		},
 	}
 
-	log := logrus.NewEntry(logrus.StandardLogger())
-	for _, tc := range testCases {
-		result, err := canTriggerJob(tc.user, pj, nil, ghc, pcfgGetter, log)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		if result != tc.expectAllowed {
-			t.Errorf("got result %t, expected %t", result, tc.expectAllowed)
-		}
+	ghoptions := flagutil.GitHubOptions{Host: "github.mycompany.com"}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			url := fmt.Sprintf("/git-provider-link?%s", tc.query)
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+			if err != nil {
+				t.Fatalf("Error making request: %v", err)
+			}
+
+			handler := HandleGitProviderLink(ghoptions.Host, true)
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+			if rr.Code != http.StatusFound {
+				t.Fatalf("Bad error code: %d", rr.Code)
+			}
+			resp := rr.Result()
+			defer resp.Body.Close()
+			if want, got := tc.want, resp.Header.Get("Location"); want != got {
+				t.Fatalf("Wrong URL. Want: %s, got: %s", want, got)
+			}
+		})
 	}
 }
 
@@ -1241,6 +1117,58 @@ func TestHttpStatusForError(t *testing.T) {
 			actual := httpStatusForError(tc.input)
 			if actual != tc.expectedStatus {
 				t.Fatalf("unexpected HTTP status (expected=%v, actual=%v) for error: %v", tc.expectedStatus, actual, tc.input)
+			}
+		})
+	}
+}
+
+func TestPRHistLink(t *testing.T) {
+	tests := []struct {
+		name    string
+		tmpl    string
+		org     string
+		repo    string
+		number  int
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "default",
+			tmpl:    defaultPRHistLinkTemplate,
+			org:     "org",
+			repo:    "repo",
+			number:  0,
+			want:    "/pr-history?org=org&repo=repo&pr=0",
+			wantErr: false,
+		},
+		{
+			name:    "different-template",
+			tmpl:    "/pull={{.Number}}",
+			org:     "org",
+			repo:    "repo",
+			number:  0,
+			want:    "/pull=0",
+			wantErr: false,
+		},
+		{
+			name:    "invalid-template",
+			tmpl:    "doesn't matter {{.NotExist}}",
+			org:     "org",
+			repo:    "repo",
+			number:  0,
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotErr := prHistLinkFromTemplate(tc.tmpl, tc.org, tc.repo, tc.number)
+			if (tc.wantErr && (gotErr == nil)) || (!tc.wantErr && (gotErr != nil)) {
+				t.Fatalf("Error mismatch. Want: %v, got: %v", tc.wantErr, gotErr)
+			}
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Fatalf("Template mismatch. Want: (-), got: (+). \n%s", diff)
 			}
 		})
 	}

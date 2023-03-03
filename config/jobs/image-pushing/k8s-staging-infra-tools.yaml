@@ -1,4 +1,46 @@
 postsubmits:
+  kubernetes/registry.k8s.io:
+  # TODO(bentheelder): rerun_auth_config (let a github team re-run these, I probably need to join a team...)
+  - name: post-oci-proxy-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+        testgrid-dashboards: sig-k8s-infra-gcb
+    decorate: true
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+          command:
+          - /run.sh
+          args:
+          # this is the project GCB will run in, which is the same as the GCR
+          # images are pushed to.
+          - --project=k8s-staging-infra-tools
+          - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+          - .
+  kubernetes-sigs/porche:
+  - name: post-porche-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+        testgrid-dashboards: sig-k8s-infra-gcb
+    decorate: true
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+          command:
+          - /run.sh
+          args:
+          # this is the project GCB will run in, which is the same as the GCR
+          # images are pushed to.
+          - --project=k8s-staging-infra-tools
+          - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+          - --with-git-dir
+          - .
   kubernetes/k8s.io:
     - name: post-k8sio-push-image-octodns-docker
       cluster: k8s-infra-prow-build-trusted
@@ -11,7 +53,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
             command:
               - /run.sh
             args:
@@ -32,7 +74,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
             command:
               - /run.sh
             args:
@@ -40,3 +82,45 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
               - --env-passthrough=PULL_BASE_REF
               - images/k8s-infra
+    - name: post-k8sio-push-image-public-log-asn-matcher
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-k8sio, sig-k8s-infra-gcb
+        testgrid-alert-email: public-log-asn-matcher@ii.coop
+        description: Builds the public-log-asn-matcher image for generating data that is used for reviewing Kubernetes Public artifact traffic in DataStudio.
+      decorate: true
+      run_if_changed: "^images/public-log-asn-matcher/"
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-infra-tools
+              - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/public-log-asn-matcher
+    - name: post-k8sio-push-image-cs-fetch-repos-canary
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-k8sio, sig-k8s-infra-gcb
+        description: Builds the cs-fetch-repos image which creates a git repository configuration file for indexing by codesearch (aka Hound).
+      decorate: true
+      run_if_changed: "^images/codesearch/cs-fetch-repos/"
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-infra-tools
+              - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/codesearch/cs-fetch-repos

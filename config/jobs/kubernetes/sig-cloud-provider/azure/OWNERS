@@ -2,20 +2,20 @@
 
 reviewers:
 - andyzhangx
-- brendandburns
 - CecileRobertMichon
-- chewong
 - feiskyer
-- justaugustus
+- jackfrancis
 - karataliu
-- khenidak
+- marosset
+- mboersma
 approvers:
 - andyzhangx
+- CecileRobertMichon
+- feiskyer
+- karataliu
+emeritus_approvers:
 - brendandburns
 - chewong
-- feiskyer
-- justaugustus
-- karataliu
 - khenidak
 
 labels:

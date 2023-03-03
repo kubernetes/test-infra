@@ -9,14 +9,6 @@
 
 ### Script
 
-Run using Bazel:
-
-```console
-$ bazel run //gencred -- <options>
-```
-
-Run using Golang:
-
 ```console
 $ go run k8s.io/test-infra/gencred <options>
 ```
@@ -30,6 +22,7 @@ The following is a list of supported options for the `gencred` CLI. All options 
   -o, --output string    Output path for generated kubeconfig file. (default "/dev/stdout")
       --overwrite        Overwrite (rather than merge) output file if exists.
   -s, --serviceaccount   Authorize with a service account. (default true)
+  -d, --duration         How many days the cred is valid. (default 7)
 ```
 
 Create a kubeconfig entry with context name `mycluster` using `serviceaccount` authorization and output to a file `config.yaml`.
@@ -174,6 +167,8 @@ token, caPEM, err := serviceaccount.CreateClusterServiceAccountCredentials(clien
 ```  
 
 `token` will contain the **service account access token** and `caPEM` will contain the **server certificate authority**.
+
+This requests a token valid for one week or until the service account is deleted.
 
 ```go
 import "encoding/base64"

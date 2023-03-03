@@ -133,3 +133,53 @@ func TestParseStoragePath(t *testing.T) {
 		})
 	}
 }
+
+func TestStoragePath(t *testing.T) {
+	tests := []struct {
+		name    string
+		bucket  string
+		path    string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:   "default",
+			bucket: "a",
+			path:   "b",
+			want:   "gs://a/b",
+		},
+		{
+			name:    "invalid",
+			bucket:  " gs://",
+			path:    "b",
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:   "explicit",
+			bucket: "gs://a",
+			path:   "b",
+			want:   "gs://a/b",
+		},
+		{
+			name:   "something-else",
+			bucket: "s3://a",
+			path:   "b",
+			want:   "s3://a/b",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotErr := providers.StoragePath(tc.bucket, tc.path)
+
+			if tc.wantErr != ((gotErr != nil) && tc.wantErr) {
+				t.Fatalf("Error mismatching. Want: %v, got: %v", tc.wantErr, gotErr)
+			}
+			if tc.want != got {
+				t.Fatalf("Got wrong GCS storage path. Want: %s, got: %s", tc.want, got)
+			}
+		})
+	}
+}

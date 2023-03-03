@@ -12,7 +12,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210916-gd9f96bbbb@sha256:5b434c08e582b58b96867152682c1e754ee609c82390abf3074992d4ec53ed25
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
         command:
         - ./hack/verify-boilerplate.sh
     annotations:
@@ -30,48 +30,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210916-gd9f96bbbb@sha256:5b434c08e582b58b96867152682c1e754ee609c82390abf3074992d4ec53ed25
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
         command:
         - ./hack/verify-codegen.sh
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: codegen
-
-  - name: pull-ingress-nginx-gofmt
-    always_run: false
-    decorate: true
-    path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$'
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210916-gd9f96bbbb@sha256:5b434c08e582b58b96867152682c1e754ee609c82390abf3074992d4ec53ed25
-        command:
-        - ./hack/verify-gofmt.sh
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: gofmt
-
-  - name: pull-ingress-nginx-golint
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$'
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210916-gd9f96bbbb@sha256:5b434c08e582b58b96867152682c1e754ee609c82390abf3074992d4ec53ed25
-        command:
-        - ./hack/verify-golint.sh
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: golint
 
   - name: pull-ingress-nginx-lualint
     always_run: false
@@ -83,31 +47,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210916-gd9f96bbbb@sha256:5b434c08e582b58b96867152682c1e754ee609c82390abf3074992d4ec53ed25
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
         command:
         - ./hack/verify-lualint.sh
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: lualint
-
-  - name: pull-ingress-nginx-chart-lint
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 5m
-    path_alias: k8s.io/ingress-nginx
-    run_if_changed: "^charts/"
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210916-gd9f96bbbb@sha256:5b434c08e582b58b96867152682c1e754ee609c82390abf3074992d4ec53ed25
-        command:
-        - ./hack/verify-chart-lint.sh
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: chart-lint
 
   - name: pull-ingress-nginx-test-lua
     always_run: false
@@ -121,154 +66,10 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210916-gd9f96bbbb@sha256:5b434c08e582b58b96867152682c1e754ee609c82390abf3074992d4ec53ed25
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20220823-ge19026fe4@sha256:038fc60379b6ce9a0134c2ff9134edccad1f8ecbd9c6ebed9660711d05b0ed95
         command:
         - make
         - lua-test
     annotations:
       testgrid-dashboards: sig-network-ingress-nginx
       testgrid-tab-name: test-lua
-
-  - name: pull-ingress-nginx-test
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 15m
-    path_alias: k8s.io/ingress-nginx
-    run_if_changed: '\.go$'
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210916-gd9f96bbbb@sha256:5b434c08e582b58b96867152682c1e754ee609c82390abf3074992d4ec53ed25
-        command:
-        - make
-        - test
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: test
-
-  - name: pull-ingress-nginx-e2e-1-16
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    max_concurrency: 5
-    path_alias: k8s.io/ingress-nginx
-    #run_if_changed: '\.go$|^rootfs/'
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211005-ca067fbd9f-master
-        command:
-          - wrapper.sh
-          - bash
-          - -c
-          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: REPO_INFO
-          value: https://github.com/kubernetes/ingress-nginx
-        - name: K8S_VERSION
-          value: v1.16.15@sha256:a89c771f7de234e6547d43695c7ab047809ffc71a0c3b65aa54eda051c45ed20
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: e2e-1-16
-
-  - name: pull-ingress-nginx-e2e-1-17
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    max_concurrency: 5
-    path_alias: k8s.io/ingress-nginx
-    #run_if_changed: '\.go$|^rootfs/'
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211005-ca067fbd9f-master
-        command:
-          - wrapper.sh
-          - bash
-          - -c
-          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: REPO_INFO
-          value: https://github.com/kubernetes/ingress-nginx
-        - name: K8S_VERSION
-          value: v1.17.11@sha256:5240a7a2c34bf241afb54ac05669f8a46661912eab05705d660971eeb12f6555
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: e2e-1-17
-
-  - name: pull-ingress-nginx-e2e-1-18
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    max_concurrency: 5
-    path_alias: k8s.io/ingress-nginx
-    #run_if_changed: '\.go$|^rootfs/'
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211005-ca067fbd9f-master
-        command:
-          - wrapper.sh
-          - bash
-          - -c
-          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: REPO_INFO
-          value: https://github.com/kubernetes/ingress-nginx
-        - name: K8S_VERSION
-          value: v1.18.8@sha256:e1f5c7e498af9d2ff8e57c30db7bd9b20f6fd0b57be3aaa3f819ba491e359a58
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: e2e-1-18
-
-  - name: pull-ingress-nginx-e2e-1-19
-    always_run: false
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    max_concurrency: 5
-    path_alias: k8s.io/ingress-nginx
-    #run_if_changed: '\.go$|^rootfs/'
-    labels:
-      preset-kind-volume-mounts: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211005-ca067fbd9f-master
-        command:
-          - wrapper.sh
-          - bash
-          - -c
-          - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && make kind-e2e-test
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: REPO_INFO
-          value: https://github.com/kubernetes/ingress-nginx
-        - name: K8S_VERSION
-          value: v1.19.1@sha256:98cf5288864662e37115e362b23e4369c8c4a408f99cbc06e58ac30ddc721600
-    annotations:
-      testgrid-dashboards: sig-network-ingress-nginx
-      testgrid-tab-name: e2e-1-19

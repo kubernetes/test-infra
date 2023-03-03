@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/git/types"
 )
 
 func OrgRepo(full string) (string, string, error) {
@@ -44,6 +44,11 @@ type clientFactoryAdapter struct {
 
 // ClientFromDir creates a client that operates on a repo that has already
 // been cloned to the given directory.
+//
+// CloneURI is the third arg that's ignored here, it's currently only used for
+// cloning Gerrit repos. This client is not used for cloning Gerrit repos yet,
+// so leave it unimplemented.
+// (TODO: chaodaiG) Either implement or remove this struct.
 func (a *clientFactoryAdapter) ClientFromDir(org, repo, dir string) (RepoClient, error) {
 	return nil, errors.New("no ClientFromDir implementation exists in the v1 git client")
 }
@@ -59,11 +64,11 @@ type repoClientAdapter struct {
 }
 
 func (a *repoClientAdapter) MergeAndCheckout(baseSHA string, mergeStrategy string, headSHAs ...string) error {
-	return a.Repo.MergeAndCheckout(baseSHA, github.PullRequestMergeType(mergeStrategy), headSHAs...)
+	return a.Repo.MergeAndCheckout(baseSHA, types.PullRequestMergeType(mergeStrategy), headSHAs...)
 }
 
 func (a *repoClientAdapter) MergeWithStrategy(commitlike, mergeStrategy string, opts ...MergeOpt) (bool, error) {
-	return a.Repo.MergeWithStrategy(commitlike, github.PullRequestMergeType(mergeStrategy))
+	return a.Repo.MergeWithStrategy(commitlike, types.PullRequestMergeType(mergeStrategy))
 }
 
 func (a *repoClientAdapter) Clone(from string) error {
@@ -82,6 +87,10 @@ func (a *repoClientAdapter) PushToNamedFork(forkName, branch string, force bool)
 	return a.Repo.PushToNamedFork(forkName, branch, force)
 }
 
+func (a *repoClientAdapter) CommitExists(sha string) (bool, error) {
+	return false, errors.New("no CommitExists implementation exists in the v1 repo client")
+}
+
 func (a *repoClientAdapter) PushToCentral(branch string, force bool) error {
 	return errors.New("no PushToCentral implementation exists in the v1 repo client")
 }
@@ -90,8 +99,10 @@ func (a *repoClientAdapter) MirrorClone() error {
 	return errors.New("no MirrorClone implementation exists in the v1 repo client")
 }
 
-func (a *repoClientAdapter) Fetch() error {
-	return a.Repo.Fetch()
+func (a *repoClientAdapter) Fetch(arg ...string) error {
+	// TODO(mpherman): Bring adapter Fetch in line with gitv2 fetch without hard-coding origin as remote.
+	args := append([]string{"origin"}, arg...)
+	return a.Repo.Fetch(args...)
 }
 
 func (a *repoClientAdapter) FetchFromRemote(resolver RemoteResolver, branch string) error {

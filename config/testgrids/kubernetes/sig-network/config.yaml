@@ -1,19 +1,18 @@
 dashboard_groups:
 - name: sig-network
   dashboard_names:
-    - sig-network-dualstack-azure-e2e
     - sig-network-dns
     - sig-network-external-dns
     - sig-network-gce
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
     - sig-network-gateway-api
+    - sig-network-policy-api
     - sig-network-ingress-controller-conformance
     - sig-network-kind
 
 dashboards:
 - name: sig-network-dns
-- name: sig-network-dualstack-azure-e2e
 - name: sig-network-external-dns
 - name: sig-network-gce
   dashboard_tab:
@@ -42,11 +41,6 @@ dashboards:
       description: network gci-gce e2e tests in ipvs proxier mode
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com, lionwei1992+alerts@gmail.com
-    - name: pull-gci-gce-ipvs
-      test_group_name: pull-kubernetes-e2e-gci-gce-ipvs
-      description: presubmit network gci-gce e2e tests in ipvs proxier mode
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-coredns
       test_group_name: ci-kubernetes-e2e-gci-gce-coredns
       description: network gci-gce tests with CoreDNS
@@ -101,5 +95,6 @@ dashboards:
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
 - name: sig-network-gateway-api
+- name: sig-network-policy-api
 - name: sig-network-ingress-controller-conformance
 - name: sig-network-kind

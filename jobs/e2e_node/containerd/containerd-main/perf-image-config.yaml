@@ -1,0 +1,13 @@
+images:
+  ubuntu:
+    image_family: pipeline-1-24
+    project: ubuntu-os-gke-cloud
+    machine: n1-standard-16  # node performance tests will be skipped on smaller machines
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-main/env"
+  cos-stable:
+    image_family: cos-stable
+    project: cos-cloud
+    machine: n1-standard-16 # node performance tests will be skipped on smaller machines
+    metadata: "user-data</go/src/github.com/containerd/containerd/test/e2e_node/init.yaml,containerd-configure-sh</go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh</go/src/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env</workspace/test-infra/jobs/e2e_node/containerd/containerd-main/env,gci-update-strategy=update_disabled"
+
+# The only difference of this file from the image-config.yaml supposed to be the machine size

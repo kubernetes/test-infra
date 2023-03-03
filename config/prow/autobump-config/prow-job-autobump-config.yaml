@@ -18,7 +18,6 @@ extraFiles:
   - "config/jobs/kubernetes/sig-cloud-provider/azure/generate.sh"
   - "config/jobs/kubernetes/kops/build_jobs.py"
   - "config/jobs/kubernetes-csi/gen-jobs.sh"
-  - "config/jobs/kubernetes-sigs/sig-windows/generate-presubmits.sh"
   - "config/jobs/README.md"
   - "releng/generate_tests.py"
   - "releng/test_config.yaml"

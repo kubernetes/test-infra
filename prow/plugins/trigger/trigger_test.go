@@ -85,6 +85,8 @@ func TestRunRequested(t *testing.T) {
 	var testCases = []struct {
 		name string
 
+		pr *github.PullRequest
+
 		requestedJobs   []config.Presubmit
 		jobCreationErrs sets.String // job names which fail creation
 
@@ -93,9 +95,24 @@ func TestRunRequested(t *testing.T) {
 	}{
 		{
 			name: "nothing requested means nothing done",
+			pr:   &github.PullRequest{},
 		},
 		{
 			name: "disjoint sets of jobs get triggered",
+			pr: &github.PullRequest{
+				Base: github.PullRequestBranch{
+					Repo: github.Repo{
+						Owner: github.User{
+							Login: "org",
+						},
+						Name: "repo",
+					},
+					Ref: "branch",
+				},
+				Head: github.PullRequestBranch{
+					SHA: "foobar1",
+				},
+			},
 			requestedJobs: []config.Presubmit{{
 				JobBase: config.JobBase{
 					Name: "first",
@@ -111,6 +128,20 @@ func TestRunRequested(t *testing.T) {
 		},
 		{
 			name: "all requested jobs get run",
+			pr: &github.PullRequest{
+				Base: github.PullRequestBranch{
+					Repo: github.Repo{
+						Owner: github.User{
+							Login: "org",
+						},
+						Name: "repo",
+					},
+					Ref: "branch",
+				},
+				Head: github.PullRequestBranch{
+					SHA: "foobar1",
+				},
+			},
 			requestedJobs: []config.Presubmit{{
 				JobBase: config.JobBase{
 					Name: "first",
@@ -126,6 +157,20 @@ func TestRunRequested(t *testing.T) {
 		},
 		{
 			name: "failure on job creation bubbles up but doesn't stop others from starting",
+			pr: &github.PullRequest{
+				Base: github.PullRequestBranch{
+					Repo: github.Repo{
+						Owner: github.User{
+							Login: "org",
+						},
+						Name: "repo",
+					},
+					Ref: "branch",
+				},
+				Head: github.PullRequestBranch{
+					SHA: "foobar1",
+				},
+			},
 			requestedJobs: []config.Presubmit{{
 				JobBase: config.JobBase{
 					Name: "first",
@@ -141,20 +186,35 @@ func TestRunRequested(t *testing.T) {
 			expectedJobs:    sets.NewString("second"),
 			expectedErr:     true,
 		},
-	}
-
-	pr := &github.PullRequest{
-		Base: github.PullRequestBranch{
-			Repo: github.Repo{
-				Owner: github.User{
-					Login: "org",
+		{
+			name: "no errors and unmergable PR means we should see no trigger",
+			pr: &github.PullRequest{
+				Base: github.PullRequestBranch{
+					Repo: github.Repo{
+						Owner: github.User{
+							Login: "org",
+						},
+						Name: "repo",
+					},
+					Ref: "branch",
 				},
-				Name: "repo",
+				Head: github.PullRequestBranch{
+					SHA: "foobar1",
+				},
+				Mergable: utilpointer.BoolPtr(false),
 			},
-			Ref: "branch",
-		},
-		Head: github.PullRequestBranch{
-			SHA: "foobar1",
+			requestedJobs: []config.Presubmit{{
+				JobBase: config.JobBase{
+					Name: "first",
+				},
+				Reporter: config.Reporter{Context: "first-context"},
+			}, {
+				JobBase: config.JobBase{
+					Name: "second",
+				},
+				Reporter: config.Reporter{Context: "second-context"},
+			}},
+			expectedJobs: sets.NewString(),
 		},
 	}
 
@@ -181,7 +241,7 @@ func TestRunRequested(t *testing.T) {
 				Logger:        logrus.WithField("testcase", testCase.name),
 			}
 
-			err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid", nil, time.Nanosecond)
+			err := runRequested(client, testCase.pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid", nil, time.Nanosecond)
 			if err == nil && testCase.expectedErr {
 				t.Error("failed to receive an error")
 			}
@@ -266,6 +326,7 @@ func TestTrustedUser(t *testing.T) {
 		name string
 
 		onlyOrgMembers bool
+		trustedApps    []string
 		trustedOrg     string
 
 		user string
@@ -356,6 +417,19 @@ func TestTrustedUser(t *testing.T) {
 			user:            "k8s-ci-robot[bot]",
 			expectedTrusted: true,
 		},
+		{
+			name:            "github-app[bot] is in trusted list",
+			user:            "github-app[bot]",
+			trustedApps:     []string{"github-app"},
+			expectedTrusted: true,
+		},
+		{
+			name:            "github-app[bot] is not in trusted list",
+			user:            "github-app[bot]",
+			trustedApps:     []string{"other-app"},
+			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator).String(),
+		},
 	}
 
 	for _, tc := range testcases {
@@ -366,7 +440,7 @@ func TestTrustedUser(t *testing.T) {
 			}
 			fc.Collaborators = []string{"test-collaborator"}
 
-			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
+			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedApps, tc.trustedOrg, tc.user, tc.org, tc.repo)
 			if err != nil {
 				t.Errorf("For case %s, didn't expect error from TrustedUser: %v", tc.name, err)
 			}

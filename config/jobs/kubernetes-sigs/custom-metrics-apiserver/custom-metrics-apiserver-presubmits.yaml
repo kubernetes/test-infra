@@ -6,11 +6,12 @@ presubmits:
     path_alias: sigs.k8s.io/custom-metrics-apiserver
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.19
         command:
         - make
         args:
         - verify
+        - --always-make
     annotations:
       testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
       testgrid-tab-name: pr-verify
@@ -20,7 +21,7 @@ presubmits:
     path_alias: sigs.k8s.io/custom-metrics-apiserver
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.19
         command:
         - make
         args:
@@ -34,7 +35,7 @@ presubmits:
     path_alias: sigs.k8s.io/custom-metrics-apiserver
     spec:
       containers:
-      - image: golang:1.16
+      - image: golang:1.19
         command:
         - make
         args:

@@ -37,22 +37,22 @@ func TestCensoringFormatter(t *testing.T) {
 		{
 			description: "all occurrences of a single secret in a message are censored",
 			entry:       &logrus.Entry{Message: "A SECRET is a SECRET if it is secret"},
-			expected:    "level=panic msg=\"A ****** is a ****** if it is secret\"\n",
+			expected:    "level=panic msg=\"A XXXXXX is a XXXXXX if it is secret\"\n",
 		},
 		{
 			description: "occurrences of a multiple secrets in a message are censored",
 			entry:       &logrus.Entry{Message: "A SECRET is a MYSTERY"},
-			expected:    "level=panic msg=\"A ****** is a *******\"\n",
+			expected:    "level=panic msg=\"A XXXXXX is a XXXXXXX\"\n",
 		},
 		{
 			description: "occurrences of multiple secrets in a field",
 			entry:       &logrus.Entry{Message: "message", Data: logrus.Fields{"key": "A SECRET is a MYSTERY"}},
-			expected:    "level=panic msg=message key=\"A ****** is a *******\"\n",
+			expected:    "level=panic msg=message key=\"A XXXXXX is a XXXXXXX\"\n",
 		},
 		{
 			description: "occurrences of a secret in a non-string field",
 			entry:       &logrus.Entry{Message: "message", Data: logrus.Fields{"key": fmt.Errorf("A SECRET is a MYSTERY")}},
-			expected:    "level=panic msg=message key=\"A ****** is a *******\"\n",
+			expected:    "level=panic msg=message key=\"A XXXXXX is a XXXXXXX\"\n",
 		},
 	}
 
@@ -89,7 +89,7 @@ with "chars" that need fixing in JSON`
 	if err != nil {
 		t.Fatalf("got an error from censoring: %v", err)
 	}
-	if diff := cmp.Diff(string(censored), `{"level":"panic","msg":"*****************************************************","time":"0001-01-01T00:00:00Z"}
+	if diff := cmp.Diff(string(censored), `{"level":"panic","msg":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX","time":"0001-01-01T00:00:00Z"}
 `); diff != "" {
 		t.Errorf("got incorrect output after censoring: %v", diff)
 	}
@@ -97,7 +97,7 @@ with "chars" that need fixing in JSON`
 
 func TestCensoringFormatterWithCornerCases(t *testing.T) {
 	entry := &logrus.Entry{Message: "message", Data: logrus.Fields{"key": fmt.Errorf("A SECRET is a secret")}}
-	expectedEntry := "level=panic msg=message key=\"A ****** is a secret\"\n"
+	expectedEntry := "level=panic msg=message key=\"A XXXXXX is a secret\"\n"
 
 	testCases := []struct {
 		description string

@@ -48,8 +48,10 @@ const (
 
 // Configuration is the top-level serialization target for plugin Configuration.
 type Configuration struct {
-	// Plugins is a map of repositories (eg "k/k") to lists of
-	// plugin names.
+	// Plugins is a map of organizations (eg "o") or repositories
+	// (eg "o/r") to lists of enabled plugin names.
+	// If it is defined on both organization and repository levels, the list of enabled
+	// plugin names for the repository is the merging list of the two levels.
 	// You can find a comprehensive list of the default available plugins here
 	// https://github.com/kubernetes/test-infra/tree/master/prow/plugins
 	// note that you're also able to add external plugins.
@@ -68,6 +70,7 @@ type Configuration struct {
 	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
 	BranchUpdater        BranchUpdater                `json:"branch_updater,omitempty"`
 	Bugzilla             Bugzilla                     `json:"bugzilla,omitempty"`
+	BranchCleaner        BranchCleaner                `json:"branch_cleaner,omitempty"`
 	Cat                  Cat                          `json:"cat,omitempty"`
 	CherryPickUnapproved CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater        ConfigUpdater                `json:"config_updater,omitempty"`
@@ -161,6 +164,13 @@ type Blunderbuss struct {
 	// additional token per successful reviewer (and potentially more depending on
 	// how many busy reviewers it had to pass over).
 	UseStatusAvailability bool `json:"use_status_availability,omitempty"`
+	// IgnoreDrafts instructs the plugin to ignore assigning reviewers
+	// to the PR that is in Draft state. Default it's false.
+	IgnoreDrafts bool `json:"ignore_drafts,omitempty"`
+	// IgnoreAuthors skips requesting reviewers for specified users.
+	// This is useful when a bot user or admin opens a PR that will be
+	// merged regardless of approvals.
+	IgnoreAuthors []string `json:"ignore_authors,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -189,10 +199,6 @@ type Owners struct {
 	// OWNERS file, preventing their automatic addition by the owners-label plugin.
 	// This check is performed by the verify-owners plugin.
 	LabelsDenyList []string `json:"labels_denylist,omitempty"`
-
-	// LabelsBlackList will be removed after October 2021, use
-	// labels_denylist instead
-	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 
 	// Filenames allows configuring repos to use a separate set of filenames for
 	// any plugin that interacts with these files. Keys are in "org/repo" format.
@@ -279,7 +285,7 @@ type Size struct {
 type Blockade struct {
 	// Repos are either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
-	// BranchRegexp is the regular expression for branches that the the blockade applies to.
+	// BranchRegexp is the regular expression for branches that the blockade applies to.
 	// If BranchRegexp is not specified, the blockade applies to all branches by default.
 	// Compiles into BranchRe during config load.
 	BranchRegexp *string        `json:"branchregexp,omitempty"`
@@ -402,10 +408,26 @@ func (l Label) RestrictedLabelsFor(org, repo string) map[string]RestrictedLabel 
 	return result
 }
 
+func (l Label) IsRestrictedLabelInAdditionalLables(restricted string) bool {
+	for _, additional := range l.AdditionalLabels {
+		if restricted == additional {
+			return true
+		}
+	}
+	return false
+}
+
 type RestrictedLabel struct {
-	Label        string   `json:"label"`
-	AllowedTeams []string `json:"allowed_teams,omitempty"`
-	AllowedUsers []string `json:"allowed_users,omitempty"`
+	Label        string          `json:"label"`
+	AllowedTeams []string        `json:"allowed_teams,omitempty"`
+	AllowedUsers []string        `json:"allowed_users,omitempty"`
+	AssignOn     []AssignOnLabel `json:"assign_on,omitempty"`
+}
+
+// AssignOnLabel specifies the label that would trigger the RestrictedLabel.AllowedUsers'
+// to be assigned on the PR.
+type AssignOnLabel struct {
+	Label string `json:"label"`
 }
 
 // Trigger specifies a configuration for a single trigger.
@@ -414,6 +436,10 @@ type RestrictedLabel struct {
 type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
+	// TrustedApps is the explicit list of GitHub apps whose PRs will be automatically
+	// considered as trusted. The list should contain usernames of each GitHub App without [bot] suffix.
+	// By default, trigger will ignore this list.
+	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' PRs will be automatically built for
 	// PRs to the above repos. The default is the PR's org.
 	//
@@ -430,6 +456,8 @@ type Trigger struct {
 	// IgnoreOkToTest makes trigger ignore /ok-to-test comments.
 	// This is a security mitigation to only allow testing from trusted users.
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
+	// TriggerGitHubWorkflows enables workflows run by github to be triggered by prow.
+	TriggerGitHubWorkflows bool `json:"trigger_github_workflows,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.
@@ -453,6 +481,7 @@ type Milestone struct {
 	// You can curl the following endpoint in order to determine the github ID of your team
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+	// Deprecated: use MaintainersTeam instead
 	MaintainersID           int    `json:"maintainers_id,omitempty"`
 	MaintainersTeam         string `json:"maintainers_team,omitempty"`
 	MaintainersFriendlyName string `json:"maintainers_friendly_name,omitempty"`
@@ -473,6 +502,12 @@ type Slack struct {
 type ConfigMapSpec struct {
 	// Name of ConfigMap
 	Name string `json:"name"`
+	// PartitionedNames is a slice of names of ConfigMaps that the keys should be balanced across.
+	// This is useful when no explicit key is given and file names/paths are used as keys instead.
+	// This is used to work around the 1MB ConfigMap size limit by spreading the keys across multiple
+	// separate ConfigMaps.
+	// PartitionedNames is mutually exclusive with the "Name" field.
+	PartitionedNames []string `json:"partitioned_names,omitempty"`
 	// Key is the key in the ConfigMap to update with the file contents.
 	// If no explicit key is given, the basename of the file will be used unless
 	// use_full_path_as_key: true is set, in which case the full filepath relative
@@ -484,7 +519,7 @@ type ConfigMapSpec struct {
 	GZIP *bool `json:"gzip,omitempty"`
 	// Clusters is a map from cluster to namespaces
 	// which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
-	Clusters map[string][]string `json:"clusters"`
+	Clusters map[string][]string `json:"clusters,omitempty"`
 	// ClusterGroup is a list of named cluster_groups to target. Mutually exclusive with clusters.
 	ClusterGroups []string `json:"cluster_groups,omitempty"`
 	// UseFullPathAsKey controls if the full path of the original file relative to the
@@ -522,38 +557,33 @@ func (cu *ConfigUpdater) UnmarshalJSON(d []byte) error {
 		return err
 	}
 	*cu = ConfigUpdater(target)
-	return cu.resolve()
+	return nil
 }
 
 func (cu *ConfigUpdater) resolve() error {
+	if err := validateConfigUpdater(cu); err != nil {
+		return err
+	}
 	var errs []error
 	for k, v := range cu.Maps {
-		if len(v.Clusters) > 0 && len(v.ClusterGroups) > 0 {
-			errs = append(errs, fmt.Errorf("item maps.%s contains both clusters and cluster_groups", k))
-			continue
-		}
-
 		if len(v.Clusters) > 0 {
 			continue
 		}
 
 		clusters := map[string][]string{}
-		for idx, clusterGroupName := range v.ClusterGroups {
-			clusterGroup, hasClusterGroup := cu.ClusterGroups[clusterGroupName]
-			if !hasClusterGroup {
-				errs = append(errs, fmt.Errorf("item maps.%s.cluster_groups.%d references inexistent cluster group named %s", k, idx, clusterGroupName))
-				continue
-			}
+		for _, clusterGroupName := range v.ClusterGroups {
+			clusterGroup := cu.ClusterGroups[clusterGroupName]
 			for _, cluster := range clusterGroup.Clusters {
 				clusters[cluster] = append(clusters[cluster], clusterGroup.Namespaces...)
 			}
 		}
 
 		cu.Maps[k] = ConfigMapSpec{
-			Name:     v.Name,
-			Key:      v.Key,
-			GZIP:     v.GZIP,
-			Clusters: clusters,
+			Name:             v.Name,
+			PartitionedNames: v.PartitionedNames,
+			Key:              v.Key,
+			GZIP:             v.GZIP,
+			Clusters:         clusters,
 		}
 	}
 
@@ -643,6 +673,9 @@ type Welcome struct {
 	// MessageTemplate is the welcome message template to post on new-contributor PRs
 	// For the info struct see prow/plugins/welcome/welcome.go's PRInfo
 	MessageTemplate string `json:"message_template,omitempty"`
+	// Post welcome message in all cases, even if PR author is not an existing
+	// contributor or part of the organization
+	AlwaysPost bool `json:"always_post,omitempty"`
 }
 
 // JiraLinker is the config for the jira-linker plugin
@@ -705,11 +738,21 @@ func (b BranchUpdater) repoIsIncluded(repo string) bool {
 type Dco struct {
 	// SkipDCOCheckForMembers is used to skip DCO check for trusted org members
 	SkipDCOCheckForMembers bool `json:"skip_dco_check_for_members,omitempty"`
+	// TrustedApps defines list of apps which commits will not be checked for DCO singoff.
+	// The list should contain usernames of each GitHub App without [bot] suffix.
+	// By default, this option is ignored.
+	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' commits will not be checked for DCO signoff
 	// if the skip DCO option is enabled. The default is the PR's org.
 	TrustedOrg string `json:"trusted_org,omitempty"`
 	// SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
 	SkipDCOCheckForCollaborators bool `json:"skip_dco_check_for_collaborators,omitempty"`
+	// ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
+	ContributingRepo string `json:"contributing_repo,omitempty"`
+	// ContributingBranch allows setting a custom branch where to find CONTRIBUTING.md
+	ContributingBranch string `json:"contributing_branch,omitempty"`
+	// ContributingPath is used to override the default path to CONTRIBUTING.md
+	ContributingPath string `json:"contributing_path,omitempty"`
 }
 
 // CherryPickUnapproved is the config for the cherrypick-unapproved plugin.
@@ -1019,7 +1062,7 @@ func (cu *ConfigUpdater) SetDefaults() {
 	}
 
 	for name, spec := range cu.Maps {
-		if len(spec.Clusters) == 0 {
+		if len(spec.Clusters) == 0 && len(spec.ClusterGroups) == 0 {
 			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: {""}}
 		}
 		cu.Maps[name] = spec
@@ -1050,11 +1093,7 @@ func (c *Configuration) setDefaults() {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
 	}
 	if c.Owners.LabelsDenyList == nil {
-		if c.Owners.LabelsBlackList != nil {
-			c.Owners.LabelsDenyList = c.Owners.LabelsBlackList
-		} else {
-			c.Owners.LabelsDenyList = []string{labels.Approved, labels.LGTM}
-		}
+		c.Owners.LabelsDenyList = []string{labels.Approved, labels.LGTM}
 	}
 	for _, milestone := range c.RepoMilestone {
 		if milestone.MaintainersFriendlyName == "" {
@@ -1172,10 +1211,23 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 	updater.SetDefaults()
 	configMapKeys := map[ConfigMapID]sets.String{}
 	for file, config := range updater.Maps {
+		// Check that Name and PartitionedNames are mutually exclusive
+		if config.Name != "" && len(config.PartitionedNames) > 0 {
+			return errors.New("'name' and 'partitioned_names' are mutually exclusive in the config_updater plugin configuration")
+		}
+		name := config.Name
+		if name == "" {
+			name = strings.Join(config.PartitionedNames, ",")
+		}
+		// Check that PartitionedNames doesn't use too many partitions.
+		if len(config.PartitionedNames) > 256 {
+			return fmt.Errorf("the PartitionedNames field in config_updater plugin config currently supports a maximum of 256 partitions, but you have %d defined", len(config.PartitionedNames))
+		}
+		// Check that keys are not associated with multiple files.
 		for cluster, namespaces := range config.Clusters {
 			for _, namespace := range namespaces {
 				cmID := ConfigMapID{
-					Name:      config.Name,
+					Name:      name,
 					Namespace: namespace,
 					Cluster:   cluster,
 				}
@@ -1187,7 +1239,7 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 
 				if _, ok := configMapKeys[cmID]; ok {
 					if configMapKeys[cmID].Has(key) {
-						return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
+						return fmt.Errorf("key %s in configmap %s updated with more than one file", key, name)
 					}
 					configMapKeys[cmID].Insert(key)
 				} else {
@@ -1196,7 +1248,26 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 			}
 		}
 	}
-	return nil
+	var errs []error
+	for k, v := range updater.Maps {
+		if len(v.Clusters) > 0 && len(v.ClusterGroups) > 0 {
+			errs = append(errs, fmt.Errorf("item maps.%s contains both clusters and cluster_groups", k))
+			continue
+		}
+
+		if len(v.Clusters) > 0 {
+			continue
+		}
+
+		for idx, clusterGroupName := range v.ClusterGroups {
+			_, hasClusterGroup := updater.ClusterGroups[clusterGroupName]
+			if !hasClusterGroup {
+				errs = append(errs, fmt.Errorf("item maps.%s.cluster_groups.%d references inexistent cluster group named %s", k, idx, clusterGroupName))
+				continue
+			}
+		}
+	}
+	return utilerrors.NewAggregate(errs)
 }
 
 func validateRequireMatchingLabel(rs []RequireMatchingLabel) error {
@@ -1259,6 +1330,16 @@ func validateTrigger(triggers []Trigger) error {
 	return nil
 }
 
+var warnRepoMilestone time.Time
+
+func validateRepoMilestone(milestones map[string]Milestone) {
+	for _, milestone := range milestones {
+		if milestone.MaintainersID != 0 {
+			logrusutil.ThrottledWarnf(&warnRepoMilestone, time.Hour, "deprecated field: maintainers_id is configured for repo_milestone, maintainers_team should be used instead")
+		}
+	}
+}
+
 func compileRegexpsAndDurations(pc *Configuration) error {
 	cRe, err := regexp.Compile(pc.SigMention.Regexp)
 	if err != nil {
@@ -1312,9 +1393,6 @@ func (c *Configuration) Validate() error {
 		logrus.Warn("no plugins specified-- check syntax?")
 	}
 
-	if c.Owners.LabelsBlackList != nil && c.Owners.LabelsDenyList != nil {
-		return errors.New("labels_blacklist and labels_denylist cannot be both supplied")
-	}
 	// Defaulting should run before validation.
 	c.setDefaults()
 	// Regexp compilation should run after defaulting, but before validation.
@@ -1346,6 +1424,7 @@ func (c *Configuration) Validate() error {
 	if err := validateTrigger(c.Triggers); err != nil {
 		return err
 	}
+	validateRepoMilestone(c.RepoMilestone)
 
 	return nil
 }
@@ -1478,6 +1557,10 @@ func (s *BugzillaBugState) Matches(bug *bugzilla.Bug) bool {
 type BugzillaBranchOptions struct {
 	// ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
 	ExcludeDefaults *bool `json:"exclude_defaults,omitempty"`
+
+	// EnableBackporting enables functionality to create new backport bugs for
+	// cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+	EnableBackporting *bool
 
 	// ValidateByDefault determines whether a validation check is run for all pull
 	// requests by default
@@ -1849,6 +1932,37 @@ func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOpt
 	return options
 }
 
+// BranchCleaner contains the configuration for the branchcleaner plugin.
+type BranchCleaner struct {
+	// PreservedBranches is a map of org/repo branches
+	// format:
+	// ```
+	// preserved_branches:
+	//   <org>: ["master", "release"]
+	//   <org/repo>: ["master", "release"]
+	// ```
+	// branches in this allow map would be exempt from branch gc
+	// even if the branches are already merged into the target branch
+	PreservedBranches map[string][]string `json:"preserved_branches,omitempty"`
+}
+
+// IsPreservedBranch check if the branch is in the preserved branch list or not.
+func (b *BranchCleaner) IsPreservedBranch(org, repo, branch string) bool {
+	fullRepoName := fmt.Sprintf("%s/%s", org, repo)
+	for _, pb := range b.PreservedBranches[fullRepoName] {
+		if branch == pb {
+			return true
+		}
+	}
+	for _, pb := range b.PreservedBranches[org] {
+		if branch == pb {
+			return true
+		}
+	}
+	// no repo or org match.
+	return false
+}
+
 // Override holds options for the override plugin
 type Override struct {
 	AllowTopLevelOwners bool `json:"allow_top_level_owners,omitempty"`
@@ -1859,7 +1973,12 @@ type Override struct {
 
 func (c *Configuration) mergeFrom(other *Configuration) error {
 	var errs []error
-	if diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla, ExternalPlugins: other.ExternalPlugins, Label: Label{RestrictedLabels: other.Label.RestrictedLabels}, Lgtm: other.Lgtm, Plugins: other.Plugins}); diff != "" {
+
+	diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla,
+		ExternalPlugins: other.ExternalPlugins, Label: Label{RestrictedLabels: other.Label.RestrictedLabels},
+		Lgtm: other.Lgtm, Plugins: other.Plugins, Triggers: other.Triggers, Welcome: other.Welcome})
+
+	if diff != "" {
 		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))
 	}
 
@@ -1876,6 +1995,8 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 
 	c.Approve = append(c.Approve, other.Approve...)
 	c.Lgtm = append(c.Lgtm, other.Lgtm...)
+	c.Triggers = append(c.Triggers, other.Triggers...)
+	c.Welcome = append(c.Welcome, other.Welcome...)
 
 	if err := c.mergeExternalPluginsFrom(other.ExternalPlugins); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge .external-plugins from supplemental config: %w", err))
@@ -2004,7 +2125,12 @@ func getLabelConfigFromRestrictedLabelsSlice(s []RestrictedLabel, label string) 
 }
 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Label: Label{RestrictedLabels: c.Label.RestrictedLabels}, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
+	equals := reflect.DeepEqual(c,
+		&Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins,
+			Label: Label{RestrictedLabels: c.Label.RestrictedLabels}, Lgtm: c.Lgtm, Plugins: c.Plugins,
+			Triggers: c.Triggers, Welcome: c.Welcome})
+
+	if !equals || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
@@ -2051,6 +2177,26 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 
 	for _, lgtm := range c.Lgtm {
 		for _, orgOrRepo := range lgtm.Repos {
+			if strings.Contains(orgOrRepo, "/") {
+				repos.Insert(orgOrRepo)
+			} else {
+				orgs.Insert(orgOrRepo)
+			}
+		}
+	}
+
+	for _, trigger := range c.Triggers {
+		for _, orgOrRepo := range trigger.Repos {
+			if strings.Contains(orgOrRepo, "/") {
+				repos.Insert(orgOrRepo)
+			} else {
+				orgs.Insert(orgOrRepo)
+			}
+		}
+	}
+
+	for _, welcome := range c.Welcome {
+		for _, orgOrRepo := range welcome.Repos {
 			if strings.Contains(orgOrRepo, "/") {
 				repos.Insert(orgOrRepo)
 			} else {

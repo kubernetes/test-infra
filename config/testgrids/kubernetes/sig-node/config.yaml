@@ -2,35 +2,25 @@ dashboard_groups:
 - name: sig-node
   dashboard_names:
     - sig-node-release-blocking # This is a replica of sig-node jobs that are release blocking.
-    - sig-node-critical # This dashboard contains jobs that sig-node has deemed critical to the greater operation of the sig. They should always be green.
-    - sig-node-cadvisor
     - sig-node-kubelet
     - sig-node-containerd
-    - sig-node-ppc64le
     - sig-node-cri-o
-    - sig-node-docker
+    - sig-node-dynamic-resource-allocation
+    - sig-node-presubmits
+    # These dashboards are for out-of-tree SIG Node projects
+    - sig-node-cadvisor
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
+    - sig-node-kernel-module-management
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
-    - sig-node-cos
-    - sig-node-presubmits
+    - sig-node-image-pushes
 
 dashboards:
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
-- name: sig-node-critical
-  dashboard_tab:
-    - name: containerd-NodeConformance
-      test_group_name: ci-containerd-node-e2e
 
 - name: sig-node-cadvisor
 - name: sig-node-kubelet
-  dashboard_tab:
-    - name: conformance-node-rhel
-      test_group_name: ci-kubernetes-conformance-node-e2e-rhel
-    - name: conformance-node-containerized-rhel
-      test_group_name: ci-kubernetes-conformance-node-e2e-containerized-rhel
-
 - name: sig-node-containerd
   dashboard_tab:
     - name: pull-node-e2e
@@ -43,35 +33,10 @@ dashboards:
       test_group_name: pull-kubernetes-node-e2e-podutil
       base_options: width=10
 
-- name: sig-node-ppc64le
-  dashboard_tab:
-    - name: conformance
-      test_group_name: ppc64le-conformance
-      description: conformance test results for ppc64le ****This is moved under conformance dashboard, WILL BE REMOVED FROM HERE IN THE FUTURE****
-    - name: unit-tests
-      test_group_name: ppc64le-unit
-      description: unit test results for ppc64le
-
 - name: sig-node-cri-o
-  dashboard_tab:
-    - name: crio-e2e-fedora
-      test_group_name: test_pull_request_crio_e2e_fedora
-      open_test_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
-      results_url_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
-      base_options: width=10
-    - name: crio-e2e-rhel
-      test_group_name: test_pull_request_crio_e2e_rhel
-      open_test_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
-      results_url_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
-      base_options: width=10
-
-- name: sig-node-docker
 - name: sig-node-cri-tools
 - name: sig-node-node-feature-discovery
+- name: sig-node-kernel-module-management
 
 - name: sig-node-node-problem-detector
 
@@ -96,56 +61,11 @@ dashboards:
     test_group_name: post-security-profiles-operator-push-image
     base_options: width=10
 
-- name: sig-node-cos
+- name: sig-node-dynamic-resource-allocation
+  dashboard_tab:
+  - name: pull-kind-dra
+    test_group_name: pull-kubernetes-kind-dra
+    alert_options:
+      alert_mail_to_addresses: patrick.ohly@intel.com
 - name: sig-node-presubmits
-
-test_groups:
-- name: ci-kubernetes-node-kubelet-alpha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-orphans
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-orphans
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-serial-topology-manager
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-topology-manager
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
+- name: sig-node-image-pushes

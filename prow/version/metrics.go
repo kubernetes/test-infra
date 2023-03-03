@@ -24,21 +24,27 @@ import (
 var (
 	prowVersion = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "prow_version",
-		Help: "Prow version",
+		Help: "Prow version.",
 	})
 )
 
 func init() {
 	prometheus.MustRegister(prowVersion)
+	// For components that import current package, if `gatherProwVersion` if not
+	// explicitly called, there will be no metrics for `prow_version`, and when
+	// querying prometheus for `prow_version` the value will be zero, which
+	// is inaccurate. Since the version would not change for the running binary,
+	//  doing this once when binary starts should be fine.
+	gatherProwVersion()
 }
 
-// GatherProwVersion reports prow version
-func GatherProwVersion(l *logrus.Entry) {
+// gatherProwVersion reports prow version
+func gatherProwVersion() {
 	// record prow version
 	version, err := VersionTimestamp()
 	if err != nil {
 		// Not worth panicking
-		l.WithError(err).Debug("Failed to get version timestamp")
+		logrus.WithError(err).Debug("Failed to get version timestamp")
 		prowVersion.Set(-1)
 	} else {
 		prowVersion.Set(float64(version))

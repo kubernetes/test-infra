@@ -18,11 +18,11 @@
 
 import unittest
 
+from parameterized import parameterized
+
 import stream
 import make_db_test
 import model
-
-from parameterized import parameterized
 
 class FakePullResponse:
     def __init__(self, messages):
@@ -117,7 +117,7 @@ class HelperTest(unittest.TestCase):
 class StreamTest(unittest.TestCase):
 
     fake_buckets = {'kubernetes-jenkins':
-                        {'contact': 'fejta',
+                        {'contact': 'spiffxp',
                          'prefix': '',
                          'sequential': False,
                          'exclude_jobs': ['ci-test-infra-benchmark-demo',

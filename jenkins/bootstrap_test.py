@@ -111,7 +111,7 @@ class ReadAllTest(unittest.TestCase):
         return self.end
 
     def readline(self):
-        line = 'line %d\n' % self.number
+        line = b'line %d\n' % self.number
         self.number += 1
         return line
 
@@ -653,8 +653,8 @@ class AppendResultTest(unittest.TestCase):
         bootstrap.append_result(gsutil, 'fake_path', build, version, success)
         cache = gsutil.jsons[0][0][1]
         self.assertEqual(1, len(cache))
-        self.assertIn(build, cache[0].values())
-        self.assertIn(version, cache[0].values())
+        self.assertIn(build, list(cache[0].values()))
+        self.assertIn(version, list(cache[0].values()))
 
     def test_passed_is_bool(self):
         build = 123
@@ -1043,7 +1043,7 @@ class FakeFinish(object):
 
 def repo(config):
     repos = bootstrap.Repos()
-    for cur_repo, tup in config.items():
+    for cur_repo, tup in list(config.items()):
         repos[cur_repo] = tup
     return repos
 
@@ -1090,14 +1090,14 @@ class FakeArgs(object):
         self.pull = PULL
         self.repo = [REPO]
         self.extra_job_args = []
-        for key, val in kw.items():
+        for key, val in list(kw.items()):
             if not hasattr(self, key):
                 raise AttributeError(self, key)
             setattr(self, key, val)
 
 
 def test_bootstrap(**kw):
-    if isinstance(kw.get('repo'), basestring):
+    if isinstance(kw.get('repo'), str):
         kw['repo'] = [kw['repo']]
     return bootstrap.bootstrap(FakeArgs(**kw))
 
@@ -1421,7 +1421,7 @@ class IntegrationTest(unittest.TestCase):
             refs.append('%d:%s' % (pr, head_sha()))
         os.chdir('/tmp')
         pull = ','.join(refs)
-        print '--pull', pull
+        print('--pull', pull)
         subprocess.check_call(['ls'])
         test_bootstrap(
             job='fake-pr',

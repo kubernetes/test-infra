@@ -20,11 +20,14 @@ package junit
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"html/template"
+	"io"
+	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/google/go-cmp/cmp"
+	utilpointer "k8s.io/utils/pointer"
 
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -56,6 +59,14 @@ func (fa *FakeArtifact) CanonicalLink() string {
 	return fakeCanonicalLink
 }
 
+func (fa *FakeArtifact) Metadata() (map[string]string, error) {
+	return nil, nil
+}
+
+func (fa *FakeArtifact) UpdateMetadata(map[string]string) error {
+	return nil
+}
+
 func (fa *FakeArtifact) ReadAt(b []byte, off int64) (int, error) {
 	r := bytes.NewReader(fa.content)
 	return r.ReadAt(b, off)
@@ -70,7 +81,7 @@ func (fa *FakeArtifact) ReadAll() ([]byte, error) {
 		return nil, lenses.ErrFileTooLarge
 	}
 	r := bytes.NewReader(fa.content)
-	return ioutil.ReadAll(r)
+	return io.ReadAll(r)
 }
 
 func (fa *FakeArtifact) ReadTail(n int64) ([]byte, error) {
@@ -86,14 +97,30 @@ func (fa *FakeArtifact) ReadAtMost(n int64) ([]byte, error) {
 }
 
 func TestGetJvd(t *testing.T) {
-	emptyFailureMsg := ""
-	failureMsgs := []string{
-		" failure message 0 ",
-		" failure message 1 ",
+	emptySkipped := junit.Skipped{}
+	failures := []junit.Failure{
+		{
+			Type:    "failure",
+			Message: "failure message 0",
+			Value:   " failure value 0 ",
+		},
+		{
+			Type:    "failure",
+			Message: "failure message 1",
+			Value:   " failure value 1 ",
+		},
 	}
-	errorMsgs := []string{
-		" error message 0 ",
-		" error message 1 ",
+	errors := []junit.Errored{
+		{
+			Type:    "error",
+			Message: "error message 0",
+			Value:   " error value 0 ",
+		},
+		{
+			Type:    "error",
+			Message: "error message 1",
+			Value:   " error value 1 ",
+		},
 	}
 
 	tests := []struct {
@@ -108,7 +135,7 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 					</testsuite>
 				</testsuites>
@@ -124,7 +151,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 						},
@@ -141,7 +168,7 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<error message="Error" type=""> error message 0 </error>
+							<error message="error message 0" type="error"> error value 0 </error>
 						</testcase>
 					</testsuite>
 				</testsuites>
@@ -157,7 +184,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Errored:   &errorMsgs[0],
+									Errored:   &errors[0],
 								},
 							},
 						},
@@ -223,7 +250,7 @@ func TestGetJvd(t *testing.T) {
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
-									Skipped:   &emptyFailureMsg,
+									Skipped:   &emptySkipped,
 								},
 							},
 						},
@@ -239,7 +266,7 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 					<testcase classname="fake_class_0" name="fake_test_0">
 							<skipped/>
@@ -258,7 +285,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 							{
@@ -266,7 +293,7 @@ func TestGetJvd(t *testing.T) {
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
-									Skipped:   &emptyFailureMsg,
+									Skipped:   &emptySkipped,
 								},
 							},
 						},
@@ -280,7 +307,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 							{
@@ -288,7 +315,7 @@ func TestGetJvd(t *testing.T) {
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
-									Skipped:   &emptyFailureMsg,
+									Skipped:   &emptySkipped,
 								},
 							},
 						},
@@ -304,7 +331,7 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 						<testcase classname="fake_class_1" name="fake_test_0"></testcase>
 					</testsuite>
@@ -334,7 +361,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 						},
@@ -351,7 +378,7 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 					</testsuite>
 				</testsuites>
@@ -387,7 +414,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 						},
@@ -404,12 +431,12 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 					</testsuite>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 1 </failure>
+							<failure message="failure message 1" type="failure"> failure value 1 </failure>
 						</testcase>
 					</testsuite>
 				</testsuites>
@@ -425,14 +452,14 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 							{
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[1],
+									Failure:   &failures[1],
 								},
 							},
 						},
@@ -530,7 +557,7 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 					</testsuite>
 					<testsuite>
@@ -551,7 +578,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 							{
@@ -576,7 +603,7 @@ func TestGetJvd(t *testing.T) {
 					</testsuite>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 					</testsuite>
 				</testsuites>
@@ -601,7 +628,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 						},
@@ -616,12 +643,12 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 					</testsuite>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 1 </failure>
+							<failure message="failure message 1" type="failure"> failure value 1 </failure>
 						</testcase>
 					</testsuite>
 					<testsuite>
@@ -642,14 +669,14 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 							{
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[1],
+									Failure:   &failures[1],
 								},
 							},
 							{
@@ -671,7 +698,7 @@ func TestGetJvd(t *testing.T) {
 				<testsuites>
 					<testsuite>
 						<testcase classname="fake_class_0" name="fake_test_0">
-							<failure message="Failed" type=""> failure message 0 </failure>
+							<failure message="failure message 0" type="failure"> failure value 0 </failure>
 						</testcase>
 					</testsuite>
 				</testsuites>
@@ -707,7 +734,7 @@ func TestGetJvd(t *testing.T) {
 								junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
-									Failure:   &failureMsgs[0],
+									Failure:   &failures[0],
 								},
 							},
 						},
@@ -825,6 +852,97 @@ func TestGetJvd(t *testing.T) {
 			got := l.getJvd(artifacts)
 			if diff := cmp.Diff(tt.exp, got); diff != "" {
 				t.Fatalf("JVD mismatch, want(-), got(+): \n%s", diff)
+			}
+		})
+	}
+}
+
+func TestTemplate(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name               string
+		input              JVD
+		expectedSubstrings []string
+	}{
+		{
+			name: "Both stdout and stderr get rendered when there is one test",
+			input: JVD{NumTests: 1, Failed: []TestResult{{
+				Junit: []JunitResult{{
+					Result: junit.Result{
+						Output: utilpointer.String("output"),
+						Error:  utilpointer.String("error"),
+					},
+				}},
+			}}},
+			expectedSubstrings: []string{
+				`<a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" `,
+				`<a href="#" class="open-stdout-stderr">open stderr<i class="material-icons"`,
+				`output`,
+				`error`,
+			},
+		},
+		{
+			name: "Both stdout and stderr get rendered when there are multiple tests",
+			input: JVD{NumTests: 1, Failed: []TestResult{{
+				Junit: []JunitResult{
+					{
+						Result: junit.Result{
+							Output: utilpointer.String("output"),
+							Error:  utilpointer.String("error"),
+						},
+					},
+					{
+						Result: junit.Result{
+							Output: utilpointer.String("output"),
+							Error:  utilpointer.String("error"),
+						},
+					},
+				},
+			}}},
+			expectedSubstrings: []string{
+				`<a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" `,
+				`<a href="#" class="open-stdout-stderr">open stderr<i class="material-icons"`,
+				`<td class="mdl-data-table__cell--non-numeric test-name">Run #0`,
+				`<td class="mdl-data-table__cell--non-numeric test-name">Run #1`,
+				`output`,
+				`error`,
+			},
+		},
+		{
+			name: "Both stdout and stderr get rendered for flaky tests",
+			input: JVD{NumTests: 1, Flaky: []TestResult{{
+				Junit: []JunitResult{{
+					Result: junit.Result{
+						Output: utilpointer.String("output"),
+						Error:  utilpointer.String("error"),
+					},
+				}},
+			}}},
+			expectedSubstrings: []string{
+				`<a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" `,
+				`<a href="#" class="open-stdout-stderr">open stderr<i class="material-icons"`,
+				`output`,
+				`error`,
+			},
+		},
+	}
+
+	tmpl, err := template.ParseFiles("template.html")
+	if err != nil {
+		t.Fatalf("failed to parse template: %v", err)
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			if err := tmpl.ExecuteTemplate(&buf, "body", tc.input); err != nil {
+				t.Fatalf("failed to execute template: %v", err)
+			}
+			result := buf.String()
+
+			for _, substring := range tc.expectedSubstrings {
+				if !strings.Contains(result, substring) {
+					t.Errorf("expected to find substring '%s' in rendered template '%s', wasn't the case", substring, result)
+				}
 			}
 		})
 	}

@@ -40,7 +40,6 @@ func NewOptions() *Options {
 type Options struct {
 	GcsOptions               *gcsupload.Options `json:"gcs_options"`
 	DeprecatedWrapperOptions *wrapper.Options   `json:"wrapper_options,omitempty"` // TODO(fejta): remove july 2019
-
 	// Additional entries to wait for if set
 	Entries []wrapper.Options `json:"entries,omitempty"`
 
@@ -122,6 +121,10 @@ type CensoringOptions struct {
 	// directory also matches a glob in IncludeDirectories. Entries in this list are
 	// parsed with the go-zglob library, allowing for globbed matches.
 	ExcludeDirectories []string `json:"exclude_directories,omitempty"`
+
+	// IniFilenames are secret filenames that should be parsed as INI files in order to
+	// censor the values in the key-value mapping as well as the full content of the file.
+	IniFilenames []string `json:"ini_filenames,omitempty"`
 }
 
 func (o Options) entries() []wrapper.Options {

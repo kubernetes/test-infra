@@ -26,7 +26,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -114,8 +113,10 @@ type IssueClient interface {
 	AssignIssue(org, repo string, number int, logins []string) error
 	UnassignIssue(org, repo string, number int, logins []string) error
 	CloseIssue(org, repo string, number int) error
+	CloseIssueAsNotPlanned(org, repo string, number int) error
 	ReopenIssue(org, repo string, number int) error
 	FindIssues(query, sort string, asc bool) ([]Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]Issue, error)
 	ListOpenIssues(org, repo string) ([]Issue, error)
 	GetIssue(org, repo string, number int) (*Issue, error)
 	EditIssue(org, repo string, number int, issue *Issue) (*Issue, error)
@@ -155,6 +156,7 @@ type CommitClient interface {
 	GetRef(org, repo, ref string) (string, error)
 	DeleteRef(org, repo, ref string) error
 	ListFileCommits(org, repo, path string) ([]RepositoryCommit, error)
+	CreateCheckRun(org, repo string, checkRun CheckRun) error
 }
 
 // RepositoryClient interface for repository related API actions
@@ -192,14 +194,22 @@ type TeamClient interface {
 	CreateTeam(org string, team Team) (*Team, error)
 	EditTeam(org string, t Team) (*Team, error)
 	DeleteTeam(org string, id int) error
+	DeleteTeamBySlug(org, teamSlug string) error
 	ListTeams(org string) ([]Team, error)
 	UpdateTeamMembership(org string, id int, user string, maintainer bool) (*TeamMembership, error)
+	UpdateTeamMembershipBySlug(org, teamSlug, user string, maintainer bool) (*TeamMembership, error)
 	RemoveTeamMembership(org string, id int, user string) error
+	RemoveTeamMembershipBySlug(org, teamSlug, user string) error
 	ListTeamMembers(org string, id int, role string) ([]TeamMember, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember, error)
 	ListTeamRepos(org string, id int) ([]Repo, error)
+	ListTeamReposBySlug(org, teamSlug string) ([]Repo, error)
 	UpdateTeamRepo(id int, org, repo string, permission TeamPermission) error
+	UpdateTeamRepoBySlug(org, teamSlug, repo string, permission TeamPermission) error
 	RemoveTeamRepo(id int, org, repo string) error
+	RemoveTeamRepoBySlug(org, teamSlug, repo string) error
 	ListTeamInvitations(org string, id int) ([]OrgInvitation, error)
+	ListTeamInvitationsBySlug(org, teamSlug string) ([]OrgInvitation, error)
 	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
@@ -238,8 +248,8 @@ type MilestoneClient interface {
 
 // RerunClient interface for job rerun access check related API actions
 type RerunClient interface {
+	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
-	GetTeamBySlug(slug string, org string) (*Team, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetIssueLabels(org, repo string, number int) ([]Label, error)
@@ -259,8 +269,12 @@ type Client interface {
 	UserClient
 	HookClient
 	ListAppInstallations() ([]AppInstallation, error)
+	IsAppInstalled(org, repo string) (bool, error)
+	UsesAppAuth() bool
+	ListAppInstallationsForOrg(org string) ([]AppInstallation, error)
 	GetApp() (*App, error)
 	GetAppWithContext(ctx context.Context) (*App, error)
+	GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error)
 
 	Throttle(hourlyTokens, burst int, org ...string) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
@@ -271,6 +285,8 @@ type Client interface {
 	WithFields(fields logrus.Fields) Client
 	ForPlugin(plugin string) Client
 	ForSubcomponent(subcomponent string) Client
+	Used() bool
+	TriggerGitHubWorkflow(org, repo string, id int) error
 }
 
 // client interacts with the github api. It is reconstructed whenever
@@ -282,6 +298,7 @@ type client struct {
 	// identifier is used to add more identification to the user-agent header
 	identifier string
 	gqlc       gqlClient
+	used       bool
 	*delegate
 }
 
@@ -311,6 +328,11 @@ type UserData struct {
 	Name  string
 	Login string
 	Email string
+}
+
+// Used determines whether the client has been used
+func (c *client) Used() bool {
+	return c.used
 }
 
 // ForPlugin clones the client, keeping the underlying delegate the same but adding
@@ -358,7 +380,8 @@ var (
 )
 
 const (
-	acceptNone = ""
+	acceptNone       = ""
+	githubApiVersion = "2022-11-28"
 
 	// MaxRequestTime aborts requests that don't return in 5 mins. Longest graphql
 	// calls can take up to 2 minutes. This limit should ensure all successful calls
@@ -655,21 +678,22 @@ type UserGenerator func() (string, error)
 // added logging fields.
 // 'getToken' is a generator for the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
-//   An endpoint is used when all preceding endpoints have returned a conn err.
-//   This should be used when using the ghproxy GitHub proxy cache to allow
-//   this client to bypass the cache if it is temporarily unavailable.
-func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	_, _, client := NewClientFromOptions(fields, ClientOptions{
+//
+//	An endpoint is used when all preceding endpoints have returned a conn err.
+//	This should be used when using the ghproxy GitHub proxy cache to allow
+//	this client to bypass the cache if it is temporarily unavailable.
+func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
+	_, _, client, err := NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		GetToken:        getToken,
 		GraphqlEndpoint: graphqlEndpoint,
 		Bases:           bases,
 		DryRun:          false,
 	}.Default())
-	return client
+	return client, err
 }
 
-func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client) {
+func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client, error) {
 	return NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		AppID:           appID,
@@ -681,7 +705,7 @@ func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byt
 }
 
 // NewClientFromOptions creates a new client from the options we expose. This method should be used over the more-specific ones.
-func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGenerator, UserGenerator, Client) {
+func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGenerator, UserGenerator, Client, error) {
 	options = options.Default()
 
 	// Will be nil if github app authentication is used
@@ -728,11 +752,9 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 	var tokenGenerator func(_ string) (string, error)
 	var userGenerator func() (string, error)
 	if options.AppID != "" {
-		appsTransport := &appsRoundTripper{
-			appID:        options.AppID,
-			privateKey:   options.AppPrivateKey,
-			upstream:     options.BaseRoundTripper,
-			githubClient: c,
+		appsTransport, err := newAppsRoundTripper(options.AppID, options.AppPrivateKey, options.BaseRoundTripper, c, options.Bases)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("failed to construct apps auth roundtripper: %w", err)
 		}
 		httpClient.Transport = appsTransport
 		graphQLTransport.upstream = appsTransport
@@ -760,7 +782,7 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 		}
 	}
 
-	return tokenGenerator, userGenerator, c
+	return tokenGenerator, userGenerator, c, nil
 }
 
 type graphQLGitHubAppsAuthClientWrapper struct {
@@ -806,6 +828,10 @@ func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	// Any GHE version after 2.22 will enable the Checks types per default
 	r.Header.Add("Accept", "application/vnd.github.antiope-preview+json")
 
+	// We have to add this header to enable the Merge info scheme preview:
+	// https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
+	r.Header.Add("Accept", "application/vnd.github.merge-info-preview+json")
+
 	// We use the context to pass the UserAgent through the V4 client we depend on
 	if v := r.Context().Value(userAgentContextKey); v != nil {
 		r.Header.Add("User-Agent", v.(string))
@@ -815,7 +841,7 @@ func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 }
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
+func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
 	return NewClientWithFields(logrus.Fields{}, getToken, censor, graphqlEndpoint, bases...)
 }
 
@@ -824,24 +850,25 @@ func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoi
 // use up API tokens. Additional fields are added to the logger.
 // 'getToken' is a generator the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
-//   An endpoint is used when all preceding endpoints have returned a conn err.
-//   This should be used when using the ghproxy GitHub proxy cache to allow
-//   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	_, _, client := NewClientFromOptions(fields, ClientOptions{
+//
+//	An endpoint is used when all preceding endpoints have returned a conn err.
+//	This should be used when using the ghproxy GitHub proxy cache to allow
+//	this client to bypass the cache if it is temporarily unavailable.
+func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
+	_, _, client, err := NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		GetToken:        getToken,
 		GraphqlEndpoint: graphqlEndpoint,
 		Bases:           bases,
 		DryRun:          true,
 	}.Default())
-	return client
+	return client, err
 }
 
 // NewAppsAuthDryRunClientWithFields creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens. Additional fields are added to the logger.
-func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client) {
+func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client, error) {
 	return NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		AppID:           appId,
@@ -857,10 +884,11 @@ func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte)
 // use up API tokens.
 // 'getToken' is a generator the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
-//   An endpoint is used when all preceding endpoints have returned a conn err.
-//   This should be used when using the ghproxy GitHub proxy cache to allow
-//   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
+//
+//	An endpoint is used when all preceding endpoints have returned a conn err.
+//	This should be used when using the ghproxy GitHub proxy cache to allow
+//	this client to bypass the cache if it is temporarily unavailable.
+func NewDryRunClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
 	return NewDryRunClientWithFields(logrus.Fields{}, getToken, censor, graphqlEndpoint, bases...)
 }
 
@@ -878,6 +906,7 @@ func NewFakeClient() Client {
 }
 
 func (c *client) log(methodName string, args ...interface{}) (logDuration func()) {
+	c.used = true
 	if c.logger == nil {
 		return func() {}
 	}
@@ -992,7 +1021,7 @@ func (c *client) requestRawWithContext(ctx context.Context, r *request) (int, []
 		return 0, nil, err
 	}
 	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -1092,12 +1121,18 @@ func (c *client) requestRetryWithContext(ctx context.Context, method, path, acce
 						authorizedScopes = "no"
 					}
 
-					want := sets.NewString(strings.Split(acceptedScopes, ",")...)
-					got := strings.Split(authorizedScopes, ",")
+					want := sets.NewString()
+					for _, acceptedScope := range strings.Split(acceptedScopes, ",") {
+						want.Insert(strings.TrimSpace(acceptedScope))
+					}
+					var got []string
+					for _, authorizedScope := range strings.Split(authorizedScopes, ",") {
+						got = append(got, strings.TrimSpace(authorizedScope))
+					}
 					if acceptedScopes != "" && !want.HasAny(got...) {
 						err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, acceptedScopes)
 					} else {
-						body, _ := ioutil.ReadAll(resp.Body)
+						body, _ := io.ReadAll(resp.Body)
 						err = fmt.Errorf("the GitHub API request returns a 403 error: %s", string(body))
 					}
 					resp.Body.Close()
@@ -1148,6 +1183,12 @@ func (c *client) doRequest(ctx context.Context, method, path, accept, org string
 	if err != nil {
 		return nil, fmt.Errorf("failed creating new request: %w", err)
 	}
+	// We do not make use of the Set() method to set this header because
+	// the header name `X-GitHub-Api-Version` is non-canonical in nature.
+	//
+	// See https://pkg.go.dev/net/http#Header.Set for more info.
+	req.Header["X-GitHub-Api-Version"] = []string{githubApiVersion}
+	c.logger.Infof("Using GitHub REST API Version: %s", githubApiVersion)
 	if header := c.authHeader(); len(header) > 0 {
 		req.Header.Set("Authorization", header)
 	}
@@ -1876,9 +1917,8 @@ func (c *client) CreateIssue(org, repo, title, body string, milestone int, label
 	}
 	_, err := c.request(&request{
 		// allow the description and draft fields
-		// https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		// https://developer.github.com/changes/2019-02-14-draft-pull-requests/
-		accept:      "application/vnd.github.symmetra-preview+json, application/vnd.github.shadow-cat-preview",
+		accept:      "application/vnd.github+json, application/vnd.github.shadow-cat-preview",
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/issues", org, repo),
 		org:         org,
@@ -1969,7 +2009,7 @@ func (c *client) readPaginatedResultsWithValuesWithContext(ctx context.Context, 
 			return fmt.Errorf("return code not 2XX: %s", resp.Status)
 		}
 
-		b, err := ioutil.ReadAll(resp.Body)
+		b, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
@@ -2120,6 +2160,56 @@ func (c *client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 		exitCodes: []int{200},
 	}, &pr)
 	return &pr, err
+}
+
+func (c *client) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error) {
+	durationLogger := c.log("GetJobsByHeadBranch", org, repo)
+	defer durationLogger()
+
+	var runs WorkflowRuns
+
+	url := url.URL{
+		Path: fmt.Sprintf("/repos/%s/%s/actions/runs", org, repo),
+	}
+	query := url.Query()
+
+	query.Add("status", "failure")
+	query.Add("event", "pull_request")
+	query.Add("branch", branchName)
+
+	url.RawQuery = query.Encode()
+
+	_, err := c.request(&request{
+		accept:    "application/vnd.github.v3+json",
+		method:    http.MethodGet,
+		path:      url.String(),
+		org:       org,
+		exitCodes: []int{200},
+	}, &runs)
+
+	prRuns := []WorkflowRun{}
+
+	// keep only the runs matching the current PR headSHA
+	for _, run := range runs.WorflowRuns {
+		if run.HeadSha == headSHA {
+			prRuns = append(prRuns, run)
+		}
+	}
+
+	return prRuns, err
+}
+
+func (c *client) TriggerGitHubWorkflow(org, repo string, id int) error {
+	durationLogger := c.log("TriggerGitHubWorkflow", org, repo, id)
+	defer durationLogger()
+	_, err := c.request(&request{
+		accept:    "application/vnd.github.v3+json",
+		method:    http.MethodPost,
+		path:      fmt.Sprintf("/repos/%s/%s/actions/runs/%d/rerun", org, repo, id),
+		org:       org,
+		exitCodes: []int{201},
+	}, nil)
+	return err
 }
 
 // EditPullRequest will update the pull request.
@@ -2402,7 +2492,7 @@ func (c *client) ListReviews(org, repo string, number int) ([]Review, error) {
 
 // CreateStatus creates or updates the status of a commit.
 //
-// See https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#create-a-commit-status
+// See https://docs.github.com/en/rest/reference/commits#create-a-commit-status
 func (c *client) CreateStatus(org, repo, SHA string, s Status) error {
 	return c.CreateStatusWithContext(context.Background(), org, repo, SHA, s)
 }
@@ -2919,10 +3009,11 @@ func (c *client) WasLabelAddedByHuman(org, repo string, number int, label string
 type MissingUsers struct {
 	Users  []string
 	action string
+	apiErr error
 }
 
 func (m MissingUsers) Error() string {
-	return fmt.Sprintf("could not %s the following user(s): %s.", m.action, strings.Join(m.Users, ", "))
+	return fmt.Sprintf("could not %s the following user(s): %s; %v.", m.action, strings.Join(m.Users, ", "), m.apiErr)
 }
 
 // AssignIssue adds logins to org/repo#number, returning an error if any login is missing after making the call.
@@ -3022,16 +3113,17 @@ func (c *client) CreateReview(org, repo string, number int, r DraftReview) error
 }
 
 // prepareReviewersBody separates reviewers from team_reviewers and prepares a map
-// {
-//   "reviewers": [
-//     "octocat",
-//     "hubot",
-//     "other_user"
-//   ],
-//   "team_reviewers": [
-//     "justice-league"
-//   ]
-// }
+//
+//	{
+//	  "reviewers": [
+//	    "octocat",
+//	    "hubot",
+//	    "other_user"
+//	  ],
+//	  "team_reviewers": [
+//	    "justice-league"
+//	  ]
+//	}
 //
 // https://developer.github.com/v3/pulls/review_requests/#create-a-review-request
 func prepareReviewersBody(logins []string, org string) (map[string][]string, error) {
@@ -3088,7 +3180,7 @@ func (c *client) RequestReview(org, repo string, number int, logins []string) er
 	statusCode, err := c.tryRequestReview(org, repo, number, logins)
 	if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
 		// Failed to set all members of 'logins' as reviewers, try individually.
-		missing := MissingUsers{action: "request a PR review from"}
+		missing := MissingUsers{action: "request a PR review from", apiErr: err}
 		for _, user := range logins {
 			statusCode, err = c.tryRequestReview(org, repo, number, []string{user})
 			if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
@@ -3156,19 +3248,38 @@ func (c *client) UnrequestReview(org, repo string, number int, logins []string) 
 }
 
 // CloseIssue closes the existing, open issue provided
+// CloseIssue also closes the issue with the reason being
+// "completed" - default value for the state_reason attribute.
 //
 // See https://developer.github.com/v3/issues/#edit-an-issue
 func (c *client) CloseIssue(org, repo string, number int) error {
 	durationLogger := c.log("CloseIssue", org, repo, number)
 	defer durationLogger()
 
+	return c.closeIssue(org, repo, number, "completed")
+}
+
+// CloseIssueAsNotPlanned closes the existing, open issue provided
+// CloseIssueAsNotPlanned also closes the issue with the reason being
+// "not_planned" - value passed for the state_reason attribute.
+//
+// See https://developer.github.com/v3/issues/#edit-an-issue
+func (c *client) CloseIssueAsNotPlanned(org, repo string, number int) error {
+	durationLogger := c.log("CloseIssueAsNotPlanned", org, repo, number)
+	defer durationLogger()
+
+	return c.closeIssue(org, repo, number, "not_planned")
+}
+
+func (c *client) closeIssue(org, repo string, number int, reason string) error {
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/%d", org, repo, number),
 		org:         org,
-		requestBody: map[string]string{"state": "closed"},
+		requestBody: map[string]string{"state": "closed", "state_reason": reason},
 		exitCodes:   []int{200},
 	}, nil)
+
 	return err
 }
 
@@ -3386,10 +3497,27 @@ func (c *client) ListFileCommits(org, repo, filePath string) ([]RepositoryCommit
 // Input query the same way you would into the website.
 // Order returned results with sort (usually "updated").
 // Control whether oldest/newest is first with asc.
+// This method is not working in contexts where "github-app-id" is set. Please use FindIssuesWithOrg() in those cases.
 //
 // See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
 func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
-	durationLogger := c.log("FindIssues", query)
+	return c.FindIssuesWithOrg("", query, sort, asc)
+}
+
+// FindIssuesWithOrg uses the GitHub search API to find issues which match a particular query.
+//
+// Input query the same way you would into the website.
+// Order returned results with sort (usually "updated").
+// Control whether oldest/newest is first with asc.
+// This method is supposed to be used in contexts where "github-app-id" is set.
+//
+// See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
+func (c *client) FindIssuesWithOrg(org, query, sort string, asc bool) ([]Issue, error) {
+	loggerName := "FindIssuesWithOrg"
+	if org == "" {
+		loggerName = "FindIssues"
+	}
+	durationLogger := c.log(loggerName, query)
 	defer durationLogger()
 
 	values := url.Values{
@@ -3408,7 +3536,7 @@ func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 		fmt.Sprintf("/search/issues"),
 		values,
 		acceptNone,
-		"",
+		org,
 		func() interface{} { // newObj
 			return &IssuesSearchResult{}
 		},
@@ -3499,16 +3627,16 @@ func (c *client) CreateTeam(org string, team Team) (*Team, error) {
 	if c.fake {
 		return nil, nil
 	} else if c.dry {
+		// When in dry mode we need a believable slug to call corresponding methods for this team
+		team.Slug = strings.ToLower(strings.ReplaceAll(team.Name, " ", "-"))
 		return &team, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/teams", org)
 	var retTeam Team
 	_, err := c.request(&request{
-		method: http.MethodPost,
-		path:   path,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		accept:      "application/vnd.github.hellcat-preview+json",
+		method:      http.MethodPost,
+		path:        path,
+		accept:      "application/vnd.github+json",
 		org:         org,
 		requestBody: &team,
 		exitCodes:   []int{201},
@@ -3516,20 +3644,20 @@ func (c *client) CreateTeam(org string, team Team) (*Team, error) {
 	return &retTeam, err
 }
 
-// EditTeam patches team.ID to contain the specified other values.
+// EditTeam patches team.Slug to contain the specified:
+// name, description, privacy, permission, and parentTeamId values.
 //
-// See https://developer.github.com/v3/teams/#edit-team
+// See https://docs.github.com/en/rest/reference/teams#update-a-team
 func (c *client) EditTeam(org string, t Team) (*Team, error) {
 	durationLogger := c.log("EditTeam", t)
 	defer durationLogger()
 
-	if t.ID == 0 {
-		return nil, errors.New("team.ID must be non-zero")
+	if t.Slug == "" {
+		return nil, errors.New("team.Slug must be populated")
 	}
 	if c.dry {
 		return &t, nil
 	}
-	id := t.ID
 	t.ID = 0
 	// Need to send parent_team_id: null
 	team := struct {
@@ -3540,13 +3668,11 @@ func (c *client) EditTeam(org string, t Team) (*Team, error) {
 		ParentTeamID: t.ParentTeamID,
 	}
 	var retTeam Team
-	path := fmt.Sprintf("/teams/%d", id)
+	path := fmt.Sprintf("/orgs/%s/teams/%s", org, t.Slug)
 	_, err := c.request(&request{
-		method: http.MethodPatch,
-		path:   path,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		accept:      "application/vnd.github.hellcat-preview+json",
+		method:      http.MethodPatch,
+		path:        path,
+		accept:      "application/vnd.github+json",
 		org:         org,
 		requestBody: &team,
 		exitCodes:   []int{200, 201},
@@ -3557,10 +3683,35 @@ func (c *client) EditTeam(org string, t Team) (*Team, error) {
 // DeleteTeam removes team.ID from GitHub.
 //
 // See https://developer.github.com/v3/teams/#delete-team
+// Deprecated: please use DeleteTeamBySlug
 func (c *client) DeleteTeam(org string, id int) error {
-	durationLogger := c.log("DeleteTeam", id)
+	c.logger.WithField("methodName", "DeleteTeam").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("DeleteTeam", org, id)
 	defer durationLogger()
-	path := fmt.Sprintf("/teams/%d", id)
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("/organizations/%d/team/%d", organization.Id, id)
+	_, err = c.request(&request{
+		method:    http.MethodDelete,
+		path:      path,
+		org:       org,
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
+// DeleteTeamBySlug removes team.Slug from GitHub.
+//
+// See https://docs.github.com/en/rest/reference/teams#delete-a-team
+func (c *client) DeleteTeamBySlug(org, teamSlug string) error {
+	durationLogger := c.log("DeleteTeamBySlug", org, teamSlug)
+	defer durationLogger()
+	path := fmt.Sprintf("/orgs/%s/teams/%s", org, teamSlug)
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
 		path:      path,
@@ -3584,9 +3735,7 @@ func (c *client) ListTeams(org string) ([]Team, error) {
 	var teams []Team
 	err := c.readPaginatedResults(
 		path,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
+		"application/vnd.github+json",
 		org,
 		func() interface{} {
 			return &[]Team{}
@@ -3606,8 +3755,49 @@ func (c *client) ListTeams(org string) ([]Team, error) {
 // If the user is not a member of the org, GitHub will invite them to become an outside collaborator, setting their status to pending.
 //
 // https://developer.github.com/v3/teams/members/#add-or-update-team-membership
+// Deprecated: please use UpdateTeamMembershipBySlug
 func (c *client) UpdateTeamMembership(org string, id int, user string, maintainer bool) (*TeamMembership, error) {
-	durationLogger := c.log("UpdateTeamMembership", id, user, maintainer)
+	c.logger.WithField("methodName", "UpdateTeamMembership").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("UpdateTeamMembership", org, id, user, maintainer)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	}
+	tm := TeamMembership{}
+	if maintainer {
+		tm.Role = RoleMaintainer
+	} else {
+		tm.Role = RoleMember
+	}
+
+	if c.dry {
+		return &tm, nil
+	}
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/organizations/%d/team/%d/memberships/%s", organization.Id, id, user),
+		org:         org,
+		requestBody: &tm,
+		exitCodes:   []int{200},
+	}, &tm)
+	return &tm, err
+}
+
+// UpdateTeamMembershipBySlug adds the user to the team and/or updates their role in that team.
+//
+// If the user is not a member of the org, GitHub will invite them to become an outside collaborator, setting their status to pending.
+//
+// https://docs.github.com/en/rest/reference/teams#add-or-update-team-membership-for-a-user
+func (c *client) UpdateTeamMembershipBySlug(org, teamSlug, user string, maintainer bool) (*TeamMembership, error) {
+	durationLogger := c.log("UpdateTeamMembershipBySlug", org, teamSlug, user, maintainer)
 	defer durationLogger()
 
 	if c.fake {
@@ -3626,7 +3816,7 @@ func (c *client) UpdateTeamMembership(org string, id int, user string, maintaine
 
 	_, err := c.request(&request{
 		method:      http.MethodPut,
-		path:        fmt.Sprintf("/teams/%d/memberships/%s", id, user),
+		path:        fmt.Sprintf("/orgs/%s/teams/%s/memberships/%s", org, teamSlug, user),
 		org:         org,
 		requestBody: &tm,
 		exitCodes:   []int{200},
@@ -3637,8 +3827,36 @@ func (c *client) UpdateTeamMembership(org string, id int, user string, maintaine
 // RemoveTeamMembership removes the user from the team (but not the org).
 //
 // https://developer.github.com/v3/teams/members/#remove-team-member
+// Deprecated: please use RemoveTeamMembershipBySlug
 func (c *client) RemoveTeamMembership(org string, id int, user string) error {
-	durationLogger := c.log("RemoveTeamMembership", id, user)
+	c.logger.WithField("methodName", "RemoveTeamMembership").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("RemoveTeamMembership", org, id, user)
+	defer durationLogger()
+
+	if c.fake {
+		return nil
+	}
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/organizations/%d/team/%d/memberships/%s", organization.Id, id, user),
+		org:       org,
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
+// RemoveTeamMembershipBySlug removes the user from the team (but not the org).
+//
+// https://docs.github.com/en/rest/reference/teams#remove-team-membership-for-a-user
+func (c *client) RemoveTeamMembershipBySlug(org, teamSlug, user string) error {
+	durationLogger := c.log("RemoveTeamMembershipBySlug", org, teamSlug, user)
 	defer durationLogger()
 
 	if c.fake {
@@ -3646,7 +3864,7 @@ func (c *client) RemoveTeamMembership(org string, id int, user string) error {
 	}
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		path:      fmt.Sprintf("/teams/%d/memberships/%s", id, user),
+		path:      fmt.Sprintf("/orgs/%s/teams/%s/memberships/%s", org, teamSlug, user),
 		org:       org,
 		exitCodes: []int{204},
 	}, nil)
@@ -3658,7 +3876,10 @@ func (c *client) RemoveTeamMembership(org string, id int, user string) error {
 // Role options are "all", "maintainer" and "member"
 //
 // https://developer.github.com/v3/teams/members/#list-team-members
+// Deprecated: please use ListTeamMembersBySlug
 func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember, error) {
+	c.logger.WithField("methodName", "ListTeamMembers").
+		Warn("method is deprecated, please use ListTeamMembersBySlug")
 	durationLogger := c.log("ListTeamMembers", id, role)
 	defer durationLogger()
 
@@ -3673,9 +3894,42 @@ func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember,
 			"per_page": []string{"100"},
 			"role":     []string{role},
 		},
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
+		"application/vnd.github+json",
+		org,
+		func() interface{} {
+			return &[]TeamMember{}
+		},
+		func(obj interface{}) {
+			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teamMembers, nil
+}
+
+// ListTeamMembersBySlug gets a list of team members for the given team slug
+//
+// Role options are "all", "maintainer" and "member"
+//
+// https://docs.github.com/en/rest/reference/teams#list-team-members
+func (c *client) ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember, error) {
+	durationLogger := c.log("ListTeamMembersBySlug", org, teamSlug, role)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/teams/%s/members", org, teamSlug)
+	var teamMembers []TeamMember
+	err := c.readPaginatedResultsWithValues(
+		path,
+		url.Values{
+			"per_page": []string{"100"},
+			"role":     []string{role},
+		},
+		"application/vnd.github.v3+json",
 		org,
 		func() interface{} {
 			return &[]TeamMember{}
@@ -3693,23 +3947,70 @@ func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember,
 // ListTeamRepos gets a list of team repos for the given team id
 //
 // https://developer.github.com/v3/teams/#list-team-repos
+// Deprecated: please use ListTeamReposBySlug
 func (c *client) ListTeamRepos(org string, id int) ([]Repo, error) {
-	durationLogger := c.log("ListTeamRepos", id)
+	c.logger.WithField("methodName", "ListTeamRepos").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("ListTeamRepos", org, id)
 	defer durationLogger()
 
 	if c.fake {
 		return nil, nil
 	}
-	path := fmt.Sprintf("/teams/%d/repos", id)
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return nil, err
+	}
+
+	path := fmt.Sprintf("/organizations/%d/team/%d/repos", organization.Id, id)
+	var repos []Repo
+	err = c.readPaginatedResultsWithValues(
+		path,
+		url.Values{
+			"per_page": []string{"100"},
+		},
+		"application/vnd.github+json",
+		org,
+		func() interface{} {
+			return &[]Repo{}
+		},
+		func(obj interface{}) {
+			for _, repo := range *obj.(*[]Repo) {
+				// Currently, GitHub API returns false for all permission levels
+				// for a repo on which the team has 'Maintain' or 'Triage' role.
+				// This check is to avoid listing a repo under the team but
+				// showing the permission level as none.
+				if LevelFromPermissions(repo.Permissions) != None {
+					repos = append(repos, repo)
+				}
+			}
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return repos, nil
+}
+
+// ListTeamReposBySlug gets a list of team repos for the given team slug
+//
+// https://docs.github.com/en/rest/reference/teams#list-team-repositories
+func (c *client) ListTeamReposBySlug(org, teamSlug string) ([]Repo, error) {
+	durationLogger := c.log("ListTeamReposBySlug", org, teamSlug)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/teams/%s/repos", org, teamSlug)
 	var repos []Repo
 	err := c.readPaginatedResultsWithValues(
 		path,
 		url.Values{
 			"per_page": []string{"100"},
 		},
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
+		"application/vnd.github.v3+json",
 		org,
 		func() interface{} {
 			return &[]Repo{}
@@ -3735,8 +4036,43 @@ func (c *client) ListTeamRepos(org string, id int) ([]Repo, error) {
 // UpdateTeamRepo adds the repo to the team with the provided role.
 //
 // https://developer.github.com/v3/teams/#add-or-update-team-repository
+// Deprecated: please use UpdateTeamRepoBySlug
 func (c *client) UpdateTeamRepo(id int, org, repo string, permission TeamPermission) error {
+	c.logger.WithField("methodName", "UpdateTeamRepo").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
 	durationLogger := c.log("UpdateTeamRepo", id, org, repo, permission)
+	defer durationLogger()
+
+	if c.fake || c.dry {
+		return nil
+	}
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		Permission string `json:"permission"`
+	}{
+		Permission: string(permission),
+	}
+
+	_, err = c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/organizations/%d/team/%d/repos/%s/%s", organization.Id, id, org, repo),
+		org:         org,
+		requestBody: &data,
+		exitCodes:   []int{204},
+	}, nil)
+	return err
+}
+
+// UpdateTeamRepoBySlug adds the repo to the team with the provided role.
+//
+// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions
+func (c *client) UpdateTeamRepoBySlug(org, teamSlug, repo string, permission TeamPermission) error {
+	durationLogger := c.log("UpdateTeamRepoBySlug", org, teamSlug, repo, permission)
 	defer durationLogger()
 
 	if c.fake || c.dry {
@@ -3751,7 +4087,7 @@ func (c *client) UpdateTeamRepo(id int, org, repo string, permission TeamPermiss
 
 	_, err := c.request(&request{
 		method:      http.MethodPut,
-		path:        fmt.Sprintf("/teams/%d/repos/%s/%s", id, org, repo),
+		path:        fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", org, teamSlug, org, repo),
 		org:         org,
 		requestBody: &data,
 		exitCodes:   []int{204},
@@ -3761,9 +4097,37 @@ func (c *client) UpdateTeamRepo(id int, org, repo string, permission TeamPermiss
 
 // RemoveTeamRepo removes the team from the repo.
 //
-// https://developer.github.com/v3/teams/#add-or-update-team-repository
+// https://docs.github.com/en/rest/reference/teams#remove-a-repository-from-a-team-legacy
+// Deprecated: please use RemoveTeamRepoBySlug
 func (c *client) RemoveTeamRepo(id int, org, repo string) error {
+	c.logger.WithField("methodName", "RemoveTeamRepo").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
 	durationLogger := c.log("RemoveTeamRepo", id, org, repo)
+	defer durationLogger()
+
+	if c.fake || c.dry {
+		return nil
+	}
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/organizations/%d/team/%d/repos/%s/%s", organization.Id, id, org, repo),
+		org:       org,
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
+// RemoveTeamRepoBySlug removes the team from the repo.
+//
+// https://docs.github.com/en/rest/reference/teams#remove-a-repository-from-a-team
+func (c *client) RemoveTeamRepoBySlug(org, teamSlug, repo string) error {
+	durationLogger := c.log("RemoveTeamRepoBySlug", org, teamSlug, repo)
 	defer durationLogger()
 
 	if c.fake || c.dry {
@@ -3772,7 +4136,7 @@ func (c *client) RemoveTeamRepo(id int, org, repo string) error {
 
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		path:      fmt.Sprintf("/teams/%d/repos/%s/%s", id, org, repo),
+		path:      fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", org, teamSlug, org, repo),
 		org:       org,
 		exitCodes: []int{204},
 	}, nil)
@@ -3783,18 +4147,56 @@ func (c *client) RemoveTeamRepo(id int, org, repo string) error {
 // given team id
 //
 // https://developer.github.com/v3/teams/members/#list-pending-team-invitations
+// Deprecated: please use ListTeamInvitationsBySlug
 func (c *client) ListTeamInvitations(org string, id int) ([]OrgInvitation, error) {
-	durationLogger := c.log("ListTeamInvites", id)
+	c.logger.WithField("methodName", "ListTeamInvitations").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("ListTeamInvitations", org, id)
 	defer durationLogger()
 
 	if c.fake {
 		return nil, nil
 	}
-	path := fmt.Sprintf("/teams/%d/invitations", id)
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/organizations/%d/team/%d/invitations", organization.Id, id)
+	var ret []OrgInvitation
+	err = c.readPaginatedResults(
+		path,
+		acceptNone,
+		org,
+		func() interface{} {
+			return &[]OrgInvitation{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]OrgInvitation))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// ListTeamInvitationsBySlug gets a list of team members with pending invitations for the given team slug
+//
+// https://docs.github.com/en/rest/reference/teams#list-pending-team-invitations
+func (c *client) ListTeamInvitationsBySlug(org, teamSlug string) ([]OrgInvitation, error) {
+	durationLogger := c.log("ListTeamInvitationsBySlug", org, teamSlug)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	}
+
+	path := fmt.Sprintf("/orgs/%s/teams/%s/invitations", org, teamSlug)
 	var ret []OrgInvitation
 	err := c.readPaginatedResults(
 		path,
-		acceptNone,
+		"application/vnd.github.v3+json",
 		org,
 		func() interface{} {
 			return &[]OrgInvitation{}
@@ -3919,10 +4321,8 @@ func (c *client) IsCollaborator(org, repo, user string) (bool, error) {
 		return true, nil
 	}
 	code, err := c.request(&request{
-		method: http.MethodGet,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		accept:    "application/vnd.github.hellcat-preview+json",
+		method:    http.MethodGet,
+		accept:    "application/vnd.github+json",
 		path:      fmt.Sprintf("/repos/%s/%s/collaborators/%s", org, repo, user),
 		org:       org,
 		exitCodes: []int{204, 404, 302},
@@ -3954,9 +4354,7 @@ func (c *client) ListCollaborators(org, repo string) ([]User, error) {
 	var users []User
 	err := c.readPaginatedResults(
 		path,
-		// This accept header enables the nested teams preview.
-		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
-		"application/vnd.github.hellcat-preview+json",
+		"application/vnd.github+json",
 		org,
 		func() interface{} {
 			return &[]User{}
@@ -4495,7 +4893,7 @@ func (c *client) DeleteProjectCard(org string, projectCardID int) error {
 
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		accept:    "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		accept:    "application/vnd.github+json",
 		path:      fmt.Sprintf("/projects/columns/cards/:%d", projectCardID),
 		org:       org,
 		exitCodes: []int{204},
@@ -4504,6 +4902,7 @@ func (c *client) DeleteProjectCard(org string, projectCardID int) error {
 }
 
 // TeamHasMember checks if a user belongs to a team
+// Deprecated: use TeamBySlugHasMember
 func (c *client) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
 	durationLogger := c.log("TeamHasMember", teamID, memberLogin)
 	defer durationLogger()
@@ -4561,23 +4960,52 @@ func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 
 // ListCheckRuns lists all checkruns for the given ref
 //
-// See https://docs.github.com/en/free-pro-team@latest/rest/reference/checks#list-check-runs-for-a-git-reference
+// See https://docs.github.com/en/rest/checks/runs#list-check-runs-for-a-git-reference
 func (c *client) ListCheckRuns(org, repo, ref string) (*CheckRunList, error) {
 	durationLogger := c.log("ListCheckRuns", org, repo, ref)
 	defer durationLogger()
 
 	var checkRunList CheckRunList
-	_, err := c.request(&request{
-		accept:    "application/vnd.github.antiope-preview+json",
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
-		org:       org,
-		exitCodes: []int{200},
-	}, &checkRunList)
-	if err != nil {
+	if err := c.readPaginatedResults(
+		fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
+		"",
+		org,
+		func() interface{} {
+			return &CheckRunList{}
+		},
+		func(obj interface{}) {
+			cr := *(obj.(*CheckRunList))
+			cr.CheckRuns = append(checkRunList.CheckRuns, cr.CheckRuns...)
+			checkRunList = cr
+		},
+	); err != nil {
 		return nil, err
 	}
 	return &checkRunList, nil
+}
+
+// CreateCheckRun Creates a new check run for a specific commit in a repository.
+//
+// See https://docs.github.com/en/rest/checks/runs#create-a-check-run
+func (c *client) CreateCheckRun(org, repo string, checkRun CheckRun) error {
+	durationLogger := c.log("CreateCheckRun", org, repo, checkRun)
+	defer durationLogger()
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/repos/%s/%s/check-runs", org, repo),
+		org:         org,
+		requestBody: &checkRun,
+		exitCodes:   []int{201},
+	}, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Simple function to check if GitHub App Authentication is being used
+func (c *client) UsesAppAuth() bool {
+	return c.delegate.usesAppsAuth
 }
 
 // ListAppInstallations lists the installations for the current app. Will not work with
@@ -4605,9 +5033,66 @@ func (c *client) ListAppInstallations() ([]AppInstallation, error) {
 	return ais, nil
 }
 
+// IsAppInstalled returns true if there is an app installation for the provided org and repo
+// Will not work with a Personal Access Token.
+//
+// See https://docs.github.com/en/rest/apps/apps#get-a-repository-installation-for-the-authenticated-app
+func (c *client) IsAppInstalled(org, repo string) (bool, error) {
+	durationLogger := c.log("IsAppInstalled", org, repo)
+	defer durationLogger()
+
+	if c.dry {
+		return false, fmt.Errorf("not getting AppInstallation in dry-run mode")
+	}
+	if !c.usesAppsAuth {
+		return false, fmt.Errorf("IsAppInstalled was called when not using appsAuth")
+	}
+
+	code, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/installation", org, repo),
+		org:       org,
+		exitCodes: []int{200, 404},
+	}, nil)
+	if err != nil {
+		return false, err
+	}
+
+	return code == 200, nil
+}
+
+// ListAppInstallationsForOrg lists the installations for an organisation.
+// The requestor must be  an organization owner with admin:read scope
+//
+// See https://docs.github.com/en/rest/orgs/orgs#list-app-installations-for-an-organization
+func (c *client) ListAppInstallationsForOrg(org string) ([]AppInstallation, error) {
+	durationLogger := c.log("AppInstallationForOrg")
+	defer durationLogger()
+
+	var ais []AppInstallation
+	if err := c.readPaginatedResults(
+		fmt.Sprintf("/orgs/%s/installations", org),
+		acceptNone,
+		org,
+		func() interface{} {
+			return &AppInstallationList{}
+		},
+		func(obj interface{}) {
+			ais = append(ais, obj.(*AppInstallationList).Installations...)
+		},
+	); err != nil {
+		return nil, err
+	}
+	return ais, nil
+}
+
 func (c *client) getAppInstallationToken(installationId int64) (*AppInstallationToken, error) {
 	durationLogger := c.log("AppInstallationToken")
 	defer durationLogger()
+
+	if c.dry {
+		return nil, fmt.Errorf("not requesting GitHub App access_token in dry-run mode")
+	}
 
 	var token AppInstallationToken
 	if _, err := c.request(&request{

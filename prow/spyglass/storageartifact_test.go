@@ -67,6 +67,20 @@ func (h *fakeArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, error
 	return h.oAttrs, nil
 }
 
+func (h *fakeArtifactHandle) UpdateAttrs(ctx context.Context, cur pkgio.ObjectAttrsToUpdate) (*pkgio.Attributes, error) {
+	if cur.ContentEncoding != nil {
+		h.oAttrs.ContentEncoding = *cur.ContentEncoding
+	}
+	for name, value := range cur.Metadata {
+		if value != "" {
+			cur.Metadata[name] = value
+		} else if cur.Metadata[name] != "" {
+			delete(cur.Metadata, name)
+		}
+	}
+	return &h.oAttrs, nil
+}
+
 func (h *fakeArtifactHandle) NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error) {
 	if bytes.Equal(h.contents, []byte("unreadable contents")) {
 		return nil, fmt.Errorf("cannot read unreadable contents")

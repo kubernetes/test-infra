@@ -56,9 +56,7 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1
   name: redhat-openshift-ocp-release-4.1-informing
 test_groups:
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.1-nightly
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.1-nightly
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-stable-to-4.1-nightly
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.1

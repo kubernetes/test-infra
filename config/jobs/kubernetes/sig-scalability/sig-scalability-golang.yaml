@@ -1,5 +1,6 @@
 periodics:
 - name: ci-build-and-push-k8s-at-golang-tip
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -8,6 +9,11 @@ periodics:
   decoration_config:
     timeout: 75m
   extra_refs:
+  - org: go.googlesource.com
+    repo: go
+    base_ref: master
+    path_alias: golang
+    clone_uri: https://go.googlesource.com/go
   - org: kubernetes
     repo: kubernetes
     base_ref: master
@@ -19,14 +25,9 @@ periodics:
     path_alias: k8s.io/perf-tests
   - org: kubernetes
     repo: release
-    base_sha: 5ad08a0987f35d7b7280e847078987f58c6f8e1f # head of master branch as of 2020-05-04
+    base_sha: 0ff1922aa2269879957646a232f657bcb57824b1 # head of master branch as of 2021-09-25
     base_ref: master
     path_alias: k8s.io/release
-  - org: go.googlesource.com
-    repo: go
-    base_ref: master
-    path_alias: golang
-    clone_uri: https://go.googlesource.com/go
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
@@ -34,13 +35,11 @@ periodics:
     testgrid-tab-name: build-and-push-k8s-at-golang-tip
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bootstrap:v20211008-e0e089cfce
+    - image: gcr.io/k8s-staging-test-infra/bootstrap:v20230206-22f4807bdc
       command:
       - runner.sh
-      - /workspace/scenarios/execute.py
       args:
       - make
-      - --
       - --directory=/home/prow/go/src/k8s.io/perf-tests/golang
       # docker-in-docker needs privileged mode
       securityContext:
@@ -53,13 +52,13 @@ periodics:
           cpu: 4
           memory: "16Gi"
 
-- interval: 4h
-  name: ci-golang-tip-k8s-1-18
-  cluster: scalability
+- interval: 24h
+  name: ci-golang-tip-k8s-1-23
+  cluster: k8s-infra-prow-build
   tags:
-  - "perfDashPrefix: golang-tip-k8s-1-18"
-  - "perfDashBuildsCount: 240"
+  - "perfDashPrefix: golang-tip-k8s-1-23"
   - "perfDashJobType: performance"
+  - "perfDashBuildsCount: 500"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -70,34 +69,35 @@ periodics:
     preset-e2e-scalability-periodics-master: "true"
   decorate: true
   decoration_config:
-    timeout: 210m
+    timeout: 240m
   extra_refs:
   - org: kubernetes
     repo: perf-tests
     base_ref: master
-    base_sha: 39a6c09ddca620a430d38e5de1400844ea954c2f # head of perf-tests' master as of 2020-11-06
+    base_sha: 6f93c89d2bf3e6f18d621bc264091b6842967c61 # head of perf-tests' master as of 2021-10-18
     path_alias: k8s.io/perf-tests
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
     testgrid-num-failures-to-alert: "3"
-    testgrid-tab-name: golang-tip-k8s-1-18
+    testgrid-tab-name: golang-tip-k8s-1-23
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --cluster=gce-golang
-      - --env=CL2_ENABLE_PVS=false
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
-      - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
-      - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
-      - --extract=gs://k8s-scale-golang-build/ci/latest-1.18.txt
+      - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
+      - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=200 --kube-api-burst=200
+      - --env=DEPLOY_GCI_DRIVER=false
+      - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
+      - --extract=gs://k8s-infra-scale-golang-builds/ci/latest-1.23.txt
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
-      - --gcp-project=k8s-presubmit-scale
+      - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --kubemark
@@ -116,9 +116,9 @@ periodics:
       - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
       - --test-cmd-args=--testoverrides=./testing/load/golang/custom_api_call_thresholds.yaml
       - --test-cmd-name=ClusterLoaderV2
-      - --timeout=180m
+      - --timeout=210m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       env:
       - name: CL2_ENABLE_VIOLATIONS_FOR_API_CALL_PROMETHEUS
         value: "true"

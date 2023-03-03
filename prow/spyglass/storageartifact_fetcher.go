@@ -190,6 +190,10 @@ func (h *storageArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, er
 	return h.Opener.Attributes(ctx, h.Name)
 }
 
+func (h *storageArtifactHandle) UpdateAttrs(ctx context.Context, attrs pkgio.ObjectAttrsToUpdate) (*pkgio.Attributes, error) {
+	return h.UpdateAtributes(ctx, h.Name, attrs)
+}
+
 // Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
 // to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
 // constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).
@@ -215,11 +219,6 @@ func (af *StorageArtifactFetcher) Artifact(ctx context.Context, key string, arti
 func extractBucketPrefixPair(storagePath string) (string, string) {
 	split := strings.SplitN(storagePath, "/", 2)
 	return split[0], split[1]
-}
-
-// CanonicalLink gets a link to the location of job-specific artifacts in GCS
-func (src *storageJobSource) canonicalLink() string {
-	return path.Join(src.linkPrefix, src.bucket, src.jobPrefix)
 }
 
 // JobPath gets the prefix to all artifacts in GCS in the job

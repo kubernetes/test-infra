@@ -19,6 +19,7 @@ package metadata
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -26,9 +27,78 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
+	"k8s.io/test-infra/prow/spyglass/api"
+	"k8s.io/test-infra/prow/spyglass/lenses"
+	"k8s.io/test-infra/prow/spyglass/lenses/fake"
 )
+
+type FakeArtifact = fake.Artifact
+
+// TestCheckTimestamps checks the way in which the started.json and
+// finished.json files affect the view. For example, a negative duration should
+// result in a warning for the user.
+func TestCheckTimestamps(t *testing.T) {
+	startedJson := &FakeArtifact{
+		Path:    "started.json",
+		Content: []byte(`{"timestamp":1676610469}`),
+	}
+	// This timestamp is *after* the one in startedJson. This is the happy path.
+	finishedJsonNormal := &FakeArtifact{
+		Path:    "finished.json",
+		Content: []byte(`{"timestamp":1676611469,"passed":true,"result":"SUCCESS"}`),
+	}
+	// This timestamp is *before* the one in startedJson.
+	finishedJsonNegative := &FakeArtifact{
+		Path:    "finished.json",
+		Content: []byte(`{"timestamp":1671827322,"passed":true,"result":"SUCCESS"}`),
+	}
+	// NOTE: We cannot check for human-readable timestamps because the timezone
+	// can differ from a local execution of this test (e.g., PST) versus the
+	// timezone used in CI (e.g., UTC). So we make sure to avoid
+	// timezone-dependent strings in these test cases.
+	testCases := []struct {
+		name               string
+		artifacts          []api.Artifact
+		expectedSubstrings []string
+		err                error
+	}{
+		{
+			name: "regular (positive) duration",
+			artifacts: []api.Artifact{
+				startedJson, finishedJsonNormal,
+			},
+			expectedSubstrings: []string{`Test started`, `after 16m40s`, `more info`},
+			err:                nil,
+		},
+		{
+			name: "negative duration triggers user-facing warning",
+			artifacts: []api.Artifact{
+				startedJson, finishedJsonNegative,
+			},
+			expectedSubstrings: []string{`WARNING: The elapsed duration (-1328h39m7s) is negative. This can be caused by another process outside of Prow writing into the finished.json file. The file currently has a completion time of`},
+			err:                nil,
+		},
+	}
+	for _, tc := range testCases {
+		lens, err := lenses.GetLens("metadata")
+		if tc.err != err {
+			t.Errorf("%s expected error %v but got error %v", tc.name, tc.err, err)
+			continue
+		}
+		if tc.err == nil && lens == nil {
+			t.Fatal("Expected lens 'metadata' but got nil.")
+		}
+		got := lens.Body(tc.artifacts, "", "", nil, config.Spyglass{})
+		for _, expectedSubstring := range tc.expectedSubstrings {
+			if !strings.Contains(got, expectedSubstring) {
+				t.Errorf("%s: failed to find expected substring %v in %v", tc.name, expectedSubstring, got)
+			}
+		}
+	}
+}
 
 func TestFlattenMetadata(t *testing.T) {
 	tests := []struct {

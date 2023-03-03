@@ -19,7 +19,7 @@ package apptokenequalizer
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,7 +53,7 @@ func (t *appTokenEqualizerTransport) RoundTrip(r *http.Request) (*http.Response,
 	defer body.Close()
 
 	l := logrus.WithField("path", r.URL.Path)
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		l.WithError(err).Error("Failed to read body")
 		resp.StatusCode = http.StatusInternalServerError
@@ -64,14 +64,14 @@ func (t *appTokenEqualizerTransport) RoundTrip(r *http.Request) (*http.Response,
 	var token github.AppInstallationToken
 	if err := json.Unmarshal(bodyBytes, &token); err != nil {
 		l.WithError(err).Error("Failed to unmarshal")
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		return resp, nil
 	}
 
 	split := strings.Split(r.URL.Path, "/")
 	if n := len(split); n != 5 {
 		l.Errorf("Splitting path %s by '/' didn't yield exactly five elements but %d", r.URL.Path, n)
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		return resp, nil
 	}
 	appId := split[3]
@@ -87,11 +87,11 @@ func (t *appTokenEqualizerTransport) RoundTrip(r *http.Request) (*http.Response,
 	serializedToken, err := json.Marshal(token)
 	if err != nil {
 		l.WithError(err).Error("Failed to serialize token")
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+		resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		return resp, nil
 	}
 
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(serializedToken))
+	resp.Body = io.NopCloser(bytes.NewBuffer(serializedToken))
 	resp.ContentLength = int64(len(serializedToken))
 	resp.Header.Set("X-PROW-GHPROXY-REPLACED-TOKEN", "true")
 	resp.Header.Set("Content-Length", strconv.Itoa(len(serializedToken)))

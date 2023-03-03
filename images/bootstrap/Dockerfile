@@ -14,7 +14,7 @@
 
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
-FROM debian:buster
+FROM debian:bullseye
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
@@ -26,24 +26,19 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # common util tools
-# https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
     curl \
     file \
     git \
+    iproute2 \
+    iputils-ping \
     jq \
     mercurial \
     openssh-client \
     pkg-config \
     procps \
-    python \
-    python-dev \
-    python-gflags \
-    python-openssl \
-    python-pip \
-    python-yaml \
     python3 \
     python3-distutils \
     python3-gflags \
@@ -56,7 +51,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
     && python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # Install gcloud
@@ -64,7 +58,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
-RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
+ARG GCLOUD_SDK_URL=https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
+RUN wget -O google-cloud-sdk.tar.gz -q $GCLOUD_SDK_URL && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
     /google-cloud-sdk/install.sh \
@@ -106,7 +101,7 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce=5:20.10.* && \
+    apt-get install -y --no-install-recommends docker-ce docker-buildx-plugin && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker \
     && update-alternatives --set iptables /usr/sbin/iptables-legacy \

@@ -45,26 +45,26 @@ function image_include_exclude() {
 
 cat <<EOS
 # images used by prowjobs on prow.k8s.io
-- total /                      $(image_include_exclude "" "^$") 
-  - gcr.io /                   $(image_include_exclude "gcr\.io" "^$")
+- total /                                             $(image_include_exclude "" "^$")
+  - gcr.io /                                          $(image_include_exclude "gcr\.io" "^$")
     - kubernetes.io gcp org
-      - k8s-staging-test-infra $(image_include_exclude "gcr\.io/k8s-staging-test-infra" "^$")
+      - k8s-staging-test-infra                        $(image_include_exclude "gcr\.io/k8s-staging-test-infra" "^$")
 $(for i in $(image_include_exclude "gcr\.io/k8s-staging-test-infra" "^$" true | tail -n+2 | xargs -n1 basename); do printf \
-"        - %-20s %s\n" "${i}" "$(image_include_exclude "gcr\.io/k8s-staging-test-infra/${i}" "^$")"; \
+"        - %-43s %s\n" "${i}" "$(image_include_exclude "gcr\.io/k8s-staging-test-infra/${i}" "^$")"; \
 done | sort -k3 -rg)
-      - k8s-staging-the_rest   $(image_include_exclude "gcr\.io/k8s-staging" "test-infra")
-      - k8s.gcr.io             $(image_include_exclude "k8s\.gcr\.io" "^$")
+      - k8s-staging-the_rest                          $(image_include_exclude "gcr\.io/k8s-staging" "test-infra")
+      - k8s.gcr.io                                    $(image_include_exclude "k8s\.gcr\.io" "^$")
     - google.com gcp org
-      - k8s-prow               $(image_include_exclude "gcr\.io/k8s-prow" "^$")
-      - k8s-testimages         $(image_include_exclude "gcr\.io/k8s-testimages" "^$")
+      - k8s-prow                                      $(image_include_exclude "gcr\.io/k8s-prow" "^$")
+      - k8s-testimages                                $(image_include_exclude "gcr\.io/k8s-testimages" "^$")
 $(for i in $(image_include_exclude "gcr\.io/k8s-testimages" "^$" true | tail -n+2 | xargs -n1 basename); do printf \
-"        - %-20s %s\n" "${i}" "$(image_include_exclude "gcr\.io/k8s-testimages/${i}" "^$")"; \
+"        - %-43s %s\n" "${i}" "$(image_include_exclude "gcr\.io/k8s-testimages/${i}" "^$")"; \
 done | sort -k3 -rg)
-    - other (unsure which org) $(image_include_exclude "gcr\.io" "^k8s.|k8s-(staging|prow|testimages)")
-$(for i in $(image_include_exclude "gcr\.io" "^k8s.|k8s-(staging|prow|testimages)" true | tail -n+2 | xargs -n1 basename); do printf \
-"      - %-22s %s\n" "${i}" "$(image_include_exclude "gcr\.io/.*/${i}$" "^$")"; \
+    - other (unsure which org)                        $(image_include_exclude "gcr\.io" "^k8s.|k8s-(staging|prow|testimages)")
+$(for i in $(image_include_exclude "gcr\.io" "^k8s.|k8s-(staging|prow|testimages)" true | tail -n+2 | cut -d/ -f2- ); do printf \
+"      - %-45s %s\n" "${i}" "$(image_include_exclude "gcr\.io/${i}$" "^$")"; \
 done | sort -k3 -rg)
-  - not gcr.io /               $(image_include_exclude "" "gcr\.io")
-    - dockerhub /              $(image_include_exclude "^[^\.]+$|^[^/]+$|docker\.io" "gcr\.io")
-    - quay.io /                $(image_include_exclude "quay\.io" "gcr\.io")
+  - not gcr.io /                                      $(image_include_exclude "" "gcr\.io")
+    - dockerhub /                                     $(image_include_exclude "^[^\.]+$|^[^/]+$|docker\.io" "gcr\.io")
+    - quay.io /                                       $(image_include_exclude "quay\.io" "gcr\.io")
 EOS

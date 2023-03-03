@@ -25,7 +25,7 @@ import (
 	"cloud.google.com/go/storage"
 	gzip "github.com/klauspost/pgzip"
 	"google.golang.org/api/option"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func main() {

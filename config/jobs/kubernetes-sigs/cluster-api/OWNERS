@@ -7,6 +7,8 @@ reviewers:
 - fabriziopandini
 - JoelSpeed
 - justinsb
+- sbueringer
+- killianmuldoon
 - timothysc
 - vincepri
 approvers:
@@ -15,11 +17,10 @@ approvers:
 - detiber
 - fabriziopandini
 - justinsb
+- sbueringer
+- killianmuldoon
 - timothysc
 - vincepri
-emeritus_reviewers:
-- luxas
-- ncdc
 emeritus_approvers:
 - luxas
 - ncdc

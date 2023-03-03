@@ -1,23 +1,23 @@
 reviewers:
 - adelina-t
-- benmoss
-- chewong
-- ddebroy
-- jeremyje
+- claudiubelu
+- jsturtevant
 - marosset
-- michmike
-- PatrickLang
 - pjh
 approvers:
 - adelina-t
+- claudiubelu
+- jsturtevant
+- marosset
+- pjh
+
+emeritus_approvers:
 - benmoss
 - chewong
 - ddebroy
 - jeremyje
-- marosset
 - michmike
 - PatrickLang
-- pjh
 
 labels:
 - sig/windows

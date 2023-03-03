@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: fakegitserver
+  labels:
+    app: fakegitserver
+spec:
+  selector:
+    matchLabels:
+      app: fakegitserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fakegitserver
+    spec:
+      containers:
+      - name: fakegitserver
+        image: localhost:5001/fakegitserver
+        args:
+        # These are self-signed certs. As they are not tied to any actual HTTPS
+        # Certificate Authority chain-of-trust, they are "junk". This is fine
+        # for our purposes because we just want to use them to have URLs that
+        # start with "https://..." which we pass into the git CLI (used by both
+        # sub and clonerefs).
+        - --cert=/var/run/ko/server.crt
+        - --key=/var/run/ko/server.key
+        ports:
+        - containerPort: 8888
+        - containerPort: 4443
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: fakegitserver
+  namespace: default
+  name: fakegitserver
+spec:
+  ports:
+  - name: main
+    port: 80
+    targetPort: 8888
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 4443
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    protocol: TCP
+  selector:
+    app: fakegitserver
+  type: ClusterIP

@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -54,10 +54,11 @@ const (
 )
 
 type extractStrategy struct {
-	mode      extractMode
-	option    string
-	ciVersion string
-	value     string
+	mode           extractMode
+	option         string
+	ciVersion      string
+	additionalInfo string
+	value          string
 }
 
 type extractStrategies []extractStrategy
@@ -70,14 +71,16 @@ func (l *extractStrategies) String() string {
 	return strings.Join(s, ",")
 }
 
+//^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$
+
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
-		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                     gci,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                gciCi,
+		`^gke-?(default|channel-(rapid|regular|stable)(?:-(latest))?|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                                   gci,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                              gciCi,
 		`^ci/(.+)$`:                   ci,
 		`^ci/(.+)-fast$`:              ciFast,
 		`^release/(latest.*)$`:        rc,
@@ -108,6 +111,9 @@ func (l *extractStrategies) Set(value string) error {
 		if len(mat) > 2 {
 			e.ciVersion = mat[2]
 		}
+		if len(mat) > 3 {
+			e.additionalInfo = mat[3]
+		}
 		*l = append(*l, e)
 		log.Printf("Matched extraction strategy: %s", search)
 		return nil
@@ -125,13 +131,9 @@ func (l *extractStrategies) Enabled() bool {
 	return len(*l) > 0
 }
 
-func (e extractStrategy) name() string {
-	return filepath.Base(e.option)
-}
-
 func (l extractStrategies) Extract(project, zone, region, ciBucket, releaseBucket string, extractSrc bool) error {
 	// rm -rf kubernetes*
-	files, err := ioutil.ReadDir(".")
+	files, err := os.ReadDir(".")
 	if err != nil {
 		return err
 	}
@@ -176,7 +178,7 @@ func ensureKube() (string, error) {
 	}
 
 	// Download it to a temp file
-	f, err := ioutil.TempFile("", "get-kube")
+	f, err := os.CreateTemp("", "get-kube")
 	if err != nil {
 		return "", err
 	}
@@ -333,7 +335,7 @@ var httpCat = func(url string) ([]byte, error) {
 		return nil, fmt.Errorf("Unexpected HTTP status code: %d", resp.StatusCode)
 	}
 
-	release, err := ioutil.ReadAll(resp.Body)
+	release, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -429,7 +431,7 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 	switch e.mode {
 	case localBazel:
 		vFile := util.K8s("kubernetes", "bazel-bin", "version")
-		vByte, err := ioutil.ReadFile(vFile)
+		vByte, err := os.ReadFile(vFile)
 		if err != nil {
 			return err
 		}
@@ -445,7 +447,7 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 		return getKube(fmt.Sprintf("file://%s", root), version, extractSrc)
 	case local:
 		url := util.K8s("kubernetes", "_output", "gcs-stage")
-		files, err := ioutil.ReadDir(url)
+		files, err := os.ReadDir(url)
 		if err != nil {
 			return err
 		}
@@ -494,8 +496,9 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 		}
 
 		if strings.HasPrefix(e.option, "channel") {
-			// get latest supported master version
-			version, err := getChannelGKEVersion(project, zone, region, e.ciVersion)
+			// get version from selected channel. If -latest is specified after channel we try to
+			// download latest valid version. Otherwise we download default version for this channel
+			version, err := getChannelGKEVersion(project, zone, region, e.ciVersion, e.additionalInfo)
 			if err != nil {
 				return fmt.Errorf("failed to get gke version from channel %s: %s", e.ciVersion, err)
 			}

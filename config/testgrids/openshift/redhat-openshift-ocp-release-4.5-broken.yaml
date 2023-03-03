@@ -56,9 +56,7 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-ovn
   name: redhat-openshift-ocp-release-4.5-broken
 test_groups:
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-azure-ovn
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-azure-ovn
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-azure-ovn
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-ovn
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-ovn
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-ovn

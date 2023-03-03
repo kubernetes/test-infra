@@ -84,6 +84,17 @@ func TestReleaseNoteComment(t *testing.T) {
 			addedLabel:    labels.ReleaseNoteNone,
 		},
 		{
+			name:          "author release-note-none with \"no\" block",
+			action:        github.IssueCommentActionCreated,
+			isAuthor:      true,
+			commentBody:   "/release-note-none",
+			issueBody:     "bologna ```release-note \nno \n ```",
+			currentLabels: []string{labels.ReleaseNoteLabelNeeded, "other"},
+
+			deletedLabels: []string{labels.ReleaseNoteLabelNeeded},
+			addedLabel:    labels.ReleaseNoteNone,
+		},
+		{
 			name:          "author release-note-none, trailing space.",
 			action:        github.IssueCommentActionCreated,
 			isAuthor:      true,
@@ -270,6 +281,7 @@ func TestReleaseNotePR(t *testing.T) {
 		issueComments      []string
 		IssueLabelsAdded   []string
 		IssueLabelsRemoved []string
+		merged             bool
 	}{
 		{
 			name:          "LGTM with release-note",
@@ -456,12 +468,26 @@ func TestReleaseNotePR(t *testing.T) {
 			body:             "",
 			IssueLabelsAdded: []string{labels.ReleaseNoteLabelNeeded},
 		},
+		{
+			name:             "Add do-not-merge/release-note-label-needed",
+			body:             "```release-note\n```",
+			initialLabels:    []string{},
+			IssueLabelsAdded: []string{labels.ReleaseNoteLabelNeeded},
+		},
+		{
+			name:             "Release note edited after merge, do not add do-not-merge/release-note-label-needed",
+			body:             "```release-note\n```",
+			merged:           true,
+			initialLabels:    []string{},
+			IssueLabelsAdded: []string{},
+		},
 	}
 	for _, test := range tests {
 		if test.branch == "" {
 			test.branch = "master"
 		}
 		fc, pr := newFakeClient(test.body, test.branch, test.initialLabels, test.issueComments, test.parentPRs)
+		pr.PullRequest.Merged = test.merged
 
 		err := handlePR(fc, logrus.WithField("plugin", PluginName), pr)
 		if err != nil {

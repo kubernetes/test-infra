@@ -106,7 +106,7 @@ func NewLRUCache(size int) (*LRUCache, error) {
 // suppression strategy. This is also called request coalescing.
 func (lruCache *LRUCache) GetOrAdd(
 	key interface{},
-	valConstructor ValConstructor) (interface{}, error) {
+	valConstructor ValConstructor) (interface{}, bool, error) {
 
 	// Cache lookup.
 	lruCache.Lock()
@@ -129,7 +129,7 @@ func (lruCache *LRUCache) GetOrAdd(
 		if !ok {
 			err := fmt.Errorf("Programmer error: expected cache entry type '*Promise', got '%T'", maybePromise)
 			logrus.WithField("key", key).Error(err)
-			return nil, err
+			return nil, false, err
 		}
 
 		// Block until the first thread originally created this promise has
@@ -216,5 +216,5 @@ func (lruCache *LRUCache) GetOrAdd(
 		}
 	}
 
-	return promise.val, promise.err
+	return promise.val, ok, promise.err
 }

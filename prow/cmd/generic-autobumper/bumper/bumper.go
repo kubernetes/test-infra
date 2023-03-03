@@ -18,6 +18,7 @@ package bumper
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha1"
 	"errors"
 	"flag"
@@ -41,27 +42,6 @@ const (
 
 	gitCmd = "git"
 )
-
-type fileArrayFlag []string
-
-func (af *fileArrayFlag) String() string {
-	return fmt.Sprint(*af)
-}
-
-func (af *fileArrayFlag) Set(value string) error {
-	for _, e := range strings.Split(value, ",") {
-		fn := strings.TrimSpace(e)
-		info, err := os.Stat(fn)
-		if err != nil {
-			return fmt.Errorf("getting file info for %q", fn)
-		}
-		if info.IsDir() && !strings.HasSuffix(fn, string(os.PathSeparator)) {
-			fn = fn + string(os.PathSeparator)
-		}
-		*af = append(*af, fn)
-	}
-	return nil
-}
 
 // Options is the options for autobumper operations.
 type Options struct {
@@ -113,10 +93,10 @@ type Gerrit struct {
 type PRHandler interface {
 	// Changes returns a slice of functions, each one does some stuff, and
 	// returns commit message for the changes
-	Changes() []func() (string, error)
+	Changes() []func(context.Context) (string, error)
 	// PRTitleBody returns the body of the PR, this function runs after all
 	// changes have been executed
-	PRTitleBody() (string, string, error)
+	PRTitleBody() (string, string)
 }
 
 // GitAuthorOptions is specifically to read the author info for a commit
@@ -206,7 +186,7 @@ func validateOptions(o *Options) error {
 // provided options.
 //
 // updateFunc: a function that returns commit message and error
-func Run(o *Options, prh PRHandler) error {
+func Run(ctx context.Context, o *Options, prh PRHandler) error {
 	if err := validateOptions(o); err != nil {
 		return fmt.Errorf("validating options: %w", err)
 	}
@@ -215,19 +195,22 @@ func Run(o *Options, prh PRHandler) error {
 		logrus.Debugf("--skip-pull-request is set to true, won't create a pull request.")
 	}
 	if o.Gerrit == nil {
-		return processGitHub(o, prh)
+		return processGitHub(ctx, o, prh)
 	}
-	return processGerrit(o, prh)
+	return processGerrit(ctx, o, prh)
 }
 
-func processGitHub(o *Options, prh PRHandler) error {
+func processGitHub(ctx context.Context, o *Options, prh PRHandler) error {
 	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: secret.Censor}
 	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: secret.Censor}
 	if err := secret.Add(o.GitHubToken); err != nil {
 		return fmt.Errorf("start secrets agent: %w", err)
 	}
 
-	gc := github.NewClient(secret.GetTokenGenerator(o.GitHubToken), secret.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+	gc, err := github.NewClient(secret.GetTokenGenerator(o.GitHubToken), secret.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+	if err != nil {
+		return fmt.Errorf("failed to construct GitHub client: %v", err)
+	}
 
 	if o.GitHubLogin == "" || o.GitName == "" || o.GitEmail == "" {
 		user, err := gc.BotUser()
@@ -248,7 +231,7 @@ func processGitHub(o *Options, prh PRHandler) error {
 	// Make change, commit and push
 	var anyChange bool
 	for i, changeFunc := range prh.Changes() {
-		msg, err := changeFunc()
+		msg, err := changeFunc(ctx)
 		if err != nil {
 			return fmt.Errorf("process function %d: %w", i, err)
 		}
@@ -277,10 +260,7 @@ func processGitHub(o *Options, prh PRHandler) error {
 		return fmt.Errorf("push changes to the remote branch: %w", err)
 	}
 
-	summary, body, err := prh.PRTitleBody()
-	if err != nil {
-		return fmt.Errorf("creating PR summary and body: %w", err)
-	}
+	summary, body := prh.PRTitleBody()
 	if o.GitHubBaseBranch == "" {
 		repo, err := gc.GetRepo(o.GitHubOrg, o.GitHubRepo)
 		if err != nil {
@@ -294,7 +274,7 @@ func processGitHub(o *Options, prh PRHandler) error {
 	return nil
 }
 
-func processGerrit(o *Options, prh PRHandler) error {
+func processGerrit(ctx context.Context, o *Options, prh PRHandler) error {
 	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: secret.Censor}
 	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: secret.Censor}
 
@@ -317,7 +297,7 @@ func processGerrit(o *Options, prh PRHandler) error {
 
 	// Make change, commit and push
 	for i, changeFunc := range prh.Changes() {
-		msg, err := changeFunc()
+		msg, err := changeFunc(ctx)
 		if err != nil {
 			return fmt.Errorf("process function %d: %w", i, err)
 		}

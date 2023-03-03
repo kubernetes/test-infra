@@ -8,7 +8,6 @@ We have bazel images that have two versions of bazel installed. The upgrade proc
 * Ensure [`.bazelversion`] file matches one of the versions in these three images:
   - [`images/bazel`]'s `test-infra` variant
   - [`images/bazelbuild`]'s `test-infra` variant
-  - [`images/gcloud-bazel`]
 * Choose the new target the [bazel release blog], such as `3.1`
   - Ensure the [`repo-infra` release] supports bazel >= the target vesion.
     - Look in [`load.bzl`] to see which repo-infra tag is used.
@@ -20,11 +19,8 @@ We have bazel images that have two versions of bazel installed. The upgrade proc
   - The new version should be the target version.
   - [`images/bazel`]'s `test-infra` variant
   - [`images/bazelbuild`]'s `test-infra` variant
-  - [`images/gcloud-bazel`] update the push.sh script
-    - `TODO(fejta):` this should be done on postsubmit like the others
 * Merge the PR
   - This should postsubmits to create the `bazel` and `bazelbuild` images.
-  - Run the `push.sh` script in `images/gcloud-bazel` to push the new image.
 * Update usage to these new images
   - Manually update the [`bazel-base`] digtest in `containers.bzl` to the new image.
     - NOTE: must update the digest (the tag param is just documentation)
@@ -55,7 +51,6 @@ There is no automated testing pipeline for images:
 [`.bazelversion`]: /.bazelversion
 [`images/bazel`]: /images/bazel/variants.yaml
 [`images/bazelbuild`]: /images/bazelbuild/variants.yaml
-[`images/gcloud-bazel`]: /images/gcloud-bazel/push.sh
 [bazel release blog]: https://blog.bazel.build
 [`repo-infra` release]: https://github.com/kubernetes/repo-infra/releases
 [`load.bzl`]: /load.bzl

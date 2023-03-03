@@ -46,7 +46,6 @@ type TriageFiler struct {
 	topClustersCount int
 	windowDays       int
 
-	nextSync    time.Time
 	latestStart int64
 
 	creator *creator.IssueCreator

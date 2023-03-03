@@ -18,7 +18,6 @@ package decorate
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -38,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/initupload"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 	"k8s.io/test-infra/prow/sidecar"
@@ -201,14 +201,14 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{}},
-					GitUserEmail: clonerefs.DefaultGitUserEmail,
-					GitUserName:  clonerefs.DefaultGitUserName,
-					SrcRoot:      codeMount.MountPath,
-					Log:          CloneLogPath(logMount),
+					GitRefs:            []prowapi.Refs{{}},
+					GitUserEmail:       clonerefs.DefaultGitUserEmail,
+					GitUserName:        clonerefs.DefaultGitUserName,
+					SrcRoot:            codeMount.MountPath,
+					Log:                CloneLogPath(logMount),
+					GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
 				}),
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
@@ -225,14 +225,14 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{}},
-					GitUserEmail: clonerefs.DefaultGitUserEmail,
-					GitUserName:  clonerefs.DefaultGitUserName,
-					SrcRoot:      codeMount.MountPath,
-					Log:          CloneLogPath(logMount),
+					GitRefs:            []prowapi.Refs{{}},
+					GitUserEmail:       clonerefs.DefaultGitUserEmail,
+					GitUserName:        clonerefs.DefaultGitUserName,
+					SrcRoot:            codeMount.MountPath,
+					Log:                CloneLogPath(logMount),
+					GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
 				}),
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
@@ -250,14 +250,14 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
-					GitUserEmail: clonerefs.DefaultGitUserEmail,
-					GitUserName:  clonerefs.DefaultGitUserName,
-					SrcRoot:      codeMount.MountPath,
-					Log:          CloneLogPath(logMount),
+					GitRefs:            []prowapi.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
+					GitUserEmail:       clonerefs.DefaultGitUserEmail,
+					GitUserName:        clonerefs.DefaultGitUserName,
+					SrcRoot:            codeMount.MountPath,
+					Log:                CloneLogPath(logMount),
+					GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
 				}),
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
@@ -275,15 +275,15 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{}},
-					GitUserEmail: clonerefs.DefaultGitUserEmail,
-					GitUserName:  clonerefs.DefaultGitUserName,
-					KeyFiles:     []string{sshMountOnly("super").MountPath, sshMountOnly("secret").MountPath},
-					SrcRoot:      codeMount.MountPath,
-					Log:          CloneLogPath(logMount),
+					GitRefs:            []prowapi.Refs{{}},
+					GitUserEmail:       clonerefs.DefaultGitUserEmail,
+					GitUserName:        clonerefs.DefaultGitUserName,
+					KeyFiles:           []string{sshMountOnly("super").MountPath, sshMountOnly("secret").MountPath},
+					SrcRoot:            codeMount.MountPath,
+					Log:                CloneLogPath(logMount),
+					GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
 				}),
 				VolumeMounts: []coreapi.VolumeMount{
 					logMount,
@@ -307,15 +307,15 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:          []prowapi.Refs{{}},
-					GitUserEmail:     clonerefs.DefaultGitUserEmail,
-					GitUserName:      clonerefs.DefaultGitUserName,
-					SrcRoot:          codeMount.MountPath,
-					HostFingerprints: []string{"thumb", "pinky"},
-					Log:              CloneLogPath(logMount),
+					GitRefs:            []prowapi.Refs{{}},
+					GitUserEmail:       clonerefs.DefaultGitUserEmail,
+					GitUserName:        clonerefs.DefaultGitUserName,
+					SrcRoot:            codeMount.MountPath,
+					HostFingerprints:   []string{"thumb", "pinky"},
+					Log:                CloneLogPath(logMount),
+					GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
 				}),
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
@@ -333,16 +333,16 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
-				Args:    []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
+				Name: cloneRefsName,
+				Args: []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
 				Env: envOrDie(clonerefs.Options{
-					CookiePath:   cookiePathOnly("oatmeal"),
-					GitRefs:      []prowapi.Refs{{}},
-					GitUserEmail: clonerefs.DefaultGitUserEmail,
-					GitUserName:  clonerefs.DefaultGitUserName,
-					SrcRoot:      codeMount.MountPath,
-					Log:          CloneLogPath(logMount),
+					CookiePath:         cookiePathOnly("oatmeal"),
+					GitRefs:            []prowapi.Refs{{}},
+					GitUserEmail:       clonerefs.DefaultGitUserEmail,
+					GitUserName:        clonerefs.DefaultGitUserName,
+					SrcRoot:            codeMount.MountPath,
+					Log:                CloneLogPath(logMount),
+					GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
 				}),
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount, cookieMountOnly("oatmeal")},
 			},
@@ -360,14 +360,14 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:      []prowapi.Refs{{}},
-					GitUserEmail: clonerefs.DefaultGitUserEmail,
-					GitUserName:  clonerefs.DefaultGitUserName,
-					SrcRoot:      codeMount.MountPath,
-					Log:          CloneLogPath(logMount),
+					GitRefs:            []prowapi.Refs{{}},
+					GitUserEmail:       clonerefs.DefaultGitUserEmail,
+					GitUserName:        clonerefs.DefaultGitUserName,
+					SrcRoot:            codeMount.MountPath,
+					Log:                CloneLogPath(logMount),
+					GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
 				}),
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount, tmpMount},
 			},
@@ -388,18 +388,20 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
-					GitRefs:        []prowapi.Refs{{}},
-					GitUserEmail:   clonerefs.DefaultGitUserEmail,
-					GitUserName:    clonerefs.DefaultGitUserName,
-					SrcRoot:        codeMount.MountPath,
-					Log:            CloneLogPath(logMount),
-					OauthTokenFile: "/secrets/oauth/oauth-file",
+					GitRefs:            []prowapi.Refs{{}},
+					GitUserEmail:       clonerefs.DefaultGitUserEmail,
+					GitUserName:        clonerefs.DefaultGitUserName,
+					SrcRoot:            codeMount.MountPath,
+					Log:                CloneLogPath(logMount),
+					OauthTokenFile:     "/secrets/oauth/oauth-file",
+					GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
 				}),
-				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount,
-					{Name: "oauth-secret", ReadOnly: true, MountPath: "/secrets/oauth"}, tmpMount,
+				VolumeMounts: []coreapi.VolumeMount{
+					logMount, codeMount,
+					{Name: "oauth-secret", ReadOnly: true, MountPath: "/secrets/oauth"},
+					tmpMount,
 				},
 			},
 			volumes: []coreapi.Volume{
@@ -410,7 +412,115 @@ func TestCloneRefs(t *testing.T) {
 							SecretName: "oauth-secret",
 							Items: []coreapi.KeyToPath{{
 								Key:  "oauth-file",
-								Path: "./oauth-file"}},
+								Path: "./oauth-file",
+							}},
+						},
+					},
+				},
+				tmpVolume,
+			},
+		},
+		{
+			name: "include GitHub App ID and private key when set",
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					ExtraRefs: []prowapi.Refs{{}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages: &prowapi.UtilityImages{},
+						GitHubAppID:   "123456",
+						GitHubAppPrivateKeySecret: &prowapi.GitHubAppPrivateKeySecret{
+							Name: "github-app-secret",
+							Key:  "private-key",
+						},
+					},
+				},
+			},
+			expected: &coreapi.Container{
+				Name: cloneRefsName,
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:                 []prowapi.Refs{{}},
+					GitUserEmail:            clonerefs.DefaultGitUserEmail,
+					GitUserName:             clonerefs.DefaultGitUserName,
+					SrcRoot:                 codeMount.MountPath,
+					Log:                     CloneLogPath(logMount),
+					GitHubAPIEndpoints:      []string{github.DefaultAPIEndpoint},
+					GitHubAppID:             "123456",
+					GitHubAppPrivateKeyFile: "/secrets/github-app/private-key",
+				}),
+				VolumeMounts: []coreapi.VolumeMount{
+					logMount, codeMount,
+					{
+						Name:      "github-app-secret",
+						ReadOnly:  true,
+						MountPath: "/secrets/github-app",
+					},
+					tmpMount,
+				},
+			},
+			volumes: []coreapi.Volume{
+				{
+					Name: "github-app-secret",
+					VolumeSource: coreapi.VolumeSource{
+						Secret: &coreapi.SecretVolumeSource{
+							SecretName: "github-app-secret",
+							Items: []coreapi.KeyToPath{{
+								Key:  "private-key",
+								Path: "./private-key",
+							}},
+						},
+					},
+				},
+				tmpVolume,
+			},
+		},
+		{
+			name: "include custom GitHub API endpoints when set",
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					ExtraRefs: []prowapi.Refs{{}},
+					DecorationConfig: &prowapi.DecorationConfig{
+						UtilityImages:      &prowapi.UtilityImages{},
+						GitHubAPIEndpoints: []string{"http://example.com"},
+						GitHubAppID:        "123456",
+						GitHubAppPrivateKeySecret: &prowapi.GitHubAppPrivateKeySecret{
+							Name: "github-app-secret",
+							Key:  "private-key",
+						},
+					},
+				},
+			},
+			expected: &coreapi.Container{
+				Name: cloneRefsName,
+				Env: envOrDie(clonerefs.Options{
+					GitRefs:                 []prowapi.Refs{{}},
+					GitUserEmail:            clonerefs.DefaultGitUserEmail,
+					GitUserName:             clonerefs.DefaultGitUserName,
+					SrcRoot:                 codeMount.MountPath,
+					Log:                     CloneLogPath(logMount),
+					GitHubAPIEndpoints:      []string{"http://example.com"},
+					GitHubAppID:             "123456",
+					GitHubAppPrivateKeyFile: "/secrets/github-app/private-key",
+				}),
+				VolumeMounts: []coreapi.VolumeMount{
+					logMount, codeMount,
+					{
+						Name:      "github-app-secret",
+						ReadOnly:  true,
+						MountPath: "/secrets/github-app",
+					},
+					tmpMount,
+				},
+			},
+			volumes: []coreapi.Volume{
+				{
+					Name: "github-app-secret",
+					VolumeSource: coreapi.VolumeSource{
+						Secret: &coreapi.SecretVolumeSource{
+							SecretName: "github-app-secret",
+							Items: []coreapi.KeyToPath{{
+								Key:  "private-key",
+								Path: "./private-key",
+							}},
 						},
 					},
 				},
@@ -1005,11 +1115,11 @@ func TestProwJobToPod(t *testing.T) {
 				if err != nil {
 					t.Fatalf("failed to marhsal pod: %v", err)
 				}
-				if err := ioutil.WriteFile(fixtureName, marshalled, 0644); err != nil {
+				if err := os.WriteFile(fixtureName, marshalled, 0644); err != nil {
 					t.Errorf("failed to update fixture: %v", err)
 				}
 			}
-			expectedRaw, err := ioutil.ReadFile(fixtureName)
+			expectedRaw, err := os.ReadFile(fixtureName)
 			if err != nil {
 				t.Fatalf("failed to read fixture: %v", err)
 			}
@@ -1163,6 +1273,10 @@ func TestDecorate(t *testing.T) {
 	defaultServiceAccountName := "default-sa"
 	censor := true
 	ignoreInterrupts := true
+	resourcePtr := func(s string) *resource.Quantity {
+		q := resource.MustParse(s)
+		return &q
+	}
 	var testCases = []struct {
 		name      string
 		spec      *coreapi.PodSpec
@@ -1206,6 +1320,124 @@ func TestDecorate(t *testing.T) {
 						},
 						GCSCredentialsSecret:      &gCSCredentialsSecret,
 						DefaultServiceAccountName: &defaultServiceAccountName,
+					},
+					Refs: &prowapi.Refs{
+						Org: "org", Repo: "repo", BaseRef: "main", BaseSHA: "abcd1234",
+						Pulls: []prowapi.Pull{{Number: 1, SHA: "aksdjhfkds"}},
+					},
+					ExtraRefs: []prowapi.Refs{{Org: "other", Repo: "something", BaseRef: "release", BaseSHA: "sldijfsd"}},
+				},
+			},
+			rawEnv: map[string]string{"custom": "env"},
+		},
+		{
+			name: "enforcing memory limit",
+			spec: &coreapi.PodSpec{
+				Containers: []coreapi.Container{
+					{
+						Name:    "test",
+						Command: []string{"/bin/ls"},
+						Args:    []string{"-l", "-a"},
+						Resources: coreapi.ResourceRequirements{
+							Requests: coreapi.ResourceList{
+								"memory": resource.MustParse("8Gi"),
+							},
+							Limits: coreapi.ResourceList{
+								"memory": resource.MustParse("100Gi"),
+							},
+						},
+					},
+				},
+				ServiceAccountName: "tester",
+			},
+			pj: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: time.Minute},
+						GracePeriod: &prowapi.Duration{Duration: time.Hour},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "cloneimage",
+							InitUpload: "initimage",
+							Entrypoint: "entrypointimage",
+							Sidecar:    "sidecarimage",
+						},
+						Resources: &prowapi.Resources{
+							CloneRefs:       &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							InitUpload:      &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							PlaceEntrypoint: &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							Sidecar:         &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "bucket",
+							PathStrategy: "single",
+							DefaultOrg:   "org",
+							DefaultRepo:  "repo",
+						},
+						GCSCredentialsSecret:        &gCSCredentialsSecret,
+						DefaultServiceAccountName:   &defaultServiceAccountName,
+						SetLimitEqualsMemoryRequest: utilpointer.BoolPtr(true),
+					},
+					Refs: &prowapi.Refs{
+						Org: "org", Repo: "repo", BaseRef: "main", BaseSHA: "abcd1234",
+						Pulls: []prowapi.Pull{{Number: 1, SHA: "aksdjhfkds"}},
+					},
+					ExtraRefs: []prowapi.Refs{{Org: "other", Repo: "something", BaseRef: "release", BaseSHA: "sldijfsd"}},
+				},
+			},
+			rawEnv: map[string]string{"custom": "env"},
+		},
+		{
+			name: "default memory request",
+			spec: &coreapi.PodSpec{
+				Containers: []coreapi.Container{
+					{
+						Name:    "test",
+						Command: []string{"/bin/ls"},
+						Args:    []string{"-l", "-a"},
+						Resources: coreapi.ResourceRequirements{
+							Requests: coreapi.ResourceList{
+								"memory": resource.MustParse("8Gi"),
+							},
+							Limits: coreapi.ResourceList{
+								"memory": resource.MustParse("100Gi"),
+							},
+						},
+					},
+					{
+						Name:    "test2",
+						Command: []string{"/bin/ls"},
+						Args:    []string{"-l", "-a"},
+					},
+				},
+				ServiceAccountName: "tester",
+			},
+			pj: &prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{
+						Timeout:     &prowapi.Duration{Duration: time.Minute},
+						GracePeriod: &prowapi.Duration{Duration: time.Hour},
+						UtilityImages: &prowapi.UtilityImages{
+							CloneRefs:  "cloneimage",
+							InitUpload: "initimage",
+							Entrypoint: "entrypointimage",
+							Sidecar:    "sidecarimage",
+						},
+						Resources: &prowapi.Resources{
+							CloneRefs:       &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							InitUpload:      &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							PlaceEntrypoint: &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+							Sidecar:         &coreapi.ResourceRequirements{Limits: coreapi.ResourceList{"cpu": resource.Quantity{}}, Requests: coreapi.ResourceList{"memory": resource.Quantity{}}},
+						},
+						GCSConfiguration: &prowapi.GCSConfiguration{
+							Bucket:       "bucket",
+							PathStrategy: "single",
+							DefaultOrg:   "org",
+							DefaultRepo:  "repo",
+						},
+						GCSCredentialsSecret:        &gCSCredentialsSecret,
+						DefaultServiceAccountName:   &defaultServiceAccountName,
+						SetLimitEqualsMemoryRequest: utilpointer.BoolPtr(true),
+						DefaultMemoryRequest:        resourcePtr("4Gi"),
 					},
 					Refs: &prowapi.Refs{
 						Org: "org", Repo: "repo", BaseRef: "main", BaseSHA: "abcd1234",

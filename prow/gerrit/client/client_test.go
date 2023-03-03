@@ -17,20 +17,30 @@ limitations under the License.
 package client
 
 import (
+	"context"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	gerrit "github.com/andygrunwald/go-gerrit"
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/io"
 )
 
 type fgc struct {
 	instance string
 	changes  map[string][]gerrit.ChangeInfo
 	comments map[string]map[string][]gerrit.CommentInfo
+}
+
+func (f *fgc) GetRelatedChanges(changeID string, revisionID string) (*gerrit.RelatedChangesInfo, *gerrit.Response, error) {
+	return &gerrit.RelatedChangesInfo{}, nil, nil
 }
 
 func (f *fgc) ListChangeComments(id string) (*map[string][]gerrit.CommentInfo, *gerrit.Response, error) {
@@ -46,7 +56,165 @@ func (f *fgc) ListChangeComments(id string) (*map[string][]gerrit.CommentInfo, *
 	}
 
 	return &comments, nil, nil
+}
 
+func (f *fgc) SubmitChange(changeID string, input *gerrit.SubmitInput) (*ChangeInfo, *gerrit.Response, error) {
+	return nil, nil, nil
+}
+
+func TestApplyGlobalConfigOnce(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "value.txt")
+	// Empty opener so *syncTime won't panic.
+	opener, err := io.NewOpener(context.Background(), "", "")
+	if err != nil {
+		t.Fatalf("Failed to create opener: %v", err)
+	}
+
+	// Fixed org/repo, as this test doesn't check the output.
+	cfg := config.Config{
+		ProwConfig: config.ProwConfig{
+			Gerrit: config.Gerrit{
+				OrgReposConfig: &config.GerritOrgRepoConfigs{
+					{
+						Org:   "foo1",
+						Repos: []string{"bar1"},
+					},
+				},
+			},
+		},
+	}
+
+	// A thread safe map for checking additionalFunc.
+	var mux sync.RWMutex
+	records := make(map[string]string)
+	setRecond := func(key, val string) {
+		mux.Lock()
+		defer mux.Unlock()
+		records[key] = val
+	}
+	getRecord := func(key string) string {
+		mux.RLock()
+		defer mux.RUnlock()
+		return records[key]
+	}
+
+	tests := []struct {
+		name                string
+		orgRepoConfigGetter func() *config.GerritOrgRepoConfigs
+		lastSyncTracker     *SyncTime
+		additionalFunc      func()
+		expect              func(t *testing.T)
+	}{
+		{
+			name: "base",
+			orgRepoConfigGetter: func() *config.GerritOrgRepoConfigs {
+				return cfg.Gerrit.OrgReposConfig
+			},
+			lastSyncTracker: NewSyncTime(path, opener, context.Background()),
+			additionalFunc: func() {
+				setRecond("base", "base")
+			},
+			expect: func(t *testing.T) {
+				if got, want := getRecord("base"), "base"; got != want {
+					t.Fatalf("Output mismatch. Want: %s, got: %s", want, got)
+				}
+			},
+		},
+		{
+			name: "nil-lastsynctracker",
+			orgRepoConfigGetter: func() *config.GerritOrgRepoConfigs {
+				return cfg.Gerrit.OrgReposConfig
+			},
+			additionalFunc: func() {
+				setRecond("nil-lastsynctracker", "nil-lastsynctracker")
+			},
+			expect: func(t *testing.T) {
+				if got, want := getRecord("nil-lastsynctracker"), "nil-lastsynctracker"; got != want {
+					t.Fatalf("Output mismatch. Want: %s, got: %s", want, got)
+				}
+			},
+		},
+		{
+			name: "empty-addtionalfunc",
+			orgRepoConfigGetter: func() *config.GerritOrgRepoConfigs {
+				return cfg.Gerrit.OrgReposConfig
+			},
+			additionalFunc: func() {},
+			expect: func(t *testing.T) {
+				// additionalFunc is nil, there is nothing expected
+			},
+		},
+		{
+			name: "nil-addtionalfunc",
+			orgRepoConfigGetter: func() *config.GerritOrgRepoConfigs {
+				return cfg.Gerrit.OrgReposConfig
+			},
+			additionalFunc: nil,
+			expect: func(t *testing.T) {
+				// additionalFunc is nil, there is nothing expected
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &Client{}
+			fc.applyGlobalConfigOnce(tc.orgRepoConfigGetter, tc.lastSyncTracker, "", "", tc.additionalFunc)
+			if tc.expect != nil {
+				tc.expect(t)
+			}
+		})
+	}
+}
+
+func TestQueryStringsFromQueryFilter(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		filters  *config.GerritQueryFilter
+		expected []string
+	}{
+		{
+			name: "nil",
+		},
+		{
+			name: "single-branch",
+			filters: &config.GerritQueryFilter{
+				Branches: []string{"foo"},
+			},
+			expected: []string{"(branch:foo)"},
+		},
+		{
+			name: "multiple-branches",
+			filters: &config.GerritQueryFilter{
+				Branches: []string{"foo1", "foo2", "foo3"},
+			},
+			expected: []string{"(branch:foo1+OR+branch:foo2+OR+branch:foo3)"},
+		},
+		{
+			name: "branches-and-excluded",
+			filters: &config.GerritQueryFilter{
+				Branches:         []string{"foo1", "foo2", "foo3"},
+				ExcludedBranches: []string{"bar1", "bar2", "bar3"},
+			},
+			expected: []string{
+				"(branch:foo1+OR+branch:foo2+OR+branch:foo3)",
+				"(-branch:bar1+AND+-branch:bar2+AND+-branch:bar3)",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			if diff := cmp.Diff(tc.expected, queryStringsFromQueryFilter(tc.filters)); diff != "" {
+				t.Fatalf("Output mismatch. Want(-), got(+):\n%s", diff)
+			}
+		})
+	}
 }
 
 func (f *fgc) QueryChanges(opt *gerrit.QueryChangeOptions) (*[]gerrit.ChangeInfo, *gerrit.Response, error) {
@@ -92,6 +260,59 @@ func makeStamp(t time.Time) gerrit.Timestamp {
 func newStamp(t time.Time) *gerrit.Timestamp {
 	gt := makeStamp(t)
 	return &gt
+}
+
+func TestUpdateClients(t *testing.T) {
+	tests := []struct {
+		name              string
+		existingInstances map[string]map[string]*config.GerritQueryFilter
+		newInstances      map[string]map[string]*config.GerritQueryFilter
+		wantInstances     map[string]map[string]*config.GerritQueryFilter
+	}{
+		{
+			name:              "normal",
+			existingInstances: map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
+			newInstances:      map[string]map[string]*config.GerritQueryFilter{"foo2": {"bar2": nil}},
+			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo2": {"bar2": nil}},
+		},
+		{
+			name:              "same instance",
+			existingInstances: map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
+			newInstances:      map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar2": nil}},
+			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar2": nil}},
+		},
+		{
+			name:              "delete",
+			existingInstances: map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}, "foo2": {"bar2": nil}},
+			newInstances:      map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
+			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &Client{
+				handlers: make(map[string]*gerritInstanceHandler),
+			}
+			for instance, projects := range tc.existingInstances {
+				client.handlers[instance] = &gerritInstanceHandler{
+					instance: instance,
+					projects: projects,
+				}
+			}
+
+			if err := client.UpdateClients(tc.newInstances); err != nil {
+				t.Fatal(err)
+			}
+			gotInstances := make(map[string]map[string]*config.GerritQueryFilter)
+			for instance, handler := range client.handlers {
+				gotInstances[instance] = handler.projects
+			}
+			if diff := cmp.Diff(tc.wantInstances, gotInstances); diff != "" {
+				t.Fatalf("mismatch. got(+), want(-):\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestQueryChange(t *testing.T) {
@@ -631,7 +852,7 @@ func TestQueryChange(t *testing.T) {
 			handlers: map[string]*gerritInstanceHandler{
 				"foo": {
 					instance: "foo",
-					projects: []string{"bar"},
+					projects: map[string]*config.GerritQueryFilter{"bar": nil},
 					changeService: &fgc{
 						changes:  tc.changes,
 						instance: "foo",
@@ -641,7 +862,7 @@ func TestQueryChange(t *testing.T) {
 				},
 				"baz": {
 					instance: "baz",
-					projects: []string{"boo"},
+					projects: map[string]*config.GerritQueryFilter{"boo": nil},
 					changeService: &fgc{
 						changes:  tc.changes,
 						instance: "baz",

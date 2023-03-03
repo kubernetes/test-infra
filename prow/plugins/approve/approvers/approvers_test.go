@@ -435,12 +435,12 @@ func TestIsApproved(t *testing.T) {
 		"d":       {},
 	}
 	tests := []struct {
-		testName               string
-		filenames              []string
-		allowFolderCreationMap map[string]bool
-		currentlyApproved      sets.String
-		testSeed               int64
-		isApproved             bool
+		testName                        string
+		filenames                       []string
+		autoApproveUnownedSubfoldersMap map[string]bool
+		currentlyApproved               sets.String
+		testSeed                        int64
+		isApproved                      bool
 	}{
 		{
 			testName:          "Empty PR",
@@ -506,53 +506,53 @@ func TestIsApproved(t *testing.T) {
 			isApproved:        true,
 		},
 		{
-			testName:               "File in folder with AllowFolderCreation does not get approved",
-			filenames:              []string{"a/test.go"},
-			allowFolderCreationMap: map[string]bool{"a": true},
-			isApproved:             false,
+			testName:                        "File in folder with AutoApproveUnownedSubfolders does not get approved",
+			filenames:                       []string{"a/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
 		},
 		{
-			testName:               "Subfolder in folder with AllowFolderCreation gets approved",
-			filenames:              []string{"a/new-folder/test.go"},
-			allowFolderCreationMap: map[string]bool{"a": true},
-			isApproved:             true,
+			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders gets approved",
+			filenames:                       []string{"a/new-folder/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      true,
 		},
 		{
-			testName:               "Subfolder in folder with AllowFolderCreation whose ownersfile has no approvers gets approved",
-			filenames:              []string{"d/new-folder/test.go"},
-			allowFolderCreationMap: map[string]bool{"d": true},
-			isApproved:             true,
+			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders whose ownersfile has no approvers gets approved",
+			filenames:                       []string{"d/new-folder/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"d": true},
+			isApproved:                      true,
 		},
 		{
-			testName:               "Subfolder in folder with AllowFolderCreation and other unapproved file does not get approved",
-			filenames:              []string{"b/unapproved.go", "a/new-folder/test.go"},
-			allowFolderCreationMap: map[string]bool{"a": true},
-			isApproved:             false,
+			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders and other unapproved file does not get approved",
+			filenames:                       []string{"b/unapproved.go", "a/new-folder/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
 		},
 		{
-			testName:               "Subfolder in folder with AllowFolderCreation and approved file, approved",
-			filenames:              []string{"b/approved.go", "a/new-folder/test.go"},
-			allowFolderCreationMap: map[string]bool{"a": true},
-			currentlyApproved:      sets.NewString(bApprovers.List()[0]),
-			isApproved:             true,
+			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders and approved file, approved",
+			filenames:                       []string{"b/approved.go", "a/new-folder/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			currentlyApproved:               sets.NewString(bApprovers.List()[0]),
+			isApproved:                      true,
 		},
 		{
-			testName:               "Nested subfolder in folder with AllowFolderCreation gets approved",
-			filenames:              []string{"a/new-folder/child/grandchild/test.go"},
-			allowFolderCreationMap: map[string]bool{"a": true},
-			isApproved:             true,
+			testName:                        "Nested subfolder in folder with AutoApproveUnownedSubfolders gets approved",
+			filenames:                       []string{"a/new-folder/child/grandchild/test.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      true,
 		},
 		{
-			testName:               "Change in folder with Owners whose parent has AllowFolderCreation does not get approved",
-			filenames:              []string{"a/d/new-file.go"},
-			allowFolderCreationMap: map[string]bool{"a": true},
-			isApproved:             false,
+			testName:                        "Change in folder with Owners whose parent has AutoApproveUnownedSubfolders does not get approved",
+			filenames:                       []string{"a/d/new-file.go"},
+			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
+			isApproved:                      false,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.testName, func(t *testing.T) {
-			testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, func(fr *FakeRepo) { fr.autoApproveUnownedSubfolders = test.allowFolderCreationMap }), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
+			testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap, func(fr *FakeRepo) { fr.autoApproveUnownedSubfolders = test.autoApproveUnownedSubfoldersMap }), seed: test.testSeed, log: logrus.WithField("plugin", "some_plugin")})
 			for approver := range test.currentlyApproved {
 				testApprovers.AddApprover(approver, "REFERENCE", false)
 			}
@@ -797,8 +797,7 @@ func TestGetMessage(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -814,6 +813,46 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`
+	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "dev"); got == nil {
+		t.Error("GetMessage() failed")
+	} else if *got != want {
+		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
+	}
+
+	ap = NewApprovers(
+		Owners{
+			filenames: []string{"a/a.go", "b/b.go", "c/c.go"},
+			repo: createFakeRepo(map[string]sets.String{
+				"a": sets.NewString("Alice"),
+				"b": sets.NewString("Bill"),
+				"c": sets.NewString("Bob"),
+			}),
+			log: logrus.WithField("plugin", "some_plugin"),
+		},
+	)
+	ap.RequireIssue = true
+	ap.AddApprover("Bill", "REFERENCE", false)
+
+	want = `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
+**Once this PR has been reviewed and has the lgtm label**, please assign alice, bob for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/dev/a/OWNERS)**
+- ~~[b/OWNERS](https://github.com/org/repo/blob/dev/b/OWNERS)~~ [Bill]
+- **[c/OWNERS](https://github.com/org/repo/blob/dev/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice","bob"]} -->`
 	if got := GetMessage(ap, &url.URL{Scheme: "https", Host: "github.com"}, "https://go.k8s.io/bot-commands", "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process", "org", "repo", "dev"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
@@ -879,8 +918,7 @@ func TestGetMessageNoneApproved(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **bill** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice, bill for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -1007,8 +1045,7 @@ func TestGetMessageMDOwners(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **doctor** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice, doctor for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -1048,8 +1085,7 @@ func TestGetMessageDifferentGitHubLink(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **doctor** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice, doctor for approval. For more information see [the Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 

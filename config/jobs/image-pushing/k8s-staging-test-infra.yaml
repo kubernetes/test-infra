@@ -3,12 +3,12 @@ postsubmits:
     #
     # job images, e.g. images/*
     #
-    - name: post-test-infra-push-bazelbuild-canary
+    - name: post-test-infra-push-bazelbuild
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/bazelbuild/'
       annotations:
-        testgrid-dashboards: sig-testing-canaries, sig-k8s-infra-canaries, sig-k8s-infra-gcb
-        testgrid-tab-name: bazelbuild-canary
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: bazelbuild
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
         description: builds and pushes the image builder's own image
@@ -19,7 +19,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -27,12 +27,12 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/bazelbuild/
-    - name: post-test-infra-push-benchmarkjunit-canary
+    - name: post-test-infra-push-benchmarkjunit
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^pkg/benchmarkjunit/'
       annotations:
-        testgrid-dashboards: sig-testing-canaries, sig-k8s-infra-canaries, sig-k8s-infra-gcb
-        testgrid-tab-name: benchmarkjunit-canary
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+        testgrid-tab-name: benchmarkjunit
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
         description: builds and pushes the image builder's own image
@@ -43,7 +43,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -67,7 +67,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -91,7 +91,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -115,7 +115,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -139,7 +139,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -163,7 +163,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -187,7 +187,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -203,7 +203,7 @@ postsubmits:
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
         description: builds and pushes the kubekins-e2e image
-      run_if_changed: '^(images/kubekins-e2e|kubetest|boskos)/'
+      run_if_changed: '^(images/kubekins-e2e|kubetest|boskos|logexporter)/'
       decorate: true
       branches:
       - ^master$
@@ -211,7 +211,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -241,7 +241,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:
@@ -265,7 +265,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
           command:
           - /run.sh
           args:

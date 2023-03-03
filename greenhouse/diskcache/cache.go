@@ -22,7 +22,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,7 +38,6 @@ type ReadHandler func(exists bool, contents io.ReadSeeker) error
 // Cache implements disk backed cache storage
 type Cache struct {
 	diskRoot string
-	logger   *logrus.Entry
 }
 
 // NewCache returns a new Cache given the root directory that should be used
@@ -100,7 +98,7 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	}
 
 	// create a temp file to get the content on disk
-	temp, err := ioutil.TempFile(dir, "temp-put")
+	temp, err := os.CreateTemp(dir, "temp-put")
 	if err != nil {
 		return fmt.Errorf("failed to create cache entry: %w", err)
 	}

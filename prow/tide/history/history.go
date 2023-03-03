@@ -22,7 +22,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	stdio "io"
 	"net/http"
 	"sort"
 	"sync"
@@ -64,7 +64,7 @@ func readHistory(maxRecordsPerKey int, opener opener, path string) (map[string]*
 		return nil, fmt.Errorf("open: %w", err)
 	}
 	defer io.LogClose(reader)
-	raw, err := ioutil.ReadAll(reader)
+	raw, err := stdio.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("read: %w", err)
 	}

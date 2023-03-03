@@ -19,7 +19,7 @@ package kube
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -92,7 +92,7 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 		candidates = append(candidates, opts.file)
 	}
 	if opts.dir != "" {
-		files, err := ioutil.ReadDir(opts.dir)
+		files, err := os.ReadDir(opts.dir)
 		if err != nil {
 			return nil, fmt.Errorf("kubecfg dir: %w", err)
 		}
@@ -104,6 +104,10 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 			}
 			if strings.HasPrefix(filename, "..") {
 				logrus.WithField("filename", filename).Info("Ignored file starting with double dots")
+				continue
+			}
+			if !strings.HasSuffix(filename, opts.suffix) {
+				logrus.WithField("filename", filename).WithField("suffix", opts.suffix).Info("Ignored file without suffix")
 				continue
 			}
 			candidates = append(candidates, filepath.Join(opts.dir, filename))
@@ -144,6 +148,7 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 type Options struct {
 	file               string
 	dir                string
+	suffix             string
 	projectedTokenFile string
 	noInClusterConfig  bool
 }
@@ -154,6 +159,13 @@ type ConfigOptions func(*Options)
 func ConfigDir(dir string) ConfigOptions {
 	return func(kc *Options) {
 		kc.dir = dir
+	}
+}
+
+// ConfigSuffix configures the suffix of the file in directory containing kubeconfig files
+func ConfigSuffix(suffix string) ConfigOptions {
+	return func(kc *Options) {
+		kc.suffix = suffix
 	}
 }
 

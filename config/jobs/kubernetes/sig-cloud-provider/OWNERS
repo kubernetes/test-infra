@@ -3,11 +3,9 @@
 reviewers:
 - andrewsykim
 - cheftako
-- justaugustus
 approvers:
 - andrewsykim
 - cheftako
-- justaugustus
 
 labels:
 - sig/cloud-provider

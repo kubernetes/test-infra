@@ -32,29 +32,9 @@ import (
 )
 
 const (
-	pluginName             = "cla"
-	claContextName         = "cla/linuxfoundation"
-	cncfclaNotFoundMessage = `Thanks for your pull request. Before we can look at your pull request, you'll need to sign a Contributor License Agreement (CLA).
-
-:memo: **Please follow instructions at <https://git.k8s.io/community/CLA.md#the-contributor-license-agreement> to sign the CLA.**
-
-It may take a couple minutes for the CLA signature to be fully registered; after that, please reply here with a new comment and we'll verify.  Thanks.
-
----
-
-- If you've already signed a CLA, it's possible we don't have your GitHub username or you're using a different email address.  Check your existing CLA data and verify that your [email is set on your git commits](https://help.github.com/articles/setting-your-email-in-git/).
-- If you signed the CLA as a corporation, please sign in with your organization's credentials at <https://identity.linuxfoundation.org/projects/cncf> to be authorized.
-- If you have done the above and are still having issues with the CLA being reported as unsigned, please log a ticket with the Linux Foundation Helpdesk: <https://support.linuxfoundation.org/>
-- Should you encounter any issues with the Linux Foundation Helpdesk, send a message to the backup e-mail support address at: login-issues@jira.linuxfoundation.org
-
-<!-- need_sender_cla -->
-
-<details>
-
-%s
-</details>
-	`
-	maxRetries = 5
+	pluginName     = "cla"
+	claContextName = "EasyCLA"
+	maxRetries     = 5
 )
 
 var (
@@ -83,7 +63,6 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 }
 
 type gitHubClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
@@ -182,9 +161,6 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 				l.WithError(err).Warningf("Could not remove %s label.", labels.ClaYes)
 			}
 		}
-		if err := gc.CreateComment(org, repo, number, fmt.Sprintf(cncfclaNotFoundMessage, plugins.AboutThisBot)); err != nil {
-			l.WithError(err).Warning("Could not create CLA not found comment.")
-		}
 		if err := gc.AddLabel(org, repo, number, labels.ClaNo); err != nil {
 			l.WithError(err).Warningf("Could not add %s label.", labels.ClaNo)
 		}
@@ -241,7 +217,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 
 	for _, status := range combined.Statuses {
 
-		// Only consider "cla/linuxfoundation" status.
+		// Only consider the context we care about
 		if status.Context == claContextName {
 
 			// Success state implies that the cla exists, so label should be cncf-cla:yes.

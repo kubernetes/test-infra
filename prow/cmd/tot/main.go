@@ -23,7 +23,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -98,7 +98,7 @@ func newStore(storagePath string) (*store, error) {
 		Number:      make(map[string]int),
 		storagePath: storagePath,
 	}
-	buf, err := ioutil.ReadFile(storagePath)
+	buf, err := os.ReadFile(storagePath)
 	if err == nil {
 		err = json.Unmarshal(buf, s)
 		if err != nil {
@@ -115,7 +115,7 @@ func (s *store) save() error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(s.storagePath+".tmp", buf, 0644)
+	err = os.WriteFile(s.storagePath+".tmp", buf, 0644)
 	if err != nil {
 		return err
 	}
@@ -170,7 +170,7 @@ func (s *store) handle(w http.ResponseWriter, r *http.Request) {
 		logrus.Infof("Peeking %s number %d to %s.", jobName, n, r.RemoteAddr)
 		fmt.Fprintf(w, "%d", n)
 	case "POST":
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			logrus.WithError(err).Error("Unable to read body.")
 			return
@@ -205,7 +205,7 @@ func (f fallbackHandler) get(jobName string) int {
 		if err == nil {
 			defer resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
-				body, err = ioutil.ReadAll(resp.Body)
+				body, err = io.ReadAll(resp.Body)
 				if err == nil {
 					break
 				} else {

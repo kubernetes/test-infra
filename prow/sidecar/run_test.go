@@ -20,20 +20,27 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/entrypoint"
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 var re = regexp.MustCompile(`(?m)(Failed to open) .*log\.txt: .*$`)
@@ -107,15 +114,7 @@ func TestWait(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			var entries []wrapper.Options
 
@@ -123,7 +122,7 @@ func TestWait(t *testing.T) {
 				p := path.Join(tmpDir, fmt.Sprintf("marker-%d.txt", i))
 				var opt wrapper.Options
 				opt.MarkerFile = p
-				if err := ioutil.WriteFile(p, []byte(m), 0600); err != nil {
+				if err := os.WriteFile(p, []byte(m), 0600); err != nil {
 					t.Fatalf("could not create marker %d: %v", i, err)
 				}
 				entries = append(entries, opt)
@@ -215,15 +214,7 @@ func TestWaitParallelContainers(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			var entries []wrapper.Options
 
@@ -354,15 +345,7 @@ func TestCombineMetadata(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 			var entries []wrapper.Options
 
 			for i, m := range tc.pieces {
@@ -379,7 +362,7 @@ func TestCombineMetadata(t *testing.T) {
 					continue
 				}
 				// not-json is invalid json
-				if err := ioutil.WriteFile(p, []byte(m), 0600); err != nil {
+				if err := os.WriteFile(p, []byte(m), 0600); err != nil {
 					t.Fatalf("could not create metadata %d: %v", i, err)
 				}
 			}
@@ -472,22 +455,14 @@ func TestLogReaders(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", tc.name)
-			if err != nil {
-				t.Errorf("%s: error creating temp dir: %v", tc.name, err)
-			}
-			defer func() {
-				if err := os.RemoveAll(tmpDir); err != nil {
-					t.Errorf("%s: error cleaning up temp dir: %v", tc.name, err)
-				}
-			}()
+			tmpDir := t.TempDir()
 
 			for name, log := range tc.processLogs {
 				p := path.Join(tmpDir, name)
 				if log == "missing" {
 					continue
 				}
-				if err := ioutil.WriteFile(p, []byte(log), 0600); err != nil {
+				if err := os.WriteFile(p, []byte(log), 0600); err != nil {
 					t.Fatalf("could not create log %s: %v", name, err)
 				}
 			}
@@ -506,15 +481,22 @@ func TestLogReaders(t *testing.T) {
 				entries = append(entries, opt)
 			}
 
-			readers := logReaders(entries)
+			readers := logReadersFuncs(entries)
 			const repl = "$1 <SNIP>"
 			actual := make(map[string]string)
-			for name, reader := range readers {
-				buf, err := ioutil.ReadAll(reader)
+			for name, newReader := range readers {
+				r, err := newReader()
+				if err != nil {
+					t.Fatalf("failed to make reader: %v", err)
+				}
+				buf, err := io.ReadAll(r)
 				if err != nil {
 					t.Fatalf("failed to read all: %v", err)
 				}
 				actual[name] = re.ReplaceAllString(string(buf), repl)
+				if err := r.Close(); err != nil {
+					t.Fatalf("failed to close reader: %v", err)
+				}
 			}
 
 			for name, log := range tc.expected {
@@ -525,6 +507,70 @@ func TestLogReaders(t *testing.T) {
 				t.Errorf("maps do not match:\n%s", diff.ObjectReflectDiff(tc.expected, actual))
 			}
 		})
+	}
+
+}
+
+func TestSideCarLogsUpload(t *testing.T) {
+	logFile, err := LogSetup()
+	if err != nil {
+		t.Fatalf("Unable to set up log file")
+	}
+	defer os.Remove(logFile.Name())
+	testString := "Testing...Hello world!"
+	logrus.Info(testString)
+	var once sync.Once
+
+	localOutputDir := t.TempDir()
+
+	options := Options{
+		GcsOptions: &gcsupload.Options{
+			GCSConfiguration: &prowapi.GCSConfiguration{
+				PathStrategy:   prowapi.PathStrategyExplicit,
+				Bucket:         "bucket",
+				LocalOutputDir: localOutputDir,
+			},
+		},
+	}
+
+	spec := &downwardapi.JobSpec{
+		Job:  "job",
+		Type: prowapi.PostsubmitJob,
+		Refs: &prowapi.Refs{
+			Org:  "org",
+			Repo: "repo",
+			Pulls: []prowapi.Pull{
+				{
+					Number: 1,
+				},
+			},
+		},
+		BuildID: "build",
+	}
+
+	entries := options.entries()
+	metadata := combineMetadata(entries)
+	buildLogs := logReadersFuncs(entries)
+
+	options.doUpload(context.Background(), spec, true, false, metadata, buildLogs, logFile, &once)
+
+	files, err := os.ReadDir(localOutputDir)
+	if err != nil {
+		t.Errorf("Unable to access files in directory: %v", err)
+	}
+	if len(files) == 0 {
+		t.Fatal("Log file was not uploaded")
+	}
+
+	var s []byte
+	s, err = os.ReadFile(filepath.Join(localOutputDir, LogFileName))
+	if err != nil {
+		t.Fatalf("Unable to read log file: %v", err)
+	}
+
+	f := string(s)
+	if !strings.Contains(f, testString) {
+		t.Fatal("Log file not correctly capturing logs")
 	}
 
 }

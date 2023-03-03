@@ -1,0 +1,21 @@
+postsubmits:
+  kubernetes-sigs/windows-gmsa:
+    - name: post-windows-gmsa-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-windows-push-images, sig-k8s-infra-gcb
+        testgrid-tab-name: post-windows-gmsa-push-images
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-gmsa-webhook
+              - --scratch-bucket=gs://k8s-staging-gmsa-webhook-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

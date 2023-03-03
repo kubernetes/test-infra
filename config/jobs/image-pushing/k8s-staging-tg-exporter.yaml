@@ -1,0 +1,23 @@
+postsubmits:
+  kubernetes-sigs/testgrid-json-exporter:
+    - name: post-testgrid-json-exporter-push-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-gcb
+      decorate: true
+      always_run: true
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-tg-exporter
+              - --scratch-bucket=gs://k8s-staging-tg-exporter
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"

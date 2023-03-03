@@ -17,7 +17,6 @@ limitations under the License.
 package plugins
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -26,9 +25,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"sigs.k8s.io/yaml"
-
-	"k8s.io/test-infra/pkg/genyaml"
 )
+
+func TestEnsureEmbed(t *testing.T) {
+	if len(embededConfigGoFileContent) == 0 {
+		t.Error("EmbededConfigGoFileContent is empty.")
+	}
+}
 
 func TestHasSelfApproval(t *testing.T) {
 	cases := []struct {
@@ -224,35 +227,6 @@ func TestGetPlugins(t *testing.T) {
 	}
 }
 
-func TestGenYamlDocs(t *testing.T) {
-	const fixtureName = "./plugin-config-documented.yaml"
-	inputFiles, err := filepath.Glob("*.go")
-	if err != nil {
-		t.Fatalf("filepath.Glob: %v", err)
-	}
-
-	commentMap, err := genyaml.NewCommentMap(inputFiles...)
-	if err != nil {
-		t.Fatalf("failed to construct commentMap: %v", err)
-	}
-	actualYaml, err := commentMap.GenYaml(genyaml.PopulateStruct(&Configuration{}))
-	if err != nil {
-		t.Fatalf("genyaml errored: %v", err)
-	}
-	if os.Getenv("UPDATE") != "" {
-		if err := ioutil.WriteFile(fixtureName, []byte(actualYaml), 0644); err != nil {
-			t.Fatalf("failed to write fixture: %v", err)
-		}
-	}
-	expectedYaml, err := ioutil.ReadFile(fixtureName)
-	if err != nil {
-		t.Fatalf("failed to read fixture: %v", err)
-	}
-	if diff := cmp.Diff(actualYaml, string(expectedYaml)); diff != "" {
-		t.Errorf("Actual result differs from expected: %s\nIf this is expected, re-run the tests with the UPDATE env var set to update the fixture:\n\tUPDATE=true go test ./prow/plugins/... -run TestGenYamlDocs", diff)
-	}
-}
-
 func TestLoad(t *testing.T) {
 	t.Parallel()
 
@@ -349,17 +323,17 @@ plugins:
 			t.Parallel()
 
 			tempDir := t.TempDir()
-			if err := ioutil.WriteFile(filepath.Join(tempDir, "_plugins.yaml"), []byte(tc.config), 0644); err != nil {
+			if err := os.WriteFile(filepath.Join(tempDir, "_plugins.yaml"), []byte(tc.config), 0644); err != nil {
 				t.Fatalf("failed to write config: %v", err)
 			}
 			for supplementalConfigName, supplementalConfig := range tc.supplementalConfigs {
-				if err := ioutil.WriteFile(filepath.Join(tempDir, supplementalConfigName), []byte(supplementalConfig), 0644); err != nil {
+				if err := os.WriteFile(filepath.Join(tempDir, supplementalConfigName), []byte(supplementalConfig), 0644); err != nil {
 					t.Fatalf("failed to write supplemental config %s: %v", supplementalConfigName, err)
 				}
 			}
 
 			agent := &ConfigAgent{}
-			if err := agent.Load(filepath.Join(tempDir, "_plugins.yaml"), []string{tempDir}, tc.supplementalPluginConfigFileSuffix, false); err != nil {
+			if err := agent.Load(filepath.Join(tempDir, "_plugins.yaml"), []string{tempDir}, tc.supplementalPluginConfigFileSuffix, false, false); err != nil {
 				t.Fatalf("failed to load: %v", err)
 			}
 
@@ -369,4 +343,91 @@ plugins:
 
 		})
 	}
+}
+
+const configUpdater = `---
+config_updater:
+  cluster_groups:
+    build_farm:
+      clusters:
+      - app.ci
+      - build01
+      namespaces:
+      - ci
+  gzip: false
+  maps:
+    ci-operator/config/**/*-fcos.yaml:
+      clusters:
+        app.ci:
+        - ci
+      name: ci-operator-misc-configs
+    ci-operator/templates/master-sidecar-3.yaml:
+      cluster_groups:
+      - build_farm
+      name: prow-job-master-sidecar-3
+`
+
+func TestLoadConfigUpdater(t *testing.T) {
+	testCases := []struct {
+		name                     string
+		config                   string
+		skipResolveConfigUpdater bool
+		expected                 ConfigUpdater
+	}{
+		{
+			name:                     "skip resolve",
+			config:                   configUpdater,
+			skipResolveConfigUpdater: true,
+			expected: ConfigUpdater{
+				ClusterGroups: map[string]ClusterGroup{
+					"build_farm": {
+						Clusters:   []string{"app.ci", "build01"},
+						Namespaces: []string{"ci"},
+					},
+				},
+				Maps: map[string]ConfigMapSpec{
+					"ci-operator/config/**/*-fcos.yaml": {
+						Name:     "ci-operator-misc-configs",
+						Clusters: map[string][]string{"app.ci": {"ci"}},
+					},
+					"ci-operator/templates/master-sidecar-3.yaml": {
+						Name:          "prow-job-master-sidecar-3",
+						ClusterGroups: []string{"build_farm"},
+					},
+				},
+			},
+		},
+		{
+			name:   "not skip resolve",
+			config: configUpdater,
+			expected: ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"ci-operator/config/**/*-fcos.yaml": {
+						Name:     "ci-operator-misc-configs",
+						Clusters: map[string][]string{"app.ci": {"ci"}},
+					},
+					"ci-operator/templates/master-sidecar-3.yaml": {
+						Name:     "prow-job-master-sidecar-3",
+						Clusters: map[string][]string{"app.ci": {"ci"}, "build01": {"ci"}},
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			if err := os.WriteFile(filepath.Join(tempDir, "_plugins.yaml"), []byte(tc.config), 0644); err != nil {
+				t.Fatalf("failed to write config: %v", err)
+			}
+			agent := &ConfigAgent{}
+			if err := agent.Load(filepath.Join(tempDir, "_plugins.yaml"), nil, "", false, tc.skipResolveConfigUpdater); err != nil {
+				t.Fatalf("failed to load: %v", err)
+			}
+			if diff := cmp.Diff(tc.expected, agent.Config().ConfigUpdater); diff != "" {
+				t.Errorf("expected config differs from actual: %s", diff)
+			}
+		})
+	}
+
 }

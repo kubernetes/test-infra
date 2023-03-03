@@ -1,0 +1,21 @@
+postsubmits:
+  kubernetes-sigs/windows-operational-readiness:
+    - name: post-windows-op-readiness-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-windows-push-images, sig-k8s-infra-gcb
+        testgrid-tab-name: post-windows-op-readiness-push-images
+      decorate: true
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-win-op-rdnss
+              - --scratch-bucket=gs://k8s-staging-win-op-rdnss
+              - --env-passthrough=PULL_BASE_REF
+              - .

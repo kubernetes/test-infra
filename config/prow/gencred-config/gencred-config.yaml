@@ -1,0 +1,21 @@
+clusters:
+# Build cluster from k8s-prow-builds
+- gke: projects/k8s-prow-builds/locations/us-central1-f/clusters/prow
+  name: default
+  duration: 48h
+  gsm:
+    name: gke_k8s-prow-builds_us-central1-f_prow__default__build-k8s-prow-builds
+    project: k8s-prow
+- gke: projects/k8s-prow/locations/us-central1-f/clusters/prow
+  name: prow-services
+  duration: 48h
+  gsm:
+    name: gke_k8s-prow_us-central1-f_prow__default__prow-services
+    project: k8s-prow
+# Build cluster from rules-k8s
+- gke: projects/rules-k8s/locations/us-central1-f/clusters/testing
+  name: gke_rules-k8s_us-central1-f_testing
+  duration: 48h
+  gsm:
+    name: gke_rules-k8s_us-central1-f_testing__default__build-rules-k8s
+    project: k8s-prow

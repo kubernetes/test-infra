@@ -34,7 +34,7 @@ import (
 // Make sure that our plugins are valid.
 func TestPlugins(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
-	if err := pa.Load("../../../config/prow/plugins.yaml", nil, "", true); err != nil {
+	if err := pa.Load("../../../config/prow/plugins.yaml", nil, "", true, false); err != nil {
 		t.Fatalf("Could not load plugins: %v.", err)
 	}
 }
@@ -97,6 +97,8 @@ func Test_gatherOptions(t *testing.T) {
 					ConfigPathFlagName:                    "config-path",
 					JobConfigPathFlagName:                 "job-config-path",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheCopies:               1,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					PluginConfigPath:                         "/etc/plugins/plugins.yaml",

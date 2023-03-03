@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githubeventserver"
+	"k8s.io/test-infra/prow/jira/fakejira"
 	"k8s.io/test-infra/prow/phony"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/ownersconfig"
@@ -109,6 +110,7 @@ func TestHook(t *testing.T) {
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:   github.NewFakeClient(),
 		OwnersClient:   repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() *config.OwnersDirDenylist { return &config.OwnersDirDenylist{} }, ownersconfig.FakeResolver),
+		JiraClient:     &fakejira.FakeClient{},
 		BugzillaClient: &bugzilla.Fake{},
 	}
 	metrics := githubeventserver.NewMetrics()

@@ -70,6 +70,8 @@ type FakeClient struct {
 
 	// org/repo#number:body
 	IssueCommentsAdded []string
+	// org/repo#issuecommentid:body
+	IssueCommentsEdited []string
 	// org/repo#issuecommentid
 	IssueCommentsDeleted []string
 
@@ -147,6 +149,9 @@ type FakeClient struct {
 
 	// Team is a map org->teamSlug->TeamWithMembers
 	Teams map[string]map[string]TeamWithMembers
+
+	// Reviewers Requested
+	ReviewersRequested []string
 }
 
 type TeamWithMembers struct {
@@ -283,12 +288,22 @@ func (f *FakeClient) CreateCommentWithContext(_ context.Context, owner, repo str
 	return nil
 }
 
-// EditComment edits a comment. Its a stub that does nothing.
+// EditComment edits a comment.
 func (f *FakeClient) EditComment(org, repo string, ID int, comment string) error {
 	return f.EditCommentWithContext(context.Background(), org, repo, ID, comment)
 }
 
 func (f *FakeClient) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.IssueCommentsEdited = append(f.IssueCommentsEdited, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, comment))
+	for _, ics := range f.IssueComments {
+		for _, ic := range ics {
+			if ic.ID == ID {
+				ic.Body = comment
+			}
+		}
+	}
 	return nil
 }
 
@@ -438,6 +453,22 @@ func (f *FakeClient) CloseIssue(org, repo string, number int) error {
 	}
 
 	f.Issues[number].State = "closed"
+	f.Issues[number].StateReason = "completed"
+
+	return nil
+}
+
+func (f *FakeClient) CloseIssueAsNotPlanned(org, repo string, number int) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+
+	if _, ok := f.Issues[number]; !ok {
+		return fmt.Errorf("issue number %d does not exist", number)
+	}
+
+	f.Issues[number].State = "closed"
+	f.Issues[number].StateReason = "not_planned"
+
 	return nil
 }
 
@@ -598,8 +629,13 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 	return fmt.Errorf("cannot remove %v from %s/%s/#%d", label, owner, repo, number)
 }
 
-// FindIssues returns f.Issues
+// FindIssues returns the same results as FindIssuesWithOrg
 func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+	return f.FindIssuesWithOrg("", query, sort, asc)
+}
+
+// FindIssuesWithOrg returns f.Issues
+func (f *FakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	var issues []github.Issue
@@ -663,10 +699,12 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 	return []github.Team{
 		{
 			ID:   0,
+			Slug: "admins",
 			Name: "Admins",
 		},
 		{
 			ID:   42,
+			Slug: "leads",
 			Name: "Leads",
 		},
 	}, nil
@@ -684,6 +722,24 @@ func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]git
 		42: {{Login: "sig-lead"}},
 	}
 	members, ok := teams[teamID]
+	if !ok {
+		return []github.TeamMember{}, nil
+	}
+	return members, nil
+}
+
+// ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
+func (f *FakeClient) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	if role != github.RoleAll {
+		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
+	}
+	teams := map[string][]github.TeamMember{
+		"admins": {{Login: "default-sig-lead"}},
+		"leads":  {{Login: "sig-lead"}},
+	}
+	members, ok := teams[teamSlug]
 	if !ok {
 		return []github.TeamMember{}, nil
 	}
@@ -746,7 +802,7 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 	defer f.lock.RUnlock()
 	milestones := []github.Milestone{}
 	for k, v := range f.MilestoneMap {
-		milestones = append(milestones, github.Milestone{Title: k, Number: v})
+		milestones = append(milestones, github.Milestone{Title: k, Number: v, State: "open"})
 	}
 	return milestones, nil
 }
@@ -1106,5 +1162,18 @@ func (f *FakeClient) ListCurrentUserOrgInvitations() ([]github.UserOrgInvitation
 }
 
 func (f *FakeClient) MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error {
+	return nil
+}
+
+func (f *FakeClient) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]github.WorkflowRun, error) {
+	return []github.WorkflowRun{}, nil
+}
+
+func (f *FakeClient) TriggerGitHubWorkflow(org, repo string, id int) error {
+	return nil
+}
+
+func (f *FakeClient) RequestReview(org, repo string, number int, logins []string) error {
+	f.ReviewersRequested = logins
 	return nil
 }

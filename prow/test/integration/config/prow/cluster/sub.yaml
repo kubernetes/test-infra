@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sub
+  namespace: default
+  labels:
+    app: sub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sub
+  template:
+    metadata:
+      labels:
+        app: sub
+    spec:
+      terminationGracePeriodSeconds: 120
+      serviceAccountName: sub
+      containers:
+      - name: sub
+        image: localhost:5001/sub
+        args:
+        - --config-path=/etc/config/config.yaml
+        - --job-config-path=/etc/job-config
+        - --grace-period=110s
+        # This cookie file is only here to trigger the creation of a
+        # Gerrit-flavored Git client factory. So this makes this sub deployment
+        # "tied" to Gerrit.
+        #
+        # TODO (listx): Allow sub to be deployed with access to multiple
+        # GitHub/Gerrit credentials (and make it know which one to use based on
+        # the org/repo name). We can't simply deploy a 2nd sub deployment
+        # configured with GitHub creds to test that codepath because currently
+        # sub will always choose one or the other.
+        - --cookiefile=/etc/cookies/cookies
+        - --dry-run=false
+        ports:
+        - name: http
+          containerPort: 80
+        - name: metrics
+          containerPort: 9090
+        volumeMounts:
+        - name: cookies
+          mountPath: /etc/cookies
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
+          readOnly: true
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+        env:
+        # Make sub use the Pub/Sub emulator running in the fakepubsub service.
+        - name: PUBSUB_EMULATOR_HOST
+          value: fakepubsub.default:80
+        # When cloning from an inrepoconfig repo, don't bother verifying certs.
+        # This allows us to use "https://..." addresses to fakegitserver.
+        - name: GIT_SSL_NO_VERIFY
+          value: "1"
+      volumes:
+      - name: cookies
+        secret:
+          defaultMode: 420
+          secretName: http-cookiefile
+      - name: config
+        configMap:
+          name: config
+      - name: job-config
+        configMap:
+          name: job-config
+      tolerations:
+      - key: "prowcomponent"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sub
+  namespace: default
+spec:
+  selector:
+    app: sub
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  type: NodePort
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sub
+  namespace: default
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: sub
+rules:
+  - apiGroups:
+      - prow.k8s.io
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - get
+      - list
+      - update
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: sub
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: sub
+subjects:
+- kind: ServiceAccount
+  name: sub

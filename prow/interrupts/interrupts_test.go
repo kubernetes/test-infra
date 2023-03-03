@@ -25,7 +25,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"net"
 	"net/http"
@@ -258,7 +257,7 @@ func generateCerts(url string) (string, string, error) {
 		return "", "", fmt.Errorf("failed to create certificate: %s", err)
 	}
 
-	certOut, err := ioutil.TempFile("", "cert.pem")
+	certOut, err := os.CreateTemp("", "cert.pem")
 	if err != nil {
 		return "", "", fmt.Errorf("failed to open cert.pem for writing: %s", err)
 	}
@@ -269,7 +268,7 @@ func generateCerts(url string) (string, string, error) {
 		return "", "", fmt.Errorf("error closing cert.pem: %s", err)
 	}
 
-	keyOut, err := ioutil.TempFile("", "key.pem")
+	keyOut, err := os.CreateTemp("", "key.pem")
 	if err != nil {
 		return "", "", fmt.Errorf("failed to open key.pem for writing: %w", err)
 	}

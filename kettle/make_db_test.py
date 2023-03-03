@@ -16,14 +16,13 @@
 
 """Tests for make_db."""
 
-import time
 import sys
 import unittest
 
 import make_db
 import model
 
-
+static_epoch = 1641585162
 
 TEST_BUCKETS_DATA = {
     'gs://kubernetes-jenkins/logs/': {'prefix': ''},
@@ -34,7 +33,7 @@ TEST_BUCKETS_DATA = {
 
 class MockedClient(make_db.GCSClient):
     """A GCSClient with stubs for external interactions."""
-    NOW = int(time.time())
+    NOW = static_epoch
     LOG_DIR = 'gs://kubernetes-jenkins/logs/'
     JOB_DIR = LOG_DIR + 'fake/123/'
     ART_DIR = JOB_DIR + 'artifacts/'
@@ -124,6 +123,15 @@ class GCSClientTest(unittest.TestCase):
         self.client.metadata = {'exclude_jobs': ['fake']}
         self.assertEqual([], list(self.client.get_builds(set())))
 
+    def test_get_builds_exclude_list_match_using_regexp(self):
+        # special case: job is in excluded list
+        self.client.metadata = {'exclude_jobs': ['.*(flaky|flake|fake).*']}
+        self.assertEqual([], list(self.client.get_builds(set())))
+        # special case: job is in excluded list
+        self.client.metadata = {'exclude_jobs': ['.*(flaky|flake).*']}
+        self.assertEqual([('fake', '123'), ('fake', '122')], list(self.client.get_builds(set())))
+
+
 class MainTest(unittest.TestCase):
     """End-to-end test of the main function's output."""
     JOBS_DIR = GCSClientTest.JOBS_DIR
@@ -151,7 +159,7 @@ class MainTest(unittest.TestCase):
             expected = self.get_expected_builds()
         if db is None:
             db = model.Database(':memory:')
-        make_db.main(db, {self.JOBS_DIR: {}}, threads, True, sys.maxsize, client)
+        make_db.main(db, {self.JOBS_DIR: {}}, threads, True, sys.maxsize, False, client)
 
         result = {path: (started, finished, db.test_results_for_build(path))
                   for _rowid, path, started, finished in db.get_builds()}
@@ -160,6 +168,7 @@ class MainTest(unittest.TestCase):
         return db
 
     def test_clean(self):
+        self.maxDiff = None
         for threads in [1, 32]:
             self.assert_main_output(threads)
 
@@ -174,7 +183,7 @@ class MainTest(unittest.TestCase):
         '''
 
         class MockedClientNewer(MockedClient):
-            NOW = int(time.time())
+            NOW = static_epoch
             LOG_DIR = 'gs://kubernetes-jenkins/logs/'
             JOB_DIR = LOG_DIR + 'fake/124/'
             ART_DIR = JOB_DIR + 'artifacts/'

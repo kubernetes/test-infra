@@ -311,6 +311,7 @@ func (c *Fake) SetRoundTripper(t http.RoundTripper) {
 func (c *Fake) ForPlugin(plugin string) Client             { return c }
 func (c *Fake) ForSubcomponent(subcomponent string) Client { return c }
 func (c *Fake) WithFields(fields logrus.Fields) Client     { return c }
+func (c *Fake) Used() bool                                 { return true }
 
 // the Fake is a Client
 var _ Client = &Fake{}

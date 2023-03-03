@@ -81,14 +81,17 @@ func (c *realSnicker) readImage(log *logrus.Entry) (string, error) {
 		imgURL = candiesImgs[imgIndex]
 		// checking size, GitHub doesn't support big images
 		tooBig, err = github.ImageTooBig(imgURL)
-		if err == nil {
-			if !tooBig {
-				return fmt.Sprintf("![candy image](%s)", imgURL), nil
-			}
-			err = errors.New("image too big")
+		if err != nil { // Retry another image
+			continue
 		}
-		log.WithError(err).Debugf("Failed to read image %q", imgURL)
+		if tooBig { // Retry another image
+			err = errors.New("image too big")
+			continue
+		}
+		return fmt.Sprintf("![candy image](%s)", imgURL), nil
 	}
+
+	log.WithError(err).WithField("img-url", imgURL).Debug("Failed to read image.")
 	return "", err
 }
 

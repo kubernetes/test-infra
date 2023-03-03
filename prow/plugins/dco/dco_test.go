@@ -528,6 +528,48 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>
 `,
 		},
+		{
+			name: "should use custom CONTRIBUTING.md repo, branch and path in comment",
+			config: plugins.Dco{
+				ContributingRepo:   "kubernetes/org",
+				ContributingBranch: "main",
+				ContributingPath:   "docs/CONTRIBUTING.md",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test-collaborator",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com/kubernetes/org/blob/main/docs/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not signed off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
