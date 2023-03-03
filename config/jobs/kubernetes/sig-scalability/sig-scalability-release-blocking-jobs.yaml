@@ -1,6 +1,7 @@
 periodics:
 # This is a sig-release-master-blocking job.
-- cron: '1 12 * * *' # Run daily at 4:01PST (12:01 UTC)
+# The frequency was cut to reduce infrastructure costs.
+- cron: '1 17 2-31/2 * *' # Run on even days at 9:01PST (17:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-correctness
   cluster: k8s-infra-prow-build
   labels:
@@ -55,7 +56,8 @@ periodics:
           memory: "39Gi"
 
 # This is a sig-release-master-blocking job.
-- cron: '1 17 * * *' # Run daily at 9:01PST (17:01 UTC)
+# The frequency was cut to reduce infrastructure costs.
+- cron: '1 17 1-31/2 * *' # Run on odd days at 9:01PST (17:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
