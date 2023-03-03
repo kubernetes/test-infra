@@ -832,6 +832,15 @@ function dump_node_info() {
   fi
 
   kubectl get nodes -o yaml > "${nodes_dir}/kubectl_get_nodes.yaml" || true
+
+  api_node_names=()
+  api_node_names+=($( kubectl get nodes -o 'template={{ range .items }}{{ .metadata.name }}{{ "\n" }}{{ end }}' ))
+  if [[ "${#api_node_names[@]}" -le 5 ]]; then
+    for node_name in "${api_node_names[@]}"; do
+      mkdir -p "${nodes_dir}/${node_name}"
+      kubectl get --raw "/api/v1/nodes/${node_name}/proxy/metrics" > "${nodes_dir}/${node_name}/kubelet_metrics.txt" || true
+    done
+  fi
 }
 
 function detect_node_failures() {
