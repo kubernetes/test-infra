@@ -86,6 +86,9 @@ def build_test(cloud='aws',
     if networking == 'cilium' and distro == 'u2204'and kops_version == '1.23':
         return None
 
+    if extra_flags is None:
+        extra_flags = []
+
     if cloud == 'aws':
         kops_image = distro_images[distro]
         kops_ssh_user = distros_ssh_user[distro]
@@ -147,7 +150,7 @@ def build_test(cloud='aws',
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         env['KUBE_SSH_USER'] = kops_ssh_user
-        if extra_flags is not None:
+        if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
@@ -267,9 +270,10 @@ def presubmit_test(branch='master',
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
 
+    if extra_flags is None:
+        extra_flags = []
+
     if irsa and cloud == "aws" and scenario is None:
-        if extra_flags is None:
-            extra_flags = []
         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
@@ -286,7 +290,7 @@ def presubmit_test(branch='master',
         env['CLOUD_PROVIDER'] = cloud
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
-        if extra_flags is not None:
+        if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
