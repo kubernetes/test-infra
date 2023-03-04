@@ -94,6 +94,10 @@ def build_test(cloud='aws',
         kops_ssh_user = distros_ssh_user[distro]
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
 
+        if networking == 'cilium-eni':
+            # Needed for higher "IPs per node" limits
+            extra_flags.append('--node-size=t3.large')
+
     elif cloud == 'gce':
         kops_image = None
         kops_ssh_user = 'prow'
