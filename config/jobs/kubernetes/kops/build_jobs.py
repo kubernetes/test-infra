@@ -413,7 +413,7 @@ def generate_grid():
             for distro in distro_options:
                 for k8s_version in k8s_versions:
                     for kops_version in kops_versions:
-                        if networking == 'cilium-eni' and kops_version in ['1.24', '1.25']:
+                        if networking == 'cilium-eni' and kops_version in ['1.25']:
                             continue
                         results.append(
                             build_test(cloud="aws",
