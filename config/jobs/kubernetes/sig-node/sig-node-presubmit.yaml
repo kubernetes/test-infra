@@ -1598,7 +1598,7 @@ presubmits:
   - name: pull-kubernetes-e2e-inplace-pod-resize-containerd-main-v2
     optional: true
     always_run: false
-    run_if_changed: 'test/e2e/node/pod_resize.go'
+    run_if_changed: 'test/e2e/node/pod_resize.go|pkg/kubelet/kubelet.go|pkg/kubelet/kubelet_pods.go|pkg/kubelet/kuberuntime/kuberuntime_manager.go'
     skip_report: true
     branches:
     # TODO(releng): Remove once repo default branch has been renamed
