@@ -530,8 +530,8 @@ func (m *mergeChecker) isAllowedToMerge(crc *CodeReviewCommon) (string, error) {
 	}
 	mergeMethod, err := m.prMergeMethod(m.config().Tide, crc)
 	if err != nil {
-		// This should be impossible.
-		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %w", err)
+		// Can happen when tide has conflicting labels: merge, squash, rebase
+		return "PR has conflicting merge method override labels", nil
 	}
 	if mergeMethod == types.MergeRebase && !pr.CanBeRebased {
 		return "PR can't be rebased", nil
