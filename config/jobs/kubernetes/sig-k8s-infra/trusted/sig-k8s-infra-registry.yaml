@@ -27,7 +27,7 @@ periodics:
             - |
               aws sts get-caller-identity
               source hack/tools/setup-go.sh
-              go run ./cmd/geranos
+              REALLY_UPLOAD=true go run ./cmd/geranos
           env:
             - name: AWS_ROLE_ARN
               value: arn:aws:iam::513428760722:role/registry.k8s.io_s3writer

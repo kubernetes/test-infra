@@ -1,6 +1,7 @@
 periodics:
   - name: gcs-to-s3-sync
-    interval: 2h
+    # impossible date, to temporarily disable this job without deleting it
+    cron: '0 0 31 2 *'
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
