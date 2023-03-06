@@ -13,6 +13,7 @@ dashboard_groups:
     - sig-windows-containerd-runtime-signal
     - sig-windows-push-images
     - sig-windows-soak-tests
+    - sig-windows-experimental
 
 dashboards:
 - name: sig-windows-signal
@@ -24,6 +25,7 @@ dashboards:
 - name: sig-windows-presubmit
 - name: sig-windows-gce
 - name: sig-windows-push-images
+- name: sig-windows-experimental
 - name: sig-windows-soak-tests
   dashboard_tab:
     - name: soak-tests-capz-windows

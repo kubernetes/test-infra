@@ -30,7 +30,7 @@ periodics:
   labels:
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
-    preset-capz-containerd-latest: "true"
+    preset-capz-containerd-1-6-latest: "true"
     preset-capz-windows-2019: "true"
     preset-capz-windows-common-126: "true"
     preset-capz-windows-parallel: "true"
