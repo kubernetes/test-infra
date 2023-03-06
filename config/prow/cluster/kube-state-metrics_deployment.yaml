@@ -18,7 +18,7 @@ spec:
         app.kubernetes.io/version: 2.0.0-alpha.1
     spec:
       containers:
-      - image: k8s.gcr.io/kube-state-metrics/kube-state-metrics:2.0.0-alpha.1
+      - image: registry.k8s.io/kube-state-metrics/kube-state-metrics:2.0.0-alpha.1
         args:
         - --metric-allowlist="kube_pod_container_status_restarts_total"
         livenessProbe:
