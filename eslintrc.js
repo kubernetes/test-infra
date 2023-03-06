@@ -12,25 +12,53 @@ https://github.com/typescript-eslint/tslint-to-eslint-config/blob/master/docs/FA
 Happy linting! 💖
 */
 module.exports = {
+    /**
+     * An environment defines global variables that are predefined.
+     * @see https://eslint.org/docs/user-guide/configuring/language-options#specifying-environments
+     */
     "env": {
         "browser": true,
         "es6": true
     },
+    /**
+     * Extends shareable configurations.
+     * @see https://eslint.org/docs/user-guide/configuring/configuration-files#extending-configuration-files
+     */
     "extends": [
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking"
     ],
+    /**
+     * Allows using ESLint with TypeScript.
+     * @see https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/parser
+     */
     "parser": "@typescript-eslint/parser",
+    /**
+     * Parser options.
+     * @see https://eslint.org/docs/user-guide/configuring/language-options#specifying-parser-options
+     */
     "parserOptions": {
         "project": "tsconfig.json",
         "sourceType": "module"
     },
+    /**
+     * Plugins are extensions that provide additional rules.
+     * @see https://eslint.org/docs/user-guide/configuring/plugins
+     */
     "plugins": [
         "eslint-plugin-jsdoc",
         "eslint-plugin-prefer-arrow",
         "@typescript-eslint"
     ],
+    /**
+     * Set to `true` to indicate that this configuration is the root configuration.
+     * @see https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-cascading-and-hierarchy
+     */
     "root": true,
+    /**
+     * Rules that are specific to TypeScript.
+     * @see https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#supported-rules
+     */
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/array-type": [
@@ -64,44 +92,67 @@ module.exports = {
                 }
             }
         ],
+        // require async/await instead of returning a Promise without using await
         "@typescript-eslint/require-await": "warn",
+        // require Promise to be handled appropriately in async functions
         "@typescript-eslint/no-floating-promises": "warn",
+        // disallow calling an any typed value as a function
         "@typescript-eslint/no-unsafe-call": "warn",
+        // disallow returning any typed value from a function
         "@typescript-eslint/no-unsafe-return": "warn",
+        // disallow passing any typed value as an argument to a function
         "@typescript-eslint/no-unsafe-argument": "warn",
+        // disallow assigning any typed value to a variable or property
         "@typescript-eslint/no-unsafe-assignment": "warn",
+        // disallow using Promise without appropriate error handling
         "@typescript-eslint/no-misused-promises": "warn",
+        // require type-safe expressions in template literals
         "@typescript-eslint/restrict-template-expressions": "warn",
+        // disallow the use of any typed value as a variable or property
         "@typescript-eslint/no-unsafe-assignment": "warn",
+        // allow access to any property or method of a value without type safety
         "@typescript-eslint/no-unsafe-member-access": "off",
+        // require consistent type assertion style
         "@typescript-eslint/consistent-type-assertions": "error",
+        // enforce dot notation over bracket notation where possible
         "@typescript-eslint/dot-notation": "error",
+        // don't require explicit return type annotations for functions
         "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/explicit-module-boundary-types": "off",
-        "@typescript-eslint/indent": [
-            "error",
-            2
-        ],
-        "@typescript-eslint/naming-convention": "off",
-        "@typescript-eslint/no-empty-function": "error",
-        "@typescript-eslint/no-empty-interface": "error",
-        "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-misused-new": "error",
-        "@typescript-eslint/no-namespace": "error",
-        "@typescript-eslint/no-parameter-properties": "off",
-        "@typescript-eslint/no-shadow": [
-            "error",
-            {
-                "hoist": "all"
-            }
-        ],
-        "@typescript-eslint/no-unused-expressions": "error",
-        "@typescript-eslint/no-use-before-define": "off",
+        // don't require explicit return and parameter types for exported functions and methods
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        // enforce a consistent indentation style of 2 spaces
+        '@typescript-eslint/indent': ['error', 2],
+        // don't enforce any particular naming convention
+        '@typescript-eslint/naming-convention': 'off',
+        // disallow empty function bodies
+        '@typescript-eslint/no-empty-function': 'error',
+        // disallow empty interfaces
+        '@typescript-eslint/no-empty-interface': 'error',
+        // allow the use of any typed value
+        '@typescript-eslint/no-explicit-any': 'off',
+        // disallow calling the constructor of a class without assigning the result
+        '@typescript-eslint/no-misused-new': 'error',
+        // disallow the use of the namespace keyword
+        '@typescript-eslint/no-namespace': 'error',
+        // don't require properties to be declared in the constructor instead of the class body
+        '@typescript-eslint/no-parameter-properties': 'off',
+        // disallow variable shadowing
+        '@typescript-eslint/no-shadow': ['error', { hoist: 'all' }],
+        // disallow unused expressions
+        '@typescript-eslint/no-unused-expressions': 'error',
+        // allow variable and function declarations to be used before they are defined
+        '@typescript-eslint/no-use-before-define': 'off',
+        // disallow using the CommonJS require function for ES modules
         "@typescript-eslint/no-var-requires": "error",
+        // enforce usage of for...of loops over Array.forEach for iterating over arrays
         "@typescript-eslint/prefer-for-of": "error",
+        // enforce usage of function types instead of interfaces with call signatures
         "@typescript-eslint/prefer-function-type": "error",
+        // enforce the use of namespace keyword instead of module for declaring custom TypeScript modules
         "@typescript-eslint/prefer-namespace-keyword": "error",
+        // allow or disallow the use of quotes
         "@typescript-eslint/quotes": "off",
+        // require or disallow a leading comment with a triple slash for triple slash directives
         "@typescript-eslint/triple-slash-reference": [
             "error",
             {
@@ -110,16 +161,24 @@ module.exports = {
                 "lib": "always"
             }
         ],
+        // require that member overloads be consecutive
         "@typescript-eslint/typedef": "off",
+        // require consistent type definitions
         "@typescript-eslint/unified-signatures": "error",
+        // specify the maximum cyclomatic complexity allowed in a program
         "complexity": "off",
+        // require `super()` calls in constructors
         "constructor-super": "error",
+        // require dot notation whenever possible
         "dot-notation": "off",
+        // require the use of `===` and `!==`
         "eqeqeq": [
             "error",
             "smart"
         ],
+        // require `for-in` loops to include an `if` statement
         "guard-for-in": "error",
+        // disallow specified identifiers
         "id-denylist": [
             "error",
             "any",
@@ -130,45 +189,80 @@ module.exports = {
             "Undefined",
             "undefined"
         ],
+        // require camelcase names
         "id-match": "error",
+        // specify tab or space width for your code
         "indent": "off",
+        // ensure JSDoc comments are valid
         "jsdoc/check-alignment": "error",
+        // specify the maximum number of classes per file
         "jsdoc/check-indentation": "error",
         "jsdoc/newline-after-description": "error",
         "max-classes-per-file": "off",
+        // specify the maximum length of a line in your program
         "max-len": "off",
+        // disallow `new` operators with the `Function` object
         "new-parens": "error",
+        // disallow bitwise operators
         "no-bitwise": "error",
+        // disallow the use of `arguments.caller` or `arguments.callee`
         "no-caller": "error",
+        // disallow assignment in conditional expressions
         "no-cond-assign": "error",
+        // disallow the use of `console`
         "no-console": "off",
+        // disallow the use of `debugger`
         "no-debugger": "error",
+        // disallow empty block statements
         "no-empty": "error",
+        // disallow empty functions
         "no-empty-function": "off",
+        // disallow the use of `eval()`
         "no-eval": "error",
+        // disallow fallthrough of `case` statements
         "no-fallthrough": "off",
+        // disallow the use of `this`/`super` before calling `super()` in constructors
         "no-invalid-this": "off",
+        // disallow the use of `new` wrapper objects
         "no-new-wrappers": "error",
+        // disallow variable declarations from shadowing variables declared in the outer scope
         "no-shadow": "off",
+        // disallow throwing literals as exceptions
         "no-throw-literal": "error",
+        // disallow trailing whitespace at the end of lines
         "no-trailing-spaces": "error",
+        // disallow initializing variables to `undefined`
         "no-undef-init": "error",
+        // disallow dangling underscores in identifiers
         "no-underscore-dangle": "off",
+        // disallow control flow statements in finally blocks
         "no-unsafe-finally": "error",
+        // disallow unused expressions
         "no-unused-expressions": "off",
+        // disallow unused labels
         "no-unused-labels": "error",
+        // disallow the use of variables before they are defined
         "no-use-before-define": "off",
+        // require let or const instead of var
         "no-var": "error",
+        // require object literal shorthand syntax
         "object-shorthand": "error",
+        // allow only one variable declaration per function scope
         "one-var": [
             "error",
             "never"
         ],
+        // suggest using arrow functions as callbacks
         "prefer-arrow/prefer-arrow-functions": "warn",
+        // suggest using const for variables that are never reassigned after declared
         "prefer-const": "error",
+        // suggest using template literals instead of string concatenation
         "prefer-template": "error",
+        // allow or disallow the use of quotes
         "quotes": "off",
+        // require the use of parseInt() with a radix argument
         "radix": "error",
+        // enforce consistent spacing after the // or /* in a comment
         "spaced-comment": [
             "error",
             "always",
@@ -178,7 +272,9 @@ module.exports = {
                 ]
             }
         ],
+        // require the use of isNaN() when checking for NaN
         "use-isnan": "error",
+        // ensure that the result of typeof is a valid string value
         "valid-typeof": "off"
     }
 };
