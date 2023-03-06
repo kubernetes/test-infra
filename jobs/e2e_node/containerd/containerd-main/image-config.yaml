@@ -11,4 +11,3 @@ images:
     image_family: ubuntu-2204-lts
     project: ubuntu-os-cloud
     metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/containerd-main/ubuntu-init.yaml"
- 

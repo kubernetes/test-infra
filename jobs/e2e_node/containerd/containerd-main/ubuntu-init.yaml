@@ -3,8 +3,8 @@
 write_files:
   - path: /tmp/bootstrap/extra-fetches.yaml
     content: |
-      # valid keys are containerd_env, kube_env, and extra_init
-      containerd_env: https://raw.githubusercontent.com/kubernetes/test-infra/master/jobs/e2e_node/containerd/containerd-main/env
+      # valid keys are containerd-env, and extra_init
+      containerd-env: https://raw.githubusercontent.com/kubernetes/test-infra/master/jobs/e2e_node/containerd/containerd-main/env
 
   - path: /etc/systemd/system/containerd-installation.service
     permissions: 0644
