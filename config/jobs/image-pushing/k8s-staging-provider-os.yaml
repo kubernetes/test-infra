@@ -25,8 +25,8 @@ postsubmits:
             args:
               # this is the project GCB will run in, which is the same as the GCR
               # images are pushed to.
-              - --project=k8s-staging-cloud-provider-os
+              - --project=k8s-staging-provider-os
               # This is the same as above, but with -gcb appended.
-              - --scratch-bucket=gs://k8s-staging-cloud-provider-os-gcb
+              - --scratch-bucket=gs://k8s-staging-provider-os-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
