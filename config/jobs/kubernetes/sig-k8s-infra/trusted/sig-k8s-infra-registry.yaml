@@ -34,7 +34,7 @@ periodics:
             - name: AWS_WEB_IDENTITY_TOKEN_FILE
               value: /var/run/secrets/aws-iam-token/serviceaccount/token
             - name: AWS_REGION
-              value: us-east-1
+              value: us-east-2
           volumeMounts:
             - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
               name: aws-iam-token
