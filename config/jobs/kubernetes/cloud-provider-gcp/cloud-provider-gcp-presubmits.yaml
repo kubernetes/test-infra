@@ -86,7 +86,8 @@ presubmits:
           - ./crd/hack/verify-codegen.sh
 
   - name: pull-cloud-provider-gcp-scenario-kops-simple
-    always_run: false # While we're debugging
+    always_run: true
+    optional: true
     decorate: true
     decoration_config:
       timeout: 80m
