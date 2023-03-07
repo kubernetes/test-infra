@@ -110,12 +110,12 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/git/
-  - name: post-test-infra-push-git-gke-gcloud-auth
+  - name: post-test-infra-push-git-custom-k8s-auth
     cluster: test-infra-trusted
-    run_if_changed: '^images/git-gke-gcloud-auth/'
+    run_if_changed: '^images/git-custom-k8s-auth/'
     annotations:
       testgrid-dashboards: sig-testing-images
-      testgrid-tab-name: git-gke-gcloud-auth
+      testgrid-tab-name: git-custom-k8s-auth
     decorate: true
     branches:
     - ^master$
