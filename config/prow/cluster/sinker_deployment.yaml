@@ -26,7 +26,7 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig:/etc/kubeconfig-build-rules-k8s/kubeconfig"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig:/etc/kubeconfig-build-rules-k8s/kubeconfig:/etc/kubeconfig-eks-prow-build-cluster/kubeconfig"
         # AWS_ variables needed to assume role to access the prow-build-cluster EKS cluster.
         - name: AWS_ROLE_ARN
           value: arn:aws:iam::468814281478:role/Prow-EKS-Admin
@@ -49,6 +49,9 @@ spec:
           readOnly: true
         - mountPath: /etc/kubeconfig-build-rules-k8s
           name: kubeconfig-build-rules-k8s
+          readOnly: true
+        - mountPath: /etc/kubeconfig-eks-prow-build-cluster
+          name: kubeconfig-eks-prow-build-cluster
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -77,6 +80,10 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig-build-rules-k8s
+      - name: kubeconfig-eks-prow-build-cluster
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-eks-prow-build-cluster
       - name: config
         configMap:
           name: config
