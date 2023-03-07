@@ -129,7 +129,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
-        - images/git-gke-gcloud-auth/
+        - images/git-custom-k8s-auth/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
