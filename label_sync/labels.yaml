@@ -1872,6 +1872,14 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/cluster-api-provider-gcp:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to GKE
+        name: area/gke
+        target: both
+        addedBy: anyone
+        prowPlugin: label
   kubernetes-sigs/cluster-api-provider-aws:
     labels:
       - color: c2e0c6
