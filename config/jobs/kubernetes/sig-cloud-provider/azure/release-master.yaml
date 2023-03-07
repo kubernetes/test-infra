@@ -349,7 +349,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -363,6 +364,11 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -401,7 +407,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -415,6 +422,11 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -455,7 +467,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -469,6 +482,11 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -506,7 +524,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -520,6 +539,11 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -605,7 +629,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -619,6 +644,11 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -657,7 +687,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -671,6 +702,11 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -711,7 +747,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -725,6 +762,11 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -762,7 +804,8 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-azure-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -776,6 +819,11 @@ periodics:
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
