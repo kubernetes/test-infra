@@ -29,6 +29,7 @@ postsubmits:
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-provider-aws-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
   # This is the github repo we'll build from. This block needs to be repeated for each repo.
   kubernetes-sigs/aws-ebs-csi-driver:
