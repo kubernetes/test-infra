@@ -18,7 +18,6 @@ package tide
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -348,11 +347,11 @@ func (p *GerritProvider) GetTideContextPolicy(org, repo, branch string, baseSHAG
 	return &gerritContextChecker{}, nil
 }
 
-func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
+func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) *types.PullRequestMergeType {
 	var res types.PullRequestMergeType
 	pr := crc.Gerrit
 	if pr == nil {
-		return res, errors.New("programmer error: crc.Gerrit cannot be nil for GerritProvider")
+		return nil
 	}
 
 	// Translate merge methods to types that git could understand. The merge
@@ -374,7 +373,7 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequest
 		res = types.MergeMerge
 	}
 
-	return res, nil
+	return &res
 }
 
 // GetPresubmits gets presubmit jobs for a PR.

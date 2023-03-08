@@ -1311,18 +1311,18 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				pr.Mergeable = githubql.MergeableStateConflicting
 			}
 
-			actual, err := mmc.prMergeMethod(tideConfig, CodeReviewCommonFromPullRequest(pr))
-			if err != nil {
+			actual := mmc.prMergeMethod(tideConfig, CodeReviewCommonFromPullRequest(pr))
+			if actual == nil {
 				if !tc.expectErr {
-					t.Errorf("unexpected error: %v", err)
+					t.Errorf("multiple merge methods are not allowed")
 				}
 				return
 			} else if tc.expectErr {
 				t.Errorf("missing expected error")
 				return
 			}
-			if tc.expectedMethod != actual {
-				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, actual)
+			if tc.expectedMethod != *actual {
+				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, *actual)
 			}
 			reason, err := mmc.isAllowedToMerge(CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
