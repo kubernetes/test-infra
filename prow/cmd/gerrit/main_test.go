@@ -93,9 +93,10 @@ func TestFlags(t *testing.T) {
 					InRepoConfigCacheSize:                 100,
 					InRepoConfigCacheCopies:               1,
 				},
-				dryRun:                 false,
-				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
-				changeWorkerPoolSize:   1,
+				dryRun:                  false,
+				instrumentationOptions:  flagutil.DefaultInstrumentationOptions(),
+				changeWorkerPoolSize:    1,
+				maxChangeWorkerPollSize: 1,
 			}
 			if tc.expected != nil {
 				tc.expected(expected)

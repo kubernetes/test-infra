@@ -47,6 +47,7 @@ import (
 const (
 	inRepoConfigRetries = 2
 	inRepoConfigFailed  = "Unable to get inRepoConfig. This could be due to a merge conflict (please resolve them), an inRepoConfig parsing error (incorrect formatting) in the .prow directory or .prow.yaml file, or a flake. For possible flakes, try again with /test all"
+	newChangesThreshold = 50
 )
 
 var gerritMetrics = struct {
@@ -115,6 +116,7 @@ type Controller struct {
 	instancesWithWorker         map[string]bool
 	latestMux                   sync.Mutex
 	workerPoolSize              int
+	maxWorkerPoolSize           int
 }
 
 type LastSyncTracker interface {
@@ -124,7 +126,7 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCacheHandler *config.InRepoConfigCacheHandler) *Controller {
+	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, maxWorkerPoolSize int, inRepoConfigCacheHandler *config.InRepoConfigCacheHandler) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
@@ -152,6 +154,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		inRepoConfigFailuresTracker: map[string]bool{},
 		instancesWithWorker:         make(map[string]bool),
 		workerPoolSize:              workerPoolSize,
+		maxWorkerPoolSize:           maxWorkerPoolSize,
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -248,7 +251,11 @@ func (c *Controller) Sync() {
 		wg.Add(len(changes))
 
 		changeChan := make(chan Change)
-		for i := 0; i < c.workerPoolSize; i++ {
+		workerPoolSize := c.workerPoolSize
+		if len(changes) > newChangesThreshold {
+			workerPoolSize = c.maxWorkerPoolSize
+		}
+		for i := 0; i < workerPoolSize; i++ {
 			go c.syncChange(latest, changeChan, log, &wg)
 		}
 
