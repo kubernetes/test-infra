@@ -854,9 +854,9 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     extra_refs:
-      - org: jackfrancis
+      - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: vmss-flex-cloudprovider
+        base_ref: release-1.7
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -891,12 +891,14 @@ presubmits:
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest"
+            - name: ORCHESTRATION_MODE # CAPZ config
+              value: "Flexible"
             - name: AZURE_LOADBALANCER_SKU # azuredisk-csi-driver config
               value: "Standard"
             - name: CLUSTER_PROVISIONING_TOOL # azuredisk-csi-driver config
               value: "capz"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              value: https://raw.githubusercontent.com/jackfrancis/cluster-api-provider-azure/vmss-flex-cloudprovider/templates/cluster-template-external-cloud-provider-machinepool.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
               value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
             - name: ENABLE_VMSS_FLEX # azuredisk-csi-driver config
