@@ -830,10 +830,9 @@ func TestGetTideContextPolicy(t *testing.T) {
 
 func TestPrMergeMethod(t *testing.T) {
 	tests := []struct {
-		name    string
-		pr      gerrit.ChangeInfo
-		want    types.PullRequestMergeType
-		wantErr error
+		name string
+		pr   gerrit.ChangeInfo
+		want types.PullRequestMergeType
 	}{
 		{
 			name: "MERGE_IF_NECESSARY",
@@ -884,13 +883,13 @@ func TestPrMergeMethod(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fc := &GerritProvider{}
 
-			got, gotErr := fc.prMergeMethod(CodeReviewCommonFromGerrit(&tc.pr, "foo1"))
-
-			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("Blocker mismatch. Want(-), got(+):\n%s", diff)
-			}
-			if tc.wantErr != gotErr {
-				t.Errorf("Error mismatch. Want: %v, got: %v", tc.wantErr, gotErr)
+			got := fc.prMergeMethod(CodeReviewCommonFromGerrit(&tc.pr, "foo1"))
+			if got == nil {
+				t.Error("Multiple conflicting merge methods assigned.")
+			} else {
+				if diff := cmp.Diff(tc.want, *got); diff != "" {
+					t.Errorf("Blocker mismatch. Want(-), got(+):\n%s", diff)
+				}
 			}
 		})
 	}

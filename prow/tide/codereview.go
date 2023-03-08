@@ -236,7 +236,7 @@ type provider interface {
 	// mergePRs attempts to merge the specified PRs and returns the prs that were successfully merged.
 	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) ([]CodeReviewCommon, error)
 	GetTideContextPolicy(org, repo, branch string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error)
-	prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error)
+	prMergeMethod(crc *CodeReviewCommon) *types.PullRequestMergeType
 
 	// GetPresubmits will return all presubmits for the given identifier. This includes
 	// Presubmits that are versioned inside the tested repo, if the inrepoconfig feature
