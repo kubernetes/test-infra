@@ -294,7 +294,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3493.1.0-arm64-hvm' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3510.1.0-arm64-hvm' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --validation-wait=20m \
@@ -493,7 +493,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3493.1.0-arm64-hvm' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3510.1.0-arm64-hvm' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --validation-wait=20m \
@@ -560,7 +560,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-beta-3493.1.0-arm64-hvm' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-beta-3510.1.0-arm64-hvm' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --topology=private --bastion --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --validation-wait=20m \
@@ -1328,7 +1328,7 @@ periodics:
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-aws-updown
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-aws-load-balancer-controller
   cron: '37 5-23/8 * * *'
   labels:
@@ -1377,15 +1377,15 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: ci
+    test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-aws-load-balancer-controller
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-keypair-rotation-ha
   cron: '26 12-23/24 * * *'
   labels:
@@ -1436,15 +1436,15 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: ci
+    test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-keypair-rotation-ha
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-metrics-server
   cron: '42 2-23/8 * * *'
   labels:
@@ -1493,15 +1493,15 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: ci
+    test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-metrics-server
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-pod-identity-webhook
   cron: '50 6-23/8 * * *'
   labels:
@@ -1550,15 +1550,15 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: ci
+    test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-pod-identity-webhook
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-addon-resource-tracking
   cron: '43 4-23/8 * * *'
   labels:
@@ -1607,11 +1607,11 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/k8s_version: ci
+    test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-stable, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-addon-resource-tracking
 
