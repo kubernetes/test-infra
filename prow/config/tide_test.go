@@ -19,12 +19,15 @@ package config
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
@@ -52,6 +55,405 @@ var expectedQueryComponents = []string{
 	"author:\"batman\"",
 	"milestone:\"milestone\"",
 	"review:approved",
+}
+
+func TestMarshalMergeMethod(t *testing.T) {
+	testCases := []struct {
+		testName   string
+		tideConfig TideGitHubConfig
+		wantYaml   string
+	}{
+		{
+			testName: "Org-wide",
+			tideConfig: TideGitHubConfig{
+				MergeType: map[string]TideOrgMergeType{
+					"org1": {
+						MergeType: "squash",
+					},
+				},
+			},
+			wantYaml: `context_options: {}
+merge_method:
+  org1: squash
+`,
+		},
+		{
+			testName: "Empty org",
+			tideConfig: TideGitHubConfig{
+				MergeType: map[string]TideOrgMergeType{
+					"org1": {},
+				},
+			},
+			wantYaml: `context_options: {}
+merge_method:
+  org1: ""
+`,
+		},
+		{
+			testName: "Repo-wide",
+			tideConfig: TideGitHubConfig{
+				MergeType: map[string]TideOrgMergeType{
+					"org1": {
+						Repos: map[string]TideRepoMergeType{
+							"repo1": {
+								MergeType: "rebase",
+							},
+						},
+					},
+				},
+			},
+			wantYaml: `context_options: {}
+merge_method:
+  org1:
+    repo1: rebase
+`,
+		},
+		{
+			testName: "Empty repo",
+			tideConfig: TideGitHubConfig{
+				MergeType: map[string]TideOrgMergeType{
+					"org1": {
+						Repos: map[string]TideRepoMergeType{
+							"repo1": {},
+						},
+					},
+				},
+			},
+			wantYaml: `context_options: {}
+merge_method:
+  org1:
+    repo1: ""
+`,
+		},
+		{
+			testName: "Multiple branches",
+			tideConfig: TideGitHubConfig{
+				MergeType: map[string]TideOrgMergeType{
+					"org1": {
+						Repos: map[string]TideRepoMergeType{
+							"repo1": {
+								Branches: map[string]TideBranchMergeType{
+									"branch1": {
+										Regexpr:   regexp.MustCompile("branch1"),
+										MergeType: types.MergeMerge,
+									},
+									"branch2": {
+										Regexpr:   regexp.MustCompile("branch2"),
+										MergeType: types.MergeSquash,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantYaml: `context_options: {}
+merge_method:
+  org1:
+    repo1:
+      branch1: merge
+      branch2: squash
+`,
+		},
+		{
+			testName: "Complex",
+			tideConfig: TideGitHubConfig{
+				MergeType: map[string]TideOrgMergeType{
+					"org1": {
+						Repos: map[string]TideRepoMergeType{
+							"repo1": {
+								Branches: map[string]TideBranchMergeType{
+									"branch1": {
+										Regexpr:   regexp.MustCompile("branch1"),
+										MergeType: types.MergeMerge,
+									},
+									"branch2": {
+										Regexpr:   regexp.MustCompile("branch2"),
+										MergeType: types.MergeSquash,
+									},
+								},
+							},
+						},
+					},
+					"org2/repo1@master": {
+						MergeType: "squash",
+					},
+					"org2": {
+						Repos: map[string]TideRepoMergeType{
+							"repo2": {
+								MergeType: "merge",
+							},
+						},
+					},
+					"org3": {
+						MergeType: "rebase",
+					},
+				},
+			},
+			wantYaml: `context_options: {}
+merge_method:
+  org1:
+    repo1:
+      branch1: merge
+      branch2: squash
+  org2:
+    repo2: merge
+  org2/repo1@master: squash
+  org3: rebase
+`,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.testName, func(t *testing.T) {
+			yaml, err := yaml.Marshal(testCase.tideConfig)
+			if err != nil {
+				t.Errorf("unmarshal error: %v", err)
+			}
+			if diff := cmp.Diff(testCase.wantYaml, string(yaml)); diff != "" {
+				t.Errorf("unexpected yaml: %s", diff)
+			}
+		})
+	}
+}
+
+func TestUnmarshalMergeMethod(t *testing.T) {
+	testCases := []struct {
+		testName   string
+		yamlConfig string
+		wantConfig Config
+	}{
+		{
+			testName:   "No merge config",
+			yamlConfig: `tide:`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{},
+				},
+			},
+		},
+		{
+			testName: "Mix OrgRepo and branches config",
+			yamlConfig: `
+tide:
+  merge_method:
+    org1:
+      repo1:
+        branch1: merge
+    org2/repo1: rebase`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							MergeType: map[string]TideOrgMergeType{
+								"org1": {
+									Repos: map[string]TideRepoMergeType{
+										"repo1": {
+											Branches: map[string]TideBranchMergeType{
+												"branch1": {
+													MergeType: types.MergeMerge,
+												},
+											},
+										},
+									},
+								},
+								"org2/repo1": {
+									MergeType: types.MergeRebase,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testName: "The same repo-wide and per branch config",
+			yamlConfig: `
+tide:
+  merge_method:
+    org1:
+      repo1:
+        branch1: merge
+    org1/repo1: rebase`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							MergeType: map[string]TideOrgMergeType{
+								"org1": {
+									Repos: map[string]TideRepoMergeType{
+										"repo1": {
+											Branches: map[string]TideBranchMergeType{
+												"branch1": {
+													MergeType: types.MergeMerge,
+												},
+											},
+										},
+									},
+								},
+								"org1/repo1": {
+									MergeType: types.MergeRebase,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testName: "Legacy repo only config",
+			yamlConfig: `
+tide:
+  merge_method:
+    org1/repo1: merge`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							MergeType: map[string]TideOrgMergeType{
+								"org1/repo1": {
+									MergeType: types.MergeMerge,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testName: "Repo only config",
+			yamlConfig: `
+tide:
+  merge_method:
+    org1:
+      repo1: merge`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							MergeType: map[string]TideOrgMergeType{
+								"org1": {
+									Repos: map[string]TideRepoMergeType{
+										"repo1": {
+											MergeType: types.MergeMerge,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testName: "Org only config",
+			yamlConfig: `
+tide:
+  merge_method:
+    org1: rebase`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							MergeType: map[string]TideOrgMergeType{
+								"org1": {
+									MergeType: types.MergeRebase,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testName: "Branches only config",
+			yamlConfig: `
+tide:
+  merge_method:
+    org1:
+      repo1:
+        branch1: merge`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							MergeType: map[string]TideOrgMergeType{
+								"org1": {
+									Repos: map[string]TideRepoMergeType{
+										"repo1": {
+											Branches: map[string]TideBranchMergeType{
+												"branch1": {
+													MergeType: types.MergeMerge,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testName: "Branches config: wildcard on branch and repo",
+			yamlConfig: `
+tide:
+  merge_method:
+    org1:
+      ".*":
+        ".+": merge`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							MergeType: map[string]TideOrgMergeType{
+								"org1": {
+									Repos: map[string]TideRepoMergeType{
+										".*": {
+											Branches: map[string]TideBranchMergeType{
+												".+": {
+													MergeType: types.MergeMerge,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testName: "Branches config: no repos at all",
+			yamlConfig: `
+tide:
+  merge_method:
+    ".*":`,
+			wantConfig: Config{
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							MergeType: map[string]TideOrgMergeType{
+								".*": {},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.testName, func(t *testing.T) {
+			var config Config
+			if err := yaml.Unmarshal([]byte(testCase.yamlConfig), &config); err != nil {
+				t.Fatalf("unmarshal error: %v", err)
+			}
+			if diff := cmp.Diff(&testCase.wantConfig, &config); diff != "" {
+				t.Errorf("merge method configurations differ: %s", diff)
+			}
+		})
+	}
 }
 
 func TestTideQuery(t *testing.T) {
@@ -176,10 +578,10 @@ func TestOrgExceptionsAndRepos(t *testing.T) {
 func TestMergeMethod(t *testing.T) {
 	ti := &Tide{
 		TideGitHubConfig: TideGitHubConfig{
-			MergeType: map[string]types.PullRequestMergeType{
-				"kubernetes/kops":             types.MergeRebase,
-				"kubernetes-helm":             types.MergeSquash,
-				"kubernetes-helm/chartmuseum": types.MergeMerge,
+			MergeType: map[string]TideOrgMergeType{
+				"kubernetes/kops":             {MergeType: types.MergeRebase},
+				"kubernetes-helm":             {MergeType: types.MergeSquash},
+				"kubernetes-helm/chartmuseum": {MergeType: types.MergeMerge},
 			},
 		},
 	}
@@ -216,6 +618,488 @@ func TestMergeMethod(t *testing.T) {
 		if actual != test.expected {
 			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, actual, test.org, test.repo)
 		}
+	}
+}
+
+func TestOrgRepoMatchMergeMethod(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		config   Tide
+		org      string
+		repo     string
+		branch   string
+		expected types.PullRequestMergeType
+	}{
+		// Edge cases
+		{
+			name: "No input at all",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"test-infra": {
+									Branches: map[string]TideBranchMergeType{
+										"master": {
+											Regexpr:   regexp.MustCompile("master"),
+											MergeType: types.MergeRebase,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: types.MergeMerge,
+		},
+		{
+			name:     "Empty tide config",
+			config:   Tide{},
+			org:      "kubernetes",
+			repo:     "test-infra",
+			branch:   "master",
+			expected: types.MergeMerge,
+		},
+		{
+			name:     "Empty tide config and no input",
+			config:   Tide{},
+			expected: types.MergeMerge,
+		},
+		// Shorthands
+		{
+			name: "org shorthand: match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes-helm": {MergeType: types.MergeSquash},
+					},
+				},
+			},
+			org:      "kubernetes-helm",
+			expected: types.MergeSquash,
+		},
+		{
+			name: "org shorthand: no match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes-helm": {MergeType: types.MergeSquash},
+					},
+				},
+			},
+			org:      "kubernetes",
+			expected: types.MergeMerge,
+		},
+		{
+			name: "org shorthand: no org provided",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {MergeType: types.MergeRebase},
+					},
+				},
+			},
+			expected: types.MergeMerge,
+		},
+		{
+			name: "org shorthand: neither repo nor branch matches",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {MergeType: types.MergeRebase},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "test-infra",
+			branch:   "dev",
+			expected: types.MergeRebase,
+		},
+		{
+			name: "org/repo shorthand: match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes-helm/chartmuseum": {MergeType: types.MergeSquash},
+					},
+				},
+			},
+			org:      "kubernetes-helm",
+			repo:     "chartmuseum",
+			expected: types.MergeSquash,
+		},
+		{
+			name: "org/repo shorthand: no match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes-helm/chartmuseum": {MergeType: types.MergeSquash},
+					},
+				},
+			},
+			org:      "kubernetes-helm",
+			repo:     "test-infra",
+			expected: types.MergeMerge,
+		},
+		{
+			name: "org/repo shorthand: no repo provided",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes-helm/chartmuseum": {MergeType: types.MergeSquash},
+					},
+				},
+			},
+			org:      "kubernetes-helm",
+			expected: types.MergeMerge,
+		},
+		{
+			name: "org/repo shorthand: org only match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes-helm": {MergeType: types.MergeSquash},
+					},
+				},
+			},
+			org:      "kubernetes-helm",
+			repo:     "chartmuseum",
+			expected: types.MergeSquash,
+		},
+		{
+			name: "org/repo shorthand: fallback to org/repo when branch doesn't match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes-helm/chartmuseum": {MergeType: types.MergeSquash},
+					},
+				},
+			},
+			org:      "kubernetes-helm",
+			repo:     "chartmuseum",
+			branch:   "master",
+			expected: types.MergeSquash,
+		},
+		{
+			name: "org/repo@branch shorthand: match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes/kops@main": {MergeType: types.MergeRebase},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "kops",
+			branch:   "main",
+			expected: types.MergeRebase,
+		},
+		{
+			name: "org/repo@branch shorthand: no match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes/kops@main": {MergeType: types.MergeRebase},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "kops",
+			branch:   "master",
+			expected: types.MergeMerge,
+		},
+		{
+			name: "org/repo@branch shorthand: no branch provided",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes/kops@main": {MergeType: types.MergeRebase},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "kops",
+			expected: types.MergeMerge,
+		},
+		// Repo-wide config
+		{
+			name: "Repo-wide config: match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"kubernetes": {MergeType: types.MergeIfNecessary},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "kubernetes",
+			expected: types.MergeIfNecessary,
+		},
+		{
+			name: "Repo-wide config: no match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"kubernetes": {MergeType: types.MergeIfNecessary},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "test-infra",
+			expected: types.MergeMerge,
+		},
+		{
+			name: "Repo-wide config: match using '*'",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"*":          {MergeType: types.MergeIfNecessary},
+								"kubernetes": {MergeType: types.MergeSquash},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "test-infra",
+			expected: types.MergeIfNecessary,
+		},
+		// Branch level config
+		{
+			name: "Branch level config: no match",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"test-infra": {
+									Branches: map[string]TideBranchMergeType{
+										"master": {
+											Regexpr:   regexp.MustCompile("master"),
+											MergeType: types.MergeRebase,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "test-infra",
+			branch:   "main",
+			expected: types.MergeMerge,
+		},
+		{
+			name: "Branch level config: match no regex",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"test-infra": {
+									Branches: map[string]TideBranchMergeType{
+										"master": {
+											Regexpr:   regexp.MustCompile("master"),
+											MergeType: types.MergeRebase,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "test-infra",
+			branch:   "master",
+			expected: types.MergeRebase,
+		},
+		{
+			name: "Branch level config: match regex",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"test-infra": {
+									Branches: map[string]TideBranchMergeType{
+										`release-\d+(.\d+)?`: {
+											Regexpr:   regexp.MustCompile(`release-\d+(.\d+)?`),
+											MergeType: types.MergeSquash,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "test-infra",
+			branch:   "release-0.2",
+			expected: types.MergeSquash,
+		},
+		{
+			name: "Branch level config: multiple regex matches, pick the first one",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"test-infra": {
+									Branches: map[string]TideBranchMergeType{
+										`ma.*`: {
+											Regexpr:   regexp.MustCompile(`ma.*`),
+											MergeType: types.MergeSquash,
+										},
+										`mast.*`: {
+											Regexpr:   regexp.MustCompile(`ma.*`),
+											MergeType: types.MergeIfNecessary,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "test-infra",
+			branch:   "master",
+			expected: types.MergeSquash,
+		},
+		{
+			name: "Branch level config: match '*' wildcard at repository level",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"golang": {
+							Repos: map[string]TideRepoMergeType{
+								"*": {
+									Branches: map[string]TideBranchMergeType{
+										"main": {
+											Regexpr:   regexp.MustCompile("main"),
+											MergeType: types.MergeIfNecessary,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			org:      "golang",
+			repo:     "docs",
+			branch:   "main",
+			expected: types.MergeIfNecessary,
+		},
+		// Precedences
+		{
+			name: "Precedence: org/repo@branch shorthand over branch level config",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes/kops@main": {MergeType: types.MergeSquash},
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"kops": {
+									Branches: map[string]TideBranchMergeType{
+										"main": {
+											Regexpr:   regexp.MustCompile("main"),
+											MergeType: types.MergeIfNecessary,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "kops",
+			branch:   "main",
+			expected: types.MergeSquash,
+		},
+		{
+			name: "Precedence: branch level config over org/repo shorthand",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes/kops": {MergeType: types.MergeSquash},
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"kops": {
+									Branches: map[string]TideBranchMergeType{
+										"main": {
+											Regexpr:   regexp.MustCompile("main"),
+											MergeType: types.MergeIfNecessary,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "kops",
+			branch:   "main",
+			expected: types.MergeIfNecessary,
+		},
+		{
+			name: "Precedence: org/repo shorthand over repo-wide config",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes/kops": {MergeType: types.MergeSquash},
+						"kubernetes": {
+							Repos: map[string]TideRepoMergeType{
+								"kops": {MergeType: types.MergeRebase},
+							},
+						},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "kops",
+			expected: types.MergeSquash,
+		},
+		{
+			name: "Precedence: org/repo shorthand over org config",
+			config: Tide{
+				TideGitHubConfig: TideGitHubConfig{
+					MergeType: map[string]TideOrgMergeType{
+						"kubernetes/kops": {MergeType: types.MergeSquash},
+						"kubernetes":      {MergeType: types.MergeIfNecessary},
+					},
+				},
+			},
+			org:      "kubernetes",
+			repo:     "kops",
+			expected: types.MergeSquash,
+		},
+	}
+	for _, test := range testCases {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			actual := test.config.OrgRepoBranchMergeMethod(OrgRepo{Org: test.org, Repo: test.repo}, test.branch)
+			if actual != test.expected {
+				t.Errorf("Expected merge method %q but got %q for org: %q, repo: %q, branch: %q",
+					test.expected, actual, test.org, test.repo, test.branch)
+			}
+		})
 	}
 }
 func TestMergeTemplate(t *testing.T) {

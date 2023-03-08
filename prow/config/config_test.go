@@ -48,6 +48,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -8819,7 +8820,7 @@ func TestProwConfigMergingProperties(t *testing.T) {
 				if err := newConfig.mergeFrom(fuzzedMergeableConfig); err != nil {
 					t.Fatalf("merging fuzzed mergeable config into empty config failed: %v", err)
 				}
-				if diff := cmp.Diff(newConfig, fuzzedMergeableConfig); diff != "" {
+				if diff := cmp.Diff(newConfig, fuzzedMergeableConfig, DefaultDiffOpts...); diff != "" {
 					t.Errorf("after merging config into an empty config, the config that was merged into differs from the one we merged from:\n%s\n", diff)
 				}
 			},
@@ -8917,6 +8918,11 @@ func TestProwConfigMergingProperties(t *testing.T) {
 	}
 }
 
+func TestEnsureConfigIsDiffable(t *testing.T) {
+	// This will panic in case it is not able to diff 'Config'.
+	_ = cmp.Diff(Config{}, Config{}, DefaultDiffOpts...)
+}
+
 // TestDeduplicateTideQueriesDoesntLoseData simply uses deduplicateTideQueries
 // on a single fuzzed tidequery, which should never result in any change as
 // there is nothing that could be deduplicated. This is mostly to ensure we
@@ -9001,6 +9007,148 @@ func TestDeduplicateTideQueries(t *testing.T) {
 
 			if diff := cmp.Diff(result, tc.expected); diff != "" {
 				t.Errorf("Result differs from expected: %v", diff)
+			}
+		})
+	}
+}
+
+func TestParseTideMergeType(t *testing.T) {
+	exportRegexp := cmp.AllowUnexported(TideBranchMergeType{})
+	regexpComparer := cmp.Comparer(func(a, b *regexp.Regexp) bool {
+		return (a == nil && b == nil) || (a != nil && b != nil) && (a.String() == b.String())
+	})
+	errComparer := cmp.Comparer(func(a, b error) bool {
+		return (a == nil && b == nil) || (a != nil && b != nil) && (a.Error() == b.Error())
+	})
+	sortSlices := cmpopts.SortSlices(func(a, b error) bool {
+		return a.Error() < b.Error()
+	})
+	for _, tc := range []struct {
+		name       string
+		mergeTypes map[string]TideOrgMergeType
+		wantTypes  map[string]TideOrgMergeType
+		wantErrs   []error
+	}{
+		{
+			name: "No errors",
+			mergeTypes: map[string]TideOrgMergeType{
+				"k8s": {
+					MergeType: types.MergeRebase,
+				},
+				"k8s/test": {
+					MergeType: types.MergeSquash,
+				},
+				"k8s/test@test": {
+					MergeType: types.MergeSquash,
+				},
+				"kubernetes": {
+					Repos: map[string]TideRepoMergeType{
+						"test-infra": {
+							MergeType: types.MergeSquash,
+						},
+					},
+				},
+				"golang": {
+					Repos: map[string]TideRepoMergeType{
+						"go": {
+							Branches: map[string]TideBranchMergeType{
+								"master": {
+									MergeType: types.MergeMerge,
+								},
+								"main.+": {
+									MergeType: types.MergeRebase,
+								},
+							},
+						},
+					},
+				},
+			},
+			wantTypes: map[string]TideOrgMergeType{
+				"k8s": {
+					MergeType: types.MergeRebase,
+				},
+				"k8s/test": {
+					MergeType: types.MergeSquash,
+				},
+				"k8s/test@test": {
+					MergeType: types.MergeSquash,
+				},
+				"kubernetes": {
+					Repos: map[string]TideRepoMergeType{
+						"test-infra": {
+							MergeType: types.MergeSquash,
+						},
+					},
+				},
+				"golang": {
+					Repos: map[string]TideRepoMergeType{
+						"go": {
+							Branches: map[string]TideBranchMergeType{
+								"master": {
+									MergeType: types.MergeMerge,
+									Regexpr:   regexp.MustCompile("master"),
+								},
+								"main.+": {
+									MergeType: types.MergeRebase,
+									Regexpr:   regexp.MustCompile("main.+"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Errors on every config level",
+			mergeTypes: map[string]TideOrgMergeType{
+				"k8s": {
+					MergeType: "fake-org-mm",
+				},
+				"kubernetes": {
+					Repos: map[string]TideRepoMergeType{
+						"test-infra": {
+							MergeType: "fake-repo-mm",
+						},
+						"kubernetes": {
+							Branches: map[string]TideBranchMergeType{
+								"main": {
+									MergeType: "fake-br-mm",
+								},
+								"invalid-regex[": {
+									MergeType: types.MergeMerge,
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErrs: []error{
+				errors.New(`merge type "fake-org-mm" for k8s is not a valid type`),
+				errors.New(`merge type "fake-repo-mm" for kubernetes/test-infra is not a valid type`),
+				errors.New(`merge type "fake-br-mm" for kubernetes/kubernetes@main is not a valid type`),
+				errors.New(`regex "invalid-regex[" is not valid`),
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := parseTideMergeType(tc.mergeTypes)
+			if len(tc.wantErrs) > 0 {
+				if err == nil {
+					t.Errorf("expected err '%v', got nil", tc.wantErrs)
+				}
+				// Resulting errors are not guaranteed to be always in the same order, due to how
+				// hashmap is implemented in Go. We need to sort first and then compare.
+				if diff := cmp.Diff(tc.wantErrs, err.Errors(), errComparer, sortSlices); diff != "" {
+					t.Errorf("errors don't match: %v", diff)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("expected err nil, got '%v'", err)
+				}
+
+				if diff := cmp.Diff(tc.wantTypes, tc.mergeTypes, regexpComparer, exportRegexp); diff != "" {
+					t.Errorf("tide configs doesn't match: %v", diff)
+				}
 			}
 		})
 	}
