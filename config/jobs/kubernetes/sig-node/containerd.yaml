@@ -1400,11 +1400,11 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=1
       - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=1
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=2
+      - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=1
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
   annotations:
@@ -1434,11 +1434,11 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=1
       - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=1
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=2
+      - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=1
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
   annotations:
