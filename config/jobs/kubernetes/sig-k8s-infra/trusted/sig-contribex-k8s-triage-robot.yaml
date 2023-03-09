@@ -88,7 +88,8 @@ periodics:
         secretName: k8s-triage-robot-github-token
 
 - name: ci-k8s-triage-robot-cla
-  interval: 10m
+  # TODO(MadhavJivrajani): change interval back to 10m once EasyCLA issues are fixed.
+  interval: 24h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
