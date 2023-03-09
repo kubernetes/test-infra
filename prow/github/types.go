@@ -769,10 +769,46 @@ type IssueEvent struct {
 // ListedIssueEvent represents an issue event from the events API (not from a webhook payload).
 // https://developer.github.com/v3/issues/events/
 type ListedIssueEvent struct {
-	Event     IssueEventAction `json:"event"` // This is the same as IssueEvent.Action.
-	Actor     User             `json:"actor"`
-	Label     Label            `json:"label"`
-	CreatedAt time.Time        `json:"created_at"`
+	ID  int64  `json:"id,omitempty"`
+	URL string `json:"url,omitempty"`
+
+	// The User that generated this event.
+	Actor User `json:"actor"`
+
+	// This is the same as IssueEvent.Action
+	Event IssueEventAction `json:"event"`
+
+	CreatedAt time.Time `json:"created_at"`
+	Issue     Issue     `json:"issue,omitempty"`
+
+	// Only present on certain events.
+	Assignee          User            `json:"assignee,omitempty"`
+	Assigner          User            `json:"assigner,omitempty"`
+	CommitID          string          `json:"commit_id,omitempty"`
+	Milestone         Milestone       `json:"milestone,omitempty"`
+	Label             Label           `json:"label"`
+	Rename            Rename          `json:"rename,omitempty"`
+	LockReason        string          `json:"lock_reason,omitempty"`
+	ProjectCard       ProjectCard     `json:"project_card,omitempty"`
+	DismissedReview   DismissedReview `json:"dismissed_review,omitempty"`
+	RequestedReviewer User            `json:"requested_reviewer,omitempty"`
+	ReviewRequester   User            `json:"review_requester,omitempty"`
+}
+
+// Rename contains details for 'renamed' events.
+type Rename struct {
+	From string `json:"from,omitempty"`
+	To   string `json:"to,omitempty"`
+}
+
+// DismissedReview represents details for 'dismissed_review' events.
+type DismissedReview struct {
+	// State represents the state of the dismissed review.DismissedReview
+	// Possible values are: "commented", "approved", and "changes_requested".
+	State             string `json:"state,omitempty"`
+	ReviewID          int64  `json:"review_id,omitempty"`
+	DismissalMessage  string `json:"dismissal_message,omitempty"`
+	DismissalCommitID string `json:"dismissal_commit_id,omitempty"`
 }
 
 // IssueCommentEventAction enumerates the triggers for this
