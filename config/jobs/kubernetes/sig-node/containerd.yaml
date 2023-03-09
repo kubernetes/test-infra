@@ -1404,6 +1404,10 @@ periodics:
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
+      # Currently, in-place pod resize tests have two SIGDescribe jobs:
+      #   var _ = SIGDescribe("[Serial] Pod InPlace Resize Container (scheduler-focussed) [Feature:InPlacePodVerticalScaling]", func() {
+      #   var _ = SIGDescribe("Pod InPlace Resize Container [Feature:InPlacePodVerticalScaling]", func()
+      # This job does not focus on serial but runs both in serial. Work item to add parallel tests is tracked by issue kubernetes/kubernetes#116431
       - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=1
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -1438,6 +1442,10 @@ periodics:
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
+      # Currently, in-place pod resize tests have two SIGDescribe jobs:
+      #   var _ = SIGDescribe("[Serial] Pod InPlace Resize Container (scheduler-focussed) [Feature:InPlacePodVerticalScaling]", func() {
+      #   var _ = SIGDescribe("Pod InPlace Resize Container [Feature:InPlacePodVerticalScaling]", func()
+      # This job does not focus on serial but runs both in serial. Work item to add parallel tests is tracked by issue kubernetes/kubernetes#116431
       - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=1
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
