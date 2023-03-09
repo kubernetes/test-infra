@@ -34,8 +34,3 @@ prefixes:
     repo: "https://github.com/kubernetes/test-infra"
     summarise: false
     consistentImages: false
-  - name: "test-infra images"
-    prefix: "k8s.gcr.io/test-infra"
-    repo: "https://github.com/kubernetes/test-infra"
-    summarise: false
-    consistentImages: false
