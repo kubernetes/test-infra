@@ -1377,7 +1377,7 @@ periodics:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: gcp-kubelet-credential-provider
     description: "tests feature gcp kubelet image credential provider"
-- name: ci-cos-cgroupv2-inplace-pod-resize-containerd-main-e2e-gce
+- name: ci-cos-cgroupv2-inplace-pod-resize-containerd-main-e2e-gce-serial
   interval: 24h
   labels:
     preset-service-account: "true"
@@ -1400,18 +1400,22 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=1
       - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=1
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=2
+      # Currently, in-place pod resize tests have two SIGDescribe jobs:
+      #   var _ = SIGDescribe("[Serial] Pod InPlace Resize Container (scheduler-focussed) [Feature:InPlacePodVerticalScaling]", func() {
+      #   var _ = SIGDescribe("Pod InPlace Resize Container [Feature:InPlacePodVerticalScaling]", func()
+      # This job does not focus on serial but runs both in serial. Work item to add parallel tests is tracked by issue kubernetes/kubernetes#116431
+      - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=1
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv2-inplace-pod-resize-containerd-e2e
-    description: Runs cluster e2e test with FOCUS=[Feature:InPlacePodVerticalScaling] enabling all alpha features with cgroup v2
-- name: ci-cos-cgroupv1-inplace-pod-resize-containerd-main-e2e-gce
+    testgrid-tab-name: cos-cgroupv2-inplace-pod-resize-containerd-e2e-serial
+    description: Runs cluster e2e pod resize tests in serial with FOCUS=[Feature:InPlacePodVerticalScaling] with cgroup v2
+- name: ci-cos-cgroupv1-inplace-pod-resize-containerd-main-e2e-gce-serial
   interval: 48h
   labels:
     preset-service-account: "true"
@@ -1434,17 +1438,21 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-nodes=1
       - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=30
+      - --ginkgo-parallel=1
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=2
+      # Currently, in-place pod resize tests have two SIGDescribe jobs:
+      #   var _ = SIGDescribe("[Serial] Pod InPlace Resize Container (scheduler-focussed) [Feature:InPlacePodVerticalScaling]", func() {
+      #   var _ = SIGDescribe("Pod InPlace Resize Container [Feature:InPlacePodVerticalScaling]", func()
+      # This job does not focus on serial but runs both in serial. Work item to add parallel tests is tracked by issue kubernetes/kubernetes#116431
+      - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\] --minStartupPods=1
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv1-inplace-pod-resize-containerd-e2e
-    description: Runs cluster e2e test with FOCUS=[Feature:InPlacePodVerticalScaling] enabling all alpha features with cgroup v1
+    testgrid-tab-name: cos-cgroupv1-inplace-pod-resize-containerd-e2e-serial
+    description: Runs cluster e2e pod resize tests in serial with FOCUS=[Feature:InPlacePodVerticalScaling] with cgroup v1
 - name: ci-kubernetes-node-release-branch-1-24
   interval: 24h
   labels:
