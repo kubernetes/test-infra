@@ -16,11 +16,24 @@
           "source": "data:,%5Bupdates%5D%0Aenabled%20%3D%20false%0A"
         },
         "mode": 420
+      },
+      {
+        "path": "/root/kubelet-e2e.te",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/6RRy07DMBC8+ytG4gwCjkT9lsp1BrTKxjbOWhWK+u+ItiFpE07scWcf83B9aqsSXT1QaY98JV6enhvnCj+rFGJ0uJZ9ZUKy+YNy2FtzC4SPkmpetevAsrd+DUgUWx9J0bzEn5UZCeqHAa0UjJAUTBEKvREpM+JYxIjT/fi7KDHC58zYTguaQofe58tmoW9RGH1P1KgSu/nYybmH3bKufHHT3Dmvmo4TNmt9++f7++cLX7YZLAcWNC6mbdq10vcb7B8aZ3yK+nz+nEjjvgMAAP//f1Vw5EkCAAA="
+        },
+        "mode": 420
       }
     ]
   },
   "systemd": {
     "units": [
+      {
+        "contents": "[Unit]\nDescription=Setup SELinux policy\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStartPre=setenforce 1\nExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te\nExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod\nExecStart=semodule -i /root/kubelet-e2e.pp\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "selinux-install.service"
+      },
       {
         "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStartPre=/usr/bin/bash -c '\\\n  /usr/bin/curl --fail --retry 5 \\\n    --retry-delay 3 --silent --show-error \\\n    -o /usr/local/crio-nodee2e-installer.sh  \\\n    https://raw.githubusercontent.com/cri-o/cri-o/fa0d058141343ee38b8339ea41f580c361271372/scripts/node_e2e_installer \u0026\u0026 \\\n  /usr/bin/ln -s /usr/bin/runc /usr/local/bin/runc'\nExecStart=/usr/bin/bash /usr/local/crio-nodee2e-installer.sh\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,

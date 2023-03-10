@@ -7,11 +7,28 @@ storage:
       contents:
         local: 90-disable-auto-updates.toml
       mode: 0644
-kernel_arguments:
-  should_exist:
-    - systemd.unified_cgroup_hierarchy=0
+    - path: /root/kubelet-e2e.te
+      contents:
+        local: kubelet-e2e.te
+      mode: 0644
 systemd:
   units:
+    - name: selinux-install.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Setup SELinux policy
+        After=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStartPre=setenforce 1
+        ExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te
+        ExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod
+        ExecStart=semodule -i /root/kubelet-e2e.pp
+
+        [Install]
+        WantedBy=multi-user.target
     - name: dbus-tools-install.service
       enabled: true
       contents: |
@@ -48,3 +65,6 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+kernel_arguments:
+  should_exist:
+    - systemd.unified_cgroup_hierarchy=0
