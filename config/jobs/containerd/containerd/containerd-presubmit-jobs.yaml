@@ -4,8 +4,8 @@ presubmits:
     always_run: true
     branches:
     - main
-    - release/1.5
     - release/1.6
+    - release/1.7
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-containerd
@@ -31,7 +31,7 @@ presubmits:
     decorate: true
     branches:
     - main
-    - release/1.6
+    - release/1.7
     decoration_config:
       timeout: 100m
     extra_refs:
@@ -77,18 +77,18 @@ presubmits:
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
-  - name: pull-containerd-node-e2e-1-5
+  - name: pull-containerd-node-e2e-1-6
     always_run: true
     max_concurrency: 8
     decorate: true
     branches:
-    - release/1.5
+    - release/1.6
     decoration_config:
       timeout: 100m
     extra_refs:
     - org: kubernetes
       repo: kubernetes
-      base_ref: release-1.25
+      base_ref: master
       path_alias: k8s.io/kubernetes
     - org: kubernetes
       repo: test-infra
@@ -96,14 +96,14 @@ presubmits:
       path_alias: k8s.io/test-infra
     annotations:
       testgrid-dashboards: sig-node-containerd
-      testgrid-tab-name: pull-containerd-node-e2e-1-5
+      testgrid-tab-name: pull-containerd-node-e2e-1-6
       description: run node e2e tests
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - name: pull-containerd-node-e2e-1-5
+      - name: pull-containerd-node-e2e-1-6
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
@@ -126,7 +126,7 @@ presubmits:
           --provider=gce
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
-          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.5-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-release-1.6-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
   - name: pull-containerd-sandboxed-node-e2e
     always_run: false

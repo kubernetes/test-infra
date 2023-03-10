@@ -58,7 +58,7 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build
     description: "builds development in progress branch of upstream containerd"
-- name: ci-containerd-build-1-5
+- name: ci-containerd-build-1-6
   interval: 30m
   labels:
     preset-service-account: "true"
@@ -66,17 +66,17 @@ periodics:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         args:
-          - --repo=github.com/containerd/containerd=release/1.5
+          - --repo=github.com/containerd/containerd=release/1.6
           - --root=/go/src
           - --upload=gs://kubernetes-jenkins/logs
           - --scenario=execute
           - --
-          - --env=DEPLOY_DIR=release-1.5
+          - --env=DEPLOY_DIR=release-1.6
           - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-build-1.5
-    description: "builds release/1.5 branch of upstream containerd"
+    testgrid-tab-name: containerd-build-1.6
+    description: "builds release/1.6 branch of upstream containerd"
 - name: ci-containerd-build-test-images
   interval: 4h
   labels:
@@ -100,7 +100,7 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-build-test-images
     description: "builds test images for development in progress branch of upstream containerd"
-- name: ci-containerd-build-1-6
+- name: ci-containerd-build-1-7
   interval: 30m
   labels:
     preset-service-account: "true"
@@ -108,17 +108,17 @@ periodics:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         args:
-          - --repo=github.com/containerd/containerd=release/1.6
+          - --repo=github.com/containerd/containerd=release/1.7
           - --root=/go/src
           - --upload=gs://kubernetes-jenkins/logs
           - --scenario=execute
           - --
-          - --env=DEPLOY_DIR=release-1.6
+          - --env=DEPLOY_DIR=release-1.7
           - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-build-1.6
-    description: "builds release/1.6 branch of upstream containerd"
+    testgrid-tab-name: containerd-build-1.7
+    description: "builds release/1.7 branch of upstream containerd"
 - interval: 1h
   name: ci-containerd-e2e-ubuntu-gce
   labels:
@@ -253,7 +253,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv1-containerd-node-e2e-serial
-- name: ci-containerd-node-e2e-1-5
+- name: ci-containerd-node-e2e-1-6
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -265,11 +265,11 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.25
-      - --repo=github.com/containerd/containerd=release/1.5
+      - --repo=github.com/containerd/containerd=release/1.6
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.5/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.6/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -289,8 +289,8 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-1.5
-- name: ci-containerd-node-e2e-1-6
+    testgrid-tab-name: containerd-node-e2e-1.6
+- name: ci-containerd-node-e2e-1-7
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -302,11 +302,11 @@ periodics:
         args:
           - --root=/go/src
           - --repo=k8s.io/kubernetes=master
-          - --repo=github.com/containerd/containerd=release/1.6
+          - --repo=github.com/containerd/containerd=release/1.7
           - --timeout=90
           - --scenario=kubernetes_e2e
           - --
-          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.6/image-config.yaml
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.7/image-config.yaml
           - --deployment=node
           - --gcp-zone=us-central1-b
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -326,8 +326,8 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-1.6
-- name: ci-containerd-node-e2e-features-1-5
+    testgrid-tab-name: containerd-node-e2e-1.7
+- name: ci-containerd-node-e2e-features-1-6
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -339,11 +339,11 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.25
-      - --repo=github.com/containerd/containerd=release/1.5
+      - --repo=github.com/containerd/containerd=release/1.6
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.5/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.6/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -363,8 +363,8 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-features-1.5
-- name: ci-containerd-node-e2e-features-1-6
+    testgrid-tab-name: containerd-node-e2e-features-1.6
+- name: ci-containerd-node-e2e-features-1-7
   cluster: k8s-infra-prow-build
   interval: 24h
   labels:
@@ -376,11 +376,11 @@ periodics:
         args:
           - --root=/go/src
           - --repo=k8s.io/kubernetes=master
-          - --repo=github.com/containerd/containerd=release/1.6
+          - --repo=github.com/containerd/containerd=release/1.7
           - --timeout=90
           - --scenario=kubernetes_e2e
           - --
-          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.6/image-config.yaml
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.7/image-config.yaml
           - --deployment=node
           - --gcp-zone=us-central1-b
           - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -400,7 +400,7 @@ periodics:
             memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-features-1.6
+    testgrid-tab-name: containerd-node-e2e-features-1.7
 
 # Disabled on 2022-02-28 because the job is consistently failing or skipping all tests
 # https://testgrid.k8s.io/sig-node-cos#soak-cos-gce&width=5&sort-by-failures=
