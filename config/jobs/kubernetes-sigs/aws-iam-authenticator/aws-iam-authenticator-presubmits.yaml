@@ -62,6 +62,7 @@ presubmits:
     branches:
     - master
     - release-0.5
+    - release-0.6
   - name: pull-aws-iam-authenticator-e2e-kind
     always_run: true
     decorate: true
@@ -90,3 +91,4 @@ presubmits:
     branches:
     - master
     - release-0.5
+    - release-0.6
