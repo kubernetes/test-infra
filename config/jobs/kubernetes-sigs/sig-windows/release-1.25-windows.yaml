@@ -8,6 +8,8 @@ presets:
     value: "-kubetest.use-ci-artifacts"
   - name: WINDOWS
     value: "true"
+  - name: TEST_WINDOWS #temp to unblock failing jobs on windows while we fix this in capz (https://github.com/kubernetes/kubernetes/issues/116474)
+    value: "true"
   - name: AZURE_NODE_MACHINE_TYPE
     value: "Standard_D4s_v3"
 periodics:
