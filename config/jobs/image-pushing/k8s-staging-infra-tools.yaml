@@ -8,6 +8,8 @@ postsubmits:
     decorate: true
     branches:
     - ^main$
+    # release tags
+    - ^v\d+.*
     spec:
       serviceAccountName: gcb-builder
       containers:
