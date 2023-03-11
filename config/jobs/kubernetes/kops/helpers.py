@@ -96,10 +96,8 @@ def k8s_version_info(k8s_version):
         raise Exception('missing required k8s_version')
     return marker, k8s_deploy_url, test_package_bucket, test_package_dir
 
-def create_args(kops_channel, networking, container_runtime, extra_flags, kops_image):
+def create_args(kops_channel, networking, extra_flags, kops_image):
     args = f"--channel={kops_channel} --networking=" + networking
-    if container_runtime:
-        args += f" --container-runtime={container_runtime}"
 
     image_overridden = False
     if extra_flags:

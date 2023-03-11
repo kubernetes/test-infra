@@ -2,7 +2,7 @@
 # 49 jobs, total of 2072 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k119-ko124-to-k120-ko125
   cron: '59 2-23/3 * * *'
   labels:
@@ -55,7 +55,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -65,7 +64,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k119-ko124-to-k120-ko125
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k123-ko124-to-k123-ko125
   cron: '9 0-23/3 * * *'
   labels:
@@ -120,7 +119,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -130,7 +128,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k123-ko124-to-k123-ko125
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k123-ko124-to-k123-ko125-many-addons
   cron: '49 3-23/6 * * *'
   labels:
@@ -191,7 +189,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -201,7 +198,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k123-ko124-to-k123-ko125-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k121-ko125-to-k122-ko125
   cron: '12 0-23/3 * * *'
   labels:
@@ -254,7 +251,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -264,7 +260,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k121-ko125-to-k122-ko125
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k121-ko125-to-k122-ko125-many-addons
   cron: '18 2-23/6 * * *'
   labels:
@@ -323,7 +319,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -333,7 +328,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k121-ko125-to-k122-ko125-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko125-to-k125-ko125
   cron: '53 2-23/3 * * *'
   labels:
@@ -388,7 +383,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -398,7 +392,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k125-ko125-to-k125-ko125
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko125-to-k125-ko125-many-addons
   cron: '21 1-23/6 * * *'
   labels:
@@ -459,7 +453,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -469,7 +462,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k125-ko125-to-k125-ko125-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k120-ko124-to-k121-ko126
   cron: '45 2-23/3 * * *'
   labels:
@@ -522,7 +515,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -532,7 +524,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k120-ko124-to-k121-ko126
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k120-ko124-to-k121-ko126-many-addons
   cron: '47 1-23/6 * * *'
   labels:
@@ -591,7 +583,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -601,7 +592,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k120-ko124-to-k121-ko126-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko124-to-k125-ko126
   cron: '1 0-23/3 * * *'
   labels:
@@ -656,7 +647,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -666,7 +656,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k124-ko124-to-k125-ko126
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko124-to-k125-ko126-many-addons
   cron: '21 3-23/6 * * *'
   labels:
@@ -727,7 +717,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -737,7 +726,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k124-ko124-to-k125-ko126-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k120-ko125-to-k121-ko126
   cron: '49 2-23/3 * * *'
   labels:
@@ -790,7 +779,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -800,7 +788,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k120-ko125-to-k121-ko126
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k120-ko125-to-k121-ko126-many-addons
   cron: '30 4-23/6 * * *'
   labels:
@@ -859,7 +847,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -869,7 +856,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k120-ko125-to-k121-ko126-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko125-to-k126-ko126
   cron: '38 2-23/3 * * *'
   labels:
@@ -924,7 +911,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -934,7 +920,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k125-ko125-to-k126-ko126
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko125-to-k126-ko126-many-addons
   cron: '46 0-23/6 * * *'
   labels:
@@ -995,7 +981,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1005,7 +990,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k125-ko125-to-k126-ko126-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k121-ko1260-beta1-to-k122-ko126
   cron: '20 0-23/3 * * *'
   labels:
@@ -1058,7 +1043,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1068,7 +1052,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k121-ko1260-beta1-to-k122-ko126
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k121-ko1260-beta1-to-k122-ko126-many-addons
   cron: '24 2-23/6 * * *'
   labels:
@@ -1127,7 +1111,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1137,7 +1120,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k121-ko1260-beta1-to-k122-ko126-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko1260-beta1-to-k126-ko126
   cron: '40 2-23/3 * * *'
   labels:
@@ -1192,7 +1175,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1202,7 +1184,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k126-ko1260-beta1-to-k126-ko126
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-ko1260-beta1-to-k126-ko126-many-addons
   cron: '41 3-23/6 * * *'
   labels:
@@ -1263,7 +1245,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1273,7 +1254,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k126-ko1260-beta1-to-k126-ko126-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k123-ko124-to-k124-kolatest
   cron: '48 0-23/3 * * *'
   labels:
@@ -1328,7 +1309,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1338,7 +1318,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k123-ko124-to-k124-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k123-ko124-to-k124-kolatest-many-addons
   cron: '8 2-23/6 * * *'
   labels:
@@ -1399,7 +1379,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1409,7 +1388,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k123-ko124-to-k124-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko124-to-k125-kolatest
   cron: '1 1-23/3 * * *'
   labels:
@@ -1464,7 +1443,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1474,7 +1452,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k124-ko124-to-k125-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko124-to-k125-kolatest-many-addons
   cron: '25 3-23/6 * * *'
   labels:
@@ -1535,7 +1513,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1545,7 +1522,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k124-ko124-to-k125-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko125-to-k125-kolatest
   cron: '8 0-23/3 * * *'
   labels:
@@ -1600,7 +1577,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1610,7 +1586,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k124-ko125-to-k125-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko125-to-k125-kolatest-many-addons
   cron: '33 3-23/6 * * *'
   labels:
@@ -1671,7 +1647,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1681,7 +1656,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k124-ko125-to-k125-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko125-to-k126-kolatest
   cron: '0 1-23/3 * * *'
   labels:
@@ -1736,7 +1711,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1746,7 +1720,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k125-ko125-to-k126-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko125-to-k126-kolatest-many-addons
   cron: '20 4-23/6 * * *'
   labels:
@@ -1807,7 +1781,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1817,7 +1790,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k125-ko125-to-k126-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k121-ko1260-beta1-to-k122-kolatest
   cron: '42 0-23/3 * * *'
   labels:
@@ -1870,7 +1843,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1880,7 +1852,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k121-ko1260-beta1-to-k122-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k121-ko1260-beta1-to-k122-kolatest-many-addons
   cron: '23 2-23/6 * * *'
   labels:
@@ -1939,7 +1911,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -1949,7 +1920,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k121-ko1260-beta1-to-k122-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko1260-beta1-to-k125-kolatest
   cron: '50 1-23/3 * * *'
   labels:
@@ -2004,7 +1975,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2014,7 +1984,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k124-ko1260-beta1-to-k125-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-ko1260-beta1-to-k125-kolatest-many-addons
   cron: '29 0-23/6 * * *'
   labels:
@@ -2075,7 +2045,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2085,7 +2054,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k124-ko1260-beta1-to-k125-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko1260-beta1-to-k125-kolatest
   cron: '43 1-23/3 * * *'
   labels:
@@ -2140,7 +2109,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2150,7 +2118,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k125-ko1260-beta1-to-k125-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko1260-beta1-to-k125-kolatest-many-addons
   cron: '26 3-23/6 * * *'
   labels:
@@ -2211,7 +2179,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2221,7 +2188,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k125-ko1260-beta1-to-k125-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko1260-beta1-to-k126-kolatest
   cron: '4 2-23/3 * * *'
   labels:
@@ -2276,7 +2243,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2286,7 +2252,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k125-ko1260-beta1-to-k126-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-ko1260-beta1-to-k126-kolatest-many-addons
   cron: '6 1-23/6 * * *'
   labels:
@@ -2347,7 +2313,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2357,7 +2322,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k125-ko1260-beta1-to-k126-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-kolatest-to-klatest-kolatest
   cron: '27 0-23/3 * * *'
   labels:
@@ -2412,7 +2377,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2422,7 +2386,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k126-kolatest-to-klatest-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k126-kolatest-to-klatest-kolatest-many-addons
   cron: '13 0-23/6 * * *'
   labels:
@@ -2483,7 +2447,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2493,7 +2456,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k126-kolatest-to-klatest-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest
   cron: '38 0-23/3 * * *'
   labels:
@@ -2548,7 +2511,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2558,7 +2520,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k125-kolatest-to-k126-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k125-kolatest-to-k126-kolatest-many-addons
   cron: '52 0-23/6 * * *'
   labels:
@@ -2619,7 +2581,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2629,7 +2590,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k125-kolatest-to-k126-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest
   cron: '40 2-23/3 * * *'
   labels:
@@ -2684,7 +2645,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2694,7 +2654,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k124-kolatest-to-k125-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-k125-kolatest-many-addons
   cron: '29 1-23/6 * * *'
   labels:
@@ -2755,7 +2715,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2765,7 +2724,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k124-kolatest-to-k125-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k123-kolatest-to-k124-kolatest
   cron: '0 2-23/3 * * *'
   labels:
@@ -2820,7 +2779,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2830,7 +2788,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k123-kolatest-to-k124-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k123-kolatest-to-k124-kolatest-many-addons
   cron: '27 1-23/6 * * *'
   labels:
@@ -2891,7 +2849,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2901,7 +2858,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k123-kolatest-to-k124-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k122-kolatest-to-k123-kolatest
   cron: '28 1-23/3 * * *'
   labels:
@@ -2956,7 +2913,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -2966,7 +2922,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k122-kolatest-to-k123-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k122-kolatest-to-k123-kolatest-many-addons
   cron: '10 4-23/6 * * *'
   labels:
@@ -3027,7 +2983,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -3037,7 +2992,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-k122-kolatest-to-k123-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest
   cron: '59 1-23/3 * * *'
   labels:
@@ -3090,7 +3045,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -3100,7 +3054,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest-many-addons
   cron: '7 2-23/6 * * *'
   labels:
@@ -3159,7 +3113,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -3169,7 +3122,7 @@ periodics:
     testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-upgrade-kstable-kolatest-to-klatest-kolatest-many-addons
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-kci-kolatest
   cron: '52 1-23/3 * * *'
   labels:
@@ -3222,7 +3175,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
@@ -3232,7 +3184,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-kstable-kolatest-to-kci-kolatest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-kstable-kolatest-to-kci-kolatest-many-addons
   cron: '20 5-23/6 * * *'
   labels:
@@ -3291,7 +3243,6 @@ periodics:
         privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
