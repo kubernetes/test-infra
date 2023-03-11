@@ -401,10 +401,6 @@ kops_versions = [
     "1.26"
 ]
 
-container_runtimes = [
-    "docker",
-    "containerd",
-]
 
 ############################
 # kops-periodics-grid.yaml #
@@ -412,23 +408,21 @@ container_runtimes = [
 def generate_grid():
     results = []
     # pylint: disable=too-many-nested-blocks
-    for container_runtime in container_runtimes:
-        for networking in networking_options:
-            for distro in distro_options:
-                for k8s_version in k8s_versions:
-                    for kops_version in kops_versions:
-                        if networking == 'cilium-eni' and kops_version in ['1.25']:
-                            continue
-                        results.append(
-                            build_test(cloud="aws",
-                                       distro=distro,
-                                       extra_dashboards=['kops-grid'],
-                                       k8s_version=k8s_version,
-                                       kops_version=kops_version,
-                                       networking=networking,
-                                       irsa=False,
-                                       container_runtime=container_runtime)
-                        )
+    for networking in networking_options:
+        for distro in distro_options:
+            for k8s_version in k8s_versions:
+                for kops_version in kops_versions:
+                    if networking == 'cilium-eni' and kops_version in ['1.25']:
+                        continue
+                    results.append(
+                        build_test(cloud="aws",
+                                    distro=distro,
+                                    extra_dashboards=['kops-grid'],
+                                    k8s_version=k8s_version,
+                                    kops_version=kops_version,
+                                    networking=networking,
+                                    irsa=False)
+                    )
 
     # Manually expand grid coverage for GCP
     # TODO(justinsb): merge into above block when we can
@@ -1175,15 +1169,6 @@ def generate_presubmits_e2e():
             tab_name='e2e-containerd-ci-ha',
             always_run=False,
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-        ),
-        presubmit_test(
-            container_runtime='docker',
-            distro='u2204arm64',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-docker',
-            tab_name='e2e-docker',
-            always_run=False,
         ),
         presubmit_test(
             distro='u2204arm64',
