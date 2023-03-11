@@ -408,12 +408,12 @@ def generate_grid():
                         continue
                     results.append(
                         build_test(cloud="aws",
-                                    distro=distro,
-                                    extra_dashboards=['kops-grid'],
-                                    k8s_version=k8s_version,
-                                    kops_version=kops_version,
-                                    networking=networking,
-                                    irsa=False)
+                                   distro=distro,
+                                   extra_dashboards=['kops-grid'],
+                                   k8s_version=k8s_version,
+                                   kops_version=kops_version,
+                                   networking=networking,
+                                   irsa=False)
                     )
 
     # Manually expand grid coverage for GCP
