@@ -190,7 +190,6 @@ def build_test(cloud='aws',
         'distro': distro,
         'k8s_version': k8s_version,
         'kops_version': kops_version,
-        'container_runtime': 'containerd',
         'kops_channel': kops_channel,
     }
     if feature_flags:
@@ -327,7 +326,6 @@ def presubmit_test(branch='master',
         'networking': networking,
         'distro': distro,
         'k8s_version': k8s_version,
-        'container_runtime': 'containerd',
         'kops_channel': kops_channel,
     }
     if feature_flags:

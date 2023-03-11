@@ -98,7 +98,6 @@ def k8s_version_info(k8s_version):
 
 def create_args(kops_channel, networking, extra_flags, kops_image):
     args = f"--channel={kops_channel} --networking=" + networking
-    args += f" --container-runtime=containerd"
 
     image_overridden = False
     if extra_flags:
