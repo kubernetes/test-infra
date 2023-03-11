@@ -45,7 +45,6 @@ loader = jinja2.FileSystemLoader(searchpath="./templates")
 def build_test(cloud='aws',
                distro='u2204',
                networking='cilium',
-               container_runtime='containerd',
                irsa=True,
                k8s_version='ci',
                kops_channel='alpha',
@@ -76,8 +75,6 @@ def build_test(cloud='aws',
         kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
     if should_skip_newer_k8s(k8s_version, kops_version):
-        return None
-    if container_runtime == 'docker' and k8s_version not in ('1.21', '1.22', '1.23'):
         return None
     if networking == 'kopeio' and distro in ('flatcar', 'flatcararm64'):
         return None
@@ -116,8 +113,6 @@ def build_test(cloud='aws',
         suffix += "-k" + k8s_version.replace("1.", "")
     if kops_version:
         suffix += "-ko" + kops_version.replace("1.", "")
-    if container_runtime and container_runtime != "containerd":
-        suffix += "-" + container_runtime
 
     tab = name_override or (f"kops-grid{suffix}")
     job_name = f"e2e-{tab}"
@@ -128,7 +123,7 @@ def build_test(cloud='aws',
         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
-    args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
+    args = create_args(kops_channel, networking, extra_flags, kops_image)
 
     node_ig_overrides = ""
     cp_ig_overrides = ""
@@ -195,7 +190,7 @@ def build_test(cloud='aws',
         'distro': distro,
         'k8s_version': k8s_version,
         'kops_version': kops_version,
-        'container_runtime': container_runtime,
+        'container_runtime': 'containerd',
         'kops_channel': kops_channel,
     }
     if feature_flags:
@@ -242,7 +237,6 @@ def presubmit_test(branch='master',
                    cloud='aws',
                    distro='u2204',
                    networking='cilium',
-                   container_runtime='containerd',
                    irsa=True,
                    k8s_version='stable',
                    kops_channel='alpha',
@@ -281,7 +275,7 @@ def presubmit_test(branch='master',
         extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
-    args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
+    args = create_args(kops_channel, networking, extra_flags, kops_image)
 
     # Scenario-specific parameters
     if env is None:
@@ -333,7 +327,7 @@ def presubmit_test(branch='master',
         'networking': networking,
         'distro': distro,
         'k8s_version': k8s_version,
-        'container_runtime': container_runtime,
+        'container_runtime': 'containerd',
         'kops_channel': kops_channel,
     }
     if feature_flags:
@@ -1235,7 +1229,6 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
             networking='calico',
-            container_runtime='containerd',
             tab_name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
             always_run=False,
             feature_flags=['GoogleCloudBucketACL'],
