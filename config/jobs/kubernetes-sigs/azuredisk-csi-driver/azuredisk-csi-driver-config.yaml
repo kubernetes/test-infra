@@ -6,7 +6,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
     spec:
@@ -51,7 +51,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -76,7 +76,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -101,7 +101,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -151,7 +151,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -202,7 +202,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -255,7 +255,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -311,7 +311,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -470,7 +470,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
     spec:
@@ -544,7 +544,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -598,7 +598,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -655,7 +655,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -709,7 +709,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -766,7 +766,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -825,7 +825,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -867,7 +867,7 @@ presubmits:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
-    - release-1.26
+    - ^release-.+$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
