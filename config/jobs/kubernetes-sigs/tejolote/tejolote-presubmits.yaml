@@ -7,7 +7,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
         imagePullPolicy: Always
         command:
         - go
@@ -34,7 +34,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
         imagePullPolicy: Always
         command:
         - go
