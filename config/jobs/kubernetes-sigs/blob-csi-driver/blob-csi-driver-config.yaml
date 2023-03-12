@@ -376,9 +376,11 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e-capz
     decorate: true
-    always_run: false
-    optional: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
+    branches:
+    - master
+    - release-1.26
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -390,6 +392,11 @@ presubmits:
         base_ref: release-1.8
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
@@ -407,8 +414,10 @@ presubmits:
           env:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest"
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver
-      testgrid-tab-name: pull-blob-csi-driver-e2e-capz
+      testgrid-tab-name: pr-blob-csi-driver-e2e-capz
       description: "Run E2E tests on a capz cluster for Blob CSI driver."
       testgrid-num-columns-recent: '30'
