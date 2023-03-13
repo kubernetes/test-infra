@@ -2013,20 +2013,6 @@ func TestEditTeam(t *testing.T) {
 	}
 }
 
-func TestListTeamMembers(t *testing.T) {
-	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}}, http.StatusOK)
-	defer ts.Close()
-	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers("orgName", 1, RoleAll)
-	if err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	} else if len(teamMembers) != 1 {
-		t.Errorf("Expected one team member, found %d: %v", len(teamMembers), teamMembers)
-	} else if teamMembers[0].Login != "foo" {
-		t.Errorf("Wrong team names: %v", teamMembers)
-	}
-}
-
 func TestListTeamMembersBySlug(t *testing.T) {
 	ts := simpleTestServer(t, "/orgs/orgName/teams/team-name/members", []TeamMember{{Login: "foo"}}, http.StatusOK)
 	defer ts.Close()

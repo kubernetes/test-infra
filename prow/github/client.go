@@ -200,7 +200,6 @@ type TeamClient interface {
 	UpdateTeamMembershipBySlug(org, teamSlug, user string, maintainer bool) (*TeamMembership, error)
 	RemoveTeamMembership(org string, id int, user string) error
 	RemoveTeamMembershipBySlug(org, teamSlug, user string) error
-	ListTeamMembers(org string, id int, role string) ([]TeamMember, error)
 	ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember, error)
 	ListTeamRepos(org string, id int) ([]Repo, error)
 	ListTeamReposBySlug(org, teamSlug string) ([]Repo, error)
@@ -213,6 +212,7 @@ type TeamClient interface {
 	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
+	GetTeamById(id int) (*Team, error)
 }
 
 // UserClient interface for user related API actions
@@ -3871,44 +3871,6 @@ func (c *client) RemoveTeamMembershipBySlug(org, teamSlug, user string) error {
 	return err
 }
 
-// ListTeamMembers gets a list of team members for the given team id
-//
-// Role options are "all", "maintainer" and "member"
-//
-// https://developer.github.com/v3/teams/members/#list-team-members
-// Deprecated: please use ListTeamMembersBySlug
-func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember, error) {
-	c.logger.WithField("methodName", "ListTeamMembers").
-		Warn("method is deprecated, please use ListTeamMembersBySlug")
-	durationLogger := c.log("ListTeamMembers", id, role)
-	defer durationLogger()
-
-	if c.fake {
-		return nil, nil
-	}
-	path := fmt.Sprintf("/teams/%d/members", id)
-	var teamMembers []TeamMember
-	err := c.readPaginatedResultsWithValues(
-		path,
-		url.Values{
-			"per_page": []string{"100"},
-			"role":     []string{role},
-		},
-		"application/vnd.github+json",
-		org,
-		func() interface{} {
-			return &[]TeamMember{}
-		},
-		func(obj interface{}) {
-			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return teamMembers, nil
-}
-
 // ListTeamMembersBySlug gets a list of team members for the given team slug
 //
 // Role options are "all", "maintainer" and "member"
@@ -4895,7 +4857,11 @@ func (c *client) TeamHasMember(org string, teamID int, memberLogin string) (bool
 	durationLogger := c.log("TeamHasMember", teamID, memberLogin)
 	defer durationLogger()
 
-	projectMaintainers, err := c.ListTeamMembers(org, teamID, RoleAll)
+	team, err := c.GetTeamById(teamID)
+	if err != nil {
+		return false, err
+	}
+	projectMaintainers, err := c.ListTeamMembersBySlug(org, team.Slug, RoleAll)
 	if err != nil {
 		return false, err
 	}
@@ -4938,6 +4904,29 @@ func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/orgs/%s/teams/%s", org, slug),
 		org:       org,
+		exitCodes: []int{200},
+	}, &team)
+	if err != nil {
+		return nil, err
+	}
+	return &team, err
+}
+
+// GetTeamById returns information about that team
+//
+// See https://developer.github.com/v3/teams/#get-a-team-legacy
+// Deprecated: please use GetTeamBySlug
+func (c *client) GetTeamById(id int) (*Team, error) {
+	durationLogger := c.log("GetTeamById", id)
+	defer durationLogger()
+
+	if c.fake {
+		return &Team{}, nil
+	}
+	var team Team
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/teams/%d", id),
 		exitCodes: []int{200},
 	}, &team)
 	if err != nil {

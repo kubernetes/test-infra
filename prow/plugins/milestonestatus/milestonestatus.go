@@ -47,7 +47,6 @@ var (
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
-	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
 	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 }
 
@@ -138,8 +137,5 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 }
 
 func determineMaintainers(gc githubClient, milestone plugins.Milestone, org string) ([]github.TeamMember, error) {
-	if milestone.MaintainersTeam != "" {
-		return gc.ListTeamMembersBySlug(org, milestone.MaintainersTeam, github.RoleAll)
-	}
-	return gc.ListTeamMembers(org, milestone.MaintainersID, github.RoleAll)
+	return gc.ListTeamMembersBySlug(org, milestone.MaintainersTeam, github.RoleAll)
 }
