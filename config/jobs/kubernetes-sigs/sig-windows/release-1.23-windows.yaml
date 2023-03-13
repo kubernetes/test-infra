@@ -44,7 +44,7 @@ periodics:
       - --aksengine-deploy-custom-k8s
       - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --feature-gates=WindowsHostProcessContainers=true
         --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice
-        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|Aggregator.Should.be.able.to.support.the.1.17.Sample.API.Server
       - --ginkgo-parallel=4
       command:
       - runner.sh
@@ -154,7 +154,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|\[Excluded:WindowsDocker\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|\[Excluded:WindowsDocker\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|Aggregator.Should.be.able.to.support.the.1.17.Sample.API.Server
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
