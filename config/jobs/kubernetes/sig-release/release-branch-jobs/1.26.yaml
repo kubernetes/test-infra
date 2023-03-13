@@ -962,6 +962,10 @@ presubmits:
     cluster: k8s-infra-prow-build
     context: pull-kubernetes-verify-govet-levee
     decorate: true
+    annotations:
+      # TODO: as soon as the 1.26 release branch gets removed, also remove all references
+      # to pull-kubernetes-verify-govet-levee from the test-infra repo
+      testgrid-create-test-group: "true"
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
