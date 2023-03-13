@@ -70,6 +70,13 @@ presubmits:
         command:
         - make
         - test
+        resources:
+          limits:
+            memory: 9Gi
+            cpu: 7
+          requests:
+            memory: 9Gi
+            cpu: 7
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-test-canary
