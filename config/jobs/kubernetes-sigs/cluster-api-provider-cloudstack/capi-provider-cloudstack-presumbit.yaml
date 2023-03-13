@@ -62,7 +62,6 @@ presubmits:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
         testgrid-tab-name: pr-build
       spec:
-        serviceaccountName: presubmits-build-account
         automountServiceAccountToken: false
         containers:
         - name: build-container
@@ -95,7 +94,6 @@ presubmits:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
         testgrid-tab-name: pr-unit-test
       spec:
-        serviceaccountName: presubmits-build-account
         automountServiceAccountToken: false
         containers:
         - name: build-container
