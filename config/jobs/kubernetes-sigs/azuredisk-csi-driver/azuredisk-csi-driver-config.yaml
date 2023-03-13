@@ -5,8 +5,7 @@ presubmits:
     always_run: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
     spec:
@@ -50,8 +49,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -75,8 +73,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -100,8 +97,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -150,8 +146,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -201,8 +196,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -254,8 +248,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -310,8 +303,7 @@ presubmits:
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -469,8 +461,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
     spec:
@@ -543,8 +534,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -597,8 +587,7 @@ presubmits:
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -654,8 +643,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -708,8 +696,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -765,8 +752,7 @@ presubmits:
     always_run: false
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -824,8 +810,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -866,8 +851,7 @@ presubmits:
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
-    - master
-    - release-1.26
+    - (master)|(^release-.+$)
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
