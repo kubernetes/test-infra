@@ -26,7 +26,7 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
       preset-capz-windows-2019: "true"
-      preset-capz-containerd-1-6-latest: "true"
+      preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
     extra_refs:
     - org: kubernetes-sigs
@@ -67,7 +67,7 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common-main: "true"
-      preset-capz-containerd-1-6-latest: "true"
+      preset-capz-containerd-1-7-latest: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -156,7 +156,7 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common-main: "true"
-      preset-capz-containerd-1-6-latest: "true"
+      preset-capz-containerd-1-7-latest: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
