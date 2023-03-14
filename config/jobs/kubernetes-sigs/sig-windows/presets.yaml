@@ -12,12 +12,12 @@ presets:
     preset-capz-containerd-1-6-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.6.18/containerd-1.6.18-windows-amd64.tar.gz"
+    value: "https://github.com/containerd/containerd/releases/download/v1.6.19/containerd-1.6.19-windows-amd64.tar.gz"
 - labels:
     preset-capz-containerd-1-7-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.7.0-rc.1/containerd-1.7.0-rc.1-windows-amd64.tar.gz"
+    value: "https://github.com/containerd/containerd/releases/download/v1.7.0/containerd-1.7.0-windows-amd64.tar.gz"
 - labels:
     preset-windows-repo-list: "true"
   env:

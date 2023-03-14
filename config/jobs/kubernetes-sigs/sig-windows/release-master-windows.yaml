@@ -85,7 +85,7 @@ periodics:
     preset-azure-anonymous-pull: "true"
     preset-capz-windows-common-main: "true"
     preset-capz-windows-2019: "true"
-    preset-capz-containerd-1-6-latest: "true"
+    preset-capz-containerd-1-7-latest: "true"
     preset-capz-windows-parallel: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -125,7 +125,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-capz-windows-common-main: "true"
-    preset-capz-containerd-1-6-latest: "true"
+    preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
     preset-windows-private-registry-cred: "true"
@@ -176,7 +176,7 @@ periodics:
     preset-azure-cred-only: "true"
     preset-capz-windows-common-main: "true"
     preset-capz-windows-2019: "true"
-    preset-capz-containerd-1-6-latest: "true"
+    preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
     preset-windows-private-registry-cred: "true"
   extra_refs:
@@ -225,7 +225,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-capz-windows-common-main: "true"
-    preset-capz-containerd-1-6-latest: "true"
+    preset-capz-containerd-1-7-latest: "true"
     preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
@@ -271,7 +271,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-capz-windows-common-main: "true"
-    preset-capz-containerd-1-6-latest: "true"
+    preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
     preset-windows-private-registry-cred: "true"
@@ -324,7 +324,7 @@ periodics:
     preset-azure-cred-only: "true"
     preset-windows-private-registry-cred: "true"
     preset-capz-windows-common-main: "true"
-    preset-capz-containerd-1-6-latest: "true"
+    preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
   extra_refs:
   - org: kubernetes-sigs
