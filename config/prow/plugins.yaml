@@ -304,6 +304,11 @@ blockades:
   exceptionregexps:
   - ^prow/(ANNOUNCEMENTS|README)\.md$
   explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4. Instructions for updating existing docs are at https://docs.prow.k8s.io/docs/contribution-guidelines/#updating-existing-docs."
+- repos:
+  - kubernetes/k8s.io
+  blockregexps:
+  - ^k8s.gcr.io/
+  explanation: "k8s.gcr.io Image registry is frozen from April 2023. Please update the manifests in registry.k8s.io folder instead"
 
 blunderbuss:
   max_request_count: 2
