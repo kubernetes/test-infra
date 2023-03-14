@@ -9,7 +9,7 @@ presubmits:
       description: build the kernel-module-management controller binary
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.20
         command:
         - ci/prow/build
   - name: pull-kernel-module-management-check-api-changes
@@ -21,7 +21,7 @@ presubmits:
       description: "make sure deployment manifests and bundle are up-to-date."
     spec:
       containers:
-      - image: docker.io/library/golang:1.19-alpine3.16
+      - image: golang:1.20-alpine
         command: [sh]
         args:
         - -c
@@ -60,7 +60,7 @@ presubmits:
       description: "lint the source code of kernel-module-management."
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.20
         command:
         - ci/prow/lint
   - name: pull-kernel-module-management-unit-tests
@@ -72,6 +72,6 @@ presubmits:
       description: "unit-tests the source code of kernel-module-management."
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.20
         command:
         - ci/prow/unit-tests
