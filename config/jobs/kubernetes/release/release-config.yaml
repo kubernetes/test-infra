@@ -72,11 +72,11 @@ presubmits:
         - test
         resources:
           limits:
-            memory: 9Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 500m
           requests:
-            memory: 9Gi
-            cpu: 7
+            memory: 2Gi
+            cpu: 500m
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-test-canary
