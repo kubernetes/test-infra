@@ -7,12 +7,11 @@ presubmits:
     always_run: false
     optional: true
     # run only if the following files are modified:
-    # - go.mod
     # - staging/src/k8s.io/apiserver/pkg/storage/value/
     # - staging/src/k8s.io/kms/
     # - staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/
     # - test/e2e/testing-manifests/auth/encrypt/
-    run_if_changed: 'go.mod|staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/'
+    run_if_changed: 'staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/'
     path_alias: k8s.io/kubernetes
     branches:
     - ^master$ # TODO(aramase): enable for release branches
@@ -39,7 +38,7 @@ presubmits:
         - ./test/e2e/testing-manifests/auth/encrypt/run-e2e.sh
 
 periodics:
-- interval: 12h
+- interval: 6h
   name: periodic-kubernetes-e2e-kind-kms
   decorate: true
   decoration_config:
@@ -56,7 +55,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   annotations:
-    testgrid-dashboards: sig-auth-encryption-at-rest
+    testgrid-dashboards: sig-auth-encryption-at-rest, sig-release-master-informing
     description: Runs conformance tests on a cluster with KMS encryption enabled at periodic intervals
   spec:
     containers:
