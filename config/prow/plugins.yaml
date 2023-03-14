@@ -1625,3 +1625,9 @@ external_plugins:
     - issue_comment
     - pull_request
     endpoint: http://cherrypicker
+  kubernetes-csi/external-snapshotter:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
