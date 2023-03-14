@@ -43,6 +43,13 @@ import (
 	cfg "k8s.io/test-infra/prow/config"
 )
 
+const (
+	clusterNameCritical = "k8s-infra-prow-build"
+	clusterNameEKS      = "eks-prow-build-cluster"
+	clusterNameInfra    = "test-infra-trusted"
+	clusterNameTrusted  = "k8s-infra-prow-build-trusted"
+)
+
 var configPath = flag.String("config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
 var deckPath = flag.String("deck-path", "https://prow.k8s.io", "Path to deck")
@@ -52,12 +59,20 @@ var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster
 // Loaded at TestMain.
 var c *cfg.Config
 
-func isCritical(clusterName string) bool {
-	return clusterName == "k8s-infra-prow-build"
+func isCriticalCluster(clusterName string) bool {
+	return clusterName == clusterNameCritical
 }
 
 func isEKSCluster(clusterName string) bool {
-	return clusterName == "eks-prow-build-cluster"
+	return clusterName == clusterNameEKS
+}
+
+func isInfraCluster(clusterName string) bool {
+	return clusterName == clusterNameInfra
+}
+
+func isTrustedCluster(clusterName string) bool {
+	return clusterName == clusterNameTrusted
 }
 
 func TestMain(m *testing.M) {
@@ -298,44 +313,42 @@ type SubmitQueueConfig struct {
 func TestTrustedJobs(t *testing.T) {
 	// TODO(fejta): allow each config/jobs/kubernetes/foo/foo-trusted.yaml
 	// that uses a foo-trusted cluster
-	const trusted = "test-infra-trusted"
 	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
 
 	// Presubmits may not use trusted clusters.
 	for _, pre := range c.AllStaticPresubmits(nil) {
-		if pre.Cluster == trusted {
+		if isTrustedCluster(pre.Cluster) || isInfraCluster(pre.Cluster) {
 			t.Errorf("%s: presubmits cannot use trusted clusters", pre.Name)
 		}
 	}
 
 	// Trusted postsubmits must be defined in trustedPath
 	for _, post := range c.AllStaticPostsubmits(nil) {
-		if post.Cluster == trusted && post.SourcePath != trustedPath {
+		if isInfraCluster(post.Cluster) && post.SourcePath != trustedPath {
 			t.Errorf("%s defined in %s may not run in trusted cluster", post.Name, post.SourcePath)
 		}
 	}
 
 	// Trusted periodics must be defined in trustedPath
 	for _, per := range c.AllPeriodics() {
-		if per.Cluster == trusted && per.SourcePath != trustedPath {
+		if isInfraCluster(per.Cluster) && per.SourcePath != trustedPath {
 			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
 		}
 	}
 }
 
-// Enforce conventions for jobs that run in k8s-infra-prow-build-trusted cluster
+// Enforce conventions for jobs that run on a trusted cluster
 func TestK8sInfraTrusted(t *testing.T) {
 	jobsToFix := 0
-	const trusted = "k8s-infra-prow-build-trusted"
 	trustedPath := path.Join(*jobConfigPath, "kubernetes", "sig-k8s-infra", "trusted") + "/"
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	errs := []error{}
 	// Presubmits may not use this cluster
 	for _, pre := range c.AllStaticPresubmits(nil) {
-		if pre.Cluster == trusted {
+		if isTrustedCluster(pre.Cluster) {
 			jobsToFix++
-			errs = append(errs, fmt.Errorf("%s: presubmits may not run in trusted cluster: %s", pre.Name, trusted))
+			errs = append(errs, fmt.Errorf("%s: presubmits may not run in trusted cluster: %s", pre.Name, clusterNameTrusted))
 		}
 	}
 
@@ -351,20 +364,20 @@ func TestK8sInfraTrusted(t *testing.T) {
 		jobs = append(jobs, job.JobBase)
 	}
 	for _, job := range jobs {
-		isTrustedCluster := job.Cluster == trusted
+		isTrustedCluster := isTrustedCluster(job.Cluster)
 		isTrustedPath := strings.HasPrefix(job.SourcePath, imagePushingDir) || strings.HasPrefix(job.SourcePath, trustedPath)
 		if isTrustedPath && !isTrustedCluster {
 			jobsToFix++
-			errs = append(errs, fmt.Errorf("%s defined in %s must run in cluster: %s", job.Name, job.SourcePath, trusted))
+			errs = append(errs, fmt.Errorf("%s defined in %s must run in cluster: %s", job.Name, job.SourcePath, clusterNameTrusted))
 		} else if isTrustedCluster && !isTrustedPath {
 			jobsToFix++
-			errs = append(errs, fmt.Errorf("%s defined in %s may not run in cluster: %s", job.Name, job.SourcePath, trusted))
+			errs = append(errs, fmt.Errorf("%s defined in %s may not run in cluster: %s", job.Name, job.SourcePath, clusterNameTrusted))
 		}
 	}
 	for _, err := range errs {
 		t.Errorf("%v", err)
 	}
-	t.Logf("summary: %4d/%4d jobs fail to meet k8s-infra-prow-build-trusted CI policy", jobsToFix, len(jobs))
+	t.Logf("summary: %4d/%4d jobs fail to meet %s CI policy", jobsToFix, len(jobs), clusterNameTrusted)
 }
 
 // Jobs in config/jobs/image-pushing must
@@ -373,7 +386,6 @@ func TestK8sInfraTrusted(t *testing.T) {
 // - have sig-k8s-infra-gcb in their testgrid-dashboards annotation
 func TestImagePushingJobs(t *testing.T) {
 	jobsToFix := 0
-	const trusted = "k8s-infra-prow-build-trusted"
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 	jobs := staticJobsMatchingAll(func(job cfg.JobBase) bool {
 		return strings.HasPrefix(job.SourcePath, imagePushingDir)
@@ -392,8 +404,8 @@ func TestImagePushingJobs(t *testing.T) {
 		if err := validateImagePushingImage(job.Spec); err != nil {
 			errs = append(errs, fmt.Errorf("%s defined in %s %w", job.Name, job.SourcePath, err))
 		}
-		if job.Cluster != trusted {
-			errs = append(errs, fmt.Errorf("%s defined in %s must have cluster: %v, got: %v", job.Name, job.SourcePath, trusted, job.Cluster))
+		if !isTrustedCluster(job.Cluster) {
+			errs = append(errs, fmt.Errorf("%s defined in %s must have cluster: %v, got: %v", job.Name, job.SourcePath, clusterNameTrusted, job.Cluster))
 		}
 		dashboardsString, ok := job.Annotations["testgrid-dashboards"]
 		if !ok {
@@ -1080,7 +1092,7 @@ func TestKubernetesMergeBlockingJobsCIPolicy(t *testing.T) {
 		}
 		// job Pod must qualify for Guaranteed QoS
 		errs := verifyPodQOSGuaranteed(job.Spec, true)
-		if !isCritical(job.Cluster) {
+		if !isCriticalCluster(job.Cluster) {
 			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build, found: %v", job.Cluster))
 		}
 		branches := job.Branches
@@ -1104,7 +1116,7 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		}
 		// job Pod must qualify for Guaranteed QoS
 		errs := verifyPodQOSGuaranteed(job.Spec, true)
-		if !isCritical(job.Cluster) && !isEKSCluster(job.Cluster) {
+		if !isCriticalCluster(job.Cluster) && !isEKSCluster(job.Cluster) {
 			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build or eks-prow-build-cluster, found: %v", job.Cluster))
 		}
 		if len(errs) > 0 {
@@ -1121,7 +1133,7 @@ func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
 	jobsToFix := 0
 	jobs := allStaticJobs()
 	for _, job := range jobs {
-		if job.Spec == nil || (!isCritical(job.Cluster) && !isEKSCluster(job.Cluster)) {
+		if job.Spec == nil || (!isCriticalCluster(job.Cluster) && !isEKSCluster(job.Cluster)) {
 			continue
 		}
 		// job Pod must qualify for Guaranteed QoS
