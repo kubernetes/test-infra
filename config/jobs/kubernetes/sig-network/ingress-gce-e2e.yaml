@@ -176,7 +176,7 @@ postsubmits:
         - make
         - all-push
         - ALL_ARCH=amd64 arm64
-        - CONTAINER_BINARIES="e2e-test"
+        - CONTAINER_BINARIES=e2e-test
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
