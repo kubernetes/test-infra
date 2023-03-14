@@ -74,8 +74,8 @@ presubmits:
             memory: 6Gi
         args:
         - "--job=$(JOB_NAME)"
-        - "--repo=github.com/google/cadvisor"
         - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=github.com/google/cadvisor"
         - --root=/go/src
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-jenkins/pr-logs
