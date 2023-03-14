@@ -98,7 +98,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
         command:
         - runner.sh
-        - "./test/e2e/test-kinder.sh"
+        - "../../k8s.io/kubeadm/kinder/ci/kinder-run.sh"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
