@@ -98,8 +98,9 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
+        - --build=quick
         - --cluster=hpa
-        - --extract=ci/latest
+        - --extract=local
         - --gcp-node-image=gci
         - --gcp-project=k8s-jkns-gci-autoscaling
         - --gcp-zone=us-west1-b
