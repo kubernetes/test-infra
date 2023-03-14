@@ -173,10 +173,11 @@ postsubmits:
         - --
         - --env=VERSION=$(PULL_BASE_REF)
         - --env=REGISTRY=gcr.io/k8s-ingress-image-push
-        - make
-        - all-push
-        - ALL_ARCH=amd64 arm64
-        - CONTAINER_BINARIES=e2e-test
+        - --env=BINARY=e2e-test
+        - |
+          make build CONTAINER_BINARIES="${BINARY}"
+          VERBOSE=1 CONTAINER_BINARIES="${BINARY}" REGISTRY="${REGISTRY}" ALL_ARCH="amd64 arm64" make all-push
+          VERBOSE=1 CONTAINER_BINARIES="${BINARY}" REGISTRY="${REGISTRY}" make push
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
