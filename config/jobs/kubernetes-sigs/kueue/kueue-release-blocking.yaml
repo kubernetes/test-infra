@@ -5,8 +5,7 @@ periodics:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-unit-main
       description: "Run periodic kueue unit tests"
-      testgrid-num-columns-recent: '6'
-      testgrid-num-failures-to-alert: "1"
+      testgrid-num-columns-recent: '15'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -34,8 +33,7 @@ periodics:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-integration-main
       description: "Run periodic kueue test-integration"
-      testgrid-num-columns-recent: '6'
-      testgrid-num-failures-to-alert: "1"
+      testgrid-num-columns-recent: '15'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -55,48 +53,12 @@ periodics:
           args:
             - test-integration
   - interval: 24h
-    name: periodic-kueue-test-e2e-main-1-23
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-test-e2e-main-1-23
-      description: "Run periodic kueue end to end tests for Kubernetes 1.23"
-      testgrid-num-columns-recent: '6'
-      testgrid-num-failures-to-alert: "1"
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: kueue
-        base_ref: master
-        path_alias: kubernetes-sigs/kueue
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
-          env:
-            - name: E2E_KIND_VERSION
-              value: kindest/node:v1.23.12
-          command:
-            # generic runner script, handles DIND, bazelrc for caching, etc.
-            - runner.sh
-          args:
-            - make
-            - kind-image-build
-            - test-e2e
-          # docker-in-docker needs privileged mode
-          securityContext:
-            privileged: true
-  - interval: 24h
     name: periodic-kueue-test-e2e-main-1-24
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-24
       description: "Run periodic kueue end to end tests for Kubernetes 1.24"
-      testgrid-num-columns-recent: '6'
-      testgrid-num-failures-to-alert: "1"
+      testgrid-num-columns-recent: '15'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -130,8 +92,7 @@ periodics:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-25
       description: "Run periodic kueue end to end tests for Kubernetes 1.25"
-      testgrid-num-columns-recent: '6'
-      testgrid-num-failures-to-alert: "1"
+      testgrid-num-columns-recent: '15'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -165,8 +126,7 @@ periodics:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-verify-main
       description: "Run periodic kueue verify checks"
-      testgrid-num-columns-recent: '6'
-      testgrid-num-failures-to-alert: "1"
+      testgrid-num-columns-recent: '15'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
