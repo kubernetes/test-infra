@@ -53,6 +53,7 @@ var gerritMetrics = struct {
 	processingResults     *prometheus.CounterVec
 	triggerLatency        *prometheus.HistogramVec
 	changeProcessDuration *prometheus.HistogramVec
+	changeSyncDuration    *prometheus.HistogramVec
 }{
 	processingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "gerrit_processing_results",
@@ -77,12 +78,18 @@ var gerritMetrics = struct {
 	}, []string{
 		"org",
 	}),
+	changeSyncDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_instance_change_sync_duration",
+		Help:    "Histogram of seconds spent syncing changes from a single gerrit instance.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+	}, []string{"org"}),
 }
 
 func init() {
 	prometheus.MustRegister(gerritMetrics.processingResults)
 	prometheus.MustRegister(gerritMetrics.triggerLatency)
 	prometheus.MustRegister(gerritMetrics.changeProcessDuration)
+	prometheus.MustRegister(gerritMetrics.changeSyncDuration)
 }
 
 type prowJobClient interface {
@@ -238,6 +245,7 @@ func (c *Controller) Sync() {
 		}()
 
 		changes := c.gc.QueryChangesForInstance(instance, syncTime, c.config().Gerrit.RateLimit)
+		timeQueryChangesForInstance := time.Now()
 		log.WithFields(logrus.Fields{"instance": instance, "changes": len(changes), "duration(s)": time.Since(now).Seconds()}).Info("Time taken querying for gerrit changes")
 
 		if len(changes) == 0 {
@@ -261,6 +269,7 @@ func (c *Controller) Sync() {
 			changeChan <- Change{changeInfo: change, instance: instance, tracker: timeBeforeSent}
 		}
 		wg.Wait()
+		gerritMetrics.changeSyncDuration.WithLabelValues(instance).Observe((float64(time.Since(timeQueryChangesForInstance).Seconds())))
 		close(changeChan)
 		c.tracker.Update(latest)
 	}
