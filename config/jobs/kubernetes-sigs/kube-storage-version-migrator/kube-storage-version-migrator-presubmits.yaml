@@ -99,6 +99,8 @@ presubmits:
         command:
         - runner.sh
         - "../../k8s.io/kubeadm/kinder/ci/kinder-run.sh"
+        args:
+        - regular-latest
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
