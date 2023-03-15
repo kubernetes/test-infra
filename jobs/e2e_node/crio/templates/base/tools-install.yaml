@@ -1,20 +1,22 @@
 ---
 systemd:
   units:
-    - name: dbus-tools-install.service
+    - name: tools-install.service
       enabled: true
       contents: |
         [Unit]
-        Description=Download and install dbus-tools.
+        Description=Download and install requried tools.
         Before=crio-install.service
         After=network-online.target
 
         [Service]
         Type=oneshot
-        ExecStart=/usr/bin/rpm-ostree install \
+        ExecStart=rpm-ostree install \
+          -y \
           --apply-live \
           --allow-inactive \
-          dbus-tools
+          dbus-tools \
+          checkpolicy
 
         [Install]
         WantedBy=multi-user.target
