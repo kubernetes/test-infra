@@ -12,7 +12,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: master
+        base_ref: main
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -40,7 +40,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: master
+        base_ref: main
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -65,7 +65,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: master
+        base_ref: main
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -99,7 +99,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: master
+        base_ref: main
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
@@ -133,7 +133,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: kueue
-        base_ref: master
+        base_ref: main
         path_alias: kubernetes-sigs/kueue
     decorate: true
     decoration_config:
