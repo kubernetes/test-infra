@@ -1,0 +1,226 @@
+- name: No input at all  
+  tide:
+    merge_method:
+      kubernetes:
+        test-infra:
+          master: rebase
+  expected: merge
+- name: Empty tide config
+  org: kubernetes
+  repo: test-infra
+  branch: master
+  tide:
+  expected: merge
+- name: Empty tide config and no input
+  tide:
+  expected: merge
+
+# org shorthand
+- name: 'org shorthand: match'
+  org: kubernetes-helm
+  tide:
+    merge_method:
+      kubernetes-helm: squash
+  expected: squash
+- name: 'org shorthand: no match'
+  org: kubernetes
+  tide:
+    merge_method:
+      kubernetes-helm: squash
+  expected: merge
+- name: 'org shorthand: no org provided'
+  tide:
+    merge_method:
+      kubernetes: rebase
+  expected: merge
+- name: 'org shorthand: neither repo nor branch matches'
+  org: kubernetes
+  repo: test-infra
+  branch: dev
+  tide:
+    merge_method:
+      kubernetes: rebase
+  expected: rebase
+
+# org/repo shorthand
+- name: 'org/repo shorthand: match'
+  org: kubernetes-helm
+  repo: chartmuseum
+  tide:
+    merge_method:
+      kubernetes-helm/chartmuseum: squash
+  expected: squash
+- name: 'org/repo shorthand: no match'
+  org: kubernetes-helm
+  repo: test-infra
+  tide:
+    merge_method:
+      kubernetes-helm/chartmuseum: squash
+  expected: merge
+- name: 'org/repo shorthand: no repo provided'
+  org: kubernetes-helm
+  tide:
+    merge_method:
+      kubernetes-helm/chartmuseum: squash
+  expected: merge
+- name: 'org/repo shorthand: org only match'
+  org: kubernetes-helm
+  repo: chartmuseum
+  tide:
+    merge_method:
+      kubernetes-helm: squash
+  expected: squash
+- name: 'org/repo shorthand: fallback to org/repo when branch doesn''t match'
+  org: kubernetes-helm
+  repo: chartmuseum
+  branch: master
+  tide:
+    merge_method:
+      kubernetes-helm/chartmuseum: squash
+  expected: squash
+
+# org/repo@branch shorthand
+- name: 'org/repo@branch shorthand: match'
+  org: kubernetes
+  repo: kops
+  branch: main
+  tide:
+    merge_method:
+      kubernetes/kops@main: rebase
+  expected: rebase
+- name: 'org/repo@branch shorthand: no match'
+  org: kubernetes
+  repo: kops
+  branch: master
+  tide:
+    merge_method:
+      kubernetes/kops@main: rebase
+  expected: merge
+- name: 'org/repo@branch shorthand: no branch provided'
+  org: kubernetes
+  repo: kops
+  tide:
+    merge_method:
+      kubernetes/kops@main: rebase
+  expected: merge
+
+# Repo-wide config
+- name: 'Repo-wide config: match'
+  org: kubernetes
+  repo: kubernetes
+  tide:
+    merge_method:
+      kubernetes:
+        kubernetes: rebase
+  expected: rebase
+- name: 'Repo-wide config: no match'
+  org: kubernetes
+  repo: test-infra
+  tide:
+    merge_method:
+      kubernetes:
+        kubernetes: rebase
+  expected: merge
+- name: 'Repo-wide config: match using ''*'''
+  org: kubernetes
+  repo: test-infra
+  tide:
+    merge_method:
+      kubernetes:
+        '*': rebase
+        kubernetes: squash
+  expected: rebase
+
+# Branch level config
+- name: 'Branch level config: no match'
+  org: kubernetes
+  repo: test-infra
+  branch: main
+  tide:
+    merge_method:
+      kubernetes:
+        test-infra:
+          master: rebase
+  expected: merge
+- name: 'Branch level config: match no regex'
+  org: kubernetes
+  repo: test-infra
+  branch: master
+  tide:
+    merge_method:
+      kubernetes:
+        test-infra:
+          master: rebase
+  expected: rebase
+- name: 'Branch level config: match regex'
+  org: kubernetes
+  repo: test-infra
+  branch: release-0.2
+  tide:
+    merge_method:
+      kubernetes:
+        test-infra:
+          release-\d+(.\d+)?: squash
+  expected: squash
+- name: 'Branch level config: multiple regex matches, pick the first one'
+  org: kubernetes
+  repo: test-infra
+  branch: master
+  tide:
+    merge_method:
+      kubernetes:
+        test-infra:
+          ma.*: squash
+          mast.*: rebase
+  expected: squash
+- name: 'Branch level config: match ''*'' wildcard at repository level'
+  org: golang
+  repo: docs
+  branch: main
+  tide:
+    merge_method:
+      golang:
+        '*':
+          main: rebase
+  expected: rebase
+
+# Precedence
+- name: 'Precedence: org/repo@branch shorthand over branch level config'
+  org: kubernetes
+  repo: kops
+  branch: main
+  tide:
+    merge_method:
+      kubernetes:
+        kops:
+          main: rebase
+      kubernetes/kops@main: squash
+  expected: squash
+- name: 'Precedence: branch level config over org/repo shorthand'
+  org: kubernetes
+  repo: kops
+  branch: main
+  tide:
+    merge_method:
+      kubernetes:
+        kops:
+          main: rebase
+      kubernetes/kops: squash
+  expected: rebase
+- name: 'Precedence: org/repo shorthand over repo-wide config'
+  org: kubernetes
+  repo: kops
+  tide:
+    merge_method:
+      kubernetes:
+        kops: rebase
+      kubernetes/kops: squash
+  expected: squash
+- name: 'Precedence: org/repo shorthand over org config'
+  org: kubernetes
+  repo: kops
+  tide:
+    merge_method:
+      kubernetes: rebase
+      kubernetes/kops: squash
+  expected: squash
