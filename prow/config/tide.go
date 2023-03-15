@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"text/template"
@@ -402,7 +403,16 @@ func (t *Tide) OrgRepoBranchMergeMethod(orgRepo OrgRepo, branch string) types.Pu
 
 	// 2. Branch level regex match
 	if orgFound && repoFound {
-		for _, branchConfig := range t.MergeType[orgRepo.Org].Repos[repo].Branches {
+		branches := t.MergeType[orgRepo.Org].Repos[repo].Branches
+		keys := make([]string, 0, len(branches))
+
+		for k := range branches {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		for _, key := range keys {
+			branchConfig := branches[key]
 			if branchConfig.Regexpr.MatchString(branch) {
 				return branchConfig.MergeType
 			}
