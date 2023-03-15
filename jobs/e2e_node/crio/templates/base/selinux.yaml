@@ -12,14 +12,16 @@ systemd:
       contents: |
         [Unit]
         Description=Setup SELinux policy
-        After=network-online.target
+        After=tools-install.service
 
         [Service]
         Type=oneshot
         ExecStartPre=setenforce 1
         ExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te
         ExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod
-        ExecStart=semodule -i /root/kubelet-e2e.pp
+        ExecStartPre=semodule -i /root/kubelet-e2e.pp
+        ExecStartPre=mkdir -p /var/lib/kubelet
+        ExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet
 
         [Install]
         WantedBy=multi-user.target

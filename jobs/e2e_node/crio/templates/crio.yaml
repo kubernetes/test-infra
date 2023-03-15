@@ -11,6 +11,18 @@ storage:
       contents:
         local: kubelet-e2e.te
       mode: 0644
+    - path: /etc/crio/crio.conf.d/10-log-level.conf
+      contents:
+        local: 10-log-level.conf
+      mode: 0644
+    - path: /etc/crio/crio.conf.d/20-runtimes.conf
+      contents:
+        local: 20-runtimes.conf
+      mode: 0644
+    - path: /etc/crio/crio.conf.d/30-infra-container.conf
+      contents:
+        local: 30-infra-container.conf
+      mode: 0644
 systemd:
   units:
     - name: selinux-install.service
@@ -18,31 +30,35 @@ systemd:
       contents: |
         [Unit]
         Description=Setup SELinux policy
-        After=network-online.target
+        After=tools-install.service
 
         [Service]
         Type=oneshot
         ExecStartPre=setenforce 1
         ExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te
         ExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod
-        ExecStart=semodule -i /root/kubelet-e2e.pp
+        ExecStartPre=semodule -i /root/kubelet-e2e.pp
+        ExecStartPre=mkdir -p /var/lib/kubelet
+        ExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet
 
         [Install]
         WantedBy=multi-user.target
-    - name: dbus-tools-install.service
+    - name: tools-install.service
       enabled: true
       contents: |
         [Unit]
-        Description=Download and install dbus-tools.
+        Description=Download and install requried tools.
         Before=crio-install.service
         After=network-online.target
 
         [Service]
         Type=oneshot
-        ExecStart=/usr/bin/rpm-ostree install \
+        ExecStart=rpm-ostree install \
+          -y \
           --apply-live \
           --allow-inactive \
-          dbus-tools
+          dbus-tools \
+          checkpolicy
 
         [Install]
         WantedBy=multi-user.target
@@ -51,17 +67,21 @@ systemd:
       contents: |
         [Unit]
         Description=Download and install crio binaries and configurations.
-        After=network-online.target
+        After=selinux-install.service
 
         [Service]
         Type=oneshot
-        ExecStartPre=/usr/bin/bash -c '\
-          /usr/bin/curl --fail --retry 5 \
-            --retry-delay 3 --silent --show-error \
-            -o /usr/local/crio-nodee2e-installer.sh  \
-            https://raw.githubusercontent.com/cri-o/cri-o/fa0d058141343ee38b8339ea41f580c361271372/scripts/node_e2e_installer && \
-          /usr/bin/ln -s /usr/bin/runc /usr/local/bin/runc'
-        ExecStart=/usr/bin/bash /usr/local/crio-nodee2e-installer.sh
+        Environment="COMMIT=fa0d058141343ee38b8339ea41f580c361271372"
+
+        ExecStartPre=mount /tmp /tmp -o remount,exec,suid
+        ExecStartPre=ln -sf /usr/bin/runc /usr/local/bin/runc
+        ExecStartPre=bash -c '\
+          curl --fail --retry 5 --retry-delay 3 --silent --show-error \
+            https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\
+              bash -s -- -t $COMMIT'
+        ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
+        ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf
+        ExecStart=systemctl enable --now crio.service
 
         [Install]
         WantedBy=multi-user.target
