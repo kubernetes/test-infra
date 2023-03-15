@@ -126,7 +126,7 @@ postsubmits:
               - --env-passthrough=PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
-              - images/localpath-provisioner/
+              - images/local-path-provisioner/
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
@@ -153,7 +153,7 @@ postsubmits:
               - --env-passthrough=PULL_BASE_SHA
               - --build-dir=.
               - --with-git-dir
-              - images/localpath-helper/
+              - images/local-path-helper/
             env:
               - name: LOG_TO_STDOUT
                 value: "y"
