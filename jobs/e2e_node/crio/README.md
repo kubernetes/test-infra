@@ -28,3 +28,28 @@ The ignition file will be then referenced from image configurations like
 
 This means modifying, adding or removing jobs should always result in running
 `make` as well as committing all changes into this repository.
+
+If you want to test a ignition config in Google Cloud, ensure that you have
+access to the VM by providing the SSH key for the user `core`, for example by
+modifying `root.yaml`:
+
+```yaml
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+        - ssh-rsa AAA…
+```
+
+Then spawn the instance via:
+
+```sh
+gcloud compute instances create \
+    --zone europe-west1-b \
+    --metadata-from-file user-data=/path/to/crio.ign \
+    --image-project fedora-coreos-cloud \
+    --image-family fedora-coreos-stable my-instance
+```
+
+Accessing the virtual machine should be now possible by using the external IP of
+the instance.

@@ -1,4 +1,18 @@
 ---
+storage:
+  files:
+    - path: /etc/crio/crio.conf.d/10-log-level.conf
+      contents:
+        local: 10-log-level.conf
+      mode: 0644
+    - path: /etc/crio/crio.conf.d/20-runtimes.conf
+      contents:
+        local: 20-runtimes.conf
+      mode: 0644
+    - path: /etc/crio/crio.conf.d/30-infra-container.conf
+      contents:
+        local: 30-infra-container.conf
+      mode: 0644
 systemd:
   units:
     - name: crio-install.service
@@ -6,17 +20,21 @@ systemd:
       contents: |
         [Unit]
         Description=Download and install crio binaries and configurations.
-        After=network-online.target
+        After=selinux-install.service
 
         [Service]
         Type=oneshot
-        ExecStartPre=/usr/bin/bash -c '\
-          /usr/bin/curl --fail --retry 5 \
-            --retry-delay 3 --silent --show-error \
-            -o /usr/local/crio-nodee2e-installer.sh  \
-            https://raw.githubusercontent.com/cri-o/cri-o/fa0d058141343ee38b8339ea41f580c361271372/scripts/node_e2e_installer && \
-          /usr/bin/ln -s /usr/bin/runc /usr/local/bin/runc'
-        ExecStart=/usr/bin/bash /usr/local/crio-nodee2e-installer.sh
+        Environment="COMMIT=fa0d058141343ee38b8339ea41f580c361271372"
+
+        ExecStartPre=mount /tmp /tmp -o remount,exec,suid
+        ExecStartPre=ln -sf /usr/bin/runc /usr/local/bin/runc
+        ExecStartPre=bash -c '\
+          curl --fail --retry 5 --retry-delay 3 --silent --show-error \
+            https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\
+              bash -s -- -t $COMMIT'
+        ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
+        ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf
+        ExecStart=systemctl enable --now crio.service
 
         [Install]
         WantedBy=multi-user.target
