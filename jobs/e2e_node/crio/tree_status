@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# TODO: remove me when all configs are migrated
-exit 0
-
 STATUS=$(git status --porcelain)
 if [[ -z $STATUS ]]; then
     echo "tree is clean"
