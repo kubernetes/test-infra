@@ -1,7 +1,6 @@
 postsubmits:
   kubernetes-sigs/promo-tools:
-    # TODO(releng): Rename to 'kpromo' once tools are merged
-    - name: post-cip-push-image-cip
+    - name: post-kpromo-push-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-release-releng-blocking, sig-release-master-informing, sig-release-image-pushes, sig-k8s-infra-gcb
