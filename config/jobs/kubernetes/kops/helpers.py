@@ -128,13 +128,11 @@ def latest_aws_image(owner, name, arch='x86_64'):
             },
         ],
     )
-    images = {}
+    images = []
     for image in response['Images']:
-        image_location = image['ImageLocation']
-        if image_location.startswith("amazon/"):
-            image_location = image_location.replace('amazon', owner)
-        images[image['CreationDate']] = image_location
-    return images[sorted(images, reverse=True)[0]]
+        images.append(image['ImageLocation'].replace('amazon', owner))
+    images.sort(reverse=True)
+    return images[0]
 
 distro_images = {
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
@@ -142,7 +140,7 @@ distro_images = {
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
     'flatcar': latest_aws_image('075585003325', 'Flatcar-beta-*-hvm'),
     'flatcararm64': latest_aws_image('075585003325', 'Flatcar-beta-*-hvm', 'arm64'),
-    'rhel8': latest_aws_image('309956199498', 'RHEL-8.7.0_HVM-20221101-x86_64-*'),
+    'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-*'),
     'rocky8': latest_aws_image('792107900819', 'Rocky-8-ec2-8.*.x86_64'),
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
