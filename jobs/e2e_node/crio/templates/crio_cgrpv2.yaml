@@ -25,24 +25,6 @@ storage:
       mode: 0644
 systemd:
   units:
-    - name: selinux-install.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Setup SELinux policy
-        After=tools-install.service
-
-        [Service]
-        Type=oneshot
-        ExecStartPre=setenforce 1
-        ExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te
-        ExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod
-        ExecStartPre=semodule -i /root/kubelet-e2e.pp
-        ExecStartPre=mkdir -p /var/lib/kubelet
-        ExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet
-
-        [Install]
-        WantedBy=multi-user.target
     - name: tools-install.service
       enabled: true
       contents: |
@@ -59,6 +41,24 @@ systemd:
           --allow-inactive \
           dbus-tools \
           checkpolicy
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: selinux-install.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Setup SELinux policy
+        After=tools-install.service
+
+        [Service]
+        Type=oneshot
+        ExecStartPre=setenforce 1
+        ExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te
+        ExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod
+        ExecStartPre=semodule -i /root/kubelet-e2e.pp
+        ExecStartPre=mkdir -p /var/lib/kubelet
+        ExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet
 
         [Install]
         WantedBy=multi-user.target
