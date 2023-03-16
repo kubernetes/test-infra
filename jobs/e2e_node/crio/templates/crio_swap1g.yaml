@@ -11,11 +11,6 @@ storage:
       contents:
         local: kubelet-e2e.te
       mode: 0644
-    - path: /etc/ssh-key-secret/ssh-public
-      contents:
-        # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
-        source: data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA==
-      mode: 0644
     - path: /etc/crio/crio.conf.d/10-log-level.conf
       contents:
         local: 10-log-level.conf
@@ -28,45 +23,13 @@ storage:
       contents:
         local: 30-infra-container.conf
       mode: 0644
+    - path: /etc/ssh-key-secret/ssh-public
+      contents:
+        # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
+        source: data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA==
+      mode: 0644
 systemd:
   units:
-    - name: selinux-install.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Setup SELinux policy
-        After=tools-install.service
-
-        [Service]
-        Type=oneshot
-        ExecStartPre=setenforce 1
-        ExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te
-        ExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod
-        ExecStartPre=semodule -i /root/kubelet-e2e.pp
-        ExecStartPre=mkdir -p /var/lib/kubelet
-        ExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet
-
-        [Install]
-        WantedBy=multi-user.target
-    - name: authorized-key.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Copy authorized keys
-        Before=crio-install.service
-        After=network-online.target
-
-        [Service]
-        Type=oneshot
-        ExecStart=/bin/sh -c '\
-          /usr/bin/mkdir -m 0700 -p /home/core/.ssh && \
-          /usr/bin/cat /etc/ssh-key-secret/ssh-public \
-            >> /home/core/.ssh/authorized_keys && \
-          /usr/bin/chown -R core:core /home/core/.ssh && \
-          /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'
-
-        [Install]
-        WantedBy=multi-user.target
     - name: tools-install.service
       enabled: true
       contents: |
@@ -86,17 +49,21 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
-    - name: swap-enable.service
+    - name: selinux-install.service
       enabled: true
       contents: |
         [Unit]
-        Description=Enable swap on CoreOS
-        Before=crio-install.service
-        ConditionFirstBoot=no
+        Description=Setup SELinux policy
+        After=tools-install.service
 
         [Service]
         Type=oneshot
-        ExecStart=/bin/sh -c \"sudo dd if=/dev/zero of=/var/swapfile count=1024 bs=1MiB && sudo chmod 600 /var/swapfile && sudo mkswap /var/swapfile && sudo swapon /var/swapfile && free -h\"
+        ExecStartPre=setenforce 1
+        ExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te
+        ExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod
+        ExecStartPre=semodule -i /root/kubelet-e2e.pp
+        ExecStartPre=mkdir -p /var/lib/kubelet
+        ExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet
 
         [Install]
         WantedBy=multi-user.target
@@ -120,6 +87,39 @@ systemd:
         ExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist
         ExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf
         ExecStart=systemctl enable --now crio.service
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: authorized-key.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Copy authorized keys
+        Before=crio-install.service
+        After=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c '\
+          /usr/bin/mkdir -m 0700 -p /home/core/.ssh && \
+          /usr/bin/cat /etc/ssh-key-secret/ssh-public \
+            >> /home/core/.ssh/authorized_keys && \
+          /usr/bin/chown -R core:core /home/core/.ssh && \
+          /usr/bin/chmod 0600 /home/core/.ssh/authorized_keys'
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: swap-enable.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Enable swap on CoreOS
+        Before=crio-install.service
+        ConditionFirstBoot=no
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c \"sudo dd if=/dev/zero of=/var/swapfile count=1024 bs=1MiB && sudo chmod 600 /var/swapfile && sudo mkswap /var/swapfile && sudo swapon /var/swapfile && free -h\"
 
         [Install]
         WantedBy=multi-user.target
