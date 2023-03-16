@@ -216,9 +216,9 @@ periodics:
       - org: kubernetes
         slug: release-managers
 
-# ci-k8sio-image-promo runs every 1 hour, to make sure that the destination
-# GCRs do not deviate away from the intent of the manifest.
-- interval: 1h
+# ci-k8sio-image-promo runs daily as a backstop on top of the postsubmit
+# ~midnight pacific
+- cron: '0 7 * * *'
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
   # Run only 1 of image promotion postsubmit and periodic at the same time.
