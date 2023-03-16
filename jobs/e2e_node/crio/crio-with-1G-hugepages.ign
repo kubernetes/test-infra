@@ -54,14 +54,14 @@
   "systemd": {
     "units": [
       {
-        "contents": "[Unit]\nDescription=Setup SELinux policy\nAfter=tools-install.service\n\n[Service]\nType=oneshot\nExecStartPre=setenforce 1\nExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te\nExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod\nExecStartPre=semodule -i /root/kubelet-e2e.pp\nExecStartPre=mkdir -p /var/lib/kubelet\nExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet\n\n[Install]\nWantedBy=multi-user.target\n",
-        "enabled": true,
-        "name": "selinux-install.service"
-      },
-      {
         "contents": "[Unit]\nDescription=Download and install requried tools.\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=rpm-ostree install \\\n  -y \\\n  --apply-live \\\n  --allow-inactive \\\n  dbus-tools \\\n  checkpolicy\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "tools-install.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Setup SELinux policy\nAfter=tools-install.service\n\n[Service]\nType=oneshot\nExecStartPre=setenforce 1\nExecStartPre=checkmodule -M -m -o /root/kubelet-e2e.mod /root/kubelet-e2e.te\nExecStartPre=semodule_package -o /root/kubelet-e2e.pp -m /root/kubelet-e2e.mod\nExecStartPre=semodule -i /root/kubelet-e2e.pp\nExecStartPre=mkdir -p /var/lib/kubelet\nExecStart=chcon -R -u system_u -r object_r -t var_lib_t /var/lib/kubelet\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "selinux-install.service"
       },
       {
         "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=selinux-install.service\n\n[Service]\nType=oneshot\nEnvironment=\"COMMIT=fa0d058141343ee38b8339ea41f580c361271372\"\n\nExecStartPre=mount /tmp /tmp -o remount,exec,suid\nExecStartPre=ln -sf /usr/bin/runc /usr/local/bin/runc\nExecStartPre=bash -c '\\\n  curl --fail --retry 5 --retry-delay 3 --silent --show-error \\\n    https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\\\n      bash -s -- -t $COMMIT'\nExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist\nExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf\nExecStart=systemctl enable --now crio.service\n\n[Install]\nWantedBy=multi-user.target\n",
