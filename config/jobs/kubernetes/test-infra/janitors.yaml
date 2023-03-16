@@ -54,14 +54,20 @@ periodics:
   name: maintenance-pull-janitor
   labels:
     preset-service-account: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   spec:
     containers:
-    - args:
+    - command:
+      - runner.sh
+      - "scenarios/kubernetes_janitor.py"
+      args:
       - --bare
       - --timeout=30
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_janitor
       - --
       - --mode=pr
       env:
