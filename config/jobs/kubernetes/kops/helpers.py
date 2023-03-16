@@ -135,6 +135,7 @@ def latest_aws_image(owner, name, arch='x86_64'):
     return images[0]
 
 distro_images = {
+    'al2023': latest_aws_image('137112412989', 'al2023-ami-2*-kernel-6.1-x86_64'),
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
     'deb10': latest_aws_image('136693071363', 'debian-10-amd64-*'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
@@ -150,6 +151,7 @@ distro_images = {
 }
 
 distros_ssh_user = {
+    'al2023': 'ec2-user',
     'amzn2': 'ec2-user',
     'deb10': 'admin',
     'deb11': 'admin',
