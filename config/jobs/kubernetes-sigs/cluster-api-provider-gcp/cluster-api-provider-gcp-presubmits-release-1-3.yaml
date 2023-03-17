@@ -1,12 +1,12 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-gcp:
-  - name: pull-cluster-api-provider-gcp-test
+  - name: pull-cluster-api-provider-gcp-test-release-1-3
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^main$
+    - ^release-1.3$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
@@ -18,14 +18,14 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-test
-  - name: pull-cluster-api-provider-gcp-build
+      testgrid-tab-name: pr-test-release-1-3
+  - name: pull-cluster-api-provider-gcp-build-release-1-3
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^main$
+    - ^release-1.3$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
@@ -37,8 +37,8 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-build
-  - name: pull-cluster-api-provider-gcp-make
+      testgrid-tab-name: pr-build-release-1-3
+  - name: pull-cluster-api-provider-gcp-make-release-1-3
     always_run: true
     optional: false
     decorate: true
@@ -47,7 +47,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^main$
+    - ^release-1.3$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
@@ -63,8 +63,8 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-make
-  - name: pull-cluster-api-provider-gcp-verify
+      testgrid-tab-name: pr-make-release-1-3
+  - name: pull-cluster-api-provider-gcp-verify-release-1-3
     always_run: true
     optional: false
     decorate: true
@@ -74,7 +74,7 @@ presubmits:
       preset-dind-enabled: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^main$
+    - ^release-1.3$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
@@ -86,15 +86,15 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-verify
-  - name: pull-cluster-api-provider-gcp-e2e-test
+      testgrid-tab-name: pr-verify-release-1-3
+  - name: pull-cluster-api-provider-gcp-e2e-test-release-1-3
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^main$
+    - ^release-1.3$
     always_run: true
     optional: false
     decorate: true
@@ -121,60 +121,15 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-e2e-test
-  - name: pull-cluster-api-provider-gcp-conformance-ci-artifacts
+      testgrid-tab-name: pr-e2e-test-release-1-3
+  - name: pull-cluster-api-provider-gcp-conformance-release-1-3
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^main$
-    always_run: false
-    optional: true
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: image-builder
-      base_ref: master
-      path_alias: "sigs.k8s.io/image-builder"
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
-          env:
-            - name: "BOSKOS_HOST"
-              value: "boskos.test-pods.svc.cluster.local"
-            - name: E2E_ARGS
-              value: "-kubetest.use-ci-artifacts"
-            - name: USE_CI_ARTIFACTS
-              value: "true"
-          command:
-            - "runner.sh"
-            - "./scripts/ci-conformance.sh"
-            - "--init-image"
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              # these are both a bit below peak usage during build
-              # this is mostly for building kubernetes
-              memory: "9000Mi"
-              # during the tests more like 3-20m is used
-              cpu: 2000m
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-conformance-ci-artifacts
-  - name: pull-cluster-api-provider-gcp-conformance
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
-    branches:
-    - ^main$
+    - ^release-1.3$
     always_run: false
     optional: true
     decorate: true
@@ -201,15 +156,15 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-conformance
-  - name: pull-cluster-api-provider-gcp-capi-e2e
+      testgrid-tab-name: pr-conformance-release-1-3
+  - name: pull-cluster-api-provider-gcp-capi-e2e-release-1-3
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^main$
+    - ^release-1.3$
     always_run: false
     optional: true
     decorate: true
@@ -217,7 +172,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -236,15 +191,15 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-capi-e2e-test
-  - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade
+      testgrid-tab-name: pr-capi-e2e-test-release-1-3
+  - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade-release-1-3
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    - ^main$
+    - ^release-1.3$
     always_run: false
     optional: true
     decorate: true
@@ -270,8 +225,8 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-e2e-upgrade
-  - name: pull-cluster-api-provider-gcp-apidiff
+      testgrid-tab-name: pr-e2e-upgrade-release-1-3
+  - name: pull-cluster-api-provider-gcp-apidiff-release-1-3
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
@@ -279,7 +234,7 @@ presubmits:
     labels:
       preset-service-account: "true"
     branches:
-    - ^main$
+    - ^release-1.3$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
@@ -289,8 +244,8 @@ presubmits:
           - ./scripts/ci-apidiff.sh
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-apidiff-main
-  - name: pull-cluster-api-provider-gcp-coverage
+      testgrid-tab-name: pr-apidiff-main-release-1-3
+  - name: pull-cluster-api-provider-gcp-coverage-release-1-3
     always_run: false
     optional: true
     decorate: true
@@ -322,5 +277,5 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-coverage
+      testgrid-tab-name: pr-coverage-release-1-3
       testgrid-alert-email: k8s-infra-staging-cluster-api-gcp@kubernetes.io
