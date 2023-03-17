@@ -9,7 +9,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -28,7 +28,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -50,7 +50,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -77,7 +77,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
         command:
         - "runner.sh"
         - "make"
@@ -102,7 +102,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -142,7 +142,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -182,7 +182,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -236,8 +236,7 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-capi-e2e-test
-  - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade
+      testgrid-tab-name: pr-capi-e2e-test6  - name: pull-cluster-api-provider-gcp-e2e-workload-upgrade
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -270,8 +269,7 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-e2e-upgrade
-  - name: pull-cluster-api-provider-gcp-apidiff
+      testgrid-tab-name: pr-e2e-upgrade6  - name: pull-cluster-api-provider-gcp-apidiff
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
@@ -289,8 +287,7 @@ presubmits:
           - ./scripts/ci-apidiff.sh
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-apidiff-main
-  - name: pull-cluster-api-provider-gcp-coverage
+      testgrid-tab-name: pr-apidiff-main6  - name: pull-cluster-api-provider-gcp-coverage
     always_run: false
     optional: true
     decorate: true
@@ -323,4 +320,4 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-coverage
-      testgrid-alert-email: k8s-infra-staging-cluster-api-gcp@kubernetes.io
+      testgrid-alert-email: k8s-infra-staging-cluster-api-gcp@kubernetes.io6
