@@ -12,6 +12,11 @@ periodics:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
