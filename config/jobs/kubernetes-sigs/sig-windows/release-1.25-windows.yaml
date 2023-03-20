@@ -56,7 +56,7 @@ periodics:
     testgrid-dashboards: sig-release-1.25-informing, sig-windows-1.25-release, sig-windows-signal
     testgrid-tab-name: capz-e2e-windows-containerd-1.25
 - name: ci-kubernetes-e2e-capz-containerd-windows-1-25-ccm
-  interval: 24h
+  interval: 2h
   decorate: true
   decoration_config:
     timeout: 4h0m0s
