@@ -624,9 +624,15 @@ func (sc *statusController) search() []CodeReviewCommon {
 	orgs := sets.StringKeySet(orgExceptions)
 	queries := openPRsQueries(orgs.List(), repos.List(), orgExceptions)
 	if !sc.usesGitHubAppsAuth {
+		//The queries for each org need to have their order maintained, otherwise it may be falsely flagged for changing
+		var orgs []string
+		for org := range queries {
+			orgs = append(orgs, org)
+		}
+		sort.Strings(orgs)
 		var query string
-		for _, orgQuery := range queries {
-			query += " " + orgQuery
+		for _, org := range orgs {
+			query += " " + queries[org]
 		}
 		queries = map[string]string{"": query}
 	}
