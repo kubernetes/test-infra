@@ -6,7 +6,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-node-kernel-module-management
       testgrid-tab-name: build
-      description: build the kernel-module-management controller binary
+      description: "build the kernel-module-management controller binary."
     spec:
       containers:
       - image: golang:1.20
