@@ -77,7 +77,7 @@ type InRepoConfigCacheHandler struct {
 func NewInRepoConfigCacheHandler(size int,
 	configAgent prowConfigAgentClient,
 	gitClientFactory git.ClientFactory,
-	count int) (*InRepoConfigCacheHandler, error) {
+	count, workers int) (*InRepoConfigCacheHandler, error) {
 
 	c := &InRepoConfigCacheHandler{
 		presubmitChan:  make(chan InrepoconfigPresubmitRequest),
@@ -89,8 +89,10 @@ func NewInRepoConfigCacheHandler(size int,
 		if err != nil {
 			return nil, err
 		}
-		go cacheClient.handlePresubmit(c.presubmitChan)
-		go cacheClient.handlePostsubmit(c.postsubmitChan)
+		for j := 0; j < workers; j++ {
+			go cacheClient.handlePresubmit(c.presubmitChan)
+			go cacheClient.handlePostsubmit(c.postsubmitChan)
+		}
 	}
 
 	return c, nil

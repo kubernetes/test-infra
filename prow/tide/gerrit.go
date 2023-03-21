@@ -121,7 +121,7 @@ func NewGerritController(
 		newPoolPending:   make(chan bool),
 	}
 
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(configOptions.InRepoConfigCacheSize, cfgAgent, gc, configOptions.InRepoConfigCacheCopies)
+	cacheGetter, err := config.NewInRepoConfigCacheHandler(configOptions.InRepoConfigCacheSize, cfgAgent, gc, configOptions.InRepoConfigCacheCopies, configOptions.InRepoConfigCacheWorkers)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
 	}

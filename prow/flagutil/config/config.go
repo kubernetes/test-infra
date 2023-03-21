@@ -45,6 +45,7 @@ type ConfigOptions struct {
 	InRepoConfigCacheSize    int
 	InRepoConfigCacheCopies  int
 	InRepoConfigCacheDirBase string
+	InRepoConfigCacheWorkers int
 }
 
 func (o *ConfigOptions) AddFlags(fs *flag.FlagSet) {
@@ -62,6 +63,8 @@ func (o *ConfigOptions) AddFlags(fs *flag.FlagSet) {
 	fs.IntVar(&o.InRepoConfigCacheSize, "in-repo-config-cache-size", 100, "Cache size for ProwYAMLs read from in-repo configs. Each host receives its own cache.")
 	fs.IntVar(&o.InRepoConfigCacheCopies, "in-repo-config-cache-copies", 1, "Copy of caches for ProwYAMLs read from in-repo configs.")
 	fs.StringVar(&o.InRepoConfigCacheDirBase, "cache-dir-base", "", "Directory where the repo cache should be mounted.")
+	fs.IntVar(&o.InRepoConfigCacheWorkers, "in-repo-config-cache-workers", 1, "Number of workers getting Presubmits/Postsubmits from cache.")
+
 }
 
 func (o *ConfigOptions) Validate(_ bool) error {
@@ -77,6 +80,9 @@ func (o *ConfigOptions) ValidateConfigOptional() error {
 	}
 	if o.InRepoConfigCacheCopies < 1 {
 		return errors.New("in-repo-config-cache-copies must be at least 1")
+	}
+	if o.InRepoConfigCacheWorkers < 1 {
+		return errors.New("in-repo-config-cache-workers must be at least 1")
 	}
 	return nil
 }
