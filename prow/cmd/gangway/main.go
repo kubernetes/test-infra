@@ -161,7 +161,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, configAgent, gitClient, o.config.InRepoConfigCacheCopies)
+	cacheGetter, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, configAgent, gitClient)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
@@ -171,9 +171,9 @@ func main() {
 	healthHTTP := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	gw := gangway.Gangway{
-		ConfigAgent:              configAgent,
-		ProwJobClient:            prowjobClient,
-		InRepoConfigCacheHandler: cacheGetter,
+		ConfigAgent:       configAgent,
+		ProwJobClient:     prowjobClient,
+		InRepoConfigCache: cacheGetter,
 	}
 
 	lis, err := net.Listen("tcp", ":"+strconv.Itoa(o.port))

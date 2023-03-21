@@ -40,46 +40,6 @@ func (fca *fakeConfigAgent) Config() *Config {
 	return fca.c
 }
 
-func TestNewInRepoConfigCacheHandler(t *testing.T) {
-	// Invalid size arguments result in a nil cache and non-nil error.
-	invalids := []int{-1, 0}
-	for _, invalid := range invalids {
-
-		fca := &fakeConfigAgent{}
-		cf := &testClientFactory{}
-		cache, err := NewInRepoConfigCacheHandler(invalid, fca, cf, 1)
-
-		if err == nil {
-			t.Fatal("Expected non-nil error, got nil")
-		}
-
-		if err.Error() != "Must provide a positive size" {
-			t.Errorf("Expected error 'Must provide a positive size', got '%v'", err.Error())
-		}
-
-		if cache != nil {
-			t.Errorf("Expected nil cache, got %v", cache)
-		}
-	}
-
-	// Valid size arguments.
-	valids := []int{1, 5, 1000}
-	for _, valid := range valids {
-
-		fca := &fakeConfigAgent{}
-		cf := &testClientFactory{}
-		cache, err := NewInRepoConfigCacheHandler(valid, fca, cf, 1)
-
-		if err != nil {
-			t.Errorf("Expected error 'nil' got '%v'", err.Error())
-		}
-
-		if cache == nil {
-			t.Errorf("Expected non-nil cache, got nil")
-		}
-	}
-}
-
 func TestNewInRepoConfigCache(t *testing.T) {
 	// Invalid size arguments result in a nil cache and non-nil error.
 	invalids := []int{-1, 0}
@@ -827,7 +787,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			cf := &testClientFactory{}
 
 			// Initialize cache. Notice that it relies on a snapshot of the Config with configBefore.
-			cache, err := NewInRepoConfigCacheHandler(10, fca, cf, 10)
+			cache, err := NewInRepoConfigCache(10, fca, cf)
 			if err != nil {
 				t1.Fatal("could not initialize cache")
 			}

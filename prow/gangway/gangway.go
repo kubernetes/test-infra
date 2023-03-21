@@ -44,9 +44,9 @@ const (
 
 type Gangway struct {
 	UnimplementedProwServer
-	ConfigAgent              *config.Agent
-	ProwJobClient            ProwJobClient
-	InRepoConfigCacheHandler *config.InRepoConfigCacheHandler
+	ConfigAgent       *config.Agent
+	ProwJobClient     ProwJobClient
+	InRepoConfigCache *config.InRepoConfigCache
 }
 
 // ProwJobClient describes a Kubernetes client for the Prow Job CR. Unlike a
@@ -95,7 +95,7 @@ func (gw *Gangway) CreateJobExecution(ctx context.Context, cjer *CreateJobExecut
 	var reporterFunc ReporterFunc = nil
 	requireTenantID := true
 
-	jobExec, err := HandleProwJob(l, reporterFunc, cjer, gw.ProwJobClient, mainConfig, gw.InRepoConfigCacheHandler, allowedApiClient, requireTenantID, allowedClusters)
+	jobExec, err := HandleProwJob(l, reporterFunc, cjer, gw.ProwJobClient, mainConfig, gw.InRepoConfigCache, allowedApiClient, requireTenantID, allowedClusters)
 	if err != nil {
 		logrus.WithError(err).Debugf("failed to create job %q", cjer.GetJobName())
 		return nil, err
@@ -450,7 +450,7 @@ func HandleProwJob(l *logrus.Entry,
 	cjer *CreateJobExecutionRequest,
 	pjc ProwJobClient,
 	mainConfig prowCfgClient,
-	pc *config.InRepoConfigCacheHandler,
+	pc *config.InRepoConfigCache,
 	allowedApiClient *config.AllowedApiClient,
 	requireTenantID bool,
 	allowedClusters []string) (*JobExecution, error) {
@@ -587,13 +587,13 @@ func HandleProwJob(l *logrus.Entry,
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error)
+	getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCache, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (peh *periodicJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCache, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
@@ -655,7 +655,7 @@ func validateRefs(jobType JobExecutionType, refs *prowcrd.Refs) error {
 	return nil
 }
 
-func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCache, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
 	refs, err := ToCrdRefs(cjer.GetRefs())
 	if err != nil {
@@ -735,7 +735,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *con
 type postsubmitJobHandler struct {
 }
 
-func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCacheHandler, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(mainConfig prowCfgClient, pc *config.InRepoConfigCache, cjer *CreateJobExecutionRequest) (prowJobSpec *prowcrd.ProwJobSpec, labels map[string]string, annotations map[string]string, err error) {
 	// postsubmit jobs require Refs to be set
 	refs, err := ToCrdRefs(cjer.GetRefs())
 	if err != nil {

@@ -53,51 +53,10 @@ type InRepoConfigCache struct {
 	gitClient   git.ClientFactory
 }
 
-type InrepoconfigPresubmitRequest struct {
-	Identifier     string
-	BaseSHAGetter  RefGetter
-	HeadSHAGetters []RefGetter
-	resChan        chan []Presubmit
-	errChan        chan error
-}
-
-type InrepoconfigPostsubmitRequest struct {
-	Identifier     string
-	BaseSHAGetter  RefGetter
-	HeadSHAGetters []RefGetter
-	resChan        chan []Postsubmit
-	errChan        chan error
-}
-
-type InRepoConfigCacheHandler struct {
-	presubmitChan  chan InrepoconfigPresubmitRequest
-	postsubmitChan chan InrepoconfigPostsubmitRequest
-}
-
-func NewInRepoConfigCacheHandler(size int,
-	configAgent prowConfigAgentClient,
-	gitClientFactory git.ClientFactory,
-	count int) (*InRepoConfigCacheHandler, error) {
-
-	c := &InRepoConfigCacheHandler{
-		presubmitChan:  make(chan InrepoconfigPresubmitRequest),
-		postsubmitChan: make(chan InrepoconfigPostsubmitRequest),
-	}
-
-	for i := 0; i < count; i++ {
-		cacheClient, err := NewInRepoConfigCache(size, configAgent, NewInRepoConfigGitCache(gitClientFactory))
-		if err != nil {
-			return nil, err
-		}
-		go cacheClient.handlePresubmit(c.presubmitChan)
-		go cacheClient.handlePostsubmit(c.postsubmitChan)
-	}
-
-	return c, nil
-}
-
 // NewInRepoConfigCache creates a new LRU cache for ProwYAML values, where the keys
 // are CacheKeys (that is, JSON strings) and values are pointers to ProwYAMLs.
+// The provided git.ClientFactory will be wrapped with NewInRepoConfigGitCache() so
+// ensure the input parameter is not prewrapped with this.
 func NewInRepoConfigCache(
 	size int,
 	configAgent prowConfigAgentClient,
@@ -118,7 +77,7 @@ func NewInRepoConfigCache(
 		configAgent,
 		// Make the cache be able to handle cache misses (by calling out to Git
 		// to construct the ProwYAML value).
-		gitClientFactory,
+		NewInRepoConfigGitCache(gitClientFactory),
 	}
 
 	return cache, nil
@@ -151,70 +110,6 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 	}
 
 	return CacheKey(data), nil
-}
-
-func (cache *InRepoConfigCache) handlePresubmit(requestChan chan InrepoconfigPresubmitRequest) {
-	for r := range requestChan {
-		res, err := cache.GetPresubmits(r.Identifier, r.BaseSHAGetter, r.HeadSHAGetters...)
-		if err != nil {
-			r.errChan <- err
-			continue
-		}
-		r.resChan <- res
-	}
-}
-
-func (cache *InRepoConfigCache) handlePostsubmit(requestChan chan InrepoconfigPostsubmitRequest) {
-	for r := range requestChan {
-		res, err := cache.GetPostsubmits(r.Identifier, r.BaseSHAGetter, r.HeadSHAGetters...)
-		if err != nil {
-			r.errChan <- err
-			continue
-		}
-		r.resChan <- res
-	}
-}
-
-func (ih *InRepoConfigCacheHandler) GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
-	resChan := make(chan []Presubmit)
-	errChan := make(chan error)
-	ih.presubmitChan <- InrepoconfigPresubmitRequest{
-		Identifier:     identifier,
-		BaseSHAGetter:  baseSHAGetter,
-		HeadSHAGetters: headSHAGetters,
-		resChan:        resChan,
-		errChan:        errChan,
-	}
-
-	for {
-		select {
-		case err := <-errChan:
-			return nil, err
-		case res := <-resChan:
-			return res, nil
-		}
-	}
-}
-
-func (ih *InRepoConfigCacheHandler) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-	resChan := make(chan []Postsubmit)
-	errChan := make(chan error)
-	ih.postsubmitChan <- InrepoconfigPostsubmitRequest{
-		Identifier:     identifier,
-		BaseSHAGetter:  baseSHAGetter,
-		HeadSHAGetters: headSHAGetters,
-		resChan:        resChan,
-		errChan:        errChan,
-	}
-
-	for {
-		select {
-		case err := <-errChan:
-			return nil, err
-		case res := <-resChan:
-			return res, nil
-		}
-	}
 }
 
 // GetPresubmits uses a cache lookup to get the *ProwYAML value (cache hit),
