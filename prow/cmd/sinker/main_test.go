@@ -904,7 +904,6 @@ func TestFlags(t *testing.T) {
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 					InRepoConfigCacheSize:                 100,
-					InRepoConfigCacheCopies:               1,
 				},
 				dryRun:                 false,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
