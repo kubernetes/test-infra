@@ -24,6 +24,7 @@ import (
 	"os"
 	"strings"
 
+	gyaml "gopkg.in/yaml.v2"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
@@ -137,6 +138,12 @@ func main() {
 		log.Fatalf("Failed to load job config: %v\n", err)
 	}
 	updateEverything(&c, o.oldVersion, o.newVersion)
+
+	// We need to use FutureLineWrap because "fork-per-release-cron" is too long
+	// causing the annotation value to be split into two lines.
+	// We use gopkg.in/yaml here because sigs.k8s.io/yaml doesn't export this
+	// function. sigs.k8s.io/yaml uses gopkg.in/yaml under the hood.
+	gyaml.FutureLineWrap()
 
 	output, err := yaml.Marshal(map[string]interface{}{
 		"presubmits":  c.PresubmitsStatic,
