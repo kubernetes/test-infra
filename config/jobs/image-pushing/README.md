@@ -161,7 +161,7 @@ If you need the `.git` directory to be uploaded to your build environment:
 - add an empty `.gcloudignore` file to your repository. This will override the
   [default values][gcloudignore].
 
-[registry instructions]: https://github.com/kubernetes/k8s.io/blob/main/registry.gcr.io/README.md
+[registry instructions]: https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/README.md
 [gcb documentation]: https://cloud.google.com/cloud-build/docs/configuring-builds/create-basic-configuration
 [gcb-docker-gcloud]: https://github.com/kubernetes/test-infra/blob/master/images/gcb-docker-gcloud/Dockerfile
 [gcloudignore]: https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore
