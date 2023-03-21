@@ -1008,16 +1008,6 @@ func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error
 	return &github.Team{}, nil
 }
 
-func (f *FakeClient) GetTeamById(id int) (*github.Team, error) {
-	teams, _ := f.ListTeams("")
-	for _, team := range teams {
-		if team.ID == id {
-			return &team, nil
-		}
-	}
-	return &github.Team{}, nil
-}
-
 func (f *FakeClient) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
 	f.lock.Lock()
 	defer f.lock.Unlock()
