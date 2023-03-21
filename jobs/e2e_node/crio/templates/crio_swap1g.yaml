@@ -34,7 +34,7 @@ systemd:
       enabled: true
       contents: |
         [Unit]
-        Description=Download and install requried tools.
+        Description=Download and install required tools.
         Before=crio-install.service
         After=network-online.target
 
