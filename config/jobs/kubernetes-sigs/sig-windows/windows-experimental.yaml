@@ -29,7 +29,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
@@ -76,7 +76,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
         command:
           - "runner.sh"
           - "./capz/run-capz-e2e.sh"
