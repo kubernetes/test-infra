@@ -118,3 +118,4 @@ ADD ["images/kubekins-e2e/kops-e2e-runner.sh", \
     "/workspace/"]
 ENV LOG_DUMP_SCRIPT_PATH "/workspace/log-dump.sh"
 RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/log-dump.sh"]
+
