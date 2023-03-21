@@ -842,3 +842,99 @@ func TestProwJobSpec_GetPipelineRunSpec(t *testing.T) {
 		})
 	}
 }
+
+func TestProwJob_NeedReportState(t *testing.T) {
+	tests := []struct {
+		name     string
+		job      *ProwJob
+		reporter string
+		want     bool
+	}{
+		{
+			name: "state changed-k8s agent",
+			job: &ProwJob{
+				Spec: ProwJobSpec{
+					Agent: KubernetesAgent,
+				},
+				Status: ProwJobStatus{
+					State:            PendingState,
+					Description:      "job triggered",
+					PrevReportStates: map[string]ProwJobState{"github": TriggeredState},
+				},
+			},
+			reporter: "github",
+			want:     true,
+		},
+		{
+			name: "state changed-jenkins agent",
+			job: &ProwJob{
+				Spec: ProwJobSpec{
+					Agent: JenkinsAgent,
+				},
+				Status: ProwJobStatus{
+					State:            PendingState,
+					Description:      "job triggered",
+					PrevReportStates: map[string]ProwJobState{"github": TriggeredState},
+				},
+			},
+			reporter: "github",
+			want:     true,
+		},
+		{
+			name: "not-jenkins-agent, state not changed",
+			job: &ProwJob{
+				Spec: ProwJobSpec{
+					Agent: KubernetesAgent,
+				},
+				Status: ProwJobStatus{
+					State:            PendingState,
+					Description:      "job running",
+					PrevReportStates: map[string]ProwJobState{"github": PendingState},
+				},
+			},
+			reporter: "github",
+			want:     false,
+		},
+		{
+			name: "jenkins-agent-description not changed",
+			job: &ProwJob{
+				Spec: ProwJobSpec{
+					Agent: JenkinsAgent,
+				},
+				Status: ProwJobStatus{
+					State:                  PendingState,
+					Description:            "jenkins build enqueued",
+					PrevReportStates:       map[string]ProwJobState{"github": PendingState},
+					PrevReportDescriptions: map[string]string{"github": "jenkins build enqueued"},
+				},
+			},
+			reporter: "github",
+			want:     false,
+		},
+		{
+			name: "jenkins-agent-description changed",
+			job: &ProwJob{
+				Spec: ProwJobSpec{
+					Agent: JenkinsAgent,
+				},
+				Status: ProwJobStatus{
+					State:                  PendingState,
+					Description:            "jenkins build running",
+					URL:                    "https://ci.example.com/job/demo/1/",
+					PrevReportStates:       map[string]ProwJobState{"github": PendingState},
+					PrevReportDescriptions: map[string]string{"github": "jenkins build enqueued"},
+				},
+			},
+			reporter: "github",
+			want:     true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.job.NeedReportState(tt.reporter); got != tt.want {
+				t.Errorf("ProwJob.NeedReportState() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

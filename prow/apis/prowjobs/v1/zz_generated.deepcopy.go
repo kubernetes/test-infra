@@ -449,6 +449,13 @@ func (in *ProwJobStatus) DeepCopyInto(out *ProwJobStatus) {
 			(*out)[key] = val
 		}
 	}
+	if in.PrevReportDescriptions != nil {
+		in, out := &in.PrevReportDescriptions, &out.PrevReportDescriptions
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 

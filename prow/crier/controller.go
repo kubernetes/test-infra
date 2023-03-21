@@ -129,8 +129,12 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 		pj.Status.PrevReportStates = map[string]prowv1.ProwJobState{}
 	}
 
-	// already reported current state
-	if pj.Status.PrevReportStates[r.reporter.GetName()] == pj.Status.State {
+	// we set omitempty on PrevReportDescriptions, so here we need to init it if is nil
+	if pj.Status.PrevReportDescriptions == nil {
+		pj.Status.PrevReportDescriptions = map[string]string{}
+	}
+
+	if !pj.NeedReportState(r.reporter.GetName()) {
 		log.Trace("Already reported")
 		return nil, nil
 	}
