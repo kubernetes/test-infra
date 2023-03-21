@@ -304,6 +304,11 @@ blockades:
   exceptionregexps:
   - ^prow/(ANNOUNCEMENTS|README)\.md$
   explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4. Instructions for updating existing docs are at https://docs.prow.k8s.io/docs/contribution-guidelines/#updating-existing-docs."
+- repos:
+  - kubernetes/k8s.io
+  blockregexps:
+  - ^k8s.gcr.io/
+  explanation: "k8s.gcr.io Image registry is frozen from April 2023. Please update the manifests in registry.k8s.io folder instead"
 
 blunderbuss:
   max_request_count: 2
@@ -468,7 +473,8 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api:
-    main: v1.4
+    main: v1.5
+    release-1.4: v1.4
     release-1.3: v1.3
     release-1.2: v1.2
     release-1.1: v1.1
@@ -481,9 +487,9 @@ milestone_applier:
     release-0.7: v0.7.x
     release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.8
+    main: v1.9
+    release-1.8: v1.8
     release-1.7: v1.7
-    release-1.6: v1.6
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -1101,6 +1107,7 @@ plugins:
 
   kubernetes/k8s.io:
     plugins:
+    - blockade
     - milestone
     - override
 
@@ -1606,6 +1613,18 @@ external_plugins:
       - issue_comment
       - pull_request
     endpoint: http://cherrypicker
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/gcp-filestore-csi-driver:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+    endpoint: http://cherrypicker  
   kubernetes-sigs/node-feature-discovery:
   - name: cherrypicker
     events:
@@ -1619,6 +1638,54 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/secrets-store-csi-driver:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-csi/external-snapshotter:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-csi/external-provisioner:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-csi/external-attacher:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-csi/external-resizer:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-csi/node-driver-registrar:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-csi/livenessprobe:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-csi/csi-driver-smb:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-csi/csi-driver-nfs:
   - name: cherrypicker
     events:
     - issue_comment

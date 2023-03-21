@@ -1,5 +1,6 @@
 # Image pushing jobs
 
+<!--TODO: update this when we start using staging AR instances instead--->
 This directory contains jobs that run in the trusted cluster and kick off GCB
 jobs that then push images to staging GCR repos. These jobs are the recommended
 way to regularly publish images to staging.
@@ -7,7 +8,7 @@ way to regularly publish images to staging.
 ## Getting started
 
 You'll need a staging GCR. If you don't have one,
-[instructions are over here][gcr instructions]. Once you have one, there are two
+[instructions are over here][registry instructions]. Once you have one, there are two
 components two getting set up:
 
 * A `cloudbuild.yaml` file in your repo, customised to build your images in
@@ -160,7 +161,7 @@ If you need the `.git` directory to be uploaded to your build environment:
 - add an empty `.gcloudignore` file to your repository. This will override the
   [default values][gcloudignore].
 
-[gcr instructions]: https://github.com/kubernetes/k8s.io/blob/main/k8s.gcr.io/README.md
+[registry instructions]: https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/README.md
 [gcb documentation]: https://cloud.google.com/cloud-build/docs/configuring-builds/create-basic-configuration
 [gcb-docker-gcloud]: https://github.com/kubernetes/test-infra/blob/master/images/gcb-docker-gcloud/Dockerfile
 [gcloudignore]: https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore
