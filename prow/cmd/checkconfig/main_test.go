@@ -1461,7 +1461,7 @@ func TestOptions(t *testing.T) {
 					ConfigPath:                            "prow/config.yaml",
 					JobConfigPath:                         "config/jobs/org/job.yaml",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
-					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheSize:                 1000,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					PluginConfigPath:                         "prow/plugins/plugin.yaml",

@@ -394,7 +394,7 @@ func TestFlags(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
-					InRepoConfigCacheSize:                 100,
+					InRepoConfigCacheSize:                 1000,
 				},
 				dryRun:                 true,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
