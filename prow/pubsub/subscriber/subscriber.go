@@ -81,11 +81,11 @@ func (pe *ProwJobEvent) ToMessageOfType(t string) (*pubsub.Message, error) {
 // validates them using Prow Configuration and
 // use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
-	ConfigAgent              *config.Agent
-	Metrics                  *Metrics
-	ProwJobClient            gangway.ProwJobClient
-	Reporter                 reportClient
-	InRepoConfigCacheHandler *config.InRepoConfigCacheHandler
+	ConfigAgent       *config.Agent
+	Metrics           *Metrics
+	ProwJobClient     gangway.ProwJobClient
+	Reporter          reportClient
+	InRepoConfigCache *config.InRepoConfigCache
 }
 
 type messageInterface interface {
@@ -165,7 +165,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	var allowedApiClient *config.AllowedApiClient = nil
 	var requireTenantID bool = false
 
-	if _, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigCacheHandler, allowedApiClient, requireTenantID, allowedClusters); err != nil {
+	if _, err = gangway.HandleProwJob(l, s.getReporterFunc(l), cjer, s.ProwJobClient, s.ConfigAgent.Config(), s.InRepoConfigCache, allowedApiClient, requireTenantID, allowedClusters); err != nil {
 		l.WithError(err).Info("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,

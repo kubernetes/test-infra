@@ -75,7 +75,6 @@ func TestGatherOptions(t *testing.T) {
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 					InRepoConfigCacheSize:                 100,
-					InRepoConfigCacheCopies:               1,
 				},
 				dryRun:                   true,
 				github:                   ghoptions,

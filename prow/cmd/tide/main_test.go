@@ -91,7 +91,6 @@ func Test_gatherOptions(t *testing.T) {
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 					InRepoConfigCacheSize:                 100,
-					InRepoConfigCacheCopies:               1,
 				},
 				dryRun:                 true,
 				syncThrottle:           800,

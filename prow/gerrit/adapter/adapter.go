@@ -117,7 +117,7 @@ type Controller struct {
 	lock                        sync.RWMutex
 	cookieFilePath              string
 	configAgent                 *config.Agent
-	inRepoConfigCacheHandler    *config.InRepoConfigCacheHandler
+	inRepoConfigCache           *config.InRepoConfigCache
 	inRepoConfigFailuresTracker map[string]bool
 	instancesWithWorker         map[string]bool
 	latestMux                   sync.Mutex
@@ -131,7 +131,7 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCacheHandler *config.InRepoConfigCacheHandler) *Controller {
+	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCache *config.InRepoConfigCache) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
@@ -155,7 +155,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		projectsOptOutHelp:          projectsOptOutHelpMap,
 		cookieFilePath:              cookiefilePath,
 		configAgent:                 ca,
-		inRepoConfigCacheHandler:    inRepoConfigCacheHandler,
+		inRepoConfigCache:           inRepoConfigCache,
 		inRepoConfigFailuresTracker: map[string]bool{},
 		instancesWithWorker:         make(map[string]bool),
 		workerPoolSize:              workerPoolSize,
@@ -503,7 +503,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			postsubmits, err = c.inRepoConfigCacheHandler.GetPostsubmits(cloneURI, baseSHAGetter, headSHAGetter)
+			postsubmits, err = c.inRepoConfigCache.GetPostsubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			// Break if there was no error, or if there was a merge conflict
 			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
@@ -523,7 +523,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				logger.WithError(postErr).Error("Failed reporting inrepoconfig processing error back to Gerrit.")
 			}
 			// Static postsubmit jobs are included as part of output from
-			// inRepoConfigCacheHandler.GetPostsubmits, fallback to static only
+			// inRepoConfigCache.GetPostsubmits, fallback to static only
 			// when inrepoconfig failed.
 			postsubmits = append(postsubmits, c.config().GetPostsubmitsStatic(cloneURI)...)
 		}
@@ -548,7 +548,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
-			presubmits, err = c.inRepoConfigCacheHandler.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
+			presubmits, err = c.inRepoConfigCache.GetPresubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			if err == nil {
 				break
 			}
