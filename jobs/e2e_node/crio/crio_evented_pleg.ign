@@ -69,7 +69,7 @@
   "systemd": {
     "units": [
       {
-        "contents": "[Unit]\nDescription=Download and install requried tools.\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=rpm-ostree install \\\n  -y \\\n  --apply-live \\\n  --allow-inactive \\\n  dbus-tools \\\n  checkpolicy\n\n[Install]\nWantedBy=multi-user.target\n",
+        "contents": "[Unit]\nDescription=Download and install required tools.\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=rpm-ostree install \\\n  -y \\\n  --apply-live \\\n  --allow-inactive \\\n  dbus-tools \\\n  checkpolicy\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "tools-install.service"
       },
