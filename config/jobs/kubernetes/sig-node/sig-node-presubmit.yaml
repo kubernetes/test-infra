@@ -1810,7 +1810,7 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-node-kubelet-containerd-sidecar-conatiners
+      testgrid-tab-name: pr-node-kubelet-containerd-sidecar-containers
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
