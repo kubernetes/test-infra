@@ -138,11 +138,12 @@ periodics:
         value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]|\\[ClusterClass\\]"
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
+      # Because of that we usually would test with v1.20, but because ClusterClass
+      # requires at least 1.22 we are using 1.22 instead.
+      # Note: We need ClusterClass for the clusterctl upgrade tests, so we're able to
+      # create clusterctl with old versions with the right cgroupDriver configuration.
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "stable-1.20"
-      # CAPI does not work with v1.20 if ClusterClass is enabled, so we have to disable it.
-      - name: CLUSTER_TOPOLOGY
-        value: "false"
+        value: "stable-1.22"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
