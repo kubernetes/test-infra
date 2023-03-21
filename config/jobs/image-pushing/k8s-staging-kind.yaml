@@ -23,8 +23,9 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2921947 # kind-maintainers
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers
     - name: post-kind-push-base-image
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '(^images/base)|(^images/Makefile)'
@@ -50,7 +51,7 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
+        github_team_slugs:
           - org: kubernetes-sigs
             slug: kind-maintainers
     - name: post-kind-push-kindnetd-image
@@ -78,8 +79,9 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2921947 # kind-maintainers
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers
     - name: post-kind-push-haproxy-image
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '(^images/haproxy)|(^images/Makefile)'
@@ -105,8 +107,9 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2921947 # kind-maintainers
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers
     - name: post-kind-push-local-path-provisioner-image
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '(^images/local-path-provisioner)|(^images/Makefile)'
@@ -132,8 +135,9 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2921947 # kind-maintainers
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers
     - name: post-kind-push-local-path-helper-image
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '(^images/local-path-helper)|(^images/Makefile)'
@@ -159,6 +163,6 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
+        github_team_slugs:
           - org: kubernetes-sigs
             slug: kind-maintainers
