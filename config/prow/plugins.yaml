@@ -560,7 +560,7 @@ repo_milestone:
 project_config:
   project_org_configs:
     kubernetes:
-      org_maintainers_team_id: 3162587 # sig-testing-dummy-project-team
+      org_maintainers_team_slug: sig-testing-dummy-project-team
       org_default_column_map:
         test-infra-dummy-testing-project-plugin:
           To do
@@ -568,14 +568,14 @@ project_config:
           To do
       project_repo_configs:
         kubernetes:
-          repo_maintainers_team_id: 2460384 # milestone-maintainers
+          repo_maintainers_team_slug: milestone-maintainers
           repo_default_column_map:
             component-base:
               To do
             Workloads:
               Backlog
         website:
-          repo_maintainers_team_id: 3175912 # website-milestone-maintainers
+          repo_maintainers_team_slug: website-milestone-maintainers
           repo_default_column_map:
             component-base:
               To do

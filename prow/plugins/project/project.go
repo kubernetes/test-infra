@@ -43,7 +43,7 @@ var (
 	invalidProject            = "The provided project is not valid for this organization. Projects in Kubernetes orgs and repositories: [%s]."
 	invalidColumn             = "A column is not provided or it's not valid for the project %s. Please provide one of the following columns in the command:\n%v"
 	invalidNumArgs            = "Please provide 1 or more arguments. Example usage: /project 0.5.0, /project 0.5.0 To do, /project clear 0.4.0"
-	projectTeamMsg            = "The project maintainers team is the github team with ID: %d."
+	projectTeamMsg            = "The project maintainers team is the github team with name: %s."
 	columnsMsg                = "An issue/PR with unspecified column will be added to one of the following columns: %v."
 	successMovingCardMsg      = "You have successfully moved the project card for this issue to column %s (ID %d)."
 	successCreatingCardMsg    = "You have successfully created a project card for this issue. It's been added to project %s column %s (ID %D)."
@@ -65,7 +65,7 @@ type githubClient interface {
 	GetColumnProjectCard(org string, columnID int, contentURL string) (*github.ProjectCard, error)
 	MoveProjectCard(org string, projectCardID int, newColumnID int) error
 	DeleteProjectCard(org string, projectCardID int) error
-	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
+	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 }
 
 func init() {
@@ -76,8 +76,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	projectConfig := config.Project
 	configInfo := map[string]string{}
 	for _, repo := range enabledRepos {
-		if maintainerTeamID := projectConfig.GetMaintainerTeam(repo.Org, repo.Repo); maintainerTeamID != -1 {
-			configInfo[repo.String()] = fmt.Sprintf(projectTeamMsg, maintainerTeamID)
+		if maintainerTeamSlug := projectConfig.GetMaintainerTeam(repo.Org, repo.Repo); maintainerTeamSlug != "" {
+			configInfo[repo.String()] = fmt.Sprintf(projectTeamMsg, maintainerTeamSlug)
 		} else {
 			configInfo[repo.String()] = "There are no maintainer team specified for this repo or its org."
 		}
@@ -90,14 +90,14 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		Project: plugins.ProjectConfig{
 			Orgs: map[string]plugins.ProjectOrgConfig{
 				"org": {
-					MaintainerTeamID: 123456,
+					MaintainerTeamSlug: "sig-example-team",
 					ProjectColumnMap: map[string]string{
 						"project1": "To do",
 						"project2": "Backlog",
 					},
 					Repos: map[string]plugins.ProjectRepoConfig{
 						"repo": {
-							MaintainerTeamID: 123456,
+							MaintainerTeamSlug: "sig-example-team",
 							ProjectColumnMap: map[string]string{
 								"project3": "To do",
 								"project4": "Backlog",
@@ -208,11 +208,11 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
-	maintainerTeamID := projectConfig.GetMaintainerTeam(org, repo)
-	if maintainerTeamID == -1 {
+	maintainerTeamSlug := projectConfig.GetMaintainerTeam(org, repo)
+	if maintainerTeamSlug == "" {
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, notTeamConfigMsg))
 	}
-	isAMember, err := gc.TeamHasMember(org, maintainerTeamID, e.User.Login)
+	isAMember, err := gc.TeamBySlugHasMember(org, maintainerTeamSlug, e.User.Login)
 	if err != nil {
 		return err
 	}

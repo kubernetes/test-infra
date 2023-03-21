@@ -23,5 +23,6 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2921947 # kind-maintainers
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: kind-maintainers

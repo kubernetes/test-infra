@@ -601,7 +601,7 @@ type ProjectConfig struct {
 // This can be overridden by ProjectRepoConfig.
 type ProjectOrgConfig struct {
 	// ID of the github project maintainer team for a give project or org
-	MaintainerTeamID int `json:"org_maintainers_team_id,omitempty"`
+	MaintainerTeamSlug string `json:"org_maintainers_team_slug,omitempty"`
 	// A map of project name to default column; an issue/PR will be added
 	// to the default column if column name is not provided in the command
 	ProjectColumnMap map[string]string `json:"org_default_column_map,omitempty"`
@@ -612,7 +612,7 @@ type ProjectOrgConfig struct {
 // ProjectRepoConfig holds the github project config for a github project.
 type ProjectRepoConfig struct {
 	// ID of the github project maintainer team for a give project or org
-	MaintainerTeamID int `json:"repo_maintainers_team_id,omitempty"`
+	MaintainerTeamSlug string `json:"repo_maintainers_team_slug,omitempty"`
 	// A map of project name to default column; an issue/PR will be added
 	// to the default column if column name is not provided in the command
 	ProjectColumnMap map[string]string `json:"repo_default_column_map,omitempty"`
@@ -1372,19 +1372,19 @@ func (c *Configuration) Validate() error {
 	return nil
 }
 
-func (pluginConfig *ProjectConfig) GetMaintainerTeam(org string, repo string) int {
+func (pluginConfig *ProjectConfig) GetMaintainerTeam(org string, repo string) string {
 	for orgName, orgConfig := range pluginConfig.Orgs {
 		if org == orgName {
 			// look for repo level configs first because repo level config overrides org level configs
 			for repoName, repoConfig := range orgConfig.Repos {
 				if repo == repoName {
-					return repoConfig.MaintainerTeamID
+					return repoConfig.MaintainerTeamSlug
 				}
 			}
-			return orgConfig.MaintainerTeamID
+			return orgConfig.MaintainerTeamSlug
 		}
 	}
-	return -1
+	return ""
 }
 
 func (pluginConfig *ProjectConfig) GetColumnMap(org string, repo string) map[string]string {

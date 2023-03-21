@@ -21472,17 +21472,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  github_team_ids:
-                    description: 'GitHubTeams contains IDs of GitHub teams of users
-                      who can rerun the job If you know the name of a team and the
-                      org it belongs to, you can look up its ID using this command,
-                      where the team slug is the hyphenated name: curl -H "Authorization:
-                      token <token>" "https://api.github.com/orgs/<org-name>/teams/<team
-                      slug>" or, to list all teams in a given org, use curl -H "Authorization:
-                      token <token>" "https://api.github.com/orgs/<org-name>/teams"'
-                    items:
-                      type: integer
-                    type: array
                   github_team_slugs:
                     description: GitHubTeamSlugs contains slugs and orgs of teams
                       of users who can rerun the job

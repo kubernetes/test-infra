@@ -171,9 +171,11 @@ deck:
   google_analytics: UA-82843984-5
   rerun_auth_configs:
     '*':
-      github_team_ids:
-      - 2009231 # test-infra-admins
-      - 2460384 # milestone-maintainers
+      github_team_slugs:
+      - org: kubernetes
+        slug: test-infra-admins
+      - org: kubernetes
+        slug: milestone-maintainers
   # additional_allowed_buckets is used only when skip_storage_path_validation is
   # false
   skip_storage_path_validation: false

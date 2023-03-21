@@ -79,22 +79,22 @@ func TestProjectCommand(t *testing.T) {
 	}
 
 	projectConfig := plugins.ProjectConfig{
-		// The team ID is set to 0 (or 42) in order to match the teams returned by FakeClient's method ListTeamMembers
+		// The team ID is set to "default-sig-lead" (or "sig-lead") in order to match the teams returned by FakeClient's method ListTeamMembersBySlug
 		Orgs: map[string]plugins.ProjectOrgConfig{
 			"kubernetes": {
-				MaintainerTeamID: 0,
+				MaintainerTeamSlug: "default-sig-lead",
 				ProjectColumnMap: map[string]string{
 					"0.0.0": "Backlog",
 				},
 				Repos: map[string]plugins.ProjectRepoConfig{
 					"kubernetes": {
-						MaintainerTeamID: 42,
+						MaintainerTeamSlug: "sig-lead",
 						ProjectColumnMap: map[string]string{
 							"0.1.0": "To do",
 						},
 					},
 					"community": {
-						MaintainerTeamID: 0,
+						MaintainerTeamSlug: "default-sig-lead",
 						ProjectColumnMap: map[string]string{
 							"0.1.0": "does not exist column",
 						},
@@ -477,48 +477,48 @@ func TestParseCommand(t *testing.T) {
 
 func TestGetProjectConfigs(t *testing.T) {
 	var testcases = []struct {
-		org                      string
-		repo                     string
-		expectedMaintainerTeamID int
+		org                        string
+		repo                       string
+		expectedMaintainerTeamSlug string
 	}{
 		{
-			org:                      "kubernetes",
-			repo:                     "kubernetes",
-			expectedMaintainerTeamID: 42,
+			org:                        "kubernetes",
+			repo:                       "kubernetes",
+			expectedMaintainerTeamSlug: "sig-lead",
 		},
 		{
-			org:                      "kubernetes",
-			repo:                     "community",
-			expectedMaintainerTeamID: 11,
+			org:                        "kubernetes",
+			repo:                       "community",
+			expectedMaintainerTeamSlug: "sig-community-lead",
 		},
 		{
-			org:                      "kubernetes-sigs",
-			repo:                     "kubespray",
-			expectedMaintainerTeamID: 10,
+			org:                        "kubernetes-sigs",
+			repo:                       "kubespray",
+			expectedMaintainerTeamSlug: "sig-kubespray-lead",
 		},
 		{
-			org:                      "kubernetes-sigs",
-			repo:                     "kind",
-			expectedMaintainerTeamID: 0,
+			org:                        "kubernetes-sigs",
+			repo:                       "kind",
+			expectedMaintainerTeamSlug: "default-sig-lead",
 		},
 	}
 	projectConfig := plugins.ProjectConfig{
 		Orgs: map[string]plugins.ProjectOrgConfig{
 			"kubernetes": {
-				MaintainerTeamID: 11,
+				MaintainerTeamSlug: "sig-community-lead",
 				Repos: map[string]plugins.ProjectRepoConfig{
 					"kubernetes": {
-						MaintainerTeamID: 42,
+						MaintainerTeamSlug: "sig-lead",
 					},
 				},
 			},
 			"kubeflow": {
-				MaintainerTeamID: 20,
+				MaintainerTeamSlug: "sig-kubeflow-lead",
 			},
 			"kubernetes-sigs": {
 				Repos: map[string]plugins.ProjectRepoConfig{
 					"kubespray": {
-						MaintainerTeamID: 10,
+						MaintainerTeamSlug: "sig-kubespray-lead",
 					},
 					"kind": {},
 				},
@@ -527,9 +527,9 @@ func TestGetProjectConfigs(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		maintainerTeamID := projectConfig.GetMaintainerTeam(tc.org, tc.repo)
-		if maintainerTeamID != tc.expectedMaintainerTeamID {
-			t.Errorf("\nFor %s/%s, expected maintainer team ID %d but got ID %d", tc.org, tc.repo, tc.expectedMaintainerTeamID, maintainerTeamID)
+		maintainerTeamSlug := projectConfig.GetMaintainerTeam(tc.org, tc.repo)
+		if maintainerTeamSlug != tc.expectedMaintainerTeamSlug {
+			t.Errorf("\nFor %s/%s, expected maintainer team name %s but got %s", tc.org, tc.repo, tc.expectedMaintainerTeamSlug, maintainerTeamSlug)
 		}
 	}
 }

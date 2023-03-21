@@ -209,10 +209,8 @@ type TeamClient interface {
 	RemoveTeamRepoBySlug(org, teamSlug, repo string) error
 	ListTeamInvitations(org string, id int) ([]OrgInvitation, error)
 	ListTeamInvitationsBySlug(org, teamSlug string) ([]OrgInvitation, error)
-	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
-	GetTeamById(id int) (*Team, error)
 }
 
 // UserClient interface for user related API actions
@@ -249,7 +247,6 @@ type MilestoneClient interface {
 // RerunClient interface for job rerun access check related API actions
 type RerunClient interface {
 	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
-	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetIssueLabels(org, repo string, number int) ([]Label, error)
@@ -4851,28 +4848,6 @@ func (c *client) DeleteProjectCard(org string, projectCardID int) error {
 	return err
 }
 
-// TeamHasMember checks if a user belongs to a team
-// Deprecated: use TeamBySlugHasMember
-func (c *client) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
-	durationLogger := c.log("TeamHasMember", teamID, memberLogin)
-	defer durationLogger()
-
-	team, err := c.GetTeamById(teamID)
-	if err != nil {
-		return false, err
-	}
-	projectMaintainers, err := c.ListTeamMembersBySlug(org, team.Slug, RoleAll)
-	if err != nil {
-		return false, err
-	}
-	for _, person := range projectMaintainers {
-		if NormLogin(person.Login) == NormLogin(memberLogin) {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
 func (c *client) TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error) {
 	durationLogger := c.log("TeamBySlugHasMember", teamSlug, org)
 	defer durationLogger()
@@ -4904,29 +4879,6 @@ func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/orgs/%s/teams/%s", org, slug),
 		org:       org,
-		exitCodes: []int{200},
-	}, &team)
-	if err != nil {
-		return nil, err
-	}
-	return &team, err
-}
-
-// GetTeamById returns information about that team
-//
-// See https://developer.github.com/v3/teams/#get-a-team-legacy
-// Deprecated: please use GetTeamBySlug
-func (c *client) GetTeamById(id int) (*Team, error) {
-	durationLogger := c.log("GetTeamById", id)
-	defer durationLogger()
-
-	if c.fake {
-		return &Team{}, nil
-	}
-	var team Team
-	_, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/teams/%d", id),
 		exitCodes: []int{200},
 	}, &team)
 	if err != nil {

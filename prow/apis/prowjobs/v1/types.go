@@ -267,13 +267,6 @@ type GitHubTeamSlug struct {
 type RerunAuthConfig struct {
 	// If AllowAnyone is set to true, any user can rerun the job
 	AllowAnyone bool `json:"allow_anyone,omitempty"`
-	// GitHubTeams contains IDs of GitHub teams of users who can rerun the job
-	// If you know the name of a team and the org it belongs to,
-	// you can look up its ID using this command, where the team slug is the hyphenated name:
-	// curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams/<team slug>"
-	// or, to list all teams in a given org, use
-	// curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams"
-	GitHubTeamIDs []int `json:"github_team_ids,omitempty"`
 	// GitHubTeamSlugs contains slugs and orgs of teams of users who can rerun the job
 	GitHubTeamSlugs []GitHubTeamSlug `json:"github_team_slugs,omitempty"`
 	// GitHubUsers contains names of individual users who can rerun the job
@@ -306,15 +299,6 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 			return false, fmt.Errorf("GitHub failed to fetch members of org %v: %w", gho, err)
 		}
 		if isOrgMember {
-			return true, nil
-		}
-	}
-	for _, ght := range rac.GitHubTeamIDs {
-		member, err := cli.TeamHasMember(org, ght, user)
-		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v, verify that you have the correct team number and access token: %w", ght, err)
-		}
-		if member {
 			return true, nil
 		}
 	}

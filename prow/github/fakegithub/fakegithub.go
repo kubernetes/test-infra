@@ -998,18 +998,6 @@ func (f *FakeClient) MoveProjectCard(org string, projectCardID int, newColumnID 
 	return nil
 }
 
-// TeamHasMember checks if a user belongs to a team
-func (f *FakeClient) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
-	team, _ := f.GetTeamById(teamID)
-	teamMembers, _ := f.ListTeamMembersBySlug(org, team.Slug, github.RoleAll)
-	for _, member := range teamMembers {
-		if member.Login == memberLogin {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
 func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error) {
 	teams, _ := f.ListTeams(org)
 	for _, team := range teams {
