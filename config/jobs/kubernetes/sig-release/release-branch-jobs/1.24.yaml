@@ -33,7 +33,7 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-cron: 0 8-23/24 * * *
+    fork-per-release-cron: 0 8-23/24 * * *, 0 14-23/24 * * *
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.24-blocking, google-gce
@@ -169,13 +169,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 21 * * *
+    fork-per-release-cron: 0 17 * * *, 0 21 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.24-500
   cluster: k8s-infra-prow-build
-  cron: 0 15 * * *
+  cron: 0 13 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -244,7 +244,7 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.24'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-cron: 0 8-20/12 * * *
+    fork-per-release-cron: 0 8-20/12 * * *, 0 8-20/24 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.24-blocking, sig-scalability-gce, google-gce,
       google-gci
