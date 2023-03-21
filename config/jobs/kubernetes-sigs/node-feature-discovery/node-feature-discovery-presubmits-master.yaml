@@ -13,7 +13,21 @@ presubmits:
       containers:
       - image: golang:1.20
         command:
-        - scripts/test-infra/verify.sh
+        - bash
+        args:
+          - -c
+          - |
+            ./scripts/test-infra/verify.sh
+            curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import # One-time step
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov -t ${CODECOV_TOKEN}
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nfd-creds
+              key: codecov-token
   - name: pull-node-feature-discovery-verify-docs-master
     run_if_changed: "^docs/"
     branches:
