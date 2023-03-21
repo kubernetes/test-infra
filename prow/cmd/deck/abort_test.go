@@ -142,9 +142,13 @@ func TestAbort(t *testing.T) {
 						},
 					},
 					RerunAuthConfig: &prowapi.RerunAuthConfig{
-						AllowAnyone:   false,
-						GitHubUsers:   []string{"authorized", "alsoauthorized"},
-						GitHubTeamIDs: []int{42},
+						AllowAnyone: false,
+						GitHubUsers: []string{"authorized", "alsoauthorized"},
+						GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+							prowapi.GitHubTeamSlug{
+								Org:  "kubernetes",
+								Slug: "sig-lead",
+							}},
 					},
 				},
 				Status: prowapi.ProwJobStatus{

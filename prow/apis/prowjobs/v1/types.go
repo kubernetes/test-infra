@@ -320,7 +320,7 @@ func (rac *RerunAuthConfig) Validate() error {
 		return nil
 	}
 
-	hasAllowList := len(rac.GitHubUsers) > 0 || len(rac.GitHubTeamIDs) > 0 || len(rac.GitHubTeamSlugs) > 0 || len(rac.GitHubOrgs) > 0
+	hasAllowList := len(rac.GitHubUsers) > 0 || len(rac.GitHubTeamSlugs) > 0 || len(rac.GitHubOrgs) > 0
 
 	// If an allowlist is specified, the user probably does not intend for anyone to be able to rerun any job.
 	if rac.AllowAnyone && hasAllowList {

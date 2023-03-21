@@ -1131,14 +1131,23 @@ func TestCreateRefs(t *testing.T) {
 }
 
 func TestSpecFromJobBase(t *testing.T) {
-	permittedGroups := []int{1234, 5678}
+	permittedGroups := []prowapi.GitHubTeamSlug{
+		{
+			Org:  "kubernetes",
+			Slug: "sig-team-1234",
+		},
+		{
+			Org:  "kubernetes",
+			Slug: "sig-team-5678",
+		},
+	}
 	permittedUsers := []string{"authorized_user", "another_authorized_user"}
 	permittedOrgs := []string{"kubernetes", "kubernetes-sigs"}
 	rerunAuthConfig := prowapi.RerunAuthConfig{
-		AllowAnyone:   false,
-		GitHubTeamIDs: permittedGroups,
-		GitHubUsers:   permittedUsers,
-		GitHubOrgs:    permittedOrgs,
+		AllowAnyone:     false,
+		GitHubTeamSlugs: permittedGroups,
+		GitHubUsers:     permittedUsers,
+		GitHubOrgs:      permittedOrgs,
 	}
 	testCases := []struct {
 		name    string
@@ -1177,8 +1186,8 @@ func TestSpecFromJobBase(t *testing.T) {
 				if pj.RerunAuthConfig.AllowAnyone {
 					return errors.New("Expected RerunAuthConfig.AllowAnyone to be false")
 				}
-				if pj.RerunAuthConfig.GitHubTeamIDs == nil {
-					return errors.New("Expected RerunAuthConfig.GitHubTeamIDs to be non-nil")
+				if pj.RerunAuthConfig.GitHubTeamSlugs == nil {
+					return errors.New("Expected RerunAuthConfig.GitHubTeamSlugs to be non-nil")
 				}
 				if pj.RerunAuthConfig.GitHubUsers == nil {
 					return errors.New("Expected RerunAuthConfig.GitHubUsers to be non-nil")

@@ -52,9 +52,14 @@ func getPresubmitConfig() *config.Config {
 					"foo": "foo",
 				},
 				RerunAuthConfig: &prowapi.RerunAuthConfig{
-					AllowAnyone:   false,
-					GitHubUsers:   []string{"authorized", "alsoauthorized"},
-					GitHubTeamIDs: []int{42},
+					AllowAnyone: false,
+					GitHubUsers: []string{"authorized", "alsoauthorized"},
+					GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+						prowapi.GitHubTeamSlug{
+							Org:  "kubernetes",
+							Slug: "sig-lead",
+						},
+					},
 				},
 			},
 			Brancher: config.Brancher{
@@ -83,9 +88,14 @@ func getPeriodicConfig() *config.Config {
 						"foo": "foo",
 					},
 					RerunAuthConfig: &prowapi.RerunAuthConfig{
-						AllowAnyone:   false,
-						GitHubUsers:   []string{"authorized", "alsoauthorized"},
-						GitHubTeamIDs: []int{42},
+						AllowAnyone: false,
+						GitHubUsers: []string{"authorized", "alsoauthorized"},
+						GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+							prowapi.GitHubTeamSlug{
+								Org:  "kubernetes",
+								Slug: "sig-lead",
+							},
+						},
 					},
 				},
 			}},
@@ -209,9 +219,14 @@ func TestRerun(t *testing.T) {
 						},
 					},
 					RerunAuthConfig: &prowapi.RerunAuthConfig{
-						AllowAnyone:   false,
-						GitHubUsers:   []string{"authorized", "alsoauthorized"},
-						GitHubTeamIDs: []int{42},
+						AllowAnyone: false,
+						GitHubUsers: []string{"authorized", "alsoauthorized"},
+						GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+							prowapi.GitHubTeamSlug{
+								Org:  "kubernetes",
+								Slug: "sig-lead",
+							},
+						},
 					},
 				},
 				Status: prowapi.ProwJobStatus{
@@ -570,9 +585,14 @@ func TestLatestRerun(t *testing.T) {
 						},
 						Report: tc.reported,
 						RerunAuthConfig: &prowapi.RerunAuthConfig{
-							AllowAnyone:   false,
-							GitHubUsers:   tc.authorized,
-							GitHubTeamIDs: []int{42},
+							AllowAnyone: false,
+							GitHubUsers: tc.authorized,
+							GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
+								prowapi.GitHubTeamSlug{
+									Org:  "kubernetes",
+									Slug: "sig-lead",
+								},
+							},
 						},
 					},
 					Status: prowapi.ProwJobStatus{
