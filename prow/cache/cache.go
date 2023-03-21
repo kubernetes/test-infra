@@ -51,6 +51,15 @@ type LRUCache struct {
 
 // Callbacks stores various callbacks that may fire during the lifetime of an
 // LRUCache.
+//
+// NOTE: You must make sure that your callbacks are able to return quickly,
+// because having slow callbacks will result in degraded cache performance
+// (because the cache invokes your callbacks synchronously). The reason why we
+// do this synchronously (and not invoke callbacks in a separate goroutine
+// ourselves) is because we want to give users the flexibility to do that
+// themselves. Hard-coding in a `go ...` invocation in our callback call sites
+// would risk unnecessarily costing performance if the callbacks themselves are
+// already optimized to return quickly.
 type Callbacks struct {
 	LookupsCallback         EventCallback
 	HitsCallback            EventCallback
@@ -200,11 +209,6 @@ func (lruCache *LRUCache) GetOrAdd(
 		// flood of multiple requests for the same cache entry is also called
 		// "cache stampede".
 
-		// Record the cache miss.
-		if lruCache.callbacks.MissesCallback != nil {
-			lruCache.callbacks.MissesCallback(key)
-		}
-
 		// Step 1
 		//
 		// Let other threads know about our promise to construct the value. We
@@ -215,6 +219,11 @@ func (lruCache *LRUCache) GetOrAdd(
 		// We must unlock here so that the cache does not block other GetOrAdd()
 		// calls to it for different (or same) key/value pairs.
 		lruCache.Unlock()
+
+		// Record the cache miss.
+		if lruCache.callbacks.MissesCallback != nil {
+			lruCache.callbacks.MissesCallback(key)
+		}
 
 		// Step 2 & 3
 		//
