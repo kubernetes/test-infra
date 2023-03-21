@@ -360,6 +360,9 @@ type Lgtm struct {
 	// StickyLgtmTeam specifies the GitHub team whose members are trusted with sticky LGTM,
 	// which eliminates the need to re-lgtm minor fixes/updates.
 	StickyLgtmTeam string `json:"trusted_team_for_sticky_lgtm,omitempty"`
+	// ReviewerCount is the minimum number of approved reviewers.
+	// Defaults 1 reviewers.
+	ReviewerCount *int `json:"reviewer_count,omitempty"`
 }
 
 // Jira holds the config for the jira plugin.
