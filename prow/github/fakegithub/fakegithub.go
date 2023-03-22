@@ -731,11 +731,8 @@ func (f *FakeClient) ListTeamMembersBySlug(org, teamSlug, role string) ([]github
 func (f *FakeClient) TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
-	teamMembers, _ := f.ListTeamMembersBySlug(org, teamSlug, github.RoleAll)
-	for _, member := range teamMembers {
-		if member.Login == memberLogin {
-			return true, nil
-		}
+	if f.Teams[org] != nil {
+		return f.Teams[org][teamSlug].Members.Has(memberLogin), nil
 	}
 	return false, nil
 }

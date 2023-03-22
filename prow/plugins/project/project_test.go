@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -79,7 +80,6 @@ func TestProjectCommand(t *testing.T) {
 	}
 
 	projectConfig := plugins.ProjectConfig{
-		// The team name is set to "admins" (or "leads") in order to match the teams returned by FakeClient's method ListTeamMembersBySlug
 		Orgs: map[string]plugins.ProjectOrgConfig{
 			"kubernetes": {
 				MaintainerTeamSlug: "admins",
@@ -117,6 +117,7 @@ func TestProjectCommand(t *testing.T) {
 		expectedProject string
 		expectedColumn  string
 		expectedComment string
+		teams           map[string]map[string]fakegithub.TeamWithMembers
 	}
 
 	testcases := []testCase{
@@ -144,6 +145,7 @@ func TestProjectCommand(t *testing.T) {
 			previousColumn:  "",
 			expectedProject: "0.0.0",
 			expectedColumn:  "To do",
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "Setting project and column with valid values; project card already exist for this issue/PR in the project, but the project card is under a different column",
@@ -156,6 +158,7 @@ func TestProjectCommand(t *testing.T) {
 			previousColumn:  "",
 			expectedProject: "0.0.0",
 			expectedColumn:  "To do",
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "Setting project without column value; the project specified exists on the repo level; the default column is set on the project and it exists on the project",
@@ -168,6 +171,7 @@ func TestProjectCommand(t *testing.T) {
 			previousColumn:  "Backlog",
 			expectedProject: "0.1.0",
 			expectedColumn:  "To do",
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "Setting project without column value; the project specified exists on the org level; the default column is set on the project and it exists on the project",
@@ -180,6 +184,7 @@ func TestProjectCommand(t *testing.T) {
 			previousColumn:  "",
 			expectedProject: "0.0.0",
 			expectedColumn:  "Backlog",
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "Setting project without column value; the default column is set on the project but it does not exist on the project",
@@ -193,6 +198,7 @@ func TestProjectCommand(t *testing.T) {
 			expectedProject: "0.0.0",
 			expectedColumn:  "Backlog",
 			expectedComment: "@default-sig-lead: " + fmt.Sprintf(invalidColumn, "0.1.0", []string{"To do", "Backlog"}),
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"admins": {Members: sets.NewString("default-sig-lead")}}},
 		},
 		{
 			name:            "Setting project with invalid column value; an error will be returned",
@@ -206,6 +212,7 @@ func TestProjectCommand(t *testing.T) {
 			expectedProject: "",
 			expectedColumn:  "",
 			expectedComment: "@sig-lead: " + fmt.Sprintf(invalidColumn, "0.1.0", []string{"To do", "Backlog"}),
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "Clearing project for a issue/PR; the project name provided is valid",
@@ -218,6 +225,7 @@ func TestProjectCommand(t *testing.T) {
 			previousColumn:  "Backlog",
 			expectedProject: "0.0.0",
 			expectedColumn:  "Backlog",
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "Setting project with invalid project name",
@@ -231,6 +239,7 @@ func TestProjectCommand(t *testing.T) {
 			expectedProject: "",
 			expectedColumn:  "",
 			expectedComment: "@default-sig-lead: " + fmt.Sprintf(invalidProject, "`0.0.0`, `0.1.0`"),
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"admins": {Members: sets.NewString("default-sig-lead")}}},
 		},
 		{
 			name:            "Clearing project for a issue/PR; the project name provided is invalid",
@@ -244,6 +253,7 @@ func TestProjectCommand(t *testing.T) {
 			expectedProject: "0.1.0",
 			expectedColumn:  "To do",
 			expectedComment: "@sig-lead: " + fmt.Sprintf(invalidProject, "`0.0.0`, `0.1.0`"),
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "Clearing project for a issue/PR; the project does not contain the card",
@@ -257,6 +267,7 @@ func TestProjectCommand(t *testing.T) {
 			expectedProject: "0.1.0",
 			expectedColumn:  "To do",
 			expectedComment: "@sig-lead: " + fmt.Sprintf(failedClearingProjectMsg, "0.1.0", "1"),
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "No action on events that are not new comments",
@@ -270,6 +281,7 @@ func TestProjectCommand(t *testing.T) {
 			expectedProject: "",
 			expectedColumn:  "",
 			noAction:        true,
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 		{
 			name:            "No action on bot comments",
@@ -296,6 +308,7 @@ func TestProjectCommand(t *testing.T) {
 			expectedProject: "",
 			expectedColumn:  "",
 			noAction:        true,
+			teams:           map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 	}
 
@@ -310,6 +323,7 @@ func TestProjectCommand(t *testing.T) {
 		fakeClient.Project = tc.previousProject
 		fakeClient.Column = tc.previousColumn
 		fakeClient.ColumnCardsMap = map[int][]github.ProjectCard{}
+		fakeClient.Teams = tc.teams
 
 		e := &github.GenericCommentEvent{
 			Action:       tc.action,
@@ -353,6 +367,7 @@ func TestParseCommand(t *testing.T) {
 		proposedProject string
 		proposedColumn  string
 		shouldClear     bool
+		teams           map[string]map[string]fakegithub.TeamWithMembers
 	}{
 		{
 			hasMatches:      true,
@@ -480,6 +495,7 @@ func TestGetProjectConfigs(t *testing.T) {
 		org                        string
 		repo                       string
 		expectedMaintainerTeamSlug string
+		teams                      map[string]map[string]fakegithub.TeamWithMembers
 	}{
 		{
 			org:                        "kubernetes",

@@ -28,6 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -46,6 +47,7 @@ func TestAbort(t *testing.T) {
 		jobState    prowapi.ProwJobState
 		httpCode    int
 		httpMethod  string
+		teams       map[string]map[string]fakegithub.TeamWithMembers
 	}{
 		{
 			name:        "Abort on triggered state",
@@ -118,6 +120,7 @@ func TestAbort(t *testing.T) {
 			jobState:    prowapi.PendingState,
 			httpCode:    http.StatusOK,
 			httpMethod:  http.MethodPost,
+			teams:       map[string]map[string]fakegithub.TeamWithMembers{"kubernetes": {"leads": {Members: sets.NewString("sig-lead")}}},
 		},
 	}
 
@@ -188,6 +191,7 @@ func TestAbort(t *testing.T) {
 			ghc := &fakeAuthenticatedUserIdentifier{login: tc.login}
 			rc := fakegithub.NewFakeClient()
 			rc.OrgMembers = map[string][]string{"org": {"org-member"}}
+			rc.Teams = tc.teams
 			pca := plugins.NewFakeConfigAgent()
 			handler := handleAbort(fakeProwJobClient.ProwV1().ProwJobs("prowjobs"), authCfgGetter, goa, ghc, rc, &pca, logrus.WithField("handler", "/abort"))
 			handler.ServeHTTP(rr, req)
