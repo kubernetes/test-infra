@@ -79,22 +79,22 @@ func TestProjectCommand(t *testing.T) {
 	}
 
 	projectConfig := plugins.ProjectConfig{
-		// The team ID is set to "default-sig-lead" (or "sig-lead") in order to match the teams returned by FakeClient's method ListTeamMembersBySlug
+		// The team name is set to "admins" (or "leads") in order to match the teams returned by FakeClient's method ListTeamMembersBySlug
 		Orgs: map[string]plugins.ProjectOrgConfig{
 			"kubernetes": {
-				MaintainerTeamSlug: "default-sig-lead",
+				MaintainerTeamSlug: "admins",
 				ProjectColumnMap: map[string]string{
 					"0.0.0": "Backlog",
 				},
 				Repos: map[string]plugins.ProjectRepoConfig{
 					"kubernetes": {
-						MaintainerTeamSlug: "sig-lead",
+						MaintainerTeamSlug: "leads",
 						ProjectColumnMap: map[string]string{
 							"0.1.0": "To do",
 						},
 					},
 					"community": {
-						MaintainerTeamSlug: "default-sig-lead",
+						MaintainerTeamSlug: "admins",
 						ProjectColumnMap: map[string]string{
 							"0.1.0": "does not exist column",
 						},
@@ -484,41 +484,42 @@ func TestGetProjectConfigs(t *testing.T) {
 		{
 			org:                        "kubernetes",
 			repo:                       "kubernetes",
-			expectedMaintainerTeamSlug: "sig-lead",
+			expectedMaintainerTeamSlug: "leads",
 		},
 		{
 			org:                        "kubernetes",
 			repo:                       "community",
-			expectedMaintainerTeamSlug: "sig-community-lead",
+			expectedMaintainerTeamSlug: "admins",
 		},
 		{
 			org:                        "kubernetes-sigs",
 			repo:                       "kubespray",
-			expectedMaintainerTeamSlug: "sig-kubespray-lead",
+			expectedMaintainerTeamSlug: "kubespray-leads",
 		},
 		{
 			org:                        "kubernetes-sigs",
 			repo:                       "kind",
-			expectedMaintainerTeamSlug: "default-sig-lead",
+			expectedMaintainerTeamSlug: "admins",
 		},
 	}
 	projectConfig := plugins.ProjectConfig{
 		Orgs: map[string]plugins.ProjectOrgConfig{
 			"kubernetes": {
-				MaintainerTeamSlug: "sig-community-lead",
+				MaintainerTeamSlug: "admins",
 				Repos: map[string]plugins.ProjectRepoConfig{
 					"kubernetes": {
-						MaintainerTeamSlug: "sig-lead",
+						MaintainerTeamSlug: "leads",
 					},
 				},
 			},
 			"kubeflow": {
-				MaintainerTeamSlug: "sig-kubeflow-lead",
+				MaintainerTeamSlug: "kubeflow-leads",
 			},
 			"kubernetes-sigs": {
+				MaintainerTeamSlug: "admins",
 				Repos: map[string]plugins.ProjectRepoConfig{
 					"kubespray": {
-						MaintainerTeamSlug: "sig-kubespray-lead",
+						MaintainerTeamSlug: "kubespray-leads",
 					},
 					"kind": {},
 				},

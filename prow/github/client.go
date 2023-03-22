@@ -4852,16 +4852,16 @@ func (c *client) TeamBySlugHasMember(org string, teamSlug string, memberLogin st
 	durationLogger := c.log("TeamBySlugHasMember", teamSlug, org)
 	defer durationLogger()
 
-	if c.fake {
-		return false, nil
+	members, err := c.ListTeamMembersBySlug(org, teamSlug, RoleAll)
+	if err != nil {
+		return false, err
 	}
-	exitCode, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/orgs/%s/teams/%s/memberships/%s", org, teamSlug, memberLogin),
-		org:       org,
-		exitCodes: []int{200, 404},
-	}, nil)
-	return exitCode == 200, err
+	for _, person := range members {
+		if NormLogin(person.Login) == NormLogin(memberLogin) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // GetTeamBySlug returns information about that team

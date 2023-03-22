@@ -57,7 +57,7 @@ func getPresubmitConfig() *config.Config {
 					GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
 						prowapi.GitHubTeamSlug{
 							Org:  "kubernetes",
-							Slug: "sig-lead",
+							Slug: "leads",
 						},
 					},
 				},
@@ -93,7 +93,7 @@ func getPeriodicConfig() *config.Config {
 						GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
 							prowapi.GitHubTeamSlug{
 								Org:  "kubernetes",
-								Slug: "sig-lead",
+								Slug: "leads",
 							},
 						},
 					},
@@ -224,7 +224,7 @@ func TestRerun(t *testing.T) {
 						GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
 							prowapi.GitHubTeamSlug{
 								Org:  "kubernetes",
-								Slug: "sig-lead",
+								Slug: "leads",
 							},
 						},
 					},
@@ -590,7 +590,7 @@ func TestLatestRerun(t *testing.T) {
 							GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
 								prowapi.GitHubTeamSlug{
 									Org:  "kubernetes",
-									Slug: "sig-lead",
+									Slug: "leads",
 								},
 							},
 						},

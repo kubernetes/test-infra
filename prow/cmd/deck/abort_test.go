@@ -147,7 +147,7 @@ func TestAbort(t *testing.T) {
 						GitHubTeamSlugs: []prowapi.GitHubTeamSlug{
 							prowapi.GitHubTeamSlug{
 								Org:  "kubernetes",
-								Slug: "sig-lead",
+								Slug: "leads",
 							}},
 					},
 				},

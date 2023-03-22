@@ -1377,7 +1377,7 @@ func (pluginConfig *ProjectConfig) GetMaintainerTeam(org string, repo string) st
 		if org == orgName {
 			// look for repo level configs first because repo level config overrides org level configs
 			for repoName, repoConfig := range orgConfig.Repos {
-				if repo == repoName {
+				if repo == repoName && repoConfig.MaintainerTeamSlug != "" {
 					return repoConfig.MaintainerTeamSlug
 				}
 			}
