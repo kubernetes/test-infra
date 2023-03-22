@@ -793,13 +793,19 @@ require_matching_label:
   org: kubernetes-sigs
   repo: kustomize
   issues: true
-  prs: false
+  prs: true
   regexp: ^kind/
+- missing_label: needs-priority
+  org: kubernetes-sigs
+  repo: kustomize
+  issues: true
+  prs: true
+  regexp: ^priority/
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: kustomize
   issues: true
-  prs: false
+  prs: true
   regexp: ^triage/
   missing_comment: |
     This issue is currently awaiting triage.
