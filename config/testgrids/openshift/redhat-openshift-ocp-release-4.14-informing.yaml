@@ -5600,8 +5600,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-vsphere-8-ovn
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-vsphere-8-ovn-csi
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-vsphere-8-ovn-csi
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-vsphere-8-ovn-upi
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-vsphere-8-ovn-upi
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-vsphere-8-ovn-upi
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-vsphere-externallb-ovn
