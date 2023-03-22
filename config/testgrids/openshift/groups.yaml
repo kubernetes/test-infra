@@ -3,6 +3,7 @@ dashboard_groups:
   - redhat-assisted-installer
   - redhat-hypershift
   - redhat-openshift-informing
+  - redhat-openshift-lp-interop-release-4.13-informing
   - redhat-openshift-ocp-release-3.11-informing
   - redhat-openshift-ocp-release-4.1-blocking
   - redhat-openshift-ocp-release-4.1-informing
