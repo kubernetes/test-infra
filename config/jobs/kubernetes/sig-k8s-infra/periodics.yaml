@@ -114,3 +114,135 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+
+- interval: 1h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-verify-master-eks-canary
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 2h 2h 6h 24h
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: verify-master-eks-canary
+    description: "Ends up running: make verify"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/verify-dockerized.sh
+      env:
+      - name: EXCLUDE_READONLY_PACKAGE
+        value: "y"
+      - name: KUBE_VERIFY_GIT_BRANCH
+        value: master
+      - name: REPO_DIR
+        value: /workspace/k8s.io/kubernetes
+      # Consider removing after https://github.com/golang/go/issues/49035 is solved
+      # See https://github.com/kubernetes/kubernetes/pull/108618
+      - name: TYPECHECK_SERIAL
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 6
+          memory: 24Gi
+        requests:
+          cpu: 6
+          memory: 24Gi
+
+- interval: 1h
+  cluster: eks-prow-build-cluster
+  name: ci-kubernetes-integration-master-eks-canary
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 2h 2h 6h 24h
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: integration-master-eks-canary
+    description: "Ends up running: make test-cmd test-integration"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      command:
+      - runner.sh
+      args:
+      - ./hack/jenkins/test-dockerized.sh
+      env:
+      - name: SHORT
+        value: --short=false
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 6
+          memory: 20Gi
+        requests:
+          cpu: 6
+          memory: 20Gi
+
+- name: ci-benchmark-scheduler-perf-master-eks-canary
+  cluster: eks-prow-build-cluster
+  tags:
+  - "perfDashPrefix: scheduler-perf-benchmark"
+  - "perfDashJobType: benchmark"
+  interval: 2h30m
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: scheduler-perf-eks-canary
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 2h25m
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      command:
+      - ./hack/jenkins/benchmark-dockerized.sh
+      args:
+      - ./test/integration/scheduler_perf
+      env:
+      - name: KUBE_TIMEOUT
+        value: --timeout=2h25m
+      - name: TEST_PREFIX
+        value: BenchmarkPerfScheduling
+      # Set the benchtime to a very low value so every test is ran at most once
+      # even on very powerful machines
+      - name: BENCHTIME
+        value: 1ns
+      # We need to constraint compute resources so all the tests
+      # finish approximately at the same time. More compute power
+      # can increase scheduling throughput and make consequent results
+      # incomparable.
+      resources:
+        requests:
+          cpu: 6
+          memory: "24Gi"
+        limits:
+          cpu: 6
+          memory: "24Gi"
