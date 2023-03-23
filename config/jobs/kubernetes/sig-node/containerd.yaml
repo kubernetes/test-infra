@@ -134,7 +134,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-85-13310-1308-1
+      - --env=KUBE_GCE_MASTER_IMAGE=cos-93-16623-341-29
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
