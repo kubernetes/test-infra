@@ -123,14 +123,7 @@ func updateTimelineComment(gc githubClient, org, repo string, number int, login 
 		messageLines = append(messageLines, latestNotification.Body)
 	}
 
-	if wantLGTM {
-		messageLines = append(messageLines, fmt.Sprintf("- `%s`: %s agreed by [%s](https://github.com/%s).",
-			time.Now(), `:ballot_box_with_check:`, login, login))
-	} else {
-		messageLines = append(messageLines, fmt.Sprintf("- `%s`: %s reset by [%s](https://github.com/%s).",
-			time.Now(), `:zero:`, login, login))
-	}
-	newMessage := strings.Join(messageLines, "\n")
+	messageLines = append(messageLines, stringifyLgtmTimelineRecordLine(time.Now(), wantLGTM, login))
 
 	for _, notif := range notifications {
 		if err := gc.DeleteComment(org, repo, notif.ID); err != nil {
@@ -138,7 +131,7 @@ func updateTimelineComment(gc githubClient, org, repo string, number int, login 
 		}
 	}
 
-	return gc.CreateComment(org, repo, number, newMessage)
+	return gc.CreateComment(org, repo, number, strings.Join(messageLines, "\n"))
 }
 
 func stringifyLgtmTimelineRecordLine(lgtmTime time.Time, wantLGTM bool, login string) string {
