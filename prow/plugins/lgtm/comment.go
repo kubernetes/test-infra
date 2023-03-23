@@ -138,7 +138,7 @@ func stringifyLgtmTimelineRecordLine(lgtmTime time.Time, wantLGTM bool, login st
 	tpl := "- `%s`: %s %s by [%s](https://github.com/%s)."
 
 	actionStr := "reset"
-	actionEmoji := ":zero"
+	actionEmoji := ":heavy_multiplication_x::repeat:"
 	if wantLGTM {
 		actionStr = "agreed"
 		actionEmoji = `:ballot_box_with_check:`
