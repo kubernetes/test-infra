@@ -88,6 +88,10 @@ presubmits:
       repo: kubeadm
       base_ref: main
       path_alias: k8s.io/kubeadm
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     always_run: true
     optional: true
     labels:
