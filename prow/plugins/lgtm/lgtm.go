@@ -202,14 +202,14 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 		if e.Action != github.GenericCommentActionCreated {
 			resp := plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author,
 				"Please do not delete or edit you lgtm type comment!")
-			return gc.CreateComment(rc.repo.Owner.Name, rc.repo.Name, rc.number, resp)
+			return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, resp)
 		}
 		wantLGTM = true
 	} else if LGTMCancelRe.MatchString(rc.body) {
 		if e.Action != github.GenericCommentActionCreated {
 			resp := plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author,
 				"Please do not delete or edit you lgtm type comment!")
-			return gc.CreateComment(rc.repo.Owner.Name, rc.repo.Name, rc.number, resp)
+			return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, resp)
 		}
 		wantLGTM = false
 	} else {
@@ -347,17 +347,14 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	opts := config.LgtmFor(rc.repo.Owner.Login, rc.repo.Name)
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
-		return removeLGTMAndRequestReview(gc, opts, cp, org, repoName, number, getLogins(assignees))
+		return removeLGTMAndRequestReview(gc, opts, &rc, cp)
 	} else if !hasLGTM && wantLGTM {
-		dup, err := hasDumpLGTMs(gc, org, repoName, number, issueAuthor)
+		dup, err := hasDumpLGTMs(gc, org, repoName, number, author)
 		if err != nil || dup {
 			return err
 		}
 
-		if err := updateTimelineComment(gc, org, repoName, number, issueAuthor, wantLGTM); err != nil {
-			log.Errorf("Updated timeline comment failed: %v", err)
-		}
-		return increaseLGTM(gc, opts, cp, log, org, repoName, number, issueAuthor, labels)
+		return increaseLGTM(gc, opts, &rc, cp, log, labels)
 	}
 
 	return nil
@@ -403,7 +400,7 @@ func lgtmNeedMoreLabelNames(labels []github.Label) []string {
 	return labelNames
 }
 
-func increaseLGTM(gc githubClient, opts *plugins.Lgtm, cp commentPruner, log *logrus.Entry, org, repo string, number int, issueAuthor string, labels []github.Label) error {
+func increaseLGTM(gc githubClient, opts *plugins.Lgtm, rc *reviewCtx, cp commentPruner, log logrus.FieldLogger, labels []github.Label) error {
 	needMoreLGTMCount, err := parseNeedsMoreLgtmCount(opts, labels)
 	if err != nil {
 		return err
@@ -416,30 +413,30 @@ func increaseLGTM(gc githubClient, opts *plugins.Lgtm, cp commentPruner, log *lo
 	}
 
 	log.Infof("Adding label: `%s` .", toAddLabel)
-	if err := gc.AddLabel(org, repo, number, toAddLabel); err != nil {
+	if err := gc.AddLabel(rc.repo.Owner.Login, rc.repo.Name, rc.number, toAddLabel); err != nil {
 		return err
 	}
 
 	for _, toRemoveLabel := range lgtmNeedMoreLabelNames((labels)) {
 		log.Infof("Removing label: `%s` .", toRemoveLabel)
-		if err := gc.RemoveLabel(org, repo, number, toRemoveLabel); err != nil {
+		if err := gc.RemoveLabel(rc.repo.Owner.Login, rc.repo.Name, rc.number, toRemoveLabel); err != nil {
 			return err
 		}
 	}
 
-	if toAddLabel == LGTMLabel && !stickyLgtm(log, gc, opts, issueAuthor, org) {
+	if toAddLabel == LGTMLabel && !stickyLgtm(log, gc, opts, rc.issueAuthor, rc.repo.Owner.Login) {
 		if opts.StoreTreeHash {
-			pr, err := gc.GetPullRequest(org, repo, number)
+			pr, err := gc.GetPullRequest(rc.repo.Owner.Login, rc.repo.Name, rc.number)
 			if err != nil {
 				log.WithError(err).Error("Failed to get pull request.")
 			}
-			commit, err := gc.GetSingleCommit(org, repo, pr.Head.SHA)
+			commit, err := gc.GetSingleCommit(rc.repo.Owner.Login, rc.repo.Name, pr.Head.SHA)
 			if err != nil {
 				log.WithField("sha", pr.Head.SHA).WithError(err).Error("Failed to get commit.")
 			}
 			treeHash := commit.Commit.Tree.SHA
 			log.WithField("tree", treeHash).Info("Adding comment to store tree-hash.")
-			if err := gc.CreateComment(org, repo, number, fmt.Sprintf(addLGTMLabelNotification, treeHash)); err != nil {
+			if err := gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, fmt.Sprintf(addLGTMLabelNotification, treeHash)); err != nil {
 				log.WithError(err).Error("Failed to add comment.")
 			}
 		}
@@ -449,10 +446,15 @@ func increaseLGTM(gc githubClient, opts *plugins.Lgtm, cp commentPruner, log *lo
 		})
 	}
 
+	if err := updateTimelineComment(gc, rc.repo.Owner.Login, rc.repo.Name, rc.number, rc.author, true); err != nil {
+		log.Errorf("Updated timeline comment failed: %v", err)
+		return err
+	}
+
 	return nil
 }
 
-func stickyLgtm(log *logrus.Entry, gc githubClient, lgtm *plugins.Lgtm, author, org string) bool {
+func stickyLgtm(log logrus.FieldLogger, gc githubClient, lgtm *plugins.Lgtm, author, org string) bool {
 	if lgtm.StickyLgtmTeam == "" {
 		return false
 	}
@@ -546,8 +548,14 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		}
 	}
 
-	if err := removeLGTMAndRequestReview(gc, opts, nil, /* no need to prune comments */
-		org, repo, number, getLogins(pe.PullRequest.Assignees)); err != nil {
+	rc := &reviewCtx{
+		author:      pe.Sender.Login,
+		issueAuthor: pe.PullRequest.User.Login,
+		assignees:   pe.PullRequest.Assignees,
+		repo:        pe.Repo,
+		number:      number,
+	}
+	if err := removeLGTMAndRequestReview(gc, opts, rc, nil /* no need to prune comments */); err != nil {
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
@@ -557,15 +565,16 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
 }
 
-func removeLGTMAndRequestReview(gc githubClient, opts *plugins.Lgtm, cp commentPruner, org, repo string, number int, logins []string) error {
-	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
+func removeLGTMAndRequestReview(gc githubClient, opts *plugins.Lgtm, rc *reviewCtx, cp commentPruner) error {
+	if err := gc.RemoveLabel(rc.repo.Owner.Login, rc.repo.Name, rc.number, LGTMLabel); err != nil {
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
 	// Re-request review because LGTM has been removed only if storeTreeHash enabled.
 	// TODO(mpherman): Surface User errors to PR
 	if opts.StoreTreeHash {
-		if err := gc.RequestReview(org, repo, number, logins); err != nil {
+		logins := getLogins(rc.assignees)
+		if err := gc.RequestReview(rc.repo.Owner.Login, rc.repo.Name, rc.number, logins); err != nil {
 			return fmt.Errorf("failed to re-request review")
 		}
 
@@ -576,7 +585,7 @@ func removeLGTMAndRequestReview(gc githubClient, opts *plugins.Lgtm, cp commentP
 		}
 	}
 
-	return nil
+	return updateTimelineComment(gc, rc.repo.Owner.Login, rc.repo.Name, rc.number, rc.author, true)
 }
 
 func getLogins(usrs []github.User) []string {
