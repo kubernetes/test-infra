@@ -585,7 +585,7 @@ func removeLGTMAndRequestReview(gc githubClient, opts *plugins.Lgtm, rc *reviewC
 		}
 	}
 
-	return updateTimelineComment(gc, rc.repo.Owner.Login, rc.repo.Name, rc.number, rc.author, true)
+	return updateTimelineComment(gc, rc.repo.Owner.Login, rc.repo.Name, rc.number, rc.author, false)
 }
 
 func getLogins(usrs []github.User) []string {
