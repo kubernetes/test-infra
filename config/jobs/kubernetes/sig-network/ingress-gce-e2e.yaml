@@ -123,7 +123,7 @@ presubmits:
           privileged: true
 
   - name: pull-ingress-gce-e2e
-    always_run: false
+    always_run: true
     optional: true
     decorate: true
     branches:
@@ -132,11 +132,6 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
