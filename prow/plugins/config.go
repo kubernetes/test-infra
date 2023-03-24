@@ -172,12 +172,26 @@ type BlunderbussConfig struct {
 	IgnoreAuthors []string `json:"ignore_authors,omitempty"`
 }
 
+// BlunderbussRepoConfig defines repository-specific configuration for the blunderbuss plugin.
+type BlunderbussRepoConfig struct {
+	BlunderbussConfig `json:",inline,omitempty"`
+}
+
+// BlunderbussOrgConfig defines organization-specific configuration for the blunderbuss plugin.
+type BlunderbussOrgConfig struct {
+	*BlunderbussConfig `json:",inline,omitempty"`
+	// Repos allows sharding for repository-specific Blunderbuss settings, provided under keys using
+	// the format organization/repository.
+	Repos map[string]BlunderbussRepoConfig `json:"repos,omitempty"`
+}
+
 // Blunderbuss defines overall configuration for the blunderbuss plugin.
 type Blunderbuss struct {
 	BlunderbussConfig `json:",inline,omitempty"`
-	// OrgsRepos allows sharding for org and repo-specific Blunderbuss settings,
-	// providing Blunderbuss settings under either org or org/repo keys.
-	OrgsRepos map[string]BlunderbussConfig `json:"orgs_repos,omitempty"`
+	// Orgs allows sharding for organization-specific Blunderbuss settings, provided under keys with
+	// the name of the organization. For repository-specific settings, provide
+	// organization/repository keys under orgs[].repos.
+	Orgs map[string]BlunderbussOrgConfig `json:"orgs,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -863,17 +877,16 @@ func (c *Configuration) ApproveFor(org, repo string) *Approve {
 // Blunderbuss configuration can be listed for a repository or an organization.
 func (c *Configuration) BlunderbussFor(org, repo string) BlunderbussConfig {
 	fullName := fmt.Sprintf("%s/%s", org, repo)
-	// First search for repo config
-	for orgAndRepo, blunderbuss := range c.Blunderbuss.OrgsRepos {
-		if orgAndRepo == fullName {
-			return blunderbuss
-		}
-	}
 
-	// If nothing is found, loop again looking for an org config
-	for orgOnly, blunderbuss := range c.Blunderbuss.OrgsRepos {
-		if orgOnly == org {
-			return blunderbuss
+	if orgConfig, ok := c.Blunderbuss.Orgs[org]; ok {
+		if repoConfig, ok := orgConfig.Repos[fullName]; ok {
+			// Return repo configuration
+			return repoConfig.BlunderbussConfig
+		}
+
+		// Return org configuration if defined
+		if orgConfig.BlunderbussConfig != nil {
+			return *orgConfig.BlunderbussConfig
 		}
 	}
 
@@ -2107,18 +2120,45 @@ func (b *Blunderbuss) mergeFrom(other *Blunderbuss) error {
 		errs = append(errs, fmt.Errorf("global configurations for blunderbuss do not match"))
 	}
 
-	// Initialize the OrgsRepos map if it's empty to accept incoming OrgsRepos configs
-	if other.OrgsRepos != nil && b.OrgsRepos == nil {
-		b.OrgsRepos = map[string]BlunderbussConfig{}
+	// Initialize the Orgs map if it's empty to accept incoming Orgs configs
+	if other.Orgs != nil && b.Orgs == nil {
+		b.Orgs = map[string]BlunderbussOrgConfig{}
 	}
 
-	// Merge OrgsRepos configs, skipping conflicts and adding a message to the aggregated error message
-	for orgOrRepo, config := range other.OrgsRepos {
-		if _, ok := b.OrgsRepos[orgOrRepo]; ok {
-			errs = append(errs, fmt.Errorf("found duplicate config for blunderbuss.orgsRepos[\"%s\"]", orgOrRepo))
-			continue
+	// Merge Orgs configs, skipping conflicts and adding a message to the aggregated error message
+	for org, otherOrgConfig := range other.Orgs {
+		if orgConfig, ok := b.Orgs[org]; ok {
+			// Use incoming org if current org config is empty, otherwise verify they're the same
+			if otherOrgConfig.BlunderbussConfig != nil {
+				if orgConfig.BlunderbussConfig == nil {
+					orgConfig.BlunderbussConfig = otherOrgConfig.BlunderbussConfig
+					b.Orgs[org] = orgConfig
+				} else if !reflect.DeepEqual(&orgConfig.BlunderbussConfig, &otherOrgConfig.BlunderbussConfig) {
+					errs = append(errs, fmt.Errorf("found conflicting config for blunderbuss.orgs[\"%s\"]", org))
+					continue
+				}
+			}
+			// Initialize Repos map if it's empty to accept incoming Repos configs
+			if otherOrgConfig.Repos != nil && orgConfig.Repos == nil {
+				orgConfig.Repos = map[string]BlunderbussRepoConfig{}
+				b.Orgs[org] = orgConfig
+			}
+			// Merge Repos configs, skipping conflicts and adding a message to the aggregated error message
+			for repo, otherRepoConfig := range otherOrgConfig.Repos {
+				if repoConfig, ok := orgConfig.Repos[repo]; ok {
+					// Verify the repo configurations are the same
+					if !reflect.DeepEqual(&repoConfig.BlunderbussConfig, &otherRepoConfig.BlunderbussConfig) {
+						errs = append(errs, fmt.Errorf(
+							"found conflicting config for blunderbuss.orgs[\"%s\"].repos[\"%s\"]", org, repo))
+						continue
+					}
+				} else {
+					b.Orgs[org].Repos[repo] = otherRepoConfig
+				}
+			}
+		} else {
+			b.Orgs[org] = otherOrgConfig
 		}
-		b.OrgsRepos[orgOrRepo] = config
 	}
 
 	return utilerrors.NewAggregate(errs)
@@ -2153,11 +2193,12 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 		}
 	}
 
-	for orgOrRepo := range c.Blunderbuss.OrgsRepos {
-		if strings.Contains(orgOrRepo, "/") {
-			repos.Insert(orgOrRepo)
-		} else {
-			orgs.Insert(orgOrRepo)
+	for org, orgConfig := range c.Blunderbuss.Orgs {
+		if orgConfig.BlunderbussConfig != nil {
+			orgs.Insert(org)
+		}
+		for repo := range orgConfig.Repos {
+			repos.Insert(repo)
 		}
 	}
 

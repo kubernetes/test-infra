@@ -700,11 +700,13 @@ func TestHandlePullRequestShardedConfig(t *testing.T) {
 				IgnoreDrafts:     tc.ignoreDrafts,
 				IgnoreAuthors:    tc.ignoreAuthors,
 			},
-			OrgsRepos: map[string]plugins.BlunderbussConfig{
-				"org/repo": {
-					IgnoreAuthors: []string{"author"},
-				},
-			}}}
+			Orgs: map[string]plugins.BlunderbussOrgConfig{
+				"org": {
+					Repos: map[string]plugins.BlunderbussRepoConfig{
+						"org/repo": {
+							BlunderbussConfig: plugins.BlunderbussConfig{
+								IgnoreAuthors: []string{"author"},
+							}}}}}}}
 	bc := c.BlunderbussFor(repo.Owner.Login, repo.Name)
 
 	if err := handlePullRequest(
@@ -836,44 +838,51 @@ func TestHandleGenericCommentShardedConfig(t *testing.T) {
 	overrideRepoReviewerCount := 3
 	var testcases = []struct {
 		name              string
-		orgConfig         map[string]plugins.BlunderbussConfig
+		orgConfig         map[string]plugins.BlunderbussOrgConfig
 		expectedRequested int
 	}{
 		{
 			name: "overrides default config with org config",
-			orgConfig: map[string]plugins.BlunderbussConfig{
+			orgConfig: map[string]plugins.BlunderbussOrgConfig{
 				"org": {
-					ReviewerCount:    &overrideOrgReviewerCount,
-					MaxReviewerCount: overrideOrgReviewerCount,
-				},
+					BlunderbussConfig: &plugins.BlunderbussConfig{
+						ReviewerCount:    &overrideOrgReviewerCount,
+						MaxReviewerCount: overrideOrgReviewerCount,
+					}},
 			},
 			expectedRequested: 2,
 		},
 		{
 			name: "overrides default and org config with repo config",
-			orgConfig: map[string]plugins.BlunderbussConfig{
+			orgConfig: map[string]plugins.BlunderbussOrgConfig{
 				"org": {
-					ReviewerCount:    &overrideOrgReviewerCount,
-					MaxReviewerCount: overrideOrgReviewerCount,
-				},
-				"org/repo": {
-					ReviewerCount:    &overrideRepoReviewerCount,
-					MaxReviewerCount: overrideRepoReviewerCount,
-				},
+					BlunderbussConfig: &plugins.BlunderbussConfig{
+						ReviewerCount:    &overrideOrgReviewerCount,
+						MaxReviewerCount: overrideOrgReviewerCount,
+					},
+					Repos: map[string]plugins.BlunderbussRepoConfig{
+						"org/repo": {
+							BlunderbussConfig: plugins.BlunderbussConfig{
+								ReviewerCount:    &overrideRepoReviewerCount,
+								MaxReviewerCount: overrideRepoReviewerCount,
+							}}}},
 			},
 			expectedRequested: 3,
 		},
 		{
 			name: "Uses org config with invalid repo config key",
-			orgConfig: map[string]plugins.BlunderbussConfig{
+			orgConfig: map[string]plugins.BlunderbussOrgConfig{
 				"org": {
-					ReviewerCount:    &overrideOrgReviewerCount,
-					MaxReviewerCount: overrideOrgReviewerCount,
-				},
-				"repo": {
-					ReviewerCount:    &overrideRepoReviewerCount,
-					MaxReviewerCount: overrideRepoReviewerCount,
-				},
+					BlunderbussConfig: &plugins.BlunderbussConfig{
+						ReviewerCount:    &overrideOrgReviewerCount,
+						MaxReviewerCount: overrideOrgReviewerCount,
+					},
+					Repos: map[string]plugins.BlunderbussRepoConfig{
+						"repo": {
+							BlunderbussConfig: plugins.BlunderbussConfig{
+								ReviewerCount:    &overrideRepoReviewerCount,
+								MaxReviewerCount: overrideRepoReviewerCount,
+							}}}},
 			},
 			expectedRequested: 2,
 		},
@@ -893,7 +902,7 @@ func TestHandleGenericCommentShardedConfig(t *testing.T) {
 						ReviewerCount:         &defaultReviewerCount,
 						UseStatusAvailability: false,
 					},
-					OrgsRepos: tc.orgConfig,
+					Orgs: tc.orgConfig,
 				}}
 			bc := config.BlunderbussFor(repo.Owner.Login, repo.Name)
 
