@@ -338,13 +338,13 @@ func TestHandleMessage(t *testing.T) {
 			ca.Set(tc.config)
 			fr := fakeReporter{}
 			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true)
-			cacheHandler, _ := config.NewInRepoConfigCache(100, ca, gitClient)
+			cache, _ := config.NewInRepoConfigCache(100, ca, gitClient)
 			s := Subscriber{
 				Metrics:           NewMetrics(),
 				ProwJobClient:     fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
 				ConfigAgent:       ca,
 				Reporter:          &fr,
-				InRepoConfigCache: cacheHandler,
+				InRepoConfigCache: cache,
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessageOfType(tc.eventType)
@@ -584,12 +584,12 @@ func TestHandlePeriodicJob(t *testing.T) {
 			ca.Set(tc.config)
 			fr := fakeReporter{}
 			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true)
-			cacheHandler, _ := config.NewInRepoConfigCache(100, ca, gitClient)
+			cache, _ := config.NewInRepoConfigCache(100, ca, gitClient)
 			s := Subscriber{
 				Metrics:           NewMetrics(),
 				ProwJobClient:     fakeProwJobClient.ProwV1().ProwJobs(ca.Config().ProwJobNamespace),
 				ConfigAgent:       ca,
-				InRepoConfigCache: cacheHandler,
+				InRepoConfigCache: cache,
 				Reporter:          &fr,
 			}
 			l := logrus.NewEntry(logrus.New())

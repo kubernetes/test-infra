@@ -47,7 +47,7 @@ func TestGetOrAddSimple(t *testing.T) {
 		}
 	}
 
-	simpleCache, err := NewLRUCache(2)
+	simpleCache, err := NewLRUCache(2, Callbacks{})
 	if err != nil {
 		t.Error("could not initialize simpleCache")
 	}
@@ -241,7 +241,7 @@ func TestGetOrAddBurst(t *testing.T) {
 		}
 	}
 
-	lruCache, err := NewLRUCache(1000)
+	lruCache, err := NewLRUCache(1000, Callbacks{})
 	if err != nil {
 		t.Error("could not initialize lruCache")
 	}
@@ -320,5 +320,223 @@ func TestGetOrAddBurst(t *testing.T) {
 	}
 	if lruCache.Len() != 5 {
 		t.Errorf("Expected 5 cached entries, got '%v'", lruCache.Len())
+	}
+}
+
+func TestCallbacks(t *testing.T) {
+	goodValConstructor := func(val string) func() (interface{}, error) {
+		return func() (interface{}, error) {
+			return val, nil
+		}
+	}
+	badValConstructor := func(val string) func() (interface{}, error) {
+		return func() (interface{}, error) {
+			return "", fmt.Errorf("could not construct val")
+		}
+	}
+
+	lookupsCounter := 0
+	hitsCounter := 0
+	missesCounter := 0
+	forcedEvictionsCounter := 0
+	manualEvictionsCounter := 0
+
+	mkCallback := func(counter *int) EventCallback {
+		callback := func(key interface{}) { (*counter)++ }
+		return callback
+	}
+
+	lookupsCallback := mkCallback(&lookupsCounter)
+	hitsCallback := mkCallback(&hitsCounter)
+	missesCallback := mkCallback(&missesCounter)
+	forcedEvictionsCallback := func(key interface{}, _ interface{}) {
+		forcedEvictionsCounter++
+	}
+	manualEvictionsCallback := mkCallback(&manualEvictionsCounter)
+
+	defaultCallbacks := Callbacks{
+		LookupsCallback:         lookupsCallback,
+		HitsCallback:            hitsCallback,
+		MissesCallback:          missesCallback,
+		ForcedEvictionsCallback: forcedEvictionsCallback,
+		ManualEvictionsCallback: manualEvictionsCallback,
+	}
+
+	type expected struct {
+		lookups         int
+		hits            int
+		misses          int
+		forcedEvictions int
+		manualEvictions int
+		// If the value constructor is flaky, then it can result in a (mostly
+		// harmless) race in which events occur. For example, the key may be
+		// evicted by either the underlying LRU cache (if it gets to it first),
+		// or by us when we manually try to evict it. This can result in an
+		// unpredictable number of forced versus manual evictions.
+		//
+		// This flakiness can have cascading effects to the other metrics like
+		// lookups/hits/misses. So, if our test case has bad constructors in it,
+		// we need to be less strict about how we compare these expected results
+		// versus what we get.
+		racyEvictions bool
+	}
+
+	type lookup struct {
+		key            string
+		valConstructor func(val string) func() (interface{}, error)
+	}
+
+	for _, tc := range []struct {
+		name              string
+		cacheSize         int
+		cacheInitialState map[string]string
+		cacheCallbacks    Callbacks
+		// Perform lookups for each key here. It could result in a hit or miss.
+		lookups  []lookup
+		expected expected
+	}{
+		{
+			name:      "NoDefinedCallbacksResultsInNOP",
+			cacheSize: 2,
+			cacheInitialState: map[string]string{
+				"(key)foo": "(val)bar",
+			},
+			cacheCallbacks: Callbacks{},
+			lookups: []lookup{
+				lookup{"(key)foo", goodValConstructor},
+			},
+			expected: expected{
+				lookups:         0,
+				hits:            0,
+				misses:          0,
+				forcedEvictions: 0,
+				manualEvictions: 0,
+			},
+		},
+		{
+			name:              "OneHitOneMiss",
+			cacheSize:         2,
+			cacheInitialState: map[string]string{},
+			cacheCallbacks:    defaultCallbacks,
+			lookups: []lookup{
+				lookup{"(key)foo", goodValConstructor},
+				lookup{"(key)foo", goodValConstructor},
+			},
+			expected: expected{
+				lookups: 2,
+				// One hit for a subsequent successful lookup.
+				hits: 1,
+				// One miss for the initial cache construction (initial state).
+				misses:          1,
+				forcedEvictions: 0,
+				manualEvictions: 0,
+			},
+		},
+		{
+			name:              "ManyMissesAndSomeForcedEvictions",
+			cacheSize:         2,
+			cacheInitialState: map[string]string{},
+			cacheCallbacks:    defaultCallbacks,
+			lookups: []lookup{
+				lookup{"(key)1", goodValConstructor},
+				lookup{"(key)2", goodValConstructor},
+				lookup{"(key)3", goodValConstructor},
+				lookup{"(key)4", goodValConstructor},
+				lookup{"(key)5", goodValConstructor},
+			},
+			expected: expected{
+				lookups: 5,
+				hits:    0,
+				misses:  5,
+				// 3 Forced evictions because the cache size is 2.
+				forcedEvictions: 3,
+				manualEvictions: 0,
+			},
+		},
+		{
+			name:              "ManualEvictions",
+			cacheSize:         2,
+			cacheInitialState: map[string]string{},
+			cacheCallbacks:    defaultCallbacks,
+			lookups: []lookup{
+				lookup{"(key)1", goodValConstructor},
+				lookup{"(key)1", goodValConstructor},
+				lookup{"(key)1", goodValConstructor},
+				lookup{"(key)1", badValConstructor},
+				lookup{"(key)1", badValConstructor},
+			},
+			expected: expected{
+				lookups:         5,
+				hits:            0,
+				misses:          5,
+				forcedEvictions: 0,
+				manualEvictions: 0,
+				// If racyEvictions is true, then we expect some positive number of evictions to occur.
+				racyEvictions: true,
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cache, err := NewLRUCache(tc.cacheSize, tc.cacheCallbacks)
+			if err != nil {
+				t.Error("could not initialize simpleCache")
+			}
+			// Reset test state.
+			lookupsCounter = 0
+			hitsCounter = 0
+			missesCounter = 0
+			forcedEvictionsCounter = 0
+			manualEvictionsCounter = 0
+
+			var wg sync.WaitGroup
+
+			// For the sake of realism, perform all lookups concurrently. The
+			// concurrency should have no effect on the operation of the
+			// callbacks.
+			for k, v := range tc.cacheInitialState {
+				k := k
+				v := v
+				wg.Add(1)
+				go func() {
+					cache.GetOrAdd(k, goodValConstructor(v))
+					wg.Done()
+				}()
+			}
+
+			for _, lookup := range tc.lookups {
+				lookup := lookup
+				wg.Add(1)
+				go func() {
+					cache.GetOrAdd(lookup.key, lookup.valConstructor("(val)"+lookup.key))
+					wg.Done()
+				}()
+			}
+			wg.Wait()
+
+			if tc.expected.lookups != lookupsCounter {
+				t.Errorf("Expected lookupsCounter to be '%d', got '%d'", tc.expected.lookups, lookupsCounter)
+			}
+
+			// If we expect racy evictions, then we expect *some* evictions to occur.
+			if tc.expected.racyEvictions {
+				totalEvictions := forcedEvictionsCounter + manualEvictionsCounter
+				if totalEvictions == 0 {
+					t.Errorf("Expected total evictions to be greater than 0, got '%d'", totalEvictions)
+				}
+			} else {
+				if tc.expected.hits != hitsCounter {
+					t.Errorf("Expected hitsCounter to be '%d', got '%d'", tc.expected.hits, hitsCounter)
+				}
+				if tc.expected.misses != missesCounter {
+					t.Errorf("Expected missesCounter to be '%d', got '%d'", tc.expected.misses, missesCounter)
+				}
+				if tc.expected.forcedEvictions != forcedEvictionsCounter {
+					t.Errorf("Expected forcedEvictionsCounter to be '%d', got '%d'", tc.expected.forcedEvictions, forcedEvictionsCounter)
+				}
+				if tc.expected.manualEvictions != manualEvictionsCounter {
+					t.Errorf("Expected manualEvictionsCounter to be '%d', got '%d'", tc.expected.manualEvictions, manualEvictionsCounter)
+				}
+			}
+		})
 	}
 }
