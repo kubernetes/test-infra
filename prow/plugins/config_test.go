@@ -1682,40 +1682,72 @@ func TestBlunderbussMergeFrom(t *testing.T) {
 		expectedErrMsg string
 	}{
 		{
-			name:     "Merging for two different repos in an org",
-			from:     &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
-			to:       &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-2": {}}},
-			expected: &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}, "org/repo-2": {}}},
+			name: "Merging for two different repos in an org",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-2": {}}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{
+						"org/repo-1": {},
+						"org/repo-2": {}}}}},
 		},
 		{
-			name:     "Merging org and repo in org",
-			from:     &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-2": {}}},
-			to:       &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org": {}}},
-			expected: &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org": {}, "org/repo-2": {}}},
+			name: "Merging org and repo in org",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-2": {}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					BlunderbussConfig: &BlunderbussConfig{}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					BlunderbussConfig: &BlunderbussConfig{},
+					Repos:             map[string]BlunderbussRepoConfig{"org/repo-2": {}}}}},
 		},
 		{
-			name:     "Merging 2 orgs",
-			from:     &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
-			to:       &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org-2/repo-1": {}}},
-			expected: &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}, "org-2/repo-1": {}}},
+			name: "Merging 2 orgs",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org-2": {
+					Repos: map[string]BlunderbussRepoConfig{"org-2/repo-1": {}}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{
+					"org": {
+						Repos: map[string]BlunderbussRepoConfig{
+							"org/repo-1": {}}},
+					"org-2": {
+						Repos: map[string]BlunderbussRepoConfig{
+							"org-2/repo-1": {}}}}},
 		},
 		{
 			name: "Merging global config with org/repo config succeeds",
-			from: &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
-			to:   &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			to: &Blunderbuss{
+				BlunderbussConfig: BlunderbussConfig{}},
 			expected: &Blunderbuss{
 				BlunderbussConfig: BlunderbussConfig{},
-				OrgsRepos:         map[string]BlunderbussConfig{"org/repo-1": {}},
-			},
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
 		},
 		{
 			name: "Merging org/repo config with global config succeeds",
-			from: &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
-			to:   &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
+			from: &Blunderbuss{
+				BlunderbussConfig: BlunderbussConfig{}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
 			expected: &Blunderbuss{
 				BlunderbussConfig: BlunderbussConfig{},
-				OrgsRepos:         map[string]BlunderbussConfig{"org/repo-1": {}},
-			},
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
 		},
 		{
 			name:     "Merging identical global configs succeeds",
@@ -1730,16 +1762,45 @@ func TestBlunderbussMergeFrom(t *testing.T) {
 			expectedErrMsg: "global configurations for blunderbuss do not match",
 		},
 		{
-			name:           "Merging the same organization fails",
-			from:           &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org": {}}},
-			to:             &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org": {}}},
-			expectedErrMsg: "found duplicate config for blunderbuss.orgsRepos[\"org\"]",
+			name: "Merging identical organization configs succeeds",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{}}}},
 		},
 		{
-			name:           "Merging the same repository fails",
-			from:           &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
-			to:             &Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"org/repo-1": {}}},
-			expectedErrMsg: "found duplicate config for blunderbuss.orgsRepos[\"org/repo-1\"]",
+			name: "Merging differing organization configs fails",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{MaxReviewerCount: 1}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{MaxReviewerCount: 2}}}},
+			expectedErrMsg: "found conflicting config for blunderbuss.orgs[\"org\"]",
+		},
+		{
+			name: "Merging identical repository configs succeeds",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+		},
+		{
+			name: "Merging differing repository configs fails",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {
+						BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 1}}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {
+						BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 2}}}}}},
+			expectedErrMsg: "found conflicting config for blunderbuss.orgs[\"org\"].repos[\"org/repo-1\"]",
 		},
 	}
 
@@ -2331,14 +2392,18 @@ func TestMergeFrom(t *testing.T) {
 			}},
 		},
 		{
-			name:                "Blunderbuss config gets merged",
-			in:                  Configuration{Blunderbuss: Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"foo/bar": {}}}},
-			supplementalConfigs: []Configuration{{Blunderbuss: Blunderbuss{OrgsRepos: map[string]BlunderbussConfig{"foo/baz": {}}}}},
+			name: "Blunderbuss config gets merged",
+			in: Configuration{Blunderbuss: Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"foo": {
+					Repos: map[string]BlunderbussRepoConfig{"foo/bar": {}}}}}},
+			supplementalConfigs: []Configuration{{Blunderbuss: Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"foo": {
+					Repos: map[string]BlunderbussRepoConfig{"foo/baz": {}}}}}}},
 			expected: Configuration{Blunderbuss: Blunderbuss{
-				OrgsRepos: map[string]BlunderbussConfig{
-					"foo/bar": {},
-					"foo/baz": {},
-				}}},
+				Orgs: map[string]BlunderbussOrgConfig{"foo": {
+					Repos: map[string]BlunderbussRepoConfig{
+						"foo/bar": {},
+						"foo/baz": {}}}}}},
 		},
 		{
 			name: "ExternalPlugins get merged",

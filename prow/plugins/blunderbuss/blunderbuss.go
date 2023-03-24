@@ -71,13 +71,26 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 				UseStatusAvailability: true,
 				IgnoreAuthors:         []string{},
 			},
-			OrgsRepos: map[string]plugins.BlunderbussConfig{
+			Orgs: map[string]plugins.BlunderbussOrgConfig{
 				"": {
-					ReviewerCount:         &two,
-					MaxReviewerCount:      3,
-					ExcludeApprovers:      true,
-					UseStatusAvailability: true,
-					IgnoreAuthors:         []string{},
+					BlunderbussConfig: &plugins.BlunderbussConfig{
+						ReviewerCount:         &two,
+						MaxReviewerCount:      3,
+						ExcludeApprovers:      true,
+						UseStatusAvailability: true,
+						IgnoreAuthors:         []string{},
+					},
+					Repos: map[string]plugins.BlunderbussRepoConfig{
+						"": {
+							BlunderbussConfig: plugins.BlunderbussConfig{
+								ReviewerCount:         &two,
+								MaxReviewerCount:      3,
+								ExcludeApprovers:      true,
+								UseStatusAvailability: true,
+								IgnoreAuthors:         []string{},
+							},
+						},
+					},
 				},
 			},
 		},
