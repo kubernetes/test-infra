@@ -412,7 +412,9 @@ presubmits:
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D2s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.26"
+            - name: DISABLE_ZONE
+              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver
       testgrid-tab-name: pr-blob-csi-driver-e2e-capz
