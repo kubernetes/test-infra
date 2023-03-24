@@ -33,14 +33,14 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-cron: 0 14-23/24 * * *
+    fork-per-release-cron: ""
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.23-blocking, google-gce
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.23
   cluster: k8s-infra-prow-build
-  cron: 0 8-23/24 * * *
+  cron: 0 14-23/24 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
@@ -101,8 +101,7 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
-        -C "${PATH%%:*}/" && e2e-k8s.sh
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: CLUSTER_LOG_FORMAT
         value: json
@@ -284,7 +283,7 @@ periodics:
       - --allow-dup
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-stable3
+      - --extra-version-markers=k8s-stable4
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
       name: ""
@@ -298,13 +297,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 21 * * *
+    fork-per-release-cron: ""
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.23-500
   cluster: k8s-infra-prow-build
-  cron: 0 17 * * *
+  cron: 0 21 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -373,14 +372,13 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.23'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-cron: 0 8-20/24 * * *
+    fork-per-release-cron: ""
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
-    testgrid-dashboards: sig-release-1.23-blocking, sig-scalability-gce, google-gce,
-      google-gci
+    testgrid-dashboards: sig-release-1.23-blocking, sig-scalability-gce, google-gce, google-gci
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.23-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 8-20/12 * * *
+  cron: 0 8-20/24 * * *
   decorate: true
   decoration_config:
     timeout: 2h20m0s
@@ -524,8 +522,7 @@ periodics:
       runAsUser: 2000
 - annotations:
     fork-per-release-periodic-interval: ""
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
-      release-managers+alerts@kubernetes.io
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.23-blocking
     testgrid-tab-name: verify-1.23
   cluster: k8s-infra-prow-build
@@ -591,8 +588,7 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
-        -C "${PATH%%:*}/" && e2e-k8s.sh
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: FOCUS
         value: .
@@ -637,8 +633,7 @@ periodics:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz -
-        -C "${PATH%%:*}/" && e2e-k8s.sh
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       - name: DOCKER_IN_DOCKER_IPV6_ENABLED
         value: "true"
@@ -662,8 +657,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    description: Runs tests on a Kubernetes cluster with Windows containerd nodes
-      on GCE
+    description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
     testgrid-dashboards: sig-windows-gce, sig-windows-1.23-release
     testgrid-tab-name: gce-windows-2019-containerd-1.23
   decorate: true
@@ -694,10 +688,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]
-        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
-      - --test-cmd-args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\]
-        --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test_args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test-cmd-args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
       - --ginkgo-parallel=4
       - --timeout=230m
       command:
@@ -799,8 +791,7 @@ presubmits:
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-36677f7c05-1.23
         name: ""
@@ -845,8 +836,7 @@ presubmits:
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         env:
         - name: BOOTSTRAP_FETCH_TEST_INFRA
@@ -901,8 +891,7 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-36677f7c05-1.23
         name: ""
@@ -953,8 +942,7 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-36677f7c05-1.23
         name: ""
@@ -1008,8 +996,7 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd-canary
-        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-36677f7c05-1.23
         name: ""
@@ -1230,8 +1217,7 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
-        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]
-          --minStartupPods=8
+        - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-36677f7c05-1.23
         name: ""
@@ -1263,10 +1249,7 @@ presubmits:
         - --
         - --deployment=node
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock
-          --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file=
-          --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"
-          --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
@@ -1311,10 +1294,7 @@ presubmits:
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
-        - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock
-          --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file=
-          --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"
-          --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config.yaml
         command:
         - runner.sh
@@ -1496,8 +1476,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: DOCKER_IN_DOCKER_IPV6_ENABLED
           value: "true"
@@ -1601,7 +1580,8 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: true
-    optional: true
+    annotations:
+      description: run with GO_VERSION set to the original go version used for this branch
     branches:
     - release-1.23
     cluster: k8s-infra-prow-build
@@ -1610,9 +1590,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    annotations:
-      description: run with GO_VERSION set to the original go version used for this branch
     name: pull-kubernetes-integration-go-compatibility
+    optional: true
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1654,8 +1633,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FOCUS
           value: .
@@ -1694,8 +1672,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: FOCUS
           value: .
@@ -1738,8 +1715,7 @@ presubmits:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz
-          - -C "${PATH%%:*}/" && e2e-k8s.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
         env:
         - name: GA_ONLY
           value: "true"
@@ -1783,7 +1759,8 @@ presubmits:
       securityContext:
         runAsUser: 2000
   - always_run: true
-    optional: true
+    annotations:
+      description: run with GO_VERSION set to the original go version used for this branch
     branches:
     - release-1.23
     cluster: k8s-infra-prow-build
@@ -1791,9 +1768,8 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
-    annotations:
-      description: run with GO_VERSION set to the original go version used for this branch
     name: pull-kubernetes-unit-go-compatibility
+    optional: true
     path_alias: k8s.io/kubernetes
     spec:
       containers:
