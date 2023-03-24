@@ -35,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20230322-fad14aa00d
+        image: gcr.io/k8s-prow/horologium:v20230324-76cde35b3d
         args:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
