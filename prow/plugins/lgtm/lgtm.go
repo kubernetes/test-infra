@@ -348,6 +348,17 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
 		return removeLGTMAndRequestReview(gc, opts, &rc, cp)
+	} else if !hasLGTM && !wantLGTM {
+		// remove the `need-more-*-lgtm` label
+		for _, toRemoveLabel := range lgtmNeedMoreLabelNames((labels)) {
+			log.Infof("Removing label: `%s` .", toRemoveLabel)
+			if err := gc.RemoveLabel(rc.repo.Owner.Login, rc.repo.Name, rc.number, toRemoveLabel); err != nil {
+				return err
+			}
+		}
+
+		// update lgtm timeline comment.
+		return updateTimelineComment(gc, rc.repo.Owner.Login, rc.repo.Name, rc.number, rc.author, false)
 	} else if !hasLGTM && wantLGTM {
 		dup, err := hasDumpLGTMs(gc, org, repoName, number, author)
 		if err != nil || dup {
