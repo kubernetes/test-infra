@@ -37,7 +37,7 @@
         "path": "/etc/crio/crio.conf.d/20-runtimes.conf",
         "contents": {
           "compression": "gzip",
-          "source": "data:;base64,H4sIAAAAAAAC/4pOLsrM1ysqzSvJzE2N5UpJTUsszSmJhwoo2CooFZXmJStxcaEohNHFIEZyLC7JktTiEt2MxLyUnNSiWC5AAAAA//+Arrt/awAAAA=="
+          "source": "data:;base64,H4sIAAAAAAAC/4pOLsrM1ysqzSvJzE2N5UpJTUsszSmJhwoo2CooFZXmJStxcaEohNHFIEZyLE7ZktTiEt2MxLyUnNSiWC6ocHxBYkkGyGT90uIi/Zz85MQc/aTMPH2IRYAAAAD//zwQewWRAAAA"
         },
         "mode": 420
       },
