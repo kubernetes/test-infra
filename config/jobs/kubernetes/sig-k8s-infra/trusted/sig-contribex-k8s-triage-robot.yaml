@@ -88,7 +88,8 @@ periodics:
         secretName: k8s-triage-robot-github-token
 
 - name: ci-k8s-triage-robot-cla
-  interval: 10m
+  # TODO(MadhavJivrajani): See if this can be left at 24h or restored to 10m.
+  interval: 24h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
