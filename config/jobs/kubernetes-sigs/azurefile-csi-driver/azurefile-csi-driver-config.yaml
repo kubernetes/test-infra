@@ -272,7 +272,7 @@ presubmits:
             - name: DISABLE_ZONE # azurefile-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.26"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-e2e-migration
