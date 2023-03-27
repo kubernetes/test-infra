@@ -75,3 +75,15 @@ presubmits:
       - image: golang:1.20
         command:
         - ci/prow/unit-tests
+  - name: pull-kernel-module-management-test-deploy
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-kernel-module-management
+      testgrid-tab-name: test-deploy
+      description: "validate that we are not breaking our deployment methods."
+    spec:
+      containers:
+      - image: golang:1.20
+        command:
+        - ci/prow/test-deploy
