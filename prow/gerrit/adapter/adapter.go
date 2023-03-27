@@ -194,7 +194,7 @@ type Change struct {
 	tracker    time.Time
 }
 
-func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup) {
+func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry) {
 	for changeStruct := range changeChan {
 		change := changeStruct.changeInfo
 		instance := changeStruct.instance
@@ -226,18 +226,16 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 			latest[instance][change.Project] = lastTime
 		}
 		c.latestMux.Unlock()
-		wg.Done()
 	}
 }
 
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
 func (c *Controller) Sync() {
-	processSingleInstance := func(instance string) {
+	querySingleInstance := func(instance string, changeChan chan<- Change) {
 		// Assumes the passed in instance was already normalized with https:// prefix.
 		log := logrus.WithField("host", instance)
 		syncTime := c.tracker.Current()
-		latest := syncTime.DeepCopy()
 
 		now := time.Now()
 		defer func() {
@@ -252,14 +250,6 @@ func (c *Controller) Sync() {
 			return
 		}
 
-		var wg sync.WaitGroup
-		wg.Add(len(changes))
-
-		changeChan := make(chan Change)
-		for i := 0; i < c.workerPoolSize; i++ {
-			go c.syncChange(latest, changeChan, log, &wg)
-		}
-
 		// Trying to understand the performance bottleneck.
 		// Would like to understand how much time a change waits until being
 		// picked up by `c.syncChange`, this will probably be used as an
@@ -268,10 +258,7 @@ func (c *Controller) Sync() {
 		for _, change := range changes {
 			changeChan <- Change{changeInfo: change, instance: instance, tracker: timeBeforeSent}
 		}
-		wg.Wait()
 		gerritMetrics.changeSyncDuration.WithLabelValues(instance).Observe((float64(time.Since(timeQueryChangesForInstance).Seconds())))
-		close(changeChan)
-		c.tracker.Update(latest)
 	}
 
 	for instance := range c.config().Gerrit.OrgReposConfig.AllRepos() {
@@ -282,9 +269,19 @@ func (c *Controller) Sync() {
 		}
 		c.instancesWithWorker[instance] = true
 
+		log := logrus.WithField("host", instance)
+		syncTime := c.tracker.Current()
+		latest := syncTime.DeepCopy()
+
+		changeChan := make(chan Change)
+		for i := 0; i < c.workerPoolSize; i++ {
+			go c.syncChange(latest, changeChan, log)
+		}
+
 		// First time see this instance, spin up a worker thread for it
 		logrus.WithField("instance", instance).Info("Start worker for instance.")
 		go func(instance string) {
+			defer close(changeChan)
 			previousRun := time.Now()
 			for {
 				timeDiff := time.Until(previousRun.Add(c.config().Gerrit.TickInterval.Duration))
@@ -292,7 +289,7 @@ func (c *Controller) Sync() {
 					time.Sleep(timeDiff)
 				}
 				previousRun = time.Now()
-				processSingleInstance(instance)
+				querySingleInstance(instance, changeChan)
 			}
 		}(instance)
 	}
