@@ -369,6 +369,7 @@ networking_options = [
     'cilium-eni',
     'flannel',
     'kopeio',
+    'kube-router',
 ]
 
 distro_options = [
@@ -535,7 +536,18 @@ def generate_misc():
                                 '--bastion',
                                 ],
                    extra_dashboards=['kops-distros', 'kops-network-plugins', 'kops-ipv6']),
-
+        # A special test for IPv6 using Kube-Router CNI
+        build_test(name_override="kops-aws-cni-kube-router-ipv6",
+                   cloud="aws",
+                   distro="u2204arm64",
+                   networking="kube-router",
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--topology=private',
+                                '--bastion',
+                                '--zones=us-west-2a',
+                                ],
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for disabling IRSA
         build_test(name_override="kops-scenario-no-irsa",
                    cloud="aws",
@@ -1109,7 +1121,7 @@ def generate_presubmits_network_plugins():
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)', # pylint: disable=line-too-long
         'weave': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/)' # pylint: disable=line-too-long
     }
-    supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
+    supports_ipv6 = {'amazonvpc', 'calico', 'cilium', 'kuberouter'}
     results = []
     for plugin, run_if_changed in plugins.items():
         k8s_version = 'stable'
@@ -1143,6 +1155,8 @@ def generate_presubmits_network_plugins():
         if plugin in supports_ipv6:
             if plugin == 'amazonvpc':
                 run_if_changed = None
+            if plugin == 'kuberouter':
+                networking_arg = 'kube-router'
             results.append(
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
