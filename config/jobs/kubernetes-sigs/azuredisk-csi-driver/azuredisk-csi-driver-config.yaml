@@ -237,7 +237,7 @@ presubmits:
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.26"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-migration
@@ -894,7 +894,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
               value: "1"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest"
+              value: "latest-1.26"
             - name: ORCHESTRATION_MODE # CAPZ config
               value: "Flexible"
             - name: AZURE_LOADBALANCER_SKU # azuredisk-csi-driver config
