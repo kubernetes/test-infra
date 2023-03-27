@@ -84,6 +84,15 @@ presubmits:
       description: "validate that we are not breaking our deployment methods."
     spec:
       containers:
-      - image: golang:1.20
-        command:
-        - ci/prow/test-deploy
+      - image: golang:1.20-alpine
+        command: [sh]
+        args:
+        - -c
+        - |
+          apk add bash curl make
+
+          # Install kubectl
+          curl -Lo /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x /usr/local/bin/kubectl
+
+          ./ci/prow/test-deploy
