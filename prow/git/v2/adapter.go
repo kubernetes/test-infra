@@ -116,3 +116,7 @@ func (a *repoClientAdapter) RemoteUpdate() error {
 func (a *repoClientAdapter) FetchRef(refspec string) error {
 	return errors.New("no FetchRef implementation exists in the v1 repo client")
 }
+
+func (a *repoClientAdapter) Fsck() (bool, error) {
+	return false, errors.New("no Fsck implementation exists in the v1 repo client")
+}
