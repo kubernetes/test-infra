@@ -210,7 +210,7 @@ type clientFactory struct {
 	repoLocks map[string]*sync.Mutex
 }
 
-func createDirAndClone(cacheDir string, cacheClientCacher cacher) error {
+func cloneDir(cacheDir string, cacheClientCacher cacher) error {
 	if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
 		return err
 	}
@@ -296,14 +296,14 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	defer c.repoLocks[cacheDir].Unlock()
 	if _, err := os.Stat(path.Join(cacheDir, "HEAD")); os.IsNotExist(err) {
 		// we have not yet cloned this repo, we need to do a full clone
-		if err := createDirAndClone(cacheDir, cacheClientCacher); err != nil {
+		if err := cloneDir(cacheDir, cacheClientCacher); err != nil {
 			return nil, err
 		}
 	} else if err != nil {
 		// something unexpected happened
 		return nil, err
-	} else if err := c.ensureValidUpdatedCache(cacheDir, repoClient, cacheClientCacher); err != nil {
 		// we have cloned the repo previously, ensure it is valid and refresh it
+	} else if err := c.ensureValidUpdatedCache(cacheDir, repoClient, cacheClientCacher); err != nil {
 		return nil, err
 	}
 
@@ -315,26 +315,23 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	return repoClient, nil
 }
 
-// Ensures that the cache is valid, clean, and up to date
+// Ensures that the repos in the cache are valid, clean, and up to date
 func (c *clientFactory) ensureValidUpdatedCache(cacheDir string, repoClient RepoClient, cacheClientCacher cacher) error {
-	// We only need to ensure it is not corrupt the first time we get it
+	// We only need to verify that the repos are valid once on startup
 	if _, ok := c.verifiedRepos[cacheDir]; !ok {
-		// Ensure it is not corupt
+		// Ensure it is valid
 		if valid, _ := repoClient.Fsck(); !valid {
 			if err := os.RemoveAll(cacheDir); err != nil {
 				return err
 			}
-			if err := createDirAndClone(cacheDir, cacheClientCacher); err != nil {
+			if err := cloneDir(cacheDir, cacheClientCacher); err != nil {
 				return err
 			}
 			c.verifiedRepos[cacheDir] = true
 			return nil
 		}
-		// Ensure it is not dirty
-		if isDirty, err := repoClient.IsDirty(); err != nil || isDirty {
-			if err := repoClient.ResetHard("HEAD"); err != nil {
-				return err
-			}
+		if err := repoClient.ResetHard("HEAD"); err != nil {
+			return err
 		}
 	}
 	// Ensure it is up to date
