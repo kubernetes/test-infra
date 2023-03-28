@@ -1026,6 +1026,19 @@ def generate_scale():
     ]
     return results
 
+###############################
+# kops-presubmits-scale.yaml #
+###############################
+def generate_presubmits_scale():
+    results = [
+        presubmit_test(
+            name='presubmit-kops-aws-scale',
+            scenario='scalability',
+            always_run=False,
+        )
+    ]
+    return results
+
 ################################
 # kops-periodics-versions.yaml #
 ################################
@@ -1555,6 +1568,7 @@ presubmits_files = {
     'kops-presubmits-distros.yaml':generate_presubmits_distros,
     'kops-presubmits-network-plugins.yaml': generate_presubmits_network_plugins,
     'kops-presubmits-e2e.yaml': generate_presubmits_e2e,
+    'kops-presubmits-scale.yaml': generate_presubmits_scale,
 }
 
 def main():
