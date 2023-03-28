@@ -106,7 +106,6 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 				Number:     number,
 				Author:     pr.User.Login,
 				SHA:        pr.Head.SHA,
-				Ref:        pr.Head.Ref,
 				Title:      pr.Title,
 				Link:       pr.HTMLURL,
 				AuthorLink: pr.User.HTMLURL,
