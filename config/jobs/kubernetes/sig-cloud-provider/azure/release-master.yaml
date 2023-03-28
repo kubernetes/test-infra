@@ -27,7 +27,7 @@ presubmits:
         path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -77,7 +77,7 @@ presubmits:
         path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -129,7 +129,7 @@ presubmits:
         path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -180,7 +180,7 @@ presubmits:
         path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -229,7 +229,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
@@ -272,7 +272,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
@@ -318,7 +318,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -371,7 +371,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -429,7 +429,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -489,7 +489,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -546,7 +546,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -598,7 +598,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -651,7 +651,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -709,7 +709,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -769,7 +769,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -826,7 +826,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

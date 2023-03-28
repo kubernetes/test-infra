@@ -93,7 +93,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         command:
         - runner.sh
         - make
@@ -113,7 +113,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         command:
         - runner.sh
         - make
@@ -134,7 +134,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         resources:
           limits:
             cpu: 4
@@ -158,7 +158,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         args:
         - --repo=k8s.io/ingress-gce=$(PULL_REFS)
         - --root=/go/src/
@@ -188,7 +188,7 @@ periodics:
     preset-ingress-master-yaml: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       args:
       - --timeout=340
       - --bare
@@ -225,7 +225,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - hack/run-e2e-gce.sh
