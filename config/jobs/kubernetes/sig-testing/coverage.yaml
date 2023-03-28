@@ -19,7 +19,7 @@ presubmits:
       description: unit test coverage presubmit
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         command:
         - runner.sh
         - bash
@@ -64,7 +64,7 @@ periodics:
     timeout: 6h
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - bash
@@ -125,7 +125,7 @@ periodics:
     timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - bash
@@ -181,7 +181,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
       command:
       - runner.sh
       - bash

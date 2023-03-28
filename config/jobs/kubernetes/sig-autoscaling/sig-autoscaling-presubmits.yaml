@@ -44,7 +44,7 @@ presubmits:
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=400m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
         securityContext:
           privileged: true
 
@@ -77,7 +77,7 @@ presubmits:
         - --test_args=--ginkgo.focus=\[Feature:HPA\] --minStartupPods=8
         - --ginkgo-parallel=1
         - --timeout=300m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
 
   - name: pull-kubernetes-e2e-autoscaling-hpa-cm
     annotations:
@@ -109,4 +109,4 @@ presubmits:
         - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
         - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=300m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
