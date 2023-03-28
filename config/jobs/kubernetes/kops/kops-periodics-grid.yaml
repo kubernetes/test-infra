@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -93,7 +93,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -155,7 +155,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -217,7 +217,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -279,7 +279,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -341,7 +341,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -403,7 +403,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -465,7 +465,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -527,7 +527,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -589,7 +589,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -651,7 +651,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -2770,7 +2770,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -2832,7 +2832,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -2894,7 +2894,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -2956,7 +2956,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -3018,7 +3018,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -3080,7 +3080,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -3142,7 +3142,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -3204,7 +3204,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -3266,7 +3266,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -3328,7 +3328,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -3390,7 +3390,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -3452,7 +3452,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -3514,7 +3514,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -3576,7 +3576,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -3638,7 +3638,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -3700,7 +3700,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -3762,7 +3762,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -3824,7 +3824,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -3886,7 +3886,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -3948,7 +3948,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -4010,7 +4010,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -4072,7 +4072,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kubenet" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kubenet" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -4134,7 +4134,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -4196,7 +4196,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -4258,7 +4258,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -4320,7 +4320,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -4382,7 +4382,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -4444,7 +4444,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -4506,7 +4506,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -4568,7 +4568,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -4630,7 +4630,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -4692,7 +4692,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -4754,7 +4754,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=calico" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -6873,7 +6873,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -6935,7 +6935,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -6997,7 +6997,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -7059,7 +7059,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -7121,7 +7121,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -7183,7 +7183,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -7245,7 +7245,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -7307,7 +7307,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -7369,7 +7369,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -7431,7 +7431,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -7493,7 +7493,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -7555,7 +7555,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -7617,7 +7617,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -7679,7 +7679,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -7741,7 +7741,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -7803,7 +7803,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -7865,7 +7865,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -7927,7 +7927,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -7989,7 +7989,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -8051,7 +8051,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -8113,7 +8113,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -8175,7 +8175,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=calico" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=calico" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -8237,7 +8237,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -8299,7 +8299,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -8361,7 +8361,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -8423,7 +8423,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -8485,7 +8485,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -8547,7 +8547,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -8609,7 +8609,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -8671,7 +8671,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -8733,7 +8733,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -8795,7 +8795,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -8857,7 +8857,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -10976,7 +10976,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11038,7 +11038,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11100,7 +11100,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11162,7 +11162,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -11224,7 +11224,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -11286,7 +11286,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -11348,7 +11348,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -11410,7 +11410,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -11472,7 +11472,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -11534,7 +11534,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -11596,7 +11596,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -11658,7 +11658,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11720,7 +11720,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11782,7 +11782,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -11844,7 +11844,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -11906,7 +11906,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -11968,7 +11968,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -12030,7 +12030,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -12092,7 +12092,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -12154,7 +12154,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -12216,7 +12216,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -12278,7 +12278,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -12340,7 +12340,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -12402,7 +12402,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -12464,7 +12464,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -12526,7 +12526,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -12588,7 +12588,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -12650,7 +12650,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -12712,7 +12712,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -12774,7 +12774,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -12836,7 +12836,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -12898,7 +12898,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -12960,7 +12960,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -15079,7 +15079,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -15141,7 +15141,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -15203,7 +15203,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -15265,7 +15265,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -15327,7 +15327,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -15389,7 +15389,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -15451,7 +15451,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -15513,7 +15513,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -15575,7 +15575,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -15637,7 +15637,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -15699,7 +15699,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -15761,7 +15761,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -15823,7 +15823,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -15885,7 +15885,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -15947,7 +15947,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -16009,7 +16009,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -16071,7 +16071,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -16133,7 +16133,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -16195,7 +16195,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -16257,7 +16257,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -16319,7 +16319,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -16381,7 +16381,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-etcd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-etcd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -16443,7 +16443,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -16506,7 +16506,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -16569,7 +16569,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -16632,7 +16632,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -16695,7 +16695,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -16758,7 +16758,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -16821,7 +16821,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -16884,7 +16884,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -18467,7 +18467,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -18530,7 +18530,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -18593,7 +18593,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -18656,7 +18656,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -18719,7 +18719,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -18782,7 +18782,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -18845,7 +18845,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -18908,7 +18908,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -18971,7 +18971,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -19034,7 +19034,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -19097,7 +19097,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -19160,7 +19160,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -19223,7 +19223,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -19286,7 +19286,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -19349,7 +19349,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -19412,7 +19412,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=cilium-eni --node-size=t3.large" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -19475,7 +19475,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -19537,7 +19537,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -19599,7 +19599,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -19661,7 +19661,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -19723,7 +19723,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -19785,7 +19785,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -19847,7 +19847,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -19909,7 +19909,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -19971,7 +19971,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -20033,7 +20033,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -20095,7 +20095,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=flannel" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -22214,7 +22214,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -22276,7 +22276,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -22338,7 +22338,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -22400,7 +22400,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -22462,7 +22462,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -22524,7 +22524,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -22586,7 +22586,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -22648,7 +22648,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -22710,7 +22710,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -22772,7 +22772,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -22834,7 +22834,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -22896,7 +22896,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -22958,7 +22958,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -23020,7 +23020,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -23082,7 +23082,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -23144,7 +23144,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -23206,7 +23206,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -23268,7 +23268,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -23330,7 +23330,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -23392,7 +23392,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -23454,7 +23454,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -23516,7 +23516,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=flannel" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=flannel" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -23578,7 +23578,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -23640,7 +23640,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -23702,7 +23702,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -23764,7 +23764,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -23826,7 +23826,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -23888,7 +23888,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -23950,7 +23950,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -24012,7 +24012,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -24074,7 +24074,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -24136,7 +24136,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -24198,7 +24198,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230307.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230320.0-x86_64-gp2' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -25624,7 +25624,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -25686,7 +25686,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -25748,7 +25748,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -25810,7 +25810,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -25872,7 +25872,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -25934,7 +25934,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -25996,7 +25996,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -26058,7 +26058,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -26120,7 +26120,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -26182,7 +26182,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -26244,7 +26244,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230302' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230322' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -26306,7 +26306,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -26368,7 +26368,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -26430,7 +26430,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -26492,7 +26492,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -26554,7 +26554,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -26616,7 +26616,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.24.txt \
           --test=kops \
@@ -26678,7 +26678,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -26740,7 +26740,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -26802,7 +26802,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.25.txt \
           --test=kops \
@@ -26864,7 +26864,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
@@ -26926,7 +26926,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230303' --channel=alpha --networking=kopeio" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230325' --channel=alpha --networking=kopeio" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.26/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.26.txt \
           --test=kops \
