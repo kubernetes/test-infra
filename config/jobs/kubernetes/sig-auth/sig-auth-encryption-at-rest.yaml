@@ -14,7 +14,8 @@ presubmits:
     run_if_changed: 'staging/src/k8s.io/apiserver/pkg/storage/value/|staging/src/k8s.io/kms/|staging/src/k8s.io/apiserver/pkg/server/options/encryptionconfig/|test/e2e/testing-manifests/auth/encrypt/'
     path_alias: k8s.io/kubernetes
     branches:
-    - ^master$ # TODO(aramase): enable for release branches
+    - ^master$
+    - ^release-1\.(2[7-9]|[3-9][0-9])$
     labels:
       # this is required because we want to run kind in docker
       preset-dind-enabled: "true"
