@@ -48,6 +48,7 @@ var (
 	companies = []string{
 		"canonical",
 		"cos",
+		"containerd",
 		"cri-o",
 		"istio",
 		"googleoss",

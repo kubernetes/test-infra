@@ -55,7 +55,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-node-containerd
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
     testgrid-tab-name: containerd-build
     description: "builds development in progress branch of upstream containerd"
 - name: ci-containerd-build-1-6
@@ -74,7 +74,7 @@ periodics:
           - --env=DEPLOY_DIR=release-1.6
           - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
-    testgrid-dashboards: sig-node-containerd
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
     testgrid-tab-name: containerd-build-1.6
     description: "builds release/1.6 branch of upstream containerd"
 - name: ci-containerd-build-test-images
@@ -97,7 +97,7 @@ periodics:
         securityContext:
           privileged: true
   annotations:
-    testgrid-dashboards: sig-node-containerd
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
     testgrid-tab-name: containerd-build-test-images
     description: "builds test images for development in progress branch of upstream containerd"
 - name: ci-containerd-build-1-7
@@ -116,7 +116,7 @@ periodics:
           - --env=DEPLOY_DIR=release-1.7
           - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
-    testgrid-dashboards: sig-node-containerd
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
     testgrid-tab-name: containerd-build-1.7
     description: "builds release/1.7 branch of upstream containerd"
 - interval: 1h

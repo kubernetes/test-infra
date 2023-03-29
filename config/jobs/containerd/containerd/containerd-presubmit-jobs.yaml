@@ -8,7 +8,7 @@ presubmits:
     - release/1.7
     decorate: true
     annotations:
-      testgrid-dashboards: sig-node-containerd
+      testgrid-dashboards: sig-node-containerd,containerd-presubmits
       testgrid-tab-name: pull-containerd-build
       description: build artifacts
     labels:
@@ -43,7 +43,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/test-infra
     annotations:
-      testgrid-dashboards: sig-node-containerd
+      testgrid-dashboards: sig-node-containerd,containerd-presubmits
       testgrid-tab-name: pull-containerd-node-e2e
       description: run node e2e tests
     labels:
@@ -94,7 +94,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/test-infra
     annotations:
-      testgrid-dashboards: sig-node-containerd
+      testgrid-dashboards: sig-node-containerd,containerd-presubmits
       testgrid-tab-name: pull-containerd-node-e2e-1-7
       description: run node e2e tests
     labels:
@@ -145,7 +145,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/test-infra
     annotations:
-      testgrid-dashboards: sig-node-containerd
+      testgrid-dashboards: sig-node-containerd,containerd-presubmits
       testgrid-tab-name: pull-containerd-node-e2e-1-6
       description: run node e2e tests
     labels:
@@ -196,7 +196,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/test-infra
     annotations:
-      testgrid-dashboards: sig-node-containerd
+      testgrid-dashboards: sig-node-containerd,containerd-presubmits
       testgrid-tab-name: pull-containerd-sandboxed-node-e2e
       description: run node e2e tests sandboxed
     labels:
