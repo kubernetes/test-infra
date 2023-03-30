@@ -34,11 +34,13 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
     && ln -s /go/src/k8s.io/kubernetes /workspace/kubernetes
 
 # preinstall:
-# - graphviz package for graphing profiles
 # - bc for shell to junit
+# - gcc-aarch64-linux-gnu for cross-compile arm64 binaries
+# - graphviz package for graphing profiles
 # - rpm for building RPMs with Bazel
 RUN apt-get update && \
     apt-get install -y bc \
+    gcc-aarch64-linux-gnu \
     graphviz \
     rpm && \
     rm -rf /var/lib/apt/lists/*
