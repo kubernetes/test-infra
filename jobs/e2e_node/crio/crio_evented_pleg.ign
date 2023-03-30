@@ -79,7 +79,7 @@
         "name": "selinux-install.service"
       },
       {
-        "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=selinux-install.service\n\n[Service]\nType=oneshot\nEnvironment=\"COMMIT=fa0d058141343ee38b8339ea41f580c361271372\"\n\nExecStartPre=mount /tmp /tmp -o remount,exec,suid\nExecStartPre=ln -sf /usr/bin/runc /usr/local/bin/runc\nExecStartPre=bash -c '\\\n  curl --fail --retry 5 --retry-delay 3 --silent --show-error \\\n    https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\\\n      bash -s -- -t $COMMIT'\nExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist\nExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf\nExecStart=systemctl enable --now crio.service\n\n[Install]\nWantedBy=multi-user.target\n",
+        "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=selinux-install.service\n\n[Service]\nType=oneshot\nEnvironment=\"COMMIT=a22a6a49215c0bb1e14830317903f15aa93a7bd4\"\n\nExecStartPre=mount /tmp /tmp -o remount,exec,suid\nExecStartPre=ln -sf /usr/bin/runc /usr/local/bin/runc\nExecStartPre=bash -c '\\\n  curl --fail --retry 5 --retry-delay 3 --silent --show-error \\\n    https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\\\n      bash -s -- -t $COMMIT'\nExecStartPre=rm -f /etc/cni/net.d/87-podman-bridge.conflist\nExecStartPre=rm -f /etc/crio/crio.conf.d/10-crun.conf\nExecStart=systemctl enable --now crio.service\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "crio-install.service"
       },
