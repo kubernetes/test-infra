@@ -28,6 +28,8 @@ substitutions:
   _CFSSL_VERSION: R1.2
 options:
   substitution_option: ALLOW_LOOSE
+  # this is a large and critical CI image, builds are slow on the default 1 core
+  machineType: E2_HIGHCPU_32
 images:
   - 'gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG'
   - 'gcr.io/$PROJECT_ID/krte:latest-$_CONFIG'
