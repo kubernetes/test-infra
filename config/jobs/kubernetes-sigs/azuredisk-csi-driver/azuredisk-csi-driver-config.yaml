@@ -799,7 +799,7 @@ presubmits:
             - name: DISABLE_ZONE # azuredisk-csi-driver config
               value: "true"
             - name: KUBERNETES_VERSION # CAPZ config
-              value: "latest-1.24"
+              value: "latest-1.26"
             - name: WORKER_MACHINE_COUNT # CAPZ config
               value: "0" # Don't create any linux worker nodes
     annotations:
