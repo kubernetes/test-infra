@@ -21,7 +21,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         args:
         - make
         - verify
@@ -58,7 +58,7 @@ presubmits:
       - name: main
         command:
         - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-go-canary
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-go-canary
         args:
         - make
         - verify
