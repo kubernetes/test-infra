@@ -71,7 +71,7 @@ systemd:
 
         [Service]
         Type=oneshot
-        Environment="COMMIT=fa0d058141343ee38b8339ea41f580c361271372"
+        Environment="COMMIT=a22a6a49215c0bb1e14830317903f15aa93a7bd4"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
         ExecStartPre=ln -sf /usr/bin/runc /usr/local/bin/runc
