@@ -32,7 +32,7 @@ variants:
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
   '1.27':
-    CONFIG: main
+    CONFIG: '1.27'
     GO_VERSION: 1.20.2
     K8S_RELEASE: latest-1.27
     BAZEL_VERSION: 3.4.1
