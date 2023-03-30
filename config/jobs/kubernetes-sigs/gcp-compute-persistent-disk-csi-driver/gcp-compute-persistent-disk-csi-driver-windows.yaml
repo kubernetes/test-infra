@@ -17,7 +17,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -61,7 +61,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
