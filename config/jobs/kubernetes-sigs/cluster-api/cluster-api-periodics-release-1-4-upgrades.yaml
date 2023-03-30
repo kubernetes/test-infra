@@ -23,7 +23,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -74,7 +74,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -125,7 +125,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -176,7 +176,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -227,7 +227,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.25
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -278,7 +278,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230328-17e539c80f-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
