@@ -4717,14 +4717,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-parallel
+    name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-appcreds
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-parallel
+    test_group_name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-appcreds
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -4744,14 +4744,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-password
+    name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-parallel
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-password
+    test_group_name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-parallel
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -5684,10 +5684,10 @@ test_groups:
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-nfv-intel-kuryr
 - gcs_prefix: origin-ci-test/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-nfv-mellanox
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-nfv-mellanox
+- gcs_prefix: origin-ci-test/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-appcreds
+  name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-appcreds
 - gcs_prefix: origin-ci-test/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-parallel
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-parallel
-- gcs_prefix: origin-ci-test/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-password
-  name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-password
 - gcs_prefix: origin-ci-test/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-serial
   name: periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-ovn-serial
 - gcs_prefix: origin-ci-test/logs/periodic-ci-shiftstack-shiftstack-ci-main-periodic-4.12-e2e-openstack-proxy
