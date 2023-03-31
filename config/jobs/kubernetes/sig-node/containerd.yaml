@@ -813,6 +813,7 @@ periodics:
       - --image-family=cos-101-lts
       - --image-project=cos-cloud
       - --provider=gce
+      - '--node-test-args=--kubelet-flags="--cgroup-driver=systemd"'
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
