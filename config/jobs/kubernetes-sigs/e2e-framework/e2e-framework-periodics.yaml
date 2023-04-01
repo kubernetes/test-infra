@@ -1,0 +1,27 @@
+periodics:
+  - name: periodic-e2e-framework-test-main
+    interval: 24h
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: e2e-framework
+        base_ref: main
+        path_alias: sigs.k8s.io/e2e-framework
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
+          imagePullPolicy: Always
+          command:
+            - runner.sh
+          args:
+            - make
+            - test
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: sig-testing-e2e-framework
+      testgrid-tab-name: periodic-e2e-framework-test-main
