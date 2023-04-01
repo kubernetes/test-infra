@@ -1,0 +1,20 @@
+presubmits:
+  kubernetes-sigs/jobset:
+  - name: pull-jobset-test-unit-main
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-jobset-test-unit-main
+      description: "Run jobset unit tests"
+    spec:
+      containers:
+      - image: golang:1.19
+        env:
+        - name: GO_TEST_FLAGS
+          value: "-race -count 3"
+        command:
+        - make
+        args:
+        - test
