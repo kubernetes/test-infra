@@ -20,6 +20,7 @@ import (
 	"flag"
 	"reflect"
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -38,6 +39,10 @@ func Test_gatherOptions(t *testing.T) {
 	}{
 		{
 			name: "minimal flags work",
+			expected: func(o *options) {
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
+			},
 		},
 		{
 			name: "explicitly set --config-path",
@@ -46,6 +51,8 @@ func Test_gatherOptions(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.config.ConfigPath = "/random/value"
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
 			},
 		},
 		{
@@ -55,6 +62,8 @@ func Test_gatherOptions(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.dryRun = false
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
 			},
 		},
 		{
@@ -66,6 +75,8 @@ func Test_gatherOptions(t *testing.T) {
 				o.storage = flagutil.StorageClientOptions{
 					GCSCredentialsFile: "/creds",
 				}
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
 			},
 		},
 		{
@@ -77,6 +88,8 @@ func Test_gatherOptions(t *testing.T) {
 				o.storage = flagutil.StorageClientOptions{
 					S3CredentialsFile: "/creds",
 				}
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
 			},
 		},
 	}
