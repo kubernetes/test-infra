@@ -177,6 +177,54 @@ periodics:
 - annotations:
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-dashboards: sig-k8s-infra-canaries, sig-release-job-config-errors
+    testgrid-num-columns-recent: "6"
+    testgrid-tab-name: kind-ipv6-1.27-parallel-eks-canary
+  cluster: eks-prow-build-cluster
+  decorate: true
+  decoration_config:
+    timeout: 1h0m0s
+  extra_refs:
+  - base_ref: release-1.27
+    org: kubernetes
+    path_alias: k8s.io/kubernetes
+    repo: kubernetes
+  interval: 1h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  name: ci-kubernetes-kind-ipv6-e2e-parallel-eks-canary-1-27
+  spec:
+    containers:
+    - command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      env:
+      - name: DOCKER_IN_DOCKER_IPV6_ENABLED
+        value: "true"
+      - name: IP_FAMILY
+        value: ipv6
+      - name: FOCUS
+        value: .
+      - name: SKIP
+        value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
+      - name: PARALLEL
+        value: "true"
+      image: gcr.io/k8s-staging-test-infra/krte:v20230330-8e9af88c7d-1.27
+      name: ""
+      resources:
+        limits:
+          cpu: "7"
+          memory: 9Gi
+        requests:
+          cpu: "7"
+          memory: 9Gi
+      securityContext:
+        privileged: true
+- annotations:
+    fork-per-release-periodic-interval: 2h 6h 24h
+    testgrid-dashboards: sig-k8s-infra-canaries, sig-release-job-config-errors
     testgrid-tab-name: verify-1.27-eks-canary
   cluster: eks-prow-build-cluster
   decorate: true
