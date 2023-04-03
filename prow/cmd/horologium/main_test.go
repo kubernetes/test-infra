@@ -350,6 +350,10 @@ func TestFlags(t *testing.T) {
 	}{
 		{
 			name: "minimal flags work",
+			expected: func(o *options) {
+				o.controllerManager.TimeoutListingProwJobs = 60 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 60 * time.Second
+			},
 		},
 		{
 			name: "explicitly set --config-path",
@@ -358,6 +362,8 @@ func TestFlags(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.config.ConfigPath = "/random/value"
+				o.controllerManager.TimeoutListingProwJobs = 60 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 60 * time.Second
 			},
 		},
 		{
@@ -367,6 +373,8 @@ func TestFlags(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.dryRun = false
+				o.controllerManager.TimeoutListingProwJobs = 60 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 60 * time.Second
 			},
 		},
 		{
@@ -376,12 +384,16 @@ func TestFlags(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.dryRun = true
+				o.controllerManager.TimeoutListingProwJobs = 60 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 60 * time.Second
 			},
 		},
 		{
 			name: "dry run defaults to true",
 			expected: func(o *options) {
 				o.dryRun = true
+				o.controllerManager.TimeoutListingProwJobs = 60 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 60 * time.Second
 			},
 		},
 	}

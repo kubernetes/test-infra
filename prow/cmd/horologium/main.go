@@ -51,6 +51,7 @@ type options struct {
 
 	kubernetes             flagutil.KubernetesOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	controllerManager      prowflagutil.ControllerManagerOptions
 	dryRun                 bool
 }
 
@@ -61,13 +62,15 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.config.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
+	o.controllerManager.TimeoutListingProwJobsDefault = 60 * time.Second
+	o.controllerManager.AddFlags(fs)
 
 	fs.Parse(args)
 	return o
 }
 
 func (o *options) Validate() error {
-	for _, group := range []pkgFlagutil.OptionGroup{&o.kubernetes, &o.config} {
+	for _, group := range []pkgFlagutil.OptionGroup{&o.kubernetes, &o.config, &o.controllerManager} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -113,9 +116,9 @@ func main() {
 		}
 		logrus.Info("Cache finished gracefully.")
 	})
-	cacheSyncCtx, cacheSyncCancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cacheSyncCancel()
-	if synced := cluster.GetCache().WaitForCacheSync(cacheSyncCtx); !synced {
+	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), o.controllerManager.TimeoutListingProwJobs)
+	defer mgrSyncCtxCancel()
+	if synced := cluster.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 		logrus.Fatal("Timed out waiting for cachesync")
 	}
 

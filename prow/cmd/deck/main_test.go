@@ -88,6 +88,9 @@ func TestOptions_Validate(t *testing.T) {
 			name: "minimal set ok",
 			input: options{
 				config: configflagutil.ConfigOptions{ConfigPath: "test"},
+				controllerManager: flagutil.ControllerManagerOptions{
+					TimeoutListingProwJobsDefault: 30 * time.Second,
+				},
 			},
 			expectedErr: false,
 		},
@@ -99,7 +102,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "ok with oauth",
 			input: options{
-				config:                configflagutil.ConfigOptions{ConfigPath: "test"},
+				config: configflagutil.ConfigOptions{ConfigPath: "test"},
+				controllerManager: flagutil.ControllerManagerOptions{
+					TimeoutListingProwJobsDefault: 30 * time.Second,
+				},
 				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
 				cookieSecretFile:      "yum",
@@ -109,7 +115,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "missing github config with oauth",
 			input: options{
-				config:           configflagutil.ConfigOptions{ConfigPath: "test"},
+				config: configflagutil.ConfigOptions{ConfigPath: "test"},
+				controllerManager: flagutil.ControllerManagerOptions{
+					TimeoutListingProwJobsDefault: 30 * time.Second,
+				},
 				oauthURL:         "website",
 				cookieSecretFile: "yum",
 			},
@@ -118,7 +127,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "missing cookie with oauth",
 			input: options{
-				config:                configflagutil.ConfigOptions{ConfigPath: "test"},
+				config: configflagutil.ConfigOptions{ConfigPath: "test"},
+				controllerManager: flagutil.ControllerManagerOptions{
+					TimeoutListingProwJobsDefault: 30 * time.Second,
+				},
 				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
 			},
@@ -127,7 +139,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "hidden only and show hidden are mutually exclusive",
 			input: options{
-				config:     configflagutil.ConfigOptions{ConfigPath: "test"},
+				config: configflagutil.ConfigOptions{ConfigPath: "test"},
+				controllerManager: flagutil.ControllerManagerOptions{
+					TimeoutListingProwJobsDefault: 30 * time.Second,
+				},
 				hiddenOnly: true,
 				showHidden: true,
 			},
@@ -136,7 +151,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "show hidden and tenantIds are mutually exclusive",
 			input: options{
-				config:     configflagutil.ConfigOptions{ConfigPath: "test"},
+				config: configflagutil.ConfigOptions{ConfigPath: "test"},
+				controllerManager: flagutil.ControllerManagerOptions{
+					TimeoutListingProwJobsDefault: 30 * time.Second,
+				},
 				hiddenOnly: false,
 				showHidden: true,
 				tenantIDs:  setTenantIDs,
@@ -146,7 +164,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "hiddenOnly and tenantIds are mutually exclusive",
 			input: options{
-				config:     configflagutil.ConfigOptions{ConfigPath: "test"},
+				config: configflagutil.ConfigOptions{ConfigPath: "test"},
+				controllerManager: flagutil.ControllerManagerOptions{
+					TimeoutListingProwJobsDefault: 30 * time.Second,
+				},
 				hiddenOnly: true,
 				showHidden: false,
 				tenantIDs:  setTenantIDs,
@@ -607,13 +628,15 @@ func Test_gatherOptions(t *testing.T) {
 		{
 			name: "minimal flags work",
 			expected: func(o *options) {
-				o.timeoutListingProwJobs = 30
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
 			},
 		},
 		{
 			name: "default static files location",
 			expected: func(o *options) {
-				o.timeoutListingProwJobs = 30
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
 				o.spyglassFilesLocation = "/lenses"
 				o.staticFilesLocation = "/static"
 				o.templateFilesLocation = "/template"
@@ -623,7 +646,8 @@ func Test_gatherOptions(t *testing.T) {
 			name:       "ko data path",
 			koDataPath: "ko-data",
 			expected: func(o *options) {
-				o.timeoutListingProwJobs = 30
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
 				o.spyglassFilesLocation = "ko-data/lenses"
 				o.staticFilesLocation = "ko-data/static"
 				o.templateFilesLocation = "ko-data/template"
@@ -636,7 +660,8 @@ func Test_gatherOptions(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.config.ConfigPath = "/random/value"
-				o.timeoutListingProwJobs = 30
+				o.controllerManager.TimeoutListingProwJobs = 30 * time.Second
+				o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
 			},
 		},
 		{

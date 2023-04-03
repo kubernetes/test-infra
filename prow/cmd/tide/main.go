@@ -59,6 +59,7 @@ type options struct {
 	github                 prowflagutil.GitHubOptions
 	storage                prowflagutil.StorageClientOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	controllerManager      prowflagutil.ControllerManagerOptions
 
 	maxRecordsPerPool int
 	// historyURI where Tide should store its action history.
@@ -83,7 +84,7 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config, &o.controllerManager} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -112,6 +113,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile; leave empty for anonymous access or if you are using GitHub")
 
 	fs.StringVar(&o.providerName, "provider", "", "The source code provider, only supported providers are github and gerrit, this should be set only when both GitHub and Gerrit configs are set for tide. By default provider is auto-detected as github if `tide.queries` is set, and gerrit if `tide.gerrit` is set.")
+	o.controllerManager.TimeoutListingProwJobsDefault = 30 * time.Second
+	o.controllerManager.AddFlags(fs)
 	fs.Parse(args)
 	return o
 }
@@ -224,7 +227,7 @@ func main() {
 		logrus.Info("Mgr finished gracefully.")
 	})
 
-	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), o.controllerManager.TimeoutListingProwJobs)
 	defer mgrSyncCtxCancel()
 	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 		logrus.Fatal("Timed out waiting for cachesync")
