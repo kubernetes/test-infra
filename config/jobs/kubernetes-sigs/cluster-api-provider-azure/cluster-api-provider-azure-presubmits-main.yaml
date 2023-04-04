@@ -368,6 +368,8 @@ presubmits:
               value: "1"
             - name: KUBETEST_WINDOWS_CONFIG
               value: "upstream-windows-serial-slow.yaml"
+            - name: K8S_FEATURE_GATE
+              value: "HPAContainerMetrics=true"
           securityContext:
             privileged: true
           resources:
