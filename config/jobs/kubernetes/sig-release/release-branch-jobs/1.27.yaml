@@ -711,47 +711,6 @@ periodics:
           memory: 9Gi
       securityContext:
         privileged: true
-- annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-release-1.27-informing, sig-windows-master-release, sig-windows-signal
-    testgrid-tab-name: capz-windows-containerd-1.27
-  decorate: true
-  decoration_config:
-    timeout: 4h0m0s
-  extra_refs:
-  - base_ref: release-1.8
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    repo: cluster-api-provider-azure
-    workdir: true
-  - base_ref: master
-    org: kubernetes-sigs
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    repo: cloud-provider-azure
-  interval: 3h
-  labels:
-    preset-azure-anonymous-pull: "true"
-    preset-azure-cred-only: "true"
-    preset-capz-containerd-1-7-latest: "true"
-    preset-capz-windows-2019: "true"
-    preset-capz-windows-common-main: "true"
-    preset-capz-windows-parallel: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  name: ci-kubernetes-e2e-capz-master-containerd-windows-1-27
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - ./scripts/ci-conformance.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.27
-      name: ""
-      resources:
-        requests:
-          cpu: "2"
-          memory: 9Gi
-      securityContext:
-        privileged: true
 postsubmits: {}
 presubmits:
   kubernetes/kubernetes:

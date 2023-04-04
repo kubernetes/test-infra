@@ -6,6 +6,7 @@ dashboard_groups:
     - sig-windows-1.24-release
     - sig-windows-1.25-release
     - sig-windows-1.26-release
+    - sig-windows-1.27-release
     - sig-windows-master-release
     - sig-windows-presubmit
     - sig-windows-gce
@@ -21,6 +22,7 @@ dashboards:
 - name: sig-windows-1.24-release
 - name: sig-windows-1.25-release
 - name: sig-windows-1.26-release
+- name: sig-windows-1.27-release
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
 - name: sig-windows-gce
