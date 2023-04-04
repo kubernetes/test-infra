@@ -22,6 +22,9 @@ postsubmits:
           - --project=k8s-staging-infra-tools
           - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
           - .
+          env:
+          - name: LOG_TO_STDOUT
+            value: "y"
   kubernetes-sigs/porche:
   - name: post-porche-push-images
     cluster: k8s-infra-prow-build-trusted
