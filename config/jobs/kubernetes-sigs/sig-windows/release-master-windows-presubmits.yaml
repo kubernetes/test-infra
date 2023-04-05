@@ -11,7 +11,7 @@ presets:
     value: "Standard_D4s_v3"
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-capz-windows-containerd
+  - name: pull-kubernetes-e2e-capz-windows
     decorate: true
     always_run: false
     optional: true
@@ -47,11 +47,12 @@ presubmits:
             cpu: 2
             memory: "9Gi"
     annotations:
+      fork-per-release: "true"
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-containerd
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows
       testgrid-num-columns-recent: '30'
   kubernetes-sigs/windows-testing:
-  - name: pull-e2e-capz-containerd-windows-2022-extension
+  - name: pull-e2e-capz-windows-2022-extension
     decorate: true
     always_run: false
     optional: true
@@ -66,7 +67,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-windows-private-registry-cred: "true"
-      preset-capz-windows-common-main: "true"
+      preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
     extra_refs:
     - org: kubernetes-sigs
@@ -78,6 +79,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
           command:
             - "runner.sh"
+            - "KUBERNETES_VERSION=latest"
             - "./capz/run-capz-e2e.sh"
           securityContext:
             privileged: true
@@ -92,8 +94,8 @@ presubmits:
             value: \[sig-windows\] # run just a subset to speed up testing time
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-e2e-capz-windows-containerd-extension
-  - name: pull-e2e-run-capz-sh-containerd-windows-2022-hyperv
+      testgrid-tab-name: pull-e2e-capz-windows-extension
+  - name: pull-e2e-run-capz-sh-windows-2022-hyperv
     decorate: true
     always_run: false
     optional: true
@@ -108,7 +110,8 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-windows-private-registry-cred: "true"
-      preset-capz-windows-common-main: "true"
+      preset-capz-windows-common: "true"
+      preset-capz-containerd-1-7-latest: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -119,6 +122,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
           command:
             - "runner.sh"
+            - "KUBERNETES_VERSION=latest"
             - "./capz/run-capz-e2e.sh"
           securityContext:
             privileged: true
@@ -131,16 +135,14 @@ presubmits:
             value: "windows-2022"
           - name: HYPERV
             value: "true"
-          - name: WINDOWS_CONTAINERD_URL
-            value: "https://github.com/containerd/containerd/releases/download/v1.7.0-beta.4/containerd-1.7.0-beta.4-windows-amd64.tar.gz"
           - name: GINKGO_FOCUS
             value: \[Feature:WindowsHyperVContainers\] # run just a subset to speed up testing time
           - name: GINKGO_SKIP
             value: \[LinuxOnly\] #must set some value otherwise default is used.  The focus of WindowsHyperVContainers will select just those tests
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-e2e-run-capz-sh-containerd-windows-2022-hyperv
-  - name: pull-e2e-capz-containerd-windows-2022-extension-gmsa
+      testgrid-tab-name: pull-e2e-run-capz-sh-windows-2022-hyperv
+  - name: pull-e2e-capz-windows-2022-extension-gmsa
     decorate: true
     always_run: false
     optional: true
@@ -155,7 +157,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-windows-private-registry-cred: "true"
-      preset-capz-windows-common-main: "true"
+      preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
     extra_refs:
     - org: kubernetes-sigs
@@ -167,6 +169,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
           command:
             - "runner.sh"
+            - "KUBERNETES_VERSION=latest"
             - "./capz/run-capz-e2e.sh"
           securityContext:
             privileged: true
@@ -187,4 +190,4 @@ presubmits:
             value: \[LinuxOnly\] #must set some value otherwise default is used.  The focus of GMSA will select just those tests
     annotations:
       testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-e2e-capz-windows-containerd-extension-gmsa
+      testgrid-tab-name: pull-e2e-capz-windows-extension-gmsa
