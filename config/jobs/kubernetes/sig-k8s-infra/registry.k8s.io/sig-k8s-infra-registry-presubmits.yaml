@@ -1,12 +1,12 @@
 presubmits:
   kubernetes/registry.k8s.io:
-  - name: pull-oci-proxy-verify
+  - name: pull-registry-verify
     cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     annotations:
-      testgrid-dashboards: sig-k8s-infra-oci-proxy
-      testgrid-tab-name: pull-oci-proxy-verify
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-verify
       testgrid-num-failures-to-alert: '6'
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
@@ -19,18 +19,18 @@ presubmits:
         - VERIFY_SHELLCHECK=false
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 2
-            memory: 4Gi
-  - name: pull-oci-proxy-shellcheck
+            cpu: 4
+            memory: 8Gi
+  - name: pull-registry-shellcheck
     cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     annotations:
-      testgrid-dashboards: sig-k8s-infra-oci-proxy
-      testgrid-tab-name: pull-oci-proxy-shellcheck
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-shellcheck
       testgrid-num-failures-to-alert: '6'
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
@@ -47,13 +47,13 @@ presubmits:
           requests:
             cpu: 2
             memory: 4Gi
-  - name: pull-oci-proxy-test
+  - name: pull-registry-test
     cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     annotations:
-      testgrid-dashboards: sig-k8s-infra-oci-proxy
-      testgrid-tab-name: pull-oci-proxy-test
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-test
       testgrid-num-failures-to-alert: '6'
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
@@ -64,18 +64,18 @@ presubmits:
         - test
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 2
-            memory: 4Gi
-  - name: pull-oci-proxy-build
+            cpu: 4
+            memory: 8Gi
+  - name: pull-registry-build
     cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     annotations:
-      testgrid-dashboards: sig-k8s-infra-oci-proxy
-      testgrid-tab-name: pull-oci-proxy-build
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-build
       testgrid-num-failures-to-alert: '6'
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     spec:
@@ -87,8 +87,8 @@ presubmits:
         - build
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
