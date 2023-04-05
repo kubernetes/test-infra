@@ -216,6 +216,56 @@ merge_method:
 	}
 }
 
+func TestUnmarshalMergeMethodBranchOrdering(t *testing.T) {
+	for _, testCase := range []struct {
+		name               string
+		yamlConfig         string
+		providedRepoConfig *TideRepoMergeType
+		wantBranchOrder    []string
+	}{
+		{
+			name:            "One branch",
+			yamlConfig:      `b1: merge`,
+			wantBranchOrder: []string{"b1"},
+		},
+		{
+			name: "Two branches",
+			yamlConfig: `
+b1: merge
+b2: squash`,
+			wantBranchOrder: []string{"b1", "b2"},
+		},
+		{
+			name:       "No branches",
+			yamlConfig: "",
+		},
+		{
+			name: "Overwrite existing branches order",
+			yamlConfig: `
+b1: merge
+b2: squash`,
+			providedRepoConfig: &TideRepoMergeType{BranchesOrder: []string{"it", "doesnt", "matter"}},
+			wantBranchOrder:    []string{"b1", "b2"},
+		},
+	} {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			var repoConfig *TideRepoMergeType
+			if testCase.providedRepoConfig != nil {
+				repoConfig = testCase.providedRepoConfig
+			} else {
+				repoConfig = &TideRepoMergeType{}
+			}
+			if err := yaml.Unmarshal([]byte(testCase.yamlConfig), repoConfig); err != nil {
+				t.Fatalf("unmarshal: %s\n", err.Error())
+			}
+			if diff := cmp.Diff(testCase.wantBranchOrder, repoConfig.BranchesOrder); diff != "" {
+				t.Errorf("unexpected branches order: %s\n", diff)
+			}
+		})
+	}
+}
+
 func TestUnmarshalMergeMethod(t *testing.T) {
 	testCases := []struct {
 		testName   string
@@ -248,6 +298,7 @@ tide:
 								"org1": {
 									Repos: map[string]TideRepoMergeType{
 										"repo1": {
+											BranchesOrder: []string{"branch1"},
 											Branches: map[string]TideBranchMergeType{
 												"branch1": {
 													MergeType: types.MergeMerge,
@@ -282,6 +333,7 @@ tide:
 								"org1": {
 									Repos: map[string]TideRepoMergeType{
 										"repo1": {
+											BranchesOrder: []string{"branch1"},
 											Branches: map[string]TideBranchMergeType{
 												"branch1": {
 													MergeType: types.MergeMerge,
@@ -380,6 +432,7 @@ tide:
 								"org1": {
 									Repos: map[string]TideRepoMergeType{
 										"repo1": {
+											BranchesOrder: []string{"branch1"},
 											Branches: map[string]TideBranchMergeType{
 												"branch1": {
 													MergeType: types.MergeMerge,
@@ -410,6 +463,7 @@ tide:
 								"org1": {
 									Repos: map[string]TideRepoMergeType{
 										".*": {
+											BranchesOrder: []string{".+"},
 											Branches: map[string]TideBranchMergeType{
 												".+": {
 													MergeType: types.MergeMerge,

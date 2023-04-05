@@ -35,6 +35,17 @@ import (
 	"k8s.io/test-infra/prow/git/v2"
 )
 
+var (
+	// This regex extracts branch names out of a configuration:
+	// {"main" : "squash","master" : "merge"}
+	//   ^                        ^   ^
+	//   branch_1 (.+?)           |   |
+	//                            whitespaces \s*
+	//                                |
+	//                                merge method .+?
+	countTideBranchesMergeMethodRegexp = regexp.MustCompile(`("(.+?)"\s*\:\s*".+?")+`)
+)
+
 // TideQueries is a TideQuery slice.
 type TideQueries []TideQuery
 
@@ -56,8 +67,12 @@ func (tbmt *TideBranchMergeType) UnmarshalJSON(b []byte) error {
 }
 
 type TideRepoMergeType struct {
-	Branches  map[string]TideBranchMergeType
-	MergeType types.PullRequestMergeType
+	// An ordered list of branches as it has been specified
+	// in the config file because map[string]TideBranchMergeType
+	// doesn't preserve any ordering.
+	BranchesOrder []string
+	Branches      map[string]TideBranchMergeType
+	MergeType     types.PullRequestMergeType
 }
 
 // When TideRepoMergeType.MergeType is present, unmarshal into:
@@ -90,6 +105,17 @@ func (trmt *TideRepoMergeType) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 	var branches map[string]TideBranchMergeType
+
+	branchMatches := countTideBranchesMergeMethodRegexp.FindAllStringSubmatch(string(b), -1)
+	trmt.BranchesOrder = make([]string, 0, len(branchMatches))
+	for _, branchSubmatch := range branchMatches {
+		if len(branchSubmatch) == 3 {
+			trmt.BranchesOrder = append(trmt.BranchesOrder, branchSubmatch[2])
+		} else {
+			return errors.New("TideRepoMergeType unmarshal: unable to determine branches order")
+		}
+	}
+
 	if err := json.Unmarshal(b, &branches); err != nil {
 		return err
 	}
