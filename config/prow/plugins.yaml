@@ -798,7 +798,7 @@ require_matching_label:
 - missing_label: needs-priority
   org: kubernetes-sigs
   repo: kustomize
-  issues: true
+  issues: false
   prs: true
   regexp: ^priority/
 - missing_label: needs-triage
