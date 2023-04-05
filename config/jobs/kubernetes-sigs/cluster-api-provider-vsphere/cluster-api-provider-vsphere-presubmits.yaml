@@ -17,11 +17,6 @@ presets:
       secretKeyRef:
         name: capv-ci-overrides
         key: vsphere-password
-  - name: VSPHERE_TLS_THUMBPRINT
-    valueFrom:
-      secretKeyRef:
-        name: capv-ci-overrides
-        key: vsphere-server-thumbprint
   - name: VM_SSH_PUB_KEY
     valueFrom:
       secretKeyRef:
