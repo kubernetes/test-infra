@@ -89,6 +89,8 @@ presubmits:
               value: "API Version Upgrade"
             - name: KUBERNETES_VERSION
               value: "v1.22.9"
+            - name: K8S_FEATURE_GATES
+              value: "WindowsHostProcessContainers=true" # TODO: remove once k8s version is 1.23+. Feature gate will be removed in 1.28.
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
