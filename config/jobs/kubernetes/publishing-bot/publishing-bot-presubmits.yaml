@@ -47,6 +47,37 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: validate-rules
+  - name: pull-publishing-bot-test-kubernetes-master
+    always_run: false
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-release-publishing-bot
+      testgrid-tab-name: pull-publishing-bot-test-k8s-master
+      description: test publishing bot against k/k master
+    labels:
+      preset-dind-enabled: "true"
+    path_alias: k8s.io/publishing-bot
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+          command:
+            - runner.sh
+          args:
+            - bash
+            - -ce
+            - |
+              make build-image
+              test/k8s-gen-bot-config.sh k8s-bot-config
+              test/run-bot-local.sh k8s-bot-config
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 300m
+              memory: 2Gi
+            limits:
+              cpu: 2
+              memory: 2Gi
   - name: pull-publishing-bot-image
     cluster: k8s-infra-prow-build
     decorate: true
