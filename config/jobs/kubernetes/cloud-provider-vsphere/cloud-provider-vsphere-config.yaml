@@ -263,7 +263,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
-    run_if_changed: '\.go$|go.mod|hack/e2e\.sh'
+    run_if_changed: '\.go$|go.mod|hack/e2e\.sh|test/e2e/'
     skip_report: false
     optional: true
     spec:
