@@ -77,6 +77,6 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-oci-proxy
+    testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
     testgrid-days-of-results: '7'
     testgrid-tab-name: kops-grid-gcr-mirror-canary
