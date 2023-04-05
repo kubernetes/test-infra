@@ -693,6 +693,7 @@ func TestOrgRepoMatchMergeMethod(t *testing.T) {
 						"kubernetes": {
 							Repos: map[string]TideRepoMergeType{
 								"test-infra": {
+									BranchesOrder: []string{"master"},
 									Branches: map[string]TideBranchMergeType{
 										"master": {
 											Regexpr:   regexp.MustCompile("master"),
@@ -938,6 +939,7 @@ func TestOrgRepoMatchMergeMethod(t *testing.T) {
 						"kubernetes": {
 							Repos: map[string]TideRepoMergeType{
 								"test-infra": {
+									BranchesOrder: []string{"master"},
 									Branches: map[string]TideBranchMergeType{
 										"master": {
 											Regexpr:   regexp.MustCompile("master"),
@@ -963,6 +965,7 @@ func TestOrgRepoMatchMergeMethod(t *testing.T) {
 						"kubernetes": {
 							Repos: map[string]TideRepoMergeType{
 								"test-infra": {
+									BranchesOrder: []string{"master"},
 									Branches: map[string]TideBranchMergeType{
 										"master": {
 											Regexpr:   regexp.MustCompile("master"),
@@ -988,6 +991,7 @@ func TestOrgRepoMatchMergeMethod(t *testing.T) {
 						"kubernetes": {
 							Repos: map[string]TideRepoMergeType{
 								"test-infra": {
+									BranchesOrder: []string{`release-\d+(.\d+)?`},
 									Branches: map[string]TideBranchMergeType{
 										`release-\d+(.\d+)?`: {
 											Regexpr:   regexp.MustCompile(`release-\d+(.\d+)?`),
@@ -1013,6 +1017,7 @@ func TestOrgRepoMatchMergeMethod(t *testing.T) {
 						"kubernetes": {
 							Repos: map[string]TideRepoMergeType{
 								"test-infra": {
+									BranchesOrder: []string{`ma.*`, `mast.*`},
 									Branches: map[string]TideBranchMergeType{
 										`ma.*`: {
 											Regexpr:   regexp.MustCompile(`ma.*`),
@@ -1042,6 +1047,7 @@ func TestOrgRepoMatchMergeMethod(t *testing.T) {
 						"golang": {
 							Repos: map[string]TideRepoMergeType{
 								"*": {
+									BranchesOrder: []string{"main"},
 									Branches: map[string]TideBranchMergeType{
 										"main": {
 											Regexpr:   regexp.MustCompile("main"),
@@ -1069,6 +1075,7 @@ func TestOrgRepoMatchMergeMethod(t *testing.T) {
 						"kubernetes": {
 							Repos: map[string]TideRepoMergeType{
 								"kops": {
+									BranchesOrder: []string{"main"},
 									Branches: map[string]TideBranchMergeType{
 										"main": {
 											Regexpr:   regexp.MustCompile("main"),
@@ -1095,6 +1102,7 @@ func TestOrgRepoMatchMergeMethod(t *testing.T) {
 						"kubernetes": {
 							Repos: map[string]TideRepoMergeType{
 								"kops": {
+									BranchesOrder: []string{"main"},
 									Branches: map[string]TideBranchMergeType{
 										"main": {
 											Regexpr:   regexp.MustCompile("main"),
