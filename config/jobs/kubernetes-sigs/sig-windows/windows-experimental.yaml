@@ -8,7 +8,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-capz-windows-common-main: "true"
+    preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
     preset-windows-private-registry-cred: "true"
     preset-capz-containerd-1-7-latest: "true"
@@ -32,6 +32,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         command:
           - "runner.sh"
+          - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
@@ -55,7 +56,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-capz-windows-common-main: "true"
+    preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
     preset-windows-private-registry-cred: "true"
     preset-capz-containerd-1-7-latest: "true"
@@ -79,6 +80,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         command:
           - "runner.sh"
+          - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
