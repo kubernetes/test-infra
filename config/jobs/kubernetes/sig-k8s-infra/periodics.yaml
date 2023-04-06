@@ -50,7 +50,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
         env:
         # set GOMAXPROCS to match the CPU limit.  This informs the Go runtime of the number of
         # compile jobs/tests to run in parallel.
@@ -93,7 +93,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20230330-8e9af88c7d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
       command:
       - wrapper.sh
       - bash
@@ -140,7 +140,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -188,7 +188,7 @@ periodics:
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       command:
       - runner.sh
       args:
@@ -226,7 +226,7 @@ periodics:
     timeout: 2h25m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -277,7 +277,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20230330-8e9af88c7d-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
       command:
       - wrapper.sh
       - bash

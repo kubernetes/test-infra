@@ -59,7 +59,7 @@ presubmits:
     path_alias: k8s.io/publishing-bot
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230321-850d5bc856-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
           command:
             - runner.sh
           args:
