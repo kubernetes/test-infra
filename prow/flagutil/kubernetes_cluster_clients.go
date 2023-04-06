@@ -531,11 +531,11 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 	return clients, utilerrors.NewAggregate(errs)
 }
 
-func (o *KubernetesOptions) KnownClusters(dryRun bool) (sets.Set[string], error) {
+func (o *KubernetesOptions) KnownClusters(dryRun bool) (map[string]rest.Config, error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
-	return sets.KeySet[string](o.clusterConfigs), nil
+	return o.clusterConfigs, nil
 }
 
 // SetDisabledClusters sets disabledClusters

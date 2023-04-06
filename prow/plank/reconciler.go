@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/rest"
 	"k8s.io/utils/clock"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -71,7 +72,7 @@ const (
 func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
-	knownClusters sets.Set[string],
+	knownClusters map[string]rest.Config,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -83,7 +84,7 @@ func Add(
 func add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
-	knownClusters sets.Set[string],
+	knownClusters map[string]rest.Config,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -224,7 +225,7 @@ const (
 	ClusterStatusNoManager   ClusterStatus = "No-Manager"
 )
 
-func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters sets.Set[string]) func(context.Context) error {
+func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters map[string]rest.Config) func(context.Context) error {
 	return func(ctx context.Context) error {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
