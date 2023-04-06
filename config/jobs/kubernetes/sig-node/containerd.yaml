@@ -17,7 +17,7 @@ presets:
   - name: NON_MASQUERADE_CIDR
     value: 0.0.0.0/0
   - name: KUBELET_TEST_ARGS
-    value: --runtime-cgroups=/system.slice/containerd.service
+    value: --runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
 - labels:
     preset-e2e-containerd-image-load: "true"
   env:
@@ -134,7 +134,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_GCE_MASTER_IMAGE=cos-93-16623-341-29
+      - --env=KUBE_GCE_MASTER_IMAGE=cos-97-16919-235-48
       - --extract=ci/latest
       - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
