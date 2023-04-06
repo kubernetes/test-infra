@@ -255,6 +255,39 @@ Instructions for interacting with me using PR comments are available [here](http
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusSuccess,
+		}, {
+			name: "should fail if an user is member of the trusted org but skip member check is false (commit non-signed)",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: false,
+				TrustedOrg:             "kubernetes",
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   true,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			expectedStatus: github.StatusFailure,
+			addedComment: "/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.\n\n" +
+				":memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your " +
+				"commits with the DCO**\n\nFull details of the Developer Certificate of Origin can be found at " +
+				"[developercertificate.org](https://developercertificate.org/).\n\n**The list of commits missing DCO signoff**:\n\n" +
+				"- [sha](https://github.com///commits/sha) not signed off\n\n<details>\n\nInstructions for interacting with me using PR comments are " +
+				"available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related " +
+				"to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) " +
+				"repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).\n</details>\n",
 		},
 		{
 			name: "should add label and update status context if an user is member of the trusted org (one commit signed, one non-signed)",
@@ -420,6 +453,55 @@ Instructions for interacting with me using PR comments are available [here](http
 `,
 		},
 		{
+			name: "should fail dco check as one unsigned commit is not from the trusted app",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: false,
+				TrustedOrg:             "kubernetes",
+				TrustedApps:            []string{"my-trusted-app"},
+			},
+			pullRequestEvent: github.PullRequestEvent{
+				Action:      github.PullRequestActionOpened,
+				PullRequest: github.PullRequest{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "test",
+					},
+				},
+				{
+					SHA:    "sha2",
+					Commit: github.GitCommit{Message: "not signed off"},
+					Author: github.User{
+						Login: "my-trusted-app",
+					},
+				},
+			},
+			issueState: "open",
+			hasDCONo:   false,
+			hasDCOYes:  false,
+
+			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
+			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not signed off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
+		},
+		{
 			name: "should fail dco check as skip feature is disabled",
 			config: plugins.Dco{
 				SkipDCOCheckForMembers: false,
@@ -463,7 +545,7 @@ Instructions for interacting with me using PR comments are available [here](http
 		{
 			name: "should skip dco check as commit is from a collaborator",
 			config: plugins.Dco{
-				SkipDCOCheckForMembers:       true,
+				SkipDCOCheckForMembers:       false,
 				SkipDCOCheckForCollaborators: true,
 				TrustedOrg:                   "kubernetes",
 			},
@@ -766,6 +848,35 @@ Instructions for interacting with me using PR comments are available [here](http
 					Commit: github.GitCommit{Message: "not a sign off"},
 					Author: github.User{
 						Login: "test",
+					},
+				},
+			},
+			issueState: "open",
+
+			expectedStatus: github.StatusSuccess,
+		},
+		{
+			name: "should succeed from a trusted app",
+			config: plugins.Dco{
+				SkipDCOCheckForMembers: false,
+				TrustedApps:            []string{"my-trusted-app"},
+			},
+			commentEvent: github.GenericCommentEvent{
+				IssueState: "open",
+				Action:     github.GenericCommentActionCreated,
+				Body:       "/check-dco",
+				IsPR:       true,
+				Number:     3,
+			},
+			pullRequests: map[int]*github.PullRequest{
+				3: {Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			commits: []github.RepositoryCommit{
+				{
+					SHA:    "sha",
+					Commit: github.GitCommit{Message: "not a sign off"},
+					Author: github.User{
+						Login: "my-trusted-app",
 					},
 				},
 			},

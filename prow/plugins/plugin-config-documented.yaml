@@ -369,17 +369,16 @@ dco:
         contributing_path: ' '
         # ContributingRepo is used to point users to a different repo containing CONTRIBUTING.md
         contributing_repo: ' '
-        # SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
+        # SkipDCOCheckForCollaborators is used to skip DCO check for repository collaborators.
         skip_dco_check_for_collaborators: true
-        # SkipDCOCheckForMembers is used to skip DCO check for trusted org members
+        # SkipDCOCheckForMembers is used to skip DCO check for org members.
         skip_dco_check_for_members: true
         # TrustedApps defines list of apps which commits will not be checked for DCO singoff.
         # The list should contain usernames of each GitHub App without [bot] suffix.
-        # By default, this option is ignored.
         trusted_apps:
             - ""
         # TrustedOrg is the org whose members' commits will not be checked for DCO signoff
-        # if the skip DCO option is enabled. The default is the PR's org.
+        # if the SkipDCOCheckForMembers option is enabled. The default is the PR's org.
         trusted_org: ' '
 # ExternalPlugins is a map of repositories (eg "k/k") to lists of
 # external plugins.

@@ -79,6 +79,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		Dco: map[string]*plugins.Dco{
 			"org/repo": {
 				SkipDCOCheckForMembers:       true,
+				TrustedApps:                  []string{"trusted-app"},
 				TrustedOrg:                   "org",
 				SkipDCOCheckForCollaborators: true,
 				ContributingRepo:             "other-org/other-repo",
@@ -124,14 +125,37 @@ type commentPruner interface {
 }
 
 // filterTrustedUsers checks whether the commits are from a trusted user and returns those that are not
-func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollaborators bool, trustedApps []string, trustedOrg, org, repo string, allCommits []github.RepositoryCommit) ([]github.RepositoryCommit, error) {
+func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, config plugins.Dco, org, repo string, allCommits []github.RepositoryCommit) ([]github.RepositoryCommit, error) {
 	untrustedCommits := make([]github.RepositoryCommit, 0, len(allCommits))
 
+	var trustedResponse trigger.TrustedUserResponse
+
 	for _, commit := range allCommits {
-		trustedResponse, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedApps, trustedOrg, commit.Author.Login, org, repo)
-		if err != nil {
-			return nil, fmt.Errorf("Error checking is member trusted: %w", err)
+		trustedResponse.IsTrusted = false
+
+		// Handle TrustedApps separately (since Trigger checks this last and doesn't have member/collaborator configurable handling)
+		for _, trustedApp := range config.TrustedApps {
+			if tUser := strings.TrimSuffix(commit.Author.Login, "[bot]"); tUser == trustedApp {
+				trustedResponse.IsTrusted = true
+				break
+			}
 		}
+
+		if !trustedResponse.IsTrusted && (config.SkipDCOCheckForMembers || config.SkipDCOCheckForCollaborators) {
+			trustedOrg := config.TrustedOrg
+
+			// If SkipDCOCheckforMembers is disabled, make sure the trusted org is empty
+			if !config.SkipDCOCheckForMembers {
+				trustedOrg = ""
+			}
+
+			var err error
+			trustedResponse, err = trigger.TrustedUser(gc, !config.SkipDCOCheckForCollaborators, config.TrustedApps, trustedOrg, commit.Author.Login, org, repo)
+			if err != nil {
+				return nil, fmt.Errorf("Error checking is member trusted: %w", err)
+			}
+		}
+
 		if !trustedResponse.IsTrusted {
 			l.Debugf("Member %s is not trusted", commit.Author.Login)
 			untrustedCommits = append(untrustedCommits, commit)
@@ -296,8 +320,8 @@ func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.E
 		return err
 	}
 
-	if config.SkipDCOCheckForMembers || config.SkipDCOCheckForCollaborators {
-		commitsMissingDCO, err = filterTrustedUsers(gc, l, config.SkipDCOCheckForCollaborators, config.TrustedApps, config.TrustedOrg, org, repo, commitsMissingDCO)
+	if config.SkipDCOCheckForMembers || config.SkipDCOCheckForCollaborators || len(config.TrustedApps) > 0 {
+		commitsMissingDCO, err = filterTrustedUsers(gc, l, config, org, repo, commitsMissingDCO)
 		if err != nil {
 			l.WithError(err).Infof("Error running trusted org member check against commits in PR")
 			return err
