@@ -22,7 +22,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
         imagePullPolicy: Always
         command:
         - runner.sh
