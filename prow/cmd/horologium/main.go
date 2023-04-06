@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -30,6 +29,7 @@ import (
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
 
+	pkgFlagutil "k8s.io/test-infra/pkg/flagutil"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
@@ -67,12 +67,10 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(o.dryRun); err != nil {
-		return err
-	}
-
-	if err := o.config.Validate(o.dryRun); err != nil {
-		return errors.New("--config-path is required")
+	for _, group := range []pkgFlagutil.OptionGroup{&o.kubernetes, &o.config} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
 	}
 
 	return nil

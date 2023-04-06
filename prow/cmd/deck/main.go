@@ -50,6 +50,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	pkgFlagutil "k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -140,19 +141,10 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(false); err != nil {
-		return err
-	}
-	if err := o.github.Validate(o.dryRun); err != nil {
-		return err
-	}
-
-	if err := o.config.Validate(o.dryRun); err != nil {
-		return err
-	}
-
-	if err := o.pluginsConfig.Validate(o.dryRun); err != nil {
-		return err
+	for _, group := range []pkgFlagutil.OptionGroup{&o.kubernetes, &o.github, &o.config, &o.pluginsConfig} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
 	}
 
 	if o.oauthURL != "" {
