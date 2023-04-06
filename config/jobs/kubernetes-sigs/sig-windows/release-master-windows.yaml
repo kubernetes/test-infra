@@ -101,6 +101,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         command:
           - "runner.sh"
+          - "env"
           - "KUBERNETES_VERSION=latest" # fork-per-release-replacements only updates args / tags and not env vars so specify k8s-version here!
           - "./scripts/ci-conformance.sh"
         securityContext:
@@ -149,6 +150,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         command:
           - "runner.sh"
+          - "env"
           - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         securityContext:
@@ -248,6 +250,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         command:
           - "runner.sh"
+          - "env"
           - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         securityContext:
@@ -297,6 +300,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         command:
           - "runner.sh"
+          - "env"
           - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         securityContext:
@@ -349,6 +353,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         command:
           - "runner.sh"
+          - "env"
           - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         securityContext:
@@ -437,6 +442,7 @@ periodics:
 #       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
 #         command:
 #           - runner.sh
+#           - env
 #           - "KUBERNETES_VERSION=latest"
 #           - ./scripts/ci-entrypoint.sh
 #         args:
@@ -483,6 +489,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-master
         command:
           - "runner.sh"
+          - "env"
           - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         env:
