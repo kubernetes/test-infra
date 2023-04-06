@@ -450,6 +450,7 @@ func checkAuthorizations(buildClusterConfig rest.Config, namespace string, requi
 	}
 	ssarInterface := client.SelfSubjectAccessReviews()
 
+	var errs []error
 	// Unfortunately we have to do multiple API requests because there is no way
 	// to check for multiple verbs on a resource at once. The closest
 	// alternative is the "*" wildcard verb, but that appears to be overbroad
@@ -489,15 +490,16 @@ func checkAuthorizations(buildClusterConfig rest.Config, namespace string, requi
 		}
 		ssarExpanded, err := ssarInterface.Create(context.TODO(), &ssar, metav1.CreateOptions{})
 		if err != nil {
-			return err
+			errs = append(errs, err)
+			continue
 		}
 
 		if !ssarExpanded.Status.Allowed {
-			return fmt.Errorf("unable to %q pods", verb)
+			errs = append(errs, fmt.Errorf("unable to %q pods", verb))
 		}
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // BuildClusterUncachedRuntimeClients returns ctrlruntimeclients for the build cluster in a non-caching implementation.
