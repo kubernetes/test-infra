@@ -219,7 +219,7 @@ func main() {
 	}
 
 	if enabledControllersSet.Has(plank.ControllerName) {
-		if err := plank.Add(mgr, buildClusterManagers, knownClusters, cfg, opener, o.totURL, o.selector); err != nil {
+		if err := plank.Add(mgr, buildClusterManagers, knownClusters, requiredTestPodVerbs, cfg, opener, o.totURL, o.selector); err != nil {
 			logrus.WithError(err).Fatal("Failed to add plank to manager")
 		}
 	}

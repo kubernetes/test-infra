@@ -78,6 +78,8 @@ type KubernetesOptions struct {
 	kubeconfigWatchEvents       <-chan fsnotify.Event
 }
 
+var MissingPermissions = errors.New("missing permissions")
+
 // AddKubeconfigChangeCallback adds a callback that gets called whenever the kubeconfig changes.
 // The main usecase for this is to exit components that can not reload a kubeconfig at runtime
 // so the kubelet restarts them
@@ -398,7 +400,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 				lock.Unlock()
 				return
 			}
-			if err := checkAuthorizations(authzClient.SelfSubjectAccessReviews(), options.Namespace, requiredTestPodVerbs); err != nil {
+			if err := CheckAuthorizations(authzClient.SelfSubjectAccessReviews(), options.Namespace, requiredTestPodVerbs); err != nil {
 				lock.Lock()
 				errs = append(errs, fmt.Errorf("failed pod resource authorization check: %w", err))
 				lock.Unlock()
@@ -440,7 +442,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct authz client: %s", err)
 						continue
 					}
-					if err := checkAuthorizations(authzClient.SelfSubjectAccessReviews(), options.Namespace, requiredTestPodVerbs); err != nil {
+					if err := CheckAuthorizations(authzClient.SelfSubjectAccessReviews(), options.Namespace, requiredTestPodVerbs); err != nil {
 						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
 						continue
 					}
@@ -458,9 +460,9 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 	return res, aggregatedErr
 }
 
-// checkAuthorizations checks if we are able to perform the required actions
+// CheckAuthorizations checks if we are able to perform the required actions
 // against test pods for the provided pod verbs (requiredTestPodVerbs).
-func checkAuthorizations(client authorizationv1.SelfSubjectAccessReviewInterface, namespace string, requiredTestPodVerbs []string) error {
+func CheckAuthorizations(client authorizationv1.SelfSubjectAccessReviewInterface, namespace string, requiredTestPodVerbs []string) error {
 
 	var errs []error
 	// Unfortunately we have to do multiple API requests because there is no way
@@ -507,7 +509,7 @@ func checkAuthorizations(client authorizationv1.SelfSubjectAccessReviewInterface
 		}
 
 		if !ssarExpanded.Status.Allowed {
-			errs = append(errs, fmt.Errorf("unable to %q pods", verb))
+			errs = append(errs, fmt.Errorf("%w: unable to %q pods", MissingPermissions, verb))
 		}
 	}
 

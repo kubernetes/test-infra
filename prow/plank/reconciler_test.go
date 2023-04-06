@@ -28,12 +28,16 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/sirupsen/logrus"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	k8sFake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	k8sTesting "k8s.io/client-go/testing"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache/informertest"
@@ -171,7 +175,7 @@ func TestAdd(t *testing.T) {
 				predicateResultChan <- !b
 			}
 			var errMsg string
-			if err := add(mgr, buildMgrs, nil, cfg, nil, "", tc.additionalSelector, reconcile, predicateCallBack, 1); err != nil {
+			if err := add(mgr, buildMgrs, nil, []string{}, cfg, nil, "", tc.additionalSelector, reconcile, predicateCallBack, 1); err != nil {
 				errMsg = err.Error()
 			}
 			if errMsg != tc.expectedError {
@@ -398,7 +402,7 @@ func TestMaxConcurrencyConsidersCacheStaleness(t *testing.T) {
 			}
 
 			r := newReconciler(context.Background(), pjClient, nil, cfg, nil, "")
-			r.buildClients = map[string]ctrlruntimeclient.Client{pja.Spec.Cluster: fakectrlruntimeclient.NewFakeClient()}
+			r.buildClients = map[string]buildClient{pja.Spec.Cluster: buildClient{Client: fakectrlruntimeclient.NewFakeClient()}}
 
 			wg := &sync.WaitGroup{}
 			wg.Add(2)
@@ -507,9 +511,10 @@ func (ecc *eventuallyConsistentClient) Create(ctx context.Context, obj ctrlrunti
 func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 	t.Parallel()
 	r := &reconciler{
-		log:          logrus.NewEntry(logrus.New()),
-		buildClients: map[string]ctrlruntimeclient.Client{"default": &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient()}},
-		config:       func() *config.Config { return &config.Config{} },
+		log: logrus.NewEntry(logrus.New()),
+		buildClients: map[string]buildClient{"default": buildClient{
+			Client: &eventuallyConsistentClient{t: t, Client: fakectrlruntimeclient.NewFakeClient()}}},
+		config: func() *config.Config { return &config.Config{} },
 	}
 	pj := &prowv1.ProwJob{
 		ObjectMeta: metav1.ObjectMeta{Name: "name"},
@@ -596,24 +601,65 @@ func TestSyncClusterStatus(t *testing.T) {
 			name:     "Multiple clusters mixed reachability",
 			location: "gs://my-bucket/build-cluster-statuses.json",
 			statuses: map[string]ClusterStatus{
-				"default":            ClusterStatusReachable,
-				"test-infra-trusted": ClusterStatusReachable,
-				"sad-build-cluster":  ClusterStatusUnreachable,
+				"default":                      ClusterStatusReachable,
+				"test-infra-trusted":           ClusterStatusReachable,
+				"sad-build-cluster":            ClusterStatusUnreachable,
+				"cluster-erroring-permissions": ClusterStatusErroringPermissions,
+				"cluster-missing-permissions":  ClusterStatusMissingPermissions,
 			},
 			expectedStatuses: map[string]ClusterStatus{
-				"default":                  ClusterStatusReachable,
-				"test-infra-trusted":       ClusterStatusReachable,
-				"sad-build-cluster":        ClusterStatusUnreachable,
-				"always-sad-build-cluster": ClusterStatusNoManager,
+				"default":                      ClusterStatusReachable,
+				"test-infra-trusted":           ClusterStatusReachable,
+				"sad-build-cluster":            ClusterStatusUnreachable,
+				"always-sad-build-cluster":     ClusterStatusNoManager,
+				"cluster-erroring-permissions": ClusterStatusErroringPermissions,
+				"cluster-missing-permissions":  ClusterStatusMissingPermissions,
 			},
 			knownClusters: map[string]rest.Config{
-				"default":                  rest.Config{},
-				"test-infra-trusted":       rest.Config{},
-				"sad-build-cluster":        rest.Config{},
-				"always-sad-build-cluster": rest.Config{},
+				"default":                      rest.Config{},
+				"test-infra-trusted":           rest.Config{},
+				"sad-build-cluster":            rest.Config{},
+				"always-sad-build-cluster":     rest.Config{},
+				"cluster-erroring-permissions": rest.Config{},
+				"cluster-missing-permissions":  rest.Config{},
 			},
 		},
 	}
+	successfulFakeClient := &k8sFake.Clientset{}
+	successfulFakeClient.Fake.AddReactor("create", "selfsubjectaccessreviews", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+		r := &authorizationv1.SelfSubjectAccessReview{
+			Status: authorizationv1.SubjectAccessReviewStatus{
+				Allowed: true,
+				Reason:  "Success!",
+			},
+		}
+		return true, r, nil
+	})
+
+	erroringFakeClient := &k8sFake.Clientset{}
+	erroringFakeClient.Fake.AddReactor("create", "selfsubjectaccessreviews", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, errors.New("could not create SelfSubjectAccessReview")
+
+	})
+
+	missingPermissionsFakeClient := &k8sFake.Clientset{}
+	missingPermissionsFakeClient.Fake.AddReactor("create", "selfsubjectaccessreviews", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+		r := &authorizationv1.SelfSubjectAccessReview{
+			Status: authorizationv1.SubjectAccessReviewStatus{
+				Allowed: false,
+				Reason:  "Permissions missing!",
+			},
+		}
+		return true, r, nil
+	})
+
+	// The verbs here are nonsensical, but they don't matter. The point
+	// is to have at least 1 verb so that it triggers the loop inside
+	// flagutil.CheckAuthorizations(). Whether the authz client runs
+	// successfully or not depends on the use of the plain
+	// FakeAuthorizationV1 (always success) or erroringFakeAuthzClient
+	// (always fail).
+	requiredTestPodVerbs := []string{"foo", "bar"}
 	for i := range tcs {
 		tc := tcs[i]
 		t.Run(tc.name, func(t *testing.T) {
@@ -621,13 +667,30 @@ func TestSyncClusterStatus(t *testing.T) {
 			cfg := func() *config.Config {
 				return &config.Config{ProwConfig: config.ProwConfig{Plank: config.Plank{BuildClusterStatusFile: tc.location}}}
 			}
-			clients := map[string]ctrlruntimeclient.Client{}
+
+			clients := map[string]buildClient{}
 			for alias, status := range tc.statuses {
 				switch status {
 				case ClusterStatusReachable:
-					clients[alias] = fakectrlruntimeclient.NewFakeClient()
+					clients[alias] = buildClient{
+						Client: fakectrlruntimeclient.NewFakeClient(),
+						ssar:   successfulFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
+					}
 				case ClusterStatusUnreachable:
-					clients[alias] = &erroringFakeCtrlRuntimeClient{fakectrlruntimeclient.NewFakeClient()}
+					clients[alias] = buildClient{
+						Client: &erroringFakeCtrlRuntimeClient{fakectrlruntimeclient.NewFakeClient()},
+						ssar:   successfulFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
+					}
+				case ClusterStatusErroringPermissions:
+					clients[alias] = buildClient{
+						Client: fakectrlruntimeclient.NewFakeClient(),
+						ssar:   erroringFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
+					}
+				case ClusterStatusMissingPermissions:
+					clients[alias] = buildClient{
+						Client: fakectrlruntimeclient.NewFakeClient(),
+						ssar:   missingPermissionsFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
+					}
 				}
 			}
 			// Test harness signals true to indicate completion of a write, false to indicate
@@ -643,7 +706,7 @@ func TestSyncClusterStatus(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 			go func() {
-				r.syncClusterStatus(time.Millisecond, tc.knownClusters)(ctx)
+				r.syncClusterStatus(time.Millisecond, tc.knownClusters, requiredTestPodVerbs)(ctx)
 				signal <- false
 			}()
 			if !tc.noWriteExpected {

@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	authorizationv1 "k8s.io/client-go/kubernetes/typed/authorization/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/utils/clock"
 	controllerruntime "sigs.k8s.io/controller-runtime"
@@ -47,6 +48,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/kube"
@@ -73,18 +75,20 @@ func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
 	knownClusters map[string]rest.Config,
+	requiredTestPodVerbs []string,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
 	additionalSelector string,
 ) error {
-	return add(mgr, buildMgrs, knownClusters, cfg, opener, totURL, additionalSelector, nil, nil, 10)
+	return add(mgr, buildMgrs, knownClusters, requiredTestPodVerbs, cfg, opener, totURL, additionalSelector, nil, nil, 10)
 }
 
 func add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
 	knownClusters map[string]rest.Config,
+	requiredTestPodVerbs []string,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -118,7 +122,16 @@ func add(
 		blder = blder.Watches(
 			source.NewKindWithCache(&corev1.Pod{}, buildClusterMgr.GetCache()),
 			podEventRequestMapper(cfg().ProwJobNamespace))
-		r.buildClients[buildCluster] = buildClusterMgr.GetClient()
+		bc := buildClient{
+			Client: buildClusterMgr.GetClient()}
+		if restConfig, ok := knownClusters[buildCluster]; ok {
+			authzClient, err := authorizationv1.NewForConfig(&restConfig)
+			if err != nil {
+				return fmt.Errorf("failed to construct authz client: %s", err)
+			}
+			bc.ssar = authzClient.SelfSubjectAccessReviews()
+		}
+		r.buildClients[buildCluster] = bc
 	}
 
 	if err := blder.Complete(r); err != nil {
@@ -129,7 +142,7 @@ func add(
 		return fmt.Errorf("failed to add metrics runnable to manager: %w", err)
 	}
 
-	if err := mgr.Add(manager.RunnableFunc(r.syncClusterStatus(time.Minute, knownClusters))); err != nil {
+	if err := mgr.Add(manager.RunnableFunc(r.syncClusterStatus(time.Minute, knownClusters, requiredTestPodVerbs))); err != nil {
 		return fmt.Errorf("failed to add cluster status runnable to manager: %w", err)
 	}
 
@@ -139,7 +152,7 @@ func add(
 func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overwriteReconcile reconcile.Func, cfg config.Getter, opener io.Opener, totURL string) *reconciler {
 	return &reconciler{
 		pjClient:           pjClient,
-		buildClients:       map[string]ctrlruntimeclient.Client{},
+		buildClients:       map[string]buildClient{},
 		overwriteReconcile: overwriteReconcile,
 		log:                logrus.NewEntry(logrus.StandardLogger()).WithField("controller", ControllerName),
 		config:             cfg,
@@ -159,7 +172,7 @@ func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overw
 
 type reconciler struct {
 	pjClient           ctrlruntimeclient.Client
-	buildClients       map[string]ctrlruntimeclient.Client
+	buildClients       map[string]buildClient
 	overwriteReconcile reconcile.Func
 	log                *logrus.Entry
 	config             config.Getter
@@ -188,6 +201,11 @@ type reconciler struct {
 type shardedLock struct {
 	mapLock *sync.Mutex
 	locks   map[string]*sync.Mutex
+}
+
+type buildClient struct {
+	ctrlruntimeclient.Client
+	ssar authorizationv1.SelfSubjectAccessReviewInterface
 }
 
 func (s *shardedLock) getLock(key string) *sync.Mutex {
@@ -220,12 +238,18 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 type ClusterStatus string
 
 const (
-	ClusterStatusUnreachable ClusterStatus = "Unreachable"
-	ClusterStatusReachable   ClusterStatus = "Reachable"
-	ClusterStatusNoManager   ClusterStatus = "No-Manager"
+	ClusterStatusUnreachable         ClusterStatus = "Unreachable"
+	ClusterStatusReachable           ClusterStatus = "Reachable"
+	ClusterStatusNoManager           ClusterStatus = "No-Manager"
+	ClusterStatusErroringPermissions ClusterStatus = "ErroringPermissions"
+	ClusterStatusMissingPermissions  ClusterStatus = "MissingPermissions"
 )
 
-func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters map[string]rest.Config) func(context.Context) error {
+func (r *reconciler) syncClusterStatus(
+	interval time.Duration,
+	knownClusters map[string]rest.Config,
+	requiredTestPodVerbs []string,
+) func(context.Context) error {
 	return func(ctx context.Context) error {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -257,6 +281,16 @@ func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters map
 						if err := client.List(ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(r.config().PodNamespace), ctrlruntimeclient.Limit(1)); err != nil {
 							r.log.WithField("cluster", cluster).WithError(err).Warn("Error listing pod to check for build cluster reachability.")
 							status = ClusterStatusUnreachable
+						}
+
+						// Additionally check for pod verbs.
+						if err := flagutil.CheckAuthorizations(client.ssar, r.config().PodNamespace, requiredTestPodVerbs); err != nil {
+							r.log.WithField("cluster", cluster).WithError(err).Warn("Error checking pod verbs to check for build cluster usability.")
+							if errors.Is(err, flagutil.MissingPermissions) {
+								status = ClusterStatusMissingPermissions
+							} else {
+								status = ClusterStatusErroringPermissions
+							}
 						}
 					}
 					clusters[cluster] = status
