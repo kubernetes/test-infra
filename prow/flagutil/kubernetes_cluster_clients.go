@@ -527,9 +527,9 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 	return clients, utilerrors.NewAggregate(errs)
 }
 
-func (o *KubernetesOptions) KnownClusters(dryRun bool) (sets.String, error) {
+func (o *KubernetesOptions) KnownClusters(dryRun bool) (map[string]rest.Config, error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
-	return sets.StringKeySet(o.clusterConfigs), nil
+	return o.clusterConfigs, nil
 }

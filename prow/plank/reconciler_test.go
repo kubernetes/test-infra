@@ -33,7 +33,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -550,32 +549,32 @@ func TestSyncClusterStatus(t *testing.T) {
 		location         string
 		statuses         map[string]ClusterStatus
 		expectedStatuses map[string]ClusterStatus // This is set to statuses ^^ if unspecified.
-		knownClusters    sets.String
+		knownClusters    map[string]rest.Config
 		noWriteExpected  bool
 	}{
 		{
 			name:            "No location set, don't upload.",
 			statuses:        map[string]ClusterStatus{"default": ClusterStatusReachable},
-			knownClusters:   sets.NewString("default"),
+			knownClusters:   map[string]rest.Config{"default": rest.Config{}},
 			noWriteExpected: true,
 		},
 		{
 			name:          "Single cluster reachable",
 			location:      "gs://my-bucket/build-cluster-statuses.json",
 			statuses:      map[string]ClusterStatus{"default": ClusterStatusReachable},
-			knownClusters: sets.NewString("default"),
+			knownClusters: map[string]rest.Config{"default": rest.Config{}},
 		},
 		{
 			name:          "Single cluster unreachable",
 			location:      "gs://my-bucket/build-cluster-statuses.json",
 			statuses:      map[string]ClusterStatus{"default": ClusterStatusUnreachable},
-			knownClusters: sets.NewString("default"),
+			knownClusters: map[string]rest.Config{"default": rest.Config{}},
 		},
 		{
 			name:             "Single cluster build manager creation failed",
 			location:         "gs://my-bucket/build-cluster-statuses.json",
 			expectedStatuses: map[string]ClusterStatus{"default": ClusterStatusNoManager},
-			knownClusters:    sets.NewString("default"),
+			knownClusters:    map[string]rest.Config{"default": rest.Config{}},
 		},
 		{
 			name:     "Multiple clusters mixed reachability",
@@ -591,7 +590,12 @@ func TestSyncClusterStatus(t *testing.T) {
 				"sad-build-cluster":        ClusterStatusUnreachable,
 				"always-sad-build-cluster": ClusterStatusNoManager,
 			},
-			knownClusters: sets.NewString("default", "test-infra-trusted", "sad-build-cluster", "always-sad-build-cluster"),
+			knownClusters: map[string]rest.Config{
+				"default":                  rest.Config{},
+				"test-infra-trusted":       rest.Config{},
+				"sad-build-cluster":        rest.Config{},
+				"always-sad-build-cluster": rest.Config{},
+			},
 		},
 	}
 	for i := range tcs {
