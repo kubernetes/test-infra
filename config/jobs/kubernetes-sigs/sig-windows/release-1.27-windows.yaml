@@ -25,15 +25,14 @@ periodics:
     workdir: true
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.7
+    base_ref: release-1.8
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: false
-# Needed when this job switches to using cluser-api-provider@release-1.8
-#  - org: kubernetes-sigs
-#    repo: cloud-provider-azure
-#    base_ref: release-1.27
-#    path_alias: sigs.k8s.io/cloud-provider-azure
-#    workdir: false
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master # TODO: Update to release-1.27 once it's created
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   interval: 24h
   labels:
     preset-azure-cred-only: "true"
