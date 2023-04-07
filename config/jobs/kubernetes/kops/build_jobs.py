@@ -255,7 +255,8 @@ def presubmit_test(branch='master',
                    always_run=False,
                    scenario=None,
                    env=None,
-                   template_path=None):
+                   template_path=None,
+                   use_boskos=False):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
         kops_image = distro_images[distro]
@@ -319,6 +320,7 @@ def presubmit_test(branch='master',
         scenario=scenario,
         env=env,
         template_path=template_path,
+        use_boskos=use_boskos,
     )
 
     spec = {
@@ -1546,7 +1548,14 @@ def generate_presubmits_e2e():
                 'KOPS_CONTROL_PLANE_SIZE': '3',
             }
         ),
+        presubmit_test(
+            name='presubmit-kops-aws-boskos',
+            scenario='aws-boskos',
+            always_run=False,
+            use_boskos=True,
+        ),
     ]
+
     return jobs
 
 ########################
