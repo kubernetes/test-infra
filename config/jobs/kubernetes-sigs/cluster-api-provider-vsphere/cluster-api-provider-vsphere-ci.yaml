@@ -14,7 +14,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
         resources:
           requests:
             cpu: "1000m"
@@ -45,7 +45,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230330-8e9af88c7d-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
         resources:
           requests:
             cpu: "1000m"
