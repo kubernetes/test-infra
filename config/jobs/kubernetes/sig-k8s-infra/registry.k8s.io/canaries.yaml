@@ -14,8 +14,7 @@ presets:
     value: registry-sandbox.k8s.io/pause:3.8
 
 periodics:
-# TODO: copy this job onto the EKS cluster and run from AWS once the job is working
-# and the EKS CI cluster is ready
+# should match registry-sandbox-e2e-aws except for the cluster field
 - name: registry-sandbox-e2e-gcp
   cluster: k8s-infra-prow-build
   interval: 10m
@@ -31,6 +30,37 @@ periodics:
     testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
     testgrid-days-of-results: '7'
     testgrid-tab-name: registry-sandbox-e2e-gcp
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+  spec:
+    containers:
+    - image: golang
+      command:
+      - make
+      - e2e-test
+      resources:
+        limits:
+          cpu: 4
+          memory: 8Gi
+        requests:
+          cpu: 4
+          memory: 8Gi
+# should match registry-sandbox-e2e-gcp except for the cluster field
+- name: registry-sandbox-e2e-aws
+  cluster: eks-prow-build-cluster
+  interval: 10m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: registry.k8s.io
+    base_ref: main
+    # we don't need git history and we want this to run very quickly
+    # TODO: https://github.com/kubernetes/test-infra/issues/26590
+    clone_depth: 1
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
+    testgrid-days-of-results: '7'
+    testgrid-tab-name: registry-sandbox-e2e-aws
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
   spec:
