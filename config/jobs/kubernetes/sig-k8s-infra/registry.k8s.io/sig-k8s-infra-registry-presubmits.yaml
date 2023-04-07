@@ -69,6 +69,28 @@ presubmits:
           requests:
             cpu: 4
             memory: 8Gi
+  - name: pull-registry-e2e
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-e2e
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - make
+        - e2e-test-local
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
   - name: pull-registry-build
     cluster: k8s-infra-prow-build
     decorate: true
