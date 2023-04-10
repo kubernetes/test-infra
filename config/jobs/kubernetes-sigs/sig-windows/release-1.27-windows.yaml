@@ -39,6 +39,7 @@ periodics:
     preset-capz-windows-parallel: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - command:
