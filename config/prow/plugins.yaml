@@ -103,6 +103,7 @@ approve:
   - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/slack-infra
   - kubernetes-sigs/tejolote
+  - kubernetes-sigs/testgrid-json-exporter
   - kubernetes-sigs/zeitgeist
   - kubernetes/community
   - kubernetes/k8s.io
