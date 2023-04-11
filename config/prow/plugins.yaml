@@ -457,6 +457,9 @@ milestone_applier:
     master: v1.28
   kubernetes/test-infra:
     master: v1.28
+  kubernetes-sigs/kueue:
+    master: v0.4
+    release-0.3: v0.3
   kubernetes/k8s.io:
     main: v1.28
   kubernetes/kops:
@@ -565,6 +568,9 @@ repo_milestone:
   kubernetes-sigs/kubebuilder:
     maintainers_team: kubebuilder-maintainers
     maintainers_friendly_name: Kubebuilder Maintainers
+  kubernetes-sigs/kueue:
+    maintainers_team: kueue-maintainers
+    maintainers_friendly_name: Kueue Maintainers
 
 project_config:
   project_org_configs:
@@ -1316,6 +1322,11 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/kueue:
+    plugins:
+    - milestone
+    - milestonestatus
+
   kubernetes-sigs/kustomize:
     plugins:
     - require-matching-label
@@ -1629,6 +1640,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/kueue:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
     endpoint: http://cherrypicker  
   kubernetes-sigs/node-feature-discovery:
   - name: cherrypicker
