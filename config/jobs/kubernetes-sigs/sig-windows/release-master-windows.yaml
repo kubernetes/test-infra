@@ -24,8 +24,6 @@ presets:
 - labels:
     preset-capz-windows-2022: "true"
   env:
-  - name: WINDOWS_FLAVOR
-    value: "containerd-2022"
   - name: WINDOWS_SERVER_VERSION
     value: "windows-2022"
 - labels:
