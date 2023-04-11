@@ -19,7 +19,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: golang:1.19
+        - image: golang:1.20
           env:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
@@ -47,7 +47,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: golang:1.19
+        - image: golang:1.20
           command:
             - make
           args:
@@ -174,7 +174,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: golang:1.19
+        - image: golang:1.20
           command:
             - make
           args:
