@@ -1632,7 +1632,7 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
-    endpoint: http://cherrypicker  
+    endpoint: http://cherrypicker
   kubernetes-sigs/kueue:
   - name: cherrypicker
     events:
