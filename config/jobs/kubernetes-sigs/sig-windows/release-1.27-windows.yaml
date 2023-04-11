@@ -19,10 +19,15 @@ periodics:
     timeout: 4h0m0s
   extra_refs:
   - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
+    workdir: true
+  - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: release-1.7
     path_alias: sigs.k8s.io/cluster-api-provider-azure
-    workdir: true
+    workdir: false
 # Needed when this job switches to using cluser-api-provider@release-1.8
 #  - org: kubernetes-sigs
 #    repo: cloud-provider-azure
@@ -44,7 +49,7 @@ periodics:
     containers:
     - command:
       - runner.sh
-      - ./scripts/ci-conformance.sh
+      - ./capz/run-capz-e2e.sh
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.27
       name: ""
       resources:
