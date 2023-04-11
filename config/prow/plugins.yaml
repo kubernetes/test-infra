@@ -1393,6 +1393,12 @@ plugins:
     - milestone
     - override
 
+  kubernetes-sigs/gateway-api:
+    plugins:
+    - milestone
+    - milestonestatus
+    - release-note
+
   kubernetes-sigs/image-builder:
     plugins:
     - mergecommitblocker
