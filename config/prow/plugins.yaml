@@ -1316,6 +1316,11 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/kueue:
+    plugins:
+    - milestone
+    - milestonestatus
+
   kubernetes-sigs/kustomize:
     plugins:
     - require-matching-label
