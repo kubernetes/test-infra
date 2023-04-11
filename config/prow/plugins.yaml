@@ -541,6 +541,9 @@ repo_milestone:
   kubernetes-sigs/cluster-api-provider-vsphere:
     maintainers_team: cluster-api-provider-vsphere-maintainers
     maintainers_friendly_name: Cluster API Provider vSphere Maintainers
+  kubernetes-sigs/node-feature-discovery:
+    maintainers_team: node-feature-discovery-maintainers
+    maintainers_friendly_name: Node Feature Discovery Maintainers
   kubernetes/community:
     maintainers_team: community-milestone-maintainers
     maintainers_friendly_name: Community Milestone Maintainers
@@ -1410,6 +1413,8 @@ plugins:
 
   kubernetes-sigs/node-feature-discovery:
     plugins:
+    - milestone
+    - milestonestatus
     - override
 
   kubernetes-sigs/node-feature-discovery-operator:
