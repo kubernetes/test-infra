@@ -1503,7 +1503,7 @@ type BugzillaBranchOptions struct {
 
 	// EnableBackporting enables functionality to create new backport bugs for
 	// cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
-	EnableBackporting *bool
+	EnableBackporting *bool `json:"enable_backporting,omitempty"`
 
 	// ValidateByDefault determines whether a validation check is run for all pull
 	// requests by default
