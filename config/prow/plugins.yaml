@@ -562,6 +562,9 @@ repo_milestone:
   kubernetes-sigs/kubebuilder:
     maintainers_team: kubebuilder-maintainers
     maintainers_friendly_name: Kubebuilder Maintainers
+  kubernetes-sigs/kueue:
+    maintainers_team: kueue-maintainers
+    maintainers_friendly_name: Kueue Maintainers
 
 project_config:
   project_org_configs:
@@ -1629,6 +1632,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+    endpoint: http://cherrypicker  
+  kubernetes-sigs/kueue:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
     endpoint: http://cherrypicker  
   kubernetes-sigs/node-feature-discovery:
   - name: cherrypicker
