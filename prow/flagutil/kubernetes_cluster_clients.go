@@ -387,7 +387,14 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 
 			// Check to see if we are able to perform actions against pods in
 			// the build cluster. The actions are given in requiredTestPodVerbs.
-			if err := checkAuthorizations(config, options.Namespace, requiredTestPodVerbs); err != nil {
+			authzClient, err := authorizationv1.NewForConfig(&config)
+			if err != nil {
+				lock.Lock()
+				errs = append(errs, fmt.Errorf("failed to construct authz client: %s", err))
+				lock.Unlock()
+				return
+			}
+			if err := checkAuthorizations(authzClient.SelfSubjectAccessReviews(), options.Namespace, requiredTestPodVerbs); err != nil {
 				lock.Lock()
 				errs = append(errs, fmt.Errorf("failed pod resource authorization check: %w", err))
 				lock.Unlock()
@@ -423,7 +430,13 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
 						continue
 					}
-					if err := checkAuthorizations(buildClusterConfig, options.Namespace, requiredTestPodVerbs); err != nil {
+
+					authzClient, err := authorizationv1.NewForConfig(&buildClusterConfig)
+					if err != nil {
+						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct authz client: %s", err)
+						continue
+					}
+					if err := checkAuthorizations(authzClient.SelfSubjectAccessReviews(), options.Namespace, requiredTestPodVerbs); err != nil {
 						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
 						continue
 					}
@@ -443,12 +456,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVer
 
 // checkAuthorizations checks if we are able to perform the required actions
 // against test pods for the provided pod verbs (requiredTestPodVerbs).
-func checkAuthorizations(buildClusterConfig rest.Config, namespace string, requiredTestPodVerbs []string) error {
-	client, err := authorizationv1.NewForConfig(&buildClusterConfig)
-	if err != nil {
-		return err
-	}
-	ssarInterface := client.SelfSubjectAccessReviews()
+func checkAuthorizations(client authorizationv1.SelfSubjectAccessReviewInterface, namespace string, requiredTestPodVerbs []string) error {
 
 	var errs []error
 	// Unfortunately we have to do multiple API requests because there is no way
@@ -488,7 +496,7 @@ func checkAuthorizations(buildClusterConfig rest.Config, namespace string, requi
 				},
 			},
 		}
-		ssarExpanded, err := ssarInterface.Create(context.TODO(), &ssar, metav1.CreateOptions{})
+		ssarExpanded, err := client.Create(context.TODO(), &ssar, metav1.CreateOptions{})
 		if err != nil {
 			errs = append(errs, err)
 			continue
