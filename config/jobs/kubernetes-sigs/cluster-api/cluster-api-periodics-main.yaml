@@ -51,12 +51,14 @@ periodics:
       - ./scripts/ci-test.sh
       env:
       # This value determines the minimum Kubernetes
-      # supported version for Cluster API management cluster.
+      # supported version for Cluster API management cluster
+      # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
+      # docs (look for minimum supported k8s version for management cluster, i.e N-3).
       #
-      # To check the available envtest in Kubebuilder, please
+      # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
       # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
       - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-        value: "1.23.5"
+        value: "1.24.2"
       resources:
         requests:
           cpu: 7300m
@@ -143,7 +145,7 @@ periodics:
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "stable-1.23"
+        value: "stable-1.24"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

@@ -254,7 +254,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
       testgrid-tab-name: capi-pr-e2e-full-release-1-4
-  - name: pull-cluster-api-e2e-workload-upgrade-1-26-latest-release-1-4
+  - name: pull-cluster-api-e2e-workload-upgrade-1-27-latest-release-1-4
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -281,13 +281,13 @@ presubmits:
             - "./scripts/ci-e2e.sh"
           env:
             - name: KUBERNETES_VERSION_UPGRADE_FROM
-              value: "stable-1.26"
+              value: "stable-1.27"
             - name: KUBERNETES_VERSION_UPGRADE_TO
-              value: "ci/latest-1.27"
+              value: "ci/latest-1.28"
             - name: ETCD_VERSION_UPGRADE_TO
-              value: "3.5.6-0"
+              value: "3.5.7-0"
             - name: COREDNS_VERSION_UPGRADE_TO
-              value: "v1.9.3"
+              value: "v1.10.1"
             - name: GINKGO_FOCUS
               value: "\\[K8s-Upgrade\\]"
           # we need privileged mode in order to do docker in docker
@@ -298,7 +298,7 @@ presubmits:
               cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
-      testgrid-tab-name: capi-pr-e2e-release-1-4-1-26-latest
+      testgrid-tab-name: capi-pr-e2e-release-1-4-1-27-latest
   # This job is experimental for now. Please do not duplicate it to release branches.
   - name: pull-cluster-api-e2e-scale-release-1-4-experimental
     labels:
