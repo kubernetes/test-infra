@@ -124,7 +124,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230411-7b4f9b177a
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230412-a86d65c3c2
       command:
       - generic-autobumper
       args:
