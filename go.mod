@@ -29,7 +29,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.20
 	github.com/GoogleCloudPlatform/testgrid v0.0.123
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/andygrunwald/go-gerrit v0.0.0-20230211083816-04e01d7217b2
+	github.com/andygrunwald/go-gerrit v0.0.0-20210709065208-9d38b0be0268
 	github.com/andygrunwald/go-jira v1.14.0
 	github.com/aws/aws-sdk-go v1.38.49
 	github.com/bazelbuild/buildtools v0.0.0-20200922170545-10384511ce98

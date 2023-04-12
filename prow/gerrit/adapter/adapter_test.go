@@ -19,7 +19,6 @@ package adapter
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -301,124 +300,6 @@ func TestCreateRefs(t *testing.T) {
 	}
 	if !equality.Semantic.DeepEqual(expected, actual) {
 		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
-	}
-}
-
-func TestFindLatestRevisionWithoutCodeChange(t *testing.T) {
-	now := time.Now()
-	cases := []struct {
-		name       string
-		change     gerrit.ChangeInfo
-		lastUpdate time.Time
-		expected   *gerrit.RevisionInfo
-	}{
-		{
-			name: "should return nil if no code change since last update",
-			change: client.ChangeInfo{
-				Project:         "foo",
-				ChangeID:        "33521",
-				CurrentRevision: "2",
-				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {
-						Number:  1,
-						Created: makeStamp(now.Add(-time.Hour)),
-						Kind:    gerrit.MergeFirstParentUpdate,
-					},
-					"2": {
-						Number:  2,
-						Created: makeStamp(now.Add(time.Hour)),
-						Kind:    gerrit.NoCodeChange,
-					},
-				},
-			},
-			lastUpdate: now,
-			expected:   nil,
-		},
-		{
-			name: "should return last revision with code change since last update when the last revision has no code change",
-			change: client.ChangeInfo{
-				Project:         "foo",
-				ChangeID:        "33521",
-				CurrentRevision: "3",
-				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {
-						Number:  1,
-						Created: makeStamp(now.Add(-time.Hour)),
-						Kind:    gerrit.MergeFirstParentUpdate,
-					},
-					"2": {
-						Number:  2,
-						Created: makeStamp(now.Add(time.Hour)),
-						Kind:    gerrit.Rework,
-					},
-					"3": {
-						Number:  3,
-						Created: makeStamp(now.Add(2 * time.Hour)),
-						Kind:    gerrit.NoCodeChange,
-					},
-				},
-			},
-			lastUpdate: now,
-			expected: &client.RevisionInfo{
-				Number:  2,
-				Created: makeStamp(now.Add(time.Hour)),
-				Kind:    gerrit.Rework,
-			},
-		},
-		{
-			name: "should return last revision with code change since last update when the last revision has code change",
-			change: client.ChangeInfo{
-				Project:         "foo",
-				ChangeID:        "33521",
-				CurrentRevision: "4",
-				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {
-						Number:  1,
-						Created: makeStamp(now.Add(-time.Hour)),
-						Kind:    gerrit.MergeFirstParentUpdate,
-					},
-					"2": {
-						Number:  2,
-						Created: makeStamp(now.Add(time.Hour)),
-						Kind:    gerrit.NoCodeChange,
-					},
-					"3": {
-						Number:  3,
-						Created: makeStamp(now.Add(2 * time.Hour)),
-						Kind:    gerrit.MergeFirstParentUpdate,
-					},
-					"4": {
-						Number:  4,
-						Created: makeStamp(now.Add(3 * time.Hour)),
-						Kind:    gerrit.Rework,
-					},
-				},
-			},
-			lastUpdate: now,
-			expected: &client.RevisionInfo{
-				Number:  4,
-				Created: makeStamp(now.Add(3 * time.Hour)),
-				Kind:    gerrit.Rework,
-			},
-		},
-		{
-			name: "should return nil if the change list has no revision",
-			change: client.ChangeInfo{
-				Project:  "foo",
-				ChangeID: "33521",
-			},
-			lastUpdate: now,
-			expected:   nil,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			rev := lastRevisionWithCodeChange(tc.change, tc.lastUpdate)
-			if !reflect.DeepEqual(rev, tc.expected) {
-				t.Errorf("expected revision: %+v, got: %+v", tc.expected, rev)
-			}
-		})
 	}
 }
 

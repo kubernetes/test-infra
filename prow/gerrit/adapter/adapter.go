@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -595,25 +594,23 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			logger.WithField("lastUpdate", lastUpdate).Warnf("lastUpdate not found, falling back to now")
 		}
 
-		currentRevision := change.Revisions[change.CurrentRevision]
-		failedJobs := failedJobs(account.AccountID, currentRevision.Number, change.Messages...)
+		revision := change.Revisions[change.CurrentRevision]
+		failedJobs := failedJobs(account.AccountID, revision.Number, change.Messages...)
 		failed, all := presubmitContexts(failedJobs, presubmits, logger)
 		messages := currentMessages(change, lastUpdate)
 		logger.WithField("failed", len(failed)).Debug("Failed jobs parsed from previous comments.")
 		filters := []pjutil.Filter{
 			messageFilter(messages, failed, all, triggerTimes, logger),
 		}
-		// Automatically trigger the Prow jobs if the change has a revision with code change
-		// since last update and the change is not in WorkInProgress.
-		lastRevisionWithChange := lastRevisionWithCodeChange(change, lastUpdate)
-		if lastRevisionWithChange != nil && !change.WorkInProgress {
+		// Automatically trigger the Prow jobs if the revision is new and the
+		// change is not in WorkInProgress.
+		if revision.Created.Time.After(lastUpdate) && !change.WorkInProgress {
 			filters = append(filters, &timeAnnotationFilter{
 				Filter:       pjutil.NewTestAllFilter(),
-				eventTime:    lastRevisionWithChange.Created.Time,
+				eventTime:    revision.Created.Time,
 				triggerTimes: triggerTimes,
 			})
 		}
-
 		toTrigger, err := pjutil.FilterPresubmits(pjutil.NewAggregateFilter(filters), client.ChangedFilesProvider(&change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("filter presubmits: %w", err)
@@ -698,30 +695,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		}
 		if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 			return err
-		}
-	}
-
-	return nil
-}
-
-// lastRevisionWithCodeChange tries to find a revision with code change since last update.
-// There is no point repeating tests if no code change happened since last update.
-func lastRevisionWithCodeChange(change client.ChangeInfo, lastUpdate time.Time) *client.RevisionInfo {
-	var revisionsWithCodeChange []client.RevisionInfo
-	for _, revision := range change.Revisions {
-		if revision.Kind == gerrit.NoCodeChange {
-			continue
-		}
-		revisionsWithCodeChange = append(revisionsWithCodeChange, revision)
-	}
-	// sorts in reverse chronological order
-	sort.Slice(revisionsWithCodeChange, func(i, j int) bool {
-		return revisionsWithCodeChange[i].Created.Time.After(revisionsWithCodeChange[j].Created.Time)
-	})
-
-	for _, revision := range revisionsWithCodeChange {
-		if revision.Created.Time.After(lastUpdate) {
-			return &revision
 		}
 	}
 
