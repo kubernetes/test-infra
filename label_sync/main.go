@@ -628,6 +628,10 @@ func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 	}
 	close(updateChan)
 
+	wrapErr := func(action, why, org, repo string, err error) error {
+		return fmt.Errorf("update failed %s %s %s/%s: %w", action, why, org, repo, err)
+	}
+
 	wg := sync.WaitGroup{}
 	wg.Add(maxConcurrentWorkers)
 	errChan := make(chan error, numUpdates)
@@ -642,35 +646,35 @@ func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 				case "missing":
 					err := gc.AddRepoLabel(org, repo, update.Wanted.Name, update.Wanted.Description, update.Wanted.Color)
 					if err != nil {
-						errChan <- err
+						errChan <- wrapErr("add-repo-label", update.Why, org, item.repo, err)
 					}
 				case "change", "rename":
 					err := gc.UpdateRepoLabel(org, repo, update.Current.Name, update.Wanted.Name, update.Wanted.Description, update.Wanted.Color)
 					if err != nil {
-						errChan <- err
+						errChan <- wrapErr("update-repo-label", update.Why, org, item.repo, err)
 					}
 				case "dead":
 					err := gc.DeleteRepoLabel(org, repo, update.Current.Name)
 					if err != nil {
-						errChan <- err
+						errChan <- wrapErr("delete-repo-label", update.Why, org, item.repo, err)
 					}
 				case "migrate":
 					issues, err := gc.FindIssuesWithOrg(org, fmt.Sprintf("is:open repo:%s/%s label:\"%s\" -label:\"%s\"", org, repo, update.Current.Name, update.Wanted.Name), "", false)
 					if err != nil {
-						errChan <- err
+						errChan <- wrapErr("find-issues-with-org", update.Why, org, item.repo, err)
 					}
 					if len(issues) == 0 {
 						if err = gc.DeleteRepoLabel(org, repo, update.Current.Name); err != nil {
-							errChan <- err
+							errChan <- wrapErr("delete-repo-label", update.Why, org, item.repo, err)
 						}
 					}
 					for _, i := range issues {
 						if err = gc.AddLabel(org, repo, i.Number, update.Wanted.Name); err != nil {
-							errChan <- err
+							errChan <- wrapErr("add-label", update.Why, org, item.repo, err)
 							continue
 						}
 						if err = gc.RemoveLabel(org, repo, i.Number, update.Current.Name); err != nil {
-							errChan <- err
+							errChan <- wrapErr("remove-label", update.Why, org, item.repo, err)
 						}
 					}
 				default:
