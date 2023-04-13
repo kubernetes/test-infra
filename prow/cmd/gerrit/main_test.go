@@ -20,6 +20,7 @@ import (
 	"flag"
 	"reflect"
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -95,6 +96,7 @@ func TestFlags(t *testing.T) {
 				dryRun:                 false,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 				changeWorkerPoolSize:   1,
+				pushGatewayInterval:    time.Minute,
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
