@@ -14,12 +14,6 @@ presubmits:
       - image: golang:1.20
         command:
         - scripts/test-infra/verify.sh
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: nfd-creds
-              key: codecov-token
   - name: pull-node-feature-discovery-verify-docs-master
     run_if_changed: "^docs/"
     branches:
