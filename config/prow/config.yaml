@@ -181,6 +181,7 @@ deck:
     - k8s-ovn
     - containerd-integration
     - ppc64le-kubernetes
+    - k8s-conform-s390x-k8s
 
 prowjob_namespace: default
 pod_namespace: test-pods
