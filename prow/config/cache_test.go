@@ -17,7 +17,9 @@ limitations under the License.
 package config
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"sync"
 	"testing"
 
@@ -27,6 +29,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/git/v2"
+	prowio "k8s.io/test-infra/prow/io"
 )
 
 type fakeConfigAgent struct {
@@ -847,4 +850,120 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 		})
 	}
 
+}
+
+// TestInRepoConfigCacheStore tests the round trip from the in-memory map to
+// disk (JSON format) and back again, with 0 changes to the cached contents.
+func TestInRepoConfigCacheStore(t *testing.T) {
+	// goodValConstructorForInitialState is used for warming up the cache.
+	goodValConstructorForInitialState := func(val ProwYAML) func() (interface{}, error) {
+		return func() (interface{}, error) {
+			return &val, nil
+		}
+	}
+
+	for _, tc := range []struct {
+		name              string
+		cacheInitialState []CacheKeyParts
+		expected          *ProwYAML
+	}{
+		{
+			name: "basic",
+			cacheInitialState: []CacheKeyParts{
+				{
+					Identifier: "foo/bar",
+					BaseSHA:    "ba5e1",
+					HeadSHAs:   []string{"abcd", "ef01"},
+				},
+				{
+					Identifier: "baz/quux",
+					BaseSHA:    "ba5e2",
+					HeadSHAs:   []string{"abcd", "ef02"},
+				},
+			},
+			expected: &ProwYAML{
+				Presubmits: []Presubmit{
+					{
+						JobBase: JobBase{Name: `{"identifier":"foo/bar","baseSHA":"ba5e","headSHAs":["abcd","ef01"]}`}},
+				},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t1 *testing.T) {
+			// Write JSON data to a temporary file. This is the data that we'll
+			// load into the cache.
+			tempFile, err := os.CreateTemp("", "tmp-serialized")
+			if err != nil {
+				t.Fatalf("could not create temporary file to hold serialized data: %v", err)
+			}
+			defer func() {
+				if err := os.Remove(tempFile.Name()); err != nil {
+					t.Errorf("could not remove temporary file: %v", err)
+				}
+			}()
+
+			// Create caches.
+			fca := &fakeConfigAgent{}
+			cf := &testClientFactory{}
+			cacheExpected, err := NewInRepoConfigCache(10, fca, cf)
+			if err != nil {
+				t1.Fatal("could not initialize cacheExpected")
+			}
+			cacheGot, err := NewInRepoConfigCache(10, fca, cf)
+			if err != nil {
+				t1.Fatal("could not initialize cacheGot")
+			}
+
+			// Manually inject the CacheKey/*ProwYAML pairs into the underlying
+			// LRUCache. This is to bypass the machinery for requiring a real
+			// Git repo (and associated Git client factory).
+			for _, kp := range tc.cacheInitialState {
+				k, err := kp.CacheKey()
+				if err != nil {
+					t.Errorf("Expected error 'nil' got '%v'", err.Error())
+				}
+				_, _, _ = cacheExpected.GetOrAdd(k, goodValConstructorForInitialState(
+					ProwYAML{
+						Presubmits: []Presubmit{
+							{
+								JobBase: JobBase{Name: string(k)}},
+						},
+					}))
+			}
+
+			opener, err := prowio.NewOpener(context.Background(), "", "")
+			if err != nil {
+				t1.Fatal("could not initialize opener")
+			}
+
+			expected := InRepoConfigCacheStore{
+				cacheExpected,
+				opener,
+			}
+
+			// Save cacheExpected to the temporary file.
+			expected.Save(context.Background(), tempFile.Name())
+
+			// Load from the saved file.
+			got := InRepoConfigCacheStore{
+				cacheGot,
+				opener,
+			}
+			got.Load(context.Background(), tempFile.Name())
+			loadedCache := got.Copy()
+
+			// Check that the loaded ProwYAML values line up with what we
+			// expected.
+			for keyExpected, valExpected := range expected.Copy() {
+				valGot := loadedCache[keyExpected]
+				if diff := cmp.Diff(valExpected, valGot,
+					cmpopts.IgnoreUnexported(
+						Presubmit{},
+						Brancher{},
+						RegexpChangeMatcher{})); diff != "" {
+					t1.Fatalf("saved/loaded mismatch (-want +got):\n%s", diff)
+				}
+			}
+		})
+	}
 }

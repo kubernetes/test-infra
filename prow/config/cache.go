@@ -17,9 +17,11 @@ limitations under the License.
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -27,6 +29,7 @@ import (
 
 	"k8s.io/test-infra/prow/cache"
 	"k8s.io/test-infra/prow/git/v2"
+	prowio "k8s.io/test-infra/prow/io"
 )
 
 // Overview
@@ -366,4 +369,85 @@ func (cache *InRepoConfigCache) get(
 	err = fmt.Errorf("Programmer error: expected value type '*config.ProwYAML', got '%T'", val)
 	logrus.Error(err)
 	return nil, err
+}
+
+// InRepoConfigCacheStore wraps around an InRepoConfigCache, to allow it to be
+// stored offline to a local (disk) or remote (GCS, S3, etc) path.
+type InRepoConfigCacheStore struct {
+	*InRepoConfigCache
+	opener prowio.Opener
+}
+
+// Load loads cache data from a previously saved InRepoConfigCache. It is used
+// to "pre-warm" the cache so that it does not start cold.
+func (c *InRepoConfigCacheStore) Load(ctx context.Context, path string) error {
+	if path == "" {
+		return fmt.Errorf("cannot load from an empty path")
+	}
+
+	reader, err := c.opener.Reader(ctx, path)
+	if err != nil {
+		if prowio.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("open %s: %v", path, err)
+	}
+
+	defer reader.Close()
+	content, err := io.ReadAll(reader)
+	if err != nil {
+		return fmt.Errorf("error reading file: %v", err)
+	}
+
+	vals := make(map[CacheKey]*ProwYAML)
+	if err := json.Unmarshal(content, &vals); err != nil {
+		return fmt.Errorf("unmarshal existing content: %v", err)
+	}
+
+	for k, v := range vals {
+		c.LRUCache.AddResolvedEntry(k, v)
+	}
+
+	return nil
+}
+
+// Save saves the cache to a local (disk) or remote (GCS, S3, etc) path.
+func (c *InRepoConfigCacheStore) Save(ctx context.Context, path string) error {
+	if path == "" {
+		return fmt.Errorf("cannot save to an empty path")
+	}
+
+	content, err := json.Marshal(c.Copy())
+	if err != nil {
+		return fmt.Errorf("marshal vals: %v", err)
+	}
+	writer, err := c.opener.Writer(ctx, path)
+	if err != nil {
+		return fmt.Errorf("cannot open state writer: %v", err)
+	}
+	if _, err = writer.Write(content); err != nil {
+		return fmt.Errorf("cannot write: %v", err)
+	}
+	if err = writer.Close(); err != nil {
+		logrus.WithError(err).Warn("Failed to close written state")
+	}
+	return nil
+}
+
+// Copy creates a new map containing the same cache content, but using the
+// CacheKey and ProwYAML types (instead of the empty interfaces used by
+// InRepoConfigCache). This way, when we run Save() we can save the data with
+// this type information (so that json.Marshal() knows how to write the data to
+// disk).
+func (c *InRepoConfigCache) Copy() map[CacheKey]*ProwYAML {
+
+	typed := make(map[CacheKey]*ProwYAML)
+
+	for k, v := range c.GetSuccessfullyResolvedEntries() {
+		key := k.(CacheKey)
+		val := v.(*ProwYAML)
+		typed[key] = val
+	}
+
+	return typed
 }
