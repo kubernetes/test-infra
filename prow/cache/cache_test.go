@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 // TestGetOrAddSimple is a basic check that the underlying LRU cache
@@ -544,5 +546,132 @@ func TestCallbacks(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestAddResolvedEntry checks whether we can safely add things to the
+// underlying cache in a concurrent manner. It also checks whether all entries
+// were added as resolved promises (without any errors).
+func TestAddResolvedEntry(t *testing.T) {
+	lruCache, err := NewLRUCache(10, Callbacks{})
+	if err != nil {
+		t.Error("could not initialize lruCache")
+	}
+
+	// We try to add 100 new entries. We expect 90 entries to be evicted,
+	// leaving 10 in the cache.
+	const maxConcurrentRequests = 100
+	wg := sync.WaitGroup{}
+	wg.Add(maxConcurrentRequests)
+	for i := 0; i < maxConcurrentRequests; i++ {
+		go func(j int) {
+			lruCache.AddResolvedEntry(j, j)
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
+	if lruCache.Len() != 10 {
+		t.Errorf("Expected 10 cached entries, got '%v'", lruCache.Len())
+	}
+
+	for _, k := range lruCache.Keys() {
+		promise, _ := lruCache.Get(k)
+		p, _ := promise.(*Promise)
+
+		if !p.resolved {
+			t.Errorf("Expected promise %v to be resolved", p)
+		}
+
+		if p.err != nil {
+			t.Errorf("Unxpected error for promise %v: %v", p, p.err)
+		}
+	}
+}
+
+func TestGetSuccessfullyResolvedEntries(t *testing.T) {
+	wg := sync.WaitGroup{}
+	blockingValConstructor := func(val string) func() (interface{}, error) {
+		return func() (interface{}, error) {
+			wg.Done()
+			c := make(chan struct{})
+			<-c
+			return val, nil
+		}
+	}
+	erroringValConstructor := func(val string) func() (interface{}, error) {
+		return func() (interface{}, error) {
+			return "", fmt.Errorf("could not construct val")
+		}
+	}
+	goodValConstructor := func(val string) func() (interface{}, error) {
+		return func() (interface{}, error) {
+			return val, nil
+		}
+	}
+
+	lruCache, err := NewLRUCache(10, Callbacks{})
+	if err != nil {
+		t.Error("could not initialize lruCache")
+	}
+
+	// Add entries. Some are either not resolved, or resolved with an error. We
+	// expect only those entries that were successfully resolved to be returned.
+	const maxConcurrentRequests = 9
+	wg.Add(maxConcurrentRequests)
+	for i := 0; i < maxConcurrentRequests; i++ {
+		go func(j int) {
+			var constructor func(string) func() (interface{}, error)
+			m := j % 3
+			switch m {
+			case 0:
+				// This should never finish, so the promise for this key will
+				// never resolve.
+				constructor = blockingValConstructor
+			case 1:
+				// This should resolve, but the promise will be marked with a
+				// non-nil error.
+				constructor = erroringValConstructor
+			case 2:
+				constructor = goodValConstructor
+			}
+			lruCache.GetOrAdd(j, constructor(fmt.Sprintf("(val)%d", j)))
+			if m != 0 {
+				wg.Done()
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	// Of the 3 types of constructors, we only delete the keys for those that
+	// returned an explicit error (erroringValConstructor). For the
+	// blockingValConstructor, we simulate a long-running task; from the cache's
+	// perspective, it could be that this long-running task will complete
+	// successfully, so it doesn't delete the key from the cache and instead
+	// keeps waiting for it to finish. And so we expect 6 cachey entries out of
+	// the 9 we attempted above.
+	if lruCache.Len() != 6 {
+		t.Errorf("Expected 6 cached entries, got '%v'", lruCache.Len())
+	}
+
+	entries := lruCache.GetSuccessfullyResolvedEntries()
+	if len(entries) != 3 {
+		t.Errorf("Expected 3 successfully resolved entries, got '%v'", len(entries))
+	}
+
+	expectedMap := map[int]string{
+		2: "(val)2",
+		5: "(val)5",
+		8: "(val)8",
+	}
+
+	gotMap := make(map[int]string)
+	for key, val := range entries {
+		k, _ := key.(int)
+		v, _ := val.(string)
+		gotMap[k] = v
+	}
+
+	if diff := cmp.Diff(expectedMap, gotMap); diff != "" {
+		t.Errorf("Cache entries mismatch. Want(-), got(+):\n%s", diff)
 	}
 }

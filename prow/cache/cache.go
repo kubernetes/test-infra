@@ -92,6 +92,7 @@ type Promise struct {
 	valConstructionPending chan struct{}
 	val                    interface{}
 	err                    error
+	resolved               bool
 }
 
 func newPromise(valConstructor ValConstructor) *Promise {
@@ -112,6 +113,7 @@ func (p *Promise) waitForResolution() {
 // been waiting for the value to be constructed.
 func (p *Promise) resolve() {
 	p.val, p.err = p.valConstructor()
+	p.resolved = true
 	close(p.valConstructionPending)
 }
 
@@ -277,4 +279,57 @@ func (lruCache *LRUCache) GetOrAdd(
 	}
 
 	return promise.val, ok, promise.err
+}
+
+// AddResolvedEntry adds a new key and value into the LRUCache, but with the
+// understanding that the value is already constructed. Because we don't need to
+// worry about constructing it, the valConstructor and valConstructionPending
+// fields are left uninitialized.
+func (lruCache *LRUCache) AddResolvedEntry(
+	key interface{},
+	val interface{}) {
+
+	lruCache.Lock()
+	promise := &Promise{
+		val:      val,
+		err:      nil,
+		resolved: true,
+	}
+	_ = lruCache.Add(key, promise)
+	lruCache.Unlock()
+}
+
+// GetSuccessfullyResolvedEntries returns a copy of the cache but with only the
+// keys and values that are fully constructed (and whose construction did not
+// result in an error). Note that we get rid of the Promise type wrapper and
+// directly access the empty interface types for the keys and values.
+func (lruCache *LRUCache) GetSuccessfullyResolvedEntries() map[interface{}]interface{} {
+	resolved := make(map[interface{}]interface{})
+
+	lruCache.Lock()
+	for _, k := range lruCache.Keys() {
+		promise, _ := lruCache.Get(k)
+
+		// The type of promise is an empty interface (because the lruCache
+		// stores everything as an empty interface), so we have to do an
+		// assertion to the Promise struct first.
+		p, _ := promise.(*Promise)
+
+		// Skip promises that have not been fully resolved yet (values that are
+		// not constructed will never be ready anyway, because we're holding the
+		// lock on the cache ourselves).
+		if !p.resolved {
+			continue
+		}
+
+		// Skip values where the valConstructor encountered an error.
+		if p.err != nil {
+			continue
+		}
+
+		resolved[k] = p.val
+	}
+	lruCache.Unlock()
+
+	return resolved
 }
