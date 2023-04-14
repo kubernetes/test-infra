@@ -66,6 +66,7 @@ data:
 
     deck:
      spyglass:
+       gcs_browser_prefix: 'https://s3.console.aws.amazon.com/s3/buckets/'
        lenses:
        - lens:
            name: metadata
