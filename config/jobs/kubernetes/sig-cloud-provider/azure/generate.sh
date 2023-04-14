@@ -40,8 +40,8 @@ EOF
 # we need to define the full image URL so it can be autobumped
 tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master"
 kubekins_e2e_image="${tmp/\-master/}"
-installCSIdrivers=""
-installCSIAzureFileDrivers=""
+installCSIdrivers=" ./deploy/install-driver.sh master local,snapshot,enable-avset &&"
+installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
 
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
@@ -59,11 +59,6 @@ for release in "$@"; do
     kubernetes_version+="-${release}"
     ccm_branch="release-${release}"
     capz_periodic_branch_name=${capz_release}
-  fi
-
-  if [[ "${release}" == "master" || "${release}" == "1.23" ]]; then
-    installCSIdrivers=" ./deploy/install-driver.sh master local,snapshot,enable-avset &&"
-    installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
   fi
 
   cat >"${output}" <<EOF
