@@ -5598,7 +5598,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.14-e2e-azure-ovn
   name: periodic-ci-openshift-release-master-ci-4.14-e2e-azure-ovn
-- days_of_results: 60
+- days_of_results: 8
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.14-e2e-azure-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.14-e2e-azure-ovn-upgrade
 - days_of_results: 60
