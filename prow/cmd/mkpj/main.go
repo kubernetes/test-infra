@@ -34,18 +34,19 @@ import (
 )
 
 type options struct {
-	jobName     string
-	config      configflagutil.ConfigOptions
-	triggerJob  bool
-	failWithJob bool
-	kubeOptions prowflagutil.KubernetesOptions
-	baseRef     string
-	baseSha     string
-	pullNumber  int
-	pullSha     string
-	pullAuthor  string
-	org         string
-	repo        string
+	jobName         string
+	config          configflagutil.ConfigOptions
+	triggerJob      bool
+	failWithJob     bool
+	kubeOptions     prowflagutil.KubernetesOptions
+	baseRef         string
+	baseSha         string
+	pullNumber      int
+	pullSha         string
+	pullAuthor      string
+	pullHeadRefName string
+	org             string
+	repo            string
 
 	local bool
 
@@ -69,9 +70,10 @@ func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJ
 					BaseRef: o.baseRef,
 					BaseSHA: o.baseSha,
 					Pulls: []prowapi.Pull{{
-						Author: o.pullAuthor,
-						Number: o.pullNumber,
-						SHA:    o.pullSha,
+						Author:      o.pullAuthor,
+						Number:      o.pullNumber,
+						SHA:         o.pullSha,
+						HeadRefName: o.pullHeadRefName,
 					}},
 				})
 			}
@@ -208,6 +210,7 @@ func gatherOptions() options {
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
+	fs.StringVar(&o.pullHeadRefName, "pull-head-ref-name", "", "Git branch name of the proposed change")
 	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
 	fs.BoolVar(&o.failWithJob, "fail-with-job", false, "Exit with a non-zero exit code if the triggered job fails")
 	o.config.AddFlags(fs)

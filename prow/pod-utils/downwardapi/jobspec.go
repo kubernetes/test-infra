@@ -98,13 +98,14 @@ const (
 	buildIDEnv     = "BUILD_ID"
 	prowBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
 
-	repoOwnerEnv   = "REPO_OWNER"
-	repoNameEnv    = "REPO_NAME"
-	pullBaseRefEnv = "PULL_BASE_REF"
-	pullBaseShaEnv = "PULL_BASE_SHA"
-	pullRefsEnv    = "PULL_REFS"
-	pullNumberEnv  = "PULL_NUMBER"
-	pullPullShaEnv = "PULL_PULL_SHA"
+	repoOwnerEnv       = "REPO_OWNER"
+	repoNameEnv        = "REPO_NAME"
+	pullBaseRefEnv     = "PULL_BASE_REF"
+	pullBaseShaEnv     = "PULL_BASE_SHA"
+	pullRefsEnv        = "PULL_REFS"
+	pullNumberEnv      = "PULL_NUMBER"
+	pullPullShaEnv     = "PULL_PULL_SHA"
+	pullHeadRefNameEnv = "PULL_HEAD_REF_NAME"
 )
 
 // EnvForSpec returns a mapping of environment variables
@@ -147,6 +148,8 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 	env[pullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
 	env[pullPullShaEnv] = spec.Refs.Pulls[0].SHA
+	env[pullHeadRefNameEnv] = spec.Refs.Pulls[0].HeadRefName
+
 	return env, nil
 }
 
@@ -154,7 +157,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 func EnvForType(jobType prowapi.ProwJobType) []string {
 	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
-	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
+	pullEnv := []string{pullNumberEnv, pullPullShaEnv, pullHeadRefNameEnv}
 
 	switch jobType {
 	case prowapi.PeriodicJob:

@@ -1701,10 +1701,11 @@ func prMeta(prs ...CodeReviewCommon) []prowapi.Pull {
 	var res []prowapi.Pull
 	for _, pr := range prs {
 		res = append(res, prowapi.Pull{
-			Number: pr.Number,
-			Author: pr.AuthorLogin,
-			Title:  pr.Title,
-			SHA:    pr.HeadRefOID,
+			Number:      pr.Number,
+			Author:      pr.AuthorLogin,
+			Title:       pr.Title,
+			SHA:         pr.HeadRefOID,
+			HeadRefName: pr.HeadRefName,
 		})
 	}
 	return res
