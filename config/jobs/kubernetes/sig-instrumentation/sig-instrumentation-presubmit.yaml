@@ -107,7 +107,7 @@ presubmits:
         env:
         # Options from https://github.com/kubernetes-sigs/kind/blob/d1eecc46e30cac9d35cd32dc52677ef75ec22e18/hack/ci/e2e-k8s.sh#L79-L83
         - name: CLUSTER_LOG_FORMAT
-          value: json
+          value: text
         - name: KIND_CLUSTER_LOG_LEVEL
           # Default is 4, but we want to exercise more log calls and get more output.
           value: "10"
