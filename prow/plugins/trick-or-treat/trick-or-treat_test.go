@@ -45,6 +45,8 @@ func TestImages(t *testing.T) {
 		t.Run(imgURL, func(t *testing.T) {
 			t.Parallel()
 			for i := 0; i < 3; i++ {
+				// copy to scoped variable, get rid of loopclosure linting error
+				imgURL := imgURL
 				toobig, err := github.ImageTooBig(imgURL)
 				if err != nil {
 					t.Errorf("Failed reading image: %v", err)
