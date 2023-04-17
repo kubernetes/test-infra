@@ -3,7 +3,7 @@
 presubmits:
   kubernetes/kops:
 
-# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-scale
     branches:
     - master
@@ -54,7 +54,7 @@ presubmits:
       test.kops.k8s.io/distro: u2204
       test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: cilium
+      test.kops.k8s.io/networking: amazonvpc
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: presubmit-kops-aws-scale

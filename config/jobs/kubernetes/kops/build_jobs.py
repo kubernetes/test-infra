@@ -1023,6 +1023,7 @@ def generate_scale():
             name_override='kops-aws-scale',
             extra_dashboards=[],
             runs_per_day=1,
+            networking='amazonvpc',
             scenario='scalability',
         )
     ]
@@ -1036,6 +1037,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale',
             scenario='scalability',
+            networking='amazonvpc',
             always_run=False,
         )
     ]
