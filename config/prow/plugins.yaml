@@ -62,7 +62,6 @@ approve:
   - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
-  - kubernetes-sigs/aws-ebs-csi-driver
   require_self_approval: true
   lgtm_acts_as_approve: false
 - repos:
@@ -118,6 +117,11 @@ approve:
 - repos:
   - kubernetes-sigs/gateway-api
   lgtm_acts_as_approve: false
+- repos:
+  - kubernetes-sigs/aws-ebs-csi-driver
+  require_self_approval: true
+  lgtm_acts_as_approve: false
+  ignore_review_state: true
 
 help:
   help_guidelines_summary: |
@@ -205,6 +209,7 @@ label:
 lgtm:
 - repos:
   - bazelbuild
+  - kubernetes-sigs/aws-ebs-csi-driver
   - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
   - kubernetes-sigs/controller-runtime
