@@ -890,6 +890,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 	}
 
 	for _, test := range tests {
+		// copy to scoped variable, get rid of loopclosure linting error
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			t.Logf("Running scenario %q", test.name)
