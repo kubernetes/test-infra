@@ -1036,6 +1036,13 @@ func TestMakeResourcesAlpha1(t *testing.T) {
 						},
 					},
 					pipelinev1beta1.Param{
+						Name: "PULL_HEAD_REF",
+						Value: pipelinev1beta1.ArrayOrString{
+							Type:      pipelinev1beta1.ParamTypeString,
+							StringVal: "",
+						},
+					},
+					pipelinev1beta1.Param{
 						Name: "PULL_NUMBER",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
@@ -1289,6 +1296,13 @@ func TestMakeResourcesBeta1(t *testing.T) {
 					},
 					pipelinev1beta1.Param{
 						Name: "PULL_BASE_SHA",
+						Value: pipelinev1beta1.ArrayOrString{
+							Type:      pipelinev1beta1.ParamTypeString,
+							StringVal: "",
+						},
+					},
+					pipelinev1beta1.Param{
+						Name: "PULL_HEAD_REF",
 						Value: pipelinev1beta1.ArrayOrString{
 							Type:      pipelinev1beta1.ParamTypeString,
 							StringVal: "",
