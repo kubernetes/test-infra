@@ -201,6 +201,10 @@ var (
 		400 * time.Millisecond,
 		800 * time.Millisecond,
 		2 * time.Second,
+		5 * time.Second,
+		10 * time.Second,
+		15 * time.Second,
+		30 * time.Second,
 	}
 )
 
