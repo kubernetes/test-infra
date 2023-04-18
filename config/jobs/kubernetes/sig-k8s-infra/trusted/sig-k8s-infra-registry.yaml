@@ -27,14 +27,14 @@ periodics:
             - |
               aws sts get-caller-identity
               source hack/tools/setup-go.sh
-              go run ./cmd/geranos
+              REALLY_UPLOAD=true go run ./cmd/geranos
           env:
             - name: AWS_ROLE_ARN
               value: arn:aws:iam::513428760722:role/registry.k8s.io_s3writer
             - name: AWS_WEB_IDENTITY_TOKEN_FILE
               value: /var/run/secrets/aws-iam-token/serviceaccount/token
             - name: AWS_REGION
-              value: us-east-1
+              value: us-east-2
           volumeMounts:
             - mountPath: /var/run/secrets/aws-iam-token/serviceaccount
               name: aws-iam-token

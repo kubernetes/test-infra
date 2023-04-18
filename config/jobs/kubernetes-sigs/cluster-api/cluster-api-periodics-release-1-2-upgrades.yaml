@@ -5,6 +5,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -20,7 +24,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -52,6 +56,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -67,7 +75,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -99,6 +107,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -114,7 +126,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -146,6 +158,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -161,7 +177,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -193,6 +209,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -209,7 +229,7 @@ periodics:
     serviceAccountName: prowjob-default-sa
     containers:
     # rollback temporarily to previous version to fix the tests. We need to roll forward it later again.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -241,6 +261,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -257,7 +281,7 @@ periodics:
     serviceAccountName: prowjob-default-sa
     containers:
    # rollback temporarily to previous version to fix the tests. We need to roll forward it later again.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -289,6 +313,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -304,7 +332,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -336,6 +364,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -351,7 +383,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"

@@ -9,7 +9,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: golang:1.19
+      - image: golang:1.20
         command:
         - ./hack/ci-check-everything.sh
         resources:
@@ -27,7 +27,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: golang:1.19
+      - image: golang:1.20
         command:
         - ./hack/apidiff.sh
     annotations:

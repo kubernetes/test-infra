@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/cache"
@@ -33,6 +34,81 @@ import (
 // Consider the expensive function prowYAMLGetter(), which needs to use a Git
 // client, walk the filesystem path, etc. To speed things up, we save results of
 // this function into a cache named InRepoConfigCache.
+
+var inRepoConfigCacheMetrics = struct {
+	// How many times have we looked up an item in this cache?
+	lookups *prometheus.CounterVec
+	// Of the lookups, how many times did we get a cache hit?
+	hits *prometheus.CounterVec
+	// Of the lookups, how many times did we have to construct a cache value
+	// ourselves (cache was useless for this lookup)?
+	misses *prometheus.CounterVec
+	// How many cache key evictions were performed by the underlying LRU
+	// algorithm outside of our control?
+	evictionsForced *prometheus.CounterVec
+	// How many times have we tried to remove a cached key because its value
+	// construction failed?
+	evictionsManual *prometheus.CounterVec
+}{
+	lookups: prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "inRepoConfigCache_lookups",
+		Help: "Count of cache lookups by org and repo.",
+	}, []string{
+		"org",
+		"repo",
+	}),
+	hits: prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "inRepoConfigCache_hits",
+		Help: "Count of cache lookup hits by org and repo.",
+	}, []string{
+		"org",
+		"repo",
+	}),
+	misses: prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "inRepoConfigCache_misses",
+		Help: "Count of cache lookup misses by org and repo.",
+	}, []string{
+		"org",
+		"repo",
+	}),
+	// Every time we evict a key, record it as a Prometheus metric. This way, we
+	// can monitor how frequently evictions are happening (if it's happening too
+	// frequently, it means that our cache size is too small).
+	evictionsForced: prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "inRepoConfigCache_evictions_forced",
+		Help: "Count of forced cache evictions (due to LRU algorithm) by org and repo.",
+	}, []string{
+		"org",
+		"repo",
+	}),
+	evictionsManual: prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "inRepoConfigCache_evictions_manual",
+		Help: "Count of manual cache evictions (due to faulty value construction) by org and repo.",
+	}, []string{
+		"org",
+		"repo",
+	}),
+}
+
+func init() {
+	prometheus.MustRegister(inRepoConfigCacheMetrics.lookups)
+	prometheus.MustRegister(inRepoConfigCacheMetrics.hits)
+	prometheus.MustRegister(inRepoConfigCacheMetrics.misses)
+	prometheus.MustRegister(inRepoConfigCacheMetrics.evictionsForced)
+	prometheus.MustRegister(inRepoConfigCacheMetrics.evictionsManual)
+}
+
+func mkCacheEventCallback(counterVec *prometheus.CounterVec) cache.EventCallback {
+	callback := func(key interface{}) {
+		org, repo, err := keyToOrgRepo(key)
+		if err != nil {
+			return
+		}
+		counterVec.WithLabelValues(org, repo).Inc()
+	}
+
+	return callback
+}
 
 // The InRepoConfigCache needs a Config agent client. Here we require that the Agent
 // type fits the prowConfigAgentClient interface, which requires a Config()
@@ -53,51 +129,10 @@ type InRepoConfigCache struct {
 	gitClient   git.ClientFactory
 }
 
-type InrepoconfigPresubmitRequest struct {
-	Identifier     string
-	BaseSHAGetter  RefGetter
-	HeadSHAGetters []RefGetter
-	resChan        chan []Presubmit
-	errChan        chan error
-}
-
-type InrepoconfigPostsubmitRequest struct {
-	Identifier     string
-	BaseSHAGetter  RefGetter
-	HeadSHAGetters []RefGetter
-	resChan        chan []Postsubmit
-	errChan        chan error
-}
-
-type InRepoConfigCacheHandler struct {
-	presubmitChan  chan InrepoconfigPresubmitRequest
-	postsubmitChan chan InrepoconfigPostsubmitRequest
-}
-
-func NewInRepoConfigCacheHandler(size int,
-	configAgent prowConfigAgentClient,
-	gitClientFactory git.ClientFactory,
-	count int) (*InRepoConfigCacheHandler, error) {
-
-	c := &InRepoConfigCacheHandler{
-		presubmitChan:  make(chan InrepoconfigPresubmitRequest),
-		postsubmitChan: make(chan InrepoconfigPostsubmitRequest),
-	}
-
-	for i := 0; i < count; i++ {
-		cacheClient, err := NewInRepoConfigCache(size, configAgent, NewInRepoConfigGitCache(gitClientFactory))
-		if err != nil {
-			return nil, err
-		}
-		go cacheClient.handlePresubmit(c.presubmitChan)
-		go cacheClient.handlePostsubmit(c.postsubmitChan)
-	}
-
-	return c, nil
-}
-
 // NewInRepoConfigCache creates a new LRU cache for ProwYAML values, where the keys
 // are CacheKeys (that is, JSON strings) and values are pointers to ProwYAMLs.
+// The provided git.ClientFactory will be wrapped with NewInRepoConfigGitCache() so
+// ensure the input parameter is not prewrapped with this.
 func NewInRepoConfigCache(
 	size int,
 	configAgent prowConfigAgentClient,
@@ -107,7 +142,27 @@ func NewInRepoConfigCache(
 		return nil, fmt.Errorf("InRepoConfigCache requires a non-nil gitClientFactory")
 	}
 
-	lruCache, err := cache.NewLRUCache(size)
+	lookupsCallback := mkCacheEventCallback(inRepoConfigCacheMetrics.lookups)
+	hitsCallback := mkCacheEventCallback(inRepoConfigCacheMetrics.hits)
+	missesCallback := mkCacheEventCallback(inRepoConfigCacheMetrics.misses)
+	forcedEvictionsCallback := func(key interface{}, _ interface{}) {
+		org, repo, err := keyToOrgRepo(key)
+		if err != nil {
+			return
+		}
+		inRepoConfigCacheMetrics.evictionsForced.WithLabelValues(org, repo).Inc()
+	}
+	manualEvictionsCallback := mkCacheEventCallback(inRepoConfigCacheMetrics.evictionsManual)
+
+	callbacks := cache.Callbacks{
+		LookupsCallback:         lookupsCallback,
+		HitsCallback:            hitsCallback,
+		MissesCallback:          missesCallback,
+		ForcedEvictionsCallback: forcedEvictionsCallback,
+		ManualEvictionsCallback: manualEvictionsCallback,
+	}
+
+	lruCache, err := cache.NewLRUCache(size, callbacks)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +173,7 @@ func NewInRepoConfigCache(
 		configAgent,
 		// Make the cache be able to handle cache misses (by calling out to Git
 		// to construct the ProwYAML value).
-		gitClientFactory,
+		NewInRepoConfigGitCache(gitClientFactory),
 	}
 
 	return cache, nil
@@ -153,68 +208,32 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 	return CacheKey(data), nil
 }
 
-func (cache *InRepoConfigCache) handlePresubmit(requestChan chan InrepoconfigPresubmitRequest) {
-	for r := range requestChan {
-		res, err := cache.GetPresubmits(r.Identifier, r.BaseSHAGetter, r.HeadSHAGetters...)
-		if err != nil {
-			r.errChan <- err
-			continue
-		}
-		r.resChan <- res
+func (cacheKey CacheKey) toCacheKeyParts() (CacheKeyParts, error) {
+	kp := CacheKeyParts{}
+	if err := json.Unmarshal([]byte(cacheKey), &kp); err != nil {
+		return kp, err
 	}
+	return kp, nil
 }
 
-func (cache *InRepoConfigCache) handlePostsubmit(requestChan chan InrepoconfigPostsubmitRequest) {
-	for r := range requestChan {
-		res, err := cache.GetPostsubmits(r.Identifier, r.BaseSHAGetter, r.HeadSHAGetters...)
-		if err != nil {
-			r.errChan <- err
-			continue
-		}
-		r.resChan <- res
-	}
-}
+func keyToOrgRepo(key interface{}) (string, string, error) {
 
-func (ih *InRepoConfigCacheHandler) GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
-	resChan := make(chan []Presubmit)
-	errChan := make(chan error)
-	ih.presubmitChan <- InrepoconfigPresubmitRequest{
-		Identifier:     identifier,
-		BaseSHAGetter:  baseSHAGetter,
-		HeadSHAGetters: headSHAGetters,
-		resChan:        resChan,
-		errChan:        errChan,
+	cacheKey, ok := key.(CacheKey)
+	if !ok {
+		return "", "", fmt.Errorf("key is not a CacheKey")
 	}
 
-	for {
-		select {
-		case err := <-errChan:
-			return nil, err
-		case res := <-resChan:
-			return res, nil
-		}
-	}
-}
-
-func (ih *InRepoConfigCacheHandler) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-	resChan := make(chan []Postsubmit)
-	errChan := make(chan error)
-	ih.postsubmitChan <- InrepoconfigPostsubmitRequest{
-		Identifier:     identifier,
-		BaseSHAGetter:  baseSHAGetter,
-		HeadSHAGetters: headSHAGetters,
-		resChan:        resChan,
-		errChan:        errChan,
+	kp, err := cacheKey.toCacheKeyParts()
+	if err != nil {
+		return "", "", err
 	}
 
-	for {
-		select {
-		case err := <-errChan:
-			return nil, err
-		case res := <-resChan:
-			return res, nil
-		}
+	org, repo, err := SplitRepoName(kp.Identifier)
+	if err != nil {
+		return "", "", err
 	}
+
+	return org, repo, nil
 }
 
 // GetPresubmits uses a cache lookup to get the *ProwYAML value (cache hit),

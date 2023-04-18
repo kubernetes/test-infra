@@ -1,6 +1,7 @@
 periodics:
 # This is a sig-release-master-blocking job.
-- cron: '1 12 * * *' # Run daily at 4:01PST (12:01 UTC)
+# The frequency was cut to reduce infrastructure costs.
+- cron: '1 17 2-31/2 * *' # Run on even days at 9:01PST (17:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-correctness
   cluster: k8s-infra-prow-build
   labels:
@@ -21,7 +22,7 @@ periodics:
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -55,7 +56,8 @@ periodics:
           memory: "39Gi"
 
 # This is a sig-release-master-blocking job.
-- cron: '1 17 * * *' # Run daily at 9:01PST (17:01 UTC)
+# The frequency was cut to reduce infrastructure costs.
+- cron: '1 17 1-31/2 * *' # Run on odd days at 9:01PST (17:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
@@ -87,7 +89,7 @@ periodics:
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -175,7 +177,7 @@ periodics:
     path_alias: k8s.io/perf-tests
   annotations:
     fork-per-release: "true"
-    fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
+    fork-per-release-cron: 0 */6 * * *, 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *, 0 8-20/24 * * *
     fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
     fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}, gce-100Nodes-master -> gce-100Nodes-{{.Version}}"
     testgrid-dashboards: sig-release-master-blocking, sig-scalability-gce, google-gce, google-gci
@@ -185,7 +187,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py

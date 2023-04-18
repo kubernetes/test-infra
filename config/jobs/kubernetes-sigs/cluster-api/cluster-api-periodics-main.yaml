@@ -4,6 +4,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
@@ -12,7 +16,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
       command:
       - runner.sh
       - ./scripts/ci-test.sh
@@ -29,6 +33,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
@@ -37,18 +45,20 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
       command:
       - runner.sh
       - ./scripts/ci-test.sh
       env:
       # This value determines the minimum Kubernetes
-      # supported version for Cluster API management cluster.
+      # supported version for Cluster API management cluster
+      # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
+      # docs (look for minimum supported k8s version for management cluster, i.e N-3).
       #
-      # To check the available envtest in Kubebuilder, please
+      # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
       # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
       - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-        value: "1.23.5"
+        value: "1.24.2"
       resources:
         requests:
           cpu: 7300m
@@ -62,6 +72,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -77,11 +91,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: GINKGO_ARGS
+            value: "--fail-fast=false" # set the value of fail-fast to false to get results for every test.
           - name: GINKGO_SKIP
             value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
         # we need privileged mode in order to do docker in docker
@@ -100,6 +116,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -115,7 +135,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -125,7 +145,7 @@ periodics:
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "stable-1.23"
+        value: "stable-1.24"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

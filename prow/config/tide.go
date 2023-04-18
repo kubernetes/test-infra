@@ -17,8 +17,11 @@ limitations under the License.
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"text/template"
@@ -34,6 +37,108 @@ import (
 
 // TideQueries is a TideQuery slice.
 type TideQueries []TideQuery
+
+type TideBranchMergeType struct {
+	MergeType types.PullRequestMergeType
+	Regexpr   *regexp.Regexp
+}
+
+func (tbmt TideBranchMergeType) Match(branch string) bool {
+	return tbmt.Regexpr.MatchString(branch)
+}
+
+func (tbmt TideBranchMergeType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(tbmt.MergeType)
+}
+
+func (tbmt *TideBranchMergeType) UnmarshalJSON(b []byte) error {
+	return json.Unmarshal(b, &tbmt.MergeType)
+}
+
+type TideRepoMergeType struct {
+	Branches  map[string]TideBranchMergeType
+	MergeType types.PullRequestMergeType
+}
+
+// When TideRepoMergeType.MergeType is present, unmarshal into:
+//   kubernetes: squash
+// when TideRepoMergeType.Branches is not empty, unmarshal into:
+//   kubernetes:
+//     main: squash
+func (trmt TideRepoMergeType) MarshalJSON() ([]byte, error) {
+	if trmt.MergeType != "" {
+		return json.Marshal(trmt.MergeType)
+	}
+	if trmt.Branches == nil || len(trmt.Branches) == 0 {
+		return json.Marshal("")
+	}
+	return json.Marshal(trmt.Branches)
+}
+
+// Full configuration:
+//   test-infra:
+//     main: merge
+// unmarshal into map[string][TideBranchMergeType]
+//
+// Repo-wide configuration:
+//   test-infra: merge
+// unmarshal into types.PullRequestMergeType
+func (trmt *TideRepoMergeType) UnmarshalJSON(b []byte) error {
+	var mt types.PullRequestMergeType
+	if err := json.Unmarshal(b, &mt); err == nil {
+		trmt.MergeType = mt
+		return nil
+	}
+	var branches map[string]TideBranchMergeType
+	if err := json.Unmarshal(b, &branches); err != nil {
+		return err
+	}
+	trmt.Branches = branches
+	return nil
+}
+
+type TideOrgMergeType struct {
+	Repos     map[string]TideRepoMergeType
+	MergeType types.PullRequestMergeType
+}
+
+// When TideOrgMergeType.MergeType is present, unmarshal into:
+//   kubernetes: squash
+// when TideOrgMergeType.Repos is not empty, unmarshal into:
+//   kubernetes:
+//     test-infra: squash
+func (tomt TideOrgMergeType) MarshalJSON() ([]byte, error) {
+	if tomt.MergeType != "" {
+		return json.Marshal(tomt.MergeType)
+	}
+	if tomt.Repos == nil || len(tomt.Repos) == 0 {
+		return json.Marshal("")
+	}
+	return json.Marshal(tomt.Repos)
+}
+
+// Org-wide configuration:
+//   kubernetes: merge
+// unmarshal into types.PullRequestMergeType.
+//
+// Full configuration:
+//   kubernetes:
+//     test-infra:
+//       main: merge
+// unmarshal into map[string][TideRepoMergeType]:
+func (tomt *TideOrgMergeType) UnmarshalJSON(b []byte) error {
+	var mt types.PullRequestMergeType
+	if err := json.Unmarshal(b, &mt); err == nil {
+		tomt.MergeType = mt
+		return nil
+	}
+	var repos map[string]TideRepoMergeType
+	if err := json.Unmarshal(b, &repos); err != nil {
+		return err
+	}
+	tomt.Repos = repos
+	return nil
+}
 
 // TideContextPolicy configures options about how to handle various contexts.
 type TideContextPolicy struct {
@@ -115,7 +220,7 @@ type TideGitHubConfig struct {
 
 	// A key/value pair of an org/repo as the key and merge method to override
 	// the default method of merge. Valid options are squash, rebase, and merge.
-	MergeType map[string]types.PullRequestMergeType `json:"merge_method,omitempty"`
+	MergeType map[string]TideOrgMergeType `json:"merge_method,omitempty"`
 
 	// A key/value pair of an org/repo as the key and Go template to override
 	// the default merge commit title and/or message. Template is passed the
@@ -246,16 +351,98 @@ func (t *Tide) BatchSizeLimit(repo OrgRepo) int {
 // MergeMethod returns the merge method to use for a repo. The default of merge is
 // returned when not overridden.
 func (t *Tide) MergeMethod(repo OrgRepo) types.PullRequestMergeType {
-	v, ok := t.MergeType[repo.String()]
-	if !ok {
-		if ov, found := t.MergeType[repo.Org]; found {
-			return ov
-		}
+	return t.OrgRepoBranchMergeMethod(repo, "")
+}
 
-		return types.MergeMerge
+// OrgRepoBranchMergeMethod returns the merge method to use for a given triple: org, repo, branch.
+// The following matching criteria apply, the priority goes from the highest to the lowest:
+//
+//  1. kubernetes/test-infra@main: rebase       org/repo@branch shorthand
+//
+//  2. kubernetes:
+//       test-infra:
+//         ma(ster|in): rebase                  branch level regex
+//
+//  3. kubernetes/test-infra: rebase            org/repo shorthand
+//
+//  4. kubernetes:
+//       test-infra: rebase                     repo-wide config
+//
+//  5. kubernetes: rebase                       org shorthand
+//
+//  6. default to "merge"
+func (t *Tide) OrgRepoBranchMergeMethod(orgRepo OrgRepo, branch string) types.PullRequestMergeType {
+	isOrgSet, isRepoSet, isBranchSet := orgRepo.Org != "", orgRepo.Repo != "", branch != ""
+	var orgFound, repoFound bool
+
+	// The repository to look for can either be provided as an input or the "*" wildcard
+	repo := orgRepo.Repo
+
+	// Check if the org exists
+	if isOrgSet {
+		_, orgFound = t.MergeType[orgRepo.Org]
 	}
 
-	return v
+	// Check if the repo exists
+	if isOrgSet && isRepoSet && orgFound {
+		_, repoFound = t.MergeType[orgRepo.Org].Repos[orgRepo.Repo]
+		_, wildcardRepoFound := t.MergeType[orgRepo.Org].Repos["*"]
+		if !repoFound && wildcardRepoFound {
+			repoFound = true
+			repo = "*"
+		}
+	}
+
+	// 1. "$org/$repo@$branch" shorthand
+	if isOrgSet && isRepoSet && isBranchSet {
+		orgRepoBranchShorthand := fmt.Sprintf("%s/%s@%s", orgRepo.Org, orgRepo.Repo, branch)
+		if orgRepoBranch, found := t.MergeType[orgRepoBranchShorthand]; found && orgRepoBranch.MergeType != "" {
+			return orgRepoBranch.MergeType
+		}
+	}
+
+	// 2. Branch level regex match
+	if orgFound && repoFound {
+		branches := t.MergeType[orgRepo.Org].Repos[repo].Branches
+		keys := make([]string, 0, len(branches))
+
+		for k := range branches {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		for _, key := range keys {
+			branchConfig := branches[key]
+			if branchConfig.Regexpr.MatchString(branch) {
+				return branchConfig.MergeType
+			}
+		}
+	}
+
+	// 3. "$org/$repo" shorthand
+	if isOrgSet && isRepoSet {
+		orgRepoShorthand := fmt.Sprintf("%s/%s", orgRepo.Org, orgRepo.Repo)
+		if orgRepo, found := t.MergeType[orgRepoShorthand]; found && orgRepo.MergeType != "" {
+			return orgRepo.MergeType
+		}
+	}
+
+	// 4. Repo-wide match
+	if orgFound && repoFound {
+		if t.MergeType[orgRepo.Org].Repos[repo].MergeType != "" {
+			return t.MergeType[orgRepo.Org].Repos[repo].MergeType
+		}
+	}
+
+	// 5. "$org" shorthand
+	if orgFound {
+		if t.MergeType[orgRepo.Org].MergeType != "" {
+			return t.MergeType[orgRepo.Org].MergeType
+		}
+	}
+
+	// 6. Default
+	return types.MergeMerge
 }
 
 // MergeCommitTemplate returns a struct with Go template string(s) or nil

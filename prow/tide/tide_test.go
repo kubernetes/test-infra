@@ -1190,10 +1190,10 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			MergeLabel:  mergeLabel,
 			RebaseLabel: rebaseLabel,
 
-			MergeType: map[string]types.PullRequestMergeType{
-				"o/configured-rebase":              types.MergeRebase, // GH client allows merge, rebase
-				"o/configured-squash-allow-rebase": types.MergeSquash, // GH client allows merge, squash, rebase
-				"o/configure-re-base":              types.MergeRebase, // GH client allows merge
+			MergeType: map[string]config.TideOrgMergeType{
+				"o/configured-rebase":              {MergeType: types.MergeRebase}, // GH client allows merge, rebase
+				"o/configured-squash-allow-rebase": {MergeType: types.MergeSquash}, // GH client allows merge, squash, rebase
+				"o/configure-re-base":              {MergeType: types.MergeRebase}, // GH client allows merge
 			},
 		},
 	}
@@ -1311,18 +1311,18 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				pr.Mergeable = githubql.MergeableStateConflicting
 			}
 
-			actual, err := mmc.prMergeMethod(tideConfig, CodeReviewCommonFromPullRequest(pr))
-			if err != nil {
+			actual := mmc.prMergeMethod(tideConfig, CodeReviewCommonFromPullRequest(pr))
+			if actual == nil {
 				if !tc.expectErr {
-					t.Errorf("unexpected error: %v", err)
+					t.Errorf("multiple merge methods are not allowed")
 				}
 				return
 			} else if tc.expectErr {
 				t.Errorf("missing expected error")
 				return
 			}
-			if tc.expectedMethod != actual {
-				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, actual)
+			if tc.expectedMethod != *actual {
+				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, *actual)
 			}
 			reason, err := mmc.isAllowedToMerge(CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
@@ -1345,8 +1345,8 @@ func TestRebaseMergeMethodIsAllowed(t *testing.T) {
 	repoName := "fake-repo"
 	tideConfig := config.Tide{
 		TideGitHubConfig: config.TideGitHubConfig{
-			MergeType: map[string]types.PullRequestMergeType{
-				fmt.Sprintf("%s/%s", orgName, repoName): types.MergeRebase,
+			MergeType: map[string]config.TideOrgMergeType{
+				fmt.Sprintf("%s/%s", orgName, repoName): {MergeType: types.MergeRebase},
 			},
 		},
 	}

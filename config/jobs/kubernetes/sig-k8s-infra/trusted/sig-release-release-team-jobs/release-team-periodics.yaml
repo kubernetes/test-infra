@@ -1,6 +1,9 @@
 periodics:
 - name: periodic-sync-enhancements-github-project-1-27
-  interval: 6h
+# temporarily disable job by with an impossible cron date instead of deleting it
+  cron: '0 0 31 2 *'
+# Re-enable once v1.28 project board is created (and update the project board number below)
+#  interval: 6h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:

@@ -110,12 +110,12 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/git/
-  - name: post-test-infra-push-git-gke-gcloud-auth
+  - name: post-test-infra-push-git-custom-k8s-auth
     cluster: test-infra-trusted
-    run_if_changed: '^images/git-gke-gcloud-auth/'
+    run_if_changed: '^images/git-custom-k8s-auth/'
     annotations:
       testgrid-dashboards: sig-testing-images
-      testgrid-tab-name: git-gke-gcloud-auth
+      testgrid-tab-name: git-custom-k8s-auth
     decorate: true
     branches:
     - ^master$
@@ -129,7 +129,7 @@ postsubmits:
         args:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
-        - images/git-gke-gcloud-auth/
+        - images/git-custom-k8s-auth/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
     run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
@@ -171,7 +171,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20230301-6893d98ee8
+      - image: gcr.io/k8s-prow/hmac:v20230417-e4f4057e6e
         command:
         - hmac
         args:
@@ -221,7 +221,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-test-infra
         command:
         - runner.sh
         args:
@@ -387,7 +387,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20230301-6893d98ee8
+        image: gcr.io/k8s-prow/gencred:v20230417-e4f4057e6e
         command:
         - gencred
         args:
@@ -434,7 +434,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20230301-6893d98ee8
+      - image: gcr.io/k8s-prow/configurator:v20230417-e4f4057e6e
         command:
         - configurator
         args:
@@ -493,7 +493,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.3.0-1
         command:
         - /kpromo
         args:
@@ -582,7 +582,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230301-6893d98ee8
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230417-e4f4057e6e
       command:
       - generic-autobumper
       args:
@@ -619,7 +619,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230301-6893d98ee8
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230417-e4f4057e6e
       command:
       - generic-autobumper
       args:
@@ -689,7 +689,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20230301-6893d98ee8
+      image: gcr.io/k8s-prow/branchprotector:v20230417-e4f4057e6e
       command:
       - branchprotector
       args:
@@ -723,7 +723,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20230301-6893d98ee8
+      image: gcr.io/k8s-prow/label_sync:v20230417-e4f4057e6e
       command:
       - label_sync
       args:
@@ -767,7 +767,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20230301-6893d98ee8
+      image: gcr.io/k8s-prow/gencred:v20230417-e4f4057e6e
       command:
       - gencred
       args:
@@ -846,7 +846,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20230301-6893d98ee8
+    - image: gcr.io/k8s-prow/checkconfig:v20230417-e4f4057e6e
       command:
       - checkconfig
       args:

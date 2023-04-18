@@ -303,6 +303,7 @@ func (c *Controller) terminateDupes(pjs []prowapi.ProwJob, jbs map[string]Build)
 		toCancel.SetComplete()
 		prevState := toCancel.Status.State
 		toCancel.Status.State = prowapi.AbortedState
+		toCancel.Status.Description = "Aborted as the newer version of this job is running."
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")

@@ -1091,12 +1091,12 @@ func pickNewBatch(gc git.ClientFactory, cfg config.Getter, provider provider) fu
 		}
 
 		for _, pr := range candidates {
-			mergeMethod, err := provider.prMergeMethod(&pr)
-			if err != nil {
-				sp.log.WithFields(pr.logFields()).Warnf("Failed to get merge method for PR, will skip: %v.", err)
+			mergeMethod := provider.prMergeMethod(&pr)
+			if mergeMethod == nil {
+				sp.log.WithFields(pr.logFields()).Warnln("Failed to get merge method for PR, will skip.")
 				continue
 			}
-			if ok, err := r.MergeWithStrategy(pr.HeadRefOID, string(mergeMethod)); err != nil {
+			if ok, err := r.MergeWithStrategy(pr.HeadRefOID, string(*mergeMethod)); err != nil {
 				// we failed to abort the merge and our git client is
 				// in a bad state; it must be cleaned before we try again
 				return nil, err

@@ -10,6 +10,7 @@ dashboard_groups:
   - kops-ipv6
   - kops-gce
   - kops-grid
+  - kops-distro-al2023
   - kops-distro-amzn2
   - kops-distro-deb10
   - kops-distro-deb11
@@ -43,6 +44,7 @@ dashboards:
 - name: kops-ipv6
 - name: kops-gce
 - name: kops-grid
+- name: kops-distro-al2023
 - name: kops-distro-amzn2
 - name: kops-distro-deb10
 - name: kops-distro-deb11

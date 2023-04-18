@@ -142,8 +142,7 @@ run_tests() {
 
   # build and load the conformance image into the kind nodes
   make build ARCH=amd64
-  kind load docker-image k8s.gcr.io/conformance-amd64:${VERSION} ||
-      kind load docker-image registry.k8s.io/conformance-amd64:${VERSION}
+  kind load docker-image registry.k8s.io/conformance-amd64:${VERSION}
 
   # patch the image in manifest
   sed -i "s|conformance-amd64:.*|conformance-amd64:${VERSION}|g" conformance-e2e.yaml

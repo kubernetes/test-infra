@@ -1,13 +1,15 @@
 postsubmits:
   kubernetes/registry.k8s.io:
   # TODO(bentheelder): rerun_auth_config (let a github team re-run these, I probably need to join a team...)
-  - name: post-oci-proxy-push-images
+  - name: post-registry-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
         testgrid-dashboards: sig-k8s-infra-gcb
     decorate: true
     branches:
     - ^main$
+    # release tags
+    - ^v\d+.*
     spec:
       serviceAccountName: gcb-builder
       containers:
@@ -20,6 +22,9 @@ postsubmits:
           - --project=k8s-staging-infra-tools
           - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
           - .
+          env:
+          - name: LOG_TO_STDOUT
+            value: "y"
   kubernetes-sigs/porche:
   - name: post-porche-push-images
     cluster: k8s-infra-prow-build-trusted

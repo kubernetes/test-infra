@@ -625,7 +625,7 @@ func TestAbortAllJobs(t *testing.T) {
 				t.Fatalf("failed to get prowjob: %v", err)
 			}
 
-			if isAborted := pj.Status.State == prowapi.AbortedState; isAborted != tc.expectedAbortedProwJob {
+			if isAborted := (pj.Status.State == prowapi.AbortedState && pj.Status.Description == abortedDescription); isAborted != tc.expectedAbortedProwJob {
 				t.Errorf("IsAborted: %t, but expected aborted: %t", isAborted, tc.expectedAbortedProwJob)
 			}
 		})

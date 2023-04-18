@@ -1099,7 +1099,7 @@ tide:
     # A key/value pair of an org/repo as the key and merge method to override
     # the default method of merge. Valid options are squash, rebase, and merge.
     merge_method:
-        "": ""
+        "": ' '
     # PRStatusBaseURL is the base URL for the PR status page.
     # This is used to link to a merge requirements overview
     # in the tide status context.

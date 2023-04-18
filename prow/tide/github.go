@@ -155,7 +155,7 @@ func (gi *GitHubProvider) GetTideContextPolicy(org, repo, branch string, baseSHA
 	return gi.cfg().GetTideContextPolicy(gi.gc, org, repo, branch, baseSHAGetter, pr.HeadRefOID)
 }
 
-func (gi *GitHubProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
+func (gi *GitHubProvider) prMergeMethod(crc *CodeReviewCommon) *types.PullRequestMergeType {
 	return gi.mergeChecker.prMergeMethod(gi.cfg().Tide, crc)
 }
 
@@ -246,9 +246,10 @@ func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdat
 
 	for i, pr := range prs {
 		log := log.WithFields(pr.logFields())
-		mergeMethod, err := gi.prMergeMethod(&pr)
-		if err != nil {
-			log.WithError(err).Error("Failed to determine merge method.")
+		mergeMethod := gi.prMergeMethod(&pr)
+		if mergeMethod == nil {
+			err := fmt.Errorf("multiple merge method labels found for %s/%s#%d", sp.org, sp.repo, pr.Number)
+			log.WithError(err).Error("Multiple merge method labels are not supported.")
 			errs = append(errs, err)
 			failed = append(failed, pr.Number)
 			continue
@@ -266,7 +267,7 @@ func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdat
 
 		commitTemplates := tideConfig.MergeCommitTemplate(config.OrgRepo{Org: sp.org, Repo: sp.repo})
 		keepTrying, err := tryMerge(func() error {
-			ghMergeDetails := gi.prepareMergeDetails(commitTemplates, pr, mergeMethod)
+			ghMergeDetails := gi.prepareMergeDetails(commitTemplates, pr, *mergeMethod)
 			return gi.ghc.Merge(sp.org, sp.repo, pr.Number, ghMergeDetails)
 		})
 		if err != nil {
@@ -528,12 +529,12 @@ func (m *mergeChecker) isAllowedToMerge(crc *CodeReviewCommon) (string, error) {
 	if pr.Mergeable == githubql.MergeableStateConflicting {
 		return "PR has a merge conflict.", nil
 	}
-	mergeMethod, err := m.prMergeMethod(m.config().Tide, crc)
-	if err != nil {
-		// This should be impossible.
-		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %w", err)
+	mergeMethod := m.prMergeMethod(m.config().Tide, crc)
+	if mergeMethod == nil {
+		// Can happen when tide has conflicting labels: merge, squash, rebase
+		return "PR has conflicting merge method override labels", nil
 	}
-	if mergeMethod == types.MergeRebase && !pr.CanBeRebased {
+	if *mergeMethod == types.MergeRebase && !pr.CanBeRebased {
 		return "PR can't be rebased", nil
 	}
 	orgRepo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
@@ -541,18 +542,18 @@ func (m *mergeChecker) isAllowedToMerge(crc *CodeReviewCommon) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error getting repo data: %w", err)
 	}
-	if allowed, exists := repoMethods[mergeMethod]; !exists {
+	if allowed, exists := repoMethods[*mergeMethod]; !exists {
 		// Should be impossible as well.
-		return "", fmt.Errorf("Programmer error! PR requested the unrecognized merge type %q", mergeMethod)
+		return "", fmt.Errorf("Programmer error! PR requested the unrecognized merge type %q", *mergeMethod)
 	} else if !allowed {
-		return fmt.Sprintf("Merge type %q disallowed by repo settings", mergeMethod), nil
+		return fmt.Sprintf("Merge type %q disallowed by repo settings", *mergeMethod), nil
 	}
 	return "", nil
 }
 
 // prMergeMethod figures out merge method based on tide config, this could be
 // overridden by GitHub labels.
-func (mc *mergeChecker) prMergeMethod(c config.Tide, crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
+func (mc *mergeChecker) prMergeMethod(c config.Tide, crc *CodeReviewCommon) *types.PullRequestMergeType {
 	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 	method := c.MergeMethod(repo)
 	squashLabel := c.SquashLabel
@@ -576,10 +577,10 @@ func (mc *mergeChecker) prMergeMethod(c config.Tide, crc *CodeReviewCommon) (typ
 					labelCount++
 				}
 				if labelCount > 1 {
-					return "", fmt.Errorf("conflicting merge method override labels")
+					return nil
 				}
 			}
 		}
 	}
-	return method, nil
+	return &method
 }

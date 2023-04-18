@@ -118,17 +118,18 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, configAgent, gitClient, o.config.InRepoConfigCacheCopies)
+
+	cacheGetter, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, configAgent, gitClient)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
 
 	s := &subscriber.Subscriber{
-		ConfigAgent:              configAgent,
-		Metrics:                  promMetrics,
-		ProwJobClient:            prowjobClient,
-		Reporter:                 pubsub.NewReporter(configAgent.Config), // reuse crier reporter
-		InRepoConfigCacheHandler: cacheGetter,
+		ConfigAgent:       configAgent,
+		Metrics:           promMetrics,
+		ProwJobClient:     prowjobClient,
+		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		InRepoConfigCache: cacheGetter,
 	}
 
 	subMux := http.NewServeMux()

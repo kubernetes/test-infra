@@ -1,0 +1,32 @@
+postsubmits:
+  # This is the github repo we'll build from. This block needs to be repeated for each repo.
+  kubernetes/cloud-provider-openstack:
+    - name: cloud-provider-openstack-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager, provider-openstack-openstack-csi-cinder, provider-openstack-manila-csi-plugin, provider-openstack-keystone-authentication-authorization, sig-k8s-infra-gcb
+        testgrid-tab-name: cloud-provider-openstack-image-pushes
+      decorate: true
+      branches:
+        # For publishing canary images.
+        - ^master$
+        - ^release-
+        # For publishing tagged images. Those will only get built once, i.e.
+        # existing images are not getting overwritten. A new tag must be set to
+        # trigger another image build. Images are only built for tags that follow
+        # the semver format (regex from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string).
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-provider-os
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-provider-os-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

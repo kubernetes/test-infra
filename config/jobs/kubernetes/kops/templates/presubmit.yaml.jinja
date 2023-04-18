@@ -12,7 +12,9 @@
       {%- if cloud == "aws" %}
       preset-service-account: "true"
       preset-aws-ssh: "true"
+      {%- if not use_boskos %}
       preset-aws-credential: "true"
+      {%- endif %}
       {%- if branch in ["release-1.22", "release-1.23"] %}
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"

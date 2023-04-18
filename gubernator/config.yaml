@@ -27,14 +27,15 @@ jobs:
   - pull-kubernetes-conformance-kind-ga-only-parallel
   - pull-kubernetes-dependencies
   - pull-kubernetes-e2e-gce
-  - pull-kubernetes-e2e-gce-100-performance
   - pull-kubernetes-e2e-gce-ubuntu-containerd
   - pull-kubernetes-e2e-kind
   - pull-kubernetes-e2e-kind-ipv6
   - pull-kubernetes-integration
+  - pull-kubernetes-integration-go-compatibility
   - pull-kubernetes-node-e2e-containerd
   - pull-kubernetes-typecheck
   - pull-kubernetes-unit
+  - pull-kubernetes-unit-go-compatibility
   - pull-kubernetes-verify
   - pull-kubernetes-verify-govet-levee
 recursive_artifacts: false

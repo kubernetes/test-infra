@@ -16,6 +16,51 @@ dashboards:
 - name: conformance-all
   # entries are named $PROVIDER, $KUBERNETES_RELEASE
   dashboard_tab:
+    - name: Gardener, v1.26 AWS
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
+      test_group_name: ci-gardener-e2e-conformance-aws-v1.26
+    - name: Gardener, v1.26 GCE
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
+      test_group_name: ci-gardener-e2e-conformance-gce-v1.26
+    - name: Gardener, v1.26 OpenStack
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
+      test_group_name: ci-gardener-e2e-conformance-openstack-v1.26
+    - name: Gardener, v1.26 Azure
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
+      test_group_name: ci-gardener-e2e-conformance-azure-v1.26
+    - name: Gardener, v1.26 Alibaba Cloud
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+      test_group_name: ci-gardener-e2e-conformance-alicloud-v1.26
+    - name: Gardener, v1.25 AWS
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
+      test_group_name: ci-gardener-e2e-conformance-aws-v1.25
+    - name: Gardener, v1.25 GCE
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
+      test_group_name: ci-gardener-e2e-conformance-gce-v1.25
+    - name: Gardener, v1.25 OpenStack
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
+      test_group_name: ci-gardener-e2e-conformance-openstack-v1.25
+    - name: Gardener, v1.25 Azure
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
+      test_group_name: ci-gardener-e2e-conformance-azure-v1.25
+    - name: Gardener, v1.25 Alibaba Cloud
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+      test_group_name: ci-gardener-e2e-conformance-alicloud-v1.25
+    - name: Gardener, v1.24 AWS
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
+      test_group_name: ci-gardener-e2e-conformance-aws-v1.24
+    - name: Gardener, v1.24 GCE
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
+      test_group_name: ci-gardener-e2e-conformance-gce-v1.24
+    - name: Gardener, v1.24 OpenStack
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
+      test_group_name: ci-gardener-e2e-conformance-openstack-v1.24
+    - name: Gardener, v1.24 Azure
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
+      test_group_name: ci-gardener-e2e-conformance-azure-v1.24
+    - name: Gardener, v1.24 Alibaba Cloud
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+      test_group_name: ci-gardener-e2e-conformance-alicloud-v1.24
     - name: Gardener, v1.23 AWS
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
       test_group_name: ci-gardener-e2e-conformance-aws-v1.23
@@ -104,6 +149,31 @@ dashboards:
 # Gardener Conformance Dashboard
 - name: conformance-gardener
   dashboard_tab:
+    - name: Gardener, v1.26 AWS
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
+      test_group_name: ci-gardener-e2e-conformance-aws-v1.26
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.26 GCE
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
+      test_group_name: ci-gardener-e2e-conformance-gce-v1.26
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.26 OpenStack
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
+      test_group_name: ci-gardener-e2e-conformance-openstack-v1.26
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.26 Azure
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
+      test_group_name: ci-gardener-e2e-conformance-azure-v1.26
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.26 Alibaba Cloud
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
+      test_group_name: ci-gardener-e2e-conformance-alicloud-v1.26
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.25 AWS
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
       test_group_name: ci-gardener-e2e-conformance-aws-v1.25
@@ -260,19 +330,16 @@ dashboards:
   dashboard_tab:
     - name: Periodic s390x conformance test on local cluster
       test_group_name: s390x-conformance
-      description: Runs conformance tests by using kubetest against latest master version of kubernetes on local s390x cluster
-    - name: Periodic s390x conformance test on local cluster , v1.23
-      test_group_name: s390x-conformance-v1.23
-      description: Runs conformance tests by using kubetest against latest v1.23 branch HEAD of kubernetes on local s390x cluster
-    - name: Periodic s390x conformance test on local cluster , v1.22
-      test_group_name: s390x-conformance-v1.22
-      description: Runs conformance tests by using kubetest against latest v1.22 branch HEAD of kubernetes on local s390x cluster
-    - name: Periodic s390x conformance test on local cluster , v1.21
-      test_group_name: s390x-conformance-v1.21
-      description: Runs conformance tests by using kubetest against latest v1.21 branch HEAD of kubernetes on local s390x cluster
-    - name: Periodic s390x conformance test on local cluster , v1.20
-      test_group_name: s390x-conformance-v1.20
-      description: Runs conformance tests by using kubetest against latest v1.20 branch HEAD of kubernetes on local s390x cluster
+      description: Runs conformance tests by using kubetest2 against latest master version of kubernetes on local s390x cluster
+    - name: Periodic s390x conformance test on local cluster , v1.27
+      test_group_name: s390x-conformance-v1.27
+      description: Runs conformance tests by using kubetest2 against latest v1.27 branch HEAD of kubernetes on local s390x cluster
+    - name: Periodic s390x conformance test on local cluster , v1.26
+      test_group_name: s390x-conformance-v1.26
+      description: Runs conformance tests by using kubetest2 against latest v1.26 branch HEAD of kubernetes on local s390x cluster
+    - name: Periodic s390x conformance test on local cluster , v1.25
+      test_group_name: s390x-conformance-v1.25
+      description: Runs conformance tests by using kubetest2 against latest v1.25 branch HEAD of kubernetes on local s390x cluster
 
 # CEL Conformance Tests
 - name: google-cel
@@ -302,14 +369,12 @@ test_groups:
 #IBM s390x test results
 - name: s390x-conformance
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x
-- name: s390x-conformance-v1.23
-  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.23
-- name: s390x-conformance-v1.22
-  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.22
-- name: s390x-conformance-v1.21
-  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.21
-- name: s390x-conformance-v1.20
-  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.20
+- name: s390x-conformance-v1.27
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.27
+- name: s390x-conformance-v1.26
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.26
+- name: s390x-conformance-v1.25
+  gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.25
 
 # google-osconfig
 - name: osconfig-unstable
@@ -322,6 +387,31 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/osconfig-head-images
 
 # Gardener Conformance Test Groups
+- name: ci-gardener-e2e-conformance-aws-v1.26
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.26
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+  disable_prowjob_analysis: true
+- name: ci-gardener-e2e-conformance-gce-v1.26
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.26
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+  disable_prowjob_analysis: true
+- name: ci-gardener-e2e-conformance-openstack-v1.26
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-openstack-v1.26
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+  disable_prowjob_analysis: true
+- name: ci-gardener-e2e-conformance-azure-v1.26
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-azure-v1.26
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+  disable_prowjob_analysis: true
+- name: ci-gardener-e2e-conformance-alicloud-v1.26
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alicloud-v1.26
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+  disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-aws-v1.25
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.25
   alert_stale_results_hours: 168

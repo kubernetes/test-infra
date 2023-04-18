@@ -1028,6 +1028,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
+        description: Code in registry.k8s.io/
+        name: area/registry.k8s.io
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Google Groups management, code in groups/
         name: area/groups
         target: both
@@ -1044,6 +1050,12 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to Kubernetes AWS infrastructure
         name: area/infra/aws
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Kubernetes GCP infrastructure
+        name: area/infra/gcp
         target: both
         prowPlugin: label
         addedBy: anyone
@@ -1872,6 +1884,14 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+  kubernetes-sigs/cluster-api-provider-gcp:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to GKE
+        name: area/gke
+        target: both
+        addedBy: anyone
+        prowPlugin: label
   kubernetes-sigs/cluster-api-provider-aws:
     labels:
       - color: c2e0c6

@@ -13,6 +13,7 @@
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-aws, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-aws-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-aws, only for issues](#labels-that-apply-to-kubernetes-sigscluster-api-provider-aws-only-for-issues)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-azure, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-azure-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/cluster-api-provider-gcp, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-gcp-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/contributor-tweets, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontributor-tweets-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/controller-runtime, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscontroller-runtime-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/gateway-api, only for issues](#labels-that-apply-to-kubernetes-sigsgateway-api-only-for-issues)
@@ -262,6 +263,12 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="kind/proposal" href="#kind/proposal">`kind/proposal`</a> | Issues or PRs related to proposals.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
+## Labels that apply to kubernetes-sigs/cluster-api-provider-gcp, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/gke" href="#area/gke">`area/gke`</a> | Issues or PRs related to GKE| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
 ## Labels that apply to kubernetes-sigs/contributor-tweets, for both issues and PRs
 
 | Name | Description | Added By | Prow Plugin |
@@ -381,11 +388,13 @@ larger set of contributors to apply/remove them.
 | <a id="area/groups" href="#area/groups">`area/groups`</a> | Google Groups management, code in groups/| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra" href="#area/infra">`area/infra`</a> | Infrastructure management, infrastructure design, code in infra/ <br><br> This was previously `area/cluster-infra`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra/aws" href="#area/infra/aws">`area/infra/aws`</a> | Issues or PRs related to Kubernetes AWS infrastructure| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/infra/gcp" href="#area/infra/gcp">`area/infra/gcp`</a> | Issues or PRs related to Kubernetes GCP infrastructure| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra/monitoring" href="#area/infra/monitoring">`area/infra/monitoring`</a> | REMOVING. This will be deleted after 2021-08-04 00:00:00 +0000 UTC <br><br> Issues or PRs related to monitoring of the Kubernetes project infrastructure| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/infra/reliability" href="#area/infra/reliability">`area/infra/reliability`</a> | REMOVING. This will be deleted after 2021-08-04 00:00:00 +0000 UTC <br><br> Issues or PR related to reliability of the Kubernetes project infrastructure| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/k8s.gcr.io" href="#area/k8s.gcr.io">`area/k8s.gcr.io`</a> | Code in k8s.gcr.io/| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/policy" href="#area/policy">`area/policy`</a> | Crafting policy, policy decisions, code in policy/| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/prow" href="#area/prow">`area/prow`</a> | Setting up or working with prow in general, prow.k8s.io, prow build clusters| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/registry.k8s.io" href="#area/registry.k8s.io">`area/registry.k8s.io`</a> | Code in registry.k8s.io/| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/terraform" href="#area/terraform">`area/terraform`</a> | Terraform modules, testing them, writing more of them, code in infra/gcp/clusters/ <br><br> This was previously `area/infra/terraform`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 

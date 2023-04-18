@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/bugzilla"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -1505,7 +1506,7 @@ type BugzillaBranchOptions struct {
 
 	// EnableBackporting enables functionality to create new backport bugs for
 	// cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
-	EnableBackporting *bool
+	EnableBackporting *bool `json:"enable_backporting,omitempty"`
 
 	// ValidateByDefault determines whether a validation check is run for all pull
 	// requests by default
@@ -1921,7 +1922,8 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 
 	diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla,
 		ExternalPlugins: other.ExternalPlugins, Label: Label{RestrictedLabels: other.Label.RestrictedLabels},
-		Lgtm: other.Lgtm, Plugins: other.Plugins, Triggers: other.Triggers, Welcome: other.Welcome})
+		Lgtm: other.Lgtm, Plugins: other.Plugins, Triggers: other.Triggers, Welcome: other.Welcome},
+		config.DefaultDiffOpts...)
 
 	if diff != "" {
 		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))

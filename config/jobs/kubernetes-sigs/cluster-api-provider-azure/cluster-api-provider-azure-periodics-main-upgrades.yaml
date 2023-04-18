@@ -8,6 +8,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -19,7 +20,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -52,6 +53,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -63,7 +65,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -96,6 +98,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -107,7 +110,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"

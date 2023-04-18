@@ -17,11 +17,6 @@ presets:
       secretKeyRef:
         name: capv-ci-overrides
         key: vsphere-password
-  - name: VSPHERE_TLS_THUMBPRINT
-    valueFrom:
-      secretKeyRef:
-        name: capv-ci-overrides
-        key: vsphere-server-thumbprint
   - name: VM_SSH_PUB_KEY
     valueFrom:
       secretKeyRef:
@@ -91,7 +86,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
           command:
           - runner.sh
           args:
@@ -143,12 +138,13 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-crds
     always_run: false
+    optional: true
     run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/verify-crds\.sh|go\.mod|go\.sum)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
         command:
         - hack/verify-crds.sh
     annotations:
@@ -159,12 +155,13 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-verify-gen
     always_run: false
+    optional: true
     run_if_changed: '^((apis|config|contrib|controllers|packaging|pkg|templates)/|Makefile|go\.mod|go\.sum)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
         command:
         - runner.sh
         args:
@@ -186,7 +183,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
         resources:
           requests:
             cpu: "500m"
@@ -213,7 +210,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -249,7 +246,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
         command:
         - runner.sh
         args:
@@ -286,7 +283,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
         command:
         - runner.sh
         args:
@@ -325,7 +322,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
           command:
             - runner.sh
           args:

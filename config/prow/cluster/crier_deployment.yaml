@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20230301-6893d98ee8
+        image: gcr.io/k8s-prow/crier:v20230417-e4f4057e6e
         args:
         - --blob-storage-workers=1
         - --config-path=/etc/config/config.yaml
@@ -48,7 +48,14 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig:/etc/kubeconfig-build-rules-k8s/kubeconfig"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig:/etc/kubeconfig-build-rules-k8s/kubeconfig:/etc/kubeconfig-eks-prow-build-cluster/kubeconfig"
+        # AWS_ variables needed to assume role to access the prow-build-cluster EKS cluster.
+        - name: AWS_ROLE_ARN
+          value: arn:aws:iam::468814281478:role/Prow-EKS-Admin
+        - name: AWS_WEB_IDENTITY_TOKEN_FILE
+          value: /var/run/secrets/aws-iam-token/serviceaccount/token
+        - name: AWS_REGION
+          value: us-east-2
         ports:
         - name: metrics
           containerPort: 9090
@@ -65,6 +72,9 @@ spec:
         - mountPath: /etc/kubeconfig-build-rules-k8s
           name: kubeconfig-build-rules-k8s
           readOnly: true
+        - mountPath: /etc/kubeconfig-eks-prow-build-cluster
+          name: kubeconfig-eks-prow-build-cluster
+          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
@@ -76,6 +86,10 @@ spec:
           readOnly: true
         - name: slack
           mountPath: /etc/slack
+          readOnly: true
+        # AWS IAM token needed to assume role to access the prow-build-cluster EKS cluster.
+        - name: aws-iam-token
+          mountPath: /var/run/secrets/aws-iam-token/serviceaccount
           readOnly: true
       volumes:
       - name: config
@@ -106,3 +120,16 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig-build-rules-k8s
+      - name: kubeconfig-eks-prow-build-cluster
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-eks-prow-build-cluster
+      # AWS IAM token needed to assume role to access the prow-build-cluster EKS cluster.
+      - name: aws-iam-token
+        projected:
+          defaultMode: 420
+          sources:
+          - serviceAccountToken:
+              audience: sts.amazonaws.com
+              expirationSeconds: 86400
+              path: token

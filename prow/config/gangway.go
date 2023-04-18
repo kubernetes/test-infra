@@ -155,11 +155,17 @@ func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, erro
 		// create. Otherwise, any caller could trigger any Prow Job, which is far from
 		// ideal from a security standpoint.
 		case "gcp":
-			v := md.Get("x-endpoint-api-consumer-type")[0]
-			if client.GCP.EndpointApiConsumerType != "PROJECT" {
-				return nil, fmt.Errorf("unsupported GCP API consumer type: %q", v)
+			v := md.Get("x-endpoint-api-consumer-type")
+			if len(v) == 0 {
+				return nil, errors.New("missing x-endpoint-api-consumer-type header")
 			}
-			v = md.Get("x-endpoint-api-consumer-number")[0]
+			if client.GCP.EndpointApiConsumerType != "PROJECT" {
+				return nil, fmt.Errorf("unsupported GCP API consumer type: %q", v[0])
+			}
+			v = md.Get("x-endpoint-api-consumer-number")
+			if len(v) == 0 {
+				return nil, errors.New("missing x-endpoint-api-consumer-number header")
+			}
 
 			// Now check whether we can find the same information in the Config's allowlist.
 			//
@@ -167,7 +173,7 @@ func (c *Config) IdentifyAllowedClient(md *metadata.MD) (*AllowedApiClient, erro
 			// elements match here. That case (where there are duplicate clients
 			// with the same EndpointApiConsumerNumber) is taken care of during
 			// validation.
-			if client.GCP.EndpointApiConsumerNumber == v {
+			if client.GCP.EndpointApiConsumerNumber == v[0] {
 				return &client, nil
 			}
 		}

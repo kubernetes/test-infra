@@ -1,0 +1,99 @@
+periodics:
+- name: ci-kubernetes-e2e-capz-master-windows-service-proxy
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-capz-windows-common: "true"
+    preset-capz-windows-2022: "true"
+    preset-windows-private-registry-cred: "true"
+    preset-capz-containerd-1-7-latest: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.8
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        command:
+          - "runner.sh"
+          - "env"
+          - "KUBERNETES_VERSION=latest"
+          - "./capz/run-capz-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+        env:
+          - name: WINDOWS_KPNG
+            value: "true"
+  annotations:
+    testgrid-alert-email: sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-windows-experimental
+    testgrid-tab-name: capz-master-windows-service-proxy
+- name: ci-kubernetes-e2e-capz-master-windows-hyperv
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-capz-windows-common: "true"
+    preset-capz-windows-2022: "true"
+    preset-windows-private-registry-cred: "true"
+    preset-capz-containerd-1-7-latest: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.8
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        command:
+          - "runner.sh"
+          - "env"
+          - "KUBERNETES_VERSION=latest"
+          - "./capz/run-capz-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+        env:
+          - name: HYPERV
+            value: "true"
+  annotations:
+    testgrid-alert-email: sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-windows-experimental
+    testgrid-tab-name: capz-master-windows-hyperv

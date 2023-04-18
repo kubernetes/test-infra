@@ -136,7 +136,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       command:
       - "./scripts/ci-aws-cred-test.sh"
 ```
@@ -216,8 +216,9 @@ accomplish this, eg:
 # from test-infra root
 $ go run ./releng/config-forker \
   --job-config $(pwd)/config/jobs \
-  --version 1.15 \
-  --output $(pwd)/config/jobs/kubernetes/sig-release/release-branch-jobs/1.15.yaml
+  --version 1.27 \
+  --go-version 1.20.2 \
+  --output $(pwd)/config/jobs/kubernetes/sig-release/release-branch-jobs/1.27.yaml
 ```
 
 [prow.k8s.io]: https://prow.k8s.io

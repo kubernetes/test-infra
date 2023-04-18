@@ -1,0 +1,9 @@
+dashboard_groups:
+- name: containerd
+  dashboard_names:
+  - containerd-presubmits
+  - containerd-periodic
+
+dashboards:
+  - name: containerd-periodic
+  - name: containerd-presubmits

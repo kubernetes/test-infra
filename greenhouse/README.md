@@ -28,9 +28,9 @@ We use this with [Prow](./../prow), to set it up we do the following:
    ```
  - Create the Kubernetes service so jobs can talk to it conveniently: `kubectl apply -f greenhouse/service.yaml`
  - Create a `StorageClass` / `PersistentVolumeClaim` for fast cache storage, we use `kubectl apply -f greenhouse/gce-fast-storage.yaml` for 3TB of pd-ssd storage
- - Finally build, push, and deploy with `bazel run //greenhouse:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64`
+ - Finally deploy with `kubectl apply -f greenhouse/deployment.yaml`
    <!--TODO(bentheelder): make this easier to consume by other users?-->
-   - NOTE: other uses will likely need to tweak this step to their needs, particular the service and storage definitions
+   - NOTE: other uses will likely need to tweak this step to their needs, in particular the service and storage definitions
 
 
 ## Optional Setup:

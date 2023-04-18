@@ -22,15 +22,18 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/test-infra/pkg/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -38,6 +41,42 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 )
+
+var (
+	diskFree = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "gerrit_disk_free",
+		Help: "Free gb on gerrit-cache disk.",
+	})
+	diskUsed = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "gerrit_disk_used",
+		Help: "Used gb on gerrit-cache disk.",
+	})
+	diskTotal = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ghcache_disk_total",
+		Help: "Total gb on gerrit-cache disk.",
+	})
+	diskInodeFree = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ghcache_disk_inode_free",
+		Help: "Free inodes on gerrit-cache disk.",
+	})
+	diskInodeUsed = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "gerrit_disk_inode_used",
+		Help: "Used inodes on gerrit-cache disk.",
+	})
+	diskInodeTotal = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "gerrit_disk_inode_total",
+		Help: "Total inodes on gerrit-cache disk.",
+	})
+)
+
+func init() {
+	prometheus.MustRegister(diskFree)
+	prometheus.MustRegister(diskUsed)
+	prometheus.MustRegister(diskTotal)
+	prometheus.MustRegister(diskInodeFree)
+	prometheus.MustRegister(diskInodeUsed)
+	prometheus.MustRegister(diskInodeTotal)
+}
 
 type options struct {
 	cookiefilePath    string
@@ -51,7 +90,7 @@ type options struct {
 	storage                prowflagutil.StorageClientOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	changeWorkerPoolSize   int
-	retryAttempts          int
+	pushGatewayInterval    time.Duration
 }
 
 func (o *options) validate() error {
@@ -89,7 +128,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
 	fs.IntVar(&o.changeWorkerPoolSize, "change-worker-pool-size", 1, "Number of workers processing changes for each instance.")
-	fs.IntVar(&o.retryAttempts, "retry-attempts", 10, "Number of times a job process will retry if failed")
+	fs.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics for disk space are pushed.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
@@ -105,6 +144,7 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
+	runtime.SetBlockProfileRate(100_000_000) // 0.1 second sample rate https://github.com/DataDog/go-profiler-notes/blob/main/guide/README.md#block-profiler-limitations
 	pprof.Instrument(o.instrumentationOptions)
 
 	ca, err := o.config.ConfigAgent()
@@ -131,11 +171,16 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating git client.")
 	}
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, ca, gitClient, o.config.InRepoConfigCacheCopies)
+
+	if o.config.InRepoConfigCacheDirBase != "" {
+		go diskMonitor(o.pushGatewayInterval, o.config.InRepoConfigCacheDirBase)
+	}
+
+	cacheGetter, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, ca, gitClient)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, o.retryAttempts, cacheGetter)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, cacheGetter)
 
 	logrus.Infof("Starting gerrit fetcher")
 
@@ -145,4 +190,24 @@ func main() {
 	}, func() time.Duration {
 		return cfg().Gerrit.TickInterval.Duration
 	})
+}
+
+// helper to update disk metrics (copied from ghproxy)
+func diskMonitor(interval time.Duration, diskRoot string) {
+	logger := logrus.WithField("sync-loop", "disk-monitor")
+	ticker := time.NewTicker(interval)
+	for ; true; <-ticker.C {
+		logger.Info("tick")
+		_, bytesFree, bytesUsed, _, inodesFree, inodesUsed, err := diskutil.GetDiskUsage(diskRoot)
+		if err != nil {
+			logger.WithError(err).Error("Failed to get disk metrics")
+		} else {
+			diskFree.Set(float64(bytesFree) / 1e9)
+			diskUsed.Set(float64(bytesUsed) / 1e9)
+			diskTotal.Set(float64(bytesFree+bytesUsed) / 1e9)
+			diskInodeFree.Set(float64(inodesFree))
+			diskInodeUsed.Set(float64(inodesUsed))
+			diskInodeTotal.Set(float64(inodesFree + inodesUsed))
+		}
+	}
 }

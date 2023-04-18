@@ -4,6 +4,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
@@ -12,7 +16,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
       command:
       - "./scripts/ci-test.sh"
       resources:
@@ -28,6 +32,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
@@ -36,7 +44,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
       command:
       - "./scripts/ci-test.sh"
       env:
@@ -60,6 +68,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -75,7 +87,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -98,6 +110,10 @@ periodics:
   decorate: true
   decoration_config:
     gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+    - org: kubernetes-sigs
+      slug: cluster-api-maintainers
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -113,20 +129,21 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
       env:
       - name: GINKGO_SKIP
-        value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]|\\[ClusterClass\\]"
+        value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
+      # Because of that we usually would test with v1.20, but because ClusterClass
+      # requires at least 1.22 we are using 1.22 instead.
+      # Note: We need ClusterClass for the clusterctl upgrade tests, so we're able to
+      # create clusterctl with old versions with the right cgroupDriver configuration.
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "stable-1.20"
-      # CAPI does not work with v1.20 if ClusterClass is enabled, so we have to disable it.
-      - name: CLUSTER_TOPOLOGY
-        value: "false"
+        value: "stable-1.22"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

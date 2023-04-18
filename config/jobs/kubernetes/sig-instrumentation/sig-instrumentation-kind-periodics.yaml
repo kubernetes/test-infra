@@ -28,7 +28,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
       command:
       - wrapper.sh
       - bash
@@ -52,7 +52,7 @@ periodics:
       - name: FEATURE_GATES
         value: '{"DynamicResourceAllocation":true,"ContextualLogging":true}'
       - name: RUNTIME_CONFIG
-        value: '{"resource.k8s.io/v1alpha1":"true"}'
+        value: '{"resource.k8s.io/v1alpha2":"true"}'
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"

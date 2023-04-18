@@ -18,7 +18,6 @@ package tide
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -122,7 +121,7 @@ func NewGerritController(
 		newPoolPending:   make(chan bool),
 	}
 
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(configOptions.InRepoConfigCacheSize, cfgAgent, gc, configOptions.InRepoConfigCacheCopies)
+	cacheGetter, err := config.NewInRepoConfigCache(configOptions.InRepoConfigCacheSize, cfgAgent, gc)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
 	}
@@ -146,9 +145,9 @@ type GerritProvider struct {
 	gc          gerritClient
 	pjclientset ctrlruntimeclient.Client
 
-	cookiefilePath           string
-	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler
-	tokenPathOverride        string
+	cookiefilePath    string
+	inRepoConfigCache *config.InRepoConfigCache
+	tokenPathOverride string
 
 	logger *logrus.Entry
 }
@@ -157,7 +156,7 @@ func newGerritProvider(
 	logger *logrus.Entry,
 	cfg config.Getter,
 	pjclientset ctrlruntimeclient.Client,
-	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler,
+	inRepoConfigCache *config.InRepoConfigCache,
 	cookiefilePath string,
 	tokenPathOverride string,
 ) *GerritProvider {
@@ -171,13 +170,13 @@ func newGerritProvider(
 	gerritClient.ApplyGlobalConfig(orgRepoConfigGetter, nil, cookiefilePath, tokenPathOverride, nil)
 
 	return &GerritProvider{
-		logger:                   logger,
-		cfg:                      cfg,
-		pjclientset:              pjclientset,
-		gc:                       gerritClient,
-		inRepoConfigCacheHandler: inRepoConfigCacheHandler,
-		cookiefilePath:           cookiefilePath,
-		tokenPathOverride:        tokenPathOverride,
+		logger:            logger,
+		cfg:               cfg,
+		pjclientset:       pjclientset,
+		gc:                gerritClient,
+		inRepoConfigCache: inRepoConfigCache,
+		cookiefilePath:    cookiefilePath,
+		tokenPathOverride: tokenPathOverride,
 	}
 }
 
@@ -348,11 +347,11 @@ func (p *GerritProvider) GetTideContextPolicy(org, repo, branch string, baseSHAG
 	return &gerritContextChecker{}, nil
 }
 
-func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
+func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) *types.PullRequestMergeType {
 	var res types.PullRequestMergeType
 	pr := crc.Gerrit
 	if pr == nil {
-		return res, errors.New("programmer error: crc.Gerrit cannot be nil for GerritProvider")
+		return nil
 	}
 
 	// Translate merge methods to types that git could understand. The merge
@@ -374,7 +373,7 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) (types.PullRequest
 		res = types.MergeMerge
 	}
 
-	return res, nil
+	return &res
 }
 
 // GetPresubmits gets presubmit jobs for a PR.
@@ -386,8 +385,8 @@ func (p *GerritProvider) GetPresubmits(identifier string, baseSHAGetter config.R
 	presubmits := p.cfg().GetPresubmitsStatic(identifier)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
-	if p.inRepoConfigCacheHandler != nil {
-		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
+	if p.inRepoConfigCache != nil {
+		presubmitsFromCache, err := p.inRepoConfigCache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
 		}

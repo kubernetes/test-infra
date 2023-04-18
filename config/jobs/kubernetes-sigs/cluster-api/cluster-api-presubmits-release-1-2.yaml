@@ -12,7 +12,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -35,7 +35,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-apidiff-release-1-2
@@ -51,7 +51,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -73,7 +73,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -95,7 +95,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -128,7 +128,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -160,7 +160,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -194,7 +194,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -231,7 +231,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -250,7 +250,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-e2e-full-release-1-2
-  - name: pull-cluster-api-e2e-workload-upgrade-1-26-latest-release-1-2
+  - name: pull-cluster-api-e2e-workload-upgrade-1-25-1-26-release-1-2
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -271,15 +271,15 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.26"
+            value: "stable-1.25"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.27"
+            value: "stable-1.26"
           - name: ETCD_VERSION_UPGRADE_TO
             value: "3.5.6-0"
           - name: COREDNS_VERSION_UPGRADE_TO
@@ -294,4 +294,4 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
-      testgrid-tab-name: capi-pr-e2e-release-1-2-1-26-latest
+      testgrid-tab-name: capi-pr-e2e-release-1-2-1-25-1-26

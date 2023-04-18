@@ -27,10 +27,12 @@ import (
 	"strings"
 	"text/template"
 
+	gyaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
+
 	v1 "k8s.io/api/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -45,7 +47,7 @@ const (
 	descriptionAnnotation        = "description"
 )
 
-func generatePostsubmits(c config.JobConfig, version string) (map[string][]config.Postsubmit, error) {
+func generatePostsubmits(c config.JobConfig, vars templateVars) (map[string][]config.Postsubmit, error) {
 	newPostsubmits := map[string][]config.Postsubmit{}
 	for repo, postsubmits := range c.PostsubmitsStatic {
 		for _, postsubmit := range postsubmits {
@@ -53,33 +55,39 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 				continue
 			}
 			p := postsubmit
-			p.Name = generateNameVariant(p.Name, version, postsubmit.Annotations[suffixAnnotation] == "true")
+			p.Name = generateNameVariant(p.Name, vars.Version, postsubmit.Annotations[suffixAnnotation] == "true")
 			p.SkipBranches = nil
-			p.Branches = []string{"release-" + version}
+			p.Branches = []string{"release-" + vars.Version}
 			if p.Spec != nil {
 				for i := range p.Spec.Containers {
 					c := &p.Spec.Containers[i]
-					c.Env = fixEnvVars(c.Env, version)
-					c.Image = fixImage(c.Image, version)
+					c.Env = fixEnvVars(c.Env, vars.Version)
+					c.Image = fixImage(c.Image, vars.Version)
 					var err error
-					c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+					c.Command, err = performReplacement(c.Command, vars, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
 					}
-					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
+					c.Args, err = performReplacement(c.Args, vars, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
+					}
+					for i := range c.Env {
+						c.Env[i].Name, c.Env[i].Value, err = performEnvReplacement(c.Env[i].Name, c.Env[i].Value, vars, p.Annotations[replacementAnnotation])
+						if err != nil {
+							return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
+						}
 					}
 				}
 			}
-			p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
+			p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, vars.Version, false))
 			newPostsubmits[repo] = append(newPostsubmits[repo], p)
 		}
 	}
 	return newPostsubmits, nil
 }
 
-func generatePresubmits(c config.JobConfig, version string) (map[string][]config.Presubmit, error) {
+func generatePresubmits(c config.JobConfig, vars templateVars) (map[string][]config.Presubmit, error) {
 	newPresubmits := map[string][]config.Presubmit{}
 	for repo, presubmits := range c.PresubmitsStatic {
 		for _, presubmit := range presubmits {
@@ -88,25 +96,31 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 			}
 			p := presubmit
 			p.SkipBranches = nil
-			p.Branches = []string{"release-" + version}
-			p.Context = generatePresubmitContextVariant(p.Name, p.Context, version)
+			p.Branches = []string{"release-" + vars.Version}
+			p.Context = generatePresubmitContextVariant(p.Name, p.Context, vars.Version)
 			if p.Spec != nil {
 				for i := range p.Spec.Containers {
 					c := &p.Spec.Containers[i]
-					c.Env = fixEnvVars(c.Env, version)
-					c.Image = fixImage(c.Image, version)
+					c.Env = fixEnvVars(c.Env, vars.Version)
+					c.Image = fixImage(c.Image, vars.Version)
 					var err error
-					c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+					c.Command, err = performReplacement(c.Command, vars, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
 					}
-					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
+					c.Args, err = performReplacement(c.Args, vars, p.Annotations[replacementAnnotation])
 					if err != nil {
 						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
+					}
+					for i := range c.Env {
+						c.Env[i].Name, c.Env[i].Value, err = performEnvReplacement(c.Env[i].Name, c.Env[i].Value, vars, p.Annotations[replacementAnnotation])
+						if err != nil {
+							return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
+						}
 					}
 				}
 			}
-			p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, true))
+			p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, vars.Version, true))
 			newPresubmits[repo] = append(newPresubmits[repo], p)
 		}
 	}
@@ -120,36 +134,42 @@ func shouldDecorate(c *config.JobConfig, util config.UtilityConfig) bool {
 	return c.DecorateAllJobs
 }
 
-func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic, error) {
+func generatePeriodics(conf config.JobConfig, vars templateVars) ([]config.Periodic, error) {
 	var newPeriodics []config.Periodic
 	for _, periodic := range conf.Periodics {
 		if periodic.Annotations[forkAnnotation] != "true" {
 			continue
 		}
 		p := periodic
-		p.Name = generateNameVariant(p.Name, version, periodic.Annotations[suffixAnnotation] == "true")
+		p.Name = generateNameVariant(p.Name, vars.Version, periodic.Annotations[suffixAnnotation] == "true")
 		if p.Spec != nil {
 			for i := range p.Spec.Containers {
 				c := &p.Spec.Containers[i]
-				c.Image = fixImage(c.Image, version)
-				c.Env = fixEnvVars(c.Env, version)
+				c.Image = fixImage(c.Image, vars.Version)
+				c.Env = fixEnvVars(c.Env, vars.Version)
 				if !shouldDecorate(&conf, p.JobBase.UtilityConfig) {
-					c.Command = fixBootstrapArgs(c.Command, version)
-					c.Args = fixBootstrapArgs(c.Args, version)
+					c.Command = fixBootstrapArgs(c.Command, vars.Version)
+					c.Args = fixBootstrapArgs(c.Args, vars.Version)
 				}
 				var err error
-				c.Command, err = performReplacement(c.Command, version, p.Annotations[replacementAnnotation])
+				c.Command, err = performReplacement(c.Command, vars, p.Annotations[replacementAnnotation])
 				if err != nil {
 					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
 				}
-				c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
+				c.Args, err = performReplacement(c.Args, vars, p.Annotations[replacementAnnotation])
 				if err != nil {
 					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
+				}
+				for i := range c.Env {
+					c.Env[i].Name, c.Env[i].Value, err = performEnvReplacement(c.Env[i].Name, c.Env[i].Value, vars, p.Annotations[replacementAnnotation])
+					if err != nil {
+						return nil, fmt.Errorf("%s: %w", periodic.Name, err)
+					}
 				}
 			}
 		}
 		if shouldDecorate(&conf, p.JobBase.UtilityConfig) {
-			p.ExtraRefs = fixExtraRefs(p.ExtraRefs, version)
+			p.ExtraRefs = fixExtraRefs(p.ExtraRefs, vars.Version)
 		}
 		if interval, ok := p.Annotations[periodicIntervalAnnotation]; ok {
 			if _, ok := p.Annotations[cronAnnotation]; ok {
@@ -171,12 +191,12 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 			}
 		}
 		var err error
-		p.Tags, err = performReplacement(p.Tags, version, p.Annotations[replacementAnnotation])
+		p.Tags, err = performReplacement(p.Tags, vars, p.Annotations[replacementAnnotation])
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", periodic.Name, err)
 		}
 		p.Labels = performDeletion(p.Labels, p.Annotations[deletionAnnotation])
-		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
+		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, vars.Version, false))
 		newPeriodics = append(newPeriodics, p)
 	}
 	return newPeriodics, nil
@@ -212,7 +232,22 @@ func evaluateTemplate(s string, c interface{}) (string, error) {
 	return wr.String(), nil
 }
 
-func performReplacement(args []string, version, replacements string) ([]string, error) {
+func performEnvReplacement(name, value string, vars templateVars, replacements string) (string, string, error) {
+	v, err := performReplacement([]string{name + "=" + value}, vars, replacements)
+	if err != nil {
+		return "", "", err
+	}
+	if len(v) != 1 {
+		return "", "", fmt.Errorf("expected a single string result replacing env var, got %d", len(v))
+	}
+	parts := strings.SplitN(v[0], "=", 2)
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("expected NAME=VALUE format replacing env var, got %s", v[0])
+	}
+	return parts[0], parts[1], nil
+}
+
+func performReplacement(args []string, vars templateVars, replacements string) ([]string, error) {
 	if args == nil {
 		return nil, nil
 	}
@@ -227,7 +262,7 @@ func performReplacement(args []string, version, replacements string) ([]string, 
 		if len(s) != 2 {
 			return nil, fmt.Errorf("failed to parse replacement %q", r)
 		}
-		v, err := evaluateTemplate(s[1], struct{ Version string }{version})
+		v, err := evaluateTemplate(s[1], vars)
 		if err != nil {
 			return nil, err
 		}
@@ -390,14 +425,20 @@ func generatePresubmitContextVariant(name, context, version string) string {
 type options struct {
 	jobConfig  string
 	outputPath string
-	newVersion string
+	vars       templateVars
+}
+
+type templateVars struct {
+	Version   string
+	GoVersion string
 }
 
 func parseFlags() options {
 	o := options{}
 	flag.StringVar(&o.jobConfig, "job-config", "", "Path to the job config")
 	flag.StringVar(&o.outputPath, "output", "", "Path to the output yaml. if not specified, just validate.")
-	flag.StringVar(&o.newVersion, "version", "", "Version number to generate jobs for")
+	flag.StringVar(&o.vars.Version, "version", "", "Version number to generate jobs for")
+	flag.StringVar(&o.vars.GoVersion, "go-version", "", "Current go version in use; see http://git.k8s.io/kubernetes/.go-version")
 	flag.Parse()
 	return o
 }
@@ -406,11 +447,17 @@ func validateOptions(o options) error {
 	if o.jobConfig == "" {
 		return errors.New("--job-config must be specified")
 	}
-	if o.newVersion == "" {
+	if o.vars.Version == "" {
 		return errors.New("--version must be specified")
 	}
-	if match, err := regexp.MatchString(`^\d+\.\d+$`, o.newVersion); err != nil || !match {
-		return fmt.Errorf("%q doesn't look like a valid version number", o.newVersion)
+	if match, err := regexp.MatchString(`^\d+\.\d+$`, o.vars.Version); err != nil || !match {
+		return fmt.Errorf("%q doesn't look like a valid version number", o.vars.Version)
+	}
+	if o.vars.GoVersion == "" {
+		return errors.New("--go-version must be specified; http://git.k8s.io/kubernetes/.go-version contains the recommended value")
+	}
+	if match, err := regexp.MatchString(`^\d+\.\d+(\.\d+)?(rc\d)?$`, o.vars.GoVersion); err != nil || !match {
+		return fmt.Errorf("%q doesn't look like a valid go version; should match the format 1.20rc1, 1.20, or 1.20.2", o.vars.GoVersion)
 	}
 	return nil
 }
@@ -425,18 +472,24 @@ func main() {
 		log.Fatalf("Failed to load job config: %v\n", err)
 	}
 
-	newPresubmits, err := generatePresubmits(c, o.newVersion)
+	newPresubmits, err := generatePresubmits(c, o.vars)
 	if err != nil {
 		log.Fatalf("Failed to generate presubmits: %v.\n", err)
 	}
-	newPeriodics, err := generatePeriodics(c, o.newVersion)
+	newPeriodics, err := generatePeriodics(c, o.vars)
 	if err != nil {
 		log.Fatalf("Failed to generate periodics: %v.\n", err)
 	}
-	newPostsubmits, err := generatePostsubmits(c, o.newVersion)
+	newPostsubmits, err := generatePostsubmits(c, o.vars)
 	if err != nil {
 		log.Fatalf("Failed to generate postsubmits: %v.\n", err)
 	}
+
+	// We need to use FutureLineWrap because "fork-per-release-cron" is too long
+	// causing the annotation value to be split into two lines.
+	// We use gopkg.in/yaml here because sigs.k8s.io/yaml doesn't export this
+	// function. sigs.k8s.io/yaml uses gopkg.in/yaml under the hood.
+	gyaml.FutureLineWrap()
 
 	output, err := yaml.Marshal(map[string]interface{}{
 		"periodics":   newPeriodics,

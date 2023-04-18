@@ -29,5 +29,5 @@ periodics:
               export PATH=$PATH:$GOPATH/bin
               apt update && apt install parallel -qqy
               go install github.com/google/go-containerregistry/cmd/gcrane@latest
-              parallel "gcrane cp --recursive --allow-nondistributable-artifacts us.gcr.io/k8s-artifacts-prod {}-docker.pkg.dev/k8s-artifacts-prod/images" ::: us-west3 us-west4
+              parallel "gcrane cp --recursive --allow-nondistributable-artifacts us.gcr.io/k8s-artifacts-prod {}-docker.pkg.dev/k8s-artifacts-prod/images" ::: asia-east2 europe-west3 southamerica-east1
               gcrane cp --recursive --allow-nondistributable-artifacts us.gcr.io/k8s-artifacts-prod gcr.io/k8s-artifacts-prod

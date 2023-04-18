@@ -21,10 +21,6 @@ Most of these objects are simply listed in a [YAML config file][configuration] f
 If you just have a [Prow job](/prow/jobs.md) configuration you want to appear in an existing
 dashboard, add annotations to that Prow job.
 
-If it's a Prow job in [the k8s.io instance](/config/jobs), you don't need to do anything else.
-
-If it's a Prow job in another instance of Prow, use [`transfigure`](cmd/transfigure).
-
 Add this to your Prow job:
 
 ```yaml
@@ -45,10 +41,11 @@ annotations:
   testgrid-base-options: base-options      # optionally, sets 'base_options' tab option.
 ```
 
-This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a _different_
-instance of Prow, you may want to use [Transfigure](cmd/transfigure) instead.
+This functionality is provided by [Configurator](cmd/configurator). If you have Prow jobs in a new
+instance of Prow, you may also have to set up [Config Merger](./merging.md) also.
 
-If you need to create a new dashboard, or do anything more advanced, read on.
+This is sufficient for TestGrid and Prow. If you're using TestGrid independently of Prow,
+read on.
 
 ## Configuration
 

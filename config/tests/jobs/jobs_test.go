@@ -52,6 +52,14 @@ var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster
 // Loaded at TestMain.
 var c *cfg.Config
 
+func isCritical(clusterName string) bool {
+	return clusterName == "k8s-infra-prow-build"
+}
+
+func isEKSCluster(clusterName string) bool {
+	return clusterName == "eks-prow-build-cluster"
+}
+
 func TestMain(m *testing.M) {
 	flag.Parse()
 	if *configPath == "" {
@@ -1072,8 +1080,7 @@ func TestKubernetesMergeBlockingJobsCIPolicy(t *testing.T) {
 		}
 		// job Pod must qualify for Guaranteed QoS
 		errs := verifyPodQOSGuaranteed(job.Spec, true)
-		// jobs must run on k8s-infra-prow-build cluster
-		if job.Cluster != "k8s-infra-prow-build" {
+		if !isCritical(job.Cluster) {
 			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build, found: %v", job.Cluster))
 		}
 		branches := job.Branches
@@ -1097,8 +1104,7 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		}
 		// job Pod must qualify for Guaranteed QoS
 		errs := verifyPodQOSGuaranteed(job.Spec, true)
-		// jobs must run on k8s-infra-prow-build cluster
-		if job.Cluster != "k8s-infra-prow-build" {
+		if !isCritical(job.Cluster) {
 			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build, found: %v", job.Cluster))
 		}
 		if len(errs) > 0 {
@@ -1115,8 +1121,7 @@ func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
 	jobsToFix := 0
 	jobs := allStaticJobs()
 	for _, job := range jobs {
-		// Only consider Pods destined for the k8s-infra-prow-builds cluster
-		if job.Spec == nil || job.Cluster != "k8s-infra-prow-build" {
+		if job.Spec == nil || (!isCritical(job.Cluster) && !isEKSCluster(job.Cluster)) {
 			continue
 		}
 		// job Pod must qualify for Guaranteed QoS

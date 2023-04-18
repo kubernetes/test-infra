@@ -5,9 +5,9 @@ dashboard_groups:
     - sig-cluster-lifecycle-kubeadm
     - sig-cluster-lifecycle-cluster-addons
     - sig-cluster-lifecycle-cluster-api
-    - sig-cluster-lifecycle-cluster-api-1.1
     - sig-cluster-lifecycle-cluster-api-1.2
     - sig-cluster-lifecycle-cluster-api-1.3
+    - sig-cluster-lifecycle-cluster-api-1.4
     - sig-cluster-lifecycle-cluster-api-addon-provider-helm
     - sig-cluster-lifecycle-cluster-api-provider-aws
     - sig-cluster-lifecycle-cluster-api-provider-aws-1.5
@@ -32,9 +32,9 @@ dashboards:
 - name: sig-cluster-lifecycle-kubeadm
 - name: sig-cluster-lifecycle-cluster-addons
 - name: sig-cluster-lifecycle-cluster-api
-- name: sig-cluster-lifecycle-cluster-api-1.1
 - name: sig-cluster-lifecycle-cluster-api-1.2
 - name: sig-cluster-lifecycle-cluster-api-1.3
+- name: sig-cluster-lifecycle-cluster-api-1.4
 - name: sig-cluster-lifecycle-cluster-api-addon-provider-helm
 - name: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
 - name: sig-cluster-lifecycle-cluster-api-provider-aws

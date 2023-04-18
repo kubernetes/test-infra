@@ -1,0 +1,5 @@
+images:
+  cos-97:
+    image_family: cos-97-lts
+    project: cos-cloud
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config-systemd.toml"

@@ -6,6 +6,7 @@ dashboard_groups:
     - sig-windows-1.24-release
     - sig-windows-1.25-release
     - sig-windows-1.26-release
+    - sig-windows-1.27-release
     - sig-windows-master-release
     - sig-windows-presubmit
     - sig-windows-gce
@@ -13,6 +14,7 @@ dashboard_groups:
     - sig-windows-containerd-runtime-signal
     - sig-windows-push-images
     - sig-windows-soak-tests
+    - sig-windows-experimental
 
 dashboards:
 - name: sig-windows-signal
@@ -20,10 +22,12 @@ dashboards:
 - name: sig-windows-1.24-release
 - name: sig-windows-1.25-release
 - name: sig-windows-1.26-release
+- name: sig-windows-1.27-release
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
 - name: sig-windows-gce
 - name: sig-windows-push-images
+- name: sig-windows-experimental
 - name: sig-windows-soak-tests
   dashboard_tab:
     - name: soak-tests-capz-windows
@@ -61,6 +65,12 @@ dashboards:
   - name: aks-ltsc2022-azurecni-1.25
     description: Runs Kubernetes E2E tests on an AKS deployment (1.25 release) with LTSC 2022 nodes and AzureCNI.
     test_group_name: aks-e2e-ltsc2022-azurecni-1.25
+  - name: aks-ltsc2019-azurecni-1.26
+    description: Runs Kubernetes E2E tests on an AKS deployment (1.26 release) with LTSC 2019 nodes and AzureCNI.
+    test_group_name: aks-e2e-ltsc2019-azurecni-1.26
+  - name: aks-ltsc2022-azurecni-1.26
+    description: Runs Kubernetes E2E tests on an AKS deployment (1.26 release) with LTSC 2022 nodes and AzureCNI.
+    test_group_name: aks-e2e-ltsc2022-azurecni-1.26
 - name: sig-windows-containerd-runtime-signal
   dashboard_tab:
   - name: win-2019-containerd-master-integration
@@ -94,6 +104,10 @@ test_groups:
   gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2019-azurecni-1.25
 - name: aks-e2e-ltsc2022-azurecni-1.25
   gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2022-azurecni-1.25
+- name: aks-e2e-ltsc2019-azurecni-1.26
+  gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2019-azurecni-1.26
+- name: aks-e2e-ltsc2022-azurecni-1.26
+  gcs_prefix: k8s-ovn/logs/aks-e2e-ltsc2022-azurecni-1.26
 # Containerd Runtime integration test groups
 - name: integration-containerd-windows-ltsc2019
   gcs_prefix: containerd-integration/logs/windows-ltsc2019

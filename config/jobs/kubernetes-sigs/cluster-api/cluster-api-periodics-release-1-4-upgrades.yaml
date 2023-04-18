@@ -1,0 +1,357 @@
+periodics:
+- name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-1-4
+  interval: 24h
+  decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: release-1.4
+      path_alias: sigs.k8s.io/cluster-api
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.21"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.22"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.5.3-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "v1.8.4"
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
+    testgrid-tab-name: capi-e2e-release-1-4-1-21-1-22
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-1-4
+  interval: 24h
+  decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: release-1.4
+      path_alias: sigs.k8s.io/cluster-api
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.22"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.23"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.5.3-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "v1.8.6"
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
+    testgrid-tab-name: capi-e2e-release-1-4-1-22-1-23
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-23-1-24-release-1-4
+  interval: 24h
+  decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: release-1.4
+      path_alias: sigs.k8s.io/cluster-api
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.23"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.24"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.5.3-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "v1.8.6"
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
+    testgrid-tab-name: capi-e2e-release-1-4-1-23-1-24
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-24-1-25-release-1-4
+  interval: 24h
+  decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: release-1.4
+      path_alias: sigs.k8s.io/cluster-api
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.24"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.25"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.5.4-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "v1.9.3"
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
+    testgrid-tab-name: capi-e2e-release-1-4-1-24-1-25
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-25-1-26-release-1-4
+  interval: 24h
+  decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: release-1.4
+      path_alias: sigs.k8s.io/cluster-api
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.25"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.26"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.5.6-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "v1.9.3"
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
+    testgrid-tab-name: capi-e2e-release-1-4-1-25-1-26
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-26-1-27-release-1-4
+  interval: 24h
+  decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: release-1.4
+      path_alias: sigs.k8s.io/cluster-api
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.26"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.27"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.5.6-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "v1.9.3"
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
+    testgrid-tab-name: capi-e2e-release-1-4-1-26-1-27
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-27-latest-release-1-4
+  interval: 24h
+  decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: release-1.4
+      path_alias: sigs.k8s.io/cluster-api
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.27"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "ci/latest-1.28"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.5.7-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "v1.10.1"
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
+    testgrid-tab-name: capi-e2e-release-1-4-1-27-latest
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"

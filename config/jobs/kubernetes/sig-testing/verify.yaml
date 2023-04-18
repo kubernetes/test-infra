@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -44,6 +44,45 @@ presubmits:
           requests:
             cpu: 7
             memory: 12Gi
+  - name: pull-kubernetes-verify-strict-lint
+    cluster: k8s-infra-prow-build
+    decorate: true
+    # This entire job is currently experimental. If it turns out to be useful,
+    # the job can be removed and the same check can run as part of pull-kubernetes-verify
+    # by removing the exclusion of verify-golangci-lint-pr.sh in hack/make-rules/verify.sh.
+    always_run: false
+    optional: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: sig-testing-misc
+      description: Runs golangci-lint with a stricter configuration for new code.
+      testgrid-alert-email: patrick.ohly@intel.com
+      testgrid-num-failures-to-alert: "15"
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - /bin/sh
+        - "-c"
+        - "if [ -x hack/verify-golangci-lint-pr.sh ]; then hack/verify-golangci-lint-pr.sh; fi"
+        resources:
+          # Consider reducing memory limits after govet memory usage issue is
+          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
+          limits:
+            cpu: 7
+            memory: 12Gi
+          requests:
+            cpu: 7
+            memory: 12Gi
   - name: pull-kubernetes-verify-go-canary
     cluster: k8s-infra-prow-build
     always_run: false
@@ -60,7 +99,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-go-canary
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -109,7 +148,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -156,7 +195,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       imagePullPolicy: Always
       command:
       - runner.sh

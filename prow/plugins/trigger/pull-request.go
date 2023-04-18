@@ -38,6 +38,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
+const (
+	abortedDescription = "Aborted by trigger plugin."
+)
+
 func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) error {
 	org, repo, a := orgRepoAuthor(pr.PullRequest)
 	author := string(a)
@@ -180,6 +184,7 @@ func abortAllJobs(c Client, pr *github.PullRequest) error {
 			continue
 		}
 		job.Status.State = prowapi.AbortedState
+		job.Status.Description = abortedDescription
 		// We use Update and not Patch here, because we are not the authority of the .Status.State field
 		// and must not overwrite changes made to it in the interim by the responsible agent.
 		// The accepted trade-off for now is that this leads to failure if unrelated fields where changed
