@@ -478,9 +478,10 @@ func TestGetLatestProwJobs(t *testing.T) {
 							BaseSHA: "e92d5c525795eafb82cf16e3ab151b567b47e333",
 							Pulls: []prowapi.Pull{
 								{
-									Number: 17061,
-									Author: "enj",
-									SHA:    "f94a3a51f59a693642e39084f03efa83af9442d3",
+									Number:  17061,
+									Author:  "enj",
+									SHA:     "f94a3a51f59a693642e39084f03efa83af9442d3",
+									HeadRef: "fixes-123",
 								},
 							},
 						},
@@ -512,9 +513,10 @@ func TestGetLatestProwJobs(t *testing.T) {
 							BaseSHA: "e92d5c525795eafb82cf16e3ab151b567b47e333",
 							Pulls: []prowapi.Pull{
 								{
-									Number: 17061,
-									Author: "enj",
-									SHA:    "f94a3a51f59a693642e39084f03efa83af9442d3",
+									Number:  17061,
+									Author:  "enj",
+									SHA:     "f94a3a51f59a693642e39084f03efa83af9442d3",
+									HeadRef: "fixes-123",
 								},
 							},
 						},
@@ -1090,6 +1092,7 @@ func TestCreateRefs(t *testing.T) {
 		HTMLURL: "https://github.example.com/kubernetes/Hello-World/pull/42",
 		Head: github.PullRequestBranch{
 			SHA: "123456",
+			Ref: "my-great-change",
 		},
 		Base: github.PullRequestBranch{
 			Ref: "master",
@@ -1118,6 +1121,7 @@ func TestCreateRefs(t *testing.T) {
 				Number:     42,
 				Author:     "ibzib",
 				SHA:        "123456",
+				HeadRef:    "my-great-change",
 				Title:      "hello world",
 				Link:       "https://github.example.com/kubernetes/Hello-World/pull/42",
 				AuthorLink: "https://github.example.com/ibzib",

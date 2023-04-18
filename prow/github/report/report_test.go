@@ -365,9 +365,10 @@ func TestReportStatus(t *testing.T) {
 						Org:  "k8s",
 						Repo: "test-infra",
 						Pulls: []prowapi.Pull{{
-							Author: "me",
-							Number: 1,
-							SHA:    "abcdef",
+							Author:  "me",
+							Number:  1,
+							SHA:     "abcdef",
+							HeadRef: "fixes-123",
 						}},
 					},
 				},

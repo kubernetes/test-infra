@@ -1030,6 +1030,10 @@ type Pull struct {
 	// github: pull/123/head
 	// gerrit: refs/changes/00/123/1
 	Ref string `json:"ref,omitempty"`
+	// HeadRef is the git ref (branch name) of the proposed change.  This can be more human-readable than just
+	// a PR #, and some tools want this metadata to help associate the work with a pull request (e.g. some code
+	// scanning services, or chromatic.com).
+	HeadRef string `json:"head_ref,omitempty"`
 	// Link links to the pull request itself.
 	Link string `json:"link,omitempty"`
 	// CommitLink links to the commit identified by the SHA.
