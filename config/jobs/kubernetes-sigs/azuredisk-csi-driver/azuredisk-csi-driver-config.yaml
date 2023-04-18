@@ -94,6 +94,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az
     decorate: true
+    decoration_config:
+      timeout: 3h
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -143,6 +145,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az
     decorate: true
+    decoration_config:
+      timeout: 3h
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -193,6 +197,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration
     decorate: true
+    decoration_config:
+      timeout: 3h
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -809,6 +815,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz
     decorate: true
+    decoration_config:
+      timeout: 3h
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -850,6 +858,8 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-vmssflex
     decorate: true
+    decoration_config:
+      timeout: 3h
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
