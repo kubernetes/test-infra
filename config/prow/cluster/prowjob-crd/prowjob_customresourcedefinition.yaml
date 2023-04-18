@@ -475,6 +475,13 @@ spec:
                             description: CommitLink links to the commit identified
                               by the SHA.
                             type: string
+                          head_ref:
+                            description: 'HeadRef is the git ref (branch name) of
+                              the proposed change.  This can be more human-readable
+                              than just a PR #, and some tools want this metadata
+                              to help associate the work with a pull request (e.g.
+                              some code scanning services, or chromatic.com).'
+                            type: string
                           link:
                             description: Link links to the pull request itself.
                             type: string
@@ -21382,6 +21389,13 @@ spec:
                         commit_link:
                           description: CommitLink links to the commit identified by
                             the SHA.
+                          type: string
+                        head_ref:
+                          description: 'HeadRef is the git ref (branch name) of the
+                            proposed change.  This can be more human-readable than
+                            just a PR #, and some tools want this metadata to help
+                            associate the work with a pull request (e.g. some code
+                            scanning services, or chromatic.com).'
                           type: string
                         link:
                           description: Link links to the pull request itself.

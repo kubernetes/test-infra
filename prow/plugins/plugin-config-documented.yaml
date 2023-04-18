@@ -79,9 +79,6 @@ bugzilla:
     # The `*` wildcard will apply to all branches.
     default:
         "":
-            # EnableBackporting enables functionality to create new backport bugs for
-            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
-            EnableBackporting: false
             # AddExternalLink determines whether the pull request will be added to the Bugzilla
             # bug using the ExternalBug tracker API after being validated
             add_external_link: false
@@ -109,6 +106,9 @@ bugzilla:
             # releases for dependent bugs. If set, all blockers must have a
             # valid target release.
             dependent_bug_target_releases: null
+            # EnableBackporting enables functionality to create new backport bugs for
+            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+            enable_backporting: false
             # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
             exclude_defaults: false
             # IsOpen determines whether a bug needs to be open to be valid
@@ -152,9 +152,6 @@ bugzilla:
             # The `*` wildcard will apply to all branches.
             default:
                 "":
-                    # EnableBackporting enables functionality to create new backport bugs for
-                    # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
-                    EnableBackporting: false
                     # AddExternalLink determines whether the pull request will be added to the Bugzilla
                     # bug using the ExternalBug tracker API after being validated
                     add_external_link: false
@@ -182,6 +179,9 @@ bugzilla:
                     # releases for dependent bugs. If set, all blockers must have a
                     # valid target release.
                     dependent_bug_target_releases: null
+                    # EnableBackporting enables functionality to create new backport bugs for
+                    # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+                    enable_backporting: false
                     # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
                     exclude_defaults: false
                     # IsOpen determines whether a bug needs to be open to be valid
@@ -225,9 +225,6 @@ bugzilla:
                     # The `*` wildcard will apply to all branches.
                     branches:
                         "":
-                            # EnableBackporting enables functionality to create new backport bugs for
-                            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
-                            EnableBackporting: false
                             # AddExternalLink determines whether the pull request will be added to the Bugzilla
                             # bug using the ExternalBug tracker API after being validated
                             add_external_link: false
@@ -255,6 +252,9 @@ bugzilla:
                             # releases for dependent bugs. If set, all blockers must have a
                             # valid target release.
                             dependent_bug_target_releases: null
+                            # EnableBackporting enables functionality to create new backport bugs for
+                            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+                            enable_backporting: false
                             # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
                             exclude_defaults: false
                             # IsOpen determines whether a bug needs to be open to be valid
@@ -338,6 +338,13 @@ config_updater:
             key: ' '
             # Name of ConfigMap
             name: ' '
+            # PartitionedNames is a slice of names of ConfigMaps that the keys should be balanced across.
+            # This is useful when no explicit key is given and file names/paths are used as keys instead.
+            # This is used to work around the 1MB ConfigMap size limit by spreading the keys across multiple
+            # separate ConfigMaps.
+            # PartitionedNames is mutually exclusive with the "Name" field.
+            partitioned_names:
+                - ""
             # UseFullPathAsKey controls if the full path of the original file relative to the
             # repository root should be used as the configmap key. Slashes will be replaced by
             # dashes. Using this avoids the need for unique file names in the original repo.
