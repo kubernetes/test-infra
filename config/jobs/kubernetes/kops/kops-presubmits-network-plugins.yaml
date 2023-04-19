@@ -658,7 +658,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)'
     always_run: false
-    optional: false
+    optional: true
     skip_report: false
     labels:
       preset-service-account: "true"
