@@ -197,9 +197,7 @@ presubmits:
         args:
         - bash
         - -c
-        - >-
-          ./test/build.sh install-lib &&
-          SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
+        - ./test/build.sh install-lib && make e2e-test
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
