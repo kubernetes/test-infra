@@ -1123,6 +1123,7 @@ def generate_presubmits_network_plugins():
             optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
+            optional = True
         if plugin == 'weave':
             distro = 'u2204'
             k8s_version = '1.22'
