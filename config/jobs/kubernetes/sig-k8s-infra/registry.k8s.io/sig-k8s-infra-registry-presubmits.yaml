@@ -37,9 +37,8 @@ presubmits:
       containers:
       - image: golang
         command:
-        - bash
-        - -c
-        - hack/tools/ci-install-shellcheck.sh && make shellcheck
+        - make
+        - shellcheck
         resources:
           limits:
             cpu: 2
