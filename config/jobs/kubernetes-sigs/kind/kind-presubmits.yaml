@@ -232,6 +232,51 @@ presubmits:
             cpu: "4"
             memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - name: pull-kind-e2e-kubernetes-1-27
+    cluster: k8s-infra-prow-build
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.27
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.27
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: "."
+        # TODO(bentheelder): reduce the skip list further
+        # NOTE: changes should filter down to pull-kubernetes-e2e-kind-canary
+        # and then pull-kubernetes-e2e-kind
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - always_run: true
     decorate: true
     decoration_config:
