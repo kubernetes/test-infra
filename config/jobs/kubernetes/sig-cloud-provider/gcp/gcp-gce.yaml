@@ -234,6 +234,7 @@ presubmits:
             - --
             - --build=quick
             - --cluster=
+            - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.18
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -585,6 +586,7 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --check-leaked-resources
+          - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.18
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
