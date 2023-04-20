@@ -47,6 +47,41 @@ postsubmits:
           - --with-git-dir
           - .
   kubernetes/k8s.io:
+  # Special job to deploy the staging registry
+  # this should closely match post-registry-push-images
+  # TODO(bentheelder): rerun_auth_config (let a github team re-run these, I probably need to join a team...)
+  - name: post-k8s-deploy-registry
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+        testgrid-dashboards: sig-k8s-infra-gcb
+    decorate: true
+    branches:
+    - ^main$
+    # run if either the staging root module or the common oci-proxy module are changed
+    run_if_changed: "(^infra/gcp/terraform/k8s-infra-oci-proxy/)|(^infra/gcp/terraform/modules/oci-proxy/)"
+    extra_refs:
+    - org: kubernetes
+      repo: registry.k8s.io
+      base_ref: main
+      # NOTE: the cloudbuild etc are actually from registry.k8s.io
+      # However they will deploy the terraform cchanges here
+      workdir: true
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+          command:
+          - /run.sh
+          args:
+          # this is the project GCB will run in, which is the same as the GCR
+          # images are pushed to.
+          - --project=k8s-staging-infra-tools
+          - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+          - .
+          env:
+          - name: LOG_TO_STDOUT
+            value: "y"
+    # normal image pushing jobs below
     - name: post-k8sio-push-image-octodns-docker
       cluster: k8s-infra-prow-build-trusted
       annotations:
