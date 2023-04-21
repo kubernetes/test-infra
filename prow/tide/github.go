@@ -555,7 +555,7 @@ func (m *mergeChecker) isAllowedToMerge(crc *CodeReviewCommon) (string, error) {
 // overridden by GitHub labels.
 func (mc *mergeChecker) prMergeMethod(c config.Tide, crc *CodeReviewCommon) *types.PullRequestMergeType {
 	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
-	method := c.MergeMethod(repo)
+	method := c.OrgRepoBranchMergeMethod(repo, crc.BaseRefName)
 	squashLabel := c.SquashLabel
 	rebaseLabel := c.RebaseLabel
 	mergeLabel := c.MergeLabel
