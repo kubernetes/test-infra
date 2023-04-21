@@ -3381,7 +3381,7 @@ func (c *client) GetRef(org, repo, ref string) (string, error) {
 		exitCodes: []int{200},
 	}, &res)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	if n := len(res); n > 1 {
