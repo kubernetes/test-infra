@@ -29,4 +29,5 @@ postsubmits:
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-provider-os-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
