@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         command:
         - wrapper.sh
         - ./hack/ci/build-all.sh
@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         command:
         - wrapper.sh
         - make
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-experimental
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-experimental
         command:
         - wrapper.sh
         - make
@@ -69,7 +69,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -112,7 +112,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -160,7 +160,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         command:
         - wrapper.sh
         - bash
@@ -205,7 +205,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         command:
         - wrapper.sh
         - bash
@@ -250,7 +250,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.27
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.27
         command:
         - wrapper.sh
         - bash
@@ -307,7 +307,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.26
+        image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.26
         name: ""
         resources:
           limits:
@@ -349,7 +349,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.25
+        image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.25
         name: ""
         resources:
           limits:
@@ -391,7 +391,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.24
+        image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.24
         name: ""
         resources:
           limits:

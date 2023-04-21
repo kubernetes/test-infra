@@ -22,7 +22,7 @@ postsubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         # workdir appears to be the base of the cloned repo
         command: ["wrapper.sh", "hack/prow-run-e2e.sh"]
         securityContext:
@@ -58,7 +58,7 @@ periodics:
     path_alias: sigs.k8s.io/hierarchical-namespaces
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
       command: ["wrapper.sh", "hack/prow-run-e2e.sh"]
       securityContext:
         privileged: true # Required for docker-in-docker
