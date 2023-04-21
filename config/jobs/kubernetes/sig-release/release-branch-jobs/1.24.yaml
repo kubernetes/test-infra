@@ -114,7 +114,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.24
+      image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.24
       name: ""
       resources:
         limits:
@@ -471,7 +471,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.24
+      image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.24
       name: ""
       resources:
         limits:
@@ -520,7 +520,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.24
+      image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.24
       name: ""
       resources:
         limits:
@@ -1302,7 +1302,7 @@ presubmits:
           value: ipv6
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.24
+        image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.24
         name: ""
         resources:
           limits:
@@ -1462,7 +1462,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.24
+        image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.24
         name: ""
         resources:
           limits:
@@ -1505,7 +1505,7 @@ presubmits:
           value: "true"
         - name: IP_FAMILY
           value: ipv6
-        image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.24
+        image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.24
         name: ""
         resources:
           limits:
@@ -1542,7 +1542,7 @@ presubmits:
           value: "true"
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-1.24
+        image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-1.24
         name: ""
         resources:
           limits:
