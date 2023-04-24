@@ -422,6 +422,11 @@ func TestGetRef(t *testing.T) {
 			expectedSHA:    "abcde",
 		},
 		{
+			name:           "unexpected response to trigger an error",
+			githubResponse: []byte(`malformed json`),
+			expectedError:  "invalid character 'm' looking for beginning of value",
+		},
+		{
 			name: "multiple refs, no match",
 			githubResponse: []byte(`
 [
@@ -502,8 +507,14 @@ func TestGetRef(t *testing.T) {
 			if errMsg != tc.expectedError {
 				t.Fatalf("expected error %q, got error %q", tc.expectedError, err)
 			}
-			if !errors.Is(err, tc.expectedErrorType) {
-				t.Errorf("expected error of type %T, got %T", tc.expectedErrorType, err)
+
+			// skip checking the error type for the case
+			// because the actual type is json.SyntaxError that does not provide the Is method
+			// and it is hard to raise other type of errors for the test
+			if tc.name != "unexpected response to trigger an error" {
+				if !errors.Is(err, tc.expectedErrorType) {
+					t.Errorf("expected error of type %T, got %T", tc.expectedErrorType, err)
+				}
 			}
 			if sha != tc.expectedSHA {
 				t.Errorf("expected sha %q, got sha %q", tc.expectedSHA, sha)
