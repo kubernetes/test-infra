@@ -41,7 +41,7 @@ presubmits:
           value: json
         - name: KIND_CLUSTER_LOG_LEVEL
           # Default is 4, but we want to exercise more log calls and get more output.
-          value: "10"
+          value: "6"
         - name: FEATURE_GATES
           value: '{"ContextualLogging":true}'
         # don't retry conformance tests
@@ -110,7 +110,7 @@ presubmits:
           value: text
         - name: KIND_CLUSTER_LOG_LEVEL
           # Default is 4, but we want to exercise more log calls and get more output.
-          value: "10"
+          value: "6"
         - name: FEATURE_GATES
           value: '{"ContextualLogging":true}'
         # don't retry conformance tests
