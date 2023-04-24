@@ -24,6 +24,10 @@ presubmits:
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.27
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
@@ -69,6 +73,10 @@ presubmits:
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.27
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
@@ -116,6 +124,10 @@ presubmits:
         repo: azurefile-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.27
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
@@ -162,6 +174,10 @@ presubmits:
         repo: azurefile-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.27
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
@@ -206,6 +222,10 @@ presubmits:
       base_ref: release-1.8
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: release-1.27
+      path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
@@ -223,46 +243,6 @@ presubmits:
           value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
         - name: CONFORMANCE_NODES
           value: "25"
-
-  - name: pull-kubernetes-e2e-capz-ha-control-plane
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    always_run: false
-    optional: true
-    path_alias: k8s.io/kubernetes
-    branches:
-      - release-1.27
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-    extra_refs:
-    - org: jackfrancis #TODO change back to kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: capz-ha-control-plane-tests #TODO change back to main
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-        command:
-        - runner.sh
-        - ./scripts/ci-conformance.sh
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 1
-            memory: "4Gi"
-        env:
-        - name: KUBETEST_CONF_PATH
-          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance.yaml
-        - name: CONFORMANCE_NODES
-          value: "1"
-        - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
-          value: "3"
 
 periodics:
 - interval: 3h

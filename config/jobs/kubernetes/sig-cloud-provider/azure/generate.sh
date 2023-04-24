@@ -88,6 +88,10 @@ presubmits:
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: ${ccm_branch}
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: ${kubekins_e2e_image}-master
@@ -133,6 +137,10 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: ${ccm_branch}
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: ${kubekins_e2e_image}-master
@@ -180,6 +188,10 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
         repo: azurefile-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: ${ccm_branch}
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: ${kubekins_e2e_image}-master
@@ -226,6 +238,10 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
         repo: azurefile-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: ${ccm_branch}
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: ${kubekins_e2e_image}-master
@@ -270,6 +286,10 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
       base_ref: ${capz_release}
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: ${ccm_branch}
+      path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
       - image: ${kubekins_e2e_image}-master
@@ -288,46 +308,6 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
         - name: CONFORMANCE_NODES
           value: "25"
 $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-conformance)
-  - name: pull-kubernetes-e2e-capz-ha-control-plane
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    always_run: false
-    optional: true
-    path_alias: k8s.io/kubernetes
-    branches:
-      - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-    extra_refs:
-    - org: jackfrancis #TODO change back to kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: capz-ha-control-plane-tests #TODO change back to main
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    spec:
-      containers:
-      - image: ${kubekins_e2e_image}-master
-        command:
-        - runner.sh
-        - ./scripts/ci-conformance.sh
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 1
-            memory: "4Gi"
-        env:
-        - name: KUBETEST_CONF_PATH
-          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance.yaml
-        - name: CONFORMANCE_NODES
-          value: "1"
-        - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
-          value: "3"
-$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-ha-control-plane)
 periodics:
 - interval: 3h
   name: capz-conformance-${release/./-}
