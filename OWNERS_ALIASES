@@ -264,28 +264,6 @@ aliases:
     - srm09
   # end sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
 
-  # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
-  controller-runtime-admins:
-  - vincepri
-  - mengqiy
-  - joelanford
-
-  controller-runtime-maintainers:
-  - vincepri
-  - joelanford
-
-  controller-runtime-approvers:
-  - gerred
-  - alvaroaleman
-
-  controller-runtime-reviewers:
-  - alenkacz
-  - vincepri
-  - alexeldeib
-
-  controller-runtime-emeritus-maintainers:
-  - pwittrock
-
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
   - camilamacedo86
