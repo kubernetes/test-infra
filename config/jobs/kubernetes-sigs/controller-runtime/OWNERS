@@ -1,10 +1,17 @@
 # See the OWNERS docs: https://git.k8s.io/community/contributors/devel/owners.md
+# Note: This is kept in sync with https://github.com/kubernetes-sigs/controller-runtime/blob/main/OWNERS_ALIASES
+# to ensure approvers/reviewers of the controller-runtime repo have the same rights for the corresponding jobs.
 approvers:
-  - controller-runtime-admins
-  - controller-runtime-maintainers
-  - controller-runtime-approvers
-  - controller-runtime-emeritus-maintainers
+  - alvaroaleman
+  - fillzpp
+  - joelanford
+  - sbueringer
+  - vincepri
 reviewers:
-  - controller-runtime-admins
-  - controller-runtime-reviewers
-  - controller-runtime-approvers
+  - alvaroaleman
+  - fillzpp
+  - joelanford
+  - sbueringer
+  - varshaprasad96
+  - inteon
+  - vincepri
