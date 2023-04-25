@@ -3,7 +3,7 @@ presubmits:
   - name: pull-kueue-test-unit-main
     branches:
     - ^main
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -23,7 +23,7 @@ presubmits:
   - name: pull-kueue-test-integration-main
     branches:
     - ^main
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -40,7 +40,7 @@ presubmits:
   - name: pull-kueue-test-e2e-main-1-24
     branches:
     - ^main
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -68,7 +68,7 @@ presubmits:
   - name: pull-kueue-test-e2e-main-1-25
     branches:
     - ^main
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -96,7 +96,7 @@ presubmits:
   - name: pull-kueue-test-e2e-main-1-26
     branches:
     - ^main
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -124,7 +124,7 @@ presubmits:
   - name: pull-kueue-verify-main
     branches:
     - ^main
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
@@ -141,7 +141,7 @@ presubmits:
   - name: pull-kueue-build-image-main
     branches:
     - ^main
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
