@@ -1,16 +1,18 @@
 presubmits:
   kubernetes-sigs/kueue:
-  - name: pull-kueue-test-unit-main
+  - name: pull-kueue-test-unit-release-0-3
+    branches:
+    - ^release-0.3
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-unit-main
+      testgrid-tab-name: pull-kueue-test-unit-release-0-3
       description: "Run kueue unit tests"
     spec:
       containers:
-      - image: golang:1.20
+      - image: golang:1.19
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -18,29 +20,33 @@ presubmits:
         - make
         args:
         - test
-  - name: pull-kueue-test-integration-main
+  - name: pull-kueue-test-integration-release-0-3
+    branches:
+    - ^release-0.3
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-integration-main
+      testgrid-tab-name: pull-kueue-test-integration-release-0-3
       description: "Run kueue test-integration"
     spec:
       containers:
-      - image: golang:1.20
+      - image: golang:1.19
         command:
         - make
         args:
         - test-integration
-  - name: pull-kueue-test-e2e-main-1-24
+  - name: pull-kueue-test-e2e-release-0-3-1-24
+    branches:
+    - ^release-0.3
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-e2e-main-1-24
-      description: "Run kueue end to end tests for Kubernetes 1.24"
+      testgrid-tab-name: pull-kueue-test-e2e-release-0-3-1-24
+      description: "Run kueue-release-0-3 end to end tests for Kubernetes 1.24"
     labels:
       preset-dind-enabled: "true"
     spec:
@@ -59,14 +65,16 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-kueue-test-e2e-main-1-25
+  - name: pull-kueue-test-e2e-release-0-3-1-25
+    branches:
+    - ^release-0.3
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-e2e-main-1-25
-      description: "Run kueue end to end tests for Kubernetes 1.25"
+      testgrid-tab-name: pull-kueue-test-e2e-release-0-3-1-25
+      description: "Run kueue-release-0-3 end to end tests for Kubernetes 1.25"
     labels:
       preset-dind-enabled: "true"
     spec:
@@ -85,14 +93,16 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-kueue-test-e2e-main-1-26
+  - name: pull-kueue-test-e2e-release-0-3-1-26
+    branches:
+    - ^release-0.3
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-test-e2e-main-1-26
-      description: "Run kueue end to end tests for Kubernetes 1.26"
+      testgrid-tab-name: pull-kueue-test-e2e-release-0-3-1-26
+      description: "Run kueue-release-0-3 end to end tests for Kubernetes 1.26"
     labels:
       preset-dind-enabled: "true"
     spec:
@@ -111,34 +121,35 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-kueue-verify-main
+  - name: pull-kueue-verify-release-0-3
+    branches:
+    - ^release-0.3
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-verify-main
-      description: "Run kueue verify checks"
+      testgrid-tab-name: pull-kueue-verify-release-0-3
+      description: "Run kueue-release-0-3 verify checks"
     spec:
       containers:
-      - image: golang:1.20
+      - image: golang:1.19
         command:
         - make
         args:
         - verify
-  - name: pull-kueue-build-image-main
+  - name: pull-kueue-build-image-release-0-3
+    branches:
+    - ^release-0.3
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/kueue
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-build-image-main
-      description: "Build container image of kueue"
+      testgrid-tab-name: pull-kueue-build-image-release-0-3
+      description: "Build container image of kueue-release-0-3"
     labels:
       preset-dind-enabled: "true"
-    skip_branches:
-    - ^release-0.1$
-    - ^release-0.2$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
@@ -149,26 +160,3 @@ presubmits:
         args:
         - make
         - image-local-build
-  - name: pull-kueue-build-image-release-0-1-and-release-0-2
-    always_run: true
-    decorate: true
-    path_alias: sigs.k8s.io/kueue
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kueue-build-image-release-0-1-and-release-0-2
-      description: "Build container image of kueue for release-0.1 and release-0.2 branches"
-    labels:
-      preset-dind-enabled: "true"
-    branches:
-    - ^release-0.1$
-    - ^release-0.2$
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-        securityContext:
-          privileged: true
-        command:
-        - runner.sh
-        args:
-        - make
-        - image-build
