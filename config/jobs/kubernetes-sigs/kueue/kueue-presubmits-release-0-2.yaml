@@ -1,7 +1,7 @@
 presubmits:
   kubernetes-sigs/kueue:
   - name: pull-kueue-build-image-release-0-2
-    always_run: true
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     branches:
     - ^release-0.2
     decorate: true
