@@ -1035,7 +1035,7 @@ def generate_scale():
 def generate_presubmits_scale():
     results = [
         presubmit_test(
-            name='presubmit-kops-aws-scale',
+            name='presubmit-kops-aws-scale-amazonvpc',
             scenario='scalability',
             networking='amazonvpc',
             always_run=False,
