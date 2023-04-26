@@ -1020,7 +1020,7 @@ def generate_upgrades():
 def generate_scale():
     results = [
         build_test(
-            name_override='kops-aws-scale',
+            name_override='kops-aws-scale-amazonvpc',
             extra_dashboards=[],
             runs_per_day=1,
             networking='amazonvpc',
