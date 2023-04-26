@@ -149,39 +149,6 @@ presubmits:
         - runner.sh
         - hack/run-e2e-gce.sh
 
-postsubmits:
-  kubernetes/ingress-gce:
-  - name: ci-ingress-gce-image-push
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-        args:
-        - --repo=k8s.io/ingress-gce=$(PULL_REFS)
-        - --root=/go/src/
-        - --timeout=320
-        - --scenario=execute
-        - --
-        - --env=VERSION=$(PULL_BASE_REF)
-        - hack/push-multiarch.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        env:
-        - name: ALL_ARCH
-          value: "amd64 arm64"
-        - name: BINARIES
-          value: "e2e-test"
-        - name: REGISTRY
-          value: "gcr.io/k8s-ingress-image-push"
-    annotations:
-      testgrid-dashboards: sig-network-ingress-gce-e2e
-      testgrid-tab-name: ingress-gce-image-push
-      testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
-
 periodics:
 - name: ci-ingress-gce-e2e
   interval: 6h
