@@ -329,7 +329,7 @@ presubmits:
   - name: pull-kops-e2e-k8s-gce-ipalias
     branches:
     - master
-    always_run: false
+    always_run: true
     optional: false
     skip_report: false
     labels:
