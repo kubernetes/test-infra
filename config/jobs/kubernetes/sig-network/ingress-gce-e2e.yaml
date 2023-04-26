@@ -124,7 +124,7 @@ presubmits:
 
   - name: pull-ingress-gce-e2e
     always_run: true
-    optional: true
+    optional: false
     decorate: true
     branches:
     - master
