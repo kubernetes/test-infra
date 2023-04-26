@@ -3,8 +3,8 @@
 periodics:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "amazonvpc"}
-- name: e2e-kops-aws-scale
-  cron: '59 7-23/24 * * *'
+- name: e2e-kops-aws-scale-amazonvpc
+  cron: '37 0-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -30,7 +30,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-e4fcaac391-54abe.test-cncf-aws.k8s.io"
+        value: "e2e-f21a47a3cd-b6b27.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
@@ -56,4 +56,4 @@ periodics:
     test.kops.k8s.io/networking: amazonvpc
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-scale
+    testgrid-tab-name: kops-aws-scale-amazonvpc
