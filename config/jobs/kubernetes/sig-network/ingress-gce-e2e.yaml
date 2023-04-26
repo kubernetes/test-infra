@@ -101,6 +101,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-network-ingress-gce-e2e
+      testgrid-tab-name: pull-ingress-gce-test
 
   - name: pull-ingress-gce-verify
     always_run: true
@@ -121,6 +124,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-network-ingress-gce-e2e
+      testgrid-tab-name: pull-ingress-gce-verify
 
   - name: pull-ingress-gce-e2e
     always_run: true
@@ -148,6 +154,9 @@ presubmits:
         command:
         - runner.sh
         - hack/run-e2e-gce.sh
+    annotations:
+      testgrid-dashboards: sig-network-ingress-gce-e2e
+      testgrid-tab-name: pull-ingress-gce-e2e
 
 postsubmits:
   kubernetes/ingress-gce:
