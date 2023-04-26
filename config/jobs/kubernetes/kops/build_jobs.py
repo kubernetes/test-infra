@@ -1020,9 +1020,10 @@ def generate_upgrades():
 def generate_scale():
     results = [
         build_test(
-            name_override='kops-aws-scale',
+            name_override='kops-aws-scale-amazonvpc',
             extra_dashboards=[],
             runs_per_day=1,
+            networking='amazonvpc',
             scenario='scalability',
         )
     ]
@@ -1034,8 +1035,9 @@ def generate_scale():
 def generate_presubmits_scale():
     results = [
         presubmit_test(
-            name='presubmit-kops-aws-scale',
+            name='presubmit-kops-aws-scale-amazonvpc',
             scenario='scalability',
+            networking='amazonvpc',
             always_run=False,
         )
     ]
