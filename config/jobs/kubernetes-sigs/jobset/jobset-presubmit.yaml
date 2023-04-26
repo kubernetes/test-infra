@@ -38,7 +38,7 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/jobset
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-apps
       testgrid-tab-name: pull-jobset-test-e2e-main-1-24
       description: "Run jobset end to end tests for Kubernetes 1.24"
     labels:
@@ -63,7 +63,7 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/jobset
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-apps
       testgrid-tab-name: pull-jobset-test-e2e-main-1-25
       description: "Run jobset end to end tests for Kubernetes 1.25"
     labels:
@@ -88,7 +88,7 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/jobset
     annotations:
-      testgrid-dashboards: sig-scheduling
+      testgrid-dashboards: sig-apps
       testgrid-tab-name: pull-jobset-test-e2e-main-1-26
       description: "Run jobset end to end tests for Kubernetes 1.26"
     labels:
