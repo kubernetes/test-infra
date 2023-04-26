@@ -14,6 +14,12 @@ presubmits:
       - image: golang:1.20
         command:
         - scripts/test-infra/verify.sh
+        env:
+        - name: CODECOV_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: nfd-creds
+              key: codecov-token
   - name: pull-node-feature-discovery-verify-docs-master
     run_if_changed: "^docs/"
     branches:
@@ -42,3 +48,29 @@ presubmits:
       - image: golang:1.20
         command:
         - scripts/test-infra/build.sh
+  - name: pull-node-feature-discovery-verify-e2e-test-master
+    branches:
+    - ^master$
+    max_concurrency: 1
+    decorate: true
+    always_run: false
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: e2e-test-presubmit
+      description: "Verify regresions by running e2e-test"
+    spec:
+      containers:
+      - image: golang:1.20
+        command:
+        - scripts/test-infra/test-e2e-presubmit.sh
+        env:
+        - name: SSH_PRIVATEKEY
+          valueFrom:
+            secretKeyRef:
+              name: nfd-creds
+              key: ssh-privatekey
+        - name: SERVER_IP
+          valueFrom:
+            secretKeyRef:
+              name: nfd-creds
+              key: server-ip
