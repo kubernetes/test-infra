@@ -1671,6 +1671,160 @@ func TestPluginsMergeFrom(t *testing.T) {
 	}
 }
 
+func TestBlunderbussMergeFrom(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name           string
+		from           *Blunderbuss
+		to             *Blunderbuss
+		expected       *Blunderbuss
+		expectedErrMsg string
+	}{
+		{
+			name: "Merging for two different repos in an org",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-2": {}}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{
+						"org/repo-1": {},
+						"org/repo-2": {}}}}},
+		},
+		{
+			name: "Merging org and repo in org",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-2": {}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					BlunderbussConfig: &BlunderbussConfig{}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					BlunderbussConfig: &BlunderbussConfig{},
+					Repos:             map[string]BlunderbussRepoConfig{"org/repo-2": {}}}}},
+		},
+		{
+			name: "Merging 2 orgs",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org-2": {
+					Repos: map[string]BlunderbussRepoConfig{"org-2/repo-1": {}}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{
+					"org": {
+						Repos: map[string]BlunderbussRepoConfig{
+							"org/repo-1": {}}},
+					"org-2": {
+						Repos: map[string]BlunderbussRepoConfig{
+							"org-2/repo-1": {}}}}},
+		},
+		{
+			name: "Merging global config with org/repo config succeeds",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			to: &Blunderbuss{
+				BlunderbussConfig: BlunderbussConfig{}},
+			expected: &Blunderbuss{
+				BlunderbussConfig: BlunderbussConfig{},
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+		},
+		{
+			name: "Merging org/repo config with global config succeeds",
+			from: &Blunderbuss{
+				BlunderbussConfig: BlunderbussConfig{}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			expected: &Blunderbuss{
+				BlunderbussConfig: BlunderbussConfig{},
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+		},
+		{
+			name:     "Merging identical global configs succeeds",
+			from:     &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+			to:       &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+			expected: &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+		},
+		{
+			name:           "Merging differing global configs fails",
+			from:           &Blunderbuss{BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 1}},
+			to:             &Blunderbuss{BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 2}},
+			expectedErrMsg: "global configurations for blunderbuss do not match",
+		},
+		{
+			name: "Merging identical organization configs succeeds",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{}}}},
+		},
+		{
+			name: "Merging differing organization configs fails",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{MaxReviewerCount: 1}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {BlunderbussConfig: &BlunderbussConfig{MaxReviewerCount: 2}}}},
+			expectedErrMsg: "found conflicting config for blunderbuss.orgs[\"org\"]",
+		},
+		{
+			name: "Merging identical repository configs succeeds",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+			expected: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
+		},
+		{
+			name: "Merging differing repository configs fails",
+			from: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {
+						BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 1}}}}}},
+			to: &Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"org": {
+					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {
+						BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 2}}}}}},
+			expectedErrMsg: "found conflicting config for blunderbuss.orgs[\"org\"].repos[\"org/repo-1\"]",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			err := tc.to.mergeFrom(tc.from)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if tc.expectedErrMsg != errMsg {
+				t.Fatalf("expected error message %q, got %q", tc.expectedErrMsg, errMsg)
+			}
+			if err != nil {
+				return
+			}
+
+			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
+				t.Errorf("expected config differs from actual: %s", diff)
+			}
+		})
+	}
+}
+
 func TestBugzillaMergeFrom(t *testing.T) {
 	t.Parallel()
 
@@ -1986,7 +2140,7 @@ func TestBugzillaMergeFrom(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
-				t.Errorf("expexcted config differs from actual: %s", diff)
+				t.Errorf("expected config differs from actual: %s", diff)
 			}
 		})
 	}
@@ -2009,6 +2163,7 @@ func TestHasConfigFor(t *testing.T) {
 				fuzzedConfig.Triggers = nil
 				fuzzedConfig.Welcome = nil
 				fuzzedConfig.ExternalPlugins = nil
+				fuzzedConfig.Blunderbuss = Blunderbuss{BlunderbussConfig: BlunderbussConfig{}}
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
 		},
@@ -2235,6 +2390,20 @@ func TestMergeFrom(t *testing.T) {
 				{Repos: []string{"foo/bar"}},
 				{Repos: []string{"foo/baz"}},
 			}},
+		},
+		{
+			name: "Blunderbuss config gets merged",
+			in: Configuration{Blunderbuss: Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"foo": {
+					Repos: map[string]BlunderbussRepoConfig{"foo/bar": {}}}}}},
+			supplementalConfigs: []Configuration{{Blunderbuss: Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"foo": {
+					Repos: map[string]BlunderbussRepoConfig{"foo/baz": {}}}}}}},
+			expected: Configuration{Blunderbuss: Blunderbuss{
+				Orgs: map[string]BlunderbussOrgConfig{"foo": {
+					Repos: map[string]BlunderbussRepoConfig{
+						"foo/bar": {},
+						"foo/baz": {}}}}}},
 		},
 		{
 			name: "ExternalPlugins get merged",

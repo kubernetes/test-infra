@@ -64,18 +64,43 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	two := 2
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
 		Blunderbuss: plugins.Blunderbuss{
-			ReviewerCount:         &two,
-			MaxReviewerCount:      3,
-			ExcludeApprovers:      true,
-			UseStatusAvailability: true,
-			IgnoreAuthors:         []string{},
+			BlunderbussConfig: plugins.BlunderbussConfig{
+				ReviewerCount:         &two,
+				MaxReviewerCount:      3,
+				ExcludeApprovers:      true,
+				UseStatusAvailability: true,
+				IgnoreAuthors:         []string{},
+			},
+			Orgs: map[string]plugins.BlunderbussOrgConfig{
+				"": {
+					BlunderbussConfig: &plugins.BlunderbussConfig{
+						ReviewerCount:         &two,
+						MaxReviewerCount:      3,
+						ExcludeApprovers:      true,
+						UseStatusAvailability: true,
+						IgnoreAuthors:         []string{},
+					},
+					Repos: map[string]plugins.BlunderbussRepoConfig{
+						"": {
+							BlunderbussConfig: plugins.BlunderbussConfig{
+								ReviewerCount:         &two,
+								MaxReviewerCount:      3,
+								ExcludeApprovers:      true,
+								UseStatusAvailability: true,
+								IgnoreAuthors:         []string{},
+							},
+						},
+					},
+				},
+			},
 		},
 	})
 	if err != nil {
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The blunderbuss plugin automatically requests reviews from reviewers when a new PR is created. The reviewers are selected based on the reviewers specified in the OWNERS files that apply to the files modified by the PR.",
+		Description: "The blunderbuss plugin automatically requests reviews from reviewers when a new PR is created. " +
+			"The reviewers are selected based on the reviewers specified in the OWNERS files that apply to the files modified by the PR.",
 		Config: map[string]string{
 			"": configString(reviewCount),
 		},
@@ -137,17 +162,18 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Logger,
-		pc.PluginConfig.Blunderbuss,
+		pc.PluginConfig.BlunderbussFor(pre.Repo.Owner.Login, pre.Repo.Name),
 		pre.Action,
 		&pre.PullRequest,
 		&pre.Repo,
 	)
 }
 
-func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.PullRequestEventAction, pr *github.PullRequest, repo *github.Repo) error {
+func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.BlunderbussConfig, action github.PullRequestEventAction, pr *github.PullRequest, repo *github.Repo) error {
 	if !(action == github.PullRequestActionOpened || action == github.PullRequestActionReadyForReview) || assign.CCRegexp.MatchString(pr.Body) {
 		return nil
 	}
+
 	if pr.Draft && config.IgnoreDrafts {
 		// ignore Draft PR when IgnoreDrafts is true
 		return nil
@@ -176,7 +202,7 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Logger,
-		pc.PluginConfig.Blunderbuss,
+		pc.PluginConfig.BlunderbussFor(ce.Repo.Owner.Login, ce.Repo.Name),
 		ce.Action,
 		ce.IsPR,
 		ce.Number,
@@ -186,7 +212,7 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 	)
 }
 
-func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.GenericCommentEventAction, isPR bool, prNumber int, issueState string, repo *github.Repo, body string) error {
+func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.BlunderbussConfig, action github.GenericCommentEventAction, isPR bool, prNumber int, issueState string, repo *github.Repo, body string) error {
 	if action != github.GenericCommentActionCreated || !isPR || issueState == "closed" {
 		return nil
 	}
