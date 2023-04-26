@@ -247,7 +247,6 @@ blockades:
 - repos:
   - kubernetes/kubernetes
   blockregexps:
-  
   - ^examples/
   explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
 - repos:
