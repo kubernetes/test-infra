@@ -294,7 +294,13 @@ periodics:
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-      resources: *id001
+      resources: &id001
+        requests:
+          cpu: 2000m
+          memory: 6Gi
+        limits:
+          cpu: 2000m
+          memory: 6Gi
   cluster: k8s-infra-prow-build
   annotations:
     testgrid-tab-name: gce-cos-k8sstable1-default
