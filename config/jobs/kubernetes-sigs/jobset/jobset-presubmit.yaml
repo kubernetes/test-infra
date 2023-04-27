@@ -108,3 +108,21 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+  - name: pull-jobset-verify-main
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-jobset-verify-main
+      description: "Run jobset verify checks"
+    spec:
+      containers:
+      - image: golang:1.20
+        command:
+        - make
+        args:
+        - verify
+
