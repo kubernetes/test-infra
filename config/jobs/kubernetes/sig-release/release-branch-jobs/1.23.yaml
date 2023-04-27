@@ -658,7 +658,7 @@ periodics:
         privileged: true
 - annotations:
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
-    testgrid-dashboards: sig-windows-gce, sig-windows-1.23-release
+    testgrid-dashboards: sig-windows-gce
     testgrid-tab-name: gce-windows-2019-containerd-1.23
   decorate: true
   decoration_config:
