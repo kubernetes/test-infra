@@ -125,4 +125,3 @@ presubmits:
         - make
         args:
         - verify
-
