@@ -35,6 +35,7 @@ jobs:
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
+  # TODO(1.28): Uncomment this when adding jobs for release-1.28 branch.
   # ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
   #   interval: 1h
   #   sigOwners: [sig-cloud-provider-gcp]
@@ -250,6 +251,7 @@ k8sVersions:
     - --extract=ci/latest
     - --extract-ci-bucket=k8s-release-dev
     version: master
+  # TODO(1.28): Uncomment this when adding jobs for release-1.28 branch.
   # beta:
   #   args:
   #   - --extract=ci/latest-1.27
@@ -418,6 +420,7 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=master
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+  # TODO(1.28): Uncomment this when adding jobs for release-1.28 branch.
   # beta:
   #   args:
   #   - --repo=k8s.io/kubernetes=release-1.27
