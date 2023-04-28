@@ -1332,6 +1332,7 @@ plugins:
     plugins:
     - milestone
     - milestonestatus
+    - release-note
 
   kubernetes-sigs/kustomize:
     plugins:
