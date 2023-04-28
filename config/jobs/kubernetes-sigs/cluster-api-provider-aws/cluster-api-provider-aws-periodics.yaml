@@ -73,15 +73,19 @@ periodics:
       # Parallelize tests
       - name: GINKGO_ARGS
         value: "-nodes 20 -skip='\\[ClusterClass\\]'"
+      # set GOMAXPROCS to match the CPU limit.  This informs the Go runtime of the number of
+      # compile jobs/tests to run in parallel.
+      - name: GOMAXPROCS
+        value: "4"
       securityContext:
         privileged: true
       resources:
         limits:
-          cpu: 2
-          memory: "9Gi"
+          cpu: 4
+          memory: "18Gi"
         requests:
-          cpu: 2
-          memory: "9Gi"
+          cpu: 4
+          memory: "18Gi"
   annotations:
     testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: periodic-aws-e2e-main-canary
