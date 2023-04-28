@@ -266,6 +266,29 @@ run_tests() {
   wait "$GINKGO_PID"
 }
 
+prune_kind_logs() {
+  # The logs for the pods are the same as for the containers. k/k/test/integration/logs/benchmark/get-logs.sh
+  # only looks for the container logs.
+  rm -rf "${ARTIFACTS}"/kind-*/pods
+  # One kubelet log is enough. get-logs.sh uses kind-worker.
+  rm -f "${ARTIFACTS}"/kind-control-plane/kubelet.log "${ARTIFACTS}"/kind-worker[0-9]*/kubelet.log
+  # The journal is large and only useful for debugging cluster startup. Let's
+  # assume that we don't need it.
+  rm -f "${ARTIFACTS}"/kind-*/journal.log
+
+  # Above we allow individual files to be as large as 100Mi before
+  # kubelet rotates them. Because "kind export logs" only copies
+  # the current log, each file is smaller than 100Mi. In practice,
+  # files are smaller. As a safeguard we fail the job here if the
+  # overall log data exceeds 300Mi.
+  total="$(du -b -s -c "${ARTIFACTS}"/kind-* | tail -1 | sed -e 's/\s*total//')"
+  limit=$((300 * 1024 * 1024 ))
+  if [ "$total" -gt "$limit" ]; then
+      echo "ERROR: Total amount of data in <ARTIFACTS>/kind-* is $total bytes, which is more than the limit of $limit. Try reducing verbosity or number of tests."
+      return 1
+  fi
+}
+
 main() {
   # create temp dir and setup cleanup
   TMP_DIR=$(mktemp -d)
@@ -295,6 +318,7 @@ main() {
   create_cluster || res=$?
   run_tests || res=$?
   cleanup || res=$?
+  prune_kind_logs || res=$?
   exit $res
 }
 
