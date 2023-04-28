@@ -10,7 +10,7 @@ presubmits:
       description: "Run jobset unit tests"
     spec:
       containers:
-      - image: golang:1.19
+      - image: golang:1.20
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -28,7 +28,7 @@ presubmits:
       description: "Run jobset integration tests"
     spec:
       containers:
-      - image: golang:1.19
+      - image: golang:1.20
         command:
         - make
         args:
