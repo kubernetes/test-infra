@@ -9,14 +9,15 @@ kubernetes/kubernetes releases which create new branches.
 [Release Manager handbooks][branch-manager-handbook] (which will be removed at
 a future date).
 
-- [Tools](#tools)
-- [Release branch jobs](#release-branch-jobs)
-  - [Generate jobs](#generate-jobs)
-  - [Update release dashboards](#update-release-dashboards)
-  - [Check/resolve configuration errors](#checkresolve-configuration-errors)
-  - [Create a pull request](#create-a-pull-request)
-  - [Validate](#validate)
-  - [Announce](#announce)
+- [Release Engineering tooling](#release-engineering-tooling)
+  - [Tools](#tools)
+  - [Release branch jobs](#release-branch-jobs)
+    - [Generate jobs](#generate-jobs)
+    - [Update release dashboards](#update-release-dashboards)
+    - [Check/resolve configuration errors](#checkresolve-configuration-errors)
+    - [Create a pull request](#create-a-pull-request)
+    - [Validate](#validate)
+    - [Announce](#announce)
 
 ## Tools
 
@@ -63,8 +64,8 @@ Once the PR has merged, verify that the new dashboards have been created and are
 
 Examples:
 
-- [sig-release-1.23-blocking](https://testgrid.k8s.io/sig-release-1.23-blocking)
-- [sig-release-1.23-informing](https://testgrid.k8s.io/sig-release-1.23-informing)
+- [sig-release-1.27-blocking](https://testgrid.k8s.io/sig-release-1.27-blocking)
+- [sig-release-1.27-informing](https://testgrid.k8s.io/sig-release-1.27-informing)
 
 ### Announce
 
