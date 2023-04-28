@@ -1,4 +1,4 @@
-# Release Engineering tooling
+# Release Engineering tooling <!-- omit in toc -->
 
 This directory contains tooling to generate Prow jobs.
 While some of this may be generically useful for other cases, the primary
@@ -30,6 +30,10 @@ a future date).
   periodic, and postsubmit job configs created by `config-forker`
 
 ## Release branch jobs
+
+**WARNING:** Release branch jobs generation for 1.28+ requires special steps
+that are yet to be documented. See [#29387](https://github.com/kubernetes/test-infra/pull/29387)
+and "TODO(1.28)" comments for more details.
 
 This task should be done after the release is complete and previous PRs are
 merged. The following steps should be run from the root of this repository.
@@ -63,8 +67,8 @@ Once the PR has merged, verify that the new dashboards have been created and are
 
 Examples:
 
-- [sig-release-1.23-blocking](https://testgrid.k8s.io/sig-release-1.23-blocking)
-- [sig-release-1.23-informing](https://testgrid.k8s.io/sig-release-1.23-informing)
+- [sig-release-1.27-blocking](https://testgrid.k8s.io/sig-release-1.27-blocking)
+- [sig-release-1.27-informing](https://testgrid.k8s.io/sig-release-1.27-informing)
 
 ### Announce
 
