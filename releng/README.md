@@ -1,4 +1,4 @@
-# Release Engineering tooling
+# Release Engineering tooling <!-- omit in toc -->
 
 This directory contains tooling to generate Prow jobs.
 While some of this may be generically useful for other cases, the primary
@@ -9,15 +9,14 @@ kubernetes/kubernetes releases which create new branches.
 [Release Manager handbooks][branch-manager-handbook] (which will be removed at
 a future date).
 
-- [Release Engineering tooling](#release-engineering-tooling)
-  - [Tools](#tools)
-  - [Release branch jobs](#release-branch-jobs)
-    - [Generate jobs](#generate-jobs)
-    - [Update release dashboards](#update-release-dashboards)
-    - [Check/resolve configuration errors](#checkresolve-configuration-errors)
-    - [Create a pull request](#create-a-pull-request)
-    - [Validate](#validate)
-    - [Announce](#announce)
+- [Tools](#tools)
+- [Release branch jobs](#release-branch-jobs)
+  - [Generate jobs](#generate-jobs)
+  - [Update release dashboards](#update-release-dashboards)
+  - [Check/resolve configuration errors](#checkresolve-configuration-errors)
+  - [Create a pull request](#create-a-pull-request)
+  - [Validate](#validate)
+  - [Announce](#announce)
 
 ## Tools
 
@@ -31,6 +30,10 @@ a future date).
   periodic, and postsubmit job configs created by `config-forker`
 
 ## Release branch jobs
+
+**WARNING:** Release branch jobs generation for 1.28+ requires special steps
+that are yet to be documented. See [#29387](https://github.com/kubernetes/test-infra/pull/29387)
+and "TODO(1.28)" comments for more details.
 
 This task should be done after the release is complete and previous PRs are
 merged. The following steps should be run from the root of this repository.
