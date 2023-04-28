@@ -28,10 +28,10 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gce-cos-1.14-ingress
-      test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    # - name: gce-cos-1.14-ingress
+    #   test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+    #   alert_options:
+    #     alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-ip-alias
       test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
       alert_options:
