@@ -45,9 +45,8 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  # Changed from 12 hours to reduce time spent waiting for job to run
-  # TODO(xmudrii): rollback to 12 hours
-  interval: 1h
+  # Changed from 12 hours to reduce amount of runs because job is broken
+  interval: 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
