@@ -17,6 +17,7 @@ postsubmits:
             args:
               - --project=k8s-staging-sp-operator
               - --scratch-bucket=gs://k8s-staging-sp-operator-gcb
+              - --with-git-dir
               - .
             env:
               - name: LOG_TO_STDOUT
