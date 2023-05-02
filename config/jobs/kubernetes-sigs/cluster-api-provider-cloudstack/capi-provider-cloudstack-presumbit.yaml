@@ -46,67 +46,67 @@ presets:
 
 presubmits:
   kubernetes-sigs/cluster-api-provider-cloudstack:
-    - name: "capi-provider-cloudstack-presubmit-build"
-      labels:
-        preset-service-account: "true"
-        preset-dind-enabled: "true"
-        preset-kind-volume-mounts: "true"
-      always_run: false
-      run_if_changed: ".*"
-      max_concurrency: 10
-      decorate: true
-      decoration_config:
-        timeout: 1h
-      skip_report: false
-      annotations:
-        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
-        testgrid-tab-name: pr-build
-      spec:
-        automountServiceAccountToken: false
-        containers:
-        - name: build-container
-          image: public.ecr.aws/r9t0b9f2/capc-builder:latest
-          command:
-          - bash
-          - -c
-          - >
-            mv /mybin ./bin && make build
-          resources:
-            requests:
-              memory: "8Gi"
-              cpu: "1024m"
-            limits:
-              memory: "8Gi"
-              cpu: "1024m"
-    - name: capi-provider-cloudstack-presubmit-unit-test
-      labels:
-        preset-service-account: "true"
-        preset-dind-enabled: "true"
-        preset-kind-volume-mounts: "true"
-      always_run: false
-      run_if_changed: ".*"
-      max_concurrency: 10
-      decorate: true
-      decoration_config:
-        timeout: 1h
-      skip_report: false
-      annotations:
-        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
-        testgrid-tab-name: pr-unit-test
-      spec:
-        automountServiceAccountToken: false
-        containers:
-        - name: build-container
-          image: public.ecr.aws/r9t0b9f2/capc-builder:latest
-          command:
-          - bash
-          - -c
-          - >
-            mv /mybin ./bin && make test
-          resources:
-            requests:
-              memory: "8Gi"
-              cpu: "1024m"
-            limits:
-              memory: "8Gi"
-              cpu: "1024m"
+  - name: capi-provider-cloudstack-presubmit-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    run_if_changed: ".*"
+    max_concurrency: 10
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    skip_report: false
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
+      testgrid-tab-name: pr-build
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: build-container
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
+        command:
+        - bash
+        - -c
+        - >
+          mv /mybin ./bin && make build
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "1024m"
+          limits:
+            memory: "8Gi"
+            cpu: "1024m"
+  - name: capi-provider-cloudstack-presubmit-unit-test
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    run_if_changed: ".*"
+    max_concurrency: 10
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    skip_report: false
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
+      testgrid-tab-name: pr-unit-test
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: build-container
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
+        command:
+        - bash
+        - -c
+        - >
+          mv /mybin ./bin && make test
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "1024m"
+          limits:
+            memory: "8Gi"
+            cpu: "1024m"
