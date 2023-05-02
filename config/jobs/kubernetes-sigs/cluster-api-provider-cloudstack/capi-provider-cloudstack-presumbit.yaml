@@ -69,8 +69,7 @@ presubmits:
         command:
         - bash
         - -c
-        - >
-          mv /mybin ./bin && make build
+        - make build
         resources:
           requests:
             memory: "8Gi"
@@ -101,8 +100,7 @@ presubmits:
         command:
         - bash
         - -c
-        - >
-          mv /mybin ./bin && make test
+        - make test
         resources:
           requests:
             memory: "8Gi"
