@@ -72,6 +72,7 @@ presubmits:
       preset-capz-windows-2022: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
+      preset-windows-private-registry-cred: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
