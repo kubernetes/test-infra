@@ -1306,11 +1306,12 @@ presubmits:
           - "--timeout=240"
           - --scenario=kubernetes_e2e
           - -- # end bootstrap args, scenario args below
+          - --build=quick
+          - --extract=local
           - --check-leaked-resources
           - --cluster=
           - --env=ENABLE_AUTH_PROVIDER_GCP=true
           - --env=KUBE_FEATURE_GATES=DisableKubeletCloudCredentialProviders=true
-          - --extract=ci/latest
           - --gcp-zone=us-west1-b
           - --gcp-node-image=gci
           - --gcp-nodes=1
