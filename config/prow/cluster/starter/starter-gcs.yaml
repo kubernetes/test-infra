@@ -93,12 +93,16 @@ data:
             [Full PR test history](https://prow.<< your-domain.com >>/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}).
             [Your PR dashboard](https://prow.<< your-domain.com >>/pr?query=is:pr+state:open+author:{{with
             index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}).
-      default_decoration_configs:
-        "*":
+      default_decoration_config_entries:
+        - config:
           gcs_configuration:
             bucket: gs://your-bucket-name
             path_strategy: explicit
           gcs_credentials_secret: gcs-credentials
+          github_app_id: "<<insert-the-app-id-here>>"
+          github_app_private_key_secret:
+            name: github-token
+            key: cert
           utility_images:
             clonerefs: gcr.io/k8s-prow/clonerefs:v20230426-d32ca9cc84
             entrypoint: gcr.io/k8s-prow/entrypoint:v20230426-d32ca9cc84

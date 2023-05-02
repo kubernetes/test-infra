@@ -93,11 +93,15 @@ data:
             [Full PR test history](http://<< your-minikube/kind IP >>:30002/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}).
             [Your PR dashboard](http://<< your-minikube/kind IP >>:30002/pr?query=is:pr+state:open+author:{{with
             index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}).
-      default_decoration_configs:
-        "*":
+      default_decoration_config_entries:
+        - config:
           gcs_configuration:
             bucket: s3://prow-logs
             path_strategy: explicit
+          github_app_id: "<<insert-the-app-id-here>>"
+          github_app_private_key_secret:
+            name: github-token
+            key: cert
           s3_credentials_secret: s3-credentials
           utility_images:
             clonerefs: gcr.io/k8s-prow/clonerefs:latest
