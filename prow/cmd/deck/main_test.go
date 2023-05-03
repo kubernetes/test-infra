@@ -831,7 +831,7 @@ func TestHandlePluginConfig(t *testing.T) {
 			}},
 		},
 		Blunderbuss: plugins.Blunderbuss{
-			BlunderbussConfig: plugins.BlunderbussConfig{
+			BlunderbussConfig: &plugins.BlunderbussConfig{
 				ExcludeApprovers: true,
 			}},
 	}

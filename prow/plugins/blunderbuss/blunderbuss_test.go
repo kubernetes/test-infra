@@ -693,7 +693,7 @@ func TestHandlePullRequestShardedConfig(t *testing.T) {
 	fghc := newFakeGitHubClient(&pr, tc.filesChanged)
 	c := &plugins.Configuration{
 		Blunderbuss: plugins.Blunderbuss{
-			BlunderbussConfig: plugins.BlunderbussConfig{
+			BlunderbussConfig: &plugins.BlunderbussConfig{
 				ReviewerCount:    &tc.reviewerCount,
 				MaxReviewerCount: 0,
 				ExcludeApprovers: false,
@@ -897,7 +897,7 @@ func TestHandleGenericCommentShardedConfig(t *testing.T) {
 
 			config := &plugins.Configuration{
 				Blunderbuss: plugins.Blunderbuss{
-					BlunderbussConfig: plugins.BlunderbussConfig{
+					BlunderbussConfig: &plugins.BlunderbussConfig{
 						IgnoreAuthors:         []string{"bob"},
 						ReviewerCount:         &defaultReviewerCount,
 						UseStatusAvailability: false,
@@ -922,7 +922,10 @@ func TestHandleGenericCommentShardedConfig(t *testing.T) {
 
 func TestHandleGenericCommentEvent(t *testing.T) {
 	pc := plugins.Agent{
-		PluginConfig: &plugins.Configuration{},
+		PluginConfig: &plugins.Configuration{
+			Blunderbuss: plugins.Blunderbuss{
+				BlunderbussConfig: &plugins.BlunderbussConfig{},
+			}},
 	}
 	ce := github.GenericCommentEvent{}
 	handleGenericCommentEvent(pc, ce)
@@ -930,7 +933,10 @@ func TestHandleGenericCommentEvent(t *testing.T) {
 
 func TestHandlePullRequestEvent(t *testing.T) {
 	pc := plugins.Agent{
-		PluginConfig: &plugins.Configuration{},
+		PluginConfig: &plugins.Configuration{
+			Blunderbuss: plugins.Blunderbuss{
+				BlunderbussConfig: &plugins.BlunderbussConfig{},
+			}},
 	}
 	pre := github.PullRequestEvent{}
 	handlePullRequestEvent(pc, pre)
@@ -949,8 +955,11 @@ func TestHelpProvider(t *testing.T) {
 		configInfoIncludes []string
 	}{
 		{
-			name:               "Empty config",
-			config:             &plugins.Configuration{},
+			name: "Empty config",
+			config: &plugins.Configuration{
+				Blunderbuss: plugins.Blunderbuss{
+					BlunderbussConfig: &plugins.BlunderbussConfig{},
+				}},
 			enabledRepos:       enabledRepos,
 			configInfoIncludes: []string{configString(0)},
 		},
@@ -958,7 +967,7 @@ func TestHelpProvider(t *testing.T) {
 			name: "ReviewerCount specified",
 			config: &plugins.Configuration{
 				Blunderbuss: plugins.Blunderbuss{
-					BlunderbussConfig: plugins.BlunderbussConfig{
+					BlunderbussConfig: &plugins.BlunderbussConfig{
 						ReviewerCount: &[]int{2}[0],
 					}},
 			},

@@ -64,7 +64,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	two := 2
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
 		Blunderbuss: plugins.Blunderbuss{
-			BlunderbussConfig: plugins.BlunderbussConfig{
+			BlunderbussConfig: &plugins.BlunderbussConfig{
 				ReviewerCount:         &two,
 				MaxReviewerCount:      3,
 				ExcludeApprovers:      true,

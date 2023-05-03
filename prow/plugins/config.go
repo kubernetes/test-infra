@@ -187,7 +187,7 @@ type BlunderbussOrgConfig struct {
 
 // Blunderbuss defines overall configuration for the blunderbuss plugin.
 type Blunderbuss struct {
-	BlunderbussConfig `json:",inline,omitempty"`
+	*BlunderbussConfig `json:",inline,omitempty"`
 	// Orgs allows sharding for organization-specific Blunderbuss settings, provided under keys with
 	// the name of the organization. For repository-specific settings, provide
 	// organization/repository keys under orgs[].repos.
@@ -891,7 +891,7 @@ func (c *Configuration) BlunderbussFor(org, repo string) BlunderbussConfig {
 	}
 
 	// Return base config
-	return c.Blunderbuss.BlunderbussConfig
+	return *c.Blunderbuss.BlunderbussConfig
 }
 
 // LgtmFor finds the Lgtm for a repo, if one exists
@@ -1067,6 +1067,10 @@ func (c *Configuration) setDefaults() {
 			}
 			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
 		}
+	}
+	// Instantiate a global Blunderbuss config if it wasn't set in the config
+	if c.Blunderbuss.BlunderbussConfig == nil {
+		c.Blunderbuss.BlunderbussConfig = &BlunderbussConfig{}
 	}
 	if c.Blunderbuss.ReviewerCount == nil {
 		c.Blunderbuss.ReviewerCount = new(int)
@@ -2115,9 +2119,14 @@ func (b *Blunderbuss) mergeFrom(other *Blunderbuss) error {
 
 	var errs []error
 
-	// Add error when both configs declare different global defaults
-	if !reflect.DeepEqual(b.BlunderbussConfig, other.BlunderbussConfig) {
-		errs = append(errs, fmt.Errorf("global configurations for blunderbuss do not match"))
+	// Handle global configs
+	if other.BlunderbussConfig != nil {
+		if b.BlunderbussConfig == nil {
+			b.BlunderbussConfig = other.BlunderbussConfig
+		} else if !reflect.DeepEqual(b.BlunderbussConfig, other.BlunderbussConfig) {
+			// Add error when both configs declare different global defaults
+			errs = append(errs, fmt.Errorf("global configurations for blunderbuss do not match"))
+		}
 	}
 
 	// Initialize the Orgs map if it's empty to accept incoming Orgs configs
@@ -2180,7 +2189,7 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 			ExternalPlugins: c.ExternalPlugins, Label: Label{RestrictedLabels: c.Label.RestrictedLabels},
 			Lgtm: c.Lgtm, Plugins: c.Plugins, Triggers: c.Triggers, Welcome: c.Welcome})
 
-	if !equals || c.Bugzilla.Default != nil {
+	if !equals || c.Bugzilla.Default != nil || c.Blunderbuss.BlunderbussConfig != nil {
 		global = true
 	}
 	orgs = sets.String{}

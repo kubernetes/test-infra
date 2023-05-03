@@ -72,6 +72,8 @@ blunderbuss:
             # IgnoreDrafts instructs the plugin to ignore assigning reviewers
             # to the PR that is in Draft state. Default it's false.
             ignore_drafts: true
+            # Repos allows sharding for repository-specific Blunderbuss settings, provided under keys using
+            # the format organization/repository.
             repos:
                 "":
                     # ExcludeApprovers controls whether approvers are considered to be

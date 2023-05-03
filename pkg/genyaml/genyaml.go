@@ -19,6 +19,7 @@ limitations under the License.
 // from the AST of a given file.
 //
 // Example:
+//
 //	cm, err := NewCommentMap("example_config.go")
 //
 //	yamlSnippet, err := cm.GenYaml(&plugins.Configuration{
@@ -40,8 +41,7 @@ limitations under the License.
 //
 // yamlSnippet, err := cm.GenYaml(PopulateStruct(&plugins.Configuration{}))
 //
-//
-// 	yamlSnippet will be assigned a string containing the following YAML:
+//	yamlSnippet will be assigned a string containing the following YAML:
 //
 //	# Approve is the configuration for the Approve plugin.
 //	approve:
@@ -61,7 +61,6 @@ limitations under the License.
 //
 //		# IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise: * an APPROVE github review is equivalent to leaving an \"/approve\" message. * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel\" message.
 //		ignore_review_state: false
-//
 package genyaml
 
 import (
@@ -297,6 +296,9 @@ func fieldType(field *ast.Field, recurse bool) (string, bool) {
 		case *ast.SelectorExpr:
 			// SelectorExpr are not object types yet reference one, thus continue with DFS.
 			isSelect = true
+		case *ast.StarExpr:
+			// Encountered a pointer--overwrite typeName with ast.Expr
+			typeName = fmt.Sprint(x.X)
 		}
 
 		return recurse || isSelect
