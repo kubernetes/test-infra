@@ -72,54 +72,6 @@ periodics:
 
 - interval: 1h
   cluster: eks-prow-build-cluster
-  name: ci-kubernetes-verify-master-eks-canary
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-periodic-interval: 2h 2h 6h 24h
-    testgrid-dashboards: sig-k8s-infra-canaries
-    testgrid-tab-name: verify-master-eks-canary
-    description: "Ends up running: make verify"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-      imagePullPolicy: Always
-      command:
-      - runner.sh
-      args:
-      - ./hack/jenkins/verify-dockerized.sh
-      env:
-      - name: EXCLUDE_READONLY_PACKAGE
-        value: "y"
-      - name: KUBE_VERIFY_GIT_BRANCH
-        value: master
-      - name: REPO_DIR
-        value: /workspace/k8s.io/kubernetes
-      # Consider removing after https://github.com/golang/go/issues/49035 is solved
-      # See https://github.com/kubernetes/kubernetes/pull/108618
-      - name: TYPECHECK_SERIAL
-        value: "true"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 6
-          memory: 24Gi
-        requests:
-          cpu: 6
-          memory: 24Gi
-
-- interval: 1h
-  cluster: eks-prow-build-cluster
   name: ci-kubernetes-integration-master-eks-canary
   decorate: true
   extra_refs:
