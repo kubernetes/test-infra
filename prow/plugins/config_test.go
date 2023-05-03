@@ -1731,34 +1731,52 @@ func TestBlunderbussMergeFrom(t *testing.T) {
 				Orgs: map[string]BlunderbussOrgConfig{"org": {
 					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
 			to: &Blunderbuss{
-				BlunderbussConfig: BlunderbussConfig{}},
+				BlunderbussConfig: &BlunderbussConfig{}},
 			expected: &Blunderbuss{
-				BlunderbussConfig: BlunderbussConfig{},
+				BlunderbussConfig: &BlunderbussConfig{},
 				Orgs: map[string]BlunderbussOrgConfig{"org": {
 					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
 		},
 		{
 			name: "Merging org/repo config with global config succeeds",
 			from: &Blunderbuss{
-				BlunderbussConfig: BlunderbussConfig{}},
+				BlunderbussConfig: &BlunderbussConfig{}},
 			to: &Blunderbuss{
 				Orgs: map[string]BlunderbussOrgConfig{"org": {
 					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
 			expected: &Blunderbuss{
-				BlunderbussConfig: BlunderbussConfig{},
+				BlunderbussConfig: &BlunderbussConfig{},
 				Orgs: map[string]BlunderbussOrgConfig{"org": {
 					Repos: map[string]BlunderbussRepoConfig{"org/repo-1": {}}}}},
 		},
 		{
 			name:     "Merging identical global configs succeeds",
-			from:     &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
-			to:       &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
-			expected: &Blunderbuss{BlunderbussConfig: BlunderbussConfig{}},
+			from:     &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
+			to:       &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
+			expected: &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
+		},
+		{
+			name:     "Merging from nil config succeeds",
+			from:     nil,
+			to:       &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
+			expected: &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
+		},
+		{
+			name:     "Merging to nil global config succeeds",
+			from:     &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
+			to:       &Blunderbuss{BlunderbussConfig: nil},
+			expected: &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
+		},
+		{
+			name:     "Merging from config with nil global config succeeds",
+			from:     &Blunderbuss{BlunderbussConfig: nil},
+			to:       &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
+			expected: &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{}},
 		},
 		{
 			name:           "Merging differing global configs fails",
-			from:           &Blunderbuss{BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 1}},
-			to:             &Blunderbuss{BlunderbussConfig: BlunderbussConfig{MaxReviewerCount: 2}},
+			from:           &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{MaxReviewerCount: 1}},
+			to:             &Blunderbuss{BlunderbussConfig: &BlunderbussConfig{MaxReviewerCount: 2}},
 			expectedErrMsg: "global configurations for blunderbuss do not match",
 		},
 		{
@@ -2163,7 +2181,7 @@ func TestHasConfigFor(t *testing.T) {
 				fuzzedConfig.Triggers = nil
 				fuzzedConfig.Welcome = nil
 				fuzzedConfig.ExternalPlugins = nil
-				fuzzedConfig.Blunderbuss = Blunderbuss{BlunderbussConfig: BlunderbussConfig{}}
+				fuzzedConfig.Blunderbuss = Blunderbuss{}
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
 		},
