@@ -174,42 +174,6 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 6h 24h
-    testgrid-dashboards: sig-k8s-infra-canaries, sig-release-job-config-errors
-    testgrid-tab-name: integration-1.27-eks-canary
-  cluster: eks-prow-build-cluster
-  decorate: true
-  extra_refs:
-  - base_ref: release-1.27
-    org: kubernetes
-    path_alias: k8s.io/kubernetes
-    repo: kubernetes
-  interval: 2h
-  labels:
-    preset-dind-enabled: "true"
-    preset-service-account: "true"
-  name: ci-kubernetes-integration-master-eks-canary-1-27
-  spec:
-    containers:
-    - args:
-      - ./hack/jenkins/test-dockerized.sh
-      command:
-      - runner.sh
-      env:
-      - name: SHORT
-        value: --short=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.27
-      name: ""
-      resources:
-        limits:
-          cpu: "6"
-          memory: 20Gi
-        requests:
-          cpu: "6"
-          memory: 20Gi
-      securityContext:
-        privileged: true
-- annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.27-blocking, sig-release-releng-blocking
     testgrid-tab-name: build-1.27
@@ -414,7 +378,7 @@ periodics:
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.27-blocking
     testgrid-tab-name: integration-1.27
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - base_ref: release-1.27
