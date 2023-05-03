@@ -70,45 +70,6 @@ periodics:
             cpu: 4
             memory: "36Gi"
 
-- interval: 1h
-  cluster: eks-prow-build-cluster
-  name: ci-kubernetes-integration-master-eks-canary
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-periodic-interval: 2h 2h 6h 24h
-    testgrid-dashboards: sig-k8s-infra-canaries
-    testgrid-tab-name: integration-master-eks-canary
-    description: "Ends up running: make test-cmd test-integration"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-      command:
-      - runner.sh
-      args:
-      - ./hack/jenkins/test-dockerized.sh
-      env:
-      - name: SHORT
-        value: --short=false
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 6
-          memory: 20Gi
-        requests:
-          cpu: 6
-          memory: 20Gi
-
 - name: ci-benchmark-scheduler-perf-master-eks-canary
   cluster: eks-prow-build-cluster
   tags:

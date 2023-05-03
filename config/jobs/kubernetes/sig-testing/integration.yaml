@@ -102,7 +102,7 @@ presubmits:
             memory: 15Gi
 periodics:
 - interval: 1h
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   name: ci-kubernetes-integration-master
   decorate: true
   extra_refs:
