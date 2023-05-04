@@ -173,12 +173,12 @@ postsubmits:
               - --build-dir=.
               - images/fastcgi-helloserver
 
-    - name: post-ingress-nginx-build-httpbin-image
+    - name: post-ingress-nginx-build-httpbun-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/httpbin/.*'
+      run_if_changed: 'images/httpbun/.*'
       branches:
         - ^main$
       spec:
@@ -192,7 +192,7 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - --build-dir=.
-              - images/httpbin
+              - images/httpbun
 
     - name: post-ingress-nginx-build-webhook-certgen-image
       cluster: k8s-infra-prow-build-trusted
