@@ -4,6 +4,7 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/release-sdk"
+    cluster: eks-prow-build-cluster
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
@@ -14,6 +15,13 @@ presubmits:
         - run
         - mage.go
         - Test
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-sdk-test
@@ -23,6 +31,7 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/release-sdk"
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
     spec:
@@ -37,6 +46,13 @@ presubmits:
         - mage.go
         - IntegrationTest
         # docker-in-docker needs privileged mode
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
         securityContext:
           privileged: true
     annotations:
@@ -48,6 +64,7 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/release-sdk"
+    cluster: eks-prow-build-cluster
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
@@ -58,6 +75,13 @@ presubmits:
         - run
         - mage.go
         - Verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-sdk-verify
