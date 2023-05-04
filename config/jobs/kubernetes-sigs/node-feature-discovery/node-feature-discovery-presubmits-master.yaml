@@ -60,7 +60,7 @@ presubmits:
       description: "Verify regresions by running e2e-test"
     spec:
       containers:
-      - image: golang:1.20
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
         command:
         - scripts/test-infra/test-e2e-presubmit.sh
         env:
