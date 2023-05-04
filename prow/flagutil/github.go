@@ -336,11 +336,12 @@ func (o *GitHubOptions) GitHubClientWithAccessToken(token string) (github.Client
 // will result in git ClientFactory to work with Gerrit.
 // TODO(chaodaiG): move this logic to somewhere more appropriate instead of in
 // github.go.
-func (o *GitHubOptions) GitClientFactory(cookieFilePath string, cacheDir *string, dryRun bool) (gitv2.ClientFactory, error) {
+func (o *GitHubOptions) GitClientFactory(cookieFilePath string, cacheDir *string, dryRun, persistCache bool) (gitv2.ClientFactory, error) {
 	var gitClientFactory gitv2.ClientFactory
 	if cookieFilePath != "" && o.TokenPath == "" && o.AppPrivateKeyPath == "" {
 		opts := gitv2.ClientFactoryOpts{
 			CookieFilePath: cookieFilePath,
+			Persist:        &persistCache,
 		}
 		if cacheDir != nil && *cacheDir != "" {
 			opts.CacheDirBase = cacheDir
