@@ -889,8 +889,7 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 		},
 	}
 
-	for i := range tests {
-		test := tests[i]
+	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			t.Logf("Running scenario %q", test.name)
@@ -1345,5 +1344,51 @@ func TestRepoOwners_AllOwners(t *testing.T) {
 	foundOwners := ro.AllOwners()
 	if !foundOwners.Equal(sets.NewString(expectedOwners...)) {
 		t.Errorf("Expected Owners: %v\tFound Owners: %v ", expectedOwners, foundOwners.List())
+	}
+}
+
+func TestRepoOwners_AllApprovers(t *testing.T) {
+	expectedApprovers := []string{"alice", "bob", "cjwagner", "mml"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			"":                    regexpAll("cjwagner"),
+			"src":                 regexpAll(),
+			"src/dir":             regexpAll("bob"),
+			"src/dir/conformance": regexpAll("mml"),
+			"src/dir/subdir":      regexpAll("alice", "bob"),
+			"vendor":              regexpAll("alice"),
+		},
+		reviewers: map[string]map[*regexp.Regexp]sets.String{
+			"":               regexpAll("alice", "bob"),
+			"src/dir":        regexpAll("alice", "matthyx"),
+			"src/dir/subdir": regexpAll("alice", "bob"),
+		},
+	}
+	foundApprovers := ro.AllApprovers()
+	if !foundApprovers.Equal(sets.NewString(expectedApprovers...)) {
+		t.Errorf("Expected approvers: %v\tFound approvers: %v ", expectedApprovers, foundApprovers.List())
+	}
+}
+
+func TestRepoOwners_AllReviewers(t *testing.T) {
+	expectedReviewers := []string{"alice", "bob", "matthyx"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			"":                    regexpAll("cjwagner"),
+			"src":                 regexpAll(),
+			"src/dir":             regexpAll("bob"),
+			"src/dir/conformance": regexpAll("mml"),
+			"src/dir/subdir":      regexpAll("alice", "bob"),
+			"vendor":              regexpAll("alice"),
+		},
+		reviewers: map[string]map[*regexp.Regexp]sets.String{
+			"":               regexpAll("alice", "bob"),
+			"src/dir":        regexpAll("alice", "matthyx"),
+			"src/dir/subdir": regexpAll("alice", "bob"),
+		},
+	}
+	foundReviewers := ro.AllReviewers()
+	if !foundReviewers.Equal(sets.NewString(expectedReviewers...)) {
+		t.Errorf("Expected reviewers: %v\tFound reviewers: %v ", expectedReviewers, foundReviewers.List())
 	}
 }

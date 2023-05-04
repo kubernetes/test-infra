@@ -1380,7 +1380,15 @@ type fakeRepoOwners struct {
 	fakeRepo
 }
 
+func (fro fakeRepoOwners) AllApprovers() sets.String {
+	return sets.String{}
+}
+
 func (fro fakeRepoOwners) AllOwners() sets.String {
+	return sets.String{}
+}
+
+func (fro fakeRepoOwners) AllReviewers() sets.String {
 	return sets.String{}
 }
 

@@ -255,6 +255,8 @@ type RepoOwner interface {
 	TopLevelApprovers() sets.String
 	Filenames() ownersconfig.Filenames
 	AllOwners() sets.String
+	AllApprovers() sets.String
+	AllReviewers() sets.String
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -889,17 +891,48 @@ func (o *RepoOwners) TopLevelApprovers() sets.String {
 	return o.entriesForFile(".", o.approvers, true).Set()
 }
 
+// AllOwners returns ALL of the users who are approvers or reviewers,
+// at least for a file across the structure of the repository.
+// If pkg/OWNERS has user1 as approver and user2 as reviewer,
+// and pkg/util has user3 as approver and user4 as reviewer,
+// the function will return user1, user2, user3, and user4.
 func (o *RepoOwners) AllOwners() sets.String {
 	allOwners := sets.NewString()
+
+	allOwners = allOwners.Union(o.AllApprovers())
+	allOwners = allOwners.Union(o.AllReviewers())
+
+	return allOwners
+}
+
+// AllApprovers returns ALL of the users who are approvers,
+// at least for a file across the structure of the repository.
+// If pkg/OWNERS has user1 as approver and user2 as reviewer,
+// and pkg/util has user3 as approver and user4 as reviewer,
+// the function will return user1, and user3.
+func (o *RepoOwners) AllApprovers() sets.String {
+	allApprovers := sets.NewString()
 	for _, pv := range o.approvers {
 		for _, rv := range pv {
-			allOwners = allOwners.Union(rv)
+			allApprovers = allApprovers.Union(rv)
 		}
 	}
+
+	return allApprovers
+}
+
+// AllReviewers returns ALL of the users who are reviewers,
+// at least for a file across the structure of the repository.
+// If pkg/OWNERS has user1 as approver and user2 as reviewer,
+// and pkg/util has user3 as approver and user4 as reviewer,
+// the function will return user2, and user4.
+func (o *RepoOwners) AllReviewers() sets.String {
+	allReviewers := sets.NewString()
 	for _, pv := range o.reviewers {
 		for _, rv := range pv {
-			allOwners = allOwners.Union(rv)
+			allReviewers = allReviewers.Union(rv)
 		}
 	}
-	return allOwners
+
+	return allReviewers
 }
