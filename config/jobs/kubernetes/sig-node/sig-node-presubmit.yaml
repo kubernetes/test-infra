@@ -1295,6 +1295,8 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
