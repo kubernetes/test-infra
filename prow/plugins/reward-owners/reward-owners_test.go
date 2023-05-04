@@ -61,7 +61,15 @@ func (f *fakeRepoOwners) Reviewers(path string) layeredsets.String  { return lay
 func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String { return nil }
 func (f *fakeRepoOwners) TopLevelApprovers() sets.String            { return nil }
 
+func (f *fakeRepoOwners) AllApprovers() sets.String {
+	return ownersBySha[f.sha]
+}
+
 func (f *fakeRepoOwners) AllOwners() sets.String {
+	return ownersBySha[f.sha]
+}
+
+func (f *fakeRepoOwners) AllReviewers() sets.String {
 	return ownersBySha[f.sha]
 }
 
