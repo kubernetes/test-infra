@@ -1328,6 +1328,10 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/kubectl-validate:
+    plugins:
+    - mergecommitblocker
+
   kubernetes-sigs/kueue:
     plugins:
     - milestone
