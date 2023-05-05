@@ -1280,7 +1280,7 @@ presubmits:
             # during the tests more like 3-20m is used
             cpu: 2000m
 
-  - name: pull-kubernetes-e2e-kubelet-credential-provider
+  - name: pull-kubernetes-e2e-gce-kubelet-credential-provider
     cluster: k8s-infra-prow-build
     always_run: false
     optional: true
@@ -1311,7 +1311,6 @@ presubmits:
           - -- # end bootstrap args, scenario args below
           - --build=quick
           - --extract=local
-          - --check-leaked-resources
           - --cluster=
           - --env=ENABLE_AUTH_PROVIDER_GCP=true
           - --env=KUBE_FEATURE_GATES=DisableKubeletCloudCredentialProviders=true
@@ -1319,6 +1318,8 @@ presubmits:
           - --gcp-node-image=gci
           - --gcp-nodes=1
           - --provider=gce
+          - --ginkgo-parallel=10
+          - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-kubelet-credential-provider
           - --test_args=--ginkgo.focus=\[Feature:KubeletCredentialProviders\]
           - --timeout=180m
         env:
