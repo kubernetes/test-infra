@@ -120,6 +120,7 @@ presubmits:
     path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     spec:
@@ -129,6 +130,13 @@ presubmits:
         - "make"
         args:
         - "test-ci"
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
@@ -139,6 +147,7 @@ presubmits:
     path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     spec:
@@ -148,6 +157,13 @@ presubmits:
         command:
         - make
         - verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
@@ -157,6 +173,7 @@ presubmits:
     path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
     branches:
@@ -170,6 +187,13 @@ presubmits:
         - make
         - verify-archives
         # docker-in-docker needs privileged mode
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
         securityContext:
           privileged: true
     annotations:
