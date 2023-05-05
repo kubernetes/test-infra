@@ -337,7 +337,7 @@ func TestHandleMessage(t *testing.T) {
 			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
 			fr := fakeReporter{}
-			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true)
+			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true, false)
 			cache, _ := config.NewInRepoConfigCache(100, ca, gitClient)
 			s := Subscriber{
 				Metrics:           NewMetrics(),
@@ -583,7 +583,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
 			fr := fakeReporter{}
-			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true)
+			gitClient, _ := (&flagutil.GitHubOptions{}).GitClientFactory("abc", nil, true, false)
 			cache, _ := config.NewInRepoConfigCache(100, ca, gitClient)
 			s := Subscriber{
 				Metrics:           NewMetrics(),
