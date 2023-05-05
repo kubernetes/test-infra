@@ -105,6 +105,7 @@ const (
 	pullRefsEnv    = "PULL_REFS"
 	pullNumberEnv  = "PULL_NUMBER"
 	pullPullShaEnv = "PULL_PULL_SHA"
+	pullHeadRefEnv = "PULL_HEAD_REF"
 )
 
 // EnvForSpec returns a mapping of environment variables
@@ -147,6 +148,8 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 	env[pullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
 	env[pullPullShaEnv] = spec.Refs.Pulls[0].SHA
+	env[pullHeadRefEnv] = spec.Refs.Pulls[0].HeadRef
+
 	return env, nil
 }
 
@@ -154,7 +157,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 func EnvForType(jobType prowapi.ProwJobType) []string {
 	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
 	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
-	pullEnv := []string{pullNumberEnv, pullPullShaEnv}
+	pullEnv := []string{pullNumberEnv, pullPullShaEnv, pullHeadRefEnv}
 
 	switch jobType {
 	case prowapi.PeriodicJob:

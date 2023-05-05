@@ -1,0 +1,24 @@
+presubmits:
+  kubernetes-sigs/kueue:
+  - name: pull-kueue-build-image-release-0-2
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    branches:
+    - ^release-0.2
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-build-image-release-0-2
+      description: "Build container image of kueue for release-0.2 branch"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        securityContext:
+          privileged: true
+        command:
+        - runner.sh
+        args:
+        - make
+        - image-build

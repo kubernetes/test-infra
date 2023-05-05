@@ -1294,6 +1294,9 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
@@ -1306,11 +1309,12 @@ presubmits:
           - "--timeout=240"
           - --scenario=kubernetes_e2e
           - -- # end bootstrap args, scenario args below
+          - --build=quick
+          - --extract=local
           - --check-leaked-resources
           - --cluster=
           - --env=ENABLE_AUTH_PROVIDER_GCP=true
           - --env=KUBE_FEATURE_GATES=DisableKubeletCloudCredentialProviders=true
-          - --extract=ci/latest
           - --gcp-zone=us-west1-b
           - --gcp-node-image=gci
           - --gcp-nodes=1
@@ -1320,6 +1324,8 @@ presubmits:
         env:
           - name: GOPATH
             value: /go
+        securityContext:
+          privileged: true
         resources:
           limits:
             cpu: 4

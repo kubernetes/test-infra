@@ -115,7 +115,15 @@ type fakeOwnersClient struct {
 	dirDenylist       []*regexp.Regexp
 }
 
+func (foc *fakeOwnersClient) AllApprovers() sets.String {
+	return sets.String{}
+}
+
 func (foc *fakeOwnersClient) AllOwners() sets.String {
+	return sets.String{}
+}
+
+func (foc *fakeOwnersClient) AllReviewers() sets.String {
 	return sets.String{}
 }
 

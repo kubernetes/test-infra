@@ -21,17 +21,15 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         command:
         - wrapper.sh
         - bash
         - -c
-        # The modified e2e-k8s.sh with support for FEATURE_GATES and RUNTIME_CONFIG comes from
-        # https://github.com/kubernetes-sigs/kind/pull/3023. Once that is in a
-        # kind release, pulling it separately via curl can be removed.
+        # The modified e2e-k8s.sh customizes logging.
         - >
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
-          curl -sSL https://github.com/kubernetes-sigs/kind/raw/c8618199912e3949aee0d7a8b966b462e4fb6f0e/hack/ci/e2e-k8s.sh >$(which e2e-k8s.sh) &&
+          curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-logs-e2e-k8s.sh >$(which e2e-k8s.sh) &&
           chmod u+x $(which e2e-k8s.sh) &&
           e2e-k8s.sh
 
@@ -41,7 +39,7 @@ presubmits:
           value: json
         - name: KIND_CLUSTER_LOG_LEVEL
           # Default is 4, but we want to exercise more log calls and get more output.
-          value: "10"
+          value: "6"
         - name: FEATURE_GATES
           value: '{"ContextualLogging":true}'
         # don't retry conformance tests
@@ -90,17 +88,15 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
         command:
         - wrapper.sh
         - bash
         - -c
-        # The modified e2e-k8s.sh with support for FEATURE_GATES and RUNTIME_CONFIG comes from
-        # https://github.com/kubernetes-sigs/kind/pull/3023. Once that is in a
-        # kind release, pulling it separately via curl can be removed.
+        # The modified e2e-k8s.sh customizes logging.
         - >
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
-          curl -sSL https://github.com/kubernetes-sigs/kind/raw/c8618199912e3949aee0d7a8b966b462e4fb6f0e/hack/ci/e2e-k8s.sh >$(which e2e-k8s.sh) &&
+          curl -sSL https://github.com/kubernetes/test-infra/raw/master/experiment/kind-logs-e2e-k8s.sh >$(which e2e-k8s.sh) &&
           chmod u+x $(which e2e-k8s.sh) &&
           e2e-k8s.sh
 
@@ -110,7 +106,7 @@ presubmits:
           value: text
         - name: KIND_CLUSTER_LOG_LEVEL
           # Default is 4, but we want to exercise more log calls and get more output.
-          value: "10"
+          value: "6"
         - name: FEATURE_GATES
           value: '{"ContextualLogging":true}'
         # don't retry conformance tests

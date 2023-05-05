@@ -1020,9 +1020,10 @@ def generate_upgrades():
 def generate_scale():
     results = [
         build_test(
-            name_override='kops-aws-scale',
+            name_override='kops-aws-scale-amazonvpc',
             extra_dashboards=[],
             runs_per_day=1,
+            networking='amazonvpc',
             scenario='scalability',
         )
     ]
@@ -1034,8 +1035,9 @@ def generate_scale():
 def generate_presubmits_scale():
     results = [
         presubmit_test(
-            name='presubmit-kops-aws-scale',
+            name='presubmit-kops-aws-scale-amazonvpc',
             scenario='scalability',
+            networking='amazonvpc',
             always_run=False,
         )
     ]
@@ -1123,6 +1125,7 @@ def generate_presubmits_network_plugins():
             optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
+            optional = True
         if plugin == 'weave':
             distro = 'u2204'
             k8s_version = '1.22'
@@ -1227,7 +1230,7 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-gce-ipalias',
             networking='gce',
             tab_name='e2e-gce',
-            always_run=False,
+            always_run=True,
             extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
         presubmit_test(

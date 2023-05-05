@@ -4,6 +4,7 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/zeitgeist"
+    cluster: eks-prow-build-cluster
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
@@ -11,6 +12,13 @@ presubmits:
         command:
         - make
         - build
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: zeitgeist-build
@@ -20,6 +28,7 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/zeitgeist"
+    cluster: eks-prow-build-cluster
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
@@ -27,6 +36,13 @@ presubmits:
         command:
         - make
         - test
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: zeitgeist-test
@@ -36,6 +52,7 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/zeitgeist"
+    cluster: eks-prow-build-cluster
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye

@@ -1,0 +1,27 @@
+postsubmits:
+
+  kubernetes/ingress-gce:
+    - name: post-ingress-gce-push-image
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-gce-e2e, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+        - ^v[0-9].*
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-ingress-image-push
+              - --scratch-bucket=gs://k8s-ingress-image-push-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - --build-dir=.
+              - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"

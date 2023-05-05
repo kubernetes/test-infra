@@ -62,7 +62,6 @@ approve:
   - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
-  - kubernetes-sigs/aws-ebs-csi-driver
   require_self_approval: true
   lgtm_acts_as_approve: false
 - repos:
@@ -103,6 +102,7 @@ approve:
   - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/slack-infra
   - kubernetes-sigs/tejolote
+  - kubernetes-sigs/testgrid-json-exporter
   - kubernetes-sigs/zeitgeist
   - kubernetes/community
   - kubernetes/k8s.io
@@ -118,6 +118,11 @@ approve:
 - repos:
   - kubernetes-sigs/gateway-api
   lgtm_acts_as_approve: false
+- repos:
+  - kubernetes-sigs/aws-ebs-csi-driver
+  require_self_approval: true
+  lgtm_acts_as_approve: false
+  ignore_review_state: true
 
 help:
   help_guidelines_summary: |
@@ -205,6 +210,7 @@ label:
 lgtm:
 - repos:
   - bazelbuild
+  - kubernetes-sigs/aws-ebs-csi-driver
   - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
   - kubernetes-sigs/controller-runtime
@@ -490,9 +496,9 @@ milestone_applier:
     release-0.7: v0.7.x
     release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.9
+    main: v1.10
+    release-1.9: v1.9
     release-1.8: v1.8
-    release-1.7: v1.7
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -1326,6 +1332,7 @@ plugins:
     plugins:
     - milestone
     - milestonestatus
+    - release-note
 
   kubernetes-sigs/kustomize:
     plugins:
@@ -1646,7 +1653,7 @@ external_plugins:
     events:
     - issue_comment
     - pull_request
-    endpoint: http://cherrypicker  
+    endpoint: http://cherrypicker
   kubernetes-sigs/node-feature-discovery:
   - name: cherrypicker
     events:

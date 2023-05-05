@@ -234,6 +234,7 @@ presubmits:
             - --
             - --build=quick
             - --cluster=
+            - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.18
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -359,7 +360,7 @@ presubmits:
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-cos-alpha-features
-        - --test_args=--ginkgo.focus=\[Feature:(WatchList|GRPCContainerProbe|InPlacePodVerticalScaling|ProbeTerminationGracePeriod|APIServerTracing|APISelfSubjectReview|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|StatefulSetMinReadySeconds|ProxyTerminatingEndpoints|NodeOutOfServiceVolumeDetach|RetroactiveDefaultStorageClass|RecoverVolumeExpansionFailure|CSINodeExpandSecret)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:(WatchList|GRPCContainerProbe|InPlacePodVerticalScaling|ProbeTerminationGracePeriod|APIServerTracing|APISelfSubjectReview|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|StatefulSetMinReadySeconds|ProxyTerminatingEndpoints|NodeOutOfServiceVolumeDetach|RecoverVolumeExpansionFailure|CSINodeExpandSecret)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
         - --timeout=180m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
         resources:
@@ -585,6 +586,7 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --check-leaked-resources
+          - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.18
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.4
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -672,7 +674,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --runtime-config=api/all=true
-      - --test_args=--ginkgo.focus=\[Feature:(InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|RetroactiveDefaultStorageClass|StatefulSetAutoDeletePVC)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(InPlacePodVerticalScaling|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
       - --timeout=180m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
       resources:

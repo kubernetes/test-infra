@@ -172,9 +172,10 @@ func main() {
 			BaseSHA: pr.Base.SHA,
 			Pulls: []prowapi.Pull{
 				{
-					Number: pr.Number,
-					Author: pr.User.Login,
-					SHA:    pr.Head.SHA,
+					Number:  pr.Number,
+					Author:  pr.User.Login,
+					SHA:     pr.Head.SHA,
+					HeadRef: pr.Head.Ref,
 				},
 			},
 		},

@@ -1104,8 +1104,8 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		}
 		// job Pod must qualify for Guaranteed QoS
 		errs := verifyPodQOSGuaranteed(job.Spec, true)
-		if !isCritical(job.Cluster) {
-			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build, found: %v", job.Cluster))
+		if !isCritical(job.Cluster) && !isEKSCluster(job.Cluster) {
+			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build or eks-prow-build-cluster, found: %v", job.Cluster))
 		}
 		if len(errs) > 0 {
 			jobsToFix++
