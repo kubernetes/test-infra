@@ -127,6 +127,7 @@ type PullRequestClient interface {
 	GetPullRequests(org, repo string) ([]PullRequest, error)
 	GetPullRequest(org, repo string, number int) (*PullRequest, error)
 	EditPullRequest(org, repo string, number int, pr *PullRequest) (*PullRequest, error)
+	GetPullRequestDiff(org, repo string, number int) ([]byte, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
