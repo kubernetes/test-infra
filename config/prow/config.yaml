@@ -553,7 +553,8 @@ branch-protection:
         kernel-module-management:
           required_status_checks:
             contexts:
-              - in-cluster-build
+              - e2e
+              - e2e-hub
         kube-batch:
           required_status_checks:
             contexts:
