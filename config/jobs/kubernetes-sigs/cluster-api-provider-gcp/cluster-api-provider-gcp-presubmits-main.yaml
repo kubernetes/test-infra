@@ -5,6 +5,7 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     spec:
@@ -13,9 +14,12 @@ presubmits:
         command:
         - "./scripts/ci-test.sh"
         resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
           requests:
-            memory: "6Gi"
-            cpu: "2"
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-test
@@ -24,6 +28,7 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     spec:
@@ -32,9 +37,12 @@ presubmits:
         command:
         - "./scripts/ci-build.sh"
         resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
           requests:
-            memory: "6Gi"
-            cpu: "2"
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-build
@@ -42,6 +50,7 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -58,9 +67,12 @@ presubmits:
         - "runner.sh"
         - "./scripts/ci-make.sh"
         resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
           requests:
-            memory: "6Gi"
-            cpu: "2"
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-make
@@ -69,6 +81,7 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    cluster: eks-prow-build-cluster
     labels:
       # required for shellcheck in container.
       preset-dind-enabled: "true"
@@ -84,6 +97,13 @@ presubmits:
         - "verify"
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-verify
@@ -276,6 +296,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
     optional: true
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
     branches:
@@ -287,6 +308,13 @@ presubmits:
           - runner.sh
         args:
           - ./scripts/ci-apidiff.sh
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-apidiff-main
@@ -295,6 +323,7 @@ presubmits:
     optional: true
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    cluster: eks-prow-build-cluster
     extra_refs:
       - org: kubernetes
         repo: test-infra
@@ -320,6 +349,13 @@ presubmits:
           exit $result
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-coverage
