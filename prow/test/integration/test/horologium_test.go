@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/google/uuid"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -158,9 +158,10 @@ func TestLaunchProwJob(t *testing.T) {
 			// Now kick off this job manually, which should alter the next run
 			// to be scheduled after 60 seconds instead of 15-45 seconds.
 			timeBeforeNewJob := time.Now()
+			uuidV1 := uuid.New()
 			pjToBe := pj.DeepCopy()
 			pjToBe.ResourceVersion = ""
-			pjToBe.Name = uuid.NewV1().String()
+			pjToBe.Name = uuidV1.String()
 			pjToBe.Status.StartTime = v1.NewTime(time.Now().Add(1 * time.Second))
 			t.Log("Creating prowjob again, and the next run should happen 60 seconds later.")
 			if err := kubeClient.Create(ctx, pjToBe); err != nil {
