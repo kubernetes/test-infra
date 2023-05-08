@@ -32,8 +32,8 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+	uuid "github.com/google/uuid"
 	"github.com/pelletier/go-toml"
-	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -347,7 +347,11 @@ func (az *AzureClient) AssignOwnerRoleToIdentity(ctx context.Context, resourceGr
 		},
 	}
 
-	if _, err := az.authorizationClient.Create(ctx, scope, uuid.NewV1().String(), roleAssignmentParameters); err != nil {
+	uuidV1, err := uuid.NewUUID()
+	if err != nil {
+		return fmt.Errorf("failed to generate UUID: %w", err)
+	}
+	if _, err := az.authorizationClient.Create(ctx, scope, uuidV1.String(), roleAssignmentParameters); err != nil {
 		return fmt.Errorf("failed to assign 'Owner' role to user assigned identity: %w", err)
 	}
 

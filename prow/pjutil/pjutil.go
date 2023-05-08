@@ -24,7 +24,7 @@ import (
 	"path"
 	"strconv"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -42,6 +42,7 @@ func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 	labels, annotations := decorate.LabelsAndAnnotationsForSpec(spec, extraLabels, extraAnnotations)
 	specCopy := spec.DeepCopy()
 	setReportDefault(specCopy)
+	uuidV1 := uuid.New()
 
 	return prowapi.ProwJob{
 		TypeMeta: metav1.TypeMeta{
@@ -49,7 +50,7 @@ func NewProwJob(spec prowapi.ProwJobSpec, extraLabels, extraAnnotations map[stri
 			Kind:       "ProwJob",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        uuid.NewV1().String(),
+			Name:        uuidV1.String(),
 			Labels:      labels,
 			Annotations: annotations,
 		},
