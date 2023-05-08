@@ -106,6 +106,15 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	}
 }
 
+func defaultTempDir() *string {
+	switch runtime.GOOS {
+	case "linux":
+		return utilpointer.StringPtr("/var/tmp")
+	default:
+		return utilpointer.StringPtr("")
+	}
+}
+
 // ClientFactoryOpts allows to manipulate the options for a ClientFactory
 type ClientFactoryOpt func(*ClientFactoryOpts)
 
@@ -114,12 +123,8 @@ func defaultClientFactoryOpts(cfo *ClientFactoryOpts) {
 		cfo.Host = "github.com"
 	}
 	if cfo.CacheDirBase == nil {
-		switch runtime.GOOS {
-		case "linux":
-			cfo.CacheDirBase = utilpointer.StringPtr("/var/tmp")
-		default:
-			cfo.CacheDirBase = utilpointer.StringPtr("")
-		}
+		// If we do not have a place to put cache, put it in temp dir.
+		cfo.CacheDirBase = defaultTempDir()
 	}
 	if cfo.Censor == nil {
 		cfo.Censor = func(in []byte) []byte { return in }
@@ -289,7 +294,8 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		return nil, err
 	}
 
-	repoDir, err := os.MkdirTemp(c.cacheDirBase, "gitrepo")
+	// Put copies of the repo in temp dir.
+	repoDir, err := os.MkdirTemp(*defaultTempDir(), "gitrepo")
 	if err != nil {
 		return nil, err
 	}
