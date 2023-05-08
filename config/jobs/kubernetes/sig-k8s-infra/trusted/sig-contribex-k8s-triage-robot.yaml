@@ -152,6 +152,7 @@ periodics:
         org:kubernetes-csi
         is:issue
         -repo:kubernetes-sigs/kind
+        -repo:kubernetes/kubectl
         -label:lifecycle/frozen
         -label:"help wanted"
         -label:"good first issue"
