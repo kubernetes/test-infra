@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: strip-path-prefix
+  namespace: default
   annotations:
     # Rewrite path to strip the first prefix from the URL path.  E.g., if the
     # inbound traffic says it is for /fakeghserver/foo, then this rule rewrites
@@ -63,6 +64,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: no-strip-path-prefix
+  namespace: default
 spec:
   ingressClassName: "nginx"
   rules:
