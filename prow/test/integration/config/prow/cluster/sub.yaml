@@ -103,6 +103,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: sub
+  namespace: default
 rules:
   - apiGroups:
       - prow.k8s.io
@@ -118,6 +119,7 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: sub
+  namespace: default
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

@@ -273,6 +273,7 @@ function wait_for_readiness() {
     if  >/dev/null 2>&1 do_kubectl wait pod \
       --for=condition=ready \
       --selector=app="${component}" \
+      --namespace=default \
       --timeout=5s; then
       return
     else
