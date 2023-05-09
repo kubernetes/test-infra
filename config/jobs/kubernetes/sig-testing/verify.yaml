@@ -128,7 +128,7 @@ presubmits:
             memory: 12Gi
 periodics:
 - interval: 1h
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   name: ci-kubernetes-verify-master
   labels:
     preset-service-account: "true"
