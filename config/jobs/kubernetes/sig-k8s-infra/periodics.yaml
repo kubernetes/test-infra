@@ -90,8 +90,6 @@ periodics:
       args:
       - ./test/integration/scheduler_perf
       env:
-      - name: GOMAXPROCS
-        value: "6"
       - name: KUBE_TIMEOUT
         value: --timeout=2h25m
       - name: TEST_PREFIX
