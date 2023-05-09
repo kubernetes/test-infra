@@ -50,7 +50,6 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
-    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
