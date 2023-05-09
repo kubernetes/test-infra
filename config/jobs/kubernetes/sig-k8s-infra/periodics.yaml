@@ -51,11 +51,6 @@ periodics:
       runAsGroup: 2010
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-        env:
-        # set GOMAXPROCS to match the CPU limit.  This informs the Go runtime of the number of
-        # compile jobs/tests to run in parallel.
-        - name: GOMAXPROCS
-          value: "4"
         securityContext:
           allowPrivilegeEscalation: false
         command:
