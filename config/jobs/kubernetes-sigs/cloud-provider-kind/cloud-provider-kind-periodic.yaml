@@ -1,0 +1,94 @@
+periodics:
+- interval: 24h
+  name: ci-kubernetes-cloud-provider-kind-conformance-parallel
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
+      env:
+      # skip serial tests and run with --ginkgo-parallel
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-dashboards: sig-testing-kind
+    testgrid-tab-name: cloud-provider-kind conformance, master (dev) [non-serial]
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+# conformance test against kubernetes master branch with `kind` ipv6
+- interval: 24h
+  name: ci-kubernetes-cloud-provider-kind-conformance-parallel-ipv6
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230421-ec4335b54b-master
+      env:
+      # enable IPV6 in bootstrap image
+      - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+        value: "true"
+      # tell kind CI script to use ipv6
+      - name: "IP_FAMILY"
+        value: "ipv6"
+      # skip serial tests and run with --ginkgo-parallel
+      - name: "PARALLEL"
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|loadbalancer.source.ranges
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
+        requests:
+          cpu: "4"
+          memory: 9000Mi
+  annotations:
+    testgrid-dashboards: sig-testing-kind
+    testgrid-tab-name: cloud-provider-kind (IPv6), master (dev) [non-serial]
+    testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
