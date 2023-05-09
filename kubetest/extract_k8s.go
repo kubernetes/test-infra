@@ -71,16 +71,14 @@ func (l *extractStrategies) String() string {
 	return strings.Join(s, ",")
 }
 
-//^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$
-
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
-		`^gke-?(default|channel-(rapid|regular|stable)(?:-(latest))?|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                                   gci,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                              gciCi,
+		`^gke-?(default|channel-(rapid|regular|stable)(?:-((?:[0-9]-)?latest))?|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                                              gci,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                                         gciCi,
 		`^ci/(.+)$`:                   ci,
 		`^ci/(.+)-fast$`:              ciFast,
 		`^release/(latest.*)$`:        rc,
