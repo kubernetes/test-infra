@@ -1,0 +1,23 @@
+postsubmits:
+
+  kubernetes-sigs/kubebuilder:
+    - name: post-kubebuilder-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-api-machinery-kubebuilder
+      decorate: true
+      branches:
+        - ^master$
+        - ^kube-rbac-proxy-releases$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kubebuilder
+              - --scratch-bucket=gs://k8s-staging-kubebuilder-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .
