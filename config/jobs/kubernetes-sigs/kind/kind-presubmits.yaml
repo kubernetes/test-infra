@@ -57,7 +57,7 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    always_run: true
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -100,7 +100,7 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    always_run: true
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -143,7 +143,7 @@ presubmits:
   # Dual Stack enabled variant
   - name: pull-kind-conformance-parallel-dual-stack-ipv4-ipv6
     cluster: k8s-infra-prow-build
-    always_run: false
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     optional: true
     labels:
       preset-dind-enabled: "true"
@@ -189,7 +189,7 @@ presubmits:
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes
     cluster: k8s-infra-prow-build
-    always_run: true
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -234,7 +234,7 @@ presubmits:
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes-1-27
     cluster: k8s-infra-prow-build
-    always_run: true
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -277,7 +277,7 @@ presubmits:
             cpu: "4"
             memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
-  - always_run: true
+  - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     decorate: true
     decoration_config:
       grace_period: 15m0s
@@ -319,7 +319,7 @@ presubmits:
         securityContext:
           privileged: true
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
-  - always_run: true
+  - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     decorate: true
     decoration_config:
       grace_period: 15m0s
@@ -361,7 +361,7 @@ presubmits:
         securityContext:
           privileged: true
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
-  - always_run: true
+  - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
     decorate: true
     decoration_config:
       grace_period: 15m0s
