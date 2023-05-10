@@ -558,6 +558,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        kubectl-validate:
+          required_status_checks:
+            contexts:
+            - required
         kubernetes-scheduler-simulator:
           branches:
             gh-pages:
