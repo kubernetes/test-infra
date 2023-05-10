@@ -125,3 +125,126 @@ periodics:
         requests:
           cpu: 2
           memory: "6Gi"
+
+- name: ci-kubernetes-e2e-gci-gce-scalability-watch-list-off
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  tags:
+    - "perfDashPrefix: watch-list-off"
+    - "perfDashJobType: watchlist-off"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: watchlist-off
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+          - --check-leaked-resources
+          - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
+          - --extract=ci/latest
+          - --gcp-node-image=gci
+          - --gcp-master-size=e2-standard-32
+          - --gcp-node-size=e2-standard-8
+          - --gcp-nodes=1
+          - --provider=gce
+          - --test=false
+          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+          - --test-cmd-args=cluster-loader2
+          - --test-cmd-args=--nodes=1
+          - --test-cmd-args=--provider=gce
+          - --test-cmd-args=--report-dir=$(ARTIFACTS)
+          - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
+          - --test-cmd-name=ClusterLoaderV2
+          - --timeout=30m
+          - --use-logexporter
+          - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        resources:
+          requests:
+            cpu: 2
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
+
+- name: ci-kubernetes-e2e-gci-gce-scalability-watch-list-on
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  tags:
+    - "perfDashPrefix: watch-list-on"
+    - "perfDashJobType: watchlist-on"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: watchlist-on
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        command:
+          - runner.sh
+          - /workspace/scenarios/kubernetes_e2e.py
+        args:
+          - --check-leaked-resources
+          - --env=CL2_ENABLE_WATCH_LIST_FEATURE=true
+          - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
+          - --extract=ci/latest
+          - --gcp-node-image=gci
+          - --gcp-master-size=e2-standard-32
+          - --gcp-node-size=e2-standard-8
+          - --gcp-nodes=1
+          - --provider=gce
+          - --test=false
+          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+          - --test-cmd-args=cluster-loader2
+          - --test-cmd-args=--nodes=1
+          - --test-cmd-args=--provider=gce
+          - --test-cmd-args=--report-dir=$(ARTIFACTS)
+          - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
+          - --test-cmd-name=ClusterLoaderV2
+          - --timeout=30m
+          - --use-logexporter
+          - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        resources:
+          requests:
+            cpu: 2
+            memory: "2Gi"
+          limits:
+            cpu: 2
+            memory: "2Gi"
