@@ -221,6 +221,44 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-informing-ipv6-main
+  - name: pull-cluster-api-e2e-informing-dualstack-ipv6-main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+    optional: true
+    branches:
+      # The script this job runs is not in all branches.
+      - ^main$
+    path_alias: sigs.k8s.io/cluster-api
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    spec:
+      serviceAccountName: prowjob-default-sa
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230509-e4070b06c0-1.27
+          args:
+            - runner.sh
+            - "./scripts/ci-e2e.sh"
+          env:
+            # enable IPV6 in bootstrap image
+            - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+              value: "true"
+            - name: GINKGO_FOCUS
+              value: "\\[IPv6\\] \\[PR-Informing\\] \\[Dualstack\\]"
+            - name: IP_FAMILY
+              value: "dual"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-e2e-informing-dualstack-ipv6-main
+
   - name: pull-cluster-api-e2e-full-main
     labels:
       preset-dind-enabled: "true"
