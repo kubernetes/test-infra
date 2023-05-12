@@ -2301,7 +2301,7 @@ func (c *client) EditIssue(org, repo string, number int, issue *Issue) (*Issue, 
 
 // GetPullRequestDiff gets the diff version of a pull request.
 //
-// See https://docs.github.com/zh/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
+// See https://docs.github.com/en/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
 func (c *client) GetPullRequestDiff(org, repo string, number int) ([]byte, error) {
 	durationLogger := c.log("GetPullRequestDiff", org, repo, number)
 	defer durationLogger()
@@ -2318,7 +2318,7 @@ func (c *client) GetPullRequestDiff(org, repo string, number int) ([]byte, error
 
 // GetPullRequestPatch gets the patch version of a pull request.
 //
-// See https://docs.github.com/zh/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
+// See https://docs.github.com/en/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
 func (c *client) GetPullRequestPatch(org, repo string, number int) ([]byte, error) {
 	durationLogger := c.log("GetPullRequestPatch", org, repo, number)
 	defer durationLogger()
