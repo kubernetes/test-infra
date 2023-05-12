@@ -127,6 +127,7 @@ type PullRequestClient interface {
 	GetPullRequests(org, repo string) ([]PullRequest, error)
 	GetPullRequest(org, repo string, number int) (*PullRequest, error)
 	EditPullRequest(org, repo string, number int, pr *PullRequest) (*PullRequest, error)
+	GetPullRequestDiff(org, repo string, number int) ([]byte, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
@@ -2298,15 +2299,32 @@ func (c *client) EditIssue(org, repo string, number int, issue *Issue) (*Issue, 
 	return &ret, nil
 }
 
+// GetPullRequestDiff gets the diff version of a pull request.
+//
+// See https://docs.github.com/en/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
+func (c *client) GetPullRequestDiff(org, repo string, number int) ([]byte, error) {
+	durationLogger := c.log("GetPullRequestDiff", org, repo, number)
+	defer durationLogger()
+
+	_, diff, err := c.requestRaw(&request{
+		accept:    "application/vnd.github.diff",
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
+		org:       org,
+		exitCodes: []int{200},
+	})
+	return diff, err
+}
+
 // GetPullRequestPatch gets the patch version of a pull request.
 //
-// See https://developer.github.com/v3/media/#commits-commit-comparison-and-pull-requests
+// See https://docs.github.com/en/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
 func (c *client) GetPullRequestPatch(org, repo string, number int) ([]byte, error) {
 	durationLogger := c.log("GetPullRequestPatch", org, repo, number)
 	defer durationLogger()
 
 	_, patch, err := c.requestRaw(&request{
-		accept:    "application/vnd.github.VERSION.patch",
+		accept:    "application/vnd.github.patch",
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		org:       org,
