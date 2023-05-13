@@ -80,7 +80,7 @@ def k8s_version_info(k8s_version):
     test_package_dir = ''
     if k8s_version == 'latest':
         marker = 'latest.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
+        k8s_deploy_url = "https://dl.k8s.io/release/latest.txt"
     elif k8s_version == 'ci':
         marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/k8s-release-dev/ci/latest.txt"
@@ -88,10 +88,10 @@ def k8s_version_info(k8s_version):
         test_package_dir = 'ci'
     elif k8s_version == 'stable':
         marker = 'stable.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+        k8s_deploy_url = "https://dl.k8s.io/release/stable.txt"
     elif k8s_version:
         marker = f"stable-{k8s_version}.txt"
-        k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
+        k8s_deploy_url = f"https://dl.k8s.io/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
     else:
         raise Exception('missing required k8s_version')
     return marker, k8s_deploy_url, test_package_bucket, test_package_dir

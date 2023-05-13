@@ -85,7 +85,7 @@ presubmits:
             --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
             --env JOB_NAME=pull-kops-e2e-kubernetes-do-gossip \
             --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3" \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
@@ -136,7 +136,7 @@ presubmits:
             --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
             --env JOB_NAME=pull-kops-e2e-kubernetes-do-fqdn \
             --create-args "--networking=calico --node-count=2" \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+            --kubernetes-version=https://dl.k8s.io/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
