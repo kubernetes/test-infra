@@ -234,7 +234,6 @@ presubmits:
       # The script this job runs is not in all branches.
       - ^main$
     path_alias: sigs.k8s.io/cluster-api
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
@@ -246,6 +245,9 @@ presubmits:
             # enable IPV6 in bootstrap image
             - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
               value: "true"
+            # Since the PR-Blocking tests are run as part of the cluster-api-e2e job
+            # and the upgrade tests are being run as part of the periodic upgrade jobs.
+            # This jobs ends up running all the other tests in the E2E suite
             - name: GINKGO_SKIP
               value: "\\[PR-Blocking\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
           # we need privileged mode in order to do docker in docker
