@@ -221,7 +221,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-informing-ipv6-main
-  - name: pull-cluster-api-e2e-informing-dualstack-ipv6-main
+  - name: pull-cluster-api-e2e-full-dualstack-ipv6-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -245,8 +245,8 @@ presubmits:
             # enable IPV6 in bootstrap image
             - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
               value: "true"
-            - name: IP_FAMILY
-              value: "dual"
+            - name: GINKGO_SKIP
+              value: "\\[PR-Blocking\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -255,7 +255,7 @@ presubmits:
               cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-informing-dualstack-ipv6-main
+      testgrid-tab-name: capi-pr-e2e-full-dualstack-ipv6-main
   - name: pull-cluster-api-e2e-full-main
     labels:
       preset-dind-enabled: "true"
