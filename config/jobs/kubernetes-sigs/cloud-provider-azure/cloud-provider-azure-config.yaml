@@ -391,16 +391,70 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
           value: "1"
         - name: KUBERNETES_VERSION # CAPZ config
-          value: "v1.25.3"
+          value: "v1.25.6"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
         - name: CLUSTER_TEMPLATE # CAPZ config
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-ipv6.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-md.yaml
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-ipv6-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in an IPv6 single stack cluster."
+- cron: '0 16 * * *'  # Run at 16:00 UTC everyday
+  # cloud-provider-azure-master-ipv6--vmss-capz runs Azure specific tests periodically using a stable capz release in an IPv6 single stack cluster with VMSS.
+  name: cloud-provider-azure-master-ipv6-vmss-capz
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.9
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230509-e4070b06c0-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM # CAPZ config
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+          value: "1"
+        - name: KUBERNETES_VERSION # CAPZ config
+          value: "v1.25.6"
+        - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+          value: "capz"
+        - name: CLUSTER_TEMPLATE # CAPZ config
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cluster-template-prow-ipv6-mp.yaml
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-master-ipv6-vmss-capz
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release in an IPv6 single stack cluster with vmss."
 - cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   # cloud-provider-azure-master-capz runs Azure specific tests periodically using a stable capz release.
   name: cloud-provider-azure-master-capz
