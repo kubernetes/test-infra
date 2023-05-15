@@ -34,8 +34,8 @@ import (
 // JobSpec is the full downward API that we expose to
 // jobs that realize a ProwJob. We will provide this
 // data to jobs with environment variables in two ways:
-//  - the full spec, in serialized JSON in one variable
-//  - individual fields of the spec in their own variables
+//   - the full spec, in serialized JSON in one variable
+//   - individual fields of the spec in their own variables
 type JobSpec struct {
 	Type      prowapi.ProwJobType `json:"type,omitempty"`
 	Job       string              `json:"job,omitempty"`
@@ -86,44 +86,44 @@ func ResolveSpecFromEnv() (*JobSpec, error) {
 
 const (
 	// ci represents whether the current environment is a CI environment
-	ci = "CI"
+	CI = "CI"
 
 	// JobSpecEnv is the name that contains JobSpec marshaled into a string.
 	JobSpecEnv = "JOB_SPEC"
 
-	jobNameEnv   = "JOB_NAME"
-	jobTypeEnv   = "JOB_TYPE"
-	prowJobIDEnv = "PROW_JOB_ID"
+	JobNameEnv   = "JOB_NAME"
+	JobTypeEnv   = "JOB_TYPE"
+	ProwJobIDEnv = "PROW_JOB_ID"
 
-	buildIDEnv     = "BUILD_ID"
-	prowBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
+	BuildIDEnv     = "BUILD_ID"
+	ProwBuildIDEnv = "BUILD_NUMBER" // Deprecated, will be removed in the future.
 
-	repoOwnerEnv   = "REPO_OWNER"
-	repoNameEnv    = "REPO_NAME"
-	pullBaseRefEnv = "PULL_BASE_REF"
-	pullBaseShaEnv = "PULL_BASE_SHA"
-	pullRefsEnv    = "PULL_REFS"
-	pullNumberEnv  = "PULL_NUMBER"
-	pullPullShaEnv = "PULL_PULL_SHA"
-	pullHeadRefEnv = "PULL_HEAD_REF"
+	RepoOwnerEnv   = "REPO_OWNER"
+	RepoNameEnv    = "REPO_NAME"
+	PullBaseRefEnv = "PULL_BASE_REF"
+	PullBaseShaEnv = "PULL_BASE_SHA"
+	PullRefsEnv    = "PULL_REFS"
+	PullNumberEnv  = "PULL_NUMBER"
+	PullPullShaEnv = "PULL_PULL_SHA"
+	PullHeadRefEnv = "PULL_HEAD_REF"
 )
 
 // EnvForSpec returns a mapping of environment variables
 // to their values that should be available for a job spec
 func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env := map[string]string{
-		ci:           "true",
-		jobNameEnv:   spec.Job,
-		buildIDEnv:   spec.BuildID,
-		prowJobIDEnv: spec.ProwJobID,
-		jobTypeEnv:   string(spec.Type),
+		CI:           "true",
+		JobNameEnv:   spec.Job,
+		BuildIDEnv:   spec.BuildID,
+		ProwJobIDEnv: spec.ProwJobID,
+		JobTypeEnv:   string(spec.Type),
 	}
 
 	// for backwards compatibility, we provide the build ID
 	// in both $BUILD_ID and $BUILD_NUMBER for Prow agents
 	// and in both $buildId and $BUILD_NUMBER for Jenkins
 	if spec.agent == prowapi.KubernetesAgent {
-		env[prowBuildIDEnv] = spec.BuildID
+		env[ProwBuildIDEnv] = spec.BuildID
 	}
 
 	raw, err := json.Marshal(spec)
@@ -136,28 +136,28 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 		return env, nil
 	}
 
-	env[repoOwnerEnv] = spec.Refs.Org
-	env[repoNameEnv] = spec.Refs.Repo
-	env[pullBaseRefEnv] = spec.Refs.BaseRef
-	env[pullBaseShaEnv] = spec.Refs.BaseSHA
-	env[pullRefsEnv] = spec.Refs.String()
+	env[RepoOwnerEnv] = spec.Refs.Org
+	env[RepoNameEnv] = spec.Refs.Repo
+	env[PullBaseRefEnv] = spec.Refs.BaseRef
+	env[PullBaseShaEnv] = spec.Refs.BaseSHA
+	env[PullRefsEnv] = spec.Refs.String()
 
 	if spec.Type == prowapi.PostsubmitJob || spec.Type == prowapi.BatchJob {
 		return env, nil
 	}
 
-	env[pullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
-	env[pullPullShaEnv] = spec.Refs.Pulls[0].SHA
-	env[pullHeadRefEnv] = spec.Refs.Pulls[0].HeadRef
+	env[PullNumberEnv] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+	env[PullPullShaEnv] = spec.Refs.Pulls[0].SHA
+	env[PullHeadRefEnv] = spec.Refs.Pulls[0].HeadRef
 
 	return env, nil
 }
 
 // EnvForType returns the slice of environment variables to export for jobType
 func EnvForType(jobType prowapi.ProwJobType) []string {
-	baseEnv := []string{ci, jobNameEnv, JobSpecEnv, jobTypeEnv, prowJobIDEnv, buildIDEnv, prowBuildIDEnv}
-	refsEnv := []string{repoOwnerEnv, repoNameEnv, pullBaseRefEnv, pullBaseShaEnv, pullRefsEnv}
-	pullEnv := []string{pullNumberEnv, pullPullShaEnv, pullHeadRefEnv}
+	baseEnv := []string{CI, JobNameEnv, JobSpecEnv, JobTypeEnv, ProwJobIDEnv, BuildIDEnv, ProwBuildIDEnv}
+	refsEnv := []string{RepoOwnerEnv, RepoNameEnv, PullBaseRefEnv, PullBaseShaEnv, PullRefsEnv}
+	pullEnv := []string{PullNumberEnv, PullPullShaEnv, PullHeadRefEnv}
 
 	switch jobType {
 	case prowapi.PeriodicJob:
