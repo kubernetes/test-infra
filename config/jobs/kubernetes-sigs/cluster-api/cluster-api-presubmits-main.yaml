@@ -229,6 +229,7 @@ presubmits:
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
+    always_run: false
     branches:
       # The script this job runs is not in all branches.
       - ^main$
