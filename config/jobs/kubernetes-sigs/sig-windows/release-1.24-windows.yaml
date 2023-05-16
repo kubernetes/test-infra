@@ -82,6 +82,10 @@ periodics:
           - "./scripts/ci-conformance.sh"
         securityContext:
           privileged: true
+        env:
+        # Skip tests that require etcd image for 1.24 Windows jobs because the etcd image referenced in this branch does not container Windows images.
+        - name: GINKGO_SKIP
+          value: \[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|Aggregator.Should.be.able.to.support.the.1.17.Sample.API.Server|be.restarted.with.a.GRPC.liveness.probe
         resources:
           requests:
             cpu: 2
