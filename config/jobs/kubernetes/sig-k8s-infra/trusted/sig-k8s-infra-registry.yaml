@@ -1,6 +1,6 @@
 periodics:
   - name: ar-to-s3-sync
-    interval: 2h
+    interval: 5m
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
