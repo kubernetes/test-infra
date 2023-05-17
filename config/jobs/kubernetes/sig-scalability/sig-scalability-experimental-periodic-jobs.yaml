@@ -162,6 +162,7 @@ periodics:
         args:
           - --check-leaked-resources
           - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
+          - --env=KUBE_GCE_PRIVATE_CLUSTER=false #TODO(#29500): revert when private cluster setup is fixed
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-master-size=n1-standard-32
@@ -225,6 +226,7 @@ periodics:
           - --check-leaked-resources
           - --env=CL2_ENABLE_WATCH_LIST_FEATURE=true
           - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
+          - --env=KUBE_GCE_PRIVATE_CLUSTER=false #TODO(#29500): revert when private cluster setup is fixed
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-master-size=n1-standard-32
