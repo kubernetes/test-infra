@@ -8,7 +8,7 @@
     
     <tr class="initial" id="file.html-tr">
       <td colspan="2" style="border: 0px; padding: 0px;">
-        <iframe srcdoc="<div id=&quot;wrapper&quot;><body>Hello world!</body></div><script type=&quot;text/javascript&quot;>
+        <iframe srcdoc="<div id=&quot;wrapper&quot;><body>&quot;Hello world!&quot;</body></div><script type=&quot;text/javascript&quot;>
 window.addEventListener(&quot;load&quot;, function(){
     if(window.self === window.top) return; // if w.self === w.top, we are not in an iframe
     send_height_to_parent_function = function(){
@@ -21,7 +21,7 @@ window.addEventListener(&quot;load&quot;, function(){
     var config = { attributes: true, childList: true, characterData: true, subtree:true}; // PT2
     observer.observe(window.document, config);                                            // PT3
 });
-</script>" title="file.html" sandbox="allow-scripts allow-popups allow-same-origin" id="file.html" width="100%" scrolling="no"></iframe>
+</script>" title="file.html" sandbox="allow-scripts allow-popups allow-same-origin" id="file.html-0" width="100%" scrolling="no"></iframe>
       </td>
     </tr>
     

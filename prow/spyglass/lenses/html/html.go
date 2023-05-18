@@ -41,6 +41,7 @@ type Lens struct{}
 
 type document struct {
 	Filename string
+	ID       string
 	Title    string
 	Content  string
 }
@@ -81,14 +82,14 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 	}
 
 	documents := make([]document, 0)
-	for _, artifact := range artifacts {
+	for i, artifact := range artifacts {
 		content, err := artifact.ReadAll()
 		if err != nil {
 			logrus.WithError(err).WithField("artifact_url", artifact.CanonicalLink()).Warn("failed to read content")
 			continue
 		}
 		name := filepath.Base(artifact.CanonicalLink())
-		documents = append(documents, extractDocumentDetails(name, content))
+		documents = append(documents, extractDocumentDetails(name, i, content))
 	}
 
 	template, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
@@ -106,9 +107,10 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 
 // extractDocumentDetails parses the HTML to extract the title and
 // meta description tag, if present.
-func extractDocumentDetails(name string, content []byte) document {
+func extractDocumentDetails(name string, id int, content []byte) document {
 	doc := document{
 		Filename: name,
+		ID:       fmt.Sprintf("%s-%d", name, id),
 		Title:    name,
 		Content:  string(content),
 	}
