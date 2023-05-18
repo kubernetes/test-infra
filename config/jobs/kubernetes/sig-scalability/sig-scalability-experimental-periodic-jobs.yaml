@@ -166,7 +166,7 @@ periodics:
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-master-size=n1-standard-32
-          - --gcp-node-size=e2-standard-8
+          - --gcp-node-size=e2-standard-16
           - --gcp-nodes=1
           - --gcp-project-type=scalability-project
           - --provider=gce
@@ -230,7 +230,7 @@ periodics:
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-master-size=n1-standard-32
-          - --gcp-node-size=e2-standard-8
+          - --gcp-node-size=e2-standard-16
           - --gcp-nodes=1
           - --gcp-project-type=scalability-project
           - --provider=gce
