@@ -830,14 +830,17 @@ func TestSyncPendingJob(t *testing.T) {
 		Pods []v1.Pod
 		Err  error
 
-		expectedReconcileResult *reconcile.Result
-		ExpectedState           prowapi.ProwJobState
-		ExpectedNumPods         int
-		ExpectedComplete        bool
-		ExpectedCreatedPJs      int
-		ExpectedReport          bool
-		ExpectedURL             string
-		ExpectedBuildID         string
+		expectedReconcileResult       *reconcile.Result
+		ExpectedState                 prowapi.ProwJobState
+		ExpectedNumPods               int
+		ExpectedComplete              bool
+		ExpectedCreatedPJs            int
+		ExpectedReport                bool
+		ExpectedURL                   string
+		ExpectedBuildID               string
+		ExpectedPodRunningTimeout     *metav1.Duration
+		ExpectedPodPendingTimeout     *metav1.Duration
+		ExpectedPodUnscheduledTimeout *metav1.Duration
 	}
 	testcases := []testCase{
 		{
@@ -1275,6 +1278,42 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedURL:      "nightmare/error",
 		},
 		{
+			Name: "stale pending prow job with specific podPendingTimeout",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "nightmare",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{
+						PodPendingTimeout: &metav1.Duration{Duration: 2 * time.Hour},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "nightmare",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "nightmare",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Hour * 2)},
+					},
+					Status: v1.PodStatus{
+						Phase:     v1.PodPending,
+						StartTime: startTime(time.Now().Add(-time.Hour * 2)),
+					},
+				},
+			},
+			ExpectedState:             prowapi.ErrorState,
+			ExpectedNumPods:           0,
+			ExpectedComplete:          true,
+			ExpectedURL:               "nightmare/error",
+			ExpectedPodPendingTimeout: &metav1.Duration{Duration: 2 * time.Hour},
+		},
+		{
 			Name: "stale running prow job",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1306,6 +1345,42 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedURL:      "endless/aborted",
 		},
 		{
+			Name: "stale running prow job with specific podRunningTimeout",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "endless",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{
+						PodRunningTimeout: &metav1.Duration{Duration: 1 * time.Hour},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "endless",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "endless",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-time.Hour)},
+					},
+					Status: v1.PodStatus{
+						Phase:     v1.PodRunning,
+						StartTime: startTime(time.Now().Add(-time.Hour)),
+					},
+				},
+			},
+			ExpectedState:             prowapi.AbortedState,
+			ExpectedNumPods:           0,
+			ExpectedComplete:          true,
+			ExpectedURL:               "endless/aborted",
+			ExpectedPodRunningTimeout: &metav1.Duration{Duration: 1 * time.Hour},
+		},
+		{
 			Name: "stale unschedulable prow job",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
@@ -1334,6 +1409,41 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedNumPods:  0,
 			ExpectedComplete: true,
 			ExpectedURL:      "homeless/error",
+		},
+		{
+			Name: "stale unschedulable prow job with specific podUnscheduledTimeout",
+			PJ: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "homeless",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					DecorationConfig: &prowapi.DecorationConfig{
+						PodUnscheduledTimeout: &metav1.Duration{Duration: 2 * time.Minute},
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:   prowapi.PendingState,
+					PodName: "homeless",
+				},
+			},
+			Pods: []v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "homeless",
+						Namespace:         "pods",
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-2*time.Minute - time.Second)},
+					},
+					Status: v1.PodStatus{
+						Phase: v1.PodPending,
+					},
+				},
+			},
+			ExpectedState:                 prowapi.ErrorState,
+			ExpectedNumPods:               0,
+			ExpectedComplete:              true,
+			ExpectedURL:                   "homeless/error",
+			ExpectedPodUnscheduledTimeout: &metav1.Duration{Duration: 2 * time.Minute},
 		},
 		{
 			Name: "pending, created less than podPendingTimeout ago",
@@ -1571,6 +1681,21 @@ func TestSyncPendingJob(t *testing.T) {
 			}
 			if tc.ExpectedBuildID != "" && actual.Status.BuildID != tc.ExpectedBuildID {
 				t.Errorf("expected BuildID %q, got %q", tc.ExpectedBuildID, actual.Status.BuildID)
+			}
+			if actual.Spec.DecorationConfig != nil && actual.Spec.DecorationConfig.PodRunningTimeout != nil &&
+				tc.ExpectedPodRunningTimeout.Duration != actual.Spec.DecorationConfig.PodRunningTimeout.Duration {
+				t.Errorf("expected PodRunningTimeout %v, got %v",
+					tc.ExpectedPodRunningTimeout.Duration, actual.Spec.DecorationConfig.PodRunningTimeout.Duration)
+			}
+			if actual.Spec.DecorationConfig != nil && actual.Spec.DecorationConfig.PodPendingTimeout != nil &&
+				tc.ExpectedPodPendingTimeout.Duration != actual.Spec.DecorationConfig.PodPendingTimeout.Duration {
+				t.Errorf("expected PodPendingTimeout %v, got %v",
+					tc.ExpectedPodPendingTimeout.Duration, actual.Spec.DecorationConfig.PodPendingTimeout.Duration)
+			}
+			if actual.Spec.DecorationConfig != nil && actual.Spec.DecorationConfig.PodUnscheduledTimeout != nil &&
+				tc.ExpectedPodUnscheduledTimeout.Duration != actual.Spec.DecorationConfig.PodUnscheduledTimeout.Duration {
+				t.Errorf("expected PodUnscheduledTimeout %v, got %v",
+					tc.ExpectedPodUnscheduledTimeout.Duration, actual.Spec.DecorationConfig.PodUnscheduledTimeout.Duration)
 			}
 			actualPods := &v1.PodList{}
 			if err := buildClients[prowapi.DefaultClusterAlias].List(context.Background(), actualPods); err != nil {
