@@ -2,6 +2,7 @@ periodics:
   - name: periodic-e2e-framework-test-main
     interval: 24h
     decorate: true
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -13,7 +14,7 @@ periodics:
         path_alias: sigs.k8s.io/e2e-framework
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           imagePullPolicy: Always
           command:
             - runner.sh
@@ -22,6 +23,13 @@ periodics:
             - test
           securityContext:
             privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
     annotations:
       testgrid-dashboards: sig-testing-e2e-framework
       testgrid-tab-name: periodic-e2e-framework-test-main

@@ -29,7 +29,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -46,7 +46,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-1-27
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -73,49 +73,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.27
-      command:
-      - runner.sh
-      - "../kubeadm/kinder/ci/kinder-run.sh"
-      args:
-      - "regular-1.27"
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          memory: "9000Mi"
-          cpu: 2000m
-        requests:
-          memory: "9000Mi"
-          cpu: 2000m
-
-- name: ci-kubernetes-e2e-kubeadm-kinder-eks-canary-1-27
-  cluster: eks-prow-build-cluster
-  interval: 1h
-  decorate: true
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-kubeadm
-    testgrid-tab-name: kubeadm-kinder-eks-canary-1-27
-    testgrid-num-columns-recent: "20"
-    testgrid-num-failures-to-alert: "4"
-    testgrid-alert-stale-results-hours: "48"
-  decoration_config:
-    timeout: 60m
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.27
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: kubeadm
-    base_ref: main
-    path_alias: k8s.io/kubeadm
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -159,7 +117,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.26
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -203,7 +161,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -247,7 +205,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

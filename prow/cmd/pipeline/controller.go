@@ -350,11 +350,12 @@ func (c *controller) createPipelineRun(pContext, namespace string, p *pipelinev1
 		return p, err
 	}
 	// Block until the pipelinerun is in the lister, otherwise we may attempt to create it again
-	err = wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
-		_, err := c.getPipelineRun(pContext, namespace, p.Name)
-		return err == nil, err
+	var errOut error
+	wait.Poll(time.Second, 3*time.Second, func() (bool, error) {
+		_, errOut = c.getPipelineRun(pContext, namespace, p.Name)
+		return errOut == nil, nil
 	})
-	return p, err
+	return p, errOut
 }
 
 func (c *controller) now() metav1.Time {

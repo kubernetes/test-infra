@@ -4,13 +4,14 @@
 approvers:
   - sig-cluster-lifecycle-leads
   - jichenjc
+  - lentzi90
   - mdbooth
   - seanschneeweiss
   - tobiasgiese
 
 reviewers:
   - jichenjc
+  - lentzi90
   - mdbooth
   - seanschneeweiss
   - tobiasgiese
-  - lentzi90

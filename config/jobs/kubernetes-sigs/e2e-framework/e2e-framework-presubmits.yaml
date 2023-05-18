@@ -3,6 +3,7 @@ presubmits:
   - name: pull-e2e-framework-verify
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     path_alias: sigs.k8s.io/e2e-framework
     spec:
       containers:
@@ -11,6 +12,13 @@ presubmits:
         command:
         - make
         - verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-testing-e2e-framework
       testgrid-tab-name: pull-e2e-framework-verify
@@ -19,6 +27,7 @@ presubmits:
   - name: pull-e2e-framework-test
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     path_alias: sigs.k8s.io/e2e-framework
     labels:
       preset-service-account: "true"
@@ -26,7 +35,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -35,6 +44,13 @@ presubmits:
         - test
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-dashboards: sig-testing-e2e-framework
       testgrid-tab-name: pull-e2e-framework-test

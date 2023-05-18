@@ -35,7 +35,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         resources:
           requests:
             memory: "6Gi"
@@ -58,7 +58,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -111,7 +111,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-experimental
         resources:
           limits:
             cpu: 4
@@ -150,7 +150,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
@@ -210,7 +210,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-experimental
         env:
         - name: GOPATH
           value: /go
@@ -254,7 +254,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-containerd-alpha-features
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
@@ -297,7 +297,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - --timeout=260
@@ -351,7 +351,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-experimental
         env:
         - name: GOPATH
           value: /go
@@ -391,7 +391,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           resources:
             limits:
               cpu: 4
@@ -450,7 +450,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-experimental
         env:
         - name: GOPATH
           value: /go
@@ -489,7 +489,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           resources:
             limits:
               cpu: 4
@@ -548,7 +548,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-experimental
         env:
         - name: GOPATH
           value: /go
@@ -587,7 +587,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           resources:
             limits:
               cpu: 4
@@ -630,7 +630,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -676,7 +676,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           args:
             - --root=/go/src
             - "--job=$(JOB_NAME)"
@@ -736,7 +736,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-experimental
         resources:
           limits:
             cpu: 4
@@ -779,7 +779,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -825,7 +825,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -873,7 +873,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -933,7 +933,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-experimental
         resources:
           limits:
             cpu: 4
@@ -976,7 +976,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           resources:
             limits:
               cpu: 4
@@ -1020,7 +1020,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1065,7 +1065,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1109,7 +1109,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           args:
             - --root=/go/src
             - "--job=$(JOB_NAME)"
@@ -1156,7 +1156,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1188,51 +1188,6 @@ presubmits:
           - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
             value: "1"
 
-  - name: pull-kubernetes-node-kubelet-credential-provider
-    cluster: k8s-infra-prow-build
-    always_run: false
-    optional: true
-    skip_report: false
-    run_if_changed: '^(pkg\/credential\/provider\/|test\/e2e_node\/plugins\/gcp-credential-provider)'
-    skip_branches:
-      - release-\d+\.\d+  # per-release image
-    annotations:
-      testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-kubelet-gce-e2e-credential-provider
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-        args:
-          - --root=/go/src
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=240"
-          - --scenario=kubernetes_e2e
-          - -- # end bootstrap args, scenario args below
-          - --deployment=node
-          - --gcp-zone=us-west1-b
-          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
-          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--feature-gates=DisableKubeletCloudCredentialProviders=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
-          - --node-tests=true
-          - --provider=gce
-          - --test_args=--nodes=1 --focus="\[Feature:KubeletCredentialProviders\]" --skip="\[Flaky\]|\[Serial\]"
-          - --timeout=180m
-        env:
-          - name: GOPATH
-            value: /go
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
-
   # This jobs runs e2e.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
   # on a kind cluster with containerd updated to a version with CDI support.
   - name: pull-kubernetes-kind-dra
@@ -1255,7 +1210,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         command:
         - runner.sh
         args:
@@ -1265,8 +1220,8 @@ presubmits:
           make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test" &&
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
           test/e2e/dra/kind-build-image.sh dra/node:latest &&
-          kind create cluster --config test/e2e/dra/kind.yaml --image dra/node:latest &&
-          trap 'kind export logs "${ARTIFACTS}/kind"' EXIT &&
+          trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
+          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=8 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus=DynamicResourceAllocation
 
         # docker-in-docker needs privileged mode
@@ -1280,59 +1235,6 @@ presubmits:
             # during the tests more like 3-20m is used
             cpu: 2000m
 
-  - name: pull-kubernetes-e2e-kubelet-credential-provider
-    cluster: k8s-infra-prow-build
-    always_run: false
-    optional: true
-    skip_report: false
-    run_if_changed: '^(pkg\/credential\/provider\/|test\/e2e_node\/plugins\/gcp-credential-provider)'
-    skip_branches:
-      - release-\d+\.\d+  # per-release image
-    annotations:
-      testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-kubelet-gce-cluster-e2e-credential-provider
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-pull-kubernetes-e2e: "true"
-      preset-pull-kubernetes-e2e-gce: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
-        args:
-          - --root=/go/src
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=240"
-          - --scenario=kubernetes_e2e
-          - -- # end bootstrap args, scenario args below
-          - --build=quick
-          - --extract=local
-          - --check-leaked-resources
-          - --cluster=
-          - --env=ENABLE_AUTH_PROVIDER_GCP=true
-          - --env=KUBE_FEATURE_GATES=DisableKubeletCloudCredentialProviders=true
-          - --gcp-zone=us-west1-b
-          - --gcp-node-image=gci
-          - --gcp-nodes=1
-          - --provider=gce
-          - --test_args=--ginkgo.focus=\[Feature:KubeletCredentialProviders\]
-          - --timeout=180m
-        env:
-          - name: GOPATH
-            value: /go
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 4
-            memory: 6Gi
-          requests:
-            cpu: 4
-            memory: 6Gi
   - name: pull-kubernetes-cos-cgroupv2-containerd-node-e2e-features
     skip_branches:
       - release-\d+\.\d+  # per-release image
@@ -1348,7 +1250,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -1392,7 +1294,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -1436,7 +1338,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -1480,7 +1382,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -1524,7 +1426,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -1568,7 +1470,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -1650,7 +1552,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-inplace-pod-resize-containerd-main-v2
         - --test_args=--ginkgo.focus=\[Feature:InPlacePodVerticalScaling\]
         - --timeout=150m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         resources:
           limits:
             cpu: 4
@@ -1676,7 +1578,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           resources:
             limits:
               cpu: 4
@@ -1723,7 +1625,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-containerd-standalone-mode-all-alpha
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
@@ -1770,7 +1672,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-containerd-standalone-mode
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
@@ -1819,7 +1721,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-containerd-sidecar-containers
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)

@@ -167,7 +167,12 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}
 
-	gitClient, err := (&prowflagutil.GitHubOptions{}).GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun)
+	persist := false
+	if o.config.InRepoConfigCacheDirBase != "" {
+		persist = true
+	}
+
+	gitClient, err := (&prowflagutil.GitHubOptions{}).GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, persist)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating git client.")
 	}

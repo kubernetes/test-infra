@@ -25,7 +25,7 @@ periodics:
     workdir: true
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: false
   - org: kubernetes-sigs
@@ -49,7 +49,7 @@ periodics:
     - command:
       - runner.sh
       - ./capz/run-capz-e2e.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.27
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
       name: ""
       resources:
         requests:

@@ -13,12 +13,12 @@ periodics:
       - --scenario=execute
       - --
       - ./tests/e2e/manifests/verify_manifest_lists.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-all
     testgrid-tab-name: periodic-manifest-lists
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle; an e2e test for verifying manifest list images at registry.k8s.io"
     testgrid-num-columns-recent: "20"
-    testgrid-num-failures-to-alert: "4"
+    testgrid-num-failures-to-alert: "2"
     testgrid-alert-stale-results-hours: "48"

@@ -20,6 +20,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
+    # TODO: update to release-1.9 when Go 1.20 is backported to kubekins-e2e.
     base_ref: release-1.8
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
@@ -43,7 +44,7 @@ periodics:
     - command:
       - runner.sh
       - ./scripts/ci-conformance.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.26
       name: ""
       resources:
         requests:

@@ -1,15 +1,23 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviewers:
-- dims
-- lingxiankong
-- ramineni
-- jichenjc
+# From
+# https://github.com/kubernetes/cloud-provider-openstack/blob/master/OWNERS
+# Correct as of 2023-05-10
 approvers:
-- dims
-- lingxiankong
-- ramineni
+- chrigl
 - jichenjc
+- ramineni
+- zetaab
+reviewers:
+- chrigl
+- dulek
+- Fedosin
+- jichenjc
+- kayrus
+- mdbooth
+- ramineni
+- zetaab
+
 labels:
 - sig/cloud-provider
 - area/provider/openstack

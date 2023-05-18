@@ -516,7 +516,7 @@ milestone_applier:
   kubernetes-sigs/boskos:
     master: v1.23
   kubernetes/website:
-    dev-1.27: 1.27
+    dev-1.28: 1.28
 
 repo_milestone:
   # Default maintainer
@@ -698,6 +698,18 @@ require_matching_label:
     This issue is currently awaiting triage.
 
     SIG CLI takes a lead on issue triage for this repo, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-triage
+  org: kubernetes
+  repo: cloud-provider-gcp
+  issues: true
+  prs: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If the repository mantainers determine this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
 
     The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 - missing_label: needs-sig
@@ -953,6 +965,24 @@ require_matching_label:
     If metrics contributors determine this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
 
     The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-triage
+  org: kubernetes-sigs
+  repo: gateway-api
+  issues: true
+  prs: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If Gateway API community members determine this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-priority
+  org: kubernetes-sigs
+  repo: gateway-api
+  issues: true
+  prs: true
+  regexp: ^priority/
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: metrics-server
@@ -1328,6 +1358,10 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/kubectl-validate:
+    plugins:
+    - mergecommitblocker
+
   kubernetes-sigs/kueue:
     plugins:
     - milestone
@@ -1395,6 +1429,12 @@ plugins:
     plugins:
     - milestone
     - override
+
+  kubernetes-sigs/gateway-api:
+    plugins:
+    - milestone
+    - milestonestatus
+    - release-note
 
   kubernetes-sigs/image-builder:
     plugins:
@@ -1625,6 +1665,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/controller-runtime:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/gateway-api:
   - name: cherrypicker
     events:
     - issue_comment

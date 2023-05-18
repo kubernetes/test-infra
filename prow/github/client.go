@@ -2301,24 +2301,25 @@ func (c *client) EditIssue(org, repo string, number int, issue *Issue) (*Issue, 
 
 // GetPullRequestDiff gets the diff version of a pull request.
 //
-// See https://docs.github.com/zh/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
+// See https://docs.github.com/en/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
 func (c *client) GetPullRequestDiff(org, repo string, number int) ([]byte, error) {
 	durationLogger := c.log("GetPullRequestDiff", org, repo, number)
 	defer durationLogger()
 
-	_, patch, err := c.requestRaw(&request{
+
+	_, diff, err := c.requestRaw(&request{
 		accept:    "application/vnd.github.diff",
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		org:       org,
 		exitCodes: []int{200},
 	})
-	return patch, err
+	return diff, err
 }
 
 // GetPullRequestPatch gets the patch version of a pull request.
 //
-// See https://docs.github.com/zh/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
+// See https://docs.github.com/en/rest/overview/media-types?apiVersion=2022-11-28#commits-commit-comparison-and-pull-requests
 func (c *client) GetPullRequestPatch(org, repo string, number int) ([]byte, error) {
 	durationLogger := c.log("GetPullRequestPatch", org, repo, number)
 	defer durationLogger()

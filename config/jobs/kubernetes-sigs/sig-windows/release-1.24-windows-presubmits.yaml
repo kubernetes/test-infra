@@ -20,7 +20,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
         - runner.sh
         - kubetest
@@ -74,17 +74,14 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.7
+      # The Windows 1.24 jobs should stay on CAPZ release-1.6 for now because later versions build CNM and CCM
+      # images from k-sigs/cluster-provider-azure repo and the container image builds are not working.
+      base_ref: release-1.6
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: release-1.24
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      workdir: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
@@ -120,7 +117,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
         - runner.sh
         - kubetest
@@ -181,7 +178,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
         - runner.sh
         - kubetest

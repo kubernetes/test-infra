@@ -33,7 +33,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230328' --channel=alpha --networking=amazonvpc --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -45,7 +45,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -96,7 +96,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=calico --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -108,7 +108,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -159,7 +159,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=canal --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -171,7 +171,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -222,7 +222,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=cilium --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -234,7 +234,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -285,7 +285,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=cilium-etcd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -297,7 +297,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -348,7 +348,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=cilium-eni --node-size=t3.large --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -360,7 +360,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -411,7 +411,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=flannel --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -423,7 +423,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -474,7 +474,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=kopeio --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -486,7 +486,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -537,7 +537,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=kube-router --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -549,7 +549,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -600,7 +600,7 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230420' --channel=alpha --networking=weave --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable-1.22.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -612,7 +612,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
       imagePullPolicy: Always
       resources:
         limits:

@@ -4,14 +4,22 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
     - ^release-1.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
         - "./scripts/ci-test.sh"
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-test-release-1-2
@@ -19,14 +27,22 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
     - ^release-1.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
         - "./scripts/ci-build.sh"
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-build-release-1-2
@@ -34,16 +50,24 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
     - ^release-1.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
         - make
         args:
         - verify
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-verify-release-1-2
@@ -51,16 +75,24 @@ presubmits:
     always_run: true
     optional: false
     decorate: true
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
     branches:
     - ^release-1.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
         - make
         args:
         - lint
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-lint-release-1-2
@@ -80,7 +112,7 @@ presubmits:
     - ^release-1.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -109,7 +141,7 @@ presubmits:
     - ^release-1.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -142,7 +174,7 @@ presubmits:
       timeout: 5h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -175,7 +207,7 @@ presubmits:
     - ^release-1.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -204,7 +236,7 @@ presubmits:
     - ^release-1.2$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"

@@ -30,20 +30,17 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    # The Windows 1.24 jobs should stay on CAPZ release-1.6 for now because later versions build CNM and CCM
+    # images from k-sigs/cluster-provider-azure repo and the container image builds are not working.
+    base_ref: release-1.6
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: release-1.24
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    workdir: false
   spec:
     containers:
     - command:
       - runner.sh
       - ./scripts/ci-conformance.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
       name: ""
       resources:
         requests:
@@ -72,22 +69,23 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.7
+    # The Windows 1.24 jobs should stay on CAPZ release-1.6 for now because later versions build CNM and CCM
+    # images from k-sigs/cluster-provider-azure repo and the container image builds are not working.
+    base_ref: release-1.6
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: release-1.24
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
         securityContext:
           privileged: true
+        env:
+        # Skip tests that require etcd image for 1.24 Windows jobs because the etcd image referenced in this branch does not container Windows images.
+        - name: GINKGO_SKIP
+          value: \[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|Aggregator.Should.be.able.to.support.the.1.17.Sample.API.Server|be.restarted.with.a.GRPC.liveness.probe
         resources:
           requests:
             cpu: 2
@@ -118,7 +116,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
       command:
       - runner.sh
       - kubetest
@@ -180,7 +178,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
       command:
       - runner.sh
       - kubetest

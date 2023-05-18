@@ -9,14 +9,14 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile)'
     optional: false
     decorate: true
     decoration_config:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -42,14 +42,14 @@ presubmits:
   #   always_run: false
   #   branches:
   #     - ^master$
-  #   run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)
+  #   run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile)
   #   optional: false
   #   decorate: true
   #   decoration_config:
   #     timeout: 3h
   #   spec:
   #     containers:
-  #       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+  #       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
   #         env:
   #         - name: "BOSKOS_HOST"
   #           value: "boskos.test-pods.svc.cluster.local"
@@ -75,14 +75,14 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/|Dockerfile)'
     optional: false
     decorate: true
     decoration_config:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -108,14 +108,14 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/|Dockerfile)'
     optional: false
     decorate: true
     decoration_config:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -134,14 +134,14 @@ presubmits:
 
   - name: openstack-cloud-csi-cinder-sanity-test
     always_run: false
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/|Dockerfile)'
     decorate: true
     branches:
       - ^master$
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         command:
         - make
         args:
@@ -153,14 +153,14 @@ presubmits:
 
   - name: openstack-cloud-csi-manila-sanity-test
     always_run: false
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/|Dockerfile)'
     decorate: true
     branches:
       - ^master$
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         command:
         - make
         args:
@@ -179,14 +179,14 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/util\/|pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/|Dockerfile)'
     optional: false
     decorate: true
     decoration_config:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"

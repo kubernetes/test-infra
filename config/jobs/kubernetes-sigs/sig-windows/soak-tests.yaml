@@ -18,12 +18,12 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.8
+        base_ref: release-1.9
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -101,7 +101,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           command:
             - runner.sh
           args:
@@ -159,7 +159,7 @@ periodics:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           command:
             - runner.sh
           args:
@@ -204,7 +204,7 @@ periodics:
         path_alias: "sigs.k8s.io/cloud-provider-azure"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -268,12 +268,12 @@ periodics:
         path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.8
+        base_ref: release-1.9
         path_alias: "sigs.k8s.io/cluster-api-provider-azure"
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
