@@ -79,62 +79,87 @@ func (fa *FakeArtifact) ReadAtMost(n int64) ([]byte, error) {
 
 func TestRenderBody(t *testing.T) {
 	testCases := []struct {
-		name     string
-		artifact FakeArtifact
+		name      string
+		artifacts []FakeArtifact
 	}{
 		{
 			name: "Simple",
-			artifact: FakeArtifact{
-				path:    "https://s3.internal/bucket/file.html",
-				content: []byte(`<body>Hello world!</body>`),
+			artifacts: []FakeArtifact{
+				{
+					path:    "https://s3.internal/bucket/file.html",
+					content: []byte(`<body>Hello world!</body>`),
+				},
 			},
 		},
 		{
 			name: "With quotes",
-			artifact: FakeArtifact{
-				path:    "https://s3.internal/bucket/file.html",
-				content: []byte(`<body>"Hello world!"</body>`),
+			artifacts: []FakeArtifact{
+				{
+					path:    "https://s3.internal/bucket/file.html",
+					content: []byte(`<body>"Hello world!"</body>`),
+				},
 			},
 		},
 		{
 			name: "With title",
-			artifact: FakeArtifact{
-				path:    "https://s3.internal/bucket/file.html",
-				content: []byte(`<head><title>Custom Title</title><body>Hello world!</body>`),
+			artifacts: []FakeArtifact{
+				{
+					path:    "https://s3.internal/bucket/file.html",
+					content: []byte(`<head><title>Custom Title</title><body>Hello world!</body>`),
+				},
 			},
 		},
 		{
 			name: "With description",
-			artifact: FakeArtifact{
-				path:    "https://s3.internal/bucket/file.html",
-				content: []byte(`<head><meta name="description" content="Loki is a log aggregation system"></head><body>Hello world!</body>`),
+			artifacts: []FakeArtifact{
+				{
+					path:    "https://s3.internal/bucket/file.html",
+					content: []byte(`<head><meta name="description" content="Loki is a log aggregation system"></head><body>Hello world!</body>`),
+				},
 			},
 		},
 		{
 			name: "With description and title",
-			artifact: FakeArtifact{
-				path:    "https://s3.internal/bucket/file.html",
-				content: []byte(`<head><meta name="description" content="Loki is a log aggregation system"><title>Custom tools</title><body></body>`),
+			artifacts: []FakeArtifact{
+				{
+					path:    "https://s3.internal/bucket/file.html",
+					content: []byte(`<head><meta name="description" content="Loki is a log aggregation system"><title>Custom tools</title><body></body>`),
+				},
+			},
+		},
+		{
+			name: "With multiple of same name",
+			artifacts: []FakeArtifact{
+				{
+					path:    "https://s3.internal/bucket/dir1/file.html",
+					content: []byte(`<head><title>File 1</title><body></body>`),
+				},
+				{
+					path:    "https://s3.internal/bucket/dir2/file.html",
+					content: []byte(`<head><title>File 2</title><body></body>`),
+				},
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			body := (Lens{}).Body([]api.Artifact{&tc.artifact}, ".", "", nil, config.Spyglass{})
-			fixtureName := filepath.Join("testdata", fmt.Sprintf("%s.yaml", strings.ReplaceAll(t.Name(), "/", "_")))
-			if os.Getenv("UPDATE") != "" {
-				if err := os.WriteFile(fixtureName, []byte(body), 0644); err != nil {
-					t.Errorf("failed to update fixture: %v", err)
+			for i := range tc.artifacts {
+				body := (Lens{}).Body([]api.Artifact{&tc.artifacts[i]}, ".", "", nil, config.Spyglass{})
+				fixtureName := filepath.Join("testdata", fmt.Sprintf("%s-%d.yaml", strings.ReplaceAll(t.Name(), "/", "_"), i))
+				if os.Getenv("UPDATE") != "" {
+					if err := os.WriteFile(fixtureName, []byte(body), 0644); err != nil {
+						t.Errorf("failed to update fixture: %v", err)
+					}
 				}
-			}
-			expectedRaw, err := os.ReadFile(fixtureName)
-			if err != nil {
-				t.Fatalf("failed to read fixture: %v", err)
-			}
-			expected := string(expectedRaw)
-			if diff := cmp.Diff(expected, body); diff != "" {
-				t.Errorf("expected doesn't match actual: \n%s\nIf this is expected, re-run the tests with the UPDATE env var set to update the fixture:\n\tUPDATE=true go test ./prow/spyglass/lenses/html/... -run TestRenderBody", diff)
+				expectedRaw, err := os.ReadFile(fixtureName)
+				if err != nil {
+					t.Fatalf("failed to read fixture: %v", err)
+				}
+				expected := string(expectedRaw)
+				if diff := cmp.Diff(expected, body); diff != "" {
+					t.Errorf("expected doesn't match actual: \n%s\nIf this is expected, re-run the tests with the UPDATE env var set to update the fixture:\n\tUPDATE=true go test ./prow/spyglass/lenses/html/... -run TestRenderBody", diff)
+				}
 			}
 		})
 	}

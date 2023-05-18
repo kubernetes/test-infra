@@ -13,7 +13,7 @@
     {{/* Do _not_ hide this by default, that will break inner javascript that dynamically resizes. Hiding post-render is ok, so we hide on first resize request */}}
     <tr class="initial" id="{{.Filename}}-tr">
       <td colspan="2" style="border: 0px; padding: 0px;">
-        <iframe srcdoc="{{.Content}}" title="{{.Filename}}" sandbox="allow-scripts allow-popups allow-same-origin" id="{{.Filename}}" width="100%" scrolling="no"></iframe>
+        <iframe srcdoc="{{.Content}}" title="{{.Filename}}" sandbox="allow-scripts allow-popups allow-same-origin" id="{{.ID}}" width="100%" scrolling="no"></iframe>
       </td>
     </tr>
     {{end}}
