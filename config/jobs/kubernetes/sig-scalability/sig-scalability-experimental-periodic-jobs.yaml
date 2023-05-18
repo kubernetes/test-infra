@@ -131,7 +131,7 @@ periodics:
   interval: 24h
   tags:
     - "perfDashPrefix: watch-list-off"
-    - "perfDashJobType: watchlist-off"
+    - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -194,7 +194,7 @@ periodics:
   interval: 24h
   tags:
     - "perfDashPrefix: watch-list-on"
-    - "perfDashJobType: watchlist-on"
+    - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
