@@ -308,7 +308,7 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 				http.Error(w, fmt.Sprintf("Could not verify if allowed to rerun: %v.", err), code)
 				l.WithError(err).Debug("Could not verify if allowed to rerun.")
 			}
-			l = l.WithField("allowed", allowed)
+			l = l.WithField("allowed", allowed).WithField("user", user).WithField("code", code)
 			l.Info("Attempted rerun")
 			if !allowed {
 				if _, err = w.Write([]byte("You don't have permission to rerun that job.")); err != nil {
