@@ -44,13 +44,21 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: k8s.io/release
+    cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
         imagePullPolicy: Always
         command:
         - make
         - test
+        resources:
+          limits:
+            memory: 4Gi
+            cpu: 2
+          requests:
+            memory: 4Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-test
@@ -65,7 +73,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -89,7 +97,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -104,13 +112,21 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: k8s.io/release
+    cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.19-bullseye
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
         imagePullPolicy: Always
         command:
         - make
         - verify
+        resources:
+          limits:
+            memory: 4Gi
+            cpu: 2
+          requests:
+            memory: 4Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-verify
