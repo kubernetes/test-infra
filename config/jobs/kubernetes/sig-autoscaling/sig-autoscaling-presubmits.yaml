@@ -89,6 +89,12 @@ presubmits:
     decoration_config:
       timeout: 310m
     run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/custom_metrics_stackdriver_autoscaling.go$)'
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -108,5 +114,6 @@ presubmits:
         # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
         - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
         - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-autoscaling-hpa-cm
         - --timeout=300m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
