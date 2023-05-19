@@ -83,11 +83,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -110,11 +110,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/src/github.com/org/repo"}},
 				cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -139,11 +139,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "user.name", "user"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -168,11 +168,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "user.email", "user@go.com"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -198,11 +198,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"config", "http.cookiefile", "/cookie.txt"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -223,11 +223,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -251,11 +251,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -277,11 +277,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://12345678:x-oauth-basic@github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://12345678:x-oauth-basic@github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -306,11 +306,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://x-access-token:xxxxx@github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://x-access-token:xxxxx@github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://x-access-token:xxxxx@github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://x-access-token:xxxxx@github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -336,11 +336,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "git@github.com:owner/repo", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "git@github.com:owner/repo", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "git@github.com:owner/repo", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "git@github.com:owner/repo", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -364,11 +364,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "internet.com", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "internet.com", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "internet.com", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "internet.com", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -393,11 +393,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@internet.com", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://12345678:x-oauth-basic@internet.com", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://12345678:x-oauth-basic@internet.com", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://12345678:x-oauth-basic@internet.com", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -422,11 +422,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/my/favorite/dir"}},
 				cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/my/favorite/dir", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -450,11 +450,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "abcdef"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
@@ -480,11 +480,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -493,7 +493,7 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []runnable{
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull/1/head"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "pull/1/head"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
@@ -515,11 +515,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -528,7 +528,7 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []runnable{
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull-1-sha"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "pull-1-sha"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "pull-1-sha"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
@@ -550,11 +550,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -563,7 +563,7 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []runnable{
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull-me"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "pull-me"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
@@ -585,11 +585,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -598,7 +598,7 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []runnable{
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "abcdef"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "abcdef"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
@@ -621,11 +621,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "master"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
@@ -634,12 +634,12 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []runnable{
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull/1/head"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "pull/1/head"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 1)},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "pull/2/head"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.com/org/repo.git", "pull/2/head"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"merge", "--no-ff", "FETCH_HEAD"}, env: gitTimestampEnvs(fakeTimestamp + 2)},
@@ -660,11 +660,11 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "--tags", "--prune"}},
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.enterprise.com/org/repo.git", "--tags", "--prune"}},
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "abcdef"}},
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.enterprise.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
@@ -690,7 +690,7 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "abcdef"}},
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "https://github.enterprise.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
@@ -717,7 +717,7 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--depth", "2", "https://github.enterprise.com/org/repo.git", "abcdef"}},
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--filter=blob:none", "--depth", "2", "https://github.enterprise.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
