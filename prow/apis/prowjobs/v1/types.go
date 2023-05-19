@@ -526,13 +526,13 @@ type DecorationConfig struct {
 	// defined explicitly on prowjob.
 	DefaultMemoryRequest *resource.Quantity `json:"default_memory_request,omitempty"`
 
-	// PodPendingTimeout is after how long the controller will perform a garbage
+	// PodPendingTimeout defines how long the controller will wait to perform garbage
 	// collection on pending pods. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
 	PodPendingTimeout *metav1.Duration `json:"pod_pending_timeout,omitempty"`
-	// PodRunningTimeout is after how long the controller will abort a prowjob pod
+	// PodRunningTimeout defines how long the controller will wait to abort a prowjob pod
 	// stuck in running state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
 	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
-	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
+	// PodUnscheduledTimeout defines how long the controller will wait to abort a prowjob
 	// stuck in an unscheduled state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 }
