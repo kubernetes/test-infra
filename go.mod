@@ -17,7 +17,7 @@ replace (
 )
 
 require (
-	bitbucket.org/creachadair/stringset v0.0.9
+	bitbucket.org/creachadair/stringset v0.0.11
 	cloud.google.com/go/automl v1.3.0
 	cloud.google.com/go/cloudbuild v1.2.0
 	cloud.google.com/go/pubsub v1.22.2
@@ -27,7 +27,7 @@ require (
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.11.27
 	github.com/Azure/go-autorest/autorest/adal v0.9.20
-	github.com/GoogleCloudPlatform/testgrid v0.0.123
+	github.com/GoogleCloudPlatform/testgrid v0.0.162
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/andygrunwald/go-gerrit v0.0.0-20210709065208-9d38b0be0268
 	github.com/andygrunwald/go-jira v1.14.0
@@ -90,7 +90,7 @@ require (
 	golang.org/x/tools v0.6.0
 	gomodules.xyz/jsonpatch/v2 v2.2.0
 	google.golang.org/api v0.83.0
-	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac
+	google.golang.org/genproto v0.0.0-20220614165028-45ed7f3ff16e
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/fsnotify.v1 v1.4.7
