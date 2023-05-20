@@ -285,6 +285,89 @@ periodics:
             cpu: 4
             memory: 6Gi
 
+
+- name: ci-kubernetes-node-e2e-containerd-standalone-mode-all-alpha
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=master
+      - --repo=github.com/containerd/containerd=main
+      - --upload=gs://kubernetes-jenkins/pr-logs
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
+      - --deployment=node
+      - --gcp-zone=us-central1-b
+      - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        requests:
+          cpu: 4
+          memory: 6Gi
+        limits:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-release-blocking
+    testgrid-tab-name: node-kubelet-containerd-standalone-mode-all-alpha
+    description: "Runs kubelet in standalone mode with all alpha features enabled"
+
+- name: ci-kubernetes-node-e2e-containerd-standalone-mode
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=master
+      - --repo=github.com/containerd/containerd=main
+      - --upload=gs://kubernetes-jenkins/pr-logs
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
+      - --deployment=node
+      - --gcp-zone=us-central1-b
+      - '--node-test-args=--standalone-mode=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        requests:
+          cpu: 4
+          memory: 6Gi
+        limits:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-release-blocking
+    testgrid-tab-name: node-kubelet-containerd-standalone-mode
+    description: "Runs kubelet in standalone mode"
+
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
 #  interval: 12h
