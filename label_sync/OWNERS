@@ -3,15 +3,16 @@
 filters:
   ".*":
     approvers:
-      - cblecker
+      - sig-contributor-experience-technical-leads
       - spiffxp
     reviewers:
-      - cblecker
+      - sig-contributor-experience-technical-leads
       - spiffxp
     emeritus_approvers:
       - fejta
     labels:
       - area/label_sync
+      - sig/contributor-experience
   "labels\\.yaml":
     required_reviewers:
-      - cblecker
+      - sig-contributor-experience-technical-leads
