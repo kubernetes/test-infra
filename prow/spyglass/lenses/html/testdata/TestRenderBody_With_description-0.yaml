@@ -13,7 +13,7 @@ window.addEventListener(&quot;load&quot;, function(){
     if(window.self === window.top) return; // if w.self === w.top, we are not in an iframe
     send_height_to_parent_function = function(){
         var height = document.getElementById(&quot;wrapper&quot;).offsetHeight;
-        parent.postMessage({&quot;height&quot; : height , &quot;id&quot;: &quot;file.html&quot;}, &quot;*&quot;);
+        parent.postMessage({&quot;height&quot; : height , &quot;id&quot;: &quot;file.html-0&quot;}, &quot;*&quot;);
     }
     send_height_to_parent_function(); //whenever the page is loaded
     window.addEventListener(&quot;resize&quot;, send_height_to_parent_function); // whenever the page is resized
