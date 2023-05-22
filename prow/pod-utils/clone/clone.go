@@ -212,7 +212,7 @@ var (
 )
 
 func (g *gitCtx) gitFetch(fetchArgs ...string) retryCommand {
-	args := []string{"fetch", "--filter=blob:none"}
+	args := []string{"fetch"}
 	args = append(args, fetchArgs...)
 
 	return retryCommand{
