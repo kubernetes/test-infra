@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api:
   - name: pull-cluster-api-build-release-1-2
+    cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -16,10 +17,18 @@ presubmits:
         command:
         - runner.sh
         - ./scripts/ci-build.sh
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-build-release-1-2
   - name: pull-cluster-api-apidiff-release-1-2
+    cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -36,10 +45,18 @@ presubmits:
         - runner.sh
         - ./scripts/ci-apidiff.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+          requests:
+            cpu: 2000m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-apidiff-release-1-2
   - name: pull-cluster-api-verify-release-1-2
+    cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -58,10 +75,15 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-verify-release-1-2
   - name: pull-cluster-api-test-release-1-2
+    cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -80,10 +102,15 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-test-release-1-2
   - name: pull-cluster-api-test-mink8s-release-1-2
+    cluster: k8s-infra-prow-build
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -110,10 +137,15 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-test-mink8s-release-1-2
   - name: pull-cluster-api-e2e-release-1-2
+    cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -141,10 +173,15 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-e2e-release-1-2
   - name: pull-cluster-api-e2e-informing-release-1-2
+    cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -175,10 +212,15 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-e2e-informing-release-1-2
   - name: pull-cluster-api-e2e-informing-ipv6-release-1-2
+    cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -212,10 +254,15 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-e2e-informing-ipv6-release-1-2
   - name: pull-cluster-api-e2e-full-release-1-2
+    cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -247,10 +294,15 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-e2e-full-release-1-2
   - name: pull-cluster-api-e2e-workload-upgrade-1-25-1-26-release-1-2
+    cluster: k8s-infra-prow-build
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -292,6 +344,10 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
       testgrid-tab-name: capi-pr-e2e-release-1-2-1-25-1-26

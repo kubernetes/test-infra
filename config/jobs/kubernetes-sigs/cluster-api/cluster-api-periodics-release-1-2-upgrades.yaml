@@ -1,6 +1,7 @@
 periodics:
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -45,6 +46,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2-1-18-1-19
@@ -52,6 +57,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -96,6 +102,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2-1-19-1-20
@@ -103,6 +113,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -147,6 +158,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2-1-20-1-21
@@ -154,6 +169,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -198,6 +214,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2-1-21-1-22
@@ -205,6 +225,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -250,6 +271,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2-1-22-1-23
@@ -257,6 +282,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-23-1-24-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -302,6 +328,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2-1-23-1-24
@@ -309,6 +339,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-24-1-25-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -353,6 +384,10 @@ periodics:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2-1-24-1-25
@@ -360,6 +395,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-25-1-26-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 24h
   decorate: true
   decoration_config:
@@ -404,6 +440,10 @@ periodics:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2-1-25-1-26

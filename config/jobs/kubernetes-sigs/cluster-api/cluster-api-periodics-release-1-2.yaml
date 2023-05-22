@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-test-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
   decoration_config:
@@ -22,12 +23,17 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-test-release-1-2
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-test-mink8s-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
   decoration_config:
@@ -58,12 +64,17 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-test-mink8s-release-1-2
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-upgrade-v0-3-to-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
   decoration_config:
@@ -109,12 +120,17 @@ periodics:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-upgrade-v0-3-to-release-1-2
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-upgrade-v1-1-to-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
   decoration_config:
@@ -158,12 +174,17 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-upgrade-v1-1-to-release-1-2
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
   decoration_config:
@@ -200,12 +221,17 @@ periodics:
         resources:
           requests:
             cpu: 7300m
+            memory: 9Gi
+          limits:
+            cpu: 7300m
+            memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-release-1-2
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-release-1-2
+  cluster: k8s-infra-prow-build
   interval: 4h
   decorate: true
   decoration_config:
@@ -249,6 +275,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 9Gi
+        limits:
+          cpu: 7300m
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.2
     testgrid-tab-name: capi-e2e-mink8s-release-1-2
