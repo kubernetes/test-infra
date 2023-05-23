@@ -178,7 +178,7 @@ periodics:
           - --test-cmd-args=--report-dir=$(ARTIFACTS)
           - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
           - --test-cmd-name=ClusterLoaderV2
-          - --timeout=30m
+          - --timeout=60m
           - --use-logexporter
           - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
@@ -243,7 +243,7 @@ periodics:
           - --test-cmd-args=--report-dir=$(ARTIFACTS)
           - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
           - --test-cmd-name=ClusterLoaderV2
-          - --timeout=30m
+          - --timeout=60m
           - --use-logexporter
           - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
