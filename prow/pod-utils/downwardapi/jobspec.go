@@ -259,3 +259,11 @@ func shaForRefs(refs prowv1.Refs, cloneRecords []clone.Record) string {
 	}
 	return ""
 }
+
+// InCI returns true if the CI environment variable is not empty
+func InCI() bool {
+	if os.Getenv(CI) == "" {
+		return false
+	}
+	return true
+}

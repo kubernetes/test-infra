@@ -17,6 +17,7 @@ limitations under the License.
 package downwardapi
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -258,5 +259,12 @@ func TestGetRevisionFromSpec(t *testing.T) {
 		if actual, expected := GetRevisionFromSpec(&test.spec), test.expected; actual != expected {
 			t.Errorf("%s: got revision:%s but expected: %s", test.name, actual, expected)
 		}
+	}
+}
+
+func TestInCI(t *testing.T) {
+	os.Setenv("CI", "true")
+	if !InCI() {
+		t.Error("we expected InCI() to return true, but it returned false")
 	}
 }
