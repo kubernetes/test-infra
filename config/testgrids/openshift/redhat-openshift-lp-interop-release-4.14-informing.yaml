@@ -19,14 +19,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-hypershift-v4.13-hypershift-cluster-tests
+    name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.14-lp-interop-service-registry-2-3
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-hypershift-v4.13-hypershift-cluster-tests
+    test_group_name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.14-lp-interop-service-registry-2-3
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -46,17 +46,17 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-rhods-tests
+    name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.14-lp-interop-dotnet-interop-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-rhods-tests
-  name: redhat-openshift-CSPI-QE-MSI-release-4.13-informing
+    test_group_name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.14-lp-interop-dotnet-interop-aws
+  name: redhat-openshift-lp-interop-release-4.14-informing
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-hypershift-v4.13-hypershift-cluster-tests
-  name: periodic-ci-CSPI-QE-MSI-hypershift-v4.13-hypershift-cluster-tests
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-rhods-tests
-  name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-rhods-tests
+- gcs_prefix: origin-ci-test/logs/periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.14-lp-interop-service-registry-2-3
+  name: periodic-ci-Apicurio-apicurio-registry-system-tests-main-service-registry-ocp4.14-lp-interop-service-registry-2-3
+- gcs_prefix: origin-ci-test/logs/periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.14-lp-interop-dotnet-interop-aws
+  name: periodic-ci-sclorg-ansible-tests-master-dotnet-ocp4.14-lp-interop-dotnet-interop-aws
