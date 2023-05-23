@@ -493,7 +493,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.3.0-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.6.0-0
         command:
         - /kpromo
         args:
