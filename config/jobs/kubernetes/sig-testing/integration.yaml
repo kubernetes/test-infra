@@ -36,14 +36,13 @@ presubmits:
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
-    optional: true
     decorate: true
     skip_branches:
     - .* # per-release job
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "GO_VERSION= -> GO_VERSION={{.GoVersion}}"
-      testgrid-dashboards: sig-testing-canaries
+      testgrid-create-test-group: 'true'
       description: run with GO_VERSION set to the original go version used for this branch
     path_alias: k8s.io/kubernetes
     labels:

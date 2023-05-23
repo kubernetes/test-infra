@@ -1412,7 +1412,6 @@ presubmits:
       preset-dind-enabled: "true"
       preset-service-account: "true"
     name: pull-kubernetes-integration-go-compatibility
-    optional: true
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1590,7 +1589,6 @@ presubmits:
     labels:
       preset-service-account: "true"
     name: pull-kubernetes-unit-go-compatibility
-    optional: true
     path_alias: k8s.io/kubernetes
     spec:
       containers:
