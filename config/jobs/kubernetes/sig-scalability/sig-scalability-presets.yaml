@@ -263,15 +263,6 @@ presets:
   - name: CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT
     value: "true"
 
-  ###### Scalability Envs
-  ### Common env variables for containerd scalability-related suites.
-  # Deprecated. Should be removed after 1.20 branch will be removed from testing
-- labels:
-    preset-e2e-scalability-containerd: "true"
-  env:
-  - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
-    value: "15m"
-
 ###### Scalability Envs
 ### Common env variables for node scalability-related suites.
 - labels:
