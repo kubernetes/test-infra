@@ -37,6 +37,7 @@ type pattern struct {
 // The rules by which the pattern matches paths are the same as in .gitignore files (see https://git-scm.com/docs/gitignore), with a few exceptions:
 //   - negative patterns are forbidden
 //   - patterns that match a directory do not recursively match paths inside that directory
+//
 // https://git-scm.com/docs/gitattributes
 func parsePattern(p string) (Pattern, error) {
 	res := pattern{}

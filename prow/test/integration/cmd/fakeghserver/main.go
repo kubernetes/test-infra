@@ -234,10 +234,10 @@ func issueCommentHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interf
 	}
 }
 
-//  GetRepoLabels(org, repo string) ([]Label, error) # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
-//  GetIssueLabels(org, repo string, number int) ([]Label, error) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
-//  AddLabel(org, repo string, number int, label string) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
-//  AddRepoLabel(org, repo, label, description, color string) error # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
+// GetRepoLabels(org, repo string) ([]Label, error) # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
+// GetIssueLabels(org, repo string, number int) ([]Label, error) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
+// AddLabel(org, repo string, number int, label string) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
+// AddRepoLabel(org, repo, label, description, color string) error # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
 func labelHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, int, error) {
 	return func(r *http.Request) (interface{}, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)

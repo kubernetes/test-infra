@@ -880,6 +880,7 @@ func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string, external 
 // Specifically:
 //   - every item in the tide subset must also be in the plugins subset
 //   - every item in the plugins subset that is in the tide superset must also be in the tide subset
+//
 // For example:
 //   - if org/repo is configured in tide to require lgtm, it must have the lgtm plugin enabled
 //   - if org/repo is configured in tide, the tide configuration must require the same set of

@@ -37,7 +37,7 @@ type lister interface {
 	List(selector labels.Selector) ([]*prowapi.ProwJob, error)
 }
 
-//https://godoc.org/github.com/prometheus/client_golang/prometheus#Collector
+// https://godoc.org/github.com/prometheus/client_golang/prometheus#Collector
 type prowJobCollector struct {
 	lister lister
 }

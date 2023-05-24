@@ -28,8 +28,8 @@ import (
 // and returns the writerOptions and a simplified filename.  For example,
 // build-log.txt.gz would be:
 //
-//   Content-Type: text/plain; charset=utf-8
-//   Content-Encoding: gzip
+//	Content-Type: text/plain; charset=utf-8
+//	Content-Encoding: gzip
 //
 // and the simplified filename would be build-log.txt (excluding the
 // content encoding extension).

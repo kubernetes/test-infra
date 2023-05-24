@@ -581,8 +581,8 @@ func (c *Config) unprotectedBranches(presubmits map[string][]Presubmit) []string
 }
 
 // BranchProtectionWarnings logs two sets of warnings:
-// - The list of repos with unprotected branches,
-// - The list of repos with disabled policies, i.e. Protect set to false,
+//   - The list of repos with unprotected branches,
+//   - The list of repos with disabled policies, i.e. Protect set to false,
 //     because any branches not explicitly specified in the configuration will be unprotected.
 func (c *Config) BranchProtectionWarnings(logger *logrus.Entry, presubmits map[string][]Presubmit) {
 	if warnings := c.reposWithDisabledPolicy(); len(warnings) > 0 {
@@ -594,9 +594,9 @@ func (c *Config) BranchProtectionWarnings(logger *logrus.Entry, presubmits map[s
 }
 
 // BranchRequirements partitions status contexts for a given org, repo branch into three buckets:
-//  - contexts that are always required to be present
-//  - contexts that are required, _if_ present
-//  - contexts that are always optional
+//   - contexts that are always required to be present
+//   - contexts that are required, _if_ present
+//   - contexts that are always optional
 func BranchRequirements(branch string, jobs []Presubmit) ([]string, []string, []string) {
 	var required, requiredIfPresent, optional []string
 	for _, j := range jobs {

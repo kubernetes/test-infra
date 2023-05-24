@@ -68,11 +68,11 @@ var commitRegexp = regexp.MustCompile(`^g?([\da-f]+)|(.+?)??(?:-(\d+)-g([\da-f]+
 
 // DeconstructCommit separates a git describe commit into its parts.
 
-//
 // Examples:
-//  v0.0.30-14-gdeadbeef => (v0.0.30 14 deadbeef)
-//  v0.0.30 => (v0.0.30 0 "")
-//  deadbeef => ("", 0, deadbeef)
+//
+//	v0.0.30-14-gdeadbeef => (v0.0.30 14 deadbeef)
+//	v0.0.30 => (v0.0.30 0 "")
+//	deadbeef => ("", 0, deadbeef)
 //
 // See man git describe.
 func DeconstructCommit(commit string) (string, int, string) {

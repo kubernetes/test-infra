@@ -65,7 +65,9 @@ func NewGroup(gitAttributesContent func() ([]byte, error)) (*Group, error) {
 
 // Use load to read a .gitattributes file, and populate g with the commands.
 // Each line in gitattributes file is of form:
-//   pattern	attr1 attr2 ...
+//
+//	pattern	attr1 attr2 ...
+//
 // That is, a pattern followed by an attributes list, separated by whitespaces.
 func (g *Group) load(r io.Reader) error {
 	s := bufio.NewScanner(r)

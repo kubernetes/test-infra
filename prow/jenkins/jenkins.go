@@ -254,7 +254,9 @@ type BuildQueryParams struct {
 // dryRun: mutating calls such as starting/aborting a build will be skipped.
 // tlsConfig: configures client transport if set, may be nil.
 // authConfig: configures the client to connect to Jenkins via basic auth/bearer token
-//             and optionally enables csrf protection
+//
+//	and optionally enables csrf protection
+//
 // logger: creates a standard logger if nil.
 // metrics: gathers prometheus metrics for the Jenkins client if set.
 func NewClient(

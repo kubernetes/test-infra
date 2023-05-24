@@ -61,10 +61,13 @@ type TideRepoMergeType struct {
 }
 
 // When TideRepoMergeType.MergeType is present, unmarshal into:
-//   kubernetes: squash
+//
+//	kubernetes: squash
+//
 // when TideRepoMergeType.Branches is not empty, unmarshal into:
-//   kubernetes:
-//     main: squash
+//
+//	kubernetes:
+//	  main: squash
 func (trmt TideRepoMergeType) MarshalJSON() ([]byte, error) {
 	if trmt.MergeType != "" {
 		return json.Marshal(trmt.MergeType)
@@ -76,12 +79,16 @@ func (trmt TideRepoMergeType) MarshalJSON() ([]byte, error) {
 }
 
 // Full configuration:
-//   test-infra:
-//     main: merge
+//
+//	test-infra:
+//	  main: merge
+//
 // unmarshal into map[string][TideBranchMergeType]
 //
 // Repo-wide configuration:
-//   test-infra: merge
+//
+//	test-infra: merge
+//
 // unmarshal into types.PullRequestMergeType
 func (trmt *TideRepoMergeType) UnmarshalJSON(b []byte) error {
 	var mt types.PullRequestMergeType
@@ -103,10 +110,13 @@ type TideOrgMergeType struct {
 }
 
 // When TideOrgMergeType.MergeType is present, unmarshal into:
-//   kubernetes: squash
+//
+//	kubernetes: squash
+//
 // when TideOrgMergeType.Repos is not empty, unmarshal into:
-//   kubernetes:
-//     test-infra: squash
+//
+//	kubernetes:
+//	  test-infra: squash
 func (tomt TideOrgMergeType) MarshalJSON() ([]byte, error) {
 	if tomt.MergeType != "" {
 		return json.Marshal(tomt.MergeType)
@@ -118,13 +128,17 @@ func (tomt TideOrgMergeType) MarshalJSON() ([]byte, error) {
 }
 
 // Org-wide configuration:
-//   kubernetes: merge
+//
+//	kubernetes: merge
+//
 // unmarshal into types.PullRequestMergeType.
 //
 // Full configuration:
-//   kubernetes:
-//     test-infra:
-//       main: merge
+//
+//	kubernetes:
+//	  test-infra:
+//	    main: merge
+//
 // unmarshal into map[string][TideRepoMergeType]:
 func (tomt *TideOrgMergeType) UnmarshalJSON(b []byte) error {
 	var mt types.PullRequestMergeType
@@ -360,13 +374,13 @@ func (t *Tide) MergeMethod(repo OrgRepo) types.PullRequestMergeType {
 //  1. kubernetes/test-infra@main: rebase       org/repo@branch shorthand
 //
 //  2. kubernetes:
-//       test-infra:
-//         ma(ster|in): rebase                  branch level regex
+//     test-infra:
+//     ma(ster|in): rebase                  branch level regex
 //
 //  3. kubernetes/test-infra: rebase            org/repo shorthand
 //
 //  4. kubernetes:
-//       test-infra: rebase                     repo-wide config
+//     test-infra: rebase                     repo-wide config
 //
 //  5. kubernetes: rebase                       org shorthand
 //

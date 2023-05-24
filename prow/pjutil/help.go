@@ -61,7 +61,8 @@ func ShouldRespondWithHelp(body string, toRunOrSkip int) (bool, string) {
 }
 
 // HelpMessage returns a user friendly help message with the
-//  available /test commands that can be triggered
+//
+//	available /test commands that can be triggered
 func HelpMessage(org, repo, branch, note string, testAllNames, optionalTestCommands, requiredTestCommands sets.String) string {
 	var resp string
 	if testAllNames.Len()+optionalTestCommands.Len()+requiredTestCommands.Len() == 0 {

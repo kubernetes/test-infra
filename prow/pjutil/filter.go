@@ -77,10 +77,10 @@ func AvailablePresubmits(changes config.ChangedFilesProvider, branch string,
 }
 
 // Filter digests a presubmit config to determine if:
-//  - the presubmit matched the filter
-//  - we know that the presubmit is forced to run
-//  - what the default behavior should be if the presubmit
-//    runs conditionally and does not match trigger conditions
+//   - the presubmit matched the filter
+//   - we know that the presubmit is forced to run
+//   - what the default behavior should be if the presubmit
+//     runs conditionally and does not match trigger conditions
 type Filter interface {
 	ShouldRun(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool)
 	Name() string

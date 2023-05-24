@@ -27,17 +27,20 @@ import (
 // ParseRefs parses a human-provided string into the repo
 // that should be cloned and the refs that need to be
 // checked out once it is. The format is:
-//   org,repo=base-ref[:base-sha][,pull-id[:pull-sha[:pull-ref]]]...
+//
+//	org,repo=base-ref[:base-sha][,pull-id[:pull-sha[:pull-ref]]]...
+//
 // For the base ref and pull IDs, a SHA may optionally be
 // provided or may be omitted for the latest available SHA.
 // Examples:
-//   kubernetes,test-infra=master
-//   kubernetes,test-infra=master:abcde12
-//   kubernetes,test-infra=master:abcde12,34
-//   kubernetes,test-infra=master:abcde12,34:fghij56
-//   kubernetes,test-infra=master,34:fghij56
-//   kubernetes,test-infra=master:abcde12,34:fghij56,78
-//   gerrit,test-infra=master:abcde12,34:fghij56:refs/changes/00/123/1
+//
+//	kubernetes,test-infra=master
+//	kubernetes,test-infra=master:abcde12
+//	kubernetes,test-infra=master:abcde12,34
+//	kubernetes,test-infra=master:abcde12,34:fghij56
+//	kubernetes,test-infra=master,34:fghij56
+//	kubernetes,test-infra=master:abcde12,34:fghij56,78
+//	gerrit,test-infra=master:abcde12,34:fghij56:refs/changes/00/123/1
 func ParseRefs(value string) (*prowapi.Refs, error) {
 	gitRef := &prowapi.Refs{}
 	values := strings.SplitN(value, "=", 2)

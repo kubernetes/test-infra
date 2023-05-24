@@ -40,8 +40,9 @@ func makeRequest(policy branchprotection.Policy, enableAppsRestrictions bool) gi
 
 // makeAdmins returns true iff *val == true, else false
 // TODO(skuznets): the API documentation tells us to pass
-//    `nil` to unset, but that is broken so we need to pass
-//    false. Change back when it's fixed
+//
+//	`nil` to unset, but that is broken so we need to pass
+//	false. Change back when it's fixed
 func makeAdmins(val *bool) *bool {
 	if val != nil {
 		return val

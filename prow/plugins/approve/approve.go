@@ -361,17 +361,18 @@ func findAssociatedIssue(body, org string) (int, error) {
 // The algorithm goes as:
 // - Initially, we build an approverSet
 //   - Go through all comments in order of creation.
-//     - (Issue/PR comments, PR review comments, and PR review bodies are considered as comments)
+//   - (Issue/PR comments, PR review comments, and PR review bodies are considered as comments)
 //   - If anyone said "/approve", add them to approverSet.
 //   - If anyone said "/lgtm" AND LgtmActsAsApprove is enabled, add them to approverSet.
 //   - If anyone created an approved review AND ReviewActsAsApprove is enabled, add them to approverSet.
+//
 // - Then, for each file, we see if any approver of this file is in approverSet and keep track of files without approval
 //   - An approver of a file is defined as:
-//     - Someone listed as an "approver" in an OWNERS file in the files directory OR
-//     - in one of the file's parent directories
-// - Iff all files have been approved, the bot will add the "approved" label.
-// - Iff a cancel command is found, that reviewer will be removed from the approverSet
-// 	and the munger will remove the approved label if it has been applied
+//   - Someone listed as an "approver" in an OWNERS file in the files directory OR
+//   - in one of the file's parent directories
+//   - Iff all files have been approved, the bot will add the "approved" label.
+//   - Iff a cancel command is found, that reviewer will be removed from the approverSet
+//     and the munger will remove the approved label if it has been applied
 func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConfig config.GitHubOptions, opts *plugins.Approve, pr *state) error {
 	funcStart := time.Now()
 	defer func() {

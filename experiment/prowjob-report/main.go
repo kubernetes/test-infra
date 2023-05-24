@@ -43,8 +43,8 @@ import (
 )
 
 // TODO: parse testgrid config to catch
-//	- jobs that aren't prowjobs but are on release-informing dashboards
-//	- jobs that don't declare testgrid info via annotations
+//   - jobs that aren't prowjobs but are on release-informing dashboards
+//   - jobs that don't declare testgrid info via annotations
 var reportFormat = flag.String("format", "csv", "Output format [csv|json|html] defaults to csv")
 var reportDate = flag.String("date", "now", "Date to include in report ('now' is converted to today)")
 
