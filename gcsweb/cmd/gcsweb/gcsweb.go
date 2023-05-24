@@ -191,7 +191,7 @@ func main() {
 	s := &server{storageClient: storageClient}
 
 	logrus.Info("Starting GCSWeb")
-	rand.Seed(time.Now().UTC().UnixNano())
+	rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
 
 	// Canonicalize allowed buckets.
 	for i := range o.allowedBuckets {

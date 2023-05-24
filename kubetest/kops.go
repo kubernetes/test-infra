@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"context"
+	cryptorand "crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -894,7 +895,7 @@ func setupGCEStateStore(projectId string) (*string, error) {
 // gceBucketName generates a name for GCE state store bucket
 func gceBucketName(projectId string) string {
 	b := make([]byte, 2)
-	rand.Read(b)
+	cryptorand.Read(b)
 	s := hex.EncodeToString(b)
 	return strings.Join([]string{projectId, "state", s}, "-")
 }

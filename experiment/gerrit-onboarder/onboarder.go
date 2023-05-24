@@ -21,6 +21,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io"
 	"math/rand"
 	"os"
@@ -29,8 +30,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/cmd/generic-autobumper/bumper"
 )
@@ -466,7 +465,7 @@ func main() {
 	}
 
 	// Using math/rand instead of crypto/rand so we don't need to handle errors
-	rand.Seed(time.Now().UTC().UnixNano())
+	rand.New(rand.NewSource(time.Now().UTC().UnixNano()))
 	branchName := fmt.Sprintf("gerritOnboarding_%d", rand.Int())
 
 	if err = fetchMetaConfig(o.host, o.repo, branchName, workDir); err != nil {

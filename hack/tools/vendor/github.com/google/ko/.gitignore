@@ -1,0 +1,4 @@
+# Ignore GoLand (IntelliJ) files.
+.idea/
+
+ko

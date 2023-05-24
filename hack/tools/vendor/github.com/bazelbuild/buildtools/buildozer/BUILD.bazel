@@ -1,0 +1,94 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "github.com/bazelbuild/buildtools/buildozer",
+    visibility = ["//visibility:private"],
+    x_defs = {
+        "main.buildVersion": "{STABLE_buildVersion}",
+        "main.buildScmRevision": "{STABLE_buildScmRevision}",
+    },
+    deps = [
+        "//build:go_default_library",
+        "//edit:go_default_library",
+        "//tables:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "buildozer",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+sh_test(
+    name = "buildozer_test",
+    size = "small",
+    srcs = ["buildozer_test.sh"],
+    args = [
+        "$(location :buildozer)",
+    ],
+    data = [
+        "test_common.sh",
+        ":buildozer",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+go_binary(
+    name = "buildozer-darwin",
+    out = "buildozer-darwin_amd64",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "darwin",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "buildozer-linux",
+    out = "buildozer-linux_amd64",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "buildozer-windows",
+    out = "buildozer-windows_amd64.exe",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "windows",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "buildozer-darwin-arm64",
+    out = "buildozer-darwin_arm64",
+    embed = [":go_default_library"],
+    goarch = "arm64",
+    goos = "darwin",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "buildozer-linux-arm64",
+    out = "buildozer-linux_arm64",
+    embed = [":go_default_library"],
+    goarch = "arm64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+exports_files(
+    [
+        "README.md",
+    ],
+    visibility = ["//buildozer/npm:__pkg__"],
+)

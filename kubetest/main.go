@@ -281,7 +281,7 @@ func main() {
 	log.Printf("Running kubetest version: %s\n", gitTag)
 
 	// Initialize global pseudo random generator. Initializing it to select random AWS Zones.
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)
 	o := defineFlags()
