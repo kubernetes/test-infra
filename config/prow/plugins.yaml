@@ -1535,6 +1535,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes/cloud-provider-openstack:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs:
   - name: needs-rebase
     events:
