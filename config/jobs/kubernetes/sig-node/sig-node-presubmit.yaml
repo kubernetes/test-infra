@@ -1567,8 +1567,6 @@ presubmits:
     always_run: false
     optional: true
     skip_report: false
-    skip_branches:
-      - release-\d+\.\d+  # per-release image
     annotations:
       testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-gce-e2e-pod-disruption-conditions
