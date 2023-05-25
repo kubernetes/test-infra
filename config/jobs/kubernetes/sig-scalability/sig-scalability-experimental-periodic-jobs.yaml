@@ -177,6 +177,7 @@ periodics:
           - --test-cmd-args=--provider=gce
           - --test-cmd-args=--report-dir=$(ARTIFACTS)
           - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
+          - --test-cmd-args=--testoverrides=./testing/overrides/watch_list_off.yaml
           - --test-cmd-name=ClusterLoaderV2
           - --timeout=60m
           - --use-logexporter
