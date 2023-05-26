@@ -169,7 +169,7 @@ func TestInterrupts(t *testing.T) {
 	// we must wait. The test must have enough time to ask for the interval
 	// as many times as we expect it to, but if we only wait for that we fail
 	// to catch the cases where the interval is requested too many times.
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 
 	var onInterruptCalled bool
 	OnInterrupt(func() {
