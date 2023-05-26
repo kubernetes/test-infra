@@ -44,7 +44,6 @@ require (
 	github.com/felixge/fgprof v0.9.1
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/fsouza/fake-gcs-server v1.19.4
-	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-openapi/spec v0.20.4
 	github.com/go-test/deep v1.0.7
@@ -63,6 +62,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/hashicorp/golang-lru v0.5.4
+	github.com/kevinburke/go-bindata/v4 v4.0.2
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.2
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.4.1
@@ -178,7 +178,6 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
-	github.com/kisielk/errcheck v1.5.0 // indirect
 	github.com/klauspost/compress v1.14.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect

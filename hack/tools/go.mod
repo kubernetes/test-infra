@@ -1,14 +1,14 @@
 module k8s.io/test-infra/hack/tools
 
-go 1.18
+go 1.20
 
 require (
 	github.com/bazelbuild/buildtools v0.0.0-20211007154642-8dd79e56e98e
 	github.com/client9/misspell v0.3.4
-	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/golang/protobuf v1.5.2
 	github.com/golangci/golangci-lint v1.52.2
 	github.com/google/ko v0.11.2
+	github.com/kevinburke/go-bindata/v4 v4.0.2
 	github.com/sethvargo/gcs-cacher v0.1.3
 	gotest.tools/gotestsum v1.7.0
 	k8s.io/code-generator v0.21.4
@@ -242,7 +242,6 @@ require (
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/exp/typeparams v0.0.0-20230224173230-c95f2b4c22f2 // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb // indirect

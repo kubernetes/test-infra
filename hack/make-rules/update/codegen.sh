@@ -45,7 +45,8 @@ go build -o "${informergen}" k8s.io/code-generator/cmd/informer-gen
 listergen=${REPO_ROOT}/_bin/lister-gen
 go build -o "${listergen}" k8s.io/code-generator/cmd/lister-gen
 go_bindata=${REPO_ROOT}/_bin/go-bindata
-go build -o "${go_bindata}" github.com/go-bindata/go-bindata/v3/go-bindata
+#go build -o "${go_bindata}" github.com/kevinburke/go-bindata/v4/
+GOBIN="${REPO_ROOT}/_bin" go install github.com/kevinburke/go-bindata/v4/...@v4.0.2
 controller_gen=${REPO_ROOT}/_bin/controller-gen
 go build -o "${controller_gen}" sigs.k8s.io/controller-tools/cmd/controller-gen
 protoc_gen_go="${REPO_ROOT}/_bin/protoc-gen-go" # golang protobuf plugin
