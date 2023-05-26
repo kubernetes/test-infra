@@ -1204,7 +1204,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
           - --root=/go/src
           - "--job=$(JOB_NAME)"
@@ -1299,7 +1299,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230406-23cb1879e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
           - --root=/go/src
           - "--job=$(JOB_NAME)"
