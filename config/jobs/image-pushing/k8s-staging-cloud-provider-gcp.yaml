@@ -88,3 +88,6 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
