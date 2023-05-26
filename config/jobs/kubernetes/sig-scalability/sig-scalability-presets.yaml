@@ -109,8 +109,6 @@ presets:
     value: true
   - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
     value: pd.csi.storage.gke.io
-  - name: CL2_WAIT_FOR_CONTROLLED_PODS_USE_EXACT_OPERATION_TIMEOUT
-    value: true
 
 ### kubemark-gce-scale
 - labels:
@@ -262,19 +260,8 @@ presets:
     value: pd.csi.storage.gke.io
   - name: KUBE_APISERVER_GODEBUG
     value: gctrace=1
-  - name: CL2_WAIT_FOR_CONTROLLED_PODS_USE_EXACT_OPERATION_TIMEOUT
-    value: true
   - name: CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT
     value: "true"
-
-  ###### Scalability Envs
-  ### Common env variables for containerd scalability-related suites.
-  # Deprecated. Should be removed after 1.20 branch will be removed from testing
-- labels:
-    preset-e2e-scalability-containerd: "true"
-  env:
-  - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
-    value: "15m"
 
 ###### Scalability Envs
 ### Common env variables for node scalability-related suites.
