@@ -14,6 +14,8 @@ replace (
 
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
+	k8s.io/api => k8s.io/api v0.26.0
+	k8s.io/apimachinery => k8s.io/apimachinery v0.24.9
 )
 
 require (
@@ -50,7 +52,7 @@ require (
 	github.com/go-test/deep v1.0.7
 	github.com/golang/glog v1.0.0
 	github.com/gomodule/redigo v1.8.5
-	github.com/google/go-cmp v0.5.8
+	github.com/google/go-cmp v0.5.9
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/gofuzz v1.2.1-0.20210504230335-f78f29fc09ea
 	github.com/google/uuid v1.3.0
@@ -92,19 +94,19 @@ require (
 	google.golang.org/api v0.83.0
 	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac
 	google.golang.org/grpc v1.47.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/protobuf v1.28.1
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.2
-	k8s.io/apimachinery v0.24.2
+	k8s.io/apimachinery v0.26.0
 	k8s.io/client-go v0.24.2
 	k8s.io/code-generator v0.24.2
-	k8s.io/klog/v2 v2.70.1
+	k8s.io/klog/v2 v2.80.1
 	k8s.io/kubernetes v1.25.3
-	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
+	k8s.io/utils v0.0.0-20221107191617-1a15be271d1d
 	knative.dev/pkg v0.0.0-20220329144915-0a1ec2e0d46c
 	sigs.k8s.io/controller-runtime v0.12.3
 	sigs.k8s.io/controller-tools v0.9.2
