@@ -108,8 +108,8 @@ presubmits:
         - --build=quick
         - --cluster=hpa
         - --extract=local
+        - --check-leaked-resources
         - --gcp-node-image=gci
-        - --gcp-project=k8s-jkns-gci-autoscaling
         - --gcp-zone=us-west1-b
         - --provider=gce
         # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
