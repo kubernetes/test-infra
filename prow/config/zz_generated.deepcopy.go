@@ -24,7 +24,7 @@ package config
 import (
 	json "encoding/json"
 
-	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	v1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	prowjobsv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -95,7 +95,7 @@ func (in *JobBase) DeepCopyInto(out *JobBase) {
 	}
 	if in.PipelineRunSpec != nil {
 		in, out := &in.PipelineRunSpec, &out.PipelineRunSpec
-		*out = new(v1alpha1.PipelineRunSpec)
+		*out = new(v1beta1.PipelineRunSpec)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.TektonPipelineRunSpec != nil {

@@ -403,7 +403,7 @@ func TestCallbacks(t *testing.T) {
 			},
 			cacheCallbacks: Callbacks{},
 			lookups: []lookup{
-				lookup{"(key)foo", goodValConstructor},
+				{"(key)foo", goodValConstructor},
 			},
 			expected: expected{
 				lookups:         0,
@@ -419,8 +419,8 @@ func TestCallbacks(t *testing.T) {
 			cacheInitialState: map[string]string{},
 			cacheCallbacks:    defaultCallbacks,
 			lookups: []lookup{
-				lookup{"(key)foo", goodValConstructor},
-				lookup{"(key)foo", goodValConstructor},
+				{"(key)foo", goodValConstructor},
+				{"(key)foo", goodValConstructor},
 			},
 			expected: expected{
 				lookups: 2,
@@ -438,11 +438,11 @@ func TestCallbacks(t *testing.T) {
 			cacheInitialState: map[string]string{},
 			cacheCallbacks:    defaultCallbacks,
 			lookups: []lookup{
-				lookup{"(key)1", goodValConstructor},
-				lookup{"(key)2", goodValConstructor},
-				lookup{"(key)3", goodValConstructor},
-				lookup{"(key)4", goodValConstructor},
-				lookup{"(key)5", goodValConstructor},
+				{"(key)1", goodValConstructor},
+				{"(key)2", goodValConstructor},
+				{"(key)3", goodValConstructor},
+				{"(key)4", goodValConstructor},
+				{"(key)5", goodValConstructor},
 			},
 			expected: expected{
 				lookups: 5,
@@ -459,11 +459,11 @@ func TestCallbacks(t *testing.T) {
 			cacheInitialState: map[string]string{},
 			cacheCallbacks:    defaultCallbacks,
 			lookups: []lookup{
-				lookup{"(key)1", goodValConstructor},
-				lookup{"(key)1", goodValConstructor},
-				lookup{"(key)1", goodValConstructor},
-				lookup{"(key)1", badValConstructor},
-				lookup{"(key)1", badValConstructor},
+				{"(key)1", goodValConstructor},
+				{"(key)1", goodValConstructor},
+				{"(key)1", goodValConstructor},
+				{"(key)1", badValConstructor},
+				{"(key)1", badValConstructor},
 			},
 			expected: expected{
 				lookups:         5,
