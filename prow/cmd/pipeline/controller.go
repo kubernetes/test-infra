@@ -38,7 +38,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
-	resourcev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/resource/v1alpha1"
 	untypedcorev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -651,8 +650,8 @@ func pipelineMeta(name string, pj prowjobv1.ProwJob) metav1.ObjectMeta {
 	}
 }
 
-// makePipelineGitResource creates a pipeline git resource from prow job
-func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.ProwJob) *resourcev1alpha1.PipelineResource {
+// makePipelineGitTask creates a pipeline git resource from prow job
+func makePipelineGitTask(name string, refs prowjobv1.Refs, pj prowjobv1.ProwJob) pipelinev1beta1.PipelineTask {
 	// Pick source URL
 	var sourceURL string
 	switch {
@@ -679,23 +678,21 @@ func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.Prow
 		revision = refs.BaseRef
 	}
 
-	pr := resourcev1alpha1.PipelineResource{
-		ObjectMeta: pipelineMeta(name, pj),
-		Spec: resourcev1alpha1.PipelineResourceSpec{
-			Type: pipelinev1beta1.PipelineResourceTypeGit,
-			Params: []pipelinev1beta1.ResourceParam{
-				{
-					Name:  "url",
-					Value: sourceURL,
-				},
-				{
-					Name:  "revision",
-					Value: revision,
-				},
+	return pipelinev1beta1.PipelineTask{
+		TaskRef: &pipelinev1beta1.TaskRef{
+			Name: "git-clone",
+		},
+		Params: []pipelinev1beta1.Param{
+			{
+				Name:  "url",
+				Value: pipelinev1beta1.ArrayOrString{StringVal: sourceURL},
+			},
+			{
+				Name:  "revision",
+				Value: pipelinev1beta1.ArrayOrString{StringVal: revision},
 			},
 		},
 	}
-	return &pr
 }
 
 // makePipeline creates a PipelineRun and substitutes ProwJob managed pipeline resources with ResourceSpec instead of ResourceRef
@@ -740,7 +737,7 @@ func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1beta1.PipelineRun, error)
 	}
 
 	// Inject resources from prow job.
-	for i, res := range p.Spec.Resources {
+	for _, res := range p.Spec.Resources {
 		refName := res.ResourceRef.Name
 		var refs prowjobv1.Refs
 		var suffix string
@@ -759,9 +756,12 @@ func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1beta1.PipelineRun, error)
 		}
 		// Change resource ref to resource spec
 		name := pj.Name + suffix
-		resource := makePipelineGitResource(name, refs, pj)
-		p.Spec.Resources[i].ResourceRef = nil
-		p.Spec.Resources[i].ResourceSpec = &resource.Spec
+		task := makePipelineGitTask(name, refs, pj)
+		if p.Spec.PipelineSpec == nil {
+			p.Spec.PipelineSpec = &pipelinev1beta1.PipelineSpec{Tasks: []pipelinev1beta1.PipelineTask{task}}
+		} else {
+			p.Spec.PipelineSpec.Tasks = append(p.Spec.PipelineSpec.Tasks, task)
+		}
 	}
 
 	return &p, nil
