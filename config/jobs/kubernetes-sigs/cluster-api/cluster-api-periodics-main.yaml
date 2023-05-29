@@ -154,6 +154,55 @@ periodics:
     testgrid-tab-name: capi-e2e-dualstack-ipv6-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
+- name: periodic-cluster-api-e2e-ipv6-main
+  interval: 2h
+  decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-maintainers
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  spec:
+    serviceAccountName: prowjob-default-sa
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          # enable IPV6 in bootstrap image
+          - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+            value: "true"
+          - name: GINKGO_SKIP
+            value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
+          - name: GINKGO_FOCUS
+            value: "\\[IPv6\\]"
+          - name: IP_FAMILY
+            value: "IPv6"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+    testgrid-tab-name: capi-e2e-ipv6-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-main
   interval: 2h
   decorate: true
