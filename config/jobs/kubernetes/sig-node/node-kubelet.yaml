@@ -330,7 +330,7 @@ periodics:
 
 
 - name: ci-kubernetes-node-e2e-containerd-standalone-mode-all-alpha
-  interval: 4h
+  interval: 24h
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
@@ -370,7 +370,7 @@ periodics:
     description: "Runs kubelet in standalone mode with all alpha features enabled"
 
 - name: ci-kubernetes-node-e2e-containerd-standalone-mode
-  interval: 4h
+  interval: 24h
   cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
