@@ -447,7 +447,7 @@ override:
 # Owners contains configuration related to handling OWNERS files.
 owners:
     # Filenames allows configuring repos to use a separate set of filenames for
-    # any plugin that interacts with these files. Keys are in "org/repo" format.
+    # any plugin that interacts with these files. Keys are in "org" or "org/repo" format.
     filenames:
         "":
             owners: ' '

@@ -200,16 +200,22 @@ type Owners struct {
 	LabelsDenyList []string `json:"labels_denylist,omitempty"`
 
 	// Filenames allows configuring repos to use a separate set of filenames for
-	// any plugin that interacts with these files. Keys are in "org/repo" format.
+	// any plugin that interacts with these files. Keys are in "org" or "org/repo" format.
 	Filenames map[string]ownersconfig.Filenames `json:"filenames,omitempty"`
 }
 
 // OwnersFilenames determines which filenames to use for OWNERS and OWNERS_ALIASES for a repo.
 func (c *Configuration) OwnersFilenames(org, repo string) ownersconfig.Filenames {
 	full := fmt.Sprintf("%s/%s", org, repo)
+
 	if config, configured := c.Owners.Filenames[full]; configured {
 		return config
 	}
+
+	if config, configured := c.Owners.Filenames[org]; configured {
+		return config
+	}
+
 	return ownersconfig.Filenames{
 		Owners:        ownersconfig.DefaultOwnersFile,
 		OwnersAliases: ownersconfig.DefaultOwnersAliasesFile,
