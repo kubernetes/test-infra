@@ -246,7 +246,7 @@ func (i *interactor) mergeHelper(args []string, commitlike string, opts ...Merge
 	if err == nil {
 		return true, nil
 	}
-	i.logger.WithError(err).Warnf("Error merging %q: %s", commitlike, string(out))
+	i.logger.WithError(err).Infof("Error merging %q: %s", commitlike, string(out))
 	if out, err := i.executor.Run("merge", "--abort"); err != nil {
 		return false, fmt.Errorf("error aborting merge of %q: %w %v", commitlike, err, string(out))
 	}
