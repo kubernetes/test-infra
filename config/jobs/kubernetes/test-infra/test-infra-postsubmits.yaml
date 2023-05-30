@@ -1,6 +1,7 @@
 postsubmits:
   kubernetes/test-infra:
   - name: post-test-infra-test-all
+    cluster: eks-prow-build-cluster
     branches:
     - master
     decorate: true
