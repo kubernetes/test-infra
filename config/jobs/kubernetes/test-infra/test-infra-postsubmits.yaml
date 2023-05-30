@@ -31,13 +31,6 @@ postsubmits:
           limits:
             cpu: "14"
             memory: "16Gi"
-      tolerations:
-      - key: "highcpu"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
-      nodeSelector:
-        highcpu: "true"
     annotations:
       testgrid-dashboards: sig-testing-misc
       testgrid-tab-name: post-test-all

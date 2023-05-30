@@ -161,13 +161,6 @@ presubmits:
           limits:
             cpu: "14"
             memory: "16Gi"
-      tolerations:
-      - key: "highcpu"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
-      nodeSelector:
-        highcpu: "true"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration
@@ -232,13 +225,6 @@ presubmits:
           limits:
             cpu: "14"
             memory: "16Gi"
-      tolerations:
-      - key: "highcpu"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
-      nodeSelector:
-        highcpu: "true"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: prow-image-build-test
