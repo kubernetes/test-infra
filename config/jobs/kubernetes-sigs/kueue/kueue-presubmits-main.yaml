@@ -24,10 +24,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "400Mi"
+            memory: "800Mi"
           limits:
             cpu: "2"
-            memory: "400Mi"
+            memory: "800Mi"
   - name: pull-kueue-test-integration-main
     cluster: eks-prow-build-cluster
     branches:
@@ -182,10 +182,10 @@ presubmits:
         resources:
           requests:
             cpu: "1"
-            memory: "400Mi"
+            memory: "800Mi"
           limits:
             cpu: "1"
-            memory: "400Mi"
+            memory: "800Mi"
   - name: pull-kueue-build-image-main
     cluster: eks-prow-build-cluster
     branches:
@@ -212,7 +212,7 @@ presubmits:
         resources:
           requests:
             cpu: "1"
-            memory: "400Mi"
+            memory: "800Mi"
           limits:
             cpu: "1"
-            memory: "400Mi"
+            memory: "800Mi"
