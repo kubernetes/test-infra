@@ -25,6 +25,13 @@ presubmits:
         env:
         - name: BAZEL_FETCH_PLEASE
           value: //...
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: bazel
@@ -45,6 +52,13 @@ presubmits:
         env:
         - name: WORKSPACE
           value: "/workspace"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: gubernator
@@ -73,6 +87,13 @@ presubmits:
         - --warnings=unknown-fields
         - --warnings=duplicate-job-refs
         - --warnings=unknown-fields-all
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-prow-checkconfig-loose
@@ -101,6 +122,13 @@ presubmits:
         - --warnings=unknown-fields-all
         - --warnings=non-decorated-jobs
         - --warnings=valid-decoration-config
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
   - name: pull-test-infra-integration
@@ -129,6 +157,10 @@ presubmits:
             # This job is very CPU intensive as building prow images in
             # parallel
             cpu: "14"
+            memory: "16Gi"
+          limits:
+            cpu: "14"
+            memory: "16Gi"
       tolerations:
       - key: "highcpu"
         operator: "Equal"
@@ -159,6 +191,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: unit-test
@@ -189,6 +228,10 @@ presubmits:
             # This job is very CPU intensive as building prow images in
             # parallel
             cpu: "14"
+            limits: "16Gi"
+          limits:
+            cpu: "14"
+            memory: "16Gi"
       tolerations:
       - key: "highcpu"
         operator: "Equal"
@@ -219,6 +262,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-test
@@ -244,6 +294,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-cri-o

@@ -27,6 +27,10 @@ postsubmits:
             # This job is very CPU intensive as building prow images in
             # parallel
             cpu: "14"
+            memory: "16Gi"
+          limits:
+            cpu: "14"
+            memory: "16Gi"
       tolerations:
       - key: "highcpu"
         operator: "Equal"
