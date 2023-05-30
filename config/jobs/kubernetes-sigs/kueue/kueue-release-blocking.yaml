@@ -31,10 +31,10 @@ periodics:
           resources:
             requests:
               cpu: "2"
-              memory: "200Mi"
+              memory: "400Mi"
             limits:
               cpu: "2"
-              memory: "200Mi"
+              memory: "400Mi"
   - interval: 12h
     name: periodic-kueue-test-integration-main
     cluster: eks-prow-build-cluster
@@ -64,10 +64,10 @@ periodics:
           resources:
             requests:
               cpu: "4"
-              memory: "1Gi"
+              memory: "2Gi"
             limits:
               cpu: "4"
-              memory: "1Gi"
+              memory: "2Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-24
     cluster: eks-prow-build-cluster
@@ -106,10 +106,10 @@ periodics:
           resources:
             requests:
               cpu: "5"
-              memory: "1.5Gi"
+              memory: "2Gi"
             limits:
               cpu: "5"
-              memory: "1.5Gi"
+              memory: "2Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-25
     cluster: eks-prow-build-cluster
@@ -148,10 +148,10 @@ periodics:
           resources:
             requests:
               cpu: "6"
-              memory: "1.5Gi"
+              memory: "2Gi"
             limits:
               cpu: "6"
-              memory: "1.5Gi"
+              memory: "2Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-26
     cluster: eks-prow-build-cluster
@@ -194,36 +194,3 @@ periodics:
             limits:
               cpu: "6"
               memory: "1.5Gi"
-  - interval: 12h
-    name: periodic-kueue-verify-main
-    cluster: eks-prow-build-cluster
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-verify-main
-      description: "Run periodic kueue verify checks"
-      testgrid-num-columns-recent: '30'
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: kueue
-        base_ref: main
-        path_alias: kubernetes-sigs/kueue
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    spec:
-      containers:
-        - image: golang:1.20
-          command:
-            - make
-          args:
-            - verify
-          resources:
-            requests:
-              cpu: "1"
-              memory: "200Mi"
-            limits:
-              cpu: "1"
-              memory: "200Mi"
