@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-vsphere:
 
-  - name: pull-cloud-provider-vsphere-verify-fmt-1.26-minus
+  - name: pull-cloud-provider-vsphere-verify-fmt-1-26-minus
     always_run: false
     run_if_changed: '\.go$|hack/check-format\.sh'
     decorate: true
@@ -18,10 +18,10 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
-      testgrid-tab-name: pr-verify-fmt
+      testgrid-tab-name: pr-verify-fmt-1-26-minus
       description: Verifies the Golang sources have been formatted
 
-  - name: pull-cloud-provider-vsphere-verify-lint-1.26-minus
+  - name: pull-cloud-provider-vsphere-verify-lint-1-26-minus
     always_run: false
     run_if_changed: '\.go$|hack/check-lint\.sh'
     decorate: true
@@ -38,10 +38,10 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
-      testgrid-tab-name: pr-verify-lint
+      testgrid-tab-name: pr-verify-lint-1-26-minus
       description: Verifies the Golang sources are linted
 
-  - name: pull-cloud-provider-vsphere-verify-vet-1.26-minus
+  - name: pull-cloud-provider-vsphere-verify-vet-1-26-minus
     always_run: false
     run_if_changed: '\.go$|hack/check-vet\.sh'
     decorate: true
@@ -58,10 +58,10 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
-      testgrid-tab-name: pr-verify-vet
+      testgrid-tab-name: pr-verify-vet-1-26-minus
       description: Vets the Golang sources have been vetted
 
-  - name: pull-cloud-provider-vsphere-verify-staticcheck-1.26-minus
+  - name: pull-cloud-provider-vsphere-verify-staticcheck-1-26-minus
     always_run: false
     run_if_changed: '\.go$|hack/check-staticcheck\.sh$|go.mod'
     decorate: true
@@ -78,11 +78,11 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
-      testgrid-tab-name: pr-verify-staticheck
+      testgrid-tab-name: pr-verify-staticheck-1-26-minus
       description: Verifies the Golang sources pass a static source checker
 
   # Builds the CCM and CSI binaries.
-  - name: pull-cloud-provider-vsphere-build-1.26-minus
+  - name: pull-cloud-provider-vsphere-build-1-26-minus
     decorate: true
     branches:
     - ^release-1.2[4-6]$
@@ -103,7 +103,7 @@ presubmits:
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
   # Executes the unit tests.
-  - name: pull-cloud-provider-vsphere-unit-test-1.26-minus
+  - name: pull-cloud-provider-vsphere-unit-test-1-26-minus
     decorate: true
     branches:
     - ^release-1.2[4-6]$
@@ -124,7 +124,7 @@ presubmits:
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
   # Executes the integration tests.
-  - name: pull-cloud-provider-vsphere-integration-test-1.26-minus
+  - name: pull-cloud-provider-vsphere-integration-test-1-26-minus
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -150,7 +150,7 @@ presubmits:
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
   # Executes the test coverage.
-  - name: pull-cloud-provider-vsphere-coverage-1.26-minus
+  - name: pull-cloud-provider-vsphere-coverage-1-26-minus
     always_run: true
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
@@ -184,11 +184,11 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
-      testgrid-tab-name: pr-verify-test-coverage
+      testgrid-tab-name: pr-verify-test-coverage-1-26-minus
       description: Shows the test coverage of the Golang sources
 
   # Executes the e2e tests.
-  - name: pull-cloud-provider-vsphere-e2e-test-1.26-minus
+  - name: pull-cloud-provider-vsphere-e2e-test-1-26-minus
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -225,7 +225,7 @@ postsubmits:
   kubernetes/cloud-provider-vsphere:
 
   # Deploys the images and binaries after all merges to master
-  - name: post-cloud-provider-vsphere-deploy-1.26-minus
+  - name: post-cloud-provider-vsphere-deploy-1-26-minus
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -253,13 +253,13 @@ postsubmits:
           privileged: true
     annotations:
       testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere
-      testgrid-tab-name: post-deploy
+      testgrid-tab-name: post-deploy-1-26-minus
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       testgrid-num-columns-recent: '20'
       description: Pushes new images and binaries from master
 
   # Deploys images and binaries for tagged releases
-  - name: post-cloud-provider-vsphere-release-1.26-minus
+  - name: post-cloud-provider-vsphere-release-1-26-minus
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -283,6 +283,6 @@ postsubmits:
           privileged: true
     annotations:
       testgrid-dashboards: vmware-postsubmits-cloud-provider-vsphere
-      testgrid-tab-name: release
+      testgrid-tab-name: release-1-26-minus
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       description: releases new tagged images and binaries
