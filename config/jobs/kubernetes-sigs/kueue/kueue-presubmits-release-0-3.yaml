@@ -24,10 +24,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "200Mi"
+            memory: "400Mi"
           limits:
             cpu: "2"
-            memory: "200Mi"
+            memory: "400Mi"
   - name: pull-kueue-test-integration-release-0-3
     cluster: eks-prow-build-cluster
     branches:
@@ -49,10 +49,10 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "1Gi"
+            memory: "2Gi"
           limits:
             cpu: "4"
-            memory: "1Gi"
+            memory: "2Gi"
   - name: pull-kueue-test-e2e-release-0-3-1-24
     cluster: eks-prow-build-cluster
     branches:
@@ -85,10 +85,10 @@ presubmits:
         resources:
           requests:
             cpu: "5"
-            memory: "1.5Gi"
+            memory: "2Gi"
           limits:
             cpu: "5"
-            memory: "1.5Gi"
+            memory: "2Gi"
   - name: pull-kueue-test-e2e-release-0-3-1-25
     cluster: eks-prow-build-cluster
     branches:
@@ -121,10 +121,10 @@ presubmits:
         resources:
           requests:
             cpu: "5"
-            memory: "1.5Gi"
+            memory: "2Gi"
           limits:
             cpu: "5"
-            memory: "1.5Gi"
+            memory: "2Gi"
   - name: pull-kueue-test-e2e-release-0-3-1-26
     cluster: eks-prow-build-cluster
     branches:
@@ -157,10 +157,10 @@ presubmits:
         resources:
           requests:
             cpu: "5"
-            memory: "1.5Gi"
+            memory: "2Gi"
           limits:
             cpu: "5"
-            memory: "1.5Gi"
+            memory: "2Gi"
   - name: pull-kueue-verify-release-0-3
     cluster: eks-prow-build-cluster
     branches:
@@ -182,10 +182,10 @@ presubmits:
         resources:
           requests:
             cpu: "1"
-            memory: "200Mi"
+            memory: "400Mi"
           limits:
             cpu: "1"
-            memory: "200Mi"
+            memory: "400Mi"
   - name: pull-kueue-build-image-release-0-3
     cluster: eks-prow-build-cluster
     branches:
@@ -212,7 +212,7 @@ presubmits:
         resources:
           requests:
             cpu: "1"
-            memory: "200Mi"
+            memory: "400Mi"
           limits:
             cpu: "1"
-            memory: "200Mi"
+            memory: "400Mi"
