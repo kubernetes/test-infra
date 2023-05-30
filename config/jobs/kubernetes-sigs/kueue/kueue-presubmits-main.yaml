@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kueue:
   - name: pull-kueue-test-unit-main
+    cluster: eks-prow-build-cluster
     branches:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -20,7 +21,15 @@ presubmits:
         - make
         args:
         - test
+        resources:
+          requests:
+            cpu: "2"
+            memory: "200Mi"
+          limits:
+            cpu: "2"
+            memory: "200Mi"
   - name: pull-kueue-test-integration-main
+    cluster: eks-prow-build-cluster
     branches:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -37,7 +46,15 @@ presubmits:
         - make
         args:
         - test-integration
+        resources:
+          requests:
+            cpu: "4"
+            memory: "1Gi"
+          limits:
+            cpu: "4"
+            memory: "1Gi"
   - name: pull-kueue-test-e2e-main-1-24
+    cluster: eks-prow-build-cluster
     branches:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -65,7 +82,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "5"
+            memory: "1.5Gi"
+          limits:
+            cpu: "5"
+            memory: "1.5Gi"
   - name: pull-kueue-test-e2e-main-1-25
+    cluster: eks-prow-build-cluster
     branches:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -93,7 +118,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "5"
+            memory: "1.5Gi"
+          limits:
+            cpu: "5"
+            memory: "1.5Gi"
   - name: pull-kueue-test-e2e-main-1-26
+    cluster: eks-prow-build-cluster
     branches:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -121,7 +154,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "5"
+            memory: "1.5Gi"
+          limits:
+            cpu: "5"
+            memory: "1.5Gi"
   - name: pull-kueue-verify-main
+    cluster: eks-prow-build-cluster
     branches:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -138,7 +179,15 @@ presubmits:
         - make
         args:
         - verify
+        resources:
+          requests:
+            cpu: "1"
+            memory: "200Mi"
+          limits:
+            cpu: "1"
+            memory: "200Mi"
   - name: pull-kueue-build-image-main
+    cluster: eks-prow-build-cluster
     branches:
     - ^main
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -160,3 +209,10 @@ presubmits:
         args:
         - make
         - image-local-build
+        resources:
+          requests:
+            cpu: "1"
+            memory: "200Mi"
+          limits:
+            cpu: "1"
+            memory: "200Mi"
