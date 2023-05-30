@@ -228,7 +228,7 @@ presubmits:
             # This job is very CPU intensive as building prow images in
             # parallel
             cpu: "14"
-            limits: "16Gi"
+            memory: "16Gi"
           limits:
             cpu: "14"
             memory: "16Gi"
