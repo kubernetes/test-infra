@@ -13,7 +13,6 @@ oom_score = -999
 [plugins."io.containerd.grpc.v1.cri".cni]
   bin_dir = "/home/containerd/"
   conf_dir = "/etc/cni/net.d"
-  conf_template = "/home/containerd/cni.template"
 [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
   endpoint = ["https://mirror.gcr.io","https://registry-1.docker.io"]
 
