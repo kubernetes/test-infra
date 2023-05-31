@@ -316,6 +316,7 @@ presubmits:
       testgrid-tab-name: pr-e2e-eks-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-eks-gc
+    cluster: eks-prow-build-cluster
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -346,6 +347,9 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 2
+              memory: "9Gi"
             requests:
               cpu: 2
               memory: "9Gi"
