@@ -146,11 +146,11 @@ presubmits:
         - verify
         resources:
           limits:
-            memory: 4Gi
-            cpu: 2
+            memory: 16Gi
+            cpu: 8
           requests:
-            memory: 4Gi
-            cpu: 2
+            memory: 16Gi
+            cpu: 8
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-verify
