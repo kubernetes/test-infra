@@ -24,6 +24,8 @@ periodics:
           env:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
+            - name: GOMAXPROCS
+              value: "2"
           command:
             - make
           args:
@@ -31,10 +33,10 @@ periodics:
           resources:
             requests:
               cpu: "2"
-              memory: "1.5Gi"
+              memory: "400Mi"
             limits:
               cpu: "2"
-              memory: "1.5Gi"
+              memory: "400Mi"
   - interval: 12h
     name: periodic-kueue-test-integration-main
     cluster: eks-prow-build-cluster
@@ -61,6 +63,9 @@ periodics:
             - make
           args:
             - test-integration
+          env:
+            - name: GOMAXPROCS
+              value: "4"
           resources:
             requests:
               cpu: "4"
