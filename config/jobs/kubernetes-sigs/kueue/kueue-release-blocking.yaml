@@ -31,10 +31,10 @@ periodics:
           resources:
             requests:
               cpu: "2"
-              memory: "800Mi"
+              memory: "1.5Gi"
             limits:
               cpu: "2"
-              memory: "800Mi"
+              memory: "1.5Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-main
     cluster: eks-prow-build-cluster
