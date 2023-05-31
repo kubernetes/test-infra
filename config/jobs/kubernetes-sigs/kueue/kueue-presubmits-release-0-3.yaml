@@ -17,6 +17,8 @@ presubmits:
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
+        - name: GOMAXPROCS
+          value: "2"
         command:
         - make
         args:
@@ -46,6 +48,9 @@ presubmits:
         - make
         args:
         - test-integration
+        env:
+        - name: GOMAXPROCS
+          value: "4"
         resources:
           requests:
             cpu: "4"
@@ -179,12 +184,15 @@ presubmits:
         - make
         args:
         - verify
+        env:
+        - name: GOMAXPROCS
+          value: "2"
         resources:
           requests:
-            cpu: "1"
+            cpu: "2"
             memory: "1.5Gi"
           limits:
-            cpu: "1"
+            cpu: "2"
             memory: "1.5Gi"
   - name: pull-kueue-build-image-release-0-3
     cluster: eks-prow-build-cluster
@@ -209,10 +217,13 @@ presubmits:
         args:
         - make
         - image-local-build
+        env:
+        - name: GOMAXPROCS
+          value: "2"
         resources:
           requests:
-            cpu: "1"
+            cpu: "2"
             memory: "1.5Gi"
           limits:
-            cpu: "1"
+            cpu: "2"
             memory: "1.5Gi"
