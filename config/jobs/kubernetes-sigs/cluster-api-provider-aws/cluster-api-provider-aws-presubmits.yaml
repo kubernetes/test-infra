@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
   - name: pull-cluster-api-provider-aws-test
+    cluster: eks-prow-build-cluster
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -13,10 +14,18 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
         command:
         - "./scripts/ci-test.sh"
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-test
   - name: pull-cluster-api-provider-aws-apidiff-main
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-aws
     always_run: true
@@ -32,10 +41,18 @@ presubmits:
         - runner.sh
         - ./scripts/ci-apidiff.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-apidiff-main
   - name: pull-cluster-api-provider-aws-build
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -45,10 +62,18 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
         command:
         - "./scripts/ci-build.sh"
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-aws-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
     # The script this job runs is not in all branches.
@@ -63,6 +88,13 @@ presubmits:
         - "runner.sh"
         - "make"
         - "verify"
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
         # docker-in-docker needs privileged mode
         securityContext:
             privileged: true

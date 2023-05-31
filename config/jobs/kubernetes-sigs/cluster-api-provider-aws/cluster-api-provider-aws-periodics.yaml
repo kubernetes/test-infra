@@ -219,6 +219,7 @@ periodics:
     testgrid-num-columns-recent: '20'
     testgrid-alert-email: release-team@kubernetes.io, sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
 - name: periodic-cluster-api-provider-aws-coverage
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   path_alias: "sigs.k8s.io/cluster-api-provider-aws"
@@ -249,5 +250,12 @@ periodics:
             ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
             ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
             exit $result
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
         securityContext:
           privileged: true
