@@ -8,6 +8,7 @@ reviewers:
 - rosti
 - ereslibre
 - yastij
+- pacoxu
 approvers:
 - timothysc
 - fabriziopandini
@@ -15,5 +16,6 @@ approvers:
 - rosti
 - ereslibre
 - yastij
+- pacoxu
 labels:
 - sig/cluster-lifecycle

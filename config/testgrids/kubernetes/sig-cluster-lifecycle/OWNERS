@@ -11,5 +11,6 @@ reviewers:
 - justinsb
 - fabriziopandini
 - neolit123
+- pacoxu
 labels:
 - sig/cluster-lifecycle
