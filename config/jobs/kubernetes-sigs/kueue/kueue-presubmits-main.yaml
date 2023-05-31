@@ -26,10 +26,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "1.5Gi"
+            memory: "8Gi"
           limits:
             cpu: "2"
-            memory: "1.5Gi"
+            memory: "8Gi"
   - name: pull-kueue-test-integration-main
     cluster: eks-prow-build-cluster
     branches:
@@ -54,10 +54,10 @@ presubmits:
         resources:
           requests:
             cpu: "4"
-            memory: "2Gi"
+            memory: "16Gi"
           limits:
             cpu: "4"
-            memory: "2Gi"
+            memory: "16Gi"
   - name: pull-kueue-test-e2e-main-1-24
     cluster: eks-prow-build-cluster
     branches:
@@ -90,10 +90,10 @@ presubmits:
         resources:
           requests:
             cpu: "5"
-            memory: "2Gi"
+            memory: "20Gi"
           limits:
             cpu: "5"
-            memory: "2Gi"
+            memory: "20Gi"
   - name: pull-kueue-test-e2e-main-1-25
     cluster: eks-prow-build-cluster
     branches:
@@ -126,10 +126,10 @@ presubmits:
         resources:
           requests:
             cpu: "5"
-            memory: "2Gi"
+            memory: "20Gi"
           limits:
             cpu: "5"
-            memory: "2Gi"
+            memory: "20Gi"
   - name: pull-kueue-test-e2e-main-1-26
     cluster: eks-prow-build-cluster
     branches:
@@ -162,10 +162,10 @@ presubmits:
         resources:
           requests:
             cpu: "5"
-            memory: "2Gi"
+            memory: "20Gi"
           limits:
             cpu: "5"
-            memory: "2Gi"
+            memory: "20Gi"
   - name: pull-kueue-verify-main
     cluster: eks-prow-build-cluster
     branches:
@@ -190,10 +190,10 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "1.5Gi"
+            memory: "8Gi"
           limits:
             cpu: "2"
-            memory: "1.5Gi"
+            memory: "8Gi"
   - name: pull-kueue-build-image-main
     cluster: eks-prow-build-cluster
     branches:
@@ -223,7 +223,7 @@ presubmits:
         resources:
           requests:
             cpu: "2"
-            memory: "1.5Gi"
+            memory: "8Gi"
           limits:
             cpu: "2"
-            memory: "1.5Gi"
+            memory: "8Gi"
