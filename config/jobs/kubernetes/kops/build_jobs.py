@@ -715,6 +715,19 @@ def generate_misc():
                    ],
                    extra_dashboards=['kops-misc']),
 
+        build_test(name_override="kops-aws-ipv6-external-dns",
+                   cloud="aws",
+                   distro="u2204arm64",
+                   networking="cilium",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=[
+                       '--ipv6',
+                       '--bastion',
+                       "--set=cluster.spec.externalDNS.provider=external-dns",
+                   ],
+                   extra_dashboards=['kops-misc', 'kops-ipv6']),
+
         build_test(name_override="kops-aws-apiserver-nodes",
                    cloud="aws",
                    distro="u2204arm64",
@@ -1315,6 +1328,16 @@ def generate_presubmits_e2e():
             cloud="aws",
             networking="calico",
             extra_flags=[
+                '--set=cluster.spec.externalDNS.provider=external-dns'
+            ],
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-ipv6-external-dns",
+            cloud="aws",
+            networking="calico",
+            extra_flags=[
+                '--ipv6',
+                '--bastion',
                 '--set=cluster.spec.externalDNS.provider=external-dns'
             ],
         ),
