@@ -252,10 +252,10 @@ periodics:
             exit $result
         resources:
           requests:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "8"
+            memory: "16Gi"
           limits:
-            cpu: "4"
-            memory: "8Gi"
+            cpu: "8"
+            memory: "16Gi"
         securityContext:
           privileged: true
