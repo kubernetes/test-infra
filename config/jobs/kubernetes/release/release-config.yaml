@@ -92,26 +92,8 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-integration-test
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/release
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
-        imagePullPolicy: Always
-        command:
-        - make
-        - test-go-integration
-    annotations:
-      testgrid-dashboards: sig-release-releng-presubmits
-      testgrid-tab-name: release-integration-test
-      testgrid-num-failures-to-alert: '10'
-      testgrid-alert-email: release-managers+alerts@kubernetes.io
-      testgrid-num-columns-recent: '30'
-  - name: pull-release-integration-test-eks-canary
     cluster: eks-prow-build-cluster
-    always_run: false
-    optional: true
+    always_run: true
     decorate: true
     path_alias: k8s.io/release
     spec:
@@ -129,8 +111,10 @@ presubmits:
             memory: "16Gi"
             cpu: "8"
     annotations:
-      testgrid-dashboards: sig-k8s-infra-canaries
-      testgrid-tab-name: release-integration-test-eks-canary
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-integration-test
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-verify
     always_run: true
