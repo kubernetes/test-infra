@@ -1658,6 +1658,12 @@ external_plugins:
     - issue_comment
     - pull_request
     endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-operator:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs/cluster-api-provider-vsphere:
   - name: cherrypicker
     events:
