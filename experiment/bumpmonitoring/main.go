@@ -62,7 +62,7 @@ func parseOptions() (*options, error) {
 	flag.StringVar(&config, "config", "", "The path to the config file for PR creation.")
 	flag.StringSliceVar(&labelsOverride, "labels-override", nil, "Override labels to be added to PR.")
 	flag.BoolVar(&skipPullRequest, "skip-pullrequest", false, "")
-	flag.BoolVar(&signoff, "dco-signoff", false, "Signoff the commits.")
+	flag.BoolVar(&signoff, "signoff", false, "Signoff the commits.")
 	flag.Parse()
 
 	var o options
