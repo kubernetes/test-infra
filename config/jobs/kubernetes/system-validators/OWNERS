@@ -2,20 +2,17 @@
 #  https://github.com/kubernetes/community/blob/master/contributors/devel/owners.md
 
 reviewers:
-- timothysc
 - fabriziopandini
 - neolit123
-- rosti
-- ereslibre
-- yastij
 - pacoxu
 approvers:
-- timothysc
 - fabriziopandini
 - neolit123
+- pacoxu
+emeritus_approvers:
+- timothysc
 - rosti
 - ereslibre
 - yastij
-- pacoxu
 labels:
 - sig/cluster-lifecycle
