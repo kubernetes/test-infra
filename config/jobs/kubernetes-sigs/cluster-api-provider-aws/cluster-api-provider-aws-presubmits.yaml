@@ -105,6 +105,7 @@ presubmits:
       preset-dind-enabled: "true"
   # conformance test
   - name: pull-cluster-api-provider-aws-e2e-conformance
+    cluster: eks-prow-build-cluster
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -150,12 +151,16 @@ presubmits:
               # this is mostly for building kubernetes
               memory: "9Gi"
               cpu: 2
+            limits:
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-conformance
       testgrid-num-columns-recent: '20'
   # conformance test against kubernetes main branch with `kind` + cluster-api-provider-aws
   - name: pull-cluster-api-provider-aws-e2e-conformance-with-ci-artifacts
+    cluster: eks-prow-build-cluster
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -191,11 +196,15 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-conformance-main-k8s-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-blocking
+    cluster: eks-prow-build-cluster
     branches:
       # The script this job runs is not in all branches.
       - ^main$
@@ -235,11 +244,15 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-quick-e2e-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e
+    cluster: eks-prow-build-cluster
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -273,11 +286,15 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-e2e-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-eks
+    cluster: eks-prow-build-cluster
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -309,6 +326,9 @@ presubmits:
             privileged: true
           resources:
             requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
               cpu: 2
               memory: "9Gi"
     annotations:
@@ -358,6 +378,7 @@ presubmits:
       testgrid-tab-name: pr-e2e-eks-gc-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-eks-testing
+    cluster: eks-prow-build-cluster
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -391,6 +412,9 @@ presubmits:
             privileged: true
           resources:
             requests:
+              cpu: 2
+              memory: "9Gi"
+            limits:
               cpu: 2
               memory: "9Gi"
     annotations:
