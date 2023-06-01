@@ -285,8 +285,10 @@ periodics:
       testgrid-num-failures-to-alert: '1'
       description: builds and pushes the bootstrap image
     decorate: true
-    branches:
-    - ^master$
+    extra_refs:            # Periodic job doesn't clone any repo by default, needs to be added explicitly
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
     spec:
       serviceAccountName: gcb-builder
       containers:
