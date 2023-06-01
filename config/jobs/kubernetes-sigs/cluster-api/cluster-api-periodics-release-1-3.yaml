@@ -143,7 +143,7 @@ periodics:
       # Note: We need ClusterClass for the clusterctl upgrade tests, so we're able to
       # create clusterctl with old versions with the right cgroupDriver configuration.
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "stable-1.22"
+        value: "v1.22.17"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

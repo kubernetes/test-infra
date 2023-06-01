@@ -237,7 +237,7 @@ periodics:
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "stable-1.24"
+        value: "v1.24.13"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
