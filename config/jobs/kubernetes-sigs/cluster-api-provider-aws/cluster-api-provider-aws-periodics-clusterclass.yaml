@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-aws-e2e-clusterclass
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -35,6 +36,9 @@ periodics:
         privileged: true
       resources:
         requests:
+          cpu: 2
+          memory: "9Gi"
+        limits:
           cpu: 2
           memory: "9Gi"
   annotations:

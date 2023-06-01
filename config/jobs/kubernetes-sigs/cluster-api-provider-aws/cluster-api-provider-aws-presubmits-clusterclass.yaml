@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
     - name: pull-cluster-api-provider-aws-e2e-clusterclass
+      cluster: eks-prow-build-cluster
       branches:
         # The script this job runs is not in all branches.
         - ^main$
@@ -37,6 +38,9 @@ presubmits:
               privileged: true
             resources:
               requests:
+                cpu: 2
+                memory: "9Gi"
+              limits:
                 cpu: 2
                 memory: "9Gi"
       annotations:
