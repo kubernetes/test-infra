@@ -1,11 +1,7 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-  - akutz
-  - CecileRobertMichon
-  - codenrhoden
-  - figo
-  - justinsb
-  - luxas
-  - moshloop
-  - timothysc
+  - AverageMarcus
+  - jsturtevant
+  - kkeshavamurthy
+  - mboersma
