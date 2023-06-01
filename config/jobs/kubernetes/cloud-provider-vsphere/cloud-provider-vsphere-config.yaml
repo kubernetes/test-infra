@@ -316,8 +316,7 @@ postsubmits:
     max_concurrency: 1
     branches:
     - ^master$
-    - ^release-1.2[7-9]$
-    - ^release-1.[3-9]\d$
+    - ^release-.*$
     # Temporarily always pushing until workflow is worked out.
     always_run: true
     # Only build a new a image if something that could change binary changes
@@ -351,9 +350,7 @@ postsubmits:
       preset-cloud-provider-vsphere-e2e-config: "true"
     max_concurrency: 1
     branches:
-    - ^master$
-    - ^release-1.2[7-9](-(alpha|beta|rc)\.(\d)+)?$
-    - ^release-1.[3-9]\d(-(alpha|beta|rc)\.(\d)+)?$
+    - ^v\d+\.\d+\.\d+(-(alpha|beta|rc)\.(\d)+)?$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     spec:
