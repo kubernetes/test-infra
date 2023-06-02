@@ -184,3 +184,53 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+
+- name: ci-kubernetes-e2e-ubuntu-gce-containerd-cdn-canary
+  interval: 1h
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - args:
+          - --timeout=70
+          - --bare
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-leaked-resources
+          - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.1
+          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.7
+          - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+          - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+          - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20230531
+          - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+          - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230531
+          - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --env=KUBERNETES_RELEASE_URL=https://cdn.dl.k8s.io/release
+          - --env=KUBE_RELEASE_BUCKET_URL=https://cdn.dl.k8s.io/release
+          - --extract=ci/latest-fast
+          - --extract-ci-bucket=k8s-release-dev
+          - --gcp-master-image=ubuntu
+          - --gcp-node-image=ubuntu
+          - --gcp-nodes=4
+          - --gcp-zone=us-west1-b
+          - --ginkgo-parallel=30
+          - --provider=gce
+          - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+          - --timeout=50m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: gce-ubuntu-master-containerd-cdn-canary
+    description: Uses kubetest to run e2e tests against a cluster created with cluster/kube-up using Fastly endpoint
