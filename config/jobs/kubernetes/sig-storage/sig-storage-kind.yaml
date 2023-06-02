@@ -4,6 +4,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
+    cluster: eks-prow-build-cluster
     # All the files owned by sig-storage. Keep in sync across
     # all sig-storage-jobs
     #
@@ -46,7 +47,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "8Gi"
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
 
 periodics:
   # This jobs runs storage tests that need Kubernetes In Docker (kind).
@@ -58,6 +63,7 @@ periodics:
       testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
       description: Run storage tests that need disruption of the API server in a KIND cluster.
     decorate: true
+    cluster: eks-prow-build-cluster
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -88,4 +94,8 @@ periodics:
           privileged: true
         resources:
           requests:
-            memory: "8Gi"
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
