@@ -19,13 +19,15 @@ package ownersconfig
 // Filenames configures which file names should be used for the OWNERS and OWNERS_ALIASES
 // concepts for a repo, if it's not the default set.
 type Filenames struct {
-	Owners        string `json:"owners,omitempty"`
-	OwnersAliases string `json:"owners_aliases,omitempty"`
+	Owners         string `json:"owners,omitempty"`
+	OwnersAliases  string `json:"owners_aliases,omitempty"`
+	OwnersFilePath string `json:"owners_file_path,omitempty"`
 }
 
 const (
 	DefaultOwnersFile        = "OWNERS"
 	DefaultOwnersAliasesFile = "OWNERS_ALIASES"
+	DefaultOwnersFilePath    = ""
 )
 
 type Resolver func(org, repo string) Filenames
@@ -40,6 +42,7 @@ func FakeResolver(_, _ string) Filenames {
 // While this *is* the default Filenames, production code should not use this var
 // and instead expect to get the default set of filenames when using a resolver.
 var FakeFilenames = Filenames{
-	Owners:        DefaultOwnersFile,
-	OwnersAliases: DefaultOwnersAliasesFile,
+	Owners:         DefaultOwnersFile,
+	OwnersAliases:  DefaultOwnersAliasesFile,
+	OwnersFilePath: DefaultOwnersFilePath,
 }

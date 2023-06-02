@@ -192,7 +192,15 @@ func (o Owners) GetOwnersSet() sets.Set[string] {
 		if strings.Contains(filepath.Dir(filepath.Dir(toApprove)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
 			continue
 		}
-		owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
+
+		// if ownersfile configuration contains unique ownersfile path, we need to reload ownersfile path when
+		// the ownersfile is located at the configured ownersfile path.
+		if ownersFile == "" {
+			logrus.Debugf("%s exists, now use configured ownersfile path", o.repo.Filenames().OwnersFilePath)
+			ownersFile = o.repo.Filenames().OwnersFilePath
+		}
+
+		owners.Insert(ownersFile)
 		newFilenames = append(newFilenames, toApprove)
 
 	}
