@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/bugzilla"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 func TestValidateExternalPlugins(t *testing.T) {
@@ -100,6 +101,52 @@ func TestValidateExternalPlugins(t *testing.T) {
 		err := validateExternalPlugins(test.plugins)
 		if !reflect.DeepEqual(err, test.expectedErr) {
 			t.Errorf("unexpected error: %v, expected: %v", err, test.expectedErr)
+		}
+	}
+}
+
+func TestOwnersFilenames(t *testing.T) {
+	cases := []struct {
+		org      string
+		repo     string
+		config   Owners
+		expected ownersconfig.Filenames
+	}{
+		{
+			org:  "kubernetes",
+			repo: "test-infra",
+			config: Owners{
+				Filenames: map[string]ownersconfig.Filenames{
+					"kubernetes":            {Owners: "OWNERS", OwnersAliases: "OWNERS_ALIASES"},
+					"kubernetes/test-infra": {Owners: ".OWNERS", OwnersAliases: ".OWNERS_ALIASES"},
+				},
+			},
+			expected: ownersconfig.Filenames{
+				Owners: ".OWNERS", OwnersAliases: ".OWNERS_ALIASES",
+			},
+		},
+		{
+			org:  "kubernetes",
+			repo: "",
+			config: Owners{
+				Filenames: map[string]ownersconfig.Filenames{
+					"kubernetes":            {Owners: "OWNERS", OwnersAliases: "OWNERS_ALIASES"},
+					"kubernetes/test-infra": {Owners: ".OWNERS", OwnersAliases: ".OWNERS_ALIASES"},
+				},
+			},
+			expected: ownersconfig.Filenames{
+				Owners: "OWNERS", OwnersAliases: "OWNERS_ALIASES",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		cfg := Configuration{
+			Owners: tc.config,
+		}
+		actual := cfg.OwnersFilenames(tc.org, tc.repo)
+		if actual != tc.expected {
+			t.Errorf("%s/%s: unexpected value. Diff: %v", tc.org, tc.repo, diff.ObjectDiff(actual, tc.expected))
 		}
 	}
 }
