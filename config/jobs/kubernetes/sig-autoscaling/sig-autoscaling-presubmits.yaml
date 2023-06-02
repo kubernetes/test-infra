@@ -58,26 +58,37 @@ presubmits:
     decoration_config:
       timeout: 310m
     run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/horizontal_pod_autoscaling|test\/e2e\/framework\/autoscaling\/)'
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
+        - --build=quick
+        - --extract=local
         - --check-leaked-resources
         - --provider=gce
         - --gcp-zone=us-west1-b
         - --gcp-node-image=gci
         # Enable HPAContainerMetrics. Required for container metrics tests.
         - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
-        - --extract=ci/latest
         - --test_args=--ginkgo.focus=\[Feature:HPA\] --minStartupPods=8
         - --ginkgo-parallel=1
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-autoscaling-hpa-cpu
         - --timeout=300m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-autoscaling-hpa-cm
     annotations:
