@@ -3,6 +3,7 @@ presubmits:
   - name: pull-kubernetes-e2e-storage-kind-disruptive
     always_run: false
     optional: true
+    decorate: true
     # All the files owned by sig-storage. Keep in sync across
     # all sig-storage-jobs
     #
