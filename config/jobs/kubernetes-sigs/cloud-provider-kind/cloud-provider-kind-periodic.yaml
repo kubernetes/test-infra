@@ -8,6 +8,10 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cloud-provider-kind
+    base_ref: main
+    path_alias: sigs.k8s.io/cloud-provider-kind
   - org: kubernetes
     repo: kubernetes
     base_ref: master
@@ -52,6 +56,10 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cloud-provider-kind
+    base_ref: main
+    path_alias: sigs.k8s.io/cloud-provider-kind
   - org: kubernetes
     repo: kubernetes
     base_ref: master
