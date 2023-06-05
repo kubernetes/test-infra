@@ -72,8 +72,6 @@ type Interactor interface {
 	MergeCommitsExistBetween(target, head string) (bool, error)
 	// ShowRef returns the commit for a commitlike. Unlike rev-parse it does not require a checkout.
 	ShowRef(commitlike string) (string, error)
-	// Fsck verifies the connectivity and validity of the repo and returns true if passed
-	Fsck() (bool, error)
 }
 
 // cacher knows how to cache and update repositories in a central cache
@@ -82,6 +80,8 @@ type cacher interface {
 	MirrorClone() error
 	// RemoteUpdate fetches all updates from the remote.
 	RemoteUpdate() error
+	// Fsck verifies the connectivity and validity of the repo and returns true if passed
+	Fsck() (bool, error)
 }
 
 // cloner knows how to clone repositories from a central cache

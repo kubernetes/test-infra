@@ -319,7 +319,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		// something unexpected happened
 		return nil, err
 		// we have cloned the repo previously, ensure it is valid and refresh it
-	} else if err := c.ensureValidUpdatedCache(cacheDir, repoClient, cacheClientCacher); err != nil {
+	} else if err := c.ensureValidUpdatedCache(cacheDir, cacheClientCacher); err != nil {
 		return nil, err
 	}
 
@@ -332,11 +332,11 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 }
 
 // Ensures that the repos in the cache are valid, clean, and up to date
-func (c *clientFactory) ensureValidUpdatedCache(cacheDir string, repoClient RepoClient, cacheClientCacher cacher) error {
+func (c *clientFactory) ensureValidUpdatedCache(cacheDir string, cacheClientCacher cacher) error {
 	// We only need to verify that the repos are valid once on startup
 	if _, ok := c.verifiedRepos[cacheDir]; !ok {
 		// Ensure it is valid
-		if valid, _ := repoClient.Fsck(); !valid {
+		if valid, _ := cacheClientCacher.Fsck(); !valid {
 			if err := os.RemoveAll(cacheDir); err != nil {
 				return err
 			}
@@ -345,9 +345,6 @@ func (c *clientFactory) ensureValidUpdatedCache(cacheDir string, repoClient Repo
 			}
 			c.verifiedRepos[cacheDir] = true
 			return nil
-		}
-		if err := repoClient.ResetHard("HEAD"); err != nil {
-			return err
 		}
 	}
 	// Ensure it is up to date
