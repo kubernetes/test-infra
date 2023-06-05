@@ -39,7 +39,7 @@ presubmits:
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
           kind build node-image --image node:latest &&
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
-          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
+          kind create cluster --retain --image node:latest &&
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=1 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus="\[sig-storage\].\[Feature:Kind\].*\[Disruptive\]"
 
         # docker-in-docker needs privileged mode
@@ -86,7 +86,7 @@ periodics:
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
           kind build node-image --image node:latest &&
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
-          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
+          kind create cluster --retain --image node:latest &&
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=1 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus="\[sig-storage\].*\[Feature:Kind\].*\[Disruptive\]"
 
         # docker-in-docker needs privileged mode
