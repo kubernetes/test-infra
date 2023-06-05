@@ -153,7 +153,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	var cacheDir string
 	var err error
 	// If we want to persist the Cache between runs, use the cacheDirBase as the cache. Otherwise make a temp dir.
-	if *o.Persist {
+	if o.Persist != nil && *o.Persist {
 		cacheDir = *o.CacheDirBase
 	} else if cacheDir, err = os.MkdirTemp(*o.CacheDirBase, "gitcache"); err != nil {
 		return nil, err
