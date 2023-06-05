@@ -70,7 +70,9 @@ data:
        - lens:
            name: metadata
          required_files:
-         - started.json|finished.json
+           - ^(?:started|finished)\.json$
+         optional_files:
+           - ^(?:podinfo|prowjob)\.json$
        - lens:
            config:
            name: buildlog
