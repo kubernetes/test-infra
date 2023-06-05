@@ -67,7 +67,7 @@ presubmits:
       testgrid-tab-name: pr-json-sort-check
   - name: pull-packer-validate
     decorate: true
-    run_if_changed: 'images/capi/Makefile|images/capi/packer/.*|images/capi/scripts/ci-packer-validate\.sh'
+    run_if_changed: 'images/capi/Makefile|images/capi/packer/.*|images/capi/scripts/ci-packer-validate\.sh|images/capi/scripts/ensure-packer\.sh'
     decoration_config:
       timeout: 20m
     max_concurrency: 5
