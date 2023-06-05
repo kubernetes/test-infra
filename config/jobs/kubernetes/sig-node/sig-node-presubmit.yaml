@@ -1847,7 +1847,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
 
-  - name: pull-kubernetes-node-e2e-containerd-dra
+  - name: pull-kubernetes-node-e2e-crio-dra
     cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
@@ -1858,31 +1858,35 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
     annotations:
       testgrid-dashboards: sig-node-presubmits
-      testgrid-tab-name: pr-node-kubelet-containerd-dra
+      testgrid-tab-name: pr-node-kubelet-crio-dra
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         args:
         - --root=/go/src
+        - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
         - --timeout=90
         - --scenario=kubernetes_e2e
-        - --
+        - -- # end bootstrap args, scenario args below
         - --deployment=node
-        - --gcp-zone=us-central1-b
-        - '--node-test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true --runtime-config=resource.k8s.io/v1alpha2=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --env=KUBE_SSH_USER=core
+        - --gcp-zone=us-west1-b
+        - '--node-test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--focus="\[NodeFeature:DynamicResourceAllocation\]" --skip="\[Flaky\]"
         - --timeout=65m
-        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.7-presubmit/image-config-presubmit.yaml
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
         env:
-        - name: GOPATH
-          value: /go
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
         resources:
           requests:
             cpu: 4

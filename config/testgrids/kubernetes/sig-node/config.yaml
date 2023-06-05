@@ -65,7 +65,7 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: patrick.ohly@intel.com
   - name: pull-node-dra
-    test_group_name: pull-kubernetes-node-e2e-containerd-dra
+    test_group_name: pull-kubernetes-node-e2e-crio-dra
     alert_options:
       alert_mail_to_addresses: eduard.bartosh@intel.com
 - name: sig-node-presubmits
