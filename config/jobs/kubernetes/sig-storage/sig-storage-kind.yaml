@@ -3,6 +3,8 @@ presubmits:
   - name: pull-kubernetes-e2e-storage-kind-disruptive
     always_run: false
     optional: true
+    decorate: true
+    cluster: eks-prow-build-cluster
     # All the files owned by sig-storage. Keep in sync across
     # all sig-storage-jobs
     #
@@ -37,7 +39,7 @@ presubmits:
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
           kind build node-image --image node:latest &&
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
-          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
+          kind create cluster --retain --image node:latest &&
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=1 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus="\[sig-storage\].\[Feature:Kind\].*\[Disruptive\]"
 
         # docker-in-docker needs privileged mode
@@ -45,7 +47,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "8Gi"
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
 
 periodics:
   # This jobs runs storage tests that need Kubernetes In Docker (kind).
@@ -57,6 +63,7 @@ periodics:
       testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
       description: Run storage tests that need disruption of the API server in a KIND cluster.
     decorate: true
+    cluster: eks-prow-build-cluster
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -79,7 +86,7 @@ periodics:
           curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
           kind build node-image --image node:latest &&
           trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
-          kind create cluster --retain --config test/e2e/dra/kind.yaml --image dra/node:latest &&
+          kind create cluster --retain --image node:latest &&
           KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=1 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus="\[sig-storage\].*\[Feature:Kind\].*\[Disruptive\]"
 
         # docker-in-docker needs privileged mode
@@ -87,4 +94,8 @@ periodics:
           privileged: true
         resources:
           requests:
-            memory: "8Gi"
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
