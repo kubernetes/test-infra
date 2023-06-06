@@ -205,13 +205,20 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/latest
-      - --gcp-master-image=ubuntu
-      - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-2004-lts
-      - --image-project=ubuntu-os-cloud
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.1
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.7
+      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+      - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+      - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+      - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
+      - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+      - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+      - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
+      - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+      - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
+      - --gcp-master-image=ubuntu
+      - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --ginkgo-parallel=30
@@ -233,13 +240,20 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --extract=ci/latest
-      - --gcp-master-image=ubuntu
-      - --gcp-node-image=ubuntu
-      - --image-family=ubuntu-2004-lts
-      - --image-project=ubuntu-os-cloud
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.1
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.7
+      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+      - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+      - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+      - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20220712a
+      - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+      - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+      - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20220712a
+      - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+      - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
+      - --gcp-master-image=ubuntu
+      - --gcp-node-image=ubuntu
       - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Driver:.iscsi\].*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\] --minStartupPods=8
