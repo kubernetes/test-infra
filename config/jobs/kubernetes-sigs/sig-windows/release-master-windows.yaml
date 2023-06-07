@@ -82,6 +82,7 @@ periodics:
     preset-capz-windows-common: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-1-7-latest: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
