@@ -44,6 +44,15 @@ stringData:
 apiVersion: v1
 kind: Secret
 metadata:
+  namespace: test-pods
+  name: github-token
+stringData:
+  cert: <<insert-downloaded-cert-here>>
+  appid: <<insert-the-app-id-here>>
+---
+apiVersion: v1
+kind: Secret
+metadata:
   namespace: prow
   name: hmac-token
 stringData:
