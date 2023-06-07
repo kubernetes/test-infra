@@ -6,8 +6,6 @@ presets:
     value: "true"
   - name: KUBERNETES_NODE_PLATFORM
     value: "windows"
-  - name: KUBELET_TEST_ARGS
-    value: "--feature-gates=KubeletPodResources=false"
   - name: USE_TEST_INFRA_LOG_DUMPING
     value: "true"
 - labels:
