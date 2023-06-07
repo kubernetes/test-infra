@@ -1,6 +1,7 @@
 images:
   - dir: prow/cmd/admission
   - dir: prow/cmd/branchprotector
+    arch: linux/amd64,linux/arm64
   - dir: prow/cmd/checkconfig
   - dir: prow/cmd/config-bootstrapper
   - dir: prow/cmd/deck
