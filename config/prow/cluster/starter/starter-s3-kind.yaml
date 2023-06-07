@@ -255,8 +255,7 @@ spec:
   selector:
     app: hook
   ports:
-    -
-      name: hook-1
+    - name: hook-1
       port: 8888
       targetPort: 8888
       nodePort: 30001
@@ -408,8 +407,7 @@ spec:
   selector:
     app: deck
   ports:
-    -
-      name: deck-1
+    - name: deck-1
       port: 80
       targetPort: 8080
       nodePort: 30002
@@ -1122,6 +1120,7 @@ rules:
       - watch
       - create
       - patch
+      - get
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1405,12 +1404,10 @@ spec:
   selector:
     app: minio
   ports:
-    -
-      name: minio-1
+    - name: minio-1
       port: 9001
       targetPort: 9001
       nodePort: 30003
-    -
-      name: minio-2
+    - name: minio-2
       port: 9000
       targetPort: 9000
