@@ -1,6 +1,6 @@
 periodics:
 - name: ci-kubernetes-e2e-capz-master-windows-service-proxy
-  interval: 12h
+  interval: 72h
   decorate: true
   decoration_config:
     timeout: 4h
@@ -49,7 +49,7 @@ periodics:
     testgrid-dashboards: sig-windows-experimental
     testgrid-tab-name: capz-master-windows-service-proxy
 - name: ci-kubernetes-e2e-capz-master-windows-hyperv
-  interval: 12h
+  interval: 168h
   decorate: true
   decoration_config:
     timeout: 4h
