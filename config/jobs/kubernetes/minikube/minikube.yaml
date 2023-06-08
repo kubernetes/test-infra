@@ -16,6 +16,7 @@ presets:
 presubmits:
   kubernetes/minikube:
   - name: pull-minikube-build
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: "k8s.io/minikube"
     always_run: true
@@ -33,6 +34,14 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: "2000Mi"
+            cpu: 500m
+          limits:
+            memory: "2000Mi"
+            cpu: 500m
+
   - name: pull-minikube-platform-tests
     labels:
         preset-minikube-e2e-creds: "true"
