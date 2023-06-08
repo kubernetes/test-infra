@@ -361,8 +361,13 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		return updateTimelineComment(gc, rc.repo.Owner.Login, rc.repo.Name, rc.number, rc.author, false)
 	} else if !hasLGTM && wantLGTM {
 		dup, err := hasDumpLGTMs(gc, org, repoName, number, author)
-		if err != nil || dup {
+		if err != nil {
 			return err
+		}
+		if dup {
+			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(
+				rc.body, rc.htmlURL, rc.author, "Your lgtm message is repeated, so it is ignored.",
+			))
 		}
 
 		return increaseLGTM(gc, opts, &rc, cp, log, labels)

@@ -56,6 +56,16 @@ func Test_parseValidLGTMFromimelines(t *testing.T) {
 			}, "\n"),
 			want: []string{"user4"},
 		},
+		{
+			name: "reset by bot app",
+			commentBody: strings.Join([]string{
+				lgtmTimelineNotificationHeader,
+				stringifyLgtmTimelineRecordLine(time.Now(), true, "user1"),
+				stringifyLgtmTimelineRecordLine(time.Now(), true, "user2"),
+				stringifyLgtmTimelineRecordLine(time.Now(), false, "fake-bot[bot]"),
+			}, "\n"),
+			want: []string{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

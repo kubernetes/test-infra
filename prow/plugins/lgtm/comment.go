@@ -148,7 +148,7 @@ func stringifyLgtmTimelineRecordLine(lgtmTime time.Time, wantLGTM bool, login st
 }
 
 func parseLgtmTimelineRecordLine(line string) (bool, string) {
-	reg := regexp.MustCompile(`^\- .* (agreed|reset) by \[([-_a-zA-Z\d\.]+)\]\(https://github\.com/.*`)
+	reg := regexp.MustCompile(`^\- .* (agreed|reset) by \[([-_a-zA-Z\d\.]+(\[bot\])?)\]\(https://github\.com/.*`)
 
 	submatches := reg.FindStringSubmatch(line)
 	if len(submatches) < 2 {
