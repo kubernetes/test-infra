@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kustomize:
   - name: kustomize-presubmit-master
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/kustomize
