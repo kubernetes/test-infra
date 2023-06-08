@@ -1,0 +1,21 @@
+periodics:
+- name: periodic-cluster-api-operator-test-release-0-3
+  interval: 24h
+  decorate: true
+  labels:
+    preset-service-account: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-operator
+    base_ref: release-0.3
+    path_alias: sigs.k8s.io/cluster-api-operator
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      command:
+      - "./scripts/ci-test.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+    testgrid-tab-name: capi-operator-test-release-0-3
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-operator-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"

@@ -1,0 +1,128 @@
+presubmits:
+  kubernetes-sigs/cluster-api-operator:
+  - name: pull-cluster-api-operator-build-release-0-3
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+        command:
+        - runner.sh
+        - ./scripts/ci-build.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-build-release-0-3
+  - name: pull-cluster-api-operator-make-release-0-3
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-make.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-make-release-0-3
+  - name: pull-cluster-api-operator-apidiff-release-0-3
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-apidiff.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-apidiff-release-0-3
+  - name: pull-cluster-api-operator-verify-release-0-3
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+        command:
+        - "runner.sh"
+        - ./scripts/ci-verify.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-verify-release-0-3
+  - name: pull-cluster-api-operator-test-release-0-3
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+        args:
+        - runner.sh
+        - ./scripts/ci-test.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-test-release-0-3
+  - name: pull-cluster-api-operator-e2e-release-0-3
+    path_alias: "sigs.k8s.io/cluster-api-operator"
+    optional: false
+    decorate: true
+    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
+    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^release-0.3$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-e2e.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: cluster-lifecycle-github-token
+              key: cluster-lifecycle-github-token
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-e2e-release-0-3

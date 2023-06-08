@@ -19,6 +19,7 @@ dashboard_groups:
     - sig-cluster-lifecycle-cluster-api-provider-openstack
     - sig-cluster-lifecycle-cluster-api-provider-cloudstack
     - sig-cluster-lifecycle-cluster-api-provider-nested
+    - sig-cluster-lifecycle-cluster-api-operator-0.3
     - sig-cluster-lifecycle-cluster-api-operator
     - sig-cluster-lifecycle-kops
     - sig-cluster-lifecycle-etcdadm
@@ -61,6 +62,7 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
 - name: sig-cluster-lifecycle-cluster-api-provider-cloudstack
 - name: sig-cluster-lifecycle-cluster-api-provider-nested
+- name: sig-cluster-lifecycle-cluster-api-operator-0.3
 - name: sig-cluster-lifecycle-cluster-api-operator
 - name: sig-cluster-lifecycle-kops
 - name: sig-cluster-lifecycle-etcdadm
