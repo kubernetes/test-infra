@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-operator-test-main
+- name: periodic-cluster-api-operator-test-release-0-3
   interval: 24h
   decorate: true
   labels:
@@ -7,7 +7,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-operator
-    base_ref: main
+    base_ref: release-0.3
     path_alias: sigs.k8s.io/cluster-api-operator
   spec:
     containers:
@@ -15,11 +15,11 @@ periodics:
       command:
       - "./scripts/ci-test.sh"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
-    testgrid-tab-name: capi-operator-test-main
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+    testgrid-tab-name: capi-operator-test-release-0-3
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-operator-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-operator-e2e-main
+- name: periodic-cluster-api-operator-e2e-release-0-3
   interval: 24h
   decorate: true
   decoration_config:
@@ -30,7 +30,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-operator
-    base_ref: main
+    base_ref: release-0.3
     path_alias: sigs.k8s.io/cluster-api-operator
   spec:
     containers:
@@ -38,7 +38,7 @@ periodics:
       command:
       - "./scripts/ci-e2e.sh"
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
-    testgrid-tab-name: capi-operator-e2e-main
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+    testgrid-tab-name: capi-operator-e2e-release-0-3
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-operator-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
