@@ -21,8 +21,7 @@ presubmits:
   - name: pull-cluster-api-operator-make-main
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
-    always_run: false
-    optional: true
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
