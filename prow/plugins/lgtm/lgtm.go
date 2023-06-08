@@ -19,6 +19,7 @@ package lgtm
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -158,6 +159,11 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 }
 
 func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+	// keep lgtm label when the repo need to sticky.
+	if strings.Contains(os.Getenv("STICKY_REPOS"), pre.Repo.FullName) {
+		return nil
+	}
+
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
