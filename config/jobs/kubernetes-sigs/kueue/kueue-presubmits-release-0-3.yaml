@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kueue:
   - name: pull-kueue-test-unit-release-0-3
+    cluster: eks-prow-build-cluster
     branches:
     - ^release-0.3
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -16,11 +17,21 @@ presubmits:
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
+        - name: GOMAXPROCS
+          value: "2"
         command:
         - make
         args:
         - test
+        resources:
+          requests:
+            cpu: "2"
+            memory: "8Gi"
+          limits:
+            cpu: "2"
+            memory: "8Gi"
   - name: pull-kueue-test-integration-release-0-3
+    cluster: eks-prow-build-cluster
     branches:
     - ^release-0.3
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -37,7 +48,18 @@ presubmits:
         - make
         args:
         - test-integration
+        env:
+        - name: GOMAXPROCS
+          value: "4"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
   - name: pull-kueue-test-e2e-release-0-3-1-24
+    cluster: eks-prow-build-cluster
     branches:
     - ^release-0.3
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -65,7 +87,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "5"
+            memory: "20Gi"
+          limits:
+            cpu: "5"
+            memory: "20Gi"
   - name: pull-kueue-test-e2e-release-0-3-1-25
+    cluster: eks-prow-build-cluster
     branches:
     - ^release-0.3
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -93,7 +123,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "5"
+            memory: "20Gi"
+          limits:
+            cpu: "5"
+            memory: "20Gi"
   - name: pull-kueue-test-e2e-release-0-3-1-26
+    cluster: eks-prow-build-cluster
     branches:
     - ^release-0.3
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -121,7 +159,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: "5"
+            memory: "20Gi"
+          limits:
+            cpu: "5"
+            memory: "20Gi"
   - name: pull-kueue-verify-release-0-3
+    cluster: eks-prow-build-cluster
     branches:
     - ^release-0.3
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -138,7 +184,18 @@ presubmits:
         - make
         args:
         - verify
+        env:
+        - name: GOMAXPROCS
+          value: "2"
+        resources:
+          requests:
+            cpu: "2"
+            memory: "8Gi"
+          limits:
+            cpu: "2"
+            memory: "8Gi"
   - name: pull-kueue-build-image-release-0-3
+    cluster: eks-prow-build-cluster
     branches:
     - ^release-0.3
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
@@ -160,3 +217,13 @@ presubmits:
         args:
         - make
         - image-local-build
+        env:
+        - name: GOMAXPROCS
+          value: "2"
+        resources:
+          requests:
+            cpu: "2"
+            memory: "8Gi"
+          limits:
+            cpu: "2"
+            memory: "8Gi"

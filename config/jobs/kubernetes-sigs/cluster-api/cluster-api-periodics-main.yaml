@@ -109,7 +109,7 @@ periodics:
     testgrid-tab-name: capi-e2e-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
-- name: periodic-cluster-api-e2e-dualstack-ipv6-main
+- name: periodic-cluster-api-e2e-dualstack-and-ipv6-main
   interval: 2h
   decorate: true
   decoration_config:
@@ -151,7 +151,7 @@ periodics:
             cpu: 7300m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-dualstack-ipv6-main
+    testgrid-tab-name: capi-e2e-dualstack-and-ipv6-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-main
@@ -188,7 +188,7 @@ periodics:
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "stable-1.24"
+        value: "v1.24.13"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

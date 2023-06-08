@@ -1,6 +1,7 @@
 postsubmits:
   kubernetes-sigs/cluster-api-provider-aws:
     - name: ci-cluster-api-provider-aws-e2e
+      cluster: eks-prow-build-cluster
       branches:
       # The script this job runs is not in all branches.
       - ^main
@@ -35,12 +36,16 @@ postsubmits:
               requests:
                 cpu: 2
                 memory: "9Gi"
+              limits:
+                cpu: 2
+                memory: "9Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: postsubmit-e2e-main
         testgrid-num-columns-recent: '20'
         testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     - name: ci-cluster-api-provider-aws-eks-e2e
+      cluster: eks-prow-build-cluster
       branches:
       # The script this job runs is not in all branches.
       - ^main
@@ -72,6 +77,9 @@ postsubmits:
               requests:
                 cpu: 2
                 memory: "9Gi"
+              limits:
+                cpu: 2
+                memory: "9Gi"
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: postsubmit-eks-e2e-main
@@ -79,6 +87,7 @@ postsubmits:
         testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
         testgrid-num-failures-to-alert: "2"
     - name: ci-cluster-api-provider-aws-e2e-conformance
+      cluster: eks-prow-build-cluster
       branches:
       # The script this job runs is not in all branches.
       - ^main
@@ -108,6 +117,9 @@ postsubmits:
               privileged: true
             resources:
               requests:
+                cpu: 2
+                memory: "9Gi"
+              limits:
                 cpu: 2
                 memory: "9Gi"
       annotations:

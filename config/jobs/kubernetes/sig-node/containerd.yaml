@@ -1320,6 +1320,63 @@ periodics:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-gce-e2e-lock-contention
     description: "Contains disruptive tests for the Lock Contention feature."
+- name: ci-kubernetes-node-kubelet-credential-provider
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
+          - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--feature-gates=DisableKubeletCloudCredentialProviders=true --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:KubeletCredentialProviders\]" --skip="\[Flaky\]|\[Serial\]"
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-credential-provider
+    description: "tests feature kubelet image credential provider"
+- name: ci-kubernetes-e2e-gcp-credential-provider
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - args:
+        - --repo=k8s.io/kubernetes=master
+        - --timeout=240
+        - --root=/go/src
+        - --scenario=kubernetes_e2e
+        - --
+        - --check-leaked-resources
+        - --cluster=
+        - --env=ENABLE_AUTH_PROVIDER_GCP=true
+        - --env=KUBE_FEATURE_GATES=DisableKubeletCloudCredentialProviders=true
+        - --extract=ci/latest
+        - --gcp-zone=us-west1-b
+        - --gcp-node-image=gci
+        - --gcp-nodes=1
+        - --provider=gce
+        - --test_args=--ginkgo.focus=\[Feature:KubeletCredentialProviders\]
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: gcp-kubelet-credential-provider
+    description: "tests feature gcp kubelet image credential provider"
 - name: ci-cos-cgroupv2-inplace-pod-resize-containerd-main-e2e-gce-serial
   interval: 24h
   labels:

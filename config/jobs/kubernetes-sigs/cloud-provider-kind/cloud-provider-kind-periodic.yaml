@@ -8,6 +8,10 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cloud-provider-kind
+    base_ref: main
+    path_alias: sigs.k8s.io/cloud-provider-kind
   - org: kubernetes
     repo: kubernetes
     base_ref: master
@@ -27,7 +31,7 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
@@ -52,6 +56,10 @@ periodics:
     preset-kind-volume-mounts: "true"
   decorate: true
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cloud-provider-kind
+    base_ref: main
+    path_alias: sigs.k8s.io/cloud-provider-kind
   - org: kubernetes
     repo: kubernetes
     base_ref: master
@@ -77,7 +85,7 @@ periodics:
         - wrapper.sh
         - bash
         - -c
-        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

@@ -76,10 +76,11 @@ systemd:
 
         [Service]
         Type=oneshot
-        Environment="COMMIT=a22a6a49215c0bb1e14830317903f15aa93a7bd4"
+        Environment="COMMIT=0f501d4a7c33157e9662f2729c72f8c33baffe84"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
-        ExecStartPre=ln -sf /usr/bin/runc /usr/local/bin/runc
+        ExecStartPre=mount -o remount,rw /usr
+        ExecStartPre=rm -f /usr/bin/runc
         ExecStartPre=bash -c '\
           curl --fail --retry 5 --retry-delay 3 --silent --show-error \
             https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\

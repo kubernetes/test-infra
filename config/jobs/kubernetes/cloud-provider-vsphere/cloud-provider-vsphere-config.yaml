@@ -31,10 +31,14 @@ presubmits:
     always_run: false
     run_if_changed: '\.go$|hack/check-format\.sh'
     decorate: true
+    branches:
+    - ^master$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - make
         args:
@@ -49,10 +53,14 @@ presubmits:
     always_run: false
     run_if_changed: '\.go$|hack/check-lint\.sh'
     decorate: true
+    branches:
+    - ^master$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - make
         args:
@@ -67,10 +75,14 @@ presubmits:
     always_run: false
     run_if_changed: '\.go$|hack/check-vet\.sh'
     decorate: true
+    branches:
+    - ^master$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - make
         args:
@@ -124,10 +136,14 @@ presubmits:
     always_run: false
     run_if_changed: '\.go$|hack/check-staticcheck\.sh$|go.mod'
     decorate: true
+    branches:
+    - ^master$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - make
         args:
@@ -143,7 +159,8 @@ presubmits:
     decorate: true
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -151,7 +168,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - "make"
         args:
@@ -165,7 +182,8 @@ presubmits:
     decorate: true
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -173,7 +191,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - "make"
         args:
@@ -190,7 +208,8 @@ presubmits:
       preset-kind-volume-mounts: "true"
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -198,7 +217,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - "make"
         args:
@@ -216,7 +235,8 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     extra_refs:
     - org: kubernetes
       repo: test-infra
@@ -224,7 +244,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - runner.sh
         - bash
@@ -259,7 +279,8 @@ presubmits:
       preset-kind-volume-mounts: "true"
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -268,7 +289,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - runner.sh
         args:
@@ -304,7 +325,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         resources:
           requests:
             cpu: "1000m"
@@ -334,7 +355,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         resources:
           requests:
             cpu: "1000m"

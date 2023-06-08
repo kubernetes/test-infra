@@ -464,7 +464,7 @@ milestone_applier:
   kubernetes/test-infra:
     master: v1.28
   kubernetes-sigs/kueue:
-    master: v0.4
+    main: v0.4
     release-0.3: v0.3
   kubernetes/k8s.io:
     main: v1.28
@@ -1571,6 +1571,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes/cloud-provider-openstack:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs:
   - name: needs-rebase
     events:
@@ -1647,6 +1653,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/cluster-api-provider-openstack:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-operator:
   - name: cherrypicker
     events:
     - issue_comment

@@ -1,6 +1,7 @@
 periodics:
   - interval: 12h
     name: periodic-kueue-test-unit-main
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-unit-main
@@ -23,12 +24,22 @@ periodics:
           env:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
+            - name: GOMAXPROCS
+              value: "2"
           command:
             - make
           args:
             - test
+          resources:
+            requests:
+              cpu: "2"
+              memory: "8Gi"
+            limits:
+              cpu: "2"
+              memory: "8Gi"
   - interval: 12h
     name: periodic-kueue-test-integration-main
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-integration-main
@@ -52,8 +63,19 @@ periodics:
             - make
           args:
             - test-integration
+          env:
+            - name: GOMAXPROCS
+              value: "4"
+          resources:
+            requests:
+              cpu: "4"
+              memory: "16Gi"
+            limits:
+              cpu: "4"
+              memory: "16Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-24
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-24
@@ -86,8 +108,16 @@ periodics:
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: "5"
+              memory: "20Gi"
+            limits:
+              cpu: "5"
+              memory: "20Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-25
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-25
@@ -120,8 +150,16 @@ periodics:
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: "5"
+              memory: "20Gi"
+            limits:
+              cpu: "5"
+              memory: "20Gi"
   - interval: 12h
     name: periodic-kueue-test-e2e-main-1-26
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-26
@@ -154,28 +192,10 @@ periodics:
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
-  - interval: 12h
-    name: periodic-kueue-verify-main
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-verify-main
-      description: "Run periodic kueue verify checks"
-      testgrid-num-columns-recent: '30'
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: kueue
-        base_ref: main
-        path_alias: kubernetes-sigs/kueue
-    decorate: true
-    decoration_config:
-      timeout: 1h
-    spec:
-      containers:
-        - image: golang:1.20
-          command:
-            - make
-          args:
-            - verify
+          resources:
+            requests:
+              cpu: "5"
+              memory: "20Gi"
+            limits:
+              cpu: "5"
+              memory: "20Gi"

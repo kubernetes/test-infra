@@ -108,3 +108,39 @@ presubmits:
           limits:
             memory: "8Gi"
             cpu: "1024m"
+  - name: capi-provider-cloudstack-presubmit-e2e-smoke-test
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    run_if_changed: ".*"
+    max_concurrency: 10
+    decorate: true
+    decoration_config:
+      timeout: 1h
+    skip_report: false
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
+      testgrid-tab-name: pr-e2e-smoke-test
+    spec:
+      automountServiceAccountToken: false
+      hostNetwork: true
+      containers:
+      - name: build-container
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+        command:
+          - runner.sh
+        args:
+          - make
+          - run-e2e-smoke
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "1024m"
+          limits:
+            memory: "8Gi"
+            cpu: "1024m"

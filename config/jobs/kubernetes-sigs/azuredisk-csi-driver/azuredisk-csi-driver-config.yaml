@@ -631,8 +631,6 @@ presubmits:
               value: "true"
             - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
-              value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION # CAPZ config
@@ -740,8 +738,6 @@ presubmits:
               value: "true"
             - name: TEST_WINDOWS # CAPZ config
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
-              value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: DISABLE_ZONE # azuredisk-csi-driver config
@@ -798,8 +794,6 @@ presubmits:
               value: "true"
             - name: WINDOWS_SERVER_VERSION # CAPZ config
               value: "windows-2022"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
-              value: "true"
             - name: NODE_MACHINE_TYPE # CAPZ config
               value: "Standard_D4s_v3"
             - name: DISABLE_ZONE # azuredisk-csi-driver config
@@ -929,4 +923,120 @@ presubmits:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-vmssflex
       description: "Run E2E tests on a capz cluster with vmssflex nodes for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-e2e-capz-windows-2019-hostprocess
+    decorate: true
+    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    branches:
+    - (master)|(^release-.+$)
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.9
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.26
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: WINDOWS # azuredisk-csi-driver config
+              value: "true"
+            - name: TEST_WINDOWS # CAPZ config
+              value: "true"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
+              value: "true"
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D4s_v3"
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
+              value: "true"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.27"
+            - name: WORKER_MACHINE_COUNT
+              value: "0" # Don't create any linux worker nodes
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver
+      testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-windows-2019-hostprocess
+      description: "Run E2E tests on a capz Windows 2019 cluster for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azuredisk-csi-driver-e2e-capz-windows-2022-hostprocess
+    decorate: true
+    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    branches:
+    - (master)|(^release-.+$)
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.9
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: release-1.26
+        path_alias: sigs.k8s.io/cloud-provider-azure
+        workdir: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: WINDOWS # azuredisk-csi-driver config
+              value: "true"
+            - name: TEST_WINDOWS # CAPZ config
+              value: "true"
+            - name: WINDOWS_SERVER_VERSION # CAPZ config
+              value: "windows-2022"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS # CAPZ config
+              value: "true"
+            - name: NODE_MACHINE_TYPE # CAPZ config
+              value: "Standard_D4s_v3"
+            - name: DISABLE_ZONE # azuredisk-csi-driver config
+              value: "true"
+            - name: KUBERNETES_VERSION # CAPZ config
+              value: "latest-1.26"
+            - name: WORKER_MACHINE_COUNT # CAPZ config
+              value: "0" # Don't create any linux worker nodes
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver
+      testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-windows-2022-hostprocess
+      description: "Run E2E tests on a capz Windows 2022 cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'

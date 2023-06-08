@@ -2169,21 +2169,20 @@ func (c *client) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA 
 
 	var runs WorkflowRuns
 
-	url := url.URL{
+	u := url.URL{
 		Path: fmt.Sprintf("/repos/%s/%s/actions/runs", org, repo),
 	}
-	query := url.Query()
-
+	query := u.Query()
 	query.Add("status", "failure")
-	query.Add("event", "pull_request")
+	// setting the OR condition to get both PR and PR target workflows
+	query.Add("event", "pull_request OR pull_request_target")
 	query.Add("branch", branchName)
-
-	url.RawQuery = query.Encode()
+	u.RawQuery = query.Encode()
 
 	_, err := c.request(&request{
 		accept:    "application/vnd.github.v3+json",
 		method:    http.MethodGet,
-		path:      url.String(),
+		path:      u.String(),
 		org:       org,
 		exitCodes: []int{200},
 	}, &runs)

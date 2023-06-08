@@ -131,7 +131,7 @@ periodics:
   interval: 24h
   tags:
     - "perfDashPrefix: watch-list-off"
-    - "perfDashJobType: watchlist-off"
+    - "perfDashJobType: watchlist"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -166,7 +166,7 @@ periodics:
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-master-size=n1-standard-32
-          - --gcp-node-size=e2-standard-8
+          - --gcp-node-size=e2-standard-16
           - --gcp-nodes=1
           - --gcp-project-type=scalability-project
           - --provider=gce
@@ -177,8 +177,9 @@ periodics:
           - --test-cmd-args=--provider=gce
           - --test-cmd-args=--report-dir=$(ARTIFACTS)
           - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
+          - --test-cmd-args=--testoverrides=./testing/overrides/watch_list_off.yaml
           - --test-cmd-name=ClusterLoaderV2
-          - --timeout=30m
+          - --timeout=60m
           - --use-logexporter
           - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:
@@ -194,7 +195,7 @@ periodics:
   interval: 24h
   tags:
     - "perfDashPrefix: watch-list-on"
-    - "perfDashJobType: watchlist-on"
+    - "perfDashJobType: watchlist"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -227,10 +228,11 @@ periodics:
           - --env=CL2_ENABLE_WATCH_LIST_FEATURE=true
           - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
           - --env=KUBE_GCE_PRIVATE_CLUSTER=false #TODO(#29500): revert when private cluster setup is fixed
+          - --env=KUBE_FEATURE_GATES=WatchList=true
           - --extract=ci/latest
           - --gcp-node-image=gci
           - --gcp-master-size=n1-standard-32
-          - --gcp-node-size=e2-standard-8
+          - --gcp-node-size=e2-standard-16
           - --gcp-nodes=1
           - --gcp-project-type=scalability-project
           - --provider=gce
@@ -242,7 +244,7 @@ periodics:
           - --test-cmd-args=--report-dir=$(ARTIFACTS)
           - --test-cmd-args=--testconfig=testing/watch-list/config.yaml
           - --test-cmd-name=ClusterLoaderV2
-          - --timeout=30m
+          - --timeout=60m
           - --use-logexporter
           - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
         resources:

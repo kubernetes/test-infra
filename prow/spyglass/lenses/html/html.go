@@ -41,6 +41,7 @@ type Lens struct{}
 
 type document struct {
 	Filename string
+	ID       string
 	Title    string
 	Content  string
 }
@@ -81,14 +82,14 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 	}
 
 	documents := make([]document, 0)
-	for _, artifact := range artifacts {
+	for i, artifact := range artifacts {
 		content, err := artifact.ReadAll()
 		if err != nil {
 			logrus.WithError(err).WithField("artifact_url", artifact.CanonicalLink()).Warn("failed to read content")
 			continue
 		}
 		name := filepath.Base(artifact.CanonicalLink())
-		documents = append(documents, extractDocumentDetails(name, content))
+		documents = append(documents, extractDocumentDetails(name, i, content))
 	}
 
 	template, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
@@ -106,9 +107,10 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 
 // extractDocumentDetails parses the HTML to extract the title and
 // meta description tag, if present.
-func extractDocumentDetails(name string, content []byte) document {
+func extractDocumentDetails(name string, id int, content []byte) document {
 	doc := document{
 		Filename: name,
+		ID:       fmt.Sprintf("%s-%d", name, id),
 		Title:    name,
 		Content:  string(content),
 	}
@@ -119,7 +121,7 @@ func extractDocumentDetails(name string, content []byte) document {
 	for {
 		switch token.Next() {
 		case html.ErrorToken:
-			doc.Content = injectHeightNotifier(doc.Content, name)
+			doc.Content = injectHeightNotifier(doc.Content, doc.ID)
 			// Escape double quotes as we are going to put this into an iframes srcdoc attribute. We can not reference the
 			// src directly because we have to inject the height notifier.
 			// Ref: https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-iframe-srcdoc
@@ -164,7 +166,7 @@ func extractDocumentDetails(name string, content []byte) document {
 // injectHeightNotifier injects a small javascript snippet that will tell the iframe container about the height
 // of the iframe. Iframe height can only be set as an absolute value and CORS doesn't allow the container to
 // query the iframe.
-func injectHeightNotifier(content string, name string) string {
+func injectHeightNotifier(content string, id string) string {
 	return `<div id="wrapper">` + content + fmt.Sprintf(`</div><script type="text/javascript">
 window.addEventListener("load", function(){
     if(window.self === window.top) return; // if w.self === w.top, we are not in an iframe
@@ -178,5 +180,5 @@ window.addEventListener("load", function(){
     var config = { attributes: true, childList: true, characterData: true, subtree:true}; // PT2
     observer.observe(window.document, config);                                            // PT3
 });
-</script>`, name)
+</script>`, id)
 }

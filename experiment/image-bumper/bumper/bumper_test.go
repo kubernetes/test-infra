@@ -330,6 +330,14 @@ func TestUpdateAllTags(t *testing.T) {
 			},
 		},
 		{
+			name:           "AR subdomains are supported",
+			content:        `{"images": ["us-docker.pkg.dev/k8s-testimages/some-image:v20190404-12345678"]}`,
+			expectedResult: `{"images": ["us-docker.pkg.dev/k8s-testimages/some-image:v20190405-123456789"]}`,
+			newTags: map[string]string{
+				"us-docker.pkg.dev/k8s-testimages/some-image:v20190404-12345678": "v20190405-123456789",
+			},
+		},
+		{
 			name:           "images not matching the filter regex are not updated",
 			content:        `{"images": ["gcr.io/k8s-prow/prow-thing:v20190404-12345678", "gcr.io/k8s-testimages/some-image:v20190404-12345678"]}`,
 			expectedResult: `{"images": ["gcr.io/k8s-prow/prow-thing:v20190404-12345678", "gcr.io/k8s-testimages/some-image:v20190405-123456789"]}`,
