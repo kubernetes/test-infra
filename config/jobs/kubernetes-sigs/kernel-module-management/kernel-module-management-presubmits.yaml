@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kernel-module-management:
   - name: pull-kernel-module-management-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -13,6 +14,7 @@ presubmits:
         command:
         - ci/prow/build
   - name: pull-kernel-module-management-check-api-changes
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -40,6 +42,7 @@ presubmits:
         - name: CGO_ENABLED
           value: '0'
   - name: pull-kernel-module-management-check-commits-count
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -52,6 +55,7 @@ presubmits:
         command:
         - ci/prow/check-commits-count
   - name: pull-kernel-module-management-lint
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -64,6 +68,7 @@ presubmits:
         command:
         - ci/prow/lint
   - name: pull-kernel-module-management-unit-tests
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
