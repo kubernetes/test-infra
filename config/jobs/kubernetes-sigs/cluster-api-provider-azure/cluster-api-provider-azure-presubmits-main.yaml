@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-azure:
   - name: pull-cluster-api-provider-azure-test
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -37,6 +38,7 @@ presubmits:
       testgrid-tab-name: capz-pr-test-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-build
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -53,6 +55,7 @@ presubmits:
       testgrid-tab-name: capz-pr-build-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
@@ -86,6 +89,7 @@ presubmits:
       testgrid-tab-name: capz-pr-e2e-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e-optional
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -121,6 +125,7 @@ presubmits:
       testgrid-tab-name: capz-pr-e2e-optional-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e-aks
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
@@ -156,6 +161,7 @@ presubmits:
       testgrid-tab-name: capz-pr-e2e-aks-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-capi-e2e
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-e2e.sh|Makefile'
@@ -192,6 +198,7 @@ presubmits:
       testgrid-tab-name: capz-pr-capi-e2e-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -215,6 +222,7 @@ presubmits:
       testgrid-tab-name: capz-pr-verify-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -244,11 +252,15 @@ presubmits:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -286,10 +298,14 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-k8s-ci-main
   - name: pull-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -334,10 +350,14 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-main
   - name: pull-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts-serial-slow
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -384,10 +404,14 @@ presubmits:
             requests:
               cpu: 2
               memory: "9Gi"
+            limits:
+              cpu: 2
+              memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-serial-slow-main
   - name: pull-cluster-api-provider-azure-apidiff
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       gcs_credentials_secret: "" # Use workload identity for uploading artifacts
@@ -408,6 +432,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-main
   - name: pull-cluster-api-provider-azure-e2e-workload-upgrade
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -442,10 +467,13 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+          limits:
+            cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-upgrade
   - name: pull-cluster-api-provider-azure-apiversion-upgrade
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -483,11 +511,14 @@ presubmits:
           resources:
             requests:
               cpu: 7300m
+            limits:
+              cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apiversion-upgrade-main
       description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
   - name: pull-cluster-api-provider-azure-ci-entrypoint
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
