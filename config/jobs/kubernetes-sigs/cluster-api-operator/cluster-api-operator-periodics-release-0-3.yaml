@@ -36,7 +36,11 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
       command:
-      - "./scripts/ci-e2e.sh"
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
     testgrid-tab-name: capi-operator-e2e-release-0-3
