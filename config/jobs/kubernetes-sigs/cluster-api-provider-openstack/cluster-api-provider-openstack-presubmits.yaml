@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-openstack:
   - name: pull-cluster-api-provider-openstack-build
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -19,10 +20,14 @@ presubmits:
           requests:
             memory: "6Gi"
             cpu: "2"
+          limits:
+            memory: "6Gi"
+            cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-openstack
       testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-openstack-test
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -34,6 +39,9 @@ presubmits:
         - "./scripts/ci-test.sh"
         resources:
           requests:
+            memory: "6Gi"
+            cpu: "2"
+          limits:
             memory: "6Gi"
             cpu: "2"
     annotations:
