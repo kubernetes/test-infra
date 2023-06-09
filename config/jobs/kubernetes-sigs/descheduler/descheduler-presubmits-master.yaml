@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/descheduler:
   - name: pull-descheduler-verify-master
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-verify-master
@@ -19,6 +20,7 @@ presubmits:
         args:
         - verify
   - name: pull-descheduler-verify-build-master
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-verify-build-master
@@ -36,6 +38,7 @@ presubmits:
         args:
         - build
   - name: pull-descheduler-unit-test-master-master
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-unit-test-master
@@ -54,6 +57,7 @@ presubmits:
         args:
         - test-unit
   - name: pull-descheduler-test-e2e-k8s-master-1-27
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.27
@@ -84,6 +88,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-descheduler-test-e2e-k8s-master-1-26
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.26
@@ -114,6 +119,7 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-descheduler-test-e2e-k8s-master-1-25
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.25
