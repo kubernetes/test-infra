@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/image-builder:
   - name: pull-azure-vhds
+    cluster: eks-prow-build-cluster
     labels:
       preset-azure-cred: "true"
     decorate: true
@@ -17,6 +18,8 @@ presubmits:
           - "./images/capi/scripts/ci-azure-e2e.sh"
         resources:
           requests:
+            cpu: 1000m
+          limits:
             cpu: 1000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
@@ -43,10 +46,13 @@ presubmits:
         resources:
           requests:
             cpu: 1000m
+          limits:
+            cpu: 1000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-azure-sigs
   - name: json-sort-check
+    cluster: eks-prow-build-cluster
     decorate: true
     run_if_changed: 'images/capi/.*\.json$'
     decoration_config:
@@ -62,10 +68,13 @@ presubmits:
           resources:
             requests:
               cpu: 1000m
+            limits:
+              cpu: 1000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-json-sort-check
   - name: pull-packer-validate
+    cluster: eks-prow-build-cluster
     decorate: true
     run_if_changed: 'images/capi/Makefile|images/capi/packer/.*|images/capi/scripts/ci-packer-validate\.sh|images/capi/scripts/ensure-packer\.sh'
     decoration_config:
@@ -106,10 +115,14 @@ presubmits:
             requests:
               memory: "4Gi"
               cpu: 2000m
+            limits:
+              memory: "4Gi"
+              cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-pull-image-builder-gcp-all
   - name: pull-goss-populate
+    cluster: eks-prow-build-cluster
     path_alias: sigs.k8s.io/image-builder
     run_if_changed: 'images/capi/packer/config/.*|images/capi/packer/goss/.*|images/capi/scripts/ci-goss-populate\.sh|images/capi/hack/generate-goss-specs\.py'
     decorate: true
@@ -142,6 +155,9 @@ presubmits:
             - "./images/capi/scripts/ci-container-image.sh"
           resources:
             requests:
+              cpu: "4000m"
+              memory: "6Gi"
+            limits:
               cpu: "4000m"
               memory: "6Gi"
           securityContext:

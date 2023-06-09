@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/image-builder:
     - name: pull-ova-all
+      cluster: eks-prow-build-cluster
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
@@ -19,6 +20,8 @@ presubmits:
               - "./images/capi/scripts/ci-ova.sh"
             resources:
               requests:
+                cpu: "1000m"
+              limits:
                 cpu: "1000m"
             securityContext:
               privileged: true
