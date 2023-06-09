@@ -16,7 +16,11 @@ presubmits:
         - prow-presubmit-check
         resources:
           requests:
+            memory: "2000Mi"
             cpu: 4000m
+          limits:
+            memory: "2000Mi"
+            cpu: 500m                    
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: kustomize-presubmit-master
