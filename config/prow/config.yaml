@@ -53,6 +53,7 @@ sinker:
 
 deck:
   spyglass:
+    announcement: "Help migrate Prow jobs to community clusters! See <a href='https://github.com/kubernetes/test-infra/issues/29722'>k8s/test-infra#29722</a> for details."
     size_limit: 200000000 # 200MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
