@@ -113,6 +113,9 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+        env:
+          - name: IMAGE_VERSION
+            value: "127.1.20230417" # pin the Windows nodes to a specific OS patch version while investigating an issue with container updates
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "KUBERNETES_VERSION=latest -> KUBERNETES_VERSION=latest-{{.Version}}"
