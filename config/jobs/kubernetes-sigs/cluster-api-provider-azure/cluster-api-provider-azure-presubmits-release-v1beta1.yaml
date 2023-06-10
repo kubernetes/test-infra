@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-azure:
   - name: pull-cluster-api-provider-azure-test-v1beta1
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -12,11 +13,19 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - "./scripts/ci-test.sh"
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-test-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-build-v1beta1
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -28,6 +37,13 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
         command:
         - "./scripts/ci-build.sh"
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-build-v1beta1
@@ -241,6 +257,7 @@ presubmits:
       testgrid-tab-name: capz-pr-capi-e2e-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-verify-v1beta1
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -259,6 +276,13 @@ presubmits:
         - "verify"
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-verify-v1beta1
@@ -297,6 +321,7 @@ presubmits:
       testgrid-tab-name: capz-pr-conformance-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-apidiff-v1beta1
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     always_run: true
@@ -312,6 +337,13 @@ presubmits:
           - runner.sh
         args:
           - ./scripts/ci-apidiff.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-v1beta1
