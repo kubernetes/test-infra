@@ -2,6 +2,7 @@ presubmits:
   kubernetes-sigs/ingress-controller-conformance:
 
   - name: pull-ingress-controller-conformance-boilerplate
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     decoration_config:
@@ -17,11 +18,19 @@ presubmits:
         - runner.sh
         args:
         - ./hack/verify-boilerplate.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-controller-conformance
       testgrid-tab-name: boilerplate
 
   - name: pull-ingress-controller-conformance-codegen
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     decoration_config:
@@ -38,11 +47,19 @@ presubmits:
         args:
         - make
         - verify-codegen
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-controller-conformance
       testgrid-tab-name: verify-codegen
 
   - name: pull-ingress-controller-conformance-gherkin
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     decoration_config:
@@ -60,11 +77,19 @@ presubmits:
         - bash
         - -c
         - pip3 install reformat-gherkin==2.0.0 --ignore-installed PyYAML && make verify-gherkin
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-controller-conformance
       testgrid-tab-name: verify-gherkin
 
   - name: pull-ingress-controller-conformance-gofmt
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/ingress-controller-conformance
@@ -78,11 +103,19 @@ presubmits:
         - runner.sh
         args:
         - ./hack/verify-gofmt.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-controller-conformance
       testgrid-tab-name: gofmt
 
   - name: pull-ingress-controller-conformance-golint
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     decoration_config:
@@ -98,11 +131,19 @@ presubmits:
         - runner.sh
         args:
         - ./hack/verify-golint.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-controller-conformance
       testgrid-tab-name: golint
 
   - name: pull-ingress-controller-conformance-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     decoration_config:
@@ -119,6 +160,13 @@ presubmits:
         args:
         - make
         - build
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-network-ingress-controller-conformance
       testgrid-tab-name: build
