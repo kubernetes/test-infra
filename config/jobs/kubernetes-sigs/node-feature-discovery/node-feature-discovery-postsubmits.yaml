@@ -1,6 +1,7 @@
 postsubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: postsubmit-node-feature-discovery-verify-master
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     - ^master
@@ -15,6 +16,13 @@ postsubmits:
       - image: golang:1.20
         command:
         - scripts/test-infra/verify.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
         env:
         - name: CODECOV_TOKEN
           valueFrom:
@@ -22,6 +30,7 @@ postsubmits:
               name: nfd-creds
               key: codecov-token
   - name: postsubmit-node-feature-discovery-e2e-test
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     - ^master$
@@ -40,6 +49,13 @@ postsubmits:
         args:
         - -c
         - apt update && apt install -y jq && scripts/test-infra/test-e2e.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
         env:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:

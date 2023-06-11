@@ -18,6 +18,7 @@ presubmits:
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-build-image-generic
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
@@ -37,7 +38,15 @@ presubmits:
         - runner.sh
         args:
         - scripts/test-infra/build-image.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
   - name: pull-node-feature-discovery-build-image-cross-generic
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     skip_branches:
     - gh-pages
@@ -61,7 +70,15 @@ presubmits:
         - runner.sh
         args:
         - scripts/test-infra/build-image-cross.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
   - name: pull-node-feature-discovery-build-gh-pages-generic
+    cluster: eks-prow-build-cluster
     run_if_changed: "^docs/"
     skip_branches:
     - gh-pages
@@ -81,3 +98,10 @@ presubmits:
         - runner.sh
         args:
         - scripts/test-infra/build-gh-pages.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
