@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kubebuilder:
   - name: pull-kubebuilder-test
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     optional: false
@@ -14,12 +15,17 @@ presubmits:
         command:
         - ./test.sh
         resources:
+          limits:
+            cpu: 4000m
+            memory: 8Gi
           requests:
             cpu: 4000m
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
   - name: pull-kubebuilder-e2e-k8s-1-27-1
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     optional: false
@@ -39,8 +45,12 @@ presubmits:
             - name: KIND_K8S_VERSION
               value: "v1.27.1"
           resources:
+            limits:
+              cpu: 4000m
+              memory: 8Gi
             requests:
               cpu: 4000m
+              memory: 8Gi
           securityContext:
             privileged: true
     annotations:
@@ -50,6 +60,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-26-0
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     optional: false
@@ -69,8 +80,12 @@ presubmits:
             - name: KIND_K8S_VERSION
               value: "v1.26.0"
           resources:
+            limits:
+              cpu: 4000m
+              memory: 8Gi
             requests:
               cpu: 4000m
+              memory: 8Gi
           securityContext:
             privileged: true
     annotations:
@@ -80,6 +95,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-25-3
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     optional: false
@@ -99,8 +115,12 @@ presubmits:
             - name: KIND_K8S_VERSION
               value: "v1.25.3"
           resources:
+            limits:
+              cpu: 4000m
+              memory: 8Gi
             requests:
               cpu: 4000m
+              memory: 8Gi
           securityContext:
             privileged: true
     annotations:
