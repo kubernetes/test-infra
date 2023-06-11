@@ -641,13 +641,13 @@ This pull-request has been approved by:{{range $index, $approval := .ap.ListAppr
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
 {{ if len .ap.SuggestedCCs -}}
 {{- if len .ap.AssignedCCs -}}
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} for approval. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{printf "[%s](https://github.com/%s)" $cc $cc}}{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{printf "[%s](https://github.com/%s)" $cc $cc}}{{end}} for approval. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- else -}}
-**Once this PR has been reviewed and has the lgtm label**, please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} for approval. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
+**Once this PR has been reviewed and has the lgtm label**, please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{printf "[%s](https://github.com/%s)" $cc $cc}}{{end}} for approval. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- end}}
 {{- else -}}
 {{- if len .ap.AssignedCCs -}}
-**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}}. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{printf "[%s](https://github.com/%s)" $cc $cc}}{{end}}. For more information see [the Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- end}}
 {{- end}}
 {{- end}}
