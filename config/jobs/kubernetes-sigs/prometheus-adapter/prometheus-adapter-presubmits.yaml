@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/prometheus-adapter:
   - name: pull-prometheus-adapter-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/prometheus-adapter
@@ -11,10 +12,18 @@ presubmits:
         - make
         args:
         - verify
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-verify
   - name: pull-prometheus-adapter-test
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/prometheus-adapter
@@ -25,10 +34,18 @@ presubmits:
         - make
         args:
         - test
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-test
   - name: pull-prometheus-adapter-test-e2e
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     decoration_config:
@@ -52,6 +69,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-test-e2e
