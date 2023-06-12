@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -97,6 +98,7 @@ type MergeOpt struct {
 }
 
 type interactor struct {
+	locking  bool
 	executor executor
 	remote   RemoteResolver
 	dir      string
@@ -146,8 +148,43 @@ func (i *interactor) Clone(from string) error {
 	return nil
 }
 
+func (i *interactor) lock() error {
+	if !i.locking {
+		return nil
+	}
+	_, err := os.Stat(filepath.Join(i.dir, "lock"))
+	if os.IsNotExist(err) {
+		file, err := os.Create("lock")
+		if err != nil {
+			return err
+		}
+		file.Close()
+	} else {
+		return fmt.Errorf("lock already exists in %s", i.dir)
+	}
+	return nil
+}
+
+func (i *interactor) unlock() error {
+	if !i.locking {
+		return nil
+	}
+	_, err := os.Stat(filepath.Join(i.dir, "lock"))
+	if os.IsNotExist(err) {
+		return fmt.Errorf("lock does not exists in %s", i.dir)
+	} else {
+		os.Remove(filepath.Join(i.dir, "lock"))
+	}
+	return nil
+}
+
 // MirrorClone sets up a mirror of the source repository.
 func (i *interactor) MirrorClone() error {
+	if err := i.lock(); err != nil {
+		return err
+	}
+	defer i.unlock()
+
 	i.logger.Infof("Creating a mirror of the repo at %s", i.dir)
 	remote, err := i.remote()
 	if err != nil {
@@ -335,6 +372,11 @@ func (i *interactor) MergeAndCheckout(baseSHA string, mergeStrategy string, head
 }
 
 func (i *interactor) Fsck() (bool, error) {
+	if err := i.lock(); err != nil {
+		return false, err
+	}
+	defer i.unlock()
+
 	i.logger.Info("Running file system check")
 	if out, err := i.executor.Run("fsck"); err != nil {
 		return false, fmt.Errorf("error running git file system check: %w %v", err, string(out))
@@ -360,6 +402,11 @@ func (i *interactor) Am(path string) error {
 
 // RemoteUpdate fetches all updates from the remote.
 func (i *interactor) RemoteUpdate() error {
+	if err := i.lock(); err != nil {
+		return err
+	}
+	defer i.unlock()
+
 	i.logger.Info("Updating from remote")
 	if out, err := i.executor.Run("remote", "update", "--prune"); err != nil {
 		return fmt.Errorf("error updating: %w %v", err, string(out))

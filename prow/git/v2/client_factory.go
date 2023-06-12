@@ -236,7 +236,7 @@ func cloneDir(cacheDir string, cacheClientCacher cacher) error {
 }
 
 // bootstrapClients returns a repository client and cloner for a dir.
-func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner, RepoClient, error) {
+func (c *clientFactory) bootstrapClients(org, repo, dir string, locking bool) (cacher, cloner, RepoClient, error) {
 	if dir == "" {
 		workdir, err := os.Getwd()
 		if err != nil {
@@ -262,6 +262,7 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 			logger:   logger,
 		},
 		interactor: interactor{
+			locking:  locking,
 			dir:      dir,
 			remote:   remote.CentralRemote(org, repo),
 			executor: executor,
@@ -274,7 +275,7 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 // ClientFromDir returns a repository client for a directory that's already initialized with content.
 // If the directory isn't specified, the current working directory is used.
 func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error) {
-	_, _, client, err := c.bootstrapClients(org, repo, dir)
+	_, _, client, err := c.bootstrapClients(org, repo, dir, false)
 	return client, err
 }
 
@@ -289,7 +290,7 @@ func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error)
 func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	cacheDir := path.Join(c.cacheDir, org, repo)
 	c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "dir": cacheDir}).Debug("Creating a client from the cache.")
-	cacheClientCacher, _, _, err := c.bootstrapClients(org, repo, cacheDir)
+	cacheClientCacher, _, _, err := c.bootstrapClients(org, repo, cacheDir, true)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +300,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, repoClientCloner, repoClient, err := c.bootstrapClients(org, repo, repoDir)
+	_, repoClientCloner, repoClient, err := c.bootstrapClients(org, repo, repoDir, false)
 	if err != nil {
 		return nil, err
 	}
