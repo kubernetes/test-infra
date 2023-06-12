@@ -81,7 +81,7 @@ presubmits:
             memory: 9000Mi
             cpu: 7500m
           limits:
-            memory: 10000Mi
+            memory: 9000Mi
             cpu: 7500m
         command:
         - runner.sh
@@ -111,7 +111,7 @@ presubmits:
             memory: 9000Mi
             cpu: 7500m
           limits:
-            memory: 10000Mi
+            memory: 9000Mi
             cpu: 7500m
         command:
         - runner.sh
