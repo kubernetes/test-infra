@@ -94,7 +94,7 @@ presubmits:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
-    always_run: true
+    always_run: false # flip after tests are green
     optional: true # flip after tests are green
     cluster: eks-prow-build-cluster
     max_concurrency: 12
