@@ -109,7 +109,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           command:
             - "runner.sh"
-            - "./home/prow/go/src/sigs.k8s.io/provider-aws-test-infra/run.sh"
+            - "/home/prow/go/src/sigs.k8s.io/provider-aws-test-infra/run.sh"
           resources:
             limits:
               cpu: 4
