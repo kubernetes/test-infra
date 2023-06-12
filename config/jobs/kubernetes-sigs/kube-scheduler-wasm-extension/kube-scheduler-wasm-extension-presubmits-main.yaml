@@ -1,0 +1,19 @@
+presubmits:
+  kubernetes-sigs/kube-scheduler-wasm-extension:
+  - name: pull-kube-scheduler-wasm-extension-verify
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/kube-scheduler-wasm-extension
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kube-scheduler-wasm-extension-verify
+      description: "Run kube-scheduler-wasm-extension verify tests"
+    spec:
+      containers:
+      - image: golang:1.20
+        command:
+        - make
+        args:
+        - check
