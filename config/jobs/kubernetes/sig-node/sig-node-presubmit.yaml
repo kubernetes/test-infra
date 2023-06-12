@@ -83,7 +83,7 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
-  - name: pull-kubernetes-node-e2e-ec2-containerd
+  - name: pull-kubernetes-node-e2e-containerd-ec2
     skip_branches:
       - release-\d+\.\d+  # per-release image
     labels:
