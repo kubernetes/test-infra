@@ -43,3 +43,46 @@ periodics:
             memory: "9000Mi"
             # during the tests more like 3-20m is used
             cpu: 2000m
+
+  # This job runs e2e_node.test with a focus on tests for the Dynamic Resource Allocation feature (currently alpha)
+  - name: ci-node-e2e-crio-dra
+    interval: 6h
+    annotations:
+      testgrid-dashboards: sig-node-dynamic-resource-allocation
+      testgrid-tab-name: ci-node-e2e-crio-dra
+      testgrid-alert-email: eduard.bartosh@intel.com
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        args:
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --service-account=/etc/service-account/service-account.json
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - -- # end bootstrap args, scenario args below
+        - --deployment=node
+        - --env=KUBE_SSH_USER=core
+        - --gcp-zone=us-west1-b
+        - '--node-test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true" --runtime-config=resource.k8s.io/v1alpha2=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--focus="\[NodeFeature:DynamicResourceAllocation\]" --skip="\[Flaky\]"
+        - --timeout=65m
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
+        env:
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
