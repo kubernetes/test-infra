@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/security-profiles-operator:
   - name: pull-security-profiles-operator-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -11,8 +12,16 @@ presubmits:
       - image: golang:1.20
         command:
         - hack/pull-security-profiles-operator-build
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
 
   - name: pull-security-profiles-operator-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -23,8 +32,16 @@ presubmits:
       - image: golang:1.20
         command:
         - hack/pull-security-profiles-operator-verify
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
 
   - name: pull-security-profiles-operator-test-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -35,8 +52,16 @@ presubmits:
       - image: golang:1.20
         command:
         - hack/pull-security-profiles-operator-test-unit
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
 
   - name: pull-security-profiles-operator-build-image
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -55,12 +80,16 @@ presubmits:
           requests:
             memory: 9000Mi
             cpu: 7500m
+          limits:
+            memory: 9000Mi
+            cpu: 7500m
         command:
         - runner.sh
         args:
         - hack/pull-security-profiles-operator-build-image
 
   - name: pull-security-profiles-operator-test-e2e
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -82,7 +111,7 @@ presubmits:
             memory: 9000Mi
             cpu: 7500m
           limits:
-            memory: 10000Mi
+            memory: 9000Mi
             cpu: 7500m
         command:
         - runner.sh
