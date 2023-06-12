@@ -320,7 +320,13 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		return nil, err
 		// we have cloned the repo previously, ensure it is up to date
 	} else if err := cacheClientCacher.RemoteUpdate(); err != nil {
-		return nil, err
+		// If there was an error updating the remote, delete it and reclone
+		if err := os.RemoveAll(cacheDir); err != nil {
+			return nil, err
+		}
+		if err := cloneDir(cacheDir, cacheClientCacher); err != nil {
+			return nil, err
+		}
 	}
 
 	// initialize the new derivative repo from the cache
