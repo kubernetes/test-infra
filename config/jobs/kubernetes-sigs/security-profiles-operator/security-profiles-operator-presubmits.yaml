@@ -34,11 +34,11 @@ presubmits:
         - hack/pull-security-profiles-operator-verify
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
 
   - name: pull-security-profiles-operator-test-unit
     cluster: eks-prow-build-cluster
@@ -125,4 +125,4 @@ presubmits:
       - name: varlog
         hostPath:
           path: /var/log/audit
-          type: Directory
+          type: DirectoryOrCreate
