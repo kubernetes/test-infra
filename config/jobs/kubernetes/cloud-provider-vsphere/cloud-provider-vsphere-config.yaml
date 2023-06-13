@@ -38,7 +38,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - make
         args:
@@ -60,7 +60,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - make
         args:
@@ -82,7 +82,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - make
         args:
@@ -143,7 +143,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - make
         args:
@@ -168,7 +168,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - "make"
         args:
@@ -191,7 +191,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - "make"
         args:
@@ -217,7 +217,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - "make"
         args:
@@ -244,7 +244,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - runner.sh
         - bash
@@ -289,7 +289,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         command:
         - runner.sh
         args:
@@ -325,7 +325,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         resources:
           requests:
             cpu: "1000m"
@@ -355,7 +355,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         resources:
           requests:
             cpu: "1000m"
