@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cli-utils:
   - name: cli-utils-presubmit-master
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/cli-utils
@@ -16,12 +17,17 @@ presubmits:
         - prow-presubmit-check
         resources:
           requests:
+            memory: "8000Mi"
+            cpu: 4000m
+          limits:
+            memory: "8000Mi"
             cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: cli-utils-presubmit-master
       description: cli-utils presubmit tests on master branch
   - name: cli-utils-presubmit-master-e2e
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/cli-utils
@@ -41,11 +47,19 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: "8000Mi"
+            cpu: 4000m
+          limits:
+            memory: "8000Mi"
+            cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: cli-utils-presubmit-master-e2e
       description: cli-utils presubmit e2e tests on master branch
   - name: cli-utils-presubmit-master-stress
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/cli-utils
@@ -65,6 +79,13 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: "8000Mi"
+            cpu: 4000m
+          limits:
+            memory: "8000Mi"
+            cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: cli-utils-presubmit-master-stress
