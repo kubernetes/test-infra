@@ -34,7 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/util/node"
 	"k8s.io/utils/clock"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -61,6 +60,13 @@ const ControllerName = "plank"
 // PodStatus constants
 const (
 	Evicted = "Evicted"
+)
+
+// NodeStatus constants
+const (
+	// NodeUnreachablePodReason is the reason on a pod when its state cannot be confirmed as kubelet is unresponsive
+	// on the node it is (was) running.
+	NodeUnreachablePodReason = "NodeLost"
 )
 
 func Add(
@@ -386,7 +392,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
 			return nil, ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
 		}
-	} else if pod.DeletionTimestamp != nil && pod.Status.Reason == node.NodeUnreachablePodReason {
+	} else if pod.DeletionTimestamp != nil && pod.Status.Reason == NodeUnreachablePodReason {
 		// This can happen in any phase and means the node got evicted after it became unresponsive. Delete the finalizer so the pod
 		// vanishes and we will silently re-create it in the next iteration.
 		r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got lost, deleting & next sync loop will restart pod")
