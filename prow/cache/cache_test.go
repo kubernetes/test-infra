@@ -341,8 +341,13 @@ func TestCallbacks(t *testing.T) {
 	forcedEvictionsCounter := 0
 	manualEvictionsCounter := 0
 
+	counterLock := &sync.Mutex{}
 	mkCallback := func(counter *int) EventCallback {
-		callback := func(key interface{}) { (*counter)++ }
+		callback := func(key interface{}) {
+			counterLock.Lock()
+			(*counter)++
+			counterLock.Unlock()
+		}
 		return callback
 	}
 
