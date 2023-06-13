@@ -132,7 +132,7 @@ func updateJobConfig(ctx context.Context, kubeClient ctrlruntimeclient.Client, f
 	jobConfigMux.Lock()
 	defer jobConfigMux.Unlock()
 
-	var existingMap prowapi.ConfigMap
+	var existingMap coreapi.ConfigMap
 	if err := kubeClient.Get(ctx, ctrlruntimeclient.ObjectKey{
 		Namespace: defaultNamespace,
 		Name:      "job-config",
