@@ -32,7 +32,7 @@ periodics:
   interval: 24h
   labels:
     preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-containerd-1-6-latest: "true"
     preset-capz-windows-2019: "true"
     preset-capz-windows-common-126: "true"
@@ -65,6 +65,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-containerd-1-6-latest: "true"
     preset-capz-serial-slow: "true"
     preset-capz-gmsa-setup: "true"
