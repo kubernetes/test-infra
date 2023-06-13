@@ -191,6 +191,12 @@ presubmits:
       repo: cluster-api-provider-azure
       base_ref: release-1.9
       path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
@@ -236,6 +242,12 @@ presubmits:
       repo: cluster-api-provider-azure
       base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
@@ -285,6 +297,12 @@ presubmits:
       repo: cluster-api-provider-azure
       base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
