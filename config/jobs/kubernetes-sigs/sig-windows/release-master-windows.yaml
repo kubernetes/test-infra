@@ -78,7 +78,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-common: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-1-7-latest: "true"
@@ -131,6 +131,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
@@ -183,6 +184,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-common: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-1-7-latest: "true"
@@ -233,6 +235,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-windows-private-registry-cred: "true"
@@ -281,6 +284,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-capz-serial-slow: "true"
@@ -335,6 +339,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-windows-private-registry-cred: "true"
     preset-capz-windows-common: "true"
     preset-capz-containerd-1-7-latest: "true"
@@ -388,7 +393,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-ci-entrypoint-common-main: "true"
     preset-capz-windows-azuredisk: "true"
   extra_refs:
@@ -478,6 +483,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-windows-private-registry-cred: "true"
     preset-capz-windows-common: "true"
   extra_refs:
