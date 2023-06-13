@@ -124,6 +124,8 @@ presubmits:
           env:
             - name: KUBE_BUILD_PLATFORMS
               value: linux/amd64
+            - name: AWS_REGION
+              value: us-east-1
           resources:
             limits:
               cpu: 4
