@@ -30,7 +30,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
-	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -201,7 +200,7 @@ func main() {
 	// check requests will only happen when we finally call
 	// interrupts.ListenAndServe() down below.
 	healthcheckGrpc := health.NewServer()
-	healthgrpc.RegisterHealthServer(grpcServer, healthcheckGrpc)
+	healthpb.RegisterHealthServer(grpcServer, healthcheckGrpc)
 	healthcheckGrpc.SetServingStatus(serviceNameForHealthCheckGrpc, healthpb.HealthCheckResponse_SERVING)
 
 	// Register reflection service on gRPC server. This enables testing through

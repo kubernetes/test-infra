@@ -27,7 +27,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	slackclient "k8s.io/test-infra/prow/slack"
 )
@@ -47,7 +46,7 @@ type slackReporter struct {
 	dryRun  bool
 }
 
-func hostAndChannel(cfg *v1.SlackReporterConfig) (string, string) {
+func hostAndChannel(cfg *prowapi.SlackReporterConfig) (string, string) {
 	host, channel := cfg.Host, cfg.Channel
 	if host == "" {
 		host = DefaultHostName
@@ -55,24 +54,24 @@ func hostAndChannel(cfg *v1.SlackReporterConfig) (string, string) {
 	return host, channel
 }
 
-func (sr *slackReporter) getConfig(pj *v1.ProwJob) (*config.SlackReporter, *v1.SlackReporterConfig) {
+func (sr *slackReporter) getConfig(pj *prowapi.ProwJob) (*config.SlackReporter, *prowapi.SlackReporterConfig) {
 	refs := pj.Spec.Refs
 	if refs == nil && len(pj.Spec.ExtraRefs) > 0 {
 		refs = &pj.Spec.ExtraRefs[0]
 	}
 	globalConfig := sr.config(refs)
-	var jobSlackConfig *v1.SlackReporterConfig
+	var jobSlackConfig *prowapi.SlackReporterConfig
 	if pj.Spec.ReporterConfig != nil && pj.Spec.ReporterConfig.Slack != nil {
 		jobSlackConfig = pj.Spec.ReporterConfig.Slack
 	}
 	return &globalConfig, jobSlackConfig
 }
 
-func (sr *slackReporter) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
-	return []*v1.ProwJob{pj}, nil, sr.report(log, pj)
+func (sr *slackReporter) Report(_ context.Context, log *logrus.Entry, pj *prowapi.ProwJob) ([]*prowapi.ProwJob, *reconcile.Result, error) {
+	return []*prowapi.ProwJob{pj}, nil, sr.report(log, pj)
 }
 
-func (sr *slackReporter) report(log *logrus.Entry, pj *v1.ProwJob) error {
+func (sr *slackReporter) report(log *logrus.Entry, pj *prowapi.ProwJob) error {
 	globalSlackConfig, jobSlackConfig := sr.getConfig(pj)
 	if globalSlackConfig != nil {
 		jobSlackConfig = jobSlackConfig.ApplyDefault(&globalSlackConfig.SlackReporterConfig)
@@ -111,7 +110,7 @@ func (sr *slackReporter) GetName() string {
 	return reporterName
 }
 
-func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, pj *v1.ProwJob) bool {
+func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, pj *prowapi.ProwJob) bool {
 	globalSlackConfig, jobSlackConfig := sr.getConfig(pj)
 
 	var typeShouldReport bool

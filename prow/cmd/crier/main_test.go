@@ -24,7 +24,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"k8s.io/test-infra/prow/flagutil"
-	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
@@ -63,7 +62,7 @@ func TestOptions(t *testing.T) {
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -80,7 +79,7 @@ func TestOptions(t *testing.T) {
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		//PubSub Reporter
@@ -98,7 +97,7 @@ func TestOptions(t *testing.T) {
 				pubsubWorkers:          7,
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -121,7 +120,7 @@ func TestOptions(t *testing.T) {
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -144,7 +143,7 @@ func TestOptions(t *testing.T) {
 				dryrun:                 true,
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -161,7 +160,7 @@ func TestOptions(t *testing.T) {
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      1.0,
-				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
@@ -178,7 +177,7 @@ func TestOptions(t *testing.T) {
 				},
 				github:                 defaultGitHubOptions,
 				k8sReportFraction:      0.5,
-				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{

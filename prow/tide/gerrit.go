@@ -28,7 +28,6 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	gerritadaptor "k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
@@ -277,7 +276,7 @@ func (p *GerritProvider) headContexts(crc *CodeReviewCommon) ([]Context, error) 
 		kube.RepoLabel:        crc.Repo,
 		kube.PullLabel:        strconv.Itoa(crc.Number),
 	}
-	var pjs v1.ProwJobList
+	var pjs prowapi.ProwJobList
 	if err := p.pjclientset.List(context.Background(), &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 		return nil, fmt.Errorf("Cannot list prowjob with selector %v", selector)
 	}

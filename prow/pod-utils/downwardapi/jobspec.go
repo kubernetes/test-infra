@@ -27,8 +27,6 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/clone"
-
-	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // JobSpec is the full downward API that we expose to
@@ -206,7 +204,7 @@ func mainRefs(refs *prowapi.Refs, extra []prowapi.Refs) *prowapi.Refs {
 	return nil
 }
 
-func PjToStarted(pj *prowv1.ProwJob, cloneRecords []clone.Record) metadata.Started {
+func PjToStarted(pj *prowapi.ProwJob, cloneRecords []clone.Record) metadata.Started {
 	return refsToStarted(pj.Spec.Refs, pj.Spec.ExtraRefs, cloneRecords, pj.Status.StartTime.Unix())
 }
 
@@ -251,7 +249,7 @@ func refsToStarted(refs *prowapi.Refs, extraRefs []prowapi.Refs, cloneRecords []
 }
 
 // shaForRefs finds the resolved SHA after cloning and merging for the given refs
-func shaForRefs(refs prowv1.Refs, cloneRecords []clone.Record) string {
+func shaForRefs(refs prowapi.Refs, cloneRecords []clone.Record) string {
 	for _, record := range cloneRecords {
 		if reflect.DeepEqual(refs, record.Refs) {
 			return record.FinalSHA

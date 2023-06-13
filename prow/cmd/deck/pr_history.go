@@ -34,7 +34,6 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/git/v2"
-	"k8s.io/test-infra/prow/io"
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
@@ -265,7 +264,7 @@ func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitCli
 	return toSearch, nil
 }
 
-func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Config, opener io.Opener, gitHubClient deckGitHubClient, gitClient git.ClientFactory, githubHost string) (prHistoryTemplate, error) {
+func getPRHistory(ctx context.Context, prHistoryURL *url.URL, config *config.Config, opener pkgio.Opener, gitHubClient deckGitHubClient, gitClient git.ClientFactory, githubHost string) (prHistoryTemplate, error) {
 	start := time.Now()
 	template := prHistoryTemplate{}
 

@@ -34,7 +34,6 @@ import (
 	"time"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
@@ -138,7 +137,7 @@ func TestRun(t *testing.T) {
 						Repo:      "test-infra",
 						BaseRef:   "master",
 						PathAlias: "k8s.io/test-infra",
-						Pulls: []v1.Pull{
+						Pulls: []prowapi.Pull{
 							{
 								Number: 5,
 								SHA:    "FEEDDAD",
@@ -155,7 +154,7 @@ func TestRun(t *testing.T) {
 						Repo:      "test-infra",
 						BaseRef:   "master",
 						PathAlias: "k8s.io/test-infra",
-						Pulls: []v1.Pull{
+						Pulls: []prowapi.Pull{
 							{
 								Number: 5,
 								SHA:    "FEEDDAD",
@@ -180,7 +179,7 @@ func TestRun(t *testing.T) {
 						Repo:      "test-infra",
 						BaseRef:   "master",
 						PathAlias: "k8s.io/test-infra",
-						Pulls: []v1.Pull{
+						Pulls: []prowapi.Pull{
 							{
 								Number: 5,
 								SHA:    "FEEDDAD",
@@ -202,7 +201,7 @@ func TestRun(t *testing.T) {
 						Repo:      "test-infra",
 						BaseRef:   "master",
 						PathAlias: "k8s.io/test-infra",
-						Pulls: []v1.Pull{
+						Pulls: []prowapi.Pull{
 							{
 								Number: 5,
 								SHA:    "FEEDDAD",
@@ -235,7 +234,7 @@ func TestRun(t *testing.T) {
 						Repo:      "test-infra",
 						BaseRef:   "master",
 						PathAlias: "k8s.io/test-infra",
-						Pulls: []v1.Pull{
+						Pulls: []prowapi.Pull{
 							{
 								Number: 5,
 								SHA:    "FEEDDAD",
@@ -252,7 +251,7 @@ func TestRun(t *testing.T) {
 						Repo:      "test-infra",
 						BaseRef:   "master",
 						PathAlias: "k8s.io/test-infra",
-						Pulls: []v1.Pull{
+						Pulls: []prowapi.Pull{
 							{
 								Number: 5,
 								SHA:    "FEEDDAD",
@@ -287,7 +286,7 @@ func TestRun(t *testing.T) {
 						Repo:      "test-infra",
 						BaseRef:   "master",
 						PathAlias: "k8s.io/test-infra",
-						Pulls: []v1.Pull{
+						Pulls: []prowapi.Pull{
 							{
 								Number: 5,
 								SHA:    "FEEDDAD",
@@ -304,7 +303,7 @@ func TestRun(t *testing.T) {
 						Repo:      "test-infra",
 						BaseRef:   "master",
 						PathAlias: "k8s.io/test-infra",
-						Pulls: []v1.Pull{
+						Pulls: []prowapi.Pull{
 							{
 								Number: 5,
 								SHA:    "FEEDDAD",

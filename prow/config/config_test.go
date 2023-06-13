@@ -46,7 +46,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/github"
@@ -1146,8 +1145,8 @@ gerrit:
 }
 
 func TestValidateAgent(t *testing.T) {
-	jenk := string(prowjobv1.JenkinsAgent)
-	k := string(prowjobv1.KubernetesAgent)
+	jenk := string(prowapi.JenkinsAgent)
+	k := string(prowapi.KubernetesAgent)
 	ns := "default"
 	base := JobBase{
 		Agent:     k,
@@ -1606,15 +1605,15 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 
 func TestValidateDecoration(t *testing.T) {
 	defCfg := prowapi.DecorationConfig{
-		UtilityImages: &prowjobv1.UtilityImages{
+		UtilityImages: &prowapi.UtilityImages{
 			CloneRefs:  "clone-me",
 			InitUpload: "upload-me",
 			Entrypoint: "enter-me",
 			Sidecar:    "official-drink-of-the-org",
 		},
 		GCSCredentialsSecret: pStr("upload-secret"),
-		GCSConfiguration: &prowjobv1.GCSConfiguration{
-			PathStrategy: prowjobv1.PathStrategyExplicit,
+		GCSConfiguration: &prowapi.GCSConfiguration{
+			PathStrategy: prowapi.PathStrategyExplicit,
 			DefaultOrg:   "so-org",
 			DefaultRepo:  "very-repo",
 		},
@@ -1712,18 +1711,18 @@ func TestValidateLabels(t *testing.T) {
 }
 
 func TestValidateMultipleContainers(t *testing.T) {
-	ka := string(prowjobv1.KubernetesAgent)
+	ka := string(prowapi.KubernetesAgent)
 	yes := true
 	defCfg := prowapi.DecorationConfig{
-		UtilityImages: &prowjobv1.UtilityImages{
+		UtilityImages: &prowapi.UtilityImages{
 			CloneRefs:  "clone-me",
 			InitUpload: "upload-me",
 			Entrypoint: "enter-me",
 			Sidecar:    "official-drink-of-the-org",
 		},
 		GCSCredentialsSecret: pStr("upload-secret"),
-		GCSConfiguration: &prowjobv1.GCSConfiguration{
-			PathStrategy: prowjobv1.PathStrategyExplicit,
+		GCSConfiguration: &prowapi.GCSConfiguration{
+			PathStrategy: prowapi.PathStrategyExplicit,
 			DefaultOrg:   "so-org",
 			DefaultRepo:  "very-repo",
 		},
@@ -1830,7 +1829,7 @@ func TestValidateMultipleContainers(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			switch err := cfg.validateJobBase(tc.base, prowjobv1.PresubmitJob); {
+			switch err := cfg.validateJobBase(tc.base, prowapi.PresubmitJob); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -1841,8 +1840,8 @@ func TestValidateMultipleContainers(t *testing.T) {
 }
 
 func TestValidateJobBase(t *testing.T) {
-	ka := string(prowjobv1.KubernetesAgent)
-	ja := string(prowjobv1.JenkinsAgent)
+	ka := string(prowapi.KubernetesAgent)
+	ja := string(prowapi.JenkinsAgent)
 	goodSpec := v1.PodSpec{
 		Containers: []v1.Container{
 			{},
@@ -1922,7 +1921,7 @@ func TestValidateJobBase(t *testing.T) {
 				Agent: ka,
 				Spec:  &goodSpec,
 				UtilityConfig: UtilityConfig{
-					DecorationConfig: &prowjobv1.DecorationConfig{}, // missing many fields
+					DecorationConfig: &prowapi.DecorationConfig{}, // missing many fields
 				},
 				Namespace: &cfg.PodNamespace,
 			},
@@ -1989,7 +1988,7 @@ func TestValidateJobBase(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			switch err := cfg.validateJobBase(tc.base, prowjobv1.PresubmitJob); {
+			switch err := cfg.validateJobBase(tc.base, prowapi.PresubmitJob); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -4310,7 +4309,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-org": "https://my-alternate-prow",
 				},
 			},
-			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"}}},
+			prowjob:              &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"}}},
 			expectedJobURLPrefix: "https://my-prow",
 		},
 		{
@@ -4322,7 +4321,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"}}},
+			prowjob:              &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"}}},
 			expectedJobURLPrefix: "https://my-alternate-prow",
 		},
 		{
@@ -4334,7 +4333,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-repo"}}}},
+			prowjob:              &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-repo"}}}},
 			expectedJobURLPrefix: "https://my-alternate-prow",
 		},
 		{
@@ -4346,8 +4345,8 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			prowjob: &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{
-				DecorationConfig: &prowjobv1.DecorationConfig{GCSConfiguration: &prowjobv1.GCSConfiguration{JobURLPrefix: "https://overriden"}},
+			prowjob: &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{
+				DecorationConfig: &prowapi.DecorationConfig{GCSConfiguration: &prowapi.GCSConfiguration{JobURLPrefix: "https://overriden"}},
 				Refs:             &prowapi.Refs{Org: "my-alternate-org", Repo: "my-repo"},
 			}},
 			expectedJobURLPrefix: "https://overriden",
@@ -4361,7 +4360,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
+			prowjob:              &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
 			expectedJobURLPrefix: "https://my-third-prow",
 		},
 		{
@@ -4373,7 +4372,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-second-repo"}}}},
+			prowjob:              &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{ExtraRefs: []prowapi.Refs{{Org: "my-alternate-org", Repo: "my-second-repo"}}}},
 			expectedJobURLPrefix: "https://my-third-prow",
 		},
 		{
@@ -4384,7 +4383,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 					"my-alternate-org/my-repo": "https://my-alternate-prow",
 				},
 			},
-			prowjob:              &prowjobv1.ProwJob{Spec: prowjobv1.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
+			prowjob:              &prowapi.ProwJob{Spec: prowapi.ProwJobSpec{Refs: &prowapi.Refs{Org: "my-alternate-org", Repo: "my-second-repo"}}},
 			expectedJobURLPrefix: "https://my-prow",
 		},
 	}
@@ -4392,7 +4391,7 @@ func TestPlankJobURLPrefix(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.prowjob == nil {
-				tc.prowjob = &prowjobv1.ProwJob{}
+				tc.prowjob = &prowapi.ProwJob{}
 			}
 			if prefix := tc.plank.GetJobURLPrefix(tc.prowjob); prefix != tc.expectedJobURLPrefix {
 				t.Errorf("expected JobURLPrefix to be %q but was %q", tc.expectedJobURLPrefix, prefix)
@@ -4555,7 +4554,7 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+						SlackReporterConfig: prowapi.SlackReporterConfig{
 							Channel: "my-channel",
 						},
 					},
@@ -4573,7 +4572,7 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"istio/proxy": {
-						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+						SlackReporterConfig: prowapi.SlackReporterConfig{
 							Channel: "my-channel",
 						},
 					},
@@ -4591,7 +4590,7 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"proxy": {
-						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+						SlackReporterConfig: prowapi.SlackReporterConfig{
 							Channel: "my-channel",
 						},
 					},
@@ -4637,7 +4636,7 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+						SlackReporterConfig: prowapi.SlackReporterConfig{
 							Channel:        "my-channel",
 							ReportTemplate: "{{ if .Spec.Name}}",
 						},
@@ -4656,7 +4655,7 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+						SlackReporterConfig: prowapi.SlackReporterConfig{
 							Channel:        "my-channel",
 							ReportTemplate: "{{ .Undef}}",
 						},
@@ -8725,43 +8724,43 @@ func TestCalculateStorageBuckets(t *testing.T) {
 	}{
 		{
 			name: "S3 provider prefix gets removed from Plank config",
-			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowjobv1.DecorationConfig{
-				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "s3://prow-logs"},
+			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "s3://prow-logs"},
 			}}}}}},
 			expected: sets.NewString("prow-logs"),
 		},
 		{
 			name: "GS provider prefix gets removed from Plank config",
-			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowjobv1.DecorationConfig{
-				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "gs://prow-logs"},
+			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "gs://prow-logs"},
 			}}}}}},
 			expected: sets.NewString("prow-logs"),
 		},
 		{
 			name: "No provider prefix, nothing to do",
-			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowjobv1.DecorationConfig{
-				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "kubernetes-jenkins"},
+			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "kubernetes-jenkins"},
 			}}}}}},
 			expected: sets.NewString("kubernetes-jenkins"),
 		},
 		{
 			name: "S3 provider prefix gets removed from periodic config",
-			in: &Config{JobConfig: JobConfig{Periodics: []Periodic{{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowjobv1.DecorationConfig{
-				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "s3://prow-logs"},
+			in: &Config{JobConfig: JobConfig{Periodics: []Periodic{{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "s3://prow-logs"},
 			}}}}}}},
 			expected: sets.NewString("prow-logs"),
 		},
 		{
 			name: "S3 provider prefix gets removed from presubmit config",
-			in: &Config{JobConfig: JobConfig{PresubmitsStatic: map[string][]Presubmit{"": {{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowjobv1.DecorationConfig{
-				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "s3://prow-logs"},
+			in: &Config{JobConfig: JobConfig{PresubmitsStatic: map[string][]Presubmit{"": {{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "s3://prow-logs"},
 			}}}}}}}},
 			expected: sets.NewString("prow-logs"),
 		},
 		{
 			name: "S3 provider prefix gets removed from postsubmit config",
-			in: &Config{JobConfig: JobConfig{PostsubmitsStatic: map[string][]Postsubmit{"": {{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowjobv1.DecorationConfig{
-				GCSConfiguration: &prowjobv1.GCSConfiguration{Bucket: "s3://prow-logs"},
+			in: &Config{JobConfig: JobConfig{PostsubmitsStatic: map[string][]Postsubmit{"": {{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowapi.DecorationConfig{
+				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "s3://prow-logs"},
 			}}}}}}}},
 			expected: sets.NewString("prow-logs"),
 		},

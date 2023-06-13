@@ -28,7 +28,6 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	gerritsource "k8s.io/test-infra/prow/gerrit/source"
@@ -91,7 +90,7 @@ type preOrPostsubmit interface {
 	GetAnnotations() map[string]string
 }
 
-func getPreOrPostSpec[p preOrPostsubmit](jobGetter func(string) []p, creator func(p, v1.Refs) v1.ProwJobSpec, name string, refs *prowapi.Refs, labels map[string]string) (*v1.ProwJobSpec, map[string]string, map[string]string, error) {
+func getPreOrPostSpec[p preOrPostsubmit](jobGetter func(string) []p, creator func(p, prowapi.Refs) prowapi.ProwJobSpec, name string, refs *prowapi.Refs, labels map[string]string) (*prowapi.ProwJobSpec, map[string]string, map[string]string, error) {
 	if err := verifyRerunRefs(refs); err != nil {
 		return nil, nil, nil, err
 	}
@@ -124,15 +123,15 @@ func getPreOrPostSpec[p preOrPostsubmit](jobGetter func(string) []p, creator fun
 	return &prowJobSpec, (*result).GetLabels(), (*result).GetAnnotations(), nil
 }
 
-func getPresubmitSpec(cfg config.Getter, name string, refs *prowapi.Refs, labels map[string]string) (*v1.ProwJobSpec, map[string]string, map[string]string, error) {
+func getPresubmitSpec(cfg config.Getter, name string, refs *prowapi.Refs, labels map[string]string) (*prowapi.ProwJobSpec, map[string]string, map[string]string, error) {
 	return getPreOrPostSpec(cfg().GetPresubmitsStatic, pjutil.PresubmitSpec, name, refs, labels)
 }
 
-func getPostsubmitSpec(cfg config.Getter, name string, refs *prowapi.Refs, labels map[string]string) (*v1.ProwJobSpec, map[string]string, map[string]string, error) {
+func getPostsubmitSpec(cfg config.Getter, name string, refs *prowapi.Refs, labels map[string]string) (*prowapi.ProwJobSpec, map[string]string, map[string]string, error) {
 	return getPreOrPostSpec(cfg().GetPostsubmitsStatic, pjutil.PostsubmitSpec, name, refs, labels)
 }
 
-func getPeriodicSpec(cfg config.Getter, name string) (*v1.ProwJobSpec, map[string]string, map[string]string, error) {
+func getPeriodicSpec(cfg config.Getter, name string) (*prowapi.ProwJobSpec, map[string]string, map[string]string, error) {
 	var periodicJob *config.Periodic
 	for _, job := range cfg().AllPeriodics() {
 		if job.Name == name {
@@ -149,7 +148,7 @@ func getPeriodicSpec(cfg config.Getter, name string) (*v1.ProwJobSpec, map[strin
 	return &prowJobSpec, periodicJob.Labels, periodicJob.Annotations, nil
 }
 
-func getProwJobSpec(pjType v1.ProwJobType, cfg config.Getter, name string, refs *prowapi.Refs, labels map[string]string) (*v1.ProwJobSpec, map[string]string, map[string]string, error) {
+func getProwJobSpec(pjType prowapi.ProwJobType, cfg config.Getter, name string, refs *prowapi.Refs, labels map[string]string) (*prowapi.ProwJobSpec, map[string]string, map[string]string, error) {
 	switch pjType {
 	case prowapi.PeriodicJob:
 		return getPeriodicSpec(cfg, name)
@@ -261,7 +260,7 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 			}
 			return
 		}
-		var newPJ v1.ProwJob
+		var newPJ prowapi.ProwJob
 		if mode == LATEST {
 			prowJobSpec, labels, annotations, err := getProwJobSpec(pj.Spec.Type, cfg, pj.Spec.Job, pj.Spec.Refs, pj.Labels)
 			if err != nil {
