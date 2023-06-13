@@ -41,7 +41,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/api/equality"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -1160,7 +1159,7 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
-	if !equality.Semantic.DeepEqual(presubmits, ca.Config().PresubmitsStatic["o/r"]) {
+	if !apiequality.Semantic.DeepEqual(presubmits, ca.Config().PresubmitsStatic["o/r"]) {
 		t.Errorf("resolving presubmits failed, diff:\n%v\n", diff.ObjectReflectDiff(presubmits, ca.Config().PresubmitsStatic["o/r"]))
 	}
 	for _, testpr := range testprs {
@@ -3241,7 +3240,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			for _, jobs := range presubmits {
 				config.ClearCompiledRegexes(jobs)
 			}
-			if !equality.Semantic.DeepEqual(presubmits, tc.expectedPresubmits) {
+			if !apiequality.Semantic.DeepEqual(presubmits, tc.expectedPresubmits) {
 				t.Errorf("got incorrect presubmit mapping: %v\n", diff.ObjectReflectDiff(tc.expectedPresubmits, presubmits))
 			}
 			if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
@@ -3768,7 +3767,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 			}
 			// Clear regexes, otherwise DeepEqual comparison wont work
 			config.ClearCompiledRegexes(presubmits)
-			if !equality.Semantic.DeepEqual(tc.expected, presubmits) {
+			if !apiequality.Semantic.DeepEqual(tc.expected, presubmits) {
 				t.Errorf("returned presubmits do not match expected, diff: %v\n", diff.ObjectReflectDiff(tc.expected, presubmits))
 			}
 		})
@@ -3818,7 +3817,7 @@ func TestChangedFilesAgentBatchChanges(t *testing.T) {
 			if err != nil {
 				t.Fatalf("fauked to get changed files: %v", err)
 			}
-			if !equality.Semantic.DeepEqual(result, tc.expected) {
+			if !apiequality.Semantic.DeepEqual(result, tc.expected) {
 				t.Errorf("returned changes do not match expected; diff: %v\n", diff.ObjectReflectDiff(tc.expected, result))
 			}
 		})

@@ -28,7 +28,6 @@ import (
 	"testing"
 
 	coreapi "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -133,7 +132,7 @@ func updateJobConfig(ctx context.Context, kubeClient ctrlruntimeclient.Client, f
 	jobConfigMux.Lock()
 	defer jobConfigMux.Unlock()
 
-	var existingMap v1.ConfigMap
+	var existingMap coreapi.ConfigMap
 	if err := kubeClient.Get(ctx, ctrlruntimeclient.ObjectKey{
 		Namespace: defaultNamespace,
 		Name:      "job-config",
