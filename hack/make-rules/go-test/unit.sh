@@ -64,5 +64,7 @@ fi
   umask 0022
   mkdir -p "${JUNIT_RESULT_DIR}"
   "${REPO_ROOT}/_bin/gotestsum" --junitfile="${JUNIT_RESULT_DIR}/junit-unit.xml" \
-    -- "./${folder_to_test}"
+    -- \
+    -race \
+    "./${folder_to_test}"
 )
