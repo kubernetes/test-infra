@@ -97,7 +97,7 @@ presubmits:
     always_run: false # flip after tests are green
     optional: true # flip after tests are green
     cluster: eks-prow-build-cluster
-    max_concurrency: 12
+    max_concurrency: 50
     decorate: true
     extra_refs:
       - org: kubernetes-sigs
@@ -108,8 +108,22 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
           command:
-            - "runner.sh"
-            - "/home/prow/go/src/sigs.k8s.io/provider-aws-test-infra/run.sh"
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - |
+              cd /home/prow/go/src/sigs.k8s.io/provider-aws-test-infra && \
+              DELETE_INSTANCES=true \
+              FOCUS=NodeConformance \
+              IMAGE_CONFIG_FILE=aws-instance.yaml \
+              IMAGE_CONFIG_DIR=config \
+              TEST_ARGS='--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"' \
+              SSH_USER=ec2-user \
+              hack/make-rules/test-e2e-node.sh"
+          env:
+            - name: KUBE_BUILD_PLATFORMS
+              value: linux/amd64
           resources:
             limits:
               cpu: 4
