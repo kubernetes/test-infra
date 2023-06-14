@@ -3,6 +3,7 @@
 presubmits:
   kubernetes-csi/csi-release-tools:
   - name: pull-kubernetes-csi-csi-release-tools
+    cluster: default
     always_run: true
     decorate: true
     skip_report: false
@@ -28,8 +29,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 2
+          limits:
+            memory: "4Gi"
+            cpu: 2
   - name: pull-kubernetes-csi-release-tools-csi-test
+    cluster: default
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -61,11 +67,16 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 2
+          limits:
+            memory: "4Gi"
+            cpu: 2
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
   - name: pull-kubernetes-csi-release-tools-external-provisioner
+    cluster: default
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -97,7 +108,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 2
+          limits:
+            memory: "4Gi"
+            cpu: 2
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
@@ -112,6 +127,7 @@ presubmits:
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
   - name: pull-kubernetes-csi-release-tools-external-snapshotter
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -143,7 +159,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 2
+          limits:
+            memory: "4Gi"
+            cpu: 2
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
@@ -158,6 +178,7 @@ presubmits:
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
   - name: pull-kubernetes-csi-release-tools-csi-driver-host-path
+    cluster: default
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -189,7 +210,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 2
+          limits:
+            memory: "4Gi"
+            cpu: 2
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path

@@ -3,6 +3,7 @@
 presubmits:
   kubernetes-csi/volume-data-source-validator:
   - name: pull-kubernetes-csi-volume-data-source-validator
+    cluster: default
     always_run: true
     decorate: true
     skip_report: false
@@ -28,4 +29,8 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 2
+          limits:
+            memory: "4Gi"
+            cpu: 2
