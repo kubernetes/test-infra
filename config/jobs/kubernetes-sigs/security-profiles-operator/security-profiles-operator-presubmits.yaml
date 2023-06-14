@@ -14,10 +14,10 @@ presubmits:
         - hack/pull-security-profiles-operator-build
         resources:
           limits:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
 
   - name: pull-security-profiles-operator-verify
@@ -34,10 +34,10 @@ presubmits:
         - hack/pull-security-profiles-operator-verify
         resources:
           limits:
-            cpu: 4
+            cpu: 6
             memory: 8Gi
           requests:
-            cpu: 4
+            cpu: 6
             memory: 8Gi
 
   - name: pull-security-profiles-operator-test-unit
@@ -54,10 +54,10 @@ presubmits:
         - hack/pull-security-profiles-operator-test-unit
         resources:
           limits:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
 
   - name: pull-security-profiles-operator-build-image
@@ -78,11 +78,11 @@ presubmits:
           privileged: true  # for dind
         resources:
           requests:
-            memory: 9000Mi
-            cpu: 7500m
+            memory: 2Gi
+            cpu: 2
           limits:
-            memory: 9000Mi
-            cpu: 7500m
+            memory: 2Gi
+            cpu: 2
         command:
         - runner.sh
         args:
@@ -108,11 +108,11 @@ presubmits:
           privileged: true  # for dind
         resources:
           requests:
-            memory: 9000Mi
-            cpu: 7500m
+            memory: 4Gi
+            cpu: 6
           limits:
-            memory: 9000Mi
-            cpu: 7500m
+            memory: 4Gi
+            cpu: 6
         command:
         - runner.sh
         args:
