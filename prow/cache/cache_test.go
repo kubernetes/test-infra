@@ -465,15 +465,16 @@ func TestCallbacks(t *testing.T) {
 			cacheCallbacks:    defaultCallbacks,
 			lookups: []lookup{
 				lookup{"(key)1", goodValConstructor},
-				lookup{"(key)1", goodValConstructor},
-				lookup{"(key)1", goodValConstructor},
+				lookup{"(key)2", goodValConstructor},
+				lookup{"(key)3", goodValConstructor},
 				lookup{"(key)1", badValConstructor},
-				lookup{"(key)1", badValConstructor},
+				lookup{"(key)2", badValConstructor},
+				lookup{"(key)3", badValConstructor},
 			},
 			expected: expected{
-				lookups:         5,
+				lookups:         6,
 				hits:            0,
-				misses:          5,
+				misses:          0,
 				forcedEvictions: 0,
 				manualEvictions: 0,
 				// If racyEvictions is true, then we expect some positive number of evictions to occur.
