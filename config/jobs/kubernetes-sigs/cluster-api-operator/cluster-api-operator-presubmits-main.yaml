@@ -48,11 +48,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: "1"
-            memory: "4Gi"
+            cpu: "4"
+            memory: "8Gi"
           limits:
-            cpu: "1"
-            memory: "4Gi"
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-make-main
@@ -165,11 +165,11 @@ presubmits:
               key: cluster-lifecycle-github-token
         resources:
           requests:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: "4"
+            memory: "8Gi"
           limits:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-e2e-main
