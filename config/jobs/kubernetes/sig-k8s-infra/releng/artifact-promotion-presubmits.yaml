@@ -21,6 +21,8 @@ presubmits:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
         - --use-prow-manifest-diff
+        - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
+        - --certificate-oidc-issuer=https://accounts.google.com
         resources:
           limits:
             cpu: 2
@@ -51,6 +53,8 @@ presubmits:
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
         - --use-prow-manifest-diff
         - --vuln-severity-threshold=1
+        - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
+        - --certificate-oidc-issuer=https://accounts.google.com
   # Check that changes to backup scripts are valid.
   - name: pull-k8sio-backup
     annotations:
