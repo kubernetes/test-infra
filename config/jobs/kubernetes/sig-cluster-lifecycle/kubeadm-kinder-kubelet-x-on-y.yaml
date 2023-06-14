@@ -2,7 +2,7 @@
 periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-27-on-latest
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
   labels:
@@ -46,7 +46,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-26-on-latest
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
   labels:
@@ -90,7 +90,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-25-on-latest
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
   labels:
@@ -134,7 +134,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-26-on-1-27
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -178,7 +178,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-25-on-1-27
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -222,7 +222,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-24-on-1-27
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -266,7 +266,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-25-on-1-26
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -310,7 +310,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-24-on-1-26
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -354,7 +354,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-kubelet-1-24-on-1-25
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:

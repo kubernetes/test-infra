@@ -2,7 +2,7 @@
 periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-no-addons-latest
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
