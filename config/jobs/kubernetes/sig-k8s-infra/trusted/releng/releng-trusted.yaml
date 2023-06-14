@@ -52,6 +52,8 @@ postsubmits:
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
         - --use-prow-manifest-diff
         - --confirm
+        - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
+        - --certificate-oidc-issuer=https://accounts.google.com
         env:
         - name: GOMAXPROCS
           value: "7"
@@ -248,6 +250,8 @@ periodics:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
       - --confirm
+      - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
+      - --certificate-oidc-issuer=https://accounts.google.com
       env:
       - name: GOMAXPROCS
         value: "7"
