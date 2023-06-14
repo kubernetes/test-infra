@@ -166,6 +166,42 @@ presubmits:
           limits:
             cpu: "5"
             memory: "20Gi"
+  - name: pull-kueue-test-e2e-main-1-27
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-e2e-main-1-27
+      description: "Run kueue end to end tests for Kubernetes 1.27"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
+        env:
+        - name: E2E_KIND_VERSION
+          value: kindest/node:v1.27.2
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - kind-image-build
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "5"
+            memory: "20Gi"
+          limits:
+            cpu: "5"
+            memory: "20Gi"
   - name: pull-kueue-verify-main
     cluster: eks-prow-build-cluster
     branches:
