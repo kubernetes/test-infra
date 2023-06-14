@@ -43,6 +43,7 @@ const (
 	dependabotUser          = "dependabot[bot]"
 )
 
+var sleepLock sync.Mutex
 var sleep = time.Sleep
 
 type githubClient interface {
