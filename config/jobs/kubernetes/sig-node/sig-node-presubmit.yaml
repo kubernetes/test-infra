@@ -91,6 +91,8 @@ presubmits:
       testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
       testgrid-num-failures-to-alert: "10"
+    labels:
+      preset-e2e-containerd-ec2: "true"
     path_alias: k8s.io/kubernetes
     always_run: false # flip after tests are green
     optional: true # flip after tests are green
@@ -112,16 +114,8 @@ presubmits:
           args:
             - hack/make-rules/test-e2e-node.sh
           env:
-            - name: KUBE_BUILD_PLATFORMS
-              value: linux/amd64
-            - name: AWS_REGION
-              value: us-east-1
             - name: FOCUS
               value: NodeConformance
-            - name: SSH_USER
-              value: ec2-user
-            - name: DELETE_INSTANCES
-              value: "true"
             - name: TEST_ARGS
               value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           resources:
@@ -1949,17 +1943,18 @@ presubmits:
         testgrid-alert-stale-results-hours: "24"
         testgrid-create-test-group: "true"
         testgrid-num-failures-to-alert: "10"
-      path_alias: "sigs.k8s.io/provider-aws-test-infra"
+      labels:
+        preset-e2e-containerd-ec2: "true"
+      path_alias: sigs.k8s.io/provider-aws-test-infra
       always_run: true
       optional: false
       cluster: eks-prow-build-cluster
-      max_concurrency: 50
       decorate: true
       extra_refs:
         - org: kubernetes
           repo: kubernetes
           base_ref: master
-          path_alias: "k8s.io/kubernetes"
+          path_alias: k8s.io/kubernetes
       spec:
         serviceAccountName: node-e2e-tests
         containers:
@@ -1967,18 +1962,10 @@ presubmits:
             command:
               - runner.sh
             args:
-              - "hack/make-rules/test-e2e-node.sh"
+              - hack/make-rules/test-e2e-node.sh
             env:
-              - name: KUBE_BUILD_PLATFORMS
-                value: linux/amd64
-              - name: AWS_REGION
-                value: us-east-1
               - name: FOCUS
                 value: NodeConformance
-              - name: SSH_USER
-                value: ec2-user
-              - name: DELETE_INSTANCES
-                value: "true"
               - name: TEST_ARGS
                 value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             resources:
