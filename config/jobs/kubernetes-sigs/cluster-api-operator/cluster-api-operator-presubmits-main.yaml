@@ -49,10 +49,10 @@ presubmits:
         resources:
           requests:
             cpu: "1"
-            memory: "2Gi"
+            memory: "4Gi"
           limits:
             cpu: "1"
-            memory: "2Gi"
+            memory: "4Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-make-main
