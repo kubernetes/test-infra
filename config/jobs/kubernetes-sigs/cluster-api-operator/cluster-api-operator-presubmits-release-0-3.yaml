@@ -60,13 +60,13 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
-    always_run: true
     optional: true
     labels:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^release-0.3$
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.25
@@ -113,12 +113,12 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
-    always_run: true
     labels:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^release-0.3$
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.25
@@ -139,8 +139,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-operator"
     optional: false
     decorate: true
-    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
-    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
