@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/community:
   - name: pull-community-verify
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -13,10 +14,18 @@ presubmits:
         - "-c"
         # Add GOPATH/bin back to PATH to workaround #9469
         - "export PATH=$PATH:$GOPATH/bin && make verify"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-contribex-community
       testgrid-tab-name: pull-verify
   - name: pull-community-tempelis-check
+    cluster: eks-prow-build-cluster
     decorate: true
     branches:
     - ^master$
@@ -32,6 +41,13 @@ presubmits:
         - --config=communication/slack-config/
         - --restrictions=communication/slack-config/restrictions.yaml
         - --auth=/etc/slack-auth/auth.json
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         volumeMounts:
         - name: tempelis-readonly-creds
           mountPath: /etc/slack-auth
