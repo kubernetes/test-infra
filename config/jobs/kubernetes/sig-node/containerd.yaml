@@ -38,20 +38,27 @@ periodics:
 - name: ci-containerd-build
   interval: 30m
   labels:
-    preset-service-account: "true"
     preset-dind-enabled: "true"
+  cluster: eks-prow-build-cluster
+  decorate: true
+  extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: main
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
+      command:
+      - runner.sh
       args:
-      - --repo=github.com/containerd/containerd=main
-      - --root=/go/src
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=execute
-      - --
-      - --env=DEPLOY_DIR=master
-      - /go/src/github.com/containerd/containerd/test/build.sh
-      # docker-in-docker needs privileged mode
+      - test/build.sh
+      resources:
+        limits:
+          cpu: 8
+          memory: 10Gi
+        requests:
+          cpu: 8
+          memory: 10Gi
       securityContext:
         privileged: true
   annotations:
@@ -119,8 +126,8 @@ periodics:
     testgrid-dashboards: sig-node-containerd,containerd-periodic
     testgrid-tab-name: containerd-build-1.7
     description: "builds release/1.7 branch of upstream containerd"
-- interval: 1h
-  name: ci-containerd-e2e-ubuntu-gce
+- name: ci-containerd-e2e-ubuntu-gce
+  interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
