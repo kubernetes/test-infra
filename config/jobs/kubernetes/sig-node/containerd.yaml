@@ -38,8 +38,9 @@ periodics:
 - name: ci-containerd-build
   interval: 30m
   labels:
+    preset-service-account: "true"
     preset-dind-enabled: "true"
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
     - org: containerd
@@ -52,6 +53,9 @@ periodics:
       - runner.sh
       args:
       - test/build.sh
+      env:
+      - name: DEPLOY_DIR
+        value: master
       resources:
         limits:
           cpu: 8
