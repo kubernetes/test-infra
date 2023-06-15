@@ -259,8 +259,12 @@ def presubmit_test(branch='master',
                    use_boskos=False):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
-        kops_image = distro_images[distro]
-        kops_ssh_user = distros_ssh_user[distro]
+        if distro == "channels":
+            kops_image = None
+            kops_ssh_user = 'ubuntu'
+        else:
+            kops_image = distro_images[distro]
+            kops_ssh_user = distros_ssh_user[distro]
         kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
 
     elif cloud == 'gce':
@@ -1208,7 +1212,7 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
         ),
         presubmit_test(
-            distro='u2204arm64',
+            distro='channels',
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-aws-calico',
@@ -1440,6 +1444,7 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
+            distro='channels',
             branch='release-1.26',
             k8s_version='1.26',
             kops_channel='alpha',
@@ -1449,6 +1454,7 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            distro='channels',
             branch='release-1.25',
             k8s_version='1.25',
             kops_channel='alpha',
@@ -1458,6 +1464,7 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            distro='channels',
             branch='release-1.24',
             k8s_version='1.24',
             kops_channel='alpha',
@@ -1476,6 +1483,7 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            distro='channels',
             branch='release-1.22',
             k8s_version='1.22',
             kops_channel='alpha',
