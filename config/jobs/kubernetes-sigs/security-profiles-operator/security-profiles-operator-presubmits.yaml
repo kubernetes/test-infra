@@ -14,10 +14,10 @@ presubmits:
         - hack/pull-security-profiles-operator-build
         resources:
           limits:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
 
   - name: pull-security-profiles-operator-verify
@@ -34,10 +34,10 @@ presubmits:
         - hack/pull-security-profiles-operator-verify
         resources:
           limits:
-            cpu: 6
+            cpu: 10
             memory: 8Gi
           requests:
-            cpu: 6
+            cpu: 10
             memory: 8Gi
 
   - name: pull-security-profiles-operator-test-unit
@@ -54,10 +54,10 @@ presubmits:
         - hack/pull-security-profiles-operator-test-unit
         resources:
           limits:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
 
   - name: pull-security-profiles-operator-build-image
