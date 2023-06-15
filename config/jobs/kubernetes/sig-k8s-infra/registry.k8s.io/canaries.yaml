@@ -31,7 +31,7 @@ periodics:
     testgrid-days-of-results: '7'
     testgrid-tab-name: registry-sandbox-e2e-gcp
     testgrid-num-failures-to-alert: '1'
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io,bentheelder@google.com
   spec:
     containers:
     - image: golang
@@ -62,7 +62,7 @@ periodics:
     testgrid-days-of-results: '7'
     testgrid-tab-name: registry-sandbox-e2e-aws
     testgrid-num-failures-to-alert: '1'
-    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io,bentheelder@google.com
   spec:
     containers:
     - image: golang
