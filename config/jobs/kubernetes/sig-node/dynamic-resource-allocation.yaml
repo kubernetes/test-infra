@@ -51,21 +51,15 @@ periodics:
       testgrid-dashboards: sig-node-dynamic-resource-allocation
       testgrid-tab-name: ci-node-e2e-crio-dra
       testgrid-alert-email: eduard.bartosh@intel.com
-    decorate: true
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
         args:
         - --root=/go/src
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/kubernetes=master
         - --timeout=90
         - --scenario=kubernetes_e2e
         - -- # end bootstrap args, scenario args below
