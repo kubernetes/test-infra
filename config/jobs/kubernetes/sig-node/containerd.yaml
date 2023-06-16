@@ -40,7 +40,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-  cluster: k8s-infra-prow-build
+  cluster: default # don't move this job to the community cluster till the gs://cri-containerd-staging is owned by the community
   decorate: true
   extra_refs:
     - org: containerd
