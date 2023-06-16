@@ -588,6 +588,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.24
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-e2e-kops-aws
     labels:
       preset-aws-credential: "true"
@@ -631,7 +632,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.24
         name: ""
         resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
           requests:
+            cpu: "2"
             memory: 6Gi
         securityContext:
           privileged: true
@@ -1001,6 +1006,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.24
+    cluster: eks-prow-build-cluster
     context: pull-kubernetes-node-e2e-containerd-kubetest2
     decorate: true
     decoration_config:
@@ -1721,6 +1727,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.24
+    cluster: eks-prow-build-cluster
     context: pull-perf-tests-clusterloader2
     decorate: true
     decoration_config:
@@ -1787,6 +1794,7 @@ presubmits:
   - always_run: false
     branches:
     - release-1.24
+    cluster: eks-prow-build-cluster
     context: pull-perf-tests-clusterloader2-kubemark
     decorate: true
     decoration_config:
