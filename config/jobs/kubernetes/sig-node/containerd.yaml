@@ -58,11 +58,11 @@ periodics:
         value: master
       resources:
         limits:
-          cpu: 8
-          memory: 10Gi
+          cpu: 4
+          memory: 6Gi
         requests:
-          cpu: 8
-          memory: 10Gi
+          cpu: 4
+          memory: 6Gi
       securityContext:
         privileged: true
   annotations:
