@@ -28,6 +28,8 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.21"
           - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -79,6 +81,8 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.22"
           - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -130,6 +134,8 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.23"
           - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -181,6 +187,8 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.24"
           - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -232,6 +240,8 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.25"
           - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -283,10 +293,12 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.26"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "v1.27.1" # Setting this to a pinned version due to an issue in the image. See: https://github.com/kubernetes-sigs/cluster-api/issues/8764
+            value: "stable-1.27"
           - name: ETCD_VERSION_UPGRADE_TO
             value: "3.5.6-0"
           - name: COREDNS_VERSION_UPGRADE_TO
@@ -334,6 +346,8 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.27"
           - name: KUBERNETES_VERSION_UPGRADE_TO

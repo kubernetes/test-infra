@@ -29,6 +29,8 @@ periodics:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.18"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -80,6 +82,8 @@ periodics:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.19"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -131,6 +135,8 @@ periodics:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.20"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -182,6 +188,8 @@ periodics:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.21"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -233,6 +241,8 @@ periodics:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.22"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -284,6 +294,8 @@ periodics:
       - runner.sh
       - "./scripts/ci-e2e.sh"
       env:
+      - name: ALWAYS_BUILD_KIND_IMAGES
+        value: "true"
       - name: KUBERNETES_VERSION_UPGRADE_FROM
         value: "stable-1.23"
       - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -335,6 +347,8 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.24"
           - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -386,6 +400,8 @@ periodics:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.25"
           - name: KUBERNETES_VERSION_UPGRADE_TO
