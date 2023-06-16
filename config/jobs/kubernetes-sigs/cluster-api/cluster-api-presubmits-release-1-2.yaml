@@ -276,6 +276,8 @@ presubmits:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.25"
           - name: KUBERNETES_VERSION_UPGRADE_TO
