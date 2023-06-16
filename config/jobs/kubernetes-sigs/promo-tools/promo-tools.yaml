@@ -2,7 +2,6 @@ presubmits:
   kubernetes-sigs/promo-tools:
   # Run promoter e2e tests.
   - name: pull-cip-e2e
-    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
@@ -49,7 +48,6 @@ presubmits:
       testgrid-num-columns-recent: '30'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
   - name: pull-cip-auditor-e2e
-    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
