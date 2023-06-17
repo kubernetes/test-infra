@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-gcp:
   - name: cloud-provider-gcp-tests
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     path_alias: k8s.io/cloud-provider-gcp
@@ -35,7 +36,15 @@ presubmits:
             /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
             bazel test --test_output=errors -- //... -//vendor/...
           fi
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: cloud-provider-gcp-verify-all
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     path_alias: k8s.io/cloud-provider-gcp
@@ -64,7 +73,15 @@ presubmits:
             fi;
             /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
             ./tools/verify-all.sh
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
   - name: cloud-provider-gcp-verify-crds
+    cluster: k8s-infra-prow-build
     run_if_changed: "^crd/"
     decorate: true
     path_alias: k8s.io/cloud-provider-gcp
@@ -84,8 +101,16 @@ presubmits:
           - "/bin/bash"
           - "-c"
           - ./crd/hack/verify-codegen.sh
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
 
   - name: pull-cloud-provider-gcp-scenario-kops-simple
+    cluster: k8s-infra-prow-build
     always_run: true
     optional: true
     decorate: true
@@ -136,6 +161,7 @@ presubmits:
           e2e/scenarios/kops-simple
 
   - name: cloud-provider-gcp-e2e-full
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     decoration_config:
@@ -186,7 +212,15 @@ presubmits:
             echo "TEST_PACKAGE_VERSION - Falling back to v1.25.0";
           fi;
           kubetest2 gce -v 2 --repo-root "${REPO_ROOT}" --build --up --down --test=ginkgo --node-size n1-standard-4 --master-size n1-standard-8 -- --test-package-version="${TEST_PACKAGE_VERSION}" --parallel=30 --test-args='--minStartupPods=8 --ginkgo.flakeAttempts=3' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: cloud-provider-gcp-verify-up-to-date
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     path_alias: k8s.io/cloud-provider-gcp
@@ -215,3 +249,10 @@ presubmits:
             fi;
             /workspace/test-infra/images/kubekins-e2e/install-bazel.sh;
             ./tools/verify-up-to-date.sh
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
