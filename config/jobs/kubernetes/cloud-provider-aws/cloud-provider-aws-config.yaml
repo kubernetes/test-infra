@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-aws:
   - name: pull-cloud-provider-aws-check
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -16,12 +17,20 @@ presubmits:
         args:
         - make
         - check
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-cloud-provider-aws
       testgrid-tab-name: check
       description: aws cloud provider checks
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-aws-test
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -37,6 +46,13 @@ presubmits:
         args:
         - make
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-cloud-provider-aws
       testgrid-tab-name: test
