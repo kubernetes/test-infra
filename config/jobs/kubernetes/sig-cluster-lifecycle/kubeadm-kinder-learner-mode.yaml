@@ -2,7 +2,7 @@
 periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-learner-mode-latest
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:

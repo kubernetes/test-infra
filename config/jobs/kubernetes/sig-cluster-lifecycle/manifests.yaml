@@ -1,7 +1,6 @@
 # manifest list tests
 periodics:
 - name: periodic-kubernetes-e2e-manifest-lists
-  cluster: eks-prow-build-cluster
   interval: 24h
   labels:
     preset-service-account: "true"
@@ -15,13 +14,6 @@ periodics:
       - --
       - ./tests/e2e/manifests/verify_manifest_lists.sh
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
-      resources:
-        limits:
-          memory: "9000Mi"
-          cpu: 2000m
-        requests:
-          memory: "9000Mi"
-          cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-all
     testgrid-tab-name: periodic-manifest-lists
