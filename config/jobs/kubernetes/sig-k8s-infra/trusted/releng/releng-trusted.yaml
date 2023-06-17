@@ -366,3 +366,24 @@ periodics:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-blocking
     testgrid-tab-name: git-repo-kubernetes-fast-forward
+- name: periodic-release-verify-image-signatures
+  cluster: k8s-infra-prow-build-trusted
+  interval: 4h
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: verify-image-signatures
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.1-0
+      imagePullPolicy: Always
+      command:
+        - /kpromo
+        - --from-days=7
+      args:
+        - sigcheck
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
