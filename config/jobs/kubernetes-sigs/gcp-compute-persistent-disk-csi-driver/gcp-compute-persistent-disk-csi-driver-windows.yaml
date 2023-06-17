@@ -48,6 +48,7 @@ periodics:
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows-2019
+    cluster: k8s-infra-prow-build
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -88,6 +89,9 @@ presubmits:
             # this is mostly for building kubernetes
             memory: "9000Mi"
             # during the tests more like 3-20m is used
+            cpu: 2000m
+          limits:
+            memory: "9000Mi"
             cpu: 2000m
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver

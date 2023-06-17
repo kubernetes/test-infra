@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e
+    cluster: k8s-infra-prow-build
     always_run: true
     labels:
       preset-service-account: "true"
@@ -17,6 +18,13 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-e2e.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         env:
         - name: ZONE
           value: us-central1-c
@@ -25,6 +33,7 @@ presubmits:
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-e2e
       description: Kubernetes e2e tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -40,11 +49,19 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-sanity.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-sanity
       description: Kubernetes sanity tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -60,11 +77,19 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-unit.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-unit
       description: Kubernetes unit tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -89,12 +114,16 @@ presubmits:
             # Peak usage was measured at 4.5 Gi
             memory: "6000Mi"
             # Peak cpu usage was measured at 2500m, average close to 1000m
-            cpu: 2000m
+            cpu: 3000m
+          limits:
+            memory: "6000Mi"
+            cpu: 3000m
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-verify
       description: Kubernetes verify tests for Kubernetes Master branch and Driver latest build
   - name: pull-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -125,6 +154,9 @@ presubmits:
             # this is mostly for building kubernetes
             memory: "9000Mi"
             # during the tests more like 3-20m is used
+            cpu: 2000m
+          limits:
+            memory: "9000Mi"
             cpu: 2000m
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
