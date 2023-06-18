@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
   - name: openstack-cloud-csi-cinder-sanity-test-release-124
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/)'
     decorate: true
@@ -14,12 +15,20 @@ presubmits:
         - make
         args:
         - test-cinder-csi-sanity
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
       testgrid-tab-name: presubmit-sanity-test-release-1.24
       description: Run cloud-provider-openstack csi sanity tests for cinder-csi-plugin
 
   - name: openstack-cloud-controller-manager-e2e-test-release-124
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -45,14 +54,18 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
             requests:
-              memory: "1Gi"
-              cpu: 1
+              cpu: 2
+              memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
       testgrid-tab-name: presubmit-e2e-test-release-1.24
 
   - name: openstack-cloud-csi-cinder-e2e-test-release-124
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -78,14 +91,18 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
             requests:
-              memory: "1Gi"
-              cpu: 1
+              cpu: 2
+              memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
       testgrid-tab-name: presubmit-e2e-test-release-1.24
 
   - name: openstack-cloud-csi-manila-e2e-test-release-124
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -111,14 +128,18 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
             requests:
-              memory: "1Gi"
-              cpu: 1
+              cpu: 2
+              memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
       testgrid-tab-name: presubmit-e2e-test-release-1.24
 
   - name: openstack-cloud-csi-manila-sanity-test-release-124
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/)'
     decorate: true
@@ -132,6 +153,13 @@ presubmits:
         - make
         args:
         - test-manila-csi-sanity
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
       testgrid-tab-name: presubmit-sanity-test-release-1.24
