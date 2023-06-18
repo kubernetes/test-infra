@@ -838,7 +838,7 @@ periodics:
 # Please keep this in sync with the `pull-test-infra-prow-checkconfig` job
 - name: ci-test-infra-prow-checkconfig
   interval: 5m
-  cluster: test-infra-trusted
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -862,5 +862,14 @@ periodics:
       - --warnings=validate-urls
       - --warnings=unknown-fields
       - --warnings=duplicate-job-refs
+      resources:
+        requests:
+          cpu: "1"
+          memory: "2Gi"
+        limits:
+          cpu: "1"
+          memory: "2Gi"
   annotations:
     testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '10'
