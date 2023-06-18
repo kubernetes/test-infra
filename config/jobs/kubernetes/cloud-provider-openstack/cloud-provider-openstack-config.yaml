@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
   - name: pull-cloud-provider-openstack-check
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_branches:
     - gh-pages
@@ -17,8 +18,16 @@ presubmits:
         - --
         - make
         - check
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
   - name: pull-cloud-provider-openstack-test
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_branches:
     - gh-pages
@@ -35,3 +44,10 @@ presubmits:
         - --
         - make
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
