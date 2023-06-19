@@ -15,10 +15,10 @@ presubmits:
         - ci/prow/build
         resources:
           limits:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
   - name: pull-kernel-module-management-check-api-changes
     cluster: eks-prow-build-cluster
@@ -50,10 +50,10 @@ presubmits:
           value: '0'
         resources:
           limits:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
   - name: pull-kernel-module-management-check-commits-count
     cluster: eks-prow-build-cluster
@@ -70,10 +70,10 @@ presubmits:
         - ci/prow/check-commits-count
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
   - name: pull-kernel-module-management-lint
     cluster: eks-prow-build-cluster
@@ -90,10 +90,10 @@ presubmits:
         - ci/prow/lint
         resources:
           limits:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
   - name: pull-kernel-module-management-unit-tests
     cluster: eks-prow-build-cluster
@@ -110,8 +110,8 @@ presubmits:
         - ci/prow/unit-tests
         resources:
           limits:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 6
             memory: 4Gi

@@ -62,10 +62,10 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 4
+            cpu: 8
             memory: 6Gi
           requests:
-            cpu: 4
+            cpu: 8
             memory: 6Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits

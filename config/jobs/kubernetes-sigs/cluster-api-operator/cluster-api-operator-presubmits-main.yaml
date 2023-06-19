@@ -18,10 +18,10 @@ presubmits:
         - ./scripts/ci-build.sh
         resources:
           requests:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
           limits:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
@@ -75,10 +75,10 @@ presubmits:
         - ./scripts/ci-apidiff.sh
         resources:
           requests:
-            cpu: "1"
+            cpu: "4"
             memory: "2Gi"
           limits:
-            cpu: "1"
+            cpu: "4"
             memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
@@ -101,10 +101,10 @@ presubmits:
         - ./scripts/ci-verify.sh
         resources:
           requests:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
           limits:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
@@ -127,10 +127,10 @@ presubmits:
         - ./scripts/ci-test.sh
         resources:
           requests:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
           limits:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator

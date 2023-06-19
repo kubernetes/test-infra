@@ -43,10 +43,10 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.25
         resources:
           requests:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
           limits:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws

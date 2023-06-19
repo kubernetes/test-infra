@@ -37,10 +37,10 @@ presubmits:
         resources:
           requests:
             memory: "2000Mi"
-            cpu: 2
+            cpu: 4
           limits:
             memory: "2000Mi"
-            cpu: 2
+            cpu: 4
 
   - name: pull-minikube-platform-tests
     cluster: eks-prow-build-cluster

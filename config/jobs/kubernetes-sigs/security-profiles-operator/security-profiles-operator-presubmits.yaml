@@ -79,10 +79,10 @@ presubmits:
         resources:
           requests:
             memory: 1Gi
-            cpu: 2
+            cpu: 4
           limits:
             memory: 1Gi
-            cpu: 2
+            cpu: 4
         command:
         - runner.sh
         args:

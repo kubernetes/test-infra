@@ -89,10 +89,10 @@ presubmits:
         - --warnings=unknown-fields-all
         resources:
           requests:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
           limits:
-            cpu: "1"
+            cpu: "2"
             memory: "2Gi"
     annotations:
       testgrid-dashboards: presubmits-test-infra

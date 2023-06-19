@@ -15,10 +15,10 @@ presubmits:
         - "./scripts/ci-test.sh"
         resources:
           limits:
-            cpu: 4
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 4
+            cpu: 6
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
@@ -38,10 +38,10 @@ presubmits:
         - "./scripts/ci-build.sh"
         resources:
           limits:
-            cpu: 4
+            cpu: 5
             memory: 4Gi
           requests:
-            cpu: 4
+            cpu: 5
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp

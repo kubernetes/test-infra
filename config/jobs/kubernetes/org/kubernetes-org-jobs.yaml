@@ -15,10 +15,10 @@ presubmits:
         - test
         resources:
           limits:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
     annotations:
       testgrid-num-columns-recent: '30'
@@ -39,10 +39,10 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 2
+            cpu: 4
             memory: 4Gi
     annotations:
       testgrid-num-columns-recent: '30'

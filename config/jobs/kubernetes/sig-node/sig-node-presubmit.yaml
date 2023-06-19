@@ -2014,10 +2014,10 @@ presubmits:
                 value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             resources:
               limits:
-                cpu: 4
+                cpu: 6
                 memory: 6Gi
               requests:
-                cpu: 4
+                cpu: 6
                 memory: 6Gi
     - name: pull-kubernetes-node-arm64-e2e-containerd-ec2-canary
       # duplicate job of in the k/k repo to test changes in provider-aws-test-infra repo
