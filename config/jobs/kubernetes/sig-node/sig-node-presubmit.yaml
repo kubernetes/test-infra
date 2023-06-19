@@ -167,6 +167,9 @@ presubmits:
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
               value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
           resources:
             limits:
               cpu: 4
@@ -2062,6 +2065,9 @@ presubmits:
                 value: aws-instance-arm64.yaml
               - name: TEST_ARGS
                 value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
             resources:
               limits:
                 cpu: 4
