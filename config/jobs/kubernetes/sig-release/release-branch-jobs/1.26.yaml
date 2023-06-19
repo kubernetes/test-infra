@@ -537,6 +537,7 @@ presubmits:
     branches:
     - release-1.26
     context: pull-kubernetes-e2e-kops-aws
+    cluster: eks-prow-build-cluster
     labels:
       preset-aws-credential: "true"
       preset-aws-ssh: "true"
@@ -579,7 +580,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.26
         name: ""
         resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
           requests:
+            cpu: "2"
             memory: 6Gi
         securityContext:
           privileged: true
@@ -905,6 +910,7 @@ presubmits:
     branches:
     - release-1.26
     context: pull-kubernetes-e2e-gce-device-plugin-gpu
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
@@ -941,7 +947,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.26
         name: ""
         resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
           requests:
+            cpu: "2"
             memory: 6Gi
         securityContext:
           privileged: true
@@ -991,6 +1001,7 @@ presubmits:
     branches:
     - release-1.26
     context: pull-kubernetes-e2e-containerd-gce
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
@@ -1023,7 +1034,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.26
         name: ""
         resources:
+          limits:
+            cpu: "2"
+            memory: 6Gi
           requests:
+            cpu: "2"
             memory: 6Gi
         securityContext:
           privileged: true
@@ -1069,6 +1084,7 @@ presubmits:
     branches:
     - release-1.26
     context: pull-kubernetes-node-e2e-containerd-kubetest2
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 1h5m0s
@@ -1755,6 +1771,7 @@ presubmits:
     branches:
     - release-1.26
     context: pull-perf-tests-clusterloader2
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 2h0m0s
@@ -1821,6 +1838,7 @@ presubmits:
     branches:
     - release-1.26
     context: pull-perf-tests-clusterloader2-kubemark
+    cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
       timeout: 2h0m0s
