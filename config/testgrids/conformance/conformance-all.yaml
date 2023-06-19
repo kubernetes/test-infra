@@ -11,6 +11,7 @@ dashboard_groups:
     - conformance-ppc64le
     - conformance-gardener
     - conformance-s390x
+    - conformance-arm64
 
 dashboards:
 - name: conformance-all
@@ -353,7 +354,18 @@ dashboards:
     code_search_url_template: # The URL template to visit when searching for changelists
       url: https://github.com/google/cel-go/compare/<start-custom-0>...<end-custom-0>
 
+# arm64 dashboard
+- name: conformance-arm64
+  dashboard_tab:
+    - name: Periodic arm64 conformance test
+      test_group_name: arm64-conformance-containerd
+      description: Runs conformance tests against latest version of kubernetes with containerd as runtime on local arm64 cluster
+
 test_groups:
+# arm64 conformance Test Groups
+- name: arm64-conformance-containerd
+  gcs_prefix: arm64-k8s-test/logs/conformance-arm64
+
 # cloud-provider-huaweicloud e2e conformance Test Groups
 - name: cloud-provider-huaweicloud-e2e-conformance-release-v1.17
   gcs_prefix: k8s-conform-huaweicloud/cloud-provider-huaweicloud/e2e-conformance-release-v1.17
