@@ -1924,7 +1924,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-ipv6-karpenter
 
-# {"cloud": "aws", "distro": "rhel8", "extra_flags": "--kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "SELinuxMount", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "distro": "rhel8", "extra_flags": "--kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod --set=Containerd.SeLinuxEnabled=true --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "SELinuxMount", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-selinux
   cron: '38 1-23/8 * * *'
   labels:
@@ -1953,7 +1953,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.8.0_HVM-20230503-x86_64-54-Hourly2-GP2' --channel=alpha --networking=cilium --kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-8.8.0_HVM-20230503-x86_64-54-Hourly2-GP2' --channel=alpha --networking=cilium --kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod --set=Containerd.SeLinuxEnabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=SELinuxMount \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -1983,7 +1983,7 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/distro: rhel8
-    test.kops.k8s.io/extra_flags: --kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod --set=Containerd.SeLinuxEnabled=true --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/feature_flags: SELinuxMount
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha

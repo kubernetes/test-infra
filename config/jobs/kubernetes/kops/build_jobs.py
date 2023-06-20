@@ -780,7 +780,10 @@ def generate_misc():
                    k8s_version="ci",
                    kops_channel="alpha",
                    feature_flags=['SELinuxMount'],
-                   extra_flags=["--kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod"], # pylint: disable=line-too-long
+                   extra_flags=[
+                       "--kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod",
+                       "--set=Containerd.SeLinuxEnabled=true"
+                   ],
                    focus_regex=r"\[Feature:SELinux\]",
                    # Skip:
                    # - Feature:Volumes: skips iSCSI and Ceph tests, they don't have client tools
