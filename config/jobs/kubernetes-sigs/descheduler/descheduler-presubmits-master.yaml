@@ -21,10 +21,10 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
   - name: pull-descheduler-verify-build-master
     cluster: eks-prow-build-cluster
@@ -46,10 +46,10 @@ presubmits:
         - build
         resources:
           limits:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
   - name: pull-descheduler-unit-test-master-master
     cluster: eks-prow-build-cluster
@@ -72,10 +72,10 @@ presubmits:
         - test-unit
         resources:
           limits:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 6
             memory: 4Gi
   - name: pull-descheduler-test-e2e-k8s-master-1-27
     cluster: eks-prow-build-cluster
@@ -110,10 +110,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
   - name: pull-descheduler-test-e2e-k8s-master-1-26
     cluster: eks-prow-build-cluster
@@ -148,10 +148,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
   - name: pull-descheduler-test-e2e-k8s-master-1-25
     cluster: eks-prow-build-cluster
@@ -186,8 +186,8 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
