@@ -2,15 +2,11 @@
 
 reviewers:
 - cpanato
-- detiber
 - justinsb
-- krousey
 - vincepri
 approvers:
 - cpanato
-- detiber
 - justinsb
-- krousey
 - vincepri
 
 labels:
@@ -19,3 +15,5 @@ labels:
 
 emeritus_approvers:
 - maisem
+- detiber
+- krousey
