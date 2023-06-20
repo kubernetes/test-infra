@@ -38,6 +38,7 @@ baseImageOverrides:
   # external
   k8s.io/test-infra/prow/external-plugins/cherrypicker: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/external-plugins/refresh: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/external-plugins/chatgpt: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/ghproxy: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/label_sync: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/robots/commenter: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
@@ -308,6 +309,13 @@ builds:
   - -s -w
   - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
   - -X k8s.io/test-infra/prow/version.Name=cherrypicker
+- id: chatgpt
+  dir: .
+  main: prow/external-plugins/chatgpt
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=chatgpt  
 - id: refresh
   dir: .
   main: prow/external-plugins/refresh

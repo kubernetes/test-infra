@@ -1,0 +1,7 @@
+---
+token: <openai-token>
+base_url: https://<api-url>/
+api_type: AZURE
+api_version: 2023-03-15-preview
+engine: <deploy-engine-name>
+model: gpt-3.5-turbo

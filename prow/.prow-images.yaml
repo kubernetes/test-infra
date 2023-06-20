@@ -39,6 +39,7 @@ images:
   - dir: prow/external-plugins/needs-rebase
   - dir: prow/external-plugins/cherrypicker
   - dir: prow/external-plugins/refresh
+  - dir: prow/external-plugins/chatgpt
   - dir: ghproxy
   - dir: label_sync
   - dir: robots/commenter

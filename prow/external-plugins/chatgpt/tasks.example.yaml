@@ -1,0 +1,18 @@
+org1:
+  review-task1: {}
+  review-task2: {}
+org2/repo2:
+  review-taskA: {}
+  review-taskB:
+    description: review summary
+    system_message: |
+      You are an experienced software developer. You will act as a reviewer for a GitHub Pull Request, and you should answer by markdown format.
+    user_prompt: |
+      Please help me to review the github pull request: identify potential problems and give some fixing suggestions.
+    patch_introduce_prompt: |
+      "This is the diff for the pull request:"
+    output_static_head_note: 
+    external_contexts:
+      - prompt_tpl: |
+          This the context about context A: %s
+        res_url: https://external.site/resource.html
