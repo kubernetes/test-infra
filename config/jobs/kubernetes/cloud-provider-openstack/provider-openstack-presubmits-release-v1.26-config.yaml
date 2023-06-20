@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
   - name: openstack-cloud-controller-manager-e2e-test-release-126
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -38,7 +38,7 @@ presubmits:
       testgrid-tab-name: presubmit-e2e-test-release-1.26
 
   - name: openstack-cloud-csi-cinder-e2e-test-release-126
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -75,7 +75,7 @@ presubmits:
       testgrid-tab-name: presubmit-e2e-test-release-1.26
 
   - name: openstack-cloud-csi-manila-e2e-test-release-126
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
