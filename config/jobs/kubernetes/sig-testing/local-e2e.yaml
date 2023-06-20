@@ -17,7 +17,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
         env:
         - name: DOCKER_IN_DOCKER_IPV6_ENABLED
           value: "true"
@@ -63,7 +63,7 @@ periodics:
   cluster: eks-prow-build-cluster
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
       env:
       - name: DOCKER_IN_DOCKER_IPV6_ENABLED
         value: "true"
