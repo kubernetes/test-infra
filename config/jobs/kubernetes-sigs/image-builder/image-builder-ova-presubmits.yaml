@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/image-builder:
     - name: pull-ova-all
+      cluster: eks-prow-build-cluster
       labels:
         preset-dind-enabled: "true"
         preset-kind-volume-mounts: "true"
@@ -20,6 +21,10 @@ presubmits:
             resources:
               requests:
                 cpu: "1000m"
+                memory: "4Gi"
+              limits:
+                cpu: "1000m"
+                memory: "4Gi"
             securityContext:
               privileged: true
               capabilities:
