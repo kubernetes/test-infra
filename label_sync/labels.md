@@ -214,6 +214,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/provider/control-plane-kubeadm" href="#area/provider/control-plane-kubeadm">`area/provider/control-plane-kubeadm`</a> | Issues or PRs related to KCP| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/provider/core" href="#area/provider/core">`area/provider/core`</a> | Issues or PRs related to the core provider| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/provider/infrastructure-docker" href="#area/provider/infrastructure-docker">`area/provider/infrastructure-docker`</a> | Issues or PRs related to the docker infrastructure provider| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/provider/infrastructure-in-memory" href="#area/provider/infrastructure-in-memory">`area/provider/infrastructure-in-memory`</a> | Issues or PRs related to the in-memory infrastructure provider| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/release" href="#area/release">`area/release`</a> | Issues or PRs related to releasing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/runtime-sdk" href="#area/runtime-sdk">`area/runtime-sdk`</a> | Issues or PRs related to Runtime SDK| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/security" href="#area/security">`area/security`</a> | Issues or PRs related to security| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
