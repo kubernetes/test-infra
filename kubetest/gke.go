@@ -64,6 +64,8 @@ var (
 	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 	gkeDownTimeout                 = flag.Duration("gke-down-timeout", 1*time.Hour, "(gke only) Timeout for gcloud container clusters delete call. Defaults to 1 hour which matches gcloud's default.")
 	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
+	gkeNetworkDeletionAttempts     = flag.Int("gke-network-deletion-attempts", 3, `(gke-only) Number of attempts to try to remove the network, effective only when '--gke-remove-network' is true`)
+	gkeWaitToRetryDuration         = flag.Duration("gke-wait-to-retry-duration", time.Minute, `(gke-only) Duration to sleep before attempting to retry a process. Currently used to retry deletin the network`)
 	gkeDumpConfigMaps              = flag.String("gke-dump-configmaps", "[]", `(gke-only) A JSON description of ConfigMaps to dump as part of gathering cluster logs. Note: --dump or --dump-pre-test-logs flags must also be set. Example: '[{"Name":"my-map", "Namespace":"default", "DataKey":"my-data-key"}]`)
 	gkeDumpAdditionalLogsCmd       = flag.String("gke-dump-additional-logs-cmd", "", "(gke-only) if set, run this command to dump cluster logs.")
 
@@ -994,8 +996,8 @@ func (g *gkeDeployer) Down() error {
 	}
 	var errNetwork error
 	if *gkeRemoveNetwork {
-		errNetwork = control.FinishRunning(exec.Command("gcloud", "compute", "networks", "delete", "-q", g.network,
-			"--project="+g.project))
+		errNetwork = retryCommand(exec.Command("gcloud", "compute", "networks", "delete", "-q", g.network,
+			"--project="+g.project), *gkeNetworkDeletionAttempts)
 	}
 	if errCluster != nil {
 		return fmt.Errorf("error deleting cluster: %w", errCluster)
@@ -1049,4 +1051,23 @@ func (g *gkeDeployer) KubectlCommand() (*exec.Cmd, error) { return nil, nil }
 
 func wrapErrors(stage string, errs ...error) error {
 	return fmt.Errorf("%s encountered %d errors: %v", stage, len(errs), errs)
+}
+
+func retryCommand(cmd *exec.Cmd, attemptsCount int) error {
+	attemptsLeft := attemptsCount
+	var err error
+	for attemptsLeft > 0 && err == nil {
+		err = control.FinishRunning(cmd)
+		attemptsLeft -= 1
+		if err == nil {
+			return nil
+		}
+		if attemptsLeft > 0 {
+			log.Printf("Found error while executing command '%s', retrying in '%s'", cmd.String(), gkeWaitToRetryDuration.String())
+			sleep(*gkeWaitToRetryDuration)
+		} else {
+			log.Printf("Found error while executing command '%s'. Not retrying, no more attempts left.", cmd.String())
+		}
+	}
+	return err
 }
