@@ -3,10 +3,12 @@
 reviewers:
 - cpanato
 - justinsb
+- richardcase
 - vincepri
 approvers:
 - cpanato
 - justinsb
+- richardcase
 - vincepri
 
 labels:
