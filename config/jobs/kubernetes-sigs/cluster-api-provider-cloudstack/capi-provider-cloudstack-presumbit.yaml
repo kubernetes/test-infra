@@ -47,6 +47,7 @@ presets:
 presubmits:
   kubernetes-sigs/cluster-api-provider-cloudstack:
   - name: capi-provider-cloudstack-presubmit-build
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -78,6 +79,7 @@ presubmits:
             memory: "8Gi"
             cpu: "1024m"
   - name: capi-provider-cloudstack-presubmit-unit-test
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -130,10 +132,10 @@ presubmits:
       - name: build-container
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.25
         command:
-          - runner.sh
+        - runner.sh
         args:
-          - make
-          - run-e2e-smoke
+        - make
+        - run-e2e-smoke
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
