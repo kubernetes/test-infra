@@ -25,7 +25,6 @@ presubmits:
       testgrid-dashboards: sig-contribex-community
       testgrid-tab-name: pull-verify
   - name: pull-community-tempelis-check
-    cluster: eks-prow-build-cluster
     decorate: true
     branches:
     - ^master$
