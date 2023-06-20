@@ -1892,6 +1892,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: approvers
+      - color: c7def8
+        description: Categorizes issue or PR as related to design.
+        name: kind/design
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the APIs
         name: area/api
@@ -1922,12 +1928,6 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
-      - color: c7def8
-        description: Categorizes issue or PR as related to design.
-        name: kind/design
-        target: both
-        prowPlugin: label
-        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the hosting of release artifacts
         name: area/artifacts
@@ -1940,6 +1940,12 @@ repos:
         target: both
         addedBy: anyone
         prowPlugin: label
+      - color: 0052cc
+        description: Issues or PRs related to ci
+        name: area/ci
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
