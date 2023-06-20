@@ -54,7 +54,7 @@ periodics:
     interval: 12h
     annotations:
       testgrid-dashboards: sig-node-containerd
-      testgrid-tab-name: cos-cgroupv1-containerd-node-e2e-serial-ec2
+      testgrid-tab-name: ci-cgroupv1-containerd-node-e2e-serial-ec2
     labels:
       preset-e2e-containerd-ec2: "true"
     cluster: eks-prow-build-cluster
