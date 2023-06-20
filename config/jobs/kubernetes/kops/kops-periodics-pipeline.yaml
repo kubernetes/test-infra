@@ -68,6 +68,72 @@ periodics:
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kopsmaster
 
+# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.27", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+- name: e2e-kops-pipeline-updown-kops127
+  cron: '48 0-23/1 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230608' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
+          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.27/latest-ci.txt \
+          --publish-version-marker=gs://kops-ci/markers/release-1.27/latest-ci-updown-green.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable-1.27.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-package-marker=stable-1.27.txt \
+          --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
+          --skip-regex="\[Slow\]|\[Serial\]" \
+          --parallel=25
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          memory: 3Gi
+        requests:
+          cpu: "2"
+          memory: 3Gi
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/k8s_version: '1.27'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: calico
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.27, kops-latest, kops-versions, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '11'
+    testgrid-tab-name: kops-pipeline-updown-kops127
+
 # {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.26", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-pipeline-updown-kops126
   cron: '46 0-23/1 * * *'
@@ -133,69 +199,3 @@ periodics:
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.26, kops-latest, kops-versions, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kops126
-
-# {"cloud": "aws", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.25", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-pipeline-updown-kops125
-  cron: '20 0-23/1 * * *'
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 90m
-  extra_refs:
-  - org: kubernetes
-    repo: kops
-    base_ref: master
-    workdir: true
-    path_alias: k8s.io/kops
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      args:
-      - bash
-      - -c
-      - |
-        make test-e2e-install
-        kubetest2 kops \
-          -v 2 \
-          --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230608' --channel=alpha --networking=calico --discovery-store=s3://k8s-kops-prow/discovery" \
-          --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.25/latest-ci.txt \
-          --publish-version-marker=gs://kops-ci/markers/release-1.25/latest-ci-updown-green.txt \
-          --kubernetes-version=https://dl.k8s.io/release/stable-1.25.txt \
-          --test=kops \
-          -- \
-          --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
-          --test-package-marker=stable-1.25.txt \
-          --focus-regex="\[k8s.io\]\sNetworking.*\[Conformance\]" \
-          --skip-regex="\[Slow\]|\[Serial\]" \
-          --parallel=25
-      env:
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: KUBE_SSH_USER
-        value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
-      imagePullPolicy: Always
-      resources:
-        limits:
-          memory: 3Gi
-        requests:
-          cpu: "2"
-          memory: 3Gi
-  annotations:
-    test.kops.k8s.io/cloud: aws
-    test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
-    test.kops.k8s.io/k8s_version: '1.25'
-    test.kops.k8s.io/kops_channel: alpha
-    test.kops.k8s.io/kops_version: ''
-    test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-k8s-1.25, kops-latest, kops-versions, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '11'
-    testgrid-tab-name: kops-pipeline-updown-kops125
