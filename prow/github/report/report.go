@@ -28,7 +28,6 @@ import (
 	"text/template"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -122,7 +121,7 @@ func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Temp
 	if err := ReportStatusContext(ctx, ghc, pj, config); err != nil {
 		return err
 	}
-	return ReportComment(ctx, ghc, reportTemplate, []v1.ProwJob{pj}, config, false)
+	return ReportComment(ctx, ghc, reportTemplate, []prowapi.ProwJob{pj}, config, false)
 }
 
 // ReportStatusContext reports prowjob status on a PR.
@@ -155,7 +154,7 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 		return errors.New("trying to report pj, but found empty github client")
 	}
 
-	var validPjs []v1.ProwJob
+	var validPjs []prowapi.ProwJob
 	for _, pj := range pjs {
 		// Report manually aborted Jenkins jobs and jobs with invalid pod specs alongside
 		// test successes/failures.
@@ -195,7 +194,7 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 	// This could be due to a push while pjs are running.
 	aborted := false
 	for _, pj := range validPjs {
-		if pj.Status.State == v1.AbortedState {
+		if pj.Status.State == prowapi.AbortedState {
 			aborted = true
 			break
 		}

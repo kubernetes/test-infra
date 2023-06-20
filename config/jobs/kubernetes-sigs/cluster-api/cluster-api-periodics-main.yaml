@@ -16,7 +16,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
       command:
       - runner.sh
       - ./scripts/ci-test.sh
@@ -45,7 +45,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
       command:
       - runner.sh
       - ./scripts/ci-test.sh
@@ -91,13 +91,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
           - name: GINKGO_SKIP
-            value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+            value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]|\\[Scale\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -133,7 +133,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -142,7 +142,7 @@ periodics:
           - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
             value: "true"
           - name: GINKGO_SKIP
-            value: "\\[Conformance\\] \\[K8s-Upgrade\\]"
+            value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[Scale\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -178,13 +178,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
       env:
       - name: GINKGO_SKIP
-        value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+        value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]|\\[Scale\\]"
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
       - name: KUBERNETES_VERSION_MANAGEMENT

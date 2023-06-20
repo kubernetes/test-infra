@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kubespray:
   - name: pull-kubespray-yamllint
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kubespray
       testgrid-tab-name: yamllint
@@ -14,3 +15,10 @@ presubmits:
         - yamllint
         - "--strict"
         - .
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi

@@ -29,7 +29,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
@@ -529,11 +528,11 @@ func TestLatestRerun(t *testing.T) {
 				}
 			} else if !tc.rerunCreatesJob && tc.httpCode == http.StatusOK {
 				expectedProwJob := prowapi.ProwJob{
-					TypeMeta: v1.TypeMeta{
+					TypeMeta: metav1.TypeMeta{
 						Kind:       "ProwJob",
 						APIVersion: "prow.k8s.io/v1",
 					},
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
 							"created-by-prow":                 "true",
 							"foo":                             "foo",
@@ -591,7 +590,7 @@ func TestLatestRerun(t *testing.T) {
 					t.Fatalf("Error unmarshaling: %v", err)
 				}
 				// These two fields are undeterministic so there are being set to the default
-				res.Status.StartTime = v1.Time{}
+				res.Status.StartTime = metav1.Time{}
 				res.ObjectMeta.Name = ""
 				if diff := cmp.Diff(expectedProwJob, res); diff != "" {
 					t.Fatalf("Job mismatch. Want: (-), got: (+). \n%s", diff)

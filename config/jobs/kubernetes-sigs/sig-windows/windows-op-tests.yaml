@@ -24,10 +24,10 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh

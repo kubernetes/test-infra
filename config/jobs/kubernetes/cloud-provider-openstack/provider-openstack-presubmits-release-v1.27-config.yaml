@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
   - name: openstack-cloud-controller-manager-e2e-test-release-127
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -16,7 +17,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -26,14 +27,18 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
             requests:
-              memory: "1Gi"
-              cpu: 1
+              cpu: 2
+              memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
       testgrid-tab-name: presubmit-e2e-test-release-1.27
 
   - name: openstack-cloud-csi-cinder-e2e-test-release-127
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -49,7 +54,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -59,14 +64,18 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
             requests:
-              memory: "1Gi"
-              cpu: 1
+              cpu: 2
+              memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
       testgrid-tab-name: presubmit-e2e-test-release-1.27
 
   - name: openstack-cloud-csi-manila-e2e-test-release-127
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -82,7 +91,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -92,14 +101,18 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
             requests:
-              memory: "1Gi"
-              cpu: 1
+              cpu: 2
+              memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
       testgrid-tab-name: presubmit-e2e-test-release-1.27
 
   - name: openstack-cloud-csi-cinder-sanity-test-release-127
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/)'
     decorate: true
@@ -108,17 +121,25 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
         command:
         - make
         args:
         - test-cinder-csi-sanity
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
       testgrid-tab-name: presubmit-sanity-test-release-1.27
       description: Run cloud-provider-openstack csi sanity tests for cinder-csi-plugin
 
   - name: openstack-cloud-csi-manila-sanity-test-release-127
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/)'
     decorate: true
@@ -127,11 +148,18 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
         command:
         - make
         args:
         - test-manila-csi-sanity
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
       testgrid-tab-name: presubmit-sanity-test-release-1.27

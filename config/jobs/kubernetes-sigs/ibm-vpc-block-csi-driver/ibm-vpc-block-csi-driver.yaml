@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/ibm-vpc-block-csi-driver:
   - name: pull-ibm-vpc-block-csi-driver-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
@@ -14,14 +15,22 @@ presubmits:
       description: Build test in ibm-vpc-block-csi-driver repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
         command:
         - runner.sh
         args:
         - make
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         securityContext:
           privileged: true
   - name: pull-ibm-vpc-block-csi-driver-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -38,8 +47,16 @@ presubmits:
         - make
         args:
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
   - name: pull-ibm-vpc-block-csi-driver-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -56,8 +73,16 @@ presubmits:
         - make
         args:
         - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
   - name: pull-ibm-vpc-block-csi-driver-sanity
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     skip_branches:
@@ -74,3 +99,10 @@ presubmits:
         - make
         args:
         - test-sanity
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

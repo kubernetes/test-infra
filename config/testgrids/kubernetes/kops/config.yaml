@@ -14,8 +14,10 @@ dashboard_groups:
   - kops-distro-amzn2
   - kops-distro-deb10
   - kops-distro-deb11
+  - kops-distro-deb12
   - kops-distro-flatcar
   - kops-distro-rhel8
+  - kops-distro-rhel9
   - kops-distro-rocky8
   - kops-distro-u1804
   - kops-distro-u2004
@@ -48,8 +50,10 @@ dashboards:
 - name: kops-distro-amzn2
 - name: kops-distro-deb10
 - name: kops-distro-deb11
+- name: kops-distro-deb12
 - name: kops-distro-flatcar
 - name: kops-distro-rhel8
+- name: kops-distro-rhel9
 - name: kops-distro-rocky8
 - name: kops-distro-u1804
 - name: kops-distro-u2004

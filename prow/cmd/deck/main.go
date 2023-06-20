@@ -51,7 +51,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	pkgFlagutil "k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -137,7 +136,7 @@ type options struct {
 	allowInsecure         bool
 	controllerManager     prowflagutil.ControllerManagerOptions
 	dryRun                bool
-	tenantIDs             flagutil.Strings
+	tenantIDs             prowflagutil.Strings
 }
 
 func (o *options) Validate() error {

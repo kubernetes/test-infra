@@ -33,7 +33,6 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	pkgio "k8s.io/test-infra/prow/io"
@@ -245,7 +244,7 @@ func (sg *Spyglass) JobPath(src string) (string, error) {
 			// fallback to gs/ if bucket name is given without storage type
 			bktName = fmt.Sprintf("%s/%s", providers.GS, bktName)
 		}
-		if job.Spec.Type == prowv1.PresubmitJob {
+		if job.Spec.Type == prowapi.PresubmitJob {
 			return path.Join(bktName, gcs.PRLogs, "directory", jobName), nil
 		}
 		return path.Join(bktName, gcs.NonPRLogs, jobName), nil
@@ -404,7 +403,7 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 
 // ExtraLinks fetches started.json and extracts links from metadata.links.
 func (sg *Spyglass) ExtraLinks(ctx context.Context, src string) ([]ExtraLink, error) {
-	artifacts, err := sg.FetchArtifacts(ctx, src, "", 1000000, []string{prowv1.StartedStatusFile})
+	artifacts, err := sg.FetchArtifacts(ctx, src, "", 1000000, []string{prowapi.StartedStatusFile})
 	// Failing to parse src, that's an error.
 	if err != nil {
 		return nil, err

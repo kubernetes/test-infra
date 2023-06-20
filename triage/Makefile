@@ -20,9 +20,6 @@ build:
 test:
 	go test ./...
 
-push:
-  ../../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-scratch triage
-
 STATIC_FILES=index.html interactive.js model.js render.js style.css
 
 # these need to be run by k8s-infra-prow or community members with access to the kubernetes.io GCP org

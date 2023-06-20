@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/security-profiles-operator:
   - name: pull-security-profiles-operator-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -11,8 +12,16 @@ presubmits:
       - image: golang:1.20
         command:
         - hack/pull-security-profiles-operator-build
+        resources:
+          limits:
+            cpu: 8
+            memory: 4Gi
+          requests:
+            cpu: 8
+            memory: 4Gi
 
   - name: pull-security-profiles-operator-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -23,8 +32,16 @@ presubmits:
       - image: golang:1.20
         command:
         - hack/pull-security-profiles-operator-verify
+        resources:
+          limits:
+            cpu: 12
+            memory: 8Gi
+          requests:
+            cpu: 12
+            memory: 8Gi
 
   - name: pull-security-profiles-operator-test-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -35,8 +52,16 @@ presubmits:
       - image: golang:1.20
         command:
         - hack/pull-security-profiles-operator-test-unit
+        resources:
+          limits:
+            cpu: 8
+            memory: 4Gi
+          requests:
+            cpu: 8
+            memory: 4Gi
 
   - name: pull-security-profiles-operator-build-image
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -48,19 +73,23 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
         securityContext:
           privileged: true  # for dind
         resources:
           requests:
-            memory: 9000Mi
-            cpu: 7500m
+            memory: 1Gi
+            cpu: 2
+          limits:
+            memory: 1Gi
+            cpu: 2
         command:
         - runner.sh
         args:
         - hack/pull-security-profiles-operator-build-image
 
   - name: pull-security-profiles-operator-test-e2e
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -74,16 +103,16 @@ presubmits:
       hostNetwork: true
       hostPID: true
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
         securityContext:
           privileged: true  # for dind
         resources:
           requests:
-            memory: 9000Mi
-            cpu: 7500m
+            memory: 2Gi
+            cpu: 5
           limits:
-            memory: 10000Mi
-            cpu: 7500m
+            memory: 2Gi
+            cpu: 5
         command:
         - runner.sh
         args:
@@ -96,4 +125,4 @@ presubmits:
       - name: varlog
         hostPath:
           path: /var/log/audit
-          type: Directory
+          type: DirectoryOrCreate

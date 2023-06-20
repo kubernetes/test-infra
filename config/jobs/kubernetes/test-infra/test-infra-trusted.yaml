@@ -171,7 +171,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20230605-b63f6f76cb
+      - image: gcr.io/k8s-prow/hmac:v20230613-9df263832f
         command:
         - hmac
         args:
@@ -221,7 +221,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-test-infra
         command:
         - runner.sh
         args:
@@ -387,7 +387,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20230605-b63f6f76cb
+        image: gcr.io/k8s-prow/gencred:v20230613-9df263832f
         command:
         - gencred
         args:
@@ -434,7 +434,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20230605-b63f6f76cb
+      - image: gcr.io/k8s-prow/configurator:v20230613-9df263832f
         command:
         - configurator
         args:
@@ -493,7 +493,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.6.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.2-0
         command:
         - /kpromo
         args:
@@ -582,7 +582,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230605-b63f6f76cb
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230613-9df263832f
       command:
       - generic-autobumper
       args:
@@ -619,7 +619,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20230605-b63f6f76cb
+    - image: gcr.io/k8s-prow/generic-autobumper:v20230613-9df263832f
       command:
       - generic-autobumper
       args:
@@ -689,7 +689,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20230605-b63f6f76cb
+      image: gcr.io/k8s-prow/branchprotector:v20230613-9df263832f
       command:
       - branchprotector
       args:
@@ -723,7 +723,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20230605-b63f6f76cb
+      image: gcr.io/k8s-prow/label_sync:v20230613-9df263832f
       command:
       - label_sync
       args:
@@ -767,7 +767,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20230605-b63f6f76cb
+      image: gcr.io/k8s-prow/gencred:v20230613-9df263832f
       command:
       - gencred
       args:
@@ -838,7 +838,7 @@ periodics:
 # Please keep this in sync with the `pull-test-infra-prow-checkconfig` job
 - name: ci-test-infra-prow-checkconfig
   interval: 5m
-  cluster: test-infra-trusted
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes
@@ -846,7 +846,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20230605-b63f6f76cb
+    - image: gcr.io/k8s-prow/checkconfig:v20230613-9df263832f
       command:
       - checkconfig
       args:
@@ -862,5 +862,14 @@ periodics:
       - --warnings=validate-urls
       - --warnings=unknown-fields
       - --warnings=duplicate-job-refs
+      resources:
+        requests:
+          cpu: "1"
+          memory: "2Gi"
+        limits:
+          cpu: "1"
+          memory: "2Gi"
   annotations:
     testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '10'

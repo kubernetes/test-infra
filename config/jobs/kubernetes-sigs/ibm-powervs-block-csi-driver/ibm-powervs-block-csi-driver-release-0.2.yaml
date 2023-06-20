@@ -1,6 +1,7 @@
 presubmits:
    kubernetes-sigs/ibm-powervs-block-csi-driver:
    - name: pull-ibm-powervs-block-csi-driver-build-test-release-0-2
+     cluster: eks-prow-build-cluster
      always_run: true
      decorate: true
      labels:
@@ -15,16 +16,24 @@ presubmits:
       - ^release-0.2
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.24
          command:
          - runner.sh
          args:
          - make
          - driver
+         resources:
+           limits:
+             cpu: 2
+             memory: 4Gi
+           requests:
+             cpu: 2
+             memory: 4Gi
          securityContext:
            privileged: true
 
    - name: pull-ibm-powervs-block-csi-driver-image-build-test-release-0-2
+     cluster: eks-prow-build-cluster
      always_run: true
      decorate: true
      labels:
@@ -39,16 +48,24 @@ presubmits:
       - ^release-0.2
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.24
          command:
          - runner.sh
          args:
          - make
          - image
+         resources:
+           limits:
+             cpu: 2
+             memory: 4Gi
+           requests:
+             cpu: 2
+             memory: 4Gi
          securityContext:
            privileged: true
 
    - name: pull-ibm-powervs-block-csi-driver-unit-test-release-0-2
+     cluster: eks-prow-build-cluster
      always_run: true
      decorate: true
      path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
@@ -66,8 +83,16 @@ presubmits:
          - make
          args:
          - test
+         resources:
+           limits:
+             cpu: 2
+             memory: 4Gi
+           requests:
+             cpu: 2
+             memory: 4Gi
 
    - name: pull-ibm-powervs-block-csi-driver-verify-test-release-0-2
+     cluster: eks-prow-build-cluster
      always_run: true
      decorate: true
      path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
@@ -85,3 +110,10 @@ presubmits:
          - make
          args:
          - verify
+         resources:
+           limits:
+             cpu: 2
+             memory: 4Gi
+           requests:
+             cpu: 2
+             memory: 4Gi

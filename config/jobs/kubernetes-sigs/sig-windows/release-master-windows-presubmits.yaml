@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-windows-2019: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
@@ -41,7 +41,7 @@ presubmits:
       workdir: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
@@ -68,7 +68,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-windows-2022: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
@@ -91,7 +91,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
         command:
           - "runner.sh"
           - "env"
@@ -124,7 +124,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-windows-2022: "true"
       preset-capz-windows-common-pull: "true"
       preset-windows-private-registry-cred: "true"
@@ -146,7 +146,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
           command:
             - "runner.sh"
             - "env"
@@ -182,6 +182,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
@@ -190,9 +191,15 @@ presubmits:
       repo: cluster-api-provider-azure
       base_ref: release-1.9
       path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
           command:
             - "runner.sh"
             - "env"
@@ -226,6 +233,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
@@ -234,9 +242,15 @@ presubmits:
       repo: cluster-api-provider-azure
       base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
           command:
             - "runner.sh"
             - "env"
@@ -274,6 +288,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
@@ -282,9 +297,15 @@ presubmits:
       repo: cluster-api-provider-azure
       base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: false
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
           command:
             - "runner.sh"
             - "env"

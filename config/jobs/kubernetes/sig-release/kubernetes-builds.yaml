@@ -4,6 +4,7 @@ presubmits:
     optional: true
     always_run: false
     run_if_changed: '(^.go-version)|(^build/build-image/)|(^hack/lib/golang.sh)|(^build/common.sh)'
+    cluster: eks-prow-build-cluster
     decorate: true
     labels:
       preset-dind-enabled: "true"
@@ -120,6 +121,7 @@ periodics:
 
 - interval: 4h
   name: ci-release-build-packages-debs
+  cluster: eks-prow-build-cluster
   decorate: true
   spec:
     containers:
@@ -130,6 +132,9 @@ periodics:
       args:
       - debs
       resources:
+        limits:
+          cpu: 4
+          memory: "8Gi"
         requests:
           cpu: 4
           memory: "8Gi"
@@ -144,6 +149,7 @@ periodics:
 
 - interval: 4h
   name: ci-release-build-packages-rpms
+  cluster: eks-prow-build-cluster
   decorate: true
   spec:
     containers:
@@ -154,6 +160,9 @@ periodics:
       args:
       - rpms
       resources:
+        limits:
+          cpu: 4
+          memory: "8Gi"
         requests:
           cpu: 4
           memory: "8Gi"

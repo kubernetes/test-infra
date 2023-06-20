@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.6.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.2-0
         command:
         - /kpromo
         args:
@@ -44,7 +44,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: registry.k8s.io/artifact-promoter/kpromo:v3.6.0-0
+      - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.2-0
         command:
         - /kpromo
         args:
@@ -52,6 +52,8 @@ postsubmits:
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
         - --use-prow-manifest-diff
         - --confirm
+        - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
+        - --certificate-oidc-issuer=https://accounts.google.com
         env:
         - name: GOMAXPROCS
           value: "7"
@@ -110,7 +112,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.6.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.2-0
       command:
       - /kpromo
       args:
@@ -141,7 +143,7 @@ periodics:
     serviceAccountName: k8s-infra-promoter
     containers:
     - name: promote-to-mirrors
-      image: registry.k8s.io/artifact-promoter/kpromo:v3.6.0-0
+      image: registry.k8s.io/artifact-promoter/kpromo:v4.0.2-0
       command:
       - /kpromo
       args:
@@ -170,7 +172,7 @@ periodics:
           name: aws-iam-token
           readOnly: true
     - name: promote-to-mirrors-staging
-      image: registry.k8s.io/artifact-promoter/kpromo:v3.6.0-0
+      image: registry.k8s.io/artifact-promoter/kpromo:v4.0.2-0
       command:
       - /kpromo
       args:
@@ -241,13 +243,15 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: registry.k8s.io/artifact-promoter/kpromo:v3.6.0-0
+    - image: registry.k8s.io/artifact-promoter/kpromo:v4.0.2-0
       command:
       - /kpromo
       args:
       - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/registry.k8s.io
       - --confirm
+      - --certificate-identity-regexp=(krel-staging@k8s-releng-prod.iam.gserviceaccount.com)|(krel-trust@k8s-releng-prod.iam.gserviceaccount.com)
+      - --certificate-oidc-issuer=https://accounts.google.com
       env:
       - name: GOMAXPROCS
         value: "7"
@@ -362,3 +366,24 @@ periodics:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-blocking
     testgrid-tab-name: git-repo-kubernetes-fast-forward
+- name: periodic-release-verify-image-signatures
+  cluster: k8s-infra-prow-build-trusted
+  interval: 4h
+  annotations:
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-tab-name: verify-image-signatures
+  decorate: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v4.0.1-0
+      imagePullPolicy: Always
+      command:
+        - /kpromo
+        - --from-days=7
+      args:
+        - sigcheck
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers

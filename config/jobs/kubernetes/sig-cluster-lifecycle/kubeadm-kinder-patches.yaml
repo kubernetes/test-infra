@@ -2,7 +2,7 @@
 periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-patches-latest
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
   labels:
@@ -29,7 +29,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

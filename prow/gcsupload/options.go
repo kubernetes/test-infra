@@ -26,7 +26,6 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
@@ -56,7 +55,7 @@ type Options struct {
 	// builtin's and the local system's defaults.  Values are
 	// colon-delimited {extension}:{media-type}, for example:
 	// log:text/plain.
-	mediaTypes flagutil.Strings
+	mediaTypes prowflagutil.Strings
 
 	// gcsPath is used to store human-provided GCS
 	// paths that are parsed to get more granular
@@ -110,7 +109,7 @@ func (o *Options) Complete(args []string) {
 		}
 		o.GCSConfiguration.MediaTypes[extension] = mediaType
 	}
-	o.mediaTypes = flagutil.NewStrings()
+	o.mediaTypes = prowflagutil.NewStrings()
 }
 
 // AddFlags adds flags to the FlagSet that populate

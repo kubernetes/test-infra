@@ -26,8 +26,20 @@ dashboards:
     - name: pull-node-e2e
       test_group_name: pull-kubernetes-node-e2e-containerd
       base_options: width=10
-    - name: pull-e2e-gci
+    - name: pull-e2e-gce
       test_group_name: pull-kubernetes-e2e-containerd-gce
+      base_options: width=10
+    - name: pull-e2e-ec2
+      test_group_name: pull-kubernetes-node-e2e-containerd-ec2
+      base_options: width=10
+    - name: pull-e2e-ec2-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-ec2-canary
+      base_options: width=10
+    - name: pull-e2e-arm64-ec2
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-ec2
+      base_options: width=10
+    - name: pull-e2e-arm64-ec2-canary
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-ec2-canary
       base_options: width=10
 
 - name: sig-node-cri-o

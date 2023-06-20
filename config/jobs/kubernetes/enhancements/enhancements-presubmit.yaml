@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/enhancements:
     - name: pull-enhancements-verify
+      cluster: eks-prow-build-cluster
       always_run: true
       decorate: true
       spec:
@@ -10,7 +11,15 @@ presubmits:
               - sh
               - "-c"
               - "export PATH=$PATH:$GOPATH/bin && ./hack/verify.sh"
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi
     - name: pull-enhancements-test
+      cluster: eks-prow-build-cluster
       always_run: true
       decorate: true
       spec:
@@ -20,3 +29,10 @@ presubmits:
               - make
               - test
               - tools
+            resources:
+              limits:
+                cpu: 2
+                memory: 4Gi
+              requests:
+                cpu: 2
+                memory: 4Gi

@@ -2,7 +2,7 @@
 periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-discovery-latest
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 2h
   decorate: true
   labels:
@@ -29,7 +29,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -46,7 +46,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-discovery-1-27
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -73,7 +73,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.27
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.27
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -90,7 +90,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-discovery-1-26
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -117,7 +117,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.26
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.26
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -134,7 +134,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-discovery-1-25
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -161,7 +161,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.25
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -178,7 +178,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-discovery-1-24
-  cluster: k8s-infra-prow-build
+  cluster: eks-prow-build-cluster
   interval: 12h
   decorate: true
   labels:
@@ -205,7 +205,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230613-63d85f5ed2-1.24
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

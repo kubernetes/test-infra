@@ -24,7 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	coretesting "k8s.io/client-go/testing"
-	pjapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 )
@@ -37,7 +36,7 @@ func Test_resultForJob(t *testing.T) {
 	testcases := []struct {
 		name             string
 		args             args
-		expected         pjapi.ProwJobStatus
+		expected         prowapi.ProwJobStatus
 		expectToContinue bool
 		expectedErr      error
 	}{
@@ -71,7 +70,7 @@ func Test_resultForJob(t *testing.T) {
 					},
 				},
 			},
-			expected: pjapi.ProwJobStatus{
+			expected: prowapi.ProwJobStatus{
 				State: prowapi.SuccessState,
 			},
 			expectToContinue: false,
@@ -118,7 +117,7 @@ func Test_resultForJob(t *testing.T) {
 					},
 				},
 			},
-			expected: pjapi.ProwJobStatus{
+			expected: prowapi.ProwJobStatus{
 				State: prowapi.SuccessState,
 			},
 			expectToContinue: false,
@@ -153,7 +152,7 @@ func Test_resultForJob(t *testing.T) {
 					},
 				},
 			},
-			expected: pjapi.ProwJobStatus{
+			expected: prowapi.ProwJobStatus{
 				State: prowapi.FailureState,
 			},
 			expectToContinue: false,
