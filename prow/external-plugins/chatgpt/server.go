@@ -27,6 +27,7 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -291,6 +292,11 @@ func (s *Server) getPullRequestDiff(l *logrus.Entry, org, repo string, num int) 
 }
 
 func (s *Server) taskRun(logger *logrus.Entry, task *Task, pr *github.PullRequest, patch string, comment *github.IssueComment) error {
+	// when triggered by pull request update or open events.
+	if comment == nil && !shouldRunTaskForPR(task, pr) {
+		return nil
+	}
+
 	logger.Debugf("start deal task %s...", task.Description)
 	message := strings.Join([]string{
 		task.UserPrompt,
@@ -384,4 +390,33 @@ func (s *Server) createComment(l *logrus.Entry, org, repo string, num int, comme
 
 	logrus.Debug("Created comment")
 	return nil
+}
+
+func shouldRunTaskForPR(task *Task, pr *github.PullRequest) bool {
+	if !task.AlwaysRun {
+		return false
+	}
+
+	// filter on author.
+	if slices.Contains(task.SkipAuthors, pr.User.Login) {
+		return false
+	}
+
+	// filter on target branch.
+	for _, reg := range task.skipBrancheRegs {
+		if reg.MatchString(pr.Base.Ref) {
+			return false
+		}
+	}
+
+	// filter on labels.
+	for _, reg := range task.skipLabelRegs {
+		for _, label := range pr.Labels {
+			if reg.MatchString(label.Name) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
