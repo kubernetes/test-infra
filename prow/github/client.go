@@ -300,6 +300,7 @@ type client struct {
 	identifier string
 	gqlc       gqlClient
 	used       bool
+	mutUsed    sync.Mutex // protects used
 	*delegate
 }
 
@@ -907,7 +908,10 @@ func NewFakeClient() Client {
 }
 
 func (c *client) log(methodName string, args ...interface{}) (logDuration func()) {
+	c.mutUsed.Lock()
 	c.used = true
+	c.mutUsed.Unlock()
+
 	if c.logger == nil {
 		return func() {}
 	}
