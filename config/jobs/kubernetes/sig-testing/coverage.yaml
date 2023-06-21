@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   # The presubmit version of the ci-kubernetes-coverage-unit job.
   - name: pull-kubernetes-coverage-unit
+    cluster: eks-prow-build-cluster
     always_run: false
     skip_report: false
     max_concurrency: 12
@@ -36,6 +37,13 @@ presubmits:
           ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
           # For now let's swallow the error - we can reenable returning $result once we're in better shape.
           exit 0
+        resources:
+          limits:
+            cpu: 4
+            memory: 16Gi
+          requests:
+            cpu: 4
+            memory: 16Gi
         securityContext:
           privileged: true
 
