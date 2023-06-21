@@ -7,6 +7,7 @@ dashboard_groups:
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
     - sig-network-gateway-api
+    - sig-network-ingress2gateway
     - sig-network-policy-api
     - sig-network-ingress-controller-conformance
     - sig-network-kind
@@ -96,6 +97,7 @@ dashboards:
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
 - name: sig-network-gateway-api
+- name: sig-network-ingress2gateway
 - name: sig-network-policy-api
 - name: sig-network-ingress-controller-conformance
 - name: sig-network-kind
