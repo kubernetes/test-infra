@@ -660,6 +660,11 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
@@ -716,6 +721,11 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
@@ -772,6 +782,11 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
@@ -828,6 +843,11 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
@@ -2175,6 +2195,11 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
@@ -2239,6 +2264,11 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
@@ -2310,6 +2340,11 @@ presubmits:
     decoration_config:
       timeout: 150m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
@@ -2381,6 +2416,11 @@ presubmits:
     decoration_config:
       timeout: 150m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
@@ -2452,6 +2492,11 @@ presubmits:
     decoration_config:
       timeout: 90m
     path_alias: k8s.io/kops
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
