@@ -782,7 +782,7 @@ def generate_misc():
                    feature_flags=['SELinuxMount'],
                    extra_flags=[
                        "--kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod",
-                       "--set=Containerd.SeLinuxEnabled=true"
+                       "--set=cluster.spec.containerd.selinuxEnabled=true",
                    ],
                    focus_regex=r"\[Feature:SELinux\]",
                    # Skip:
