@@ -131,20 +131,38 @@ resources_for_kubernetes () {
     case $kubernetes in master|$experimental_k8s_version|release-*) cat <<EOF
 resources:
   requests:
-    # these are both a bit below peak usage during build
-    # this is mostly for building kubernetes
-    memory: "9000Mi"
-    # during the tests more like 3-20m is used
-    cpu: 2000m
+    memory: "9Gi"
+    cpu: 2
+  limits:
+    memory: "9Gi"
+    cpu: 2
 EOF
                             ;;
                             *) cat <<EOF
 resources:
   requests:
-    cpu: 2000m
+    memory: "4Gi"
+    cpu: 2
+  limits:
+    memory: "4Gi"
+    cpu: 2
 EOF
                             ;;
     esac | sed -e "s/^/${indentation}/"
+}
+
+job_cluster() {
+  local repo=$1
+
+  case "$repo" in
+   external-snapshotter|external-resizer)
+     echo "eks-prow-build-cluster"
+     ;;
+   *)
+     echo "default"
+     ;;
+  esac
+
 }
 
 # Combines deployment and Kubernetes version in a job suffix like "1-14-on-kubernetes-1-13".
@@ -362,6 +380,7 @@ EOF
                             # older, stable hostpath driver deployments and Kubernetes versions
                             cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment$deployment_suffix" "$kubernetes")
+    cluster: $(job_cluster "$repo")
     always_run: $(pull_alwaysrun "$tests")
     optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix")
     decorate: true
@@ -416,6 +435,7 @@ EOF
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
+    cluster: $(job_cluster "$repo")
     always_run: false
     optional: true
     decorate: true
@@ -456,6 +476,7 @@ EOF
 
     cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "unit")
+    cluster: $(job_cluster "$repo")
     always_run: true
     decorate: true
     skip_report: false
@@ -547,6 +568,7 @@ EOF
     for tests in non-alpha unit alpha; do
         cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: $(job_name "pull" "$repo" "$tests")
+    cluster: $(job_cluster "$repo")
     always_run: true
     optional: $(pull_optional "$tests")
     decorate: true
@@ -588,6 +610,7 @@ EOF
 
     cat >>"$base/$repo/$repo-config.yaml" <<EOF
   - name: pull-kubernetes-csi-$repo
+    cluster: $(job_cluster "$repo")
     always_run: true
     decorate: true
     skip_report: false
@@ -765,6 +788,7 @@ done
 for repo in $csi_release_tools_repos; do
     cat >>"$base/csi-release-tools/csi-release-tools-config.yaml" <<EOF
   - name: $(job_name "pull" "release-tools" "$repo" "" "")
+    cluster: $(job_cluster "$repo")
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
