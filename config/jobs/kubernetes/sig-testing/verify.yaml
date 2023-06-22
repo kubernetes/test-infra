@@ -177,6 +177,7 @@ periodics:
           memory: 24Gi
 - interval: 6h
   name: kubernetes-verify-go-licenses-periodical
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5m
@@ -206,6 +207,13 @@ periodics:
         value: master
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
