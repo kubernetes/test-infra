@@ -12,7 +12,7 @@
       {%- if cloud == "aws" %}
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      {%- if not use_boskos %}
+      {%- if not boskos_resource_type %}
       preset-aws-credential: "true"
       {%- endif %}
       {%- if branch in ["release-1.22", "release-1.23"] %}
@@ -48,6 +48,9 @@
             --create-args="{{create_args}}" \
             {%- if kops_feature_flags %}
             --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
+            {%- endif %}
+            {%- if boskos_resource_type %}
+            --boskos-resource-type={{boskos_resource_type}} \
             {%- endif %}
             --kubernetes-version={{k8s_deploy_url}} \
             {%- if branch in ["release-1.22", "release-1.23"] %}

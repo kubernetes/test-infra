@@ -11,7 +11,7 @@
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
-      {%- if not use_boskos %}
+      {%- if not boskos_resource_type %}
       preset-aws-credential: "true"
       {%- endif %}
       preset-dind-enabled: "true"

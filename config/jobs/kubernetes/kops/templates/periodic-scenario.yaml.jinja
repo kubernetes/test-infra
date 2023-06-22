@@ -4,7 +4,9 @@
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
+    {%- if not boskos_resource_type %}
     preset-aws-credential: "true"
+    {%- endif %}
     preset-dind-enabled: "true"
   max_concurrency: 1
   decorate: true
