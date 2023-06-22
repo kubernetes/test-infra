@@ -273,6 +273,13 @@ def presubmit_test(branch='master',
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
 
+    boskos_resource_type = None
+    if use_boskos:
+        if cloud == 'aws':
+            boskos_resource_type = 'aws-account'
+        else:
+            raise Exception(f"use_boskos not supported on cloud {cloud}")
+
     if extra_flags is None:
         extra_flags = []
 
@@ -326,7 +333,7 @@ def presubmit_test(branch='master',
         artifacts=artifacts,
         env=env,
         template_path=template_path,
-        use_boskos=use_boskos,
+        boskos_resource_type=boskos_resource_type,
     )
 
     spec = {
@@ -1611,6 +1618,11 @@ def generate_presubmits_e2e():
         presubmit_test(
             name='presubmit-kops-aws-boskos',
             scenario='aws-boskos',
+            always_run=False,
+            use_boskos=True,
+        ),
+        presubmit_test(
+            name='presubmit-kops-aws-boskos-kubetest2',
             always_run=False,
             use_boskos=True,
         ),
