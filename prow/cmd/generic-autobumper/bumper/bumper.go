@@ -63,6 +63,8 @@ type Options struct {
 	AssignTo string `json:"assign_to"`
 	// Whether to skip creating the pull request for this bump.
 	SkipPullRequest bool `json:"skipPullRequest"`
+	// Whether to signoff the commits.
+	Signoff bool `json:"signoff"`
 	// Information needed to do a gerrit bump. Do not include if doing github bump
 	Gerrit *Gerrit `json:"gerrit"`
 	// The name used in the address when creating remote. This should be the same name as the fork. If fork does not exist this will be the name of the fork that is created.
@@ -247,7 +249,7 @@ func processGitHub(ctx context.Context, o *Options, prh PRHandler) error {
 		}
 
 		anyChange = true
-		if err := gitCommit(o.GitName, o.GitEmail, msg, stdout, stderr, false); err != nil {
+		if err := gitCommit(o.GitName, o.GitEmail, msg, stdout, stderr, o.Signoff); err != nil {
 			return fmt.Errorf("git commit: %w", err)
 		}
 	}
