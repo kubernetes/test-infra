@@ -254,6 +254,7 @@ def presubmit_test(branch='master',
                    skip_report=False,
                    always_run=False,
                    scenario=None,
+                   artifacts=None,
                    env=None,
                    template_path=None,
                    use_boskos=False):
@@ -322,6 +323,7 @@ def presubmit_test(branch='master',
         always_run='true' if always_run else 'false',
         image=image,
         scenario=scenario,
+        artifacts=artifacts,
         env=env,
         template_path=template_path,
         use_boskos=use_boskos,
@@ -1060,6 +1062,16 @@ def generate_presubmits_scale():
             scenario='scalability',
             networking='amazonvpc',
             always_run=False,
+        ),
+        presubmit_test(
+            name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
+            scenario='scalability',
+            networking='amazonvpc',
+            always_run=False,
+            artifacts='$(ARTIFACTS)',
+            env={
+                'RUN_CL2_TEST': "true",
+            }
         )
     ]
     return results
