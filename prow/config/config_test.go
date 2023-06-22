@@ -5166,6 +5166,70 @@ default_decoration_config_entries:
 			},
 		},
 		{
+			name: "org, repo, cluster specific timeouts",
+			raw: `
+default_decoration_config_entries:
+  - repo: "org"
+    config:
+      pod_running_timeout: 3h
+      pod_pending_timeout: 2h
+      pod_unscheduled_timeout: 1h
+  - repo: "org/repo"
+    config:
+      pod_running_timeout: 2h
+      pod_pending_timeout: 1h
+      pod_unscheduled_timeout: 3h
+  - repo: "org/foo"
+    config:
+      pod_running_timeout: 1h
+      pod_pending_timeout: 2h
+      pod_unscheduled_timeout: 3h
+  - cluster: "trusted"
+    config:
+      pod_running_timeout: 30m
+      pod_pending_timeout: 45m
+      pod_unscheduled_timeout: 15m
+`,
+			expected: []*DefaultDecorationConfigEntry{
+				{
+					OrgRepo: "org",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						PodRunningTimeout:     &metav1.Duration{Duration: 3 * time.Hour},
+						PodPendingTimeout:     &metav1.Duration{Duration: 2 * time.Hour},
+						PodUnscheduledTimeout: &metav1.Duration{Duration: 1 * time.Hour},
+					},
+				},
+				{
+					OrgRepo: "org/repo",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						PodRunningTimeout:     &metav1.Duration{Duration: 2 * time.Hour},
+						PodPendingTimeout:     &metav1.Duration{Duration: 1 * time.Hour},
+						PodUnscheduledTimeout: &metav1.Duration{Duration: 3 * time.Hour},
+					},
+				},
+				{
+					OrgRepo: "org/foo",
+					Cluster: "",
+					Config: &prowapi.DecorationConfig{
+						PodRunningTimeout:     &metav1.Duration{Duration: 1 * time.Hour},
+						PodPendingTimeout:     &metav1.Duration{Duration: 2 * time.Hour},
+						PodUnscheduledTimeout: &metav1.Duration{Duration: 3 * time.Hour},
+					},
+				},
+				{
+					OrgRepo: "",
+					Cluster: "trusted",
+					Config: &prowapi.DecorationConfig{
+						PodRunningTimeout:     &metav1.Duration{Duration: 30 * time.Minute},
+						PodPendingTimeout:     &metav1.Duration{Duration: 45 * time.Minute},
+						PodUnscheduledTimeout: &metav1.Duration{Duration: 15 * time.Minute},
+					},
+				},
+			},
+		},
+		{
 			name: "both formats, expect error",
 			raw: `
 default_decoration_configs:

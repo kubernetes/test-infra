@@ -456,7 +456,13 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		case corev1.PodPending:
 			var requeueAfter time.Duration
 			maxPodPending := r.config().Plank.PodPendingTimeout.Duration
+			if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.PodPendingTimeout != nil {
+				maxPodPending = pj.Spec.DecorationConfig.PodPendingTimeout.Duration
+			}
 			maxPodUnscheduled := r.config().Plank.PodUnscheduledTimeout.Duration
+			if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.PodUnscheduledTimeout != nil {
+				maxPodUnscheduled = pj.Spec.DecorationConfig.PodUnscheduledTimeout.Duration
+			}
 			if pod.Status.StartTime.IsZero() {
 				if time.Since(pod.CreationTimestamp.Time) >= maxPodUnscheduled {
 					// Pod is stuck in unscheduled state longer than maxPodUncheduled
@@ -502,6 +508,9 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 				break
 			}
 			maxPodRunning := r.config().Plank.PodRunningTimeout.Duration
+			if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.PodRunningTimeout != nil {
+				maxPodRunning = pj.Spec.DecorationConfig.PodRunningTimeout.Duration
+			}
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
 				// Pod is still running. Do nothing.
 				return nil, nil

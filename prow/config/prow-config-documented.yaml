@@ -663,6 +663,15 @@ plank:
                 key: ' '
                 # Name is the name of a kubernetes secret.
                 name: ' '
+            # PodPendingTimeout defines how long the controller will wait to perform garbage
+            # collection on pending pods. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+            pod_pending_timeout: 0s
+            # PodRunningTimeout defines how long the controller will wait to abort a prowjob pod
+            # stuck in running state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+            pod_running_timeout: 0s
+            # PodUnscheduledTimeout defines how long the controller will wait to abort a prowjob
+            # stuck in an unscheduled state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+            pod_unscheduled_timeout: 0s
             # Resources holds resource requests and limits for utility
             # containers used to decorate a PodSpec.
             resources:
@@ -832,6 +841,15 @@ plank:
                 key: ' '
                 # Name is the name of a kubernetes secret.
                 name: ' '
+            # PodPendingTimeout defines how long the controller will wait to perform garbage
+            # collection on pending pods. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+            pod_pending_timeout: 0s
+            # PodRunningTimeout defines how long the controller will wait to abort a prowjob pod
+            # stuck in running state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+            pod_running_timeout: 0s
+            # PodUnscheduledTimeout defines how long the controller will wait to abort a prowjob
+            # stuck in an unscheduled state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+            pod_unscheduled_timeout: 0s
             # Resources holds resource requests and limits for utility
             # containers used to decorate a PodSpec.
             resources:
@@ -906,13 +924,13 @@ plank:
     # JobURLPrefixDisableAppendStorageProvider disables that the storageProvider is
     # automatically appended to the JobURLPrefix.
     jobURLPrefixDisableAppendStorageProvider: true
-    # PodPendingTimeout is after how long the controller will perform a garbage
+    # PodPendingTimeout defines how long the controller will wait to perform a garbage
     # collection on pending pods. Defaults to 10 minutes.
     pod_pending_timeout: 0s
-    # PodRunningTimeout is after how long the controller will abort a prowjob pod
+    # PodRunningTimeout defines how long the controller will wait to abort a prowjob pod
     # stuck in running state. Defaults to two days.
     pod_running_timeout: 0s
-    # PodUnscheduledTimeout is after how long the controller will abort a prowjob
+    # PodUnscheduledTimeout defines how long the controller will wait to abort a prowjob
     # stuck in an unscheduled state. Defaults to 5 minutes.
     pod_unscheduled_timeout: 0s
     # ReportTemplateString compiles into ReportTemplate at load time.

@@ -250,6 +250,24 @@ spec:
                         description: Name is the name of a kubernetes secret.
                         type: string
                     type: object
+                  pod_pending_timeout:
+                    description: PodPendingTimeout defines how long the controller
+                      will wait to perform garbage collection on pending pods. Specific
+                      for OrgRepo or Cluster. If not set, it has a fallback inside
+                      plank field.
+                    type: string
+                  pod_running_timeout:
+                    description: PodRunningTimeout defines how long the controller
+                      will wait to abort a prowjob pod stuck in running state. Specific
+                      for OrgRepo or Cluster. If not set, it has a fallback inside
+                      plank field.
+                    type: string
+                  pod_unscheduled_timeout:
+                    description: PodUnscheduledTimeout defines how long the controller
+                      will wait to abort a prowjob stuck in an unscheduled state.
+                      Specific for OrgRepo or Cluster. If not set, it has a fallback
+                      inside plank field.
+                    type: string
                   resources:
                     description: Resources holds resource requests and limits for
                       utility containers used to decorate a PodSpec.
