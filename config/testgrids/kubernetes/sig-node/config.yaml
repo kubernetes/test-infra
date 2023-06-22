@@ -51,6 +51,9 @@ dashboards:
     - name: pull-e2e-arm64-serial-ec2-canary
       test_group_name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
       base_options: width=10
+    - name: pull-e2e-arm64-gce
+      test_group_name: pull-kubernetes-node-arm64-ubuntu-serial-gce
+      base_options: width=10
 
 - name: sig-node-ec2
   dashboard_tab:
