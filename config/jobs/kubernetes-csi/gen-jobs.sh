@@ -132,20 +132,20 @@ resources_for_kubernetes () {
 resources:
   requests:
     memory: "9Gi"
-    cpu: 2
+    cpu: 4
   limits:
     memory: "9Gi"
-    cpu: 2
+    cpu: 4
 EOF
                             ;;
                             *) cat <<EOF
 resources:
   requests:
     memory: "4Gi"
-    cpu: 2
+    cpu: 4
   limits:
     memory: "4Gi"
-    cpu: 2
+    cpu: 4
 EOF
                             ;;
     esac | sed -e "s/^/${indentation}/"

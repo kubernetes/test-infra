@@ -30,10 +30,10 @@ presubmits:
         resources:
           requests:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
           limits:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
   - name: pull-kubernetes-csi-release-tools-csi-test
     cluster: default
     always_run: true
@@ -68,10 +68,10 @@ presubmits:
         resources:
           requests:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
           limits:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
@@ -109,10 +109,10 @@ presubmits:
         resources:
           requests:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
           limits:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
@@ -160,10 +160,10 @@ presubmits:
         resources:
           requests:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
           limits:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
@@ -211,10 +211,10 @@ presubmits:
         resources:
           requests:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
           limits:
             memory: "4Gi"
-            cpu: 2
+            cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
