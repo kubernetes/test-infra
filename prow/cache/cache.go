@@ -199,17 +199,20 @@ func (lruCache *LRUCache) GetOrAdd(
 		// the same value as us (so that they don't have to also call
 		// valConstructor()). We do this with the following algorithm:
 		//
-		//  1. immediately create a Promise to construct the value;
-		//  2. actually construct the value (expensive operation);
-		//  3. resolve the promise to alert all threads looking at the same Promise
-		//     get the value from Step 2.
+		//  1. (thread 1) immediately create a Promise to construct the value;
+		//  2. (all other threads) wait on the same Promise from step 1 to
+		//     finish resolving (constructing the value) by watching a channel;
+		//  3. (thread 1) actually construct the value (expensive operation);
+		//  4. (thread 1) alert all other threads about the value by calling
+		//     resolve(), which closes the channel that the other threads are
+		//     watching.
 		//
 		// This mitigation strategy is a kind of "duplicate suppression", also
 		// called "request coalescing". The problem of having to deal with a
 		// flood of multiple requests for the same cache entry is also called
 		// "cache stampede".
 
-		// Step 1
+		// Step 1 & 2
 		//
 		// Let other threads know about our promise to construct the value. We
 		// don't care if the underlying LRU cache had to evict an existing
@@ -225,7 +228,7 @@ func (lruCache *LRUCache) GetOrAdd(
 			lruCache.callbacks.MissesCallback(key)
 		}
 
-		// Step 2 & 3
+		// Step 3 & 4
 		//
 		// Construct the value (expensive operation), and broadcast to all
 		// watchers of this promise that it is ready to be read from (no data
