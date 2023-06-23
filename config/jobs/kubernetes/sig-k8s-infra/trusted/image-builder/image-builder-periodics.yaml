@@ -5,6 +5,10 @@ periodics:
     decorate: true
     decoration_config:
       timeout: 4h
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes-sigs
+        slug: image-builder-maintainers
     extra_refs:
       - org: kubernetes-sigs
         repo: image-builder
