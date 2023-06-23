@@ -1076,6 +1076,7 @@ def generate_presubmits_scale():
             artifacts='$(ARTIFACTS)',
             env={
                 'RUN_CL2_TEST': "true",
+                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "25",
             }
         )
     ]

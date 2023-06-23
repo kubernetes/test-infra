@@ -107,6 +107,8 @@ presubmits:
           value: $(ARTIFACTS)
         - name: RUN_CL2_TEST
           value: "true"
+        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+          value: "25"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
