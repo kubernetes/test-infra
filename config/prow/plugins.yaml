@@ -1591,6 +1591,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes/ingress-nginx:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes/cloud-provider-openstack:
   - name: cherrypicker
     events:
