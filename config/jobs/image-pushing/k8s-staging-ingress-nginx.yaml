@@ -8,7 +8,7 @@ postsubmits:
       run_if_changed: 'TAG'
       branches:
         - ^main$
-        - ^legacy$
+        - ^release-.*$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -30,7 +30,7 @@ postsubmits:
       run_if_changed: 'images/nginx/.*'
       branches:
         - ^main$
-        - ^legacy$
+        - ^release-.*$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -52,6 +52,7 @@ postsubmits:
       run_if_changed: 'images/opentelemetry/.*'
       branches:
         - ^main$
+        - ^release-.*$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -73,7 +74,7 @@ postsubmits:
       run_if_changed: 'images/test-runner/.*|NGINX_BASE'
       branches:
         - ^main$
-        - ^legacy$
+        - ^release-.*$
       spec:
         serviceAccountName: gcb-builder
         containers:
