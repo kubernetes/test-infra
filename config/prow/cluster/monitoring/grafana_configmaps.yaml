@@ -71,6 +71,7 @@ data:
     provisioning = /etc/grafana/provisioning
     [security]
     disable_gravatar = true
+    allow_embedding = true
     [server]
     http_port = 3001
 ---
