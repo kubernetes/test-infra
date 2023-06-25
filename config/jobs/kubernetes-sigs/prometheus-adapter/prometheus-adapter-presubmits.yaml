@@ -14,11 +14,11 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: "6000m"
+            memory: "6Gi"
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-verify
@@ -36,11 +36,11 @@ presubmits:
         - test
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: "6000m"
+            memory: "6Gi"
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-test
@@ -71,11 +71,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: "6000m"
+            memory: "6Gi"
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-test-e2e
