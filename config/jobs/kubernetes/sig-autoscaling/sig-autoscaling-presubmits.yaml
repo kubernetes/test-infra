@@ -52,8 +52,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-hpa
       testgrid-tab-name: gci-gce-autoscaling-hpa-cpu-pull
-    # TODO: set `optional: false` once tests not flaky
-    optional: true
     decorate: true
     decoration_config:
       timeout: 310m
@@ -94,8 +92,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-autoscaling-hpa
       testgrid-tab-name: gci-gce-autoscaling-hpa-cm-pull
-    # TODO: set `optional: false` once tests not flaky
-    optional: true
     decorate: true
     decoration_config:
       timeout: 310m
