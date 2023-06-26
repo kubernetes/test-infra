@@ -1,9 +1,8 @@
 presubmits:
   kubernetes-sigs/cluster-api-addon-provider-helm:
   - name: pull-cluster-api-addon-provider-helm-build-main
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
     always_run: true
     branches:
@@ -16,13 +15,19 @@ presubmits:
         command:
         - runner.sh
         - ./scripts/ci-build.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-build-main
   - name: pull-cluster-api-addon-provider-helm-apidiff-main
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
     always_run: true
     optional: true
@@ -36,13 +41,19 @@ presubmits:
         - runner.sh
         - ./scripts/ci-apidiff.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-1.26
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-apidiff-main
   - name: pull-cluster-api-addon-provider-helm-verify-main
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
     always_run: true
     labels:
@@ -58,17 +69,20 @@ presubmits:
         - "runner.sh"
         - ./scripts/ci-verify.sh
         resources:
+          limits:
+            cpu: 7300m
+            memory: 4Gi
           requests:
             cpu: 7300m
+            memory: 4Gi
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-verify-main
   - name: pull-cluster-api-addon-provider-helm-test-main
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
     always_run: true
     branches:
@@ -82,15 +96,18 @@ presubmits:
         - runner.sh
         - ./scripts/ci-test.sh
         resources:
+          limits:
+            cpu: 7300m
+            memory: 4Gi
           requests:
             cpu: 7300m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-test-main
   - name: pull-cluster-api-addon-provider-helm-test-mink8s-main
+    cluster: eks-prow-build-cluster
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api-addon-provider-helm
     always_run: true
     branches:
@@ -112,8 +129,12 @@ presubmits:
         - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
           value: "1.20.2"
         resources:
+          limits:
+            cpu: 7300m
+            memory: 4Gi
           requests:
             cpu: 7300m
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-test-mink8s-main
