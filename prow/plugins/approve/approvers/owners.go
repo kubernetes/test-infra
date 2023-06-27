@@ -464,11 +464,20 @@ func (ap Approvers) NoIssueApprovers() map[string]Approval {
 // UnapprovedFiles returns owners files that still need approval
 func (ap Approvers) UnapprovedFiles() sets.Set[string] {
 	unapproved := sets.New[string]()
-	for fn, approvers := range ap.GetFilesApprovers() {
-		if len(approvers) == 0 {
-			unapproved.Insert(fn)
+	ownersSet := ap.owners.GetOwnersSet()
+	currentApprovers := ap.GetCurrentApproversSetCased()
+
+	for _, toApprove := range ap.owners.filenames {
+		ownersFile := ap.owners.repo.FindApproverOwnersForFile(toApprove)
+		if !ownersSet.Has(ownersFile) {
+			continue
+		}
+
+		if CaseInsensitiveIntersection(ap.owners.repo.Approvers(toApprove).Set(), currentApprovers).Len() == 0 {
+			unapproved.Insert(ownersFile)
 		}
 	}
+
 	return unapproved
 }
 
