@@ -167,7 +167,7 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-alpha-features
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-windows-alpha-feature-vertical-pod-autoscaler
+  - name: pull-kubernetes-e2e-capz-windows-alpha-feature-vpa
     decorate: true
     always_run: false
     optional: true
