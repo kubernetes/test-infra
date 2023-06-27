@@ -73,9 +73,20 @@ func NewOwners(log *logrus.Entry, filenames []string, r Repo, s int64) Owners {
 // GetApprovers returns a map from ownersFiles -> people that are approvers in them
 func (o Owners) GetApprovers() map[string]sets.Set[string] {
 	ownersToApprovers := map[string]sets.Set[string]{}
+	for _, toApprove := range o.filenames {
+		ownersFile := o.repo.FindApproverOwnersForFile(toApprove)
+		approvers := o.repo.Approvers(toApprove).Set()
+		if _, ok := ownersToApprovers[ownersFile]; !ok {
+			ownersToApprovers[ownersFile] = sets.New[string]()
+		}
+		ownersToApprovers[ownersFile] = ownersToApprovers[ownersFile].Union(approvers)
+	}
 
-	for ownersFilename := range o.GetOwnersSet() {
-		ownersToApprovers[ownersFilename] = o.repo.Approvers(ownersFilename).Set()
+	owners := o.GetOwnersSet()
+	for k := range ownersToApprovers {
+		if !owners.Has(k) {
+			delete(ownersToApprovers, k)
+		}
 	}
 
 	return ownersToApprovers
@@ -85,8 +96,20 @@ func (o Owners) GetApprovers() map[string]sets.Set[string] {
 func (o Owners) GetLeafApprovers() map[string]sets.Set[string] {
 	ownersToApprovers := map[string]sets.Set[string]{}
 
-	for fn := range o.GetOwnersSet() {
-		ownersToApprovers[fn] = o.repo.LeafApprovers(fn)
+	for _, toApprove := range o.filenames {
+		ownersFile := o.repo.FindApproverOwnersForFile(toApprove)
+		approvers := o.repo.LeafApprovers(toApprove)
+		if _, ok := ownersToApprovers[ownersFile]; !ok {
+			ownersToApprovers[ownersFile] = sets.New[string]()
+		}
+		ownersToApprovers[ownersFile] = ownersToApprovers[ownersFile].Union(approvers)
+	}
+
+	owners := o.GetOwnersSet()
+	for k := range ownersToApprovers {
+		if !owners.Has(k) {
+			delete(ownersToApprovers, k)
+		}
 	}
 
 	return ownersToApprovers

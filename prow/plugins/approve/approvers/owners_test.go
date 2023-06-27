@@ -46,11 +46,30 @@ func (f FakeRepo) Filenames() ownersconfig.Filenames {
 }
 
 func (f FakeRepo) Approvers(path string) layeredsets.String {
-	return f.approversMap[path]
+	ret := f.approversMap[path]
+	if ret.Len() > 0 || path == "" {
+		return ret
+	}
+
+	p := filepath.Dir(path)
+	if p == "." {
+		p = ""
+	}
+	return f.Approvers(p)
 }
 
 func (f FakeRepo) LeafApprovers(path string) sets.Set[string] {
-	return f.leafApproversMap[path]
+	ret := f.leafApproversMap[path]
+
+	if ret.Len() > 0 || path == "" {
+		return ret
+	}
+
+	p := filepath.Dir(path)
+	if p == "." {
+		p = ""
+	}
+	return f.LeafApprovers(p)
 }
 
 func (f FakeRepo) FindApproverOwnersForFile(path string) string {
