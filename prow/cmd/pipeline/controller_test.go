@@ -154,7 +154,7 @@ func (r *fakeReconciler) pipelineID(pj prowjobv1.ProwJob) (string, string, error
 }
 
 func (r *fakeReconciler) cancelPipelineRun(context string, pr *pipelinev1beta1.PipelineRun) error {
-	pr.Spec.Status = pipelinev1beta1.PipelineRunSpecStatusCancelled
+	pr.Spec.Status = pipelinev1beta1.PipelineRunSpecStatusCancelledRunFinally
 	return nil
 }
 
