@@ -76,7 +76,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
         env:
         - name: E2E_KIND_VERSION
-          value: kindest/node:v1.24.7
+          value: kindest/node:v1.24.15
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -112,7 +112,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
         env:
         - name: E2E_KIND_VERSION
-          value: kindest/node:v1.25.3
+          value: kindest/node:v1.25.11
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -148,7 +148,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
         env:
         - name: E2E_KIND_VERSION
-          value: kindest/node:v1.26.2
+          value: kindest/node:v1.26.6
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -184,7 +184,7 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
         env:
         - name: E2E_KIND_VERSION
-          value: kindest/node:v1.27.2
+          value: kindest/node:v1.27.3
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
