@@ -15,10 +15,10 @@ presubmits:
         - "./scripts/ci-test.sh"
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -39,10 +39,10 @@ presubmits:
         - "./scripts/ci-build.sh"
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -245,10 +245,10 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
@@ -288,7 +288,6 @@ presubmits:
       testgrid-tab-name: capz-pr-conformance-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-apidiff-v1beta1
-    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     always_run: true
@@ -304,13 +303,6 @@ presubmits:
           - runner.sh
         args:
           - ./scripts/ci-apidiff.sh
-        resources:
-          limits:
-            cpu: 1
-            memory: 4Gi
-          requests:
-            cpu: 1
-            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-v1beta1
