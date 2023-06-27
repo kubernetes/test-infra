@@ -959,21 +959,39 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 }
 
 const (
-	baseDir        = ""
-	leafDir        = "a/b/c"
-	noParentsDir   = "d"
-	nonExistentDir = "DELETED_DIR"
+	baseDir            = ""
+	leafDir            = "a/b/c"
+	leafFilterDir      = "a/b/e"
+	noParentsDir       = "d"
+	noParentsFilterDir = "f"
+	nonExistentDir     = "DELETED_DIR"
+)
+
+var (
+	mdFileReg  = regexp.MustCompile(`.*\.md`)
+	txtFileReg = regexp.MustCompile(`.*\.txt`)
 )
 
 func TestGetApprovers(t *testing.T) {
 	ro := &RepoOwners{
 		approvers: map[string]map[*regexp.Regexp]sets.String{
-			baseDir:      regexpAll("alice", "bob"),
-			leafDir:      regexpAll("carl", "dave"),
+			baseDir: regexpAll("alice", "bob"),
+			leafDir: regexpAll("carl", "dave"),
+			leafFilterDir: {
+				mdFileReg:  sets.NewString("carl", "dave"),
+				txtFileReg: sets.NewString("elic"),
+			},
 			noParentsDir: regexpAll("mml"),
+			noParentsFilterDir: {
+				mdFileReg:  sets.NewString("carl", "dave"),
+				txtFileReg: sets.NewString("flex"),
+			},
 		},
 		options: map[string]dirOptions{
 			noParentsDir: {
+				NoParentOwners: true,
+			},
+			noParentsFilterDir: {
 				NoParentOwners: true,
 			},
 		},
@@ -1000,11 +1018,32 @@ func TestGetApprovers(t *testing.T) {
 			expectedAllOwners:  ro.approvers[baseDir][nil].Union(ro.approvers[leafDir][nil]),
 		},
 		{
+			name:               "Modified regexp matched file in Leaf Dir Only",
+			filePath:           filepath.Join(leafFilterDir, "testFile.md"),
+			expectedOwnersPath: leafFilterDir,
+			expectedLeafOwners: ro.approvers[leafFilterDir][mdFileReg],
+			expectedAllOwners:  ro.approvers[baseDir][nil].Union(ro.approvers[leafFilterDir][mdFileReg]),
+		},
+		{
+			name:               "Modified not regexp matched file in Leaf Dir Only",
+			filePath:           filepath.Join(leafFilterDir, "testFile.dat"),
+			expectedOwnersPath: baseDir,
+			expectedLeafOwners: ro.approvers[baseDir][nil],
+			expectedAllOwners:  ro.approvers[baseDir][nil],
+		},
+		{
 			name:               "Modified NoParentOwners Dir Only",
 			filePath:           filepath.Join(noParentsDir, "testFile.go"),
 			expectedOwnersPath: noParentsDir,
 			expectedLeafOwners: ro.approvers[noParentsDir][nil],
 			expectedAllOwners:  ro.approvers[noParentsDir][nil],
+		},
+		{
+			name:               "Modified regexp matched file NoParentOwners Dir Only",
+			filePath:           filepath.Join(noParentsFilterDir, "testFile.txt"),
+			expectedOwnersPath: noParentsFilterDir,
+			expectedLeafOwners: ro.approvers[noParentsFilterDir][txtFileReg],
+			expectedAllOwners:  ro.approvers[noParentsFilterDir][txtFileReg],
 		},
 		{
 			name:               "Modified Nonexistent Dir (Default to Base)",
