@@ -11,14 +11,18 @@ presubmits:
       description: "Run jobset unit tests"
     spec:
       containers:
-      - image: golang:1.20
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
         command:
-        - make
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
         args:
+        - make
         - test
+        securityContext:
+          privileged: true
         resources:
           limits:
             cpu: 1
