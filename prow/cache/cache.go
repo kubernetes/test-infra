@@ -44,7 +44,7 @@ import (
 
 // LRUCache is the actual concurrent non-blocking cache.
 type LRUCache struct {
-	*sync.Mutex
+	*sync.RWMutex
 	*simplelru.LRU
 	callbacks Callbacks
 }
@@ -128,7 +128,7 @@ func NewLRUCache(size int,
 	}
 
 	return &LRUCache{
-		&sync.Mutex{},
+		&sync.RWMutex{},
 		cache,
 		callbacks,
 	}, nil
@@ -306,7 +306,7 @@ func (lruCache *LRUCache) AddResolvedEntry(
 func (lruCache *LRUCache) GetSuccessfullyResolvedEntries() map[interface{}]interface{} {
 	resolved := make(map[interface{}]interface{})
 
-	lruCache.Lock()
+	lruCache.RLock()
 	for _, k := range lruCache.Keys() {
 		promise, _ := lruCache.Get(k)
 
@@ -329,7 +329,7 @@ func (lruCache *LRUCache) GetSuccessfullyResolvedEntries() map[interface{}]inter
 
 		resolved[k] = p.val
 	}
-	lruCache.Unlock()
+	lruCache.RUnlock()
 
 	return resolved
 }
