@@ -5482,8 +5482,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-alibaba-csi
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-alibaba-csi
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-alibaba-ovn
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-alibaba-ovn
   name: periodic-ci-openshift-release-master-nightly-4.14-e2e-alibaba-ovn
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.14-e2e-aws-csi
