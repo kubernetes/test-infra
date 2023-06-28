@@ -237,6 +237,7 @@ presubmits:
     - release-\d+\.\d+  # per-release image
     always_run: false
     optional: true
+    cluster: k8s-infra-prow-build
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -257,28 +258,34 @@ presubmits:
       testgrid-num-failures-to-alert: "10"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
         command:
-        - runner.sh
+          - runner.sh
         args:
-          - kubetest2
-          - noop
-          - --test=node
-          - --
-          - --repo-root=.
-          - --gcp-zone=us-central1-a
-          - --parallelism=1
-          - --focus-regex=\[Serial\]
-          - --use-dockerized-build=true
-          - --target-build-arch=linux/arm64
-          - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]
-          - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
-          - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
-        securityContext:
-          privileged: true
+          - hack/make-rules/test-e2e-node.sh
         env:
+          - name: FOCUS
+            value: \[Serial\]
+          - name: SKIP
+            value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:DynamicResourceAllocation\]
+          - name: USE_DOCKERIZED_BUILD
+            value: "true"
+          - name: TARGET_BUILD_ARCH
+            value: "linux/arm64"
+          - name: PARALLELISM
+            value: "1"
+          - name: ZONE
+            value: us-central1-a
+          - name: TEST_ARGS
+            value: '--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - name: IMAGE_CONFIG_FILE
+            value: /home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
+          - name: TIMEOUT
+            value: 90m
           - name: GOPATH
             value: /go
+        securityContext:
+          privileged: true
         resources:
           limits:
             cpu: 4
