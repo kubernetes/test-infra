@@ -95,7 +95,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.12.5
+      - image: public.ecr.aws/docker/library/golang:1.12.5
         command:
         - /bin/bash
         args:

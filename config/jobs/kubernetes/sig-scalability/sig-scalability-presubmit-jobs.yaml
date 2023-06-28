@@ -817,7 +817,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-all
     spec:
       containers:
-      - image: golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - make
         args:
@@ -865,7 +865,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - verify/test.sh
         resources:

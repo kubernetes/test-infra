@@ -14,7 +14,7 @@ presubmits:
       description: "Verify source code of pre golang 1.17 release branches"
     spec:
       containers:
-      - image: golang:1.16
+      - image: public.ecr.aws/docker/library/golang:1.16
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-build-image-generic

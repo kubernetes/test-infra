@@ -78,7 +78,7 @@ presubmits:
       - ^release-0.2
      spec:
        containers:
-       - image: golang:1.18
+       - image: public.ecr.aws/docker/library/golang:1.18
          command:
          - make
          args:
@@ -105,7 +105,7 @@ presubmits:
       - ^release-0.2
      spec:
        containers:
-       - image: golang:1.18
+       - image: public.ecr.aws/docker/library/golang:1.18
          command:
          - make
          args:
