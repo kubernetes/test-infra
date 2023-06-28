@@ -25,11 +25,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
   - name: pull-jobset-test-integration-main
     cluster: eks-prow-build-cluster
     always_run: true
@@ -48,11 +48,11 @@ presubmits:
         - test-integration
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
   - name: pull-jobset-test-e2e-main-1-24
     cluster: eks-prow-build-cluster
     always_run: true
@@ -81,11 +81,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
   - name: pull-jobset-test-e2e-main-1-25
     cluster: eks-prow-build-cluster
     always_run: true
@@ -114,11 +114,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
   - name: pull-jobset-test-e2e-main-1-26
     cluster: eks-prow-build-cluster
     always_run: true
@@ -147,11 +147,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
   - name: pull-jobset-verify-main
     cluster: eks-prow-build-cluster
     branches:
@@ -172,8 +172,8 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 2
+            memory: 8Gi
