@@ -13,7 +13,7 @@ presubmits:
       description: "Run kueue unit tests"
     spec:
       containers:
-      - image: golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.19
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -43,7 +43,7 @@ presubmits:
       description: "Run kueue test-integration"
     spec:
       containers:
-      - image: golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.19
         command:
         - make
         args:
@@ -77,6 +77,8 @@ presubmits:
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.24.15
+        - name: BUILDER_IMAGE
+          value: public.ecr.aws/docker/library/golang:1.19
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -113,6 +115,8 @@ presubmits:
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.25.11
+        - name: BUILDER_IMAGE
+          value: public.ecr.aws/docker/library/golang:1.19
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -149,6 +153,8 @@ presubmits:
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.26.6
+        - name: BUILDER_IMAGE
+          value: public.ecr.aws/docker/library/golang:1.19
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -185,6 +191,8 @@ presubmits:
         env:
         - name: E2E_KIND_VERSION
           value: kindest/node:v1.27.3
+        - name: BUILDER_IMAGE
+          value: public.ecr.aws/docker/library/golang:1.19
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
@@ -215,7 +223,7 @@ presubmits:
       description: "Run kueue-release-0-3 verify checks"
     spec:
       containers:
-      - image: golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.19
         command:
         - make
         args:

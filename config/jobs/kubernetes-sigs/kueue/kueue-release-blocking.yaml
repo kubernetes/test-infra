@@ -20,7 +20,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: golang:1.20
+        - image: public.ecr.aws/docker/library/golang:1.20
           env:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
@@ -58,7 +58,7 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: golang:1.20
+        - image: public.ecr.aws/docker/library/golang:1.20
           command:
             - make
           args:
@@ -98,6 +98,8 @@ periodics:
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.24.15
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.20
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -140,6 +142,8 @@ periodics:
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.25.11
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.20
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -182,6 +186,8 @@ periodics:
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.26.6
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.20
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -224,6 +230,8 @@ periodics:
           env:
             - name: E2E_KIND_VERSION
               value: kindest/node:v1.27.3
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.20
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
