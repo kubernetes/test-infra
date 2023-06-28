@@ -1335,7 +1335,7 @@ spec:
   type: NodePort
   ports:
   - port: 8003
-    targetPort: "$CHANGE_ME_MINIO_CONSOLE_PORT"
+    targetPort: "$MINIO_CONSOLE_PORT"
     protocol: TCP
   selector:
     app: minio
