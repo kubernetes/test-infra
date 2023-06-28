@@ -158,29 +158,8 @@ func main() {
 		interrupts.Terminate()
 	}
 
-	// We require operating on test pods in build clusters with the following
-	// verbs. This is used during startup to check that we have the necessary
-	// authorizations on build clusters.
-	//
-	// NOTE: Setting up build cluster managers is tricky because if we don't
-	// have the required permissions, the controller manager setup machinery
-	// (library code, not our code) can return an error and this can essentially
-	// result in a fatal error, resulting in a crash loop on startup. Although
-	// other components such as crier, deck, and hook also need to talk to build
-	// clusters, we only perform this preemptive requiredTestPodVerbs check for
-	// PCM and sinker because only these latter components make use of the
-	// BuildClusterManagers() call.
-	requiredTestPodVerbs := []string{
-		"create",
-		"delete",
-		"list",
-		"watch",
-		"get",
-		"patch",
-	}
-
 	buildClusterManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
-		requiredTestPodVerbs,
+		plank.RequiredTestPodVerbs(),
 		callBack,
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
@@ -219,7 +198,7 @@ func main() {
 	}
 
 	if enabledControllersSet.Has(plank.ControllerName) {
-		if err := plank.Add(mgr, buildClusterManagers, knownClusters, requiredTestPodVerbs, cfg, opener, o.totURL, o.selector); err != nil {
+		if err := plank.Add(mgr, buildClusterManagers, knownClusters, cfg, opener, o.totURL, o.selector); err != nil {
 			logrus.WithError(err).Fatal("Failed to add plank to manager")
 		}
 	}

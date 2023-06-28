@@ -175,7 +175,7 @@ func TestAdd(t *testing.T) {
 				predicateResultChan <- !b
 			}
 			var errMsg string
-			if err := add(mgr, buildMgrs, nil, []string{}, cfg, nil, "", tc.additionalSelector, reconcile, predicateCallBack, 1); err != nil {
+			if err := add(mgr, buildMgrs, nil, cfg, nil, "", tc.additionalSelector, reconcile, predicateCallBack, 1); err != nil {
 				errMsg = err.Error()
 			}
 			if errMsg != tc.expectedError {
@@ -601,27 +601,27 @@ func TestSyncClusterStatus(t *testing.T) {
 			name:     "Multiple clusters mixed reachability",
 			location: "gs://my-bucket/build-cluster-statuses.json",
 			statuses: map[string]ClusterStatus{
-				"default":                      ClusterStatusReachable,
-				"test-infra-trusted":           ClusterStatusReachable,
-				"sad-build-cluster":            ClusterStatusUnreachable,
-				"cluster-erroring-permissions": ClusterStatusErroringPermissions,
-				"cluster-missing-permissions":  ClusterStatusMissingPermissions,
+				"default":                     ClusterStatusReachable,
+				"test-infra-trusted":          ClusterStatusReachable,
+				"sad-build-cluster":           ClusterStatusUnreachable,
+				"cluster-error":               ClusterStatusError,
+				"cluster-missing-permissions": ClusterStatusMissingPermissions,
 			},
 			expectedStatuses: map[string]ClusterStatus{
-				"default":                      ClusterStatusReachable,
-				"test-infra-trusted":           ClusterStatusReachable,
-				"sad-build-cluster":            ClusterStatusUnreachable,
-				"always-sad-build-cluster":     ClusterStatusNoManager,
-				"cluster-erroring-permissions": ClusterStatusErroringPermissions,
-				"cluster-missing-permissions":  ClusterStatusMissingPermissions,
+				"default":                     ClusterStatusReachable,
+				"test-infra-trusted":          ClusterStatusReachable,
+				"sad-build-cluster":           ClusterStatusUnreachable,
+				"always-sad-build-cluster":    ClusterStatusNoManager,
+				"cluster-error":               ClusterStatusError,
+				"cluster-missing-permissions": ClusterStatusMissingPermissions,
 			},
 			knownClusters: map[string]rest.Config{
-				"default":                      rest.Config{},
-				"test-infra-trusted":           rest.Config{},
-				"sad-build-cluster":            rest.Config{},
-				"always-sad-build-cluster":     rest.Config{},
-				"cluster-erroring-permissions": rest.Config{},
-				"cluster-missing-permissions":  rest.Config{},
+				"default":                     rest.Config{},
+				"test-infra-trusted":          rest.Config{},
+				"sad-build-cluster":           rest.Config{},
+				"always-sad-build-cluster":    rest.Config{},
+				"cluster-error":               rest.Config{},
+				"cluster-missing-permissions": rest.Config{},
 			},
 		},
 	}
@@ -653,13 +653,9 @@ func TestSyncClusterStatus(t *testing.T) {
 		return true, r, nil
 	})
 
-	// The verbs here are nonsensical, but they don't matter. The point
-	// is to have at least 1 verb so that it triggers the loop inside
-	// flagutil.CheckAuthorizations(). Whether the authz client runs
-	// successfully or not depends on the use of the plain
-	// FakeAuthorizationV1 (always success) or erroringFakeAuthzClient
+	// Whether the authz client runs successfully or not depends on the use of
+	// the plain FakeAuthorizationV1 (always success) or erroringFakeAuthzClient
 	// (always fail).
-	requiredTestPodVerbs := []string{"foo", "bar"}
 	for i := range tcs {
 		tc := tcs[i]
 		t.Run(tc.name, func(t *testing.T) {
@@ -681,7 +677,7 @@ func TestSyncClusterStatus(t *testing.T) {
 						Client: &erroringFakeCtrlRuntimeClient{fakectrlruntimeclient.NewFakeClient()},
 						ssar:   successfulFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
 					}
-				case ClusterStatusErroringPermissions:
+				case ClusterStatusError:
 					clients[alias] = buildClient{
 						Client: fakectrlruntimeclient.NewFakeClient(),
 						ssar:   erroringFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
@@ -706,7 +702,7 @@ func TestSyncClusterStatus(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 			go func() {
-				r.syncClusterStatus(time.Millisecond, tc.knownClusters, requiredTestPodVerbs)(ctx)
+				r.syncClusterStatus(time.Millisecond, tc.knownClusters)(ctx)
 				signal <- false
 			}()
 			if !tc.noWriteExpected {

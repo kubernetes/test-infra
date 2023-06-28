@@ -71,24 +71,45 @@ const (
 	NodeUnreachablePodReason = "NodeLost"
 )
 
+// RequiredTestPodVerbs returns a list of verbs that we expect to be able to
+// have permissions for when interacting with the test pods. This is used during
+// startup to check that we have the necessary authorizations on build clusters.
+//
+// NOTE: Setting up build cluster managers is tricky because if we don't
+// have the required permissions, the controller manager setup machinery
+// (library code, not our code) can return an error and this can essentially
+// result in a fatal error, resulting in a crash loop on startup. Although
+// other components such as crier, deck, and hook also need to talk to build
+// clusters, we only perform this preemptive requiredTestPodVerbs check for
+// PCM and sinker because only these latter components make use of the
+// BuildClusterManagers() call.
+func RequiredTestPodVerbs() []string {
+	return []string{
+		"create",
+		"delete",
+		"list",
+		"watch",
+		"get",
+		"patch",
+	}
+}
+
 func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
 	knownClusters map[string]rest.Config,
-	requiredTestPodVerbs []string,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
 	additionalSelector string,
 ) error {
-	return add(mgr, buildMgrs, knownClusters, requiredTestPodVerbs, cfg, opener, totURL, additionalSelector, nil, nil, 10)
+	return add(mgr, buildMgrs, knownClusters, cfg, opener, totURL, additionalSelector, nil, nil, 10)
 }
 
 func add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
 	knownClusters map[string]rest.Config,
-	requiredTestPodVerbs []string,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -142,7 +163,7 @@ func add(
 		return fmt.Errorf("failed to add metrics runnable to manager: %w", err)
 	}
 
-	if err := mgr.Add(manager.RunnableFunc(r.syncClusterStatus(time.Minute, knownClusters, requiredTestPodVerbs))); err != nil {
+	if err := mgr.Add(manager.RunnableFunc(r.syncClusterStatus(time.Minute, knownClusters))); err != nil {
 		return fmt.Errorf("failed to add cluster status runnable to manager: %w", err)
 	}
 
@@ -248,7 +269,6 @@ const (
 func (r *reconciler) syncClusterStatus(
 	interval time.Duration,
 	knownClusters map[string]rest.Config,
-	requiredTestPodVerbs []string,
 ) func(context.Context) error {
 	return func(ctx context.Context) error {
 		ticker := time.NewTicker(interval)
@@ -284,7 +304,7 @@ func (r *reconciler) syncClusterStatus(
 						}
 
 						// Additionally check for pod verbs.
-						if err := flagutil.CheckAuthorizations(client.ssar, r.config().PodNamespace, requiredTestPodVerbs); err != nil {
+						if err := flagutil.CheckAuthorizations(client.ssar, r.config().PodNamespace, RequiredTestPodVerbs()); err != nil {
 							r.log.WithField("cluster", cluster).WithError(err).Warn("Error checking pod verbs to check for build cluster usability.")
 							if errors.Is(err, flagutil.MissingPermissions) {
 								status = ClusterStatusMissingPermissions
