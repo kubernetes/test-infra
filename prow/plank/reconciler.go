@@ -297,13 +297,7 @@ func (r *reconciler) syncClusterStatus(
 					if !ok {
 						status = ClusterStatusNoManager
 					} else {
-						var pods corev1.PodList
-						if err := client.List(ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(r.config().PodNamespace), ctrlruntimeclient.Limit(1)); err != nil {
-							r.log.WithField("cluster", cluster).WithError(err).Warn("Error listing pod to check for build cluster reachability.")
-							status = ClusterStatusUnreachable
-						}
-
-						// Additionally check for pod verbs.
+						// Check for pod verbs.
 						if err := flagutil.CheckAuthorizations(client.ssar, r.config().PodNamespace, RequiredTestPodVerbs()); err != nil {
 							r.log.WithField("cluster", cluster).WithError(err).Warn("Error checking pod verbs to check for build cluster usability.")
 							if errors.Is(err, flagutil.MissingPermissions) {
