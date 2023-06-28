@@ -264,6 +264,8 @@ presubmits:
         env:
         - name: GOMAXPROCS
           value: "2"
+        - name: BUILDER_IMAGE
+          value: public.ecr.aws/docker/library/golang:1.19
         resources:
           requests:
             cpu: "2"
