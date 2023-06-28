@@ -19,7 +19,7 @@ periodics:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-        - image: golang:1.19
+        - image: public.ecr.aws/docker/library/golang:1.19
           imagePullPolicy: Always
           command:
             - /bin/bash
