@@ -164,6 +164,41 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration
+  - name: pull-test-infra-unit-test-race-detector-nonblocking
+    cluster: eks-prow-build-cluster
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    optional: true
+    skip_report: true
+    labels:
+      # Python unit tests run in docker.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit
+        env:
+        - name: PROW_UNIT_TEST_EXTRA_FLAGS
+          value: "-race"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: unit-test-race-detector-nonblocking
   - name: pull-test-infra-unit-test
     cluster: eks-prow-build-cluster
     branches:
