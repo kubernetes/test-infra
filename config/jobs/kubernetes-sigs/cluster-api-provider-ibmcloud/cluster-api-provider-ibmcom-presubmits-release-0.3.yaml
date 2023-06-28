@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - name: pull-cluster-api-provider-ibmcloud-make-release-0-3
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -21,12 +22,17 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-1.24
         imagePullPolicy: Always
         resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
           requests:
+            cpu: "2"
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-make-release-0-3
   - name: pull-cluster-api-provider-ibmcloud-test-release-0-3
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -41,10 +47,18 @@ presubmits:
         imagePullPolicy: Always
         command:
         - "./scripts/ci-test.sh"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-test-release-0-3
   - name: pull-cluster-api-provider-ibmcloud-smoke-test-release-0-3
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -68,10 +82,18 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-smoke-test-release-0-3
   - name: pull-cluster-api-provider-ibmcloud-build-release-0-3
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -85,6 +107,9 @@ presubmits:
         command:
         - "./scripts/ci-build.sh"
         resources:
+          limits:
+            memory: "6Gi"
+            cpu: "2"
           requests:
             memory: "6Gi"
             cpu: "2"
@@ -92,6 +117,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-build-release-0-3
   - name: pull-cluster-api-provider-ibmcloud-verify-release-0-3
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -105,10 +131,18 @@ presubmits:
           command:
             - "make"
             - "verify"
+          resources:
+            limits:
+              cpu: "2"
+              memory: "6Gi"
+            requests:
+              cpu: "2"
+              memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-verify-release-0-3
   - name: pull-cluster-api-provider-ibmcloud-apidiff-release-0-3
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
     always_run: true
@@ -125,6 +159,13 @@ presubmits:
             - runner.sh
           args:
             - ./scripts/ci-apidiff.sh
+          resources:
+            limits:
+              cpu: "2"
+              memory: "6Gi"
+            requests:
+              cpu: "2"
+              memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-apidiff-release-0-3

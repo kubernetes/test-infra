@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - name: pull-cluster-api-provider-ccm-image
+    cluster: eks-prow-build-cluster
     run_if_changed: '^hack/ccm/'
     branches:
       - ^main$
@@ -27,7 +28,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-1.26
         imagePullPolicy: IfNotPresent
         resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
           requests:
+            cpu: "2"
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
