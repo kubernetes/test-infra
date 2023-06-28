@@ -1,6 +1,6 @@
 periodics:
 - interval: 1h
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   name: ci-kubernetes-kind-e2e-parallel
   annotations:
     testgrid-dashboards: sig-release-master-blocking, sig-testing-kind
