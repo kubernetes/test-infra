@@ -238,11 +238,11 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 type ClusterStatus string
 
 const (
-	ClusterStatusUnreachable         ClusterStatus = "Unreachable"
-	ClusterStatusReachable           ClusterStatus = "Reachable"
-	ClusterStatusNoManager           ClusterStatus = "No-Manager"
-	ClusterStatusErroringPermissions ClusterStatus = "ErroringPermissions"
-	ClusterStatusMissingPermissions  ClusterStatus = "MissingPermissions"
+	ClusterStatusUnreachable        ClusterStatus = "Unreachable"
+	ClusterStatusReachable          ClusterStatus = "Reachable"
+	ClusterStatusNoManager          ClusterStatus = "No-Manager"
+	ClusterStatusError              ClusterStatus = "Error"
+	ClusterStatusMissingPermissions ClusterStatus = "MissingPermissions"
 )
 
 func (r *reconciler) syncClusterStatus(
@@ -289,7 +289,7 @@ func (r *reconciler) syncClusterStatus(
 							if errors.Is(err, flagutil.MissingPermissions) {
 								status = ClusterStatusMissingPermissions
 							} else {
-								status = ClusterStatusErroringPermissions
+								status = ClusterStatusError
 							}
 						}
 					}
