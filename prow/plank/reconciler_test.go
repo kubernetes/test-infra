@@ -532,17 +532,6 @@ func TestStartPodBlocksUntilItHasThePodInCache(t *testing.T) {
 	}
 }
 
-type erroringFakeCtrlRuntimeClient struct {
-	ctrlruntimeclient.Client
-}
-
-func (p *erroringFakeCtrlRuntimeClient) List(
-	ctx context.Context,
-	objs ctrlruntimeclient.ObjectList,
-	opts ...ctrlruntimeclient.ListOption) error {
-	return errors.New("could not list resources")
-}
-
 type fakeOpener struct {
 	io.Opener
 	strings.Builder
@@ -586,12 +575,6 @@ func TestSyncClusterStatus(t *testing.T) {
 			knownClusters: map[string]rest.Config{"default": rest.Config{}},
 		},
 		{
-			name:          "Single cluster unreachable",
-			location:      "gs://my-bucket/build-cluster-statuses.json",
-			statuses:      map[string]ClusterStatus{"default": ClusterStatusUnreachable},
-			knownClusters: map[string]rest.Config{"default": rest.Config{}},
-		},
-		{
 			name:             "Single cluster build manager creation failed",
 			location:         "gs://my-bucket/build-cluster-statuses.json",
 			expectedStatuses: map[string]ClusterStatus{"default": ClusterStatusNoManager},
@@ -603,14 +586,12 @@ func TestSyncClusterStatus(t *testing.T) {
 			statuses: map[string]ClusterStatus{
 				"default":                     ClusterStatusReachable,
 				"test-infra-trusted":          ClusterStatusReachable,
-				"sad-build-cluster":           ClusterStatusUnreachable,
 				"cluster-error":               ClusterStatusError,
 				"cluster-missing-permissions": ClusterStatusMissingPermissions,
 			},
 			expectedStatuses: map[string]ClusterStatus{
 				"default":                     ClusterStatusReachable,
 				"test-infra-trusted":          ClusterStatusReachable,
-				"sad-build-cluster":           ClusterStatusUnreachable,
 				"always-sad-build-cluster":    ClusterStatusNoManager,
 				"cluster-error":               ClusterStatusError,
 				"cluster-missing-permissions": ClusterStatusMissingPermissions,
@@ -618,7 +599,6 @@ func TestSyncClusterStatus(t *testing.T) {
 			knownClusters: map[string]rest.Config{
 				"default":                     rest.Config{},
 				"test-infra-trusted":          rest.Config{},
-				"sad-build-cluster":           rest.Config{},
 				"always-sad-build-cluster":    rest.Config{},
 				"cluster-error":               rest.Config{},
 				"cluster-missing-permissions": rest.Config{},
@@ -670,11 +650,6 @@ func TestSyncClusterStatus(t *testing.T) {
 				case ClusterStatusReachable:
 					clients[alias] = buildClient{
 						Client: fakectrlruntimeclient.NewFakeClient(),
-						ssar:   successfulFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
-					}
-				case ClusterStatusUnreachable:
-					clients[alias] = buildClient{
-						Client: &erroringFakeCtrlRuntimeClient{fakectrlruntimeclient.NewFakeClient()},
 						ssar:   successfulFakeClient.AuthorizationV1().SelfSubjectAccessReviews(),
 					}
 				case ClusterStatusError:
