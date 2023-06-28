@@ -6,7 +6,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
@@ -30,7 +30,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
@@ -54,7 +54,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
@@ -78,7 +78,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
@@ -126,7 +126,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
@@ -150,7 +150,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
