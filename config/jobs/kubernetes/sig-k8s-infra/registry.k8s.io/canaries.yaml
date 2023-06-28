@@ -65,7 +65,7 @@ periodics:
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
   spec:
     containers:
-    - image: golang
+    - image: public.ecr.aws/docker/library/golang:latest
       command:
       - make
       - e2e-test
