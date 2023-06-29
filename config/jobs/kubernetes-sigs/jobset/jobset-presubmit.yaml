@@ -9,6 +9,8 @@ presubmits:
       testgrid-dashboards: sig-apps
       testgrid-tab-name: pull-jobset-test-unit-main
       description: "Run jobset unit tests"
+    labels:
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
