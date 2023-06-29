@@ -39,7 +39,7 @@ metadata:
   name: github-token
 stringData:
   cert: $GITHUB_TOKEN
-  appid: $GITHUB_APP_ID
+  appid: "$GITHUB_APP_ID"
 ---
 apiVersion: v1
 kind: Secret

@@ -39,7 +39,7 @@ metadata:
   name: github-token
 stringData:
   cert: $GITHUB_TOKEN
-  appid: $GITHUB_APP_ID
+  appid: "$GITHUB_APP_ID"
 ---
 apiVersion: v1
 kind: Secret
@@ -1292,7 +1292,7 @@ spec:
         args:
         - gateway
         - azure
-        - --console-address=:"$MINIO_CONSOLE_PORT"
+        - --console-address=:0.0.0.0:$MINIO_CONSOLE_PORT
         env:
         - name: MINIO_ROOT_USER
           value: "$AZURE_STORAGE_ACCOUNT_USER"
@@ -1335,7 +1335,7 @@ spec:
   type: NodePort
   ports:
   - port: 8003
-    targetPort: "$MINIO_CONSOLE_PORT"
+    targetPort: $MINIO_CONSOLE_PORT
     protocol: TCP
   selector:
     app: minio
