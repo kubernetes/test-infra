@@ -1953,7 +1953,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.8.0_HVM-20230503-x86_64-54-Hourly2-GP2' --channel=alpha --networking=cilium --kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod --set=cluster.spec.containerd.selinuxEnabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-8.8.0_HVM-20230623-x86_64-3-Hourly2-GP2' --channel=alpha --networking=cilium --kubernetes-feature-gates=SELinuxMountReadWriteOncePod,ReadWriteOncePod --set=cluster.spec.containerd.selinuxEnabled=true --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=SELinuxMount \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \

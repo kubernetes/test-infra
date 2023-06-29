@@ -1065,18 +1065,24 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc',
             scenario='scalability',
-            networking='amazonvpc',
+            networking='amazonvpc', # only helps with setting the right anotation test.kops.k8s.io/networking
             always_run=False,
+            env={
+                'CNI_PLUGIN': "amazonvpc",
+            }
         ),
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
             scenario='scalability',
-            networking='amazonvpc',
+            networking='amazonvpc', # only helps with setting the right anotation test.kops.k8s.io/networking
             always_run=False,
             artifacts='$(ARTIFACTS)',
             env={
+                'CNI_PLUGIN': "amazonvpc",
+                'KUBE_NODE_COUNT': "500",
                 'RUN_CL2_TEST': "true",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "25",
+                'CONTROL_PLANE_INSTANCE_TYPE': "c6g.4xlarge",
             }
         )
     ]

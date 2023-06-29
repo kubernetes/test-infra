@@ -42,6 +42,8 @@ presubmits:
           value: ubuntu
         - name: GOPATH
           value: /home/prow/go
+        - name: CNI_PLUGIN
+          value: "amazonvpc"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
@@ -105,10 +107,16 @@ presubmits:
           value: /home/prow/go
         - name: ARTIFACTS
           value: $(ARTIFACTS)
+        - name: CNI_PLUGIN
+          value: "amazonvpc"
+        - name: KUBE_NODE_COUNT
+          value: "500"
         - name: RUN_CL2_TEST
           value: "true"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
           value: "25"
+        - name: CONTROL_PLANE_INSTANCE_TYPE
+          value: "c6g.4xlarge"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
