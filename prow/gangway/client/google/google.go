@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"golang.org/x/oauth2"
 	googleOAuth "golang.org/x/oauth2/google"
@@ -74,7 +74,7 @@ type Client struct {
 
 // NewFromFile creates a Gangway client from a JSON service account key file and an audience string.
 func NewFromFile(addr, keyFile, audience, clientPem, apiKey string) (*Client, error) {
-	keyBytes, err := ioutil.ReadFile(keyFile)
+	keyBytes, err := os.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read service account key file %s: %v", keyFile, err)
 	}
