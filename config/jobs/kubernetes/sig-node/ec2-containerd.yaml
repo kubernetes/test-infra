@@ -12,7 +12,7 @@ presets:
         value: "true"
 periodics:
   - name: ci-cgroupv1-containerd-node-e2e-ec2
-    interval: 12h
+    interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: cgroupv1-containerd-node-e2e-ec2
@@ -100,7 +100,7 @@ periodics:
               cpu: 8
               memory: 10Gi
   - name: ci-cgroupv2-containerd-node-arm64-e2e-serial-ec2
-    interval: 12h
+    interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: ci-cgroupv2-containerd-node-arm64-e2e-serial-ec2
