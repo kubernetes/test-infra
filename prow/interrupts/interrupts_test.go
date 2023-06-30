@@ -182,6 +182,7 @@ func TestInterrupts(t *testing.T) {
 	done.Add(1)
 	go func() {
 		WaitForGracefulShutdown()
+		time.Sleep(1 * time.Millisecond) // Ensure graceful shutdown channel closes  
 		done.Done()
 	}()
 
