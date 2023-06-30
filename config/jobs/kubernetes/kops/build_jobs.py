@@ -1075,7 +1075,7 @@ def generate_presubmits_scale():
         presubmit_test(
             name='presubmit-kops-aws-scale-amazonvpc-using-cl2',
             scenario='scalability',
-             # only helps with setting the right anotation test.kops.k8s.io/networking
+            # only helps with setting the right anotation test.kops.k8s.io/networking
             networking='amazonvpc',
             always_run=False,
             artifacts='$(ARTIFACTS)',
