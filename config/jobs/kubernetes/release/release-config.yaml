@@ -54,11 +54,11 @@ presubmits:
         - test
         resources:
           limits:
-            memory: 4Gi
-            cpu: 2
+            memory: 2500Mi
+            cpu: 4
           requests:
-            memory: 4Gi
-            cpu: 2
+            memory: 2500Mi
+            cpu: 4
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-test
@@ -105,11 +105,11 @@ presubmits:
         - test-go-integration
         resources:
           requests:
-            memory: "16Gi"
-            cpu: "8"
+            memory: "4Gi"
+            cpu: "12"
           limits:
-            memory: "16Gi"
-            cpu: "8"
+            memory: "4Gi"
+            cpu: "12"
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-integration-test
@@ -130,11 +130,11 @@ presubmits:
         - verify
         resources:
           limits:
-            memory: 16Gi
-            cpu: 8
+            memory: 4Gi
+            cpu: 8500m
           requests:
-            memory: 16Gi
-            cpu: 8
+            memory: 4Gi
+            cpu: 8500m
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: release-verify
