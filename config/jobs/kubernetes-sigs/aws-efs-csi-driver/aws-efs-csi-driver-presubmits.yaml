@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/aws-efs-csi-driver:
   - name: pull-aws-efs-csi-driver-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -15,12 +16,20 @@ presubmits:
         args:
         - make
         - verify
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-efs-csi-driver
       testgrid-tab-name: verify
       description: aws efs csi driver basic code verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-efs-csi-driver-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -35,6 +44,13 @@ presubmits:
         args:
         - make
         - test
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-efs-csi-driver
       testgrid-tab-name: unit-test
