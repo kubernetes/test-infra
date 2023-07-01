@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/node-problem-detector:
   - name: pull-npd-build
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -20,6 +21,13 @@ presubmits:
         - >-
           ./test/build.sh install-lib &&
           make build
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -29,6 +37,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-test
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -47,11 +56,19 @@ presubmits:
         - >-
           ./test/build.sh install-lib &&
           make test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-node
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -91,6 +108,13 @@ presubmits:
           '--node-test-args=--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/"'
           '--test_args=--nodes=8 --focus=NodeProblemDetector'
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -98,6 +122,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-gci
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -128,6 +153,13 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -135,6 +167,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -165,6 +198,13 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -172,6 +212,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-test
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -202,10 +243,18 @@ presubmits:
         - >-
           ./test/build.sh install-lib &&
           SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-ubuntu
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -236,6 +285,13 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -243,6 +299,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -273,6 +330,13 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
