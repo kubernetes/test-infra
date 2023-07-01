@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/aws-load-balancer-controller:
   - name: pull-aws-load-balancer-controller-lint
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
@@ -13,12 +14,20 @@ presubmits:
         args:
         - make
         - lint
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-load-balancer-controller
       testgrid-tab-name: lint
       description: aws load balancer controller code lint
       testgrid-num-columns-recent: '30'
   - name: pull-aws-load-balancer-controller-unit-test
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
@@ -35,6 +44,13 @@ presubmits:
         - name: coveralls
           mountPath: /etc/coveralls-token
           readOnly: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
       volumes:
       - name: coveralls
         secret:
