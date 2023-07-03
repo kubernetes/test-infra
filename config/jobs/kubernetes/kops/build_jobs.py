@@ -944,9 +944,10 @@ def generate_network_plugins():
 ################################
 def generate_upgrades():
 
-    kops24 = 'v1.24.4'
-    kops25 = 'v1.25.2'
-    kops26 = 'v1.26.0-beta.1'
+    kops24 = 'v1.24.5'
+    kops25 = 'v1.25.4'
+    kops26 = 'v1.26.4'
+    kops27 = 'v1.26.7-beta.3'
 
     versions_list = [
         #  kops    k8s          kops      k8s
@@ -962,6 +963,13 @@ def generate_upgrades():
         ((kops25, 'v1.25.0'), ('1.26', 'v1.26.0')),
         ((kops26, 'v1.21.14'), ('1.26', 'v1.22.13')),
         ((kops26, 'v1.26.0'), ('1.26', 'v1.26.0')),
+        # 1.27 release branch
+        ((kops25, 'v1.20.15'), ('1.27', 'v1.21.14')),
+        ((kops25, 'v1.25.11'), ('1.27', 'v1.26.6')),
+        ((kops26, 'v1.21.14'), ('1.27', 'v1.22.17')),
+        ((kops26, 'v1.26.6'), ('1.27', 'v1.26.6')),
+        ((kops27, 'v1.22.17'), ('1.27', 'v1.23.17')),
+        ((kops27, 'v1.27.3'), ('1.27', 'v1.27.3')),
         # 1.24 upgrade to latest
         ((kops24, 'v1.23.1'), ('latest', 'v1.24.0')),
         ((kops24, 'v1.24.0'), ('latest', 'v1.25.0')),
@@ -973,12 +981,20 @@ def generate_upgrades():
         ((kops26, 'v1.24.0'), ('latest', 'v1.25.0')),
         ((kops26, 'v1.25.0'), ('latest', 'v1.25.0')),
         ((kops26, 'v1.25.0'), ('latest', 'v1.26.0')),
+        # 1.27 upgrade to latest
+        ((kops27, 'v1.24.0'), ('latest', 'v1.25.0')),
+        ((kops27, 'v1.24.0'), ('latest', 'v1.26.0')),
+        ((kops27, 'v1.24.0'), ('latest', 'v1.27.0')),
+        ((kops27, 'v1.25.0'), ('latest', 'v1.26.0')),
+        ((kops27, 'v1.25.0'), ('latest', 'v1.27.0')),
+        ((kops27, 'v1.26.0'), ('latest', 'v1.27.0')),
+        ((kops27, 'v1.27.0'), ('latest', 'v1.27.0')),
         # we should have an upgrade test for every supported K8s version
-        (('latest', 'v1.26.0'), ('latest', 'latest')),
+        (('latest', 'v1.27.0'), ('latest', 'latest')),
+        (('latest', 'v1.26.0'), ('latest', 'v1.27.0')),
         (('latest', 'v1.25.0'), ('latest', 'v1.26.0')),
         (('latest', 'v1.24.0'), ('latest', 'v1.25.0')),
         (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
-        (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
         # kOps latest should always be able to upgrade from stable to latest and stable to ci
         (('latest', 'stable'), ('latest', 'latest')),
         (('latest', 'stable'), ('latest', 'ci')),
@@ -1595,7 +1611,7 @@ def generate_presubmits_e2e():
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k123-ko125-to-k124-kolatest-karpenter",
+            name="pull-kops-e2e-aws-upgrade-k126-ko1270b2-to-k127-kolatest-karpenter",
             optional=True,
             distro='u2204arm64',
             networking='cilium',
@@ -1610,10 +1626,10 @@ def generate_presubmits_e2e():
                 "--master-size=c6g.xlarge",
             ],
             env={
-                'KOPS_VERSION_A': "1.25",
-                'K8S_VERSION_A': "v1.23.0",
+                'KOPS_VERSION_A': "1.27.0-beta.2",
+                'K8S_VERSION_A': "v1.26.0",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.24.0",
+                'K8S_VERSION_B': "v1.27.0",
                 'KOPS_SKIP_E2E': '1',
                 'KOPS_CONTROL_PLANE_SIZE': '3',
             }

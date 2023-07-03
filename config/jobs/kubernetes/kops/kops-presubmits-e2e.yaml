@@ -608,7 +608,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230616' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230630' --channel=alpha --networking=cilium --set=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
@@ -2364,7 +2364,7 @@ presubmits:
       testgrid-tab-name: pull-kops-e2e-aws-upgrade-126-ko126-to-klatest-kolatest-many-addons
 
 # {"cloud": "aws", "distro": "u2204arm64", "extra_flags": "--instance-manager=karpenter --master-size=c6g.xlarge", "feature_flags": "Karpenter", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-e2e-aws-upgrade-k123-ko125-to-k124-kolatest-karpenter
+  - name: pull-kops-e2e-aws-upgrade-k126-ko1270b2-to-k127-kolatest-karpenter
     branches:
     - master
     run_if_changed: '^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/'
@@ -2399,13 +2399,13 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         - name: KOPS_VERSION_A
-          value: "1.25"
+          value: "1.27.0-beta.2"
         - name: K8S_VERSION_A
-          value: "v1.23.0"
+          value: "v1.26.0"
         - name: KOPS_VERSION_B
           value: "latest"
         - name: K8S_VERSION_B
-          value: "v1.24.0"
+          value: "v1.27.0"
         - name: KOPS_SKIP_E2E
           value: "1"
         - name: KOPS_CONTROL_PLANE_SIZE
@@ -2413,7 +2413,7 @@ presubmits:
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-e0f2048229-326c9.test-cncf-aws.k8s.io"
+          value: "e2e-de63f8201c-c85e8.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_EXTRA_FLAGS
@@ -2434,7 +2434,7 @@ presubmits:
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-e2e-aws-upgrade-k123-ko125-to-k124-kolatest-karpenter
+      testgrid-tab-name: pull-kops-e2e-aws-upgrade-k126-ko1270b2-to-k127-kolatest-karpenter
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: presubmit-kops-aws-boskos
