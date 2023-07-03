@@ -127,14 +127,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-sanity-rosa-rhods-hypershift
+    name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-hypershift-sanity-rosa-rhods-hypershift
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-sanity-rosa-rhods-hypershift
+    test_group_name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-hypershift-sanity-rosa-rhods-hypershift
   name: redhat-openshift-CSPI-QE-MSI-release-4.13-informing
 test_groups:
 - gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-hypershift-v4.13-sanity-aws-hypershift-rosa-install
@@ -145,5 +145,5 @@ test_groups:
   name: periodic-ci-CSPI-QE-MSI-rhods-gpu-servicemesh-operators-v4.13-GA-sanity-rosa-rhods-gpu-servicemesh
 - gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-gpu-servicemesh-operators-v4.13-IIB-sanity-rosa-rhods-gpu-servicemesh
   name: periodic-ci-CSPI-QE-MSI-rhods-gpu-servicemesh-operators-v4.13-IIB-sanity-rosa-rhods-gpu-servicemesh
-- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-sanity-rosa-rhods-hypershift
-  name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-sanity-rosa-rhods-hypershift
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-hypershift-sanity-rosa-rhods-hypershift
+  name: periodic-ci-CSPI-QE-MSI-rhods-operator-v4.13-hypershift-sanity-rosa-rhods-hypershift
