@@ -2399,7 +2399,7 @@ presubmits:
         - name: GOPATH
           value: /home/prow/go
         - name: KOPS_VERSION_A
-          value: "1.27.0-beta.2"
+          value: "1.27"
         - name: K8S_VERSION_A
           value: "v1.26.0"
         - name: KOPS_VERSION_B
