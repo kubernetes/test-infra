@@ -50,6 +50,14 @@
         "mode": 420
       },
       {
+        "path": "/etc/sysctl.d/99-e2e-sysctl.conf",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/2SQvU7DQBCEez/FSG7BduKf4Eh0NBR06dH6bo1P8d1F3r3EvD2KCJFQqpW+LWbmy/EezMIkjCMvgefi5OynpxUU7B/SaWGy8nzFGuFpdT75AofJCZwgMFu2GOOS5Tg5Cz47oy4GKIvKEwY2lIQh36LsLS5uniGsoBvCxVnGG4+UZj2QHOWD1izHQMIWMcA7n0LyiCN0YmGcaU4sRZZjXXjcY1I9yb4sv5xOaShM9OUt7X5N9N5pWVM1Vp1pNrTth11XjdyZ2tKu3fZmbPuW25eaqOqyHIeJYX9L3QJBC0NjxBwv18HXNo+Ti+y/zNdm0zd11WSPQu+vnwAAAP//xE8bG4oBAAA="
+        },
+        "mode": 420
+      },
+      {
         "path": "/etc/ssh-key-secret/ssh-public",
         "contents": {
           "source": "data:text/plain;base64,R0NFX1NTSF9QVUJMSUNfS0VZX0ZJTEVfQ09OVEVOVA=="
@@ -68,6 +76,11 @@
   },
   "systemd": {
     "units": [
+      {
+        "contents": "[Unit]\nDescription=Configure required sysctls.\n\n[Service]\nType=oneshot\nExecStart=/usr/lib/systemd/systemd-sysctl\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "configure-sysctl.service"
+      },
       {
         "contents": "[Unit]\nDescription=Download and install required tools.\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=rpm-ostree install \\\n  -y \\\n  --apply-live \\\n  --allow-inactive \\\n  dbus-tools \\\n  checkpolicy\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
