@@ -23,8 +23,24 @@ storage:
       contents:
         local: 30-infra-container.conf
       mode: 0644
+    - path: /etc/sysctl.d/99-e2e-sysctl.conf
+      contents:
+        local: 99-e2e-sysctl.conf
+      mode: 0644
 systemd:
   units:
+    - name: configure-sysctl.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Configure required sysctls.
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/lib/systemd/systemd-sysctl
+
+        [Install]
+        WantedBy=multi-user.target
     - name: tools-install.service
       enabled: true
       contents: |
