@@ -1626,7 +1626,7 @@ def generate_presubmits_e2e():
                 "--master-size=c6g.xlarge",
             ],
             env={
-                'KOPS_VERSION_A': "1.27.0-beta.2",
+                'KOPS_VERSION_A': "1.27",
                 'K8S_VERSION_A': "v1.26.0",
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "v1.27.0",
