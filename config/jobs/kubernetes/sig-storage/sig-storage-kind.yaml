@@ -28,7 +28,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230613-63d85f5ed2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
         command:
         - wrapper.sh
         args:
@@ -75,7 +75,7 @@ periodics:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230613-63d85f5ed2-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
         command:
         - wrapper.sh
         args:
