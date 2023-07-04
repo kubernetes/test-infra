@@ -56,7 +56,7 @@ presubmits:
     path_alias: sigs.k8s.io/prometheus-adapter
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         # generic runner script, handles DIND, etc.
         - runner.sh

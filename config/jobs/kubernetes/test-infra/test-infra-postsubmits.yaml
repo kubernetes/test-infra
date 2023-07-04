@@ -11,7 +11,7 @@ postsubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-test-infra
         command:
         - runner.sh
         args:

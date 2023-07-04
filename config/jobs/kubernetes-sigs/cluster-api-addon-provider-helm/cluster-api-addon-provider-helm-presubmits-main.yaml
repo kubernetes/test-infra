@@ -11,7 +11,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -40,7 +40,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-1.26
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         resources:
           limits:
             cpu: 1
@@ -64,7 +64,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -91,7 +91,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -116,7 +116,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         args:
         - runner.sh
         - ./scripts/ci-test.sh
