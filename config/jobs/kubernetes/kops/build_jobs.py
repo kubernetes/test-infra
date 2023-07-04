@@ -759,7 +759,6 @@ def generate_misc():
                        "--instance-manager=karpenter",
                        "--master-size=c6g.xlarge",
                    ],
-                   feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc"],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic|serve.endpoints.on.same.port.and.different.protocols'), # pylint: disable=line-too-long
 
@@ -775,7 +774,6 @@ def generate_misc():
                        '--bastion',
                        "--master-size=c6g.xlarge",
                    ],
-                   feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc", "kops-ipv6"],
                    skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic|serve.endpoints.on.same.port.and.different.protocols'), # pylint: disable=line-too-long
 
@@ -944,49 +942,36 @@ def generate_network_plugins():
 ################################
 def generate_upgrades():
 
-    kops24 = 'v1.24.5'
     kops25 = 'v1.25.4'
     kops26 = 'v1.26.4'
-    kops27 = 'v1.26.7-beta.3'
+    kops27 = 'v1.27.0-beta.3'
 
     versions_list = [
         #  kops    k8s          kops      k8s
-        # 1.25 release branch
-        ((kops24, 'v1.19.16'), ('1.25', 'v1.20.6')),
-        ((kops24, 'v1.23.1'), ('1.25', 'v1.23.1')),
-        ((kops25, 'v1.21.14'), ('1.25', 'v1.22.13')),
-        ((kops25, 'v1.25.0'), ('1.25', 'v1.25.0')),
         # 1.26 release branch
-        ((kops24, 'v1.20.6'), ('1.26', 'v1.21.7')),
-        ((kops24, 'v1.24.0'), ('1.26', 'v1.25.0')),
         ((kops25, 'v1.20.6'), ('1.26', 'v1.21.7')),
         ((kops25, 'v1.25.0'), ('1.26', 'v1.26.0')),
         ((kops26, 'v1.21.14'), ('1.26', 'v1.22.13')),
         ((kops26, 'v1.26.0'), ('1.26', 'v1.26.0')),
         # 1.27 release branch
-        ((kops25, 'v1.20.15'), ('1.27', 'v1.21.14')),
+        ((kops25, 'v1.21.14'), ('1.27', 'v1.22.17')),
         ((kops25, 'v1.25.11'), ('1.27', 'v1.26.6')),
         ((kops26, 'v1.21.14'), ('1.27', 'v1.22.17')),
-        ((kops26, 'v1.26.6'), ('1.27', 'v1.26.6')),
+        ((kops26, 'v1.26.6'), ('1.27', 'v1.27.3')),
         ((kops27, 'v1.22.17'), ('1.27', 'v1.23.17')),
         ((kops27, 'v1.27.3'), ('1.27', 'v1.27.3')),
-        # 1.24 upgrade to latest
-        ((kops24, 'v1.23.1'), ('latest', 'v1.24.0')),
-        ((kops24, 'v1.24.0'), ('latest', 'v1.25.0')),
         # 1.25 upgrade to latest
         ((kops25, 'v1.24.0'), ('latest', 'v1.25.0')),
         ((kops25, 'v1.25.0'), ('latest', 'v1.26.0')),
         # 1.26 upgrade to latest
-        ((kops26, 'v1.21.14'), ('latest', 'v1.22.1')),
+        ((kops26, 'v1.22.0'), ('latest', 'v1.23.0')),
         ((kops26, 'v1.24.0'), ('latest', 'v1.25.0')),
-        ((kops26, 'v1.25.0'), ('latest', 'v1.25.0')),
         ((kops26, 'v1.25.0'), ('latest', 'v1.26.0')),
+        ((kops26, 'v1.26.0'), ('latest', 'v1.27.0')),
         # 1.27 upgrade to latest
+        ((kops27, 'v1.23.0'), ('latest', 'v1.24.0')),
         ((kops27, 'v1.24.0'), ('latest', 'v1.25.0')),
-        ((kops27, 'v1.24.0'), ('latest', 'v1.26.0')),
-        ((kops27, 'v1.24.0'), ('latest', 'v1.27.0')),
         ((kops27, 'v1.25.0'), ('latest', 'v1.26.0')),
-        ((kops27, 'v1.25.0'), ('latest', 'v1.27.0')),
         ((kops27, 'v1.26.0'), ('latest', 'v1.27.0')),
         ((kops27, 'v1.27.0'), ('latest', 'v1.27.0')),
         # we should have an upgrade test for every supported K8s version
@@ -1554,7 +1539,6 @@ def generate_presubmits_e2e():
                 "--instance-manager=karpenter",
                 "--master-size=c6g.xlarge",
             ],
-            feature_flags=['Karpenter'],
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|should.verify.that.all.nodes.have.volume.limits|In-tree.Volumes|LoadBalancers.should.be.able.to.preserve.UDP.traffic|serve.endpoints.on.same.port.and.different.protocols' # pylint: disable=line-too-long
         ),
         presubmit_test(
@@ -1611,13 +1595,35 @@ def generate_presubmits_e2e():
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-k126-ko1270b2-to-k127-kolatest-karpenter",
+            name="pull-kops-e2e-aws-upgrade-k126-ko126-to-k127-kolatest-karpenter",
             optional=True,
             distro='u2204arm64',
             networking='cilium',
             k8s_version='stable',
             kops_channel='alpha',
-            feature_flags=['Karpenter'],
+            test_timeout_minutes=120,
+            scenario='upgrade-ab',
+            extra_flags=[
+                "--instance-manager=karpenter",
+                "--master-size=c6g.xlarge",
+            ],
+            env={
+                'KOPS_FEATURE_FLAGS': "Karpenter",
+                'KOPS_VERSION_A': "1.26",
+                'K8S_VERSION_A': "v1.26.0",
+                'KOPS_VERSION_B': "latest",
+                'K8S_VERSION_B': "v1.27.0",
+                'KOPS_SKIP_E2E': '1',
+                'KOPS_CONTROL_PLANE_SIZE': '3',
+            }
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-upgrade-k126-ko127-to-k127-kolatest-karpenter",
+            optional=True,
+            distro='u2204arm64',
+            networking='cilium',
+            k8s_version='stable',
+            kops_channel='alpha',
             test_timeout_minutes=120,
             run_if_changed=r'^upup\/models\/cloudup\/resources\/addons\/karpenter\.sh\/',
             scenario='upgrade-ab',
