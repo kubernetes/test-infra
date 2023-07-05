@@ -50,6 +50,49 @@ periodics:
             requests:
               cpu: 8
               memory: 10Gi
+  - name: ci-cgroupv1-containerd-node-e2e-ec2-eks
+    interval: 6h
+    annotations:
+      testgrid-dashboards: sig-node-containerd
+      testgrid-tab-name: cgroupv1-containerd-node-e2e-ec2-eks
+      testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    labels:
+      preset-e2e-containerd-ec2: "true"
+    cluster: eks-prow-build-cluster
+    decorate: true
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: provider-aws-test-infra
+        base_ref: main
+        path_alias: sigs.k8s.io/provider-aws-test-infra
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      serviceAccountName: node-e2e-tests
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+          command:
+            - runner.sh
+          args:
+            - hack/make-rules/test-e2e-node.sh
+          env:
+            - name: FOCUS
+              value: \[NodeConformance\]
+            - name: BUILD_EKS_AMI
+              value: "true"
+            - name: IMAGE_CONFIG_FILE
+              value: aws-instance-eks.yaml
+            - name: TEST_ARGS
+              value: '--container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          resources:
+            limits:
+              cpu: 8
+              memory: 10Gi
+            requests:
+              cpu: 8
+              memory: 10Gi
   - name: ci-kubernetes-node-arm64-e2e-containerd-ec2
     interval: 12h
     annotations:
@@ -180,6 +223,50 @@ periodics:
               value: \[Serial\]
             - name: SKIP
               value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+            - name: TEST_ARGS
+              value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          resources:
+            limits:
+              cpu: 8
+              memory: 10Gi
+            requests:
+              cpu: 8
+              memory: 10Gi
+  - name: ci-cgroupv1-containerd-node-e2e-serial-ec2-eks
+    interval: 12h
+    annotations:
+      testgrid-dashboards: sig-node-containerd
+      testgrid-tab-name: ci-cgroupv1-containerd-node-e2e-serial-ec2-eks
+    labels:
+      preset-e2e-containerd-ec2: "true"
+    cluster: eks-prow-build-cluster
+    decorate: true
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: provider-aws-test-infra
+        base_ref: main
+        path_alias: sigs.k8s.io/provider-aws-test-infra
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      serviceAccountName: node-e2e-tests
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+          command:
+            - runner.sh
+          args:
+            - hack/make-rules/test-e2e-node.sh
+          env:
+            - name: FOCUS
+              value: \[Serial\]
+            - name: SKIP
+              value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
+            - name: BUILD_EKS_AMI
+              value: "true"
+            - name: IMAGE_CONFIG_FILE
+              value: aws-instance-eks.yaml
             - name: TEST_ARGS
               value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           resources:
