@@ -53,7 +53,6 @@ dashboards:
       - key: body
         value: <test-url>
 - name: google-soak
-- name: google-rules_k8s
 
 #
 # Start dashboard groups
@@ -68,5 +67,4 @@ dashboard_groups:
   - google-gci
   - google-kops-gce
   - google-osconfig
-  - google-rules_k8s
   - google-soak
