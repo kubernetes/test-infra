@@ -1374,6 +1374,12 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/kwok:
+    plugins:
+    - milestone
+    - release-note
+    - override
+
   kubernetes-sigs/kubectl-validate:
     plugins:
     - mergecommitblocker
@@ -1799,6 +1805,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-csi/csi-driver-nfs:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/kwok:
   - name: cherrypicker
     events:
     - issue_comment
