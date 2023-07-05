@@ -71,7 +71,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-node
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:
@@ -113,10 +113,10 @@ periodics:
         --timeout=60m
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
@@ -125,7 +125,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-kubernetes-gce-gci
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:
@@ -158,10 +158,10 @@ periodics:
         --timeout=60m
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
@@ -170,7 +170,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-kubernetes-gce-gci-custom-flags
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:
@@ -203,10 +203,10 @@ periodics:
         --timeout=60m
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
@@ -215,7 +215,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-kubernetes-gce-ubuntu
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:
@@ -248,10 +248,10 @@ periodics:
         --timeout=60m
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
@@ -260,7 +260,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
 - name: ci-npd-e2e-kubernetes-gce-ubuntu-custom-flags
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:
@@ -293,10 +293,10 @@ periodics:
         --timeout=60m
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
   annotations:
     testgrid-dashboards: sig-node-node-problem-detector
