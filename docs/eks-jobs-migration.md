@@ -73,10 +73,10 @@ then follow the steps below:
     Boskos resource is available in the EKS Prow build cluster (see contact
     information at the end of this document).**
   - **IMPORTANT: if you see any entries under `label` or `volumeMounts` that
-    might indicate that a job is using some external resource (e.g. credentials
-    for some cloud platform), you need to check if the Community Ownership
-    criteria is satisfied for that resource (see the Community Ownership
-    section for more details)**
+    might indicate that a job is using some external non-GCP resource (e.g.
+    credentials for some cloud platform), you need to check if the Community
+    Ownership criteria is satisfied for that resource (see the Community
+    Ownership section for more details)**
   - **IMPORTANT: jobs running in community-owned clusters must have resource
     requests and limits specified for cluster-autoscaler to work properly.
     If that's not the case for your job, please see the next section for some
