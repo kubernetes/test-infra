@@ -2,8 +2,20 @@
 options:
   no_parent_owners: true
 
-reviewers:
-- sig-k8s-infra-oncall
-approvers:
-- sig-k8s-infra-oncall
-- test-infra-oncall
+filters:
+  ".*":
+    reviewers:
+    - sig-k8s-infra-oncall
+    approvers:
+    - sig-k8s-infra-oncall
+    - test-infra-oncall
+  # ContribEx related jobs that K8s infra owns (currently
+  # only the sig-contirbex-k8s-triage-robot.yaml job) should
+  # be reviewed by ContribEx TLs since it could potentially
+  # constitute a workflow change:
+  # git.k8s.io/community/sig-contributor-experience/charter.md#cross-cutting-and-externally-facing-processes
+  "^sig-contribex-":
+    required_reviewers:
+      - sig-contributor-experience-technical-leads
+    labels:
+      - sig/contributor-experience
