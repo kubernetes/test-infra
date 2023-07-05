@@ -15,7 +15,8 @@ owned by community that's used for running ProwJobs. It's supposed to be
 similar to our GCP/GKE based clusters, but there are some significant
 differences such as:
 
-- Operating system on worker nodes where we run jobs is Ubuntu 22.04
+- Operating system on worker nodes where we run jobs is Ubuntu 20.04 (EKS
+  optimized)
 - The cluster is smaller in terms of number of worker nodes, but worker nodes
   are larger (16 vCPUs, 128 GB RAM, 300 GB NVMe SSD)
 - There's cluster-autoscaler in place to scale up/down cluster on demand
@@ -61,36 +62,37 @@ then follow the steps below:
   jobs are defined in the [kubernetes/test-infra][k-test-infra] repository. You
   can use GitHub or our [Code Search tool][cs-test-infra] to find the file
   where this job is defined (search by job name).
-- Look for a `cluster:` key in the job definition. If there isn't one or it's
-  set to `default`, then the job runs in the default cluster. Add (or replace)
-  the following `cluster:` key: `cluster: eks-prow-build-cluster`.
+- Look for a `.spec.cluster` key in the job definition. If there isn't one or
+  it's set to `default`, then the job runs in the default cluster. Add (or
+  replace) the following `.spec.cluster` key:
+  `cluster: eks-prow-build-cluster`.
   - **IMPORTANT: if you see any entries under `label` that says `gce` skip this
     job and get back to it the next time as this is not ready to be moved yet.**
-  - **IMPORTANT: if you see any entries under `label` that might indicate that
-    a job is using some external resource (e.g. some cloud platform), you need
-    to check if the Community Ownership criteria is satisfied for that resource
-    (see the Community Ownership section for more details)**
+  - **IMPORTANT: if you see that a job uses Boskos, (e.g. there's `BOSKOS_HOST`
+    environment variable set), please check with SIG K8s infra if a needed
+    Boskos resource is available in the EKS Prow build cluster (see contact
+    information at the end of this document).**
+  - **IMPORTANT: if you see any entries under `label` or `volumeMounts` that
+    might indicate that a job is using some external resource (e.g. credentials
+    for some cloud platform), you need to check if the Community Ownership
+    criteria is satisfied for that resource (see the Community Ownership
+    section for more details)**
   - **IMPORTANT: jobs running in community-owned clusters must have resource
     requests and limits specified for cluster-autoscaler to work properly.
     If that's not the case for your job, please see the next section for some
     details about determining correct resource requests and limits.**
   - Here's an [example of a job][example-eks-job] as a reference (pay attention
-    to the `cluster:` key)
+    to the `.spec.cluster` key)
 - Save the file, commit the change, create a branch and file a PR
 - Once the PR is merged, follow the guidelines in the Post Migration Period
   section of this document to ensure that the job remains stable
 
-If you have any trouble, please leave a note in the following
-[GitHub issue][test-infra-gh-issue] or come to
-[#sig-k8s-infra][slack-k8s-infra] or [#sig-testing][slack-sig-testing] Slack
-channel to ask for help.
+If you have any trouble, please see how you can get in touch with us at the
+end of this document.
 
 [prow-results-default]: https://prow.k8s.io/?cluster=default
 [cs-test-infra]: https://cs.k8s.io/?q=job-name-here&i=nope&files=config%2F&excludeFiles=&repos=kubernetes/test-infra
 [example-eks-job]: https://github.com/kubernetes/test-infra/blob/1d219efcca8a254aaca2c34570db0a56a05f5770/config/jobs/kubernetes/cloud-provider-aws/cloud-provider-aws-config.yaml#L3C1-L31
-[test-infra-gh-issue]: https://github.com/kubernetes/test-infra/issues/29722
-[slack-k8s-infra]: https://kubernetes.slack.com/archives/CCK68P2Q2
-[slack-sig-testing]: https://kubernetes.slack.com/archives/C09QZ4DQB
 
 ### Determining Resource Requests and Limits
 
@@ -150,10 +152,10 @@ several steps that you should take:
 
 ## Known Issues
 
-- Go doesn't respect cgroups, i.e. CPU limits are not going to be respected by
-  Go applications
+- Golang doesn't respect cgroups, i.e. CPU limits are not going to be respected
+  by Golang applications
   - This means that a Go application will try to use all available CPUs on
-    node, even though it's limited, e.g. to 2
+    node, even though it's limited by (Kubernetes) resource limits, e.g. to 2
   - This can cause massive throttling and performance-sensitive tasks and tests
     can be hit by this. Nodes in the new clusters are much larger
     (we had 8 vCPUs in the old cluster per node, while we have 16 vCPUs in the
@@ -163,7 +165,7 @@ several steps that you should take:
     issue by setting `GOMAXPROCS` environment variable for that job to the
     value of `cpu` limit. There are also ways to automatically determine
     `GOMAXPROCS`, such as [`automaxprocs`][automaxprocs]
-- Kernel configs are not available inside the job's test pod so kubeadm can
+- Kernel configs are not available inside the job's test pod so kubeadm might
   show a warning about this
   - We're still working on a permanent resolution, but you can take a look at
     the [following GitHub issue][gh-issue-kubeadm] for more details
@@ -214,3 +216,7 @@ to us:
   [#sig-testing][slack-sig-testing]
 - via our mailing lists: `kubernetes-sig-k8s-infra@googlegroups.com` and
   `kubernetes-sig-testing@googlegroups.com`
+
+[test-infra-gh-issue]: https://github.com/kubernetes/test-infra/issues/29722
+[slack-k8s-infra]: https://kubernetes.slack.com/archives/CCK68P2Q2
+[slack-sig-testing]: https://kubernetes.slack.com/archives/C09QZ4DQB
