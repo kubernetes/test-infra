@@ -116,7 +116,7 @@ presubmits:
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
           value: "25"
         - name: CONTROL_PLANE_INSTANCE_TYPE
-          value: "c6g.4xlarge"
+          value: "c6g.16xlarge"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
