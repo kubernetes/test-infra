@@ -9,7 +9,6 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
@@ -17,11 +16,11 @@ presubmits:
         - ./scripts/ci-build.sh
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-build-main
@@ -35,7 +34,6 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - command:
         - runner.sh
@@ -43,11 +41,11 @@ presubmits:
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         resources:
           limits:
-            cpu: 1
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
           requests:
-            cpu: 1
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-apidiff-main
@@ -62,7 +60,6 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
@@ -70,11 +67,11 @@ presubmits:
         - ./scripts/ci-verify.sh
         resources:
           limits:
-            cpu: 7300m
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
           requests:
-            cpu: 7300m
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
         securityContext:
           privileged: true
     annotations:
@@ -89,7 +86,6 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         args:
@@ -97,11 +93,11 @@ presubmits:
         - ./scripts/ci-test.sh
         resources:
           limits:
-            cpu: 7300m
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
           requests:
-            cpu: 7300m
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-test-main
@@ -114,7 +110,6 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         args:
@@ -130,11 +125,11 @@ presubmits:
           value: "1.20.2"
         resources:
           limits:
-            cpu: 7300m
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
           requests:
-            cpu: 7300m
-            memory: 4Gi
+            cpu: 6
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-addon-provider-helm
       testgrid-tab-name: caaph-pr-test-mink8s-main
