@@ -171,7 +171,7 @@ presubmits:
     always_run: true
     decorate: true
     optional: true
-    skip_report: true
+    skip_report: false
     labels:
       # Python unit tests run in docker.
       preset-dind-enabled: "true"
