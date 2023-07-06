@@ -54,6 +54,9 @@ dashboards:
     - name: pull-e2e-serial-ec2-canary
       test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2-canary
       base_options: width=10
+    - name: pull-e2e-serial-ec2-eks-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2-eks-canary
+      base_options: width=10
     - name: pull-e2e-arm64-serial-ec2-canary
       test_group_name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
       base_options: width=10
@@ -86,6 +89,9 @@ dashboards:
       base_options: width=10
     - name: pull-kubernetes-node-e2e-containerd-serial-ec2-canary
       test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2-canary
+      base_options: width=10
+    - name: pull-kubernetes-node-e2e-containerd-serial-ec2-eks-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2-eks-canary
       base_options: width=10
     - name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
       test_group_name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
