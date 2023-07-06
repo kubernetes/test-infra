@@ -20,6 +20,7 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/initupload: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/invitations-accepter: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
   k8s.io/test-infra/prow/cmd/jenkins-operator: gcr.io/k8s-prow/git:v20220215-ddc3ad9
+  k8s.io/test-infra/prow/cmd/moonraker: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/peribolos: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
   k8s.io/test-infra/prow/cmd/sidecar: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/sinker: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
@@ -238,6 +239,13 @@ builds:
   - -s -w
   - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
   - -X k8s.io/test-infra/prow/version.Name=jenkins-operator
+- id: moonraker
+  dir: .
+  main: prow/cmd/moonraker
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=moonraker
 - id: peribolos
   dir: .
   main: prow/cmd/peribolos
