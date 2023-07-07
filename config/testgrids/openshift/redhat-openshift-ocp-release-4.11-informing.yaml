@@ -4840,7 +4840,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-ovirt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-ovirt-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-vsphere-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-vsphere-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-vsphere-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-from-stable-4.9-e2e-aws-upgrade
