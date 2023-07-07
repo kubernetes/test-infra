@@ -1,5 +1,9 @@
 #cloud-config
 
+package_upgrade: true
+package_update: true
+packages:
+  - nfs-common
 runcmd:
   - echo "Test run from /tmp folder, remounting it"
   - mount /tmp /tmp -o remount,exec,suid
