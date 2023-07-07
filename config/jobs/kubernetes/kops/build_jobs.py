@@ -1085,7 +1085,8 @@ def generate_presubmits_scale():
                 'KUBE_NODE_COUNT': "500",
                 'RUN_CL2_TEST': "true",
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "25",
-                'CONTROL_PLANE_INSTANCE_TYPE': "c6g.16xlarge",
+                'CONTROL_PLANE_COUNT': "3",
+                'CONTROL_PLANE_SIZE': "c6g.16xlarge",
             }
         )
     ]
