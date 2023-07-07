@@ -24,5 +24,8 @@ runcmd:
   - echo "Restarting containerd"
   - systemctl restart containerd
 
+  - echo "Increasing the limit of inotify watches"
+  - sysctl -w fs.inotify.max_user_watches=524288
+
   - echo "Configuration complete"
 
