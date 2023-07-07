@@ -1,0 +1,38 @@
+# These CI/post-submit jobs are used by Kubernetes tests to fetch a recent build of containerd instead of building containerd on every run.
+periodics:
+- name: ci-containerd-build-canary
+  interval: 30m
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: main
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+      command:
+      - runner.sh
+      args:
+      - test/build.sh
+      env:
+      - name: DEPLOY_DIR
+        value: main
+      - name: DEPLOY_BUCKET
+        value: k8s-staging-cri-tools
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
+    testgrid-tab-name: containerd-build-canary
+    description: "builds development in progress branch of upstream containerd"
