@@ -11,9 +11,9 @@
       <td class="mdl-data-table__cell--non-numeric expander"><i class="icon-button material-icons arrow-icon noselect">expand_less</i></td>
     </tr>
     {{/* Do _not_ hide this by default, that will break inner javascript that dynamically resizes. Hiding post-render is ok, so we hide on first resize request */}}
-    <tr class="initial" id="{{.Filename}}-tr">
+    <tr class="initial" id="{{.ID}}-tr">
       <td colspan="2" style="border: 0px; padding: 0px;">
-        <iframe srcdoc="{{.Content}}" title="{{.Filename}}" sandbox="allow-scripts allow-popups allow-same-origin" id="{{.Filename}}" width="100%" scrolling="no"></iframe>
+        <iframe srcdoc="{{.Content}}" title="{{.Filename}}" sandbox="allow-scripts allow-popups allow-same-origin" id="{{.ID}}" width="100%" scrolling="no"></iframe>
       </td>
     </tr>
     {{end}}

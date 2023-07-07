@@ -25,6 +25,7 @@ import re
 import sh
 import ruamel.yaml as yaml
 
+import requests
 
 TEST_CONFIG_YAML = "test_config.yaml"
 JOB_CONFIG = "../config/jobs"
@@ -96,7 +97,7 @@ def rotate_files(rotator_bin, branch_path, current_version):
             _fg=True)
 
 
-def fork_new_file(forker_bin, branch_path, prowjob_path, current_version):
+def fork_new_file(forker_bin, branch_path, prowjob_path, current_version, go_version):
     print("Forking new file...")
     next_version = (current_version[0], current_version[1] + 1)
     filename = '%d.%d.yaml' % (next_version[0], next_version[1])
@@ -104,6 +105,7 @@ def fork_new_file(forker_bin, branch_path, prowjob_path, current_version):
         job_config=os.path.abspath(prowjob_path),
         output=os.path.abspath(os.path.join(branch_path, filename)),
         version='%d.%d' % next_version,
+        go_version=go_version,
         _fg=True)
 
 
@@ -137,6 +139,12 @@ def regenerate_files(generate_tests_bin, test_config):
         yaml_config_path=test_config,
         _fg=True)
 
+def go_version_kubernetes_master():
+    resp = requests.get(
+        'https://raw.githubusercontent.com/kubernetes/kubernetes/master/.go-version')
+    resp.raise_for_status()
+    data = resp.content.decode("utf-8")
+    return data
 
 def main():
     if os.environ.get('BUILD_WORKSPACE_DIRECTORY'):
@@ -153,6 +161,9 @@ def main():
     version = check_version(branch_job_dir_abs)
     print("Current version: %d.%d" % (version[0], version[1]))
 
+    go_version = go_version_kubernetes_master()
+    print("Current Go Version: %s" % go_version)
+
     files = get_config_files(branch_job_dir_abs)
     if len(files) > max_config_count:
         print("There should be a maximum of %s release branch configs." % max_config_count)
@@ -163,7 +174,7 @@ def main():
     rotate_files(rotator_bin, branch_job_dir_abs, version)
 
     fork_new_file(forker_bin, branch_job_dir_abs,
-                  os.path.join(cur_file_dir, JOB_CONFIG), version)
+                  os.path.join(cur_file_dir, JOB_CONFIG), version, go_version)
 
     update_generated_config(os.path.join(cur_file_dir, TEST_CONFIG_YAML), version)
 

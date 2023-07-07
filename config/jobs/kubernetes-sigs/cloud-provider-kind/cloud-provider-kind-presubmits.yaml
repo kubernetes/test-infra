@@ -1,0 +1,163 @@
+# sigs.k8s.io/cloud-provider-kind presubmits
+presubmits:
+  kubernetes-sigs/cloud-provider-kind:
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # GA-only variant
+  - name: pull-cloud-provider-kind-conformance-parallel-ga-only
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: true
+    optional: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/cloud-provider-kind
+    decoration_config:
+      timeout: 40m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        - name: FOCUS
+          value: \[sig-network\]|\[Conformance\]
+        - name: SKIP
+          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      testgrid-tab-name: pull-cloud-provider-kind conformance, master (dev) [non-serial]
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # IPv6 enabled variant
+  - name: pull-cloud-provider-kind-conformance-parallel-ipv6
+    cluster: k8s-infra-prow-build
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: true
+    optional: true
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/cloud-provider-kind
+    decoration_config:
+      timeout: 40m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
+        env:
+        # skip serial tests and run with --ginkgo-parallel
+        - name: "PARALLEL"
+          value: "true"
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # tell kind CI script to use ipv6
+        - name: "IP_FAMILY"
+          value: "ipv6"
+        - name: FOCUS
+          value: \[sig-network\]|\[Conformance\]
+        - name: SKIP
+          value: \[Feature:(Networking-IPv4|Example|Federation|PerformanceDNS)\]|GCE|NetworkPolicy|DualStack|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service|loadbalancer.source.ranges|Internet.connection.for.containers
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      testgrid-tab-name: pull-cloud-provider-kind-ipv6 conformance, master (dev) [non-serial]
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
+  # conformance test against kubernetes master branch with `kind`, skipping
+  # serial tests so it runs in ~20m
+  # Dual Stack enabled variant
+  - name: pull-kind-conformance-parallel-dual-stack-ipv4-ipv6
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/cloud-provider-kind
+    decoration_config:
+      timeout: 40m
+      grace_period: 15m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/sigs.k8s.io/cloud-provider-kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: \[sig-network\]|\[Conformance\]
+        - name: SKIP
+          value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|GCE|NetworkPolicy|LoadBalancer.Service.without.NodePort|type.and.ports.of.a.TCP.service
+        - name: PARALLEL
+          value: "true"
+        - name: IP_FAMILY
+          value: dual
+        # enable IPV6 in bootstrap image
+        - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+    annotations:
+      testgrid-dashboards: sig-testing-kind
+      testgrid-tab-name: pull-cloud-provider-kind-dual master (dev) [non-serial]
+      testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com

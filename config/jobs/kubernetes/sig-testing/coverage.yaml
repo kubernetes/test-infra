@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   # The presubmit version of the ci-kubernetes-coverage-unit job.
   - name: pull-kubernetes-coverage-unit
+    cluster: eks-prow-build-cluster
     always_run: false
     skip_report: false
     max_concurrency: 12
@@ -19,7 +20,7 @@ presubmits:
       description: unit test coverage presubmit
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - bash
@@ -36,6 +37,13 @@ presubmits:
           ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
           # For now let's swallow the error - we can reenable returning $result once we're in better shape.
           exit 0
+        resources:
+          limits:
+            cpu: 4
+            memory: 16Gi
+          requests:
+            cpu: 4
+            memory: 16Gi
         securityContext:
           privileged: true
 
@@ -64,7 +72,7 @@ periodics:
     timeout: 6h
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - bash
@@ -125,7 +133,7 @@ periodics:
     timeout: 3h
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - bash
@@ -181,7 +189,7 @@ periodics:
     path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - bash

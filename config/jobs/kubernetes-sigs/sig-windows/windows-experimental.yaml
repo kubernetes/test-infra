@@ -1,6 +1,6 @@
 periodics:
 - name: ci-kubernetes-e2e-capz-master-windows-service-proxy
-  interval: 12h
+  interval: 72h
   decorate: true
   decoration_config:
     timeout: 4h
@@ -8,14 +8,15 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-capz-windows-common-main: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
     preset-windows-private-registry-cred: "true"
     preset-capz-containerd-1-7-latest: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: windows-testing
@@ -29,9 +30,11 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
           - "runner.sh"
+          - "env"
+          - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
@@ -47,7 +50,7 @@ periodics:
     testgrid-dashboards: sig-windows-experimental
     testgrid-tab-name: capz-master-windows-service-proxy
 - name: ci-kubernetes-e2e-capz-master-windows-hyperv
-  interval: 12h
+  interval: 168h
   decorate: true
   decoration_config:
     timeout: 4h
@@ -55,14 +58,15 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-capz-windows-common-main: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-capz-windows-common: "true"
     preset-capz-windows-2022: "true"
     preset-windows-private-registry-cred: "true"
     preset-capz-containerd-1-7-latest: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: windows-testing
@@ -76,9 +80,11 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
           - "runner.sh"
+          - "env"
+          - "KUBERNETES_VERSION=latest"
           - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true

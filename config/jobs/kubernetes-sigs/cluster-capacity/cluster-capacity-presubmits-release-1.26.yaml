@@ -1,0 +1,138 @@
+# sigs.k8s.io/cluster-capacity presubmits
+presubmits:
+  kubernetes-sigs/cluster-capacity:
+  - name: pull-cluster-capacity-verify-gofmt-release-1-26
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.26$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.19.3
+        command:
+        - make
+        args:
+        - verify-gofmt
+  - name: pull-cluster-capacity-verify-build-release-1-26
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.26$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.19.3
+        command:
+        - make
+        args:
+        - build
+  - name: pull-cluster-capacity-unit-test-release-1-26
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.26$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.19.3
+        command:
+        - make
+        args:
+        - test-unit
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-26-1-26
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.26-1.26
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - release-1.26
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.26.3"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-26-1-25
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.26-1.25
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - release-1.26
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.25.2"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-26-1-24
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.26-1.24
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - release-1.26
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.24.4"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true

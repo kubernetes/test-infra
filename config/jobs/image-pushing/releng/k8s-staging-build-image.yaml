@@ -134,6 +134,8 @@ postsubmits:
         testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
+      decoration_config:
+        timeout: 4h
       run_if_changed: '^images\/build\/cross\/'
       branches:
         - ^main$

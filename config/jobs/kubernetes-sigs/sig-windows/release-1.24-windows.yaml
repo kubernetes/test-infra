@@ -20,7 +20,7 @@ periodics:
     timeout: 4h0m0s
   labels:
     preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-containerd-1-6-latest: "true"
     preset-capz-windows-2019: "true"
     preset-capz-windows-common-124: "true"
@@ -30,20 +30,17 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.7
+    # The Windows 1.24 jobs should stay on CAPZ release-1.6 for now because later versions build CNM and CCM
+    # images from k-sigs/cluster-provider-azure repo and the container image builds are not working.
+    base_ref: release-1.6
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: release-1.24
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    workdir: false
   spec:
     containers:
     - command:
       - runner.sh
       - ./scripts/ci-conformance.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.24
       name: ""
       resources:
         requests:
@@ -55,48 +52,6 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-release-1.24-informing, sig-windows-1.24-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-1.24
-- name: ci-kubernetes-e2e-capz-master-containerd-windows-1-24-ccm
-  interval: 24h
-  decorate: true
-  decoration_config:
-    timeout: 4h0m0s
-  labels:
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-capz-containerd-1-6-latest: "true"
-    preset-capz-windows-2019: "true"
-    preset-capz-windows-common-124: "true"
-    preset-capz-windows-parallel: "true"
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-azure
-    base_ref: release-1.8
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    workdir: true
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: release-1.24
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    workdir: false
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - ./scripts/ci-conformance.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
-      name: ""
-      resources:
-        requests:
-          cpu: "2"
-          memory: 9Gi
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    testgrid-dashboards: sig-windows-1.24-release
-    testgrid-tab-name: capz-windows-containerd-1.24-ccm
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-serial-slow-1-24
   interval: 24h
   decorate: true
@@ -106,7 +61,7 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-capz-windows-common-124: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-1-6-latest: "true"
@@ -114,22 +69,23 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.7
+    # The Windows 1.24 jobs should stay on CAPZ release-1.6 for now because later versions build CNM and CCM
+    # images from k-sigs/cluster-provider-azure repo and the container image builds are not working.
+    base_ref: release-1.6
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: release-1.24
-    path_alias: sigs.k8s.io/cloud-provider-azure
-    workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.24
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
         securityContext:
           privileged: true
+        env:
+        # Skip tests that require etcd image for 1.24 Windows jobs because the etcd image referenced in this branch does not container Windows images.
+        - name: GINKGO_SKIP
+          value: \[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|Aggregator.Should.be.able.to.support.the.1.17.Sample.API.Server|be.restarted.with.a.GRPC.liveness.probe
         resources:
           requests:
             cpu: 2
@@ -138,127 +94,3 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-1.24-release
     testgrid-tab-name: capz-windows-containerd-serial-slow-1.24
-- name: ci-kubernetes-e2e-azure-disk-windows-containerd-1-24
-  interval: 48h
-  decorate: true
-  decoration_config:
-    timeout: 2h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.24
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: azuredisk-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/azuredisk-csi-driver
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.24
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_24_csi_enabled.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-agentpoolcount=2
-      # Specific test args
-      - --test-azure-disk-csi-driver
-      securityContext:
-        privileged: true
-      env:
-      - name: AZURE_STORAGE_DRIVER
-        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-      - name: TEST_WINDOWS
-        value: "true"
-  annotations:
-    testgrid-dashboards: sig-windows-1.24-release
-    testgrid-tab-name: aks-engine-windows-containerd-azure-disk-1.24
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    description: Run Azure Disk e2e test with Azure Disk in a Windows cluster configured with CSI proxy and containerd.
-- name: ci-kubernetes-e2e-azure-file-windows-containerd
-  interval: 48h
-  decorate: true
-  decoration_config:
-    timeout: 2h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.24
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: azurefile-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/azurefile-csi-driver
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.24
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_24_csi_enabled.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-agentpoolcount=2
-      # Specific test args
-      - --test-azure-file-csi-driver
-      securityContext:
-        privileged: true
-      env:
-      - name: AZURE_STORAGE_DRIVER
-        value: "kubernetes.io/azure-file" # In-tree Azure file storage class
-      - name: TEST_WINDOWS
-        value: "true"
-  annotations:
-    testgrid-dashboards: sig-windows-1.24-release
-    testgrid-tab-name: aks-engine-windows-containerd-azure-file-1.24
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    description: Run Azure File e2e test with Azure File in a Windows cluster configured with CSI proxy and containerd.

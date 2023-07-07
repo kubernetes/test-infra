@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - name: pull-cluster-api-provider-ibmcloud-make
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -18,15 +19,20 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         imagePullPolicy: Always
         resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
           requests:
+            cpu: "2"
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-make
   - name: pull-cluster-api-provider-ibmcloud-test
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -37,14 +43,22 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         imagePullPolicy: Always
         command:
         - "./scripts/ci-test.sh"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-test
   - name: pull-cluster-api-provider-ibmcloud-smoke-test
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -57,7 +71,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         imagePullPolicy: Always
         env:
         - name: "IBMCLOUD_API_KEY"
@@ -68,10 +82,18 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-smoke-test
   - name: pull-cluster-api-provider-ibmcloud-build
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -81,10 +103,13 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - "./scripts/ci-build.sh"
         resources:
+          limits:
+            memory: "6Gi"
+            cpu: "2"
           requests:
             memory: "6Gi"
             cpu: "2"
@@ -92,6 +117,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-build
   - name: pull-cluster-api-provider-ibmcloud-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
       # The script this job runs is not in all branches.
@@ -101,14 +127,22 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
           command:
             - "make"
             - "verify"
+          resources:
+            limits:
+              cpu: "2"
+              memory: "6Gi"
+            requests:
+              cpu: "2"
+              memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-verify
   - name: pull-cluster-api-provider-ibmcloud-coverage
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
@@ -121,7 +155,7 @@ presubmits:
       - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:
@@ -137,7 +171,15 @@ presubmits:
             ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
             ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
             exit $result
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
   - name: pull-cluster-api-provider-ibmcloud-apidiff
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
     always_run: true
@@ -148,11 +190,18 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:
           - ./scripts/ci-apidiff.sh
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-apidiff-main

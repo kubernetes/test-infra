@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-azure:
   - name: pull-cluster-api-provider-azure-test
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -14,7 +15,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - runner.sh
         args:
@@ -32,11 +33,19 @@ presubmits:
           exit $result
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 16Gi
+          requests:
+            cpu: 6
+            memory: 16Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-test-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-build
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -45,9 +54,16 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - "./scripts/ci-build.sh"
+        resources:
+          limits:
+            cpu: 6
+            memory: 8Gi
+          requests:
+            cpu: 6
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-build-main
@@ -56,19 +72,19 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
-    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
-    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
+    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:
@@ -103,7 +119,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:
@@ -126,19 +142,19 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 4h
-    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
-    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
+    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:
@@ -158,6 +174,7 @@ presubmits:
   - name: pull-cluster-api-provider-azure-capi-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
+    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-e2e.sh|Makefile'
     optional: true
     decorate: true
     decoration_config:
@@ -168,11 +185,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:
@@ -190,6 +208,7 @@ presubmits:
       testgrid-tab-name: capz-pr-capi-e2e-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -201,13 +220,20 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - "runner.sh"
         - "make"
         - "verify"
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-verify-main
@@ -216,7 +242,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh'
+    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
     decorate: true
     decoration_config:
       timeout: 4h
@@ -225,11 +251,12 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
+      preset-azure-capz-sa-cred: "true"
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:
@@ -250,7 +277,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh'
+    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
     decoration_config:
       timeout: 4h
     max_concurrency: 5
@@ -259,6 +286,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     branches:
     - ^main$
     extra_refs:
@@ -268,7 +296,7 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
           command:
             - runner.sh
           args:
@@ -289,7 +317,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
-    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh'
+    run_if_changed: 'test\/e2e|templates\/test|scripts\/ci-conformance.sh|Makefile'
     decorate: true
     decoration_config:
       timeout: 4h
@@ -299,6 +327,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     branches:
     - ^main$
     extra_refs:
@@ -308,7 +337,7 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
           command:
             - runner.sh
           args:
@@ -345,6 +374,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     branches:
     - ^main$
     extra_refs:
@@ -354,7 +384,7 @@ presubmits:
       path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
           command:
             - runner.sh
           args:
@@ -370,6 +400,8 @@ presubmits:
               value: "1"
             - name: KUBETEST_WINDOWS_CONFIG
               value: "upstream-windows-serial-slow.yaml"
+            - name: K8S_FEATURE_GATE
+              value: "HPAContainerMetrics=true"
           securityContext:
             privileged: true
           resources:
@@ -381,8 +413,6 @@ presubmits:
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-serial-slow-main
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     always_run: true
     optional: true
@@ -391,7 +421,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:
@@ -405,6 +435,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     decorate: true
     optional: true
     always_run: false
@@ -420,7 +451,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -442,6 +473,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     decorate: true
     run_if_changed: '^test\/e2e\/(config\/azure-dev\.yaml)|(data\/shared\/v1beta1_provider\/metadata\.yaml)$'
     optional: true
@@ -456,7 +488,7 @@ presubmits:
         path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -465,6 +497,8 @@ presubmits:
               value: "API Version Upgrade"
             - name: KUBERNETES_VERSION
               value: "v1.22.9"
+            - name: K8S_FEATURE_GATES
+              value: "WindowsHostProcessContainers=true" # TODO: remove once k8s version is 1.23+. Feature gate will be removed in 1.28.
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -479,19 +513,19 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
-    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
-    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
+    skip_if_only_changed: "^docs/|^\\.github/|\\.md$|^(\\.codespellignore|LICENSE|OWNERS|OWNERS_ALIASES|PROJECT|SECURITY_CONTACTS|Tiltfile|metadata\\.yaml|netlify\\.toml|tilt-provider\\.json)$"
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
           - runner.sh
         args:

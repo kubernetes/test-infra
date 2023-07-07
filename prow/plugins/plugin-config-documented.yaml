@@ -79,9 +79,6 @@ bugzilla:
     # The `*` wildcard will apply to all branches.
     default:
         "":
-            # EnableBackporting enables functionality to create new backport bugs for
-            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
-            EnableBackporting: false
             # AddExternalLink determines whether the pull request will be added to the Bugzilla
             # bug using the ExternalBug tracker API after being validated
             add_external_link: false
@@ -109,6 +106,9 @@ bugzilla:
             # releases for dependent bugs. If set, all blockers must have a
             # valid target release.
             dependent_bug_target_releases: null
+            # EnableBackporting enables functionality to create new backport bugs for
+            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+            enable_backporting: false
             # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
             exclude_defaults: false
             # IsOpen determines whether a bug needs to be open to be valid
@@ -152,9 +152,6 @@ bugzilla:
             # The `*` wildcard will apply to all branches.
             default:
                 "":
-                    # EnableBackporting enables functionality to create new backport bugs for
-                    # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
-                    EnableBackporting: false
                     # AddExternalLink determines whether the pull request will be added to the Bugzilla
                     # bug using the ExternalBug tracker API after being validated
                     add_external_link: false
@@ -182,6 +179,9 @@ bugzilla:
                     # releases for dependent bugs. If set, all blockers must have a
                     # valid target release.
                     dependent_bug_target_releases: null
+                    # EnableBackporting enables functionality to create new backport bugs for
+                    # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+                    enable_backporting: false
                     # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
                     exclude_defaults: false
                     # IsOpen determines whether a bug needs to be open to be valid
@@ -225,9 +225,6 @@ bugzilla:
                     # The `*` wildcard will apply to all branches.
                     branches:
                         "":
-                            # EnableBackporting enables functionality to create new backport bugs for
-                            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
-                            EnableBackporting: false
                             # AddExternalLink determines whether the pull request will be added to the Bugzilla
                             # bug using the ExternalBug tracker API after being validated
                             add_external_link: false
@@ -255,6 +252,9 @@ bugzilla:
                             # releases for dependent bugs. If set, all blockers must have a
                             # valid target release.
                             dependent_bug_target_releases: null
+                            # EnableBackporting enables functionality to create new backport bugs for
+                            # cherrypick PRs created by the cherrypick plugin that reference bugzilla bugs.
+                            enable_backporting: false
                             # ExcludeDefaults excludes defaults from more generic Bugzilla configurations.
                             exclude_defaults: false
                             # IsOpen determines whether a bug needs to be open to be valid
@@ -447,7 +447,7 @@ override:
 # Owners contains configuration related to handling OWNERS files.
 owners:
     # Filenames allows configuring repos to use a separate set of filenames for
-    # any plugin that interacts with these files. Keys are in "org/repo" format.
+    # any plugin that interacts with these files. Keys are in "org" or "org/repo" format.
     filenames:
         "":
             owners: ' '

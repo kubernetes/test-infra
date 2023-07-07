@@ -14,7 +14,7 @@
 
 ARG GO_VERSION
 
-FROM multiarch/qemu-user-static:7.1.0-2 as qemu-image
+FROM multiarch/qemu-user-static:7.2.0-1 as qemu-image
 
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine
@@ -42,15 +42,8 @@ RUN gcloud config set core/disable_usage_reporting true && \
     gcloud --version && \
     gcloud info > /workspace/gcloud-info.txt
 
-# Install docker Buildx for fast docker builds
-ENV HOME=/root
-RUN mkdir -p  $HOME/.docker/cli-plugins \
-    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.10.2/buildx-v0.10.2.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
-    && chmod a+x $HOME/.docker/cli-plugins/docker-buildx
-# Link link /root/.docker to /builder/home/.docker because the default home for cloudbuild jobs is /builder/home
-# and this will make in uncessarry for each cloudbuild.yaml file in K8s project to specify HOME=/root
-RUN mkdir -p /builder/home \
-    && ln -s /root/.docker /builder/home/.docker
+# Default home for cloudbuild jobs is /builder/home
+RUN mkdir -p /builder/home
 
 # Copy qemu static binaries.
 COPY --from=qemu-image /usr/bin /qemu-bin
@@ -61,5 +54,8 @@ COPY --from=qemu-image /register /register
 ADD ./buildx-entrypoint.sh /buildx-entrypoint
 
 RUN apk add qemu
+
+# Install buildx system-wide for fast docker builds
+COPY --from=docker/buildx-bin:0.10.4 /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 ENTRYPOINT ["/bin/bash"]

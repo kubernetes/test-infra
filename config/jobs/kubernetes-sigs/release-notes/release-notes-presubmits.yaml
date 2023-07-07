@@ -3,70 +3,103 @@ presubmits:
   - name: pull-release-notes-build-dev
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
         - >
           npm ci &&
           npm run build-dev
-
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+
   - name: pull-release-notes-build-prod
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
         - >
           npm ci &&
           npm run build-prod
-
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+
   - name: pull-release-notes-check-prettier
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
         - >
           npm ci &&
           npm run check-prettier
-
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+
   - name: pull-release-notes-doc
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
         - >
           npm ci &&
           npm run doc
-
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+
   - name: pull-release-notes-e2e
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     spec:
       containers:
       - image: cypress/base:18.6.0
@@ -76,38 +109,61 @@ presubmits:
         - >
           npm ci &&
           npm run e2e-cy-ci
-
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+
   - name: pull-release-notes-lint
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
         - >
           npm ci &&
           npm run lint
-
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+
   - name: pull-release-notes-test
     always_run: true
     decorate: true
+    cluster: eks-prow-build-cluster
     spec:
       containers:
-      - image: node:14
+      - image: public.ecr.aws/docker/library/node:14
         command:
         - /bin/bash
         - -c
         - >
           npm ci &&
           npm run test
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'

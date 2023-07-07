@@ -34,12 +34,6 @@ dashboards:
       description: storage gce flaky e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
-    - name: gce-single-flake-attempt
-      test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
-      base_options: include-filter-by-regex=Volume%7Cstorage
-      description: storage gce e2e tests for master branch with reduced flake attempt
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
     - name: gce-slow
       test_group_name: ci-kubernetes-e2e-gci-gce-slow
       base_options: include-filter-by-regex=Volume%7Cstorage
@@ -62,12 +56,6 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
       base_options: include-filter-by-regex=Volume%7Cstorage
       description: storage gci gce alpha enabled default features e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
-    - name: gce-iscsi
-      test_group_name: ci-kubernetes-e2e-gce-iscsi
-      base_options: include-filter-by-regex=Volume%7Cstorage
-      description: storage iSCSI e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
     - name: gce-iscsi-serial

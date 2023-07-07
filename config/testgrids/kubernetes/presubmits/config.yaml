@@ -78,9 +78,6 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-canary
     test_group_name: pull-kubernetes-e2e-gce-canary
     base_options: width=10
-  - name: pull-kubernetes-e2e-gce-ubuntu
-    test_group_name: pull-kubernetes-e2e-gce-ubuntu
-    base_options: width=10
   - name: pull-kubernetes-e2e-kind-canary
     test_group_name: pull-kubernetes-e2e-kind-canary
     base_options: width=10
@@ -92,6 +89,9 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-kind-ipvs-dual-canary
     test_group_name: pull-kubernetes-e2e-kind-ipvs-dual-canary
+    base_options: width=10
+  - name: pull-kubernetes-e2e-kind-alpha-features
+    test_group_name: pull-kubernetes-e2e-kind-alpha-features
     base_options: width=10
   - name: pull-kubernetes-e2e-gce-cos-alpha-features
     test_group_name: pull-kubernetes-e2e-gce-cos-alpha-features
@@ -122,9 +122,6 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
-    base_options: width=10
-  - name: pull-kubernetes-node-e2e-kubetest2
-    test_group_name: pull-kubernetes-node-e2e-kubetest2
     base_options: width=10
   - name: pull-kubernetes-node-e2e-containerd-kubetest2
     test_group_name: pull-kubernetes-node-e2e-containerd-kubetest2

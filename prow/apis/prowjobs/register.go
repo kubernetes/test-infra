@@ -19,4 +19,12 @@ package prowjobs
 const (
 	// GroupName defines the API group identifier for prow types.
 	GroupName = "prow.k8s.io"
+
+	// Kind defines the API kind identifier.
+	Kind = "ProwJob"
+)
+
+var (
+	// KindPlural is the plural form of Kind
+	KindPlural = Kind + "s"
 )

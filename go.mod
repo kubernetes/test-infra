@@ -29,7 +29,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.20
 	github.com/GoogleCloudPlatform/testgrid v0.0.123
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/andygrunwald/go-gerrit v0.0.0-20230211083816-04e01d7217b2
+	github.com/andygrunwald/go-gerrit v0.0.0-20210709065208-9d38b0be0268
 	github.com/andygrunwald/go-jira v1.14.0
 	github.com/aws/aws-sdk-go v1.38.49
 	github.com/bazelbuild/buildtools v0.0.0-20200922170545-10384511ce98
@@ -71,7 +71,6 @@ require (
 	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.32.1
-	github.com/satori/go.uuid v1.2.0
 	github.com/shurcooL/githubv4 v0.0.0-20210725200734-83ba7b4c9228
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
@@ -83,12 +82,12 @@ require (
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
+	golang.org/x/net v0.8.0
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
-	golang.org/x/text v0.3.7
+	golang.org/x/sync v0.1.0
+	golang.org/x/text v0.8.0
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306
-	golang.org/x/tools v0.1.12
+	golang.org/x/tools v0.6.0
 	gomodules.xyz/jsonpatch/v2 v2.2.0
 	google.golang.org/api v0.83.0
 	google.golang.org/genproto v0.0.0-20220608133413-ed9918b62aac
@@ -97,16 +96,15 @@ require (
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
+	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.2
 	k8s.io/apimachinery v0.24.2
 	k8s.io/client-go v0.24.2
 	k8s.io/code-generator v0.24.2
 	k8s.io/klog/v2 v2.70.1
-	k8s.io/kubernetes v1.25.3
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	knative.dev/pkg v0.0.0-20220329144915-0a1ec2e0d46c
-	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/controller-runtime v0.12.3
 	sigs.k8s.io/controller-tools v0.9.2
 	sigs.k8s.io/yaml v1.3.0
@@ -190,6 +188,8 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/onsi/ginkgo/v2 v2.1.6 // indirect
+	github.com/onsi/gomega v1.20.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
@@ -201,14 +201,13 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
-	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/term v0.6.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/apiextensions-apiserver v0.24.2 // indirect
 	k8s.io/component-base v0.24.2 // indirect
 	k8s.io/gengo v0.0.0-20220307231824-4627b89bbf1b // indirect

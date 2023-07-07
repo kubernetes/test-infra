@@ -40,25 +40,6 @@ func (c *fakeSnicker) readImage(log *logrus.Entry) (string, error) {
 	return "![fake candy image](fake)", nil
 }
 
-func TestImages(t *testing.T) {
-	for _, imgURL := range candiesImgs {
-		t.Run(imgURL, func(t *testing.T) {
-			t.Parallel()
-			for i := 0; i < 3; i++ {
-				toobig, err := github.ImageTooBig(imgURL)
-				if err != nil {
-					t.Errorf("Failed reading image: %v", err)
-					continue
-				}
-				if toobig {
-					t.Errorf("Image %q too big", imgURL)
-				}
-				break
-			}
-		})
-	}
-}
-
 func TestReadImage(t *testing.T) {
 	img, err := trickOrTreat.readImage(logrus.WithContext(context.Background()))
 	if err != nil {

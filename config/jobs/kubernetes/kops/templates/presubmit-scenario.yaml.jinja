@@ -11,13 +11,22 @@
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
+      {%- if not boskos_resource_type %}
       preset-aws-credential: "true"
+      {%- endif %}
       preset-dind-enabled: "true"
     max_concurrency: 1
     decorate: true
     decoration_config:
       timeout: {{job_timeout}}
     path_alias: k8s.io/kops
+    {%- if scenario == 'scalability' %}
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    {%- endif %}
     spec:
       containers:
       - image: {{image}}
@@ -35,6 +44,10 @@
           value: {{kops_ssh_user}}
         - name: GOPATH
           value: /home/prow/go
+        {%- if artifacts %}
+        - name: ARTIFACTS
+          value: {{artifacts}}
+        {%- endif %}
         {%- for key, val in env.items() %}
         - name: {{ key }}
           value: "{{ val }}"

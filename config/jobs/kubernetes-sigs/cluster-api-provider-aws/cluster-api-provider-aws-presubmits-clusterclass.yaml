@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
     - name: pull-cluster-api-provider-aws-e2e-clusterclass
+      cluster: eks-prow-build-cluster
       branches:
         # The script this job runs is not in all branches.
         - ^main$
@@ -19,7 +20,7 @@ presubmits:
         preset-aws-credential: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
             command:
               - "runner.sh"
               - "./scripts/ci-e2e.sh"
@@ -37,6 +38,9 @@ presubmits:
               privileged: true
             resources:
               requests:
+                cpu: 2
+                memory: "9Gi"
+              limits:
                 cpu: 2
                 memory: "9Gi"
       annotations:

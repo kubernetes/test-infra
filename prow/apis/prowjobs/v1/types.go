@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -248,6 +249,8 @@ func (pjs ProwJobSpec) GetPipelineRunSpec() (*pipelinev1beta1.PipelineRunSpec, e
 	}
 	if found == nil && pjs.PipelineRunSpec != nil {
 		var spec pipelinev1beta1.PipelineRunSpec
+
+		logrus.Warn("The AlphaV1 tektoncd/pipeline version is deprecated and it will be replaced by the BetaV1. It will be removed in July 2023")
 		if err := pjs.PipelineRunSpec.ConvertTo(context.TODO(), &spec); err != nil {
 			return nil, err
 		}
@@ -506,6 +509,16 @@ type DecorationConfig struct {
 	// set the same as this request. Could be overridden by memory request
 	// defined explicitly on prowjob.
 	DefaultMemoryRequest *resource.Quantity `json:"default_memory_request,omitempty"`
+
+	// PodPendingTimeout defines how long the controller will wait to perform garbage
+	// collection on pending pods. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+	PodPendingTimeout *metav1.Duration `json:"pod_pending_timeout,omitempty"`
+	// PodRunningTimeout defines how long the controller will wait to abort a prowjob pod
+	// stuck in running state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
+	// PodUnscheduledTimeout defines how long the controller will wait to abort a prowjob
+	// stuck in an unscheduled state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
+	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -714,6 +727,18 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 
 	if merged.DefaultMemoryRequest == nil {
 		merged.DefaultMemoryRequest = def.DefaultMemoryRequest
+	}
+
+	if merged.PodPendingTimeout == nil {
+		merged.PodPendingTimeout = def.PodPendingTimeout
+	}
+
+	if merged.PodRunningTimeout == nil {
+		merged.PodRunningTimeout = def.PodRunningTimeout
+	}
+
+	if merged.PodUnscheduledTimeout == nil {
+		merged.PodUnscheduledTimeout = def.PodUnscheduledTimeout
 	}
 
 	return &merged
@@ -1014,6 +1039,10 @@ type Pull struct {
 	// github: pull/123/head
 	// gerrit: refs/changes/00/123/1
 	Ref string `json:"ref,omitempty"`
+	// HeadRef is the git ref (branch name) of the proposed change.  This can be more human-readable than just
+	// a PR #, and some tools want this metadata to help associate the work with a pull request (e.g. some code
+	// scanning services, or chromatic.com).
+	HeadRef string `json:"head_ref,omitempty"`
 	// Link links to the pull request itself.
 	Link string `json:"link,omitempty"`
 	// CommitLink links to the commit identified by the SHA.

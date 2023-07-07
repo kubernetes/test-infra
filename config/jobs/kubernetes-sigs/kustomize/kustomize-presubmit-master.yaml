@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kustomize:
   - name: kustomize-presubmit-master
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/kustomize
@@ -8,13 +9,17 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - make
         args:
         - prow-presubmit-check
         resources:
           requests:
+            memory: "2000Mi"
+            cpu: 4000m
+          limits:
+            memory: "2000Mi"
             cpu: 4000m
     annotations:
       testgrid-dashboards: sig-cli-misc

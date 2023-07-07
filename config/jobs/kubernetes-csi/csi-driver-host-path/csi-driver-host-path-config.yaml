@@ -3,6 +3,7 @@
 presubmits:
   kubernetes-csi/csi-driver-host-path:
   - name: pull-kubernetes-csi-csi-driver-host-path-1-24-on-kubernetes-1-24
+    cluster: default
     always_run: true
     optional: false
     decorate: true
@@ -19,7 +20,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -47,11 +48,16 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-24-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -67,7 +73,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -88,12 +94,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-25-on-kubernetes-1-25
+    cluster: default
     always_run: true
     optional: false
     decorate: true
@@ -110,7 +117,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -138,11 +145,16 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-25-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -158,7 +170,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -179,12 +191,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-26-on-kubernetes-1-26
+    cluster: default
     always_run: true
     optional: true
     decorate: true
@@ -201,7 +214,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -229,15 +242,16 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-26-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -253,7 +267,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -274,12 +288,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-alpha-1-25-on-kubernetes-1-25
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -296,7 +311,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -324,8 +339,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-24-test-on-kubernetes-1-24
+    cluster: default
     always_run: true
     optional: true
     decorate: true
@@ -342,7 +362,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -370,11 +390,16 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-24-test-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -390,7 +415,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -411,12 +436,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-25-test-on-kubernetes-1-25
+    cluster: default
     always_run: true
     optional: true
     decorate: true
@@ -433,7 +459,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -461,11 +487,16 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-25-test-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -481,7 +512,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -502,12 +533,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-26-test-on-kubernetes-1-26
+    cluster: default
     always_run: true
     optional: true
     decorate: true
@@ -524,7 +556,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -552,15 +584,16 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-26-test-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -576,7 +609,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -597,12 +630,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-alpha-1-25-test-on-kubernetes-1-25
+    cluster: default
     always_run: false
     optional: true
     decorate: true
@@ -619,7 +653,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -647,8 +681,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-unit
+    cluster: default
     always_run: true
     decorate: true
     skip_report: false
@@ -664,7 +703,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -677,11 +716,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
 
 periodics:
 - interval: 6h
@@ -703,7 +742,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -726,11 +765,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-on-kubernetes-1-25
   decorate: true
@@ -750,7 +789,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -773,11 +812,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-on-kubernetes-1-26
   decorate: true
@@ -797,7 +836,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -820,11 +859,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-on-kubernetes-master
   decorate: true
@@ -844,7 +883,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -867,7 +906,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-on-kubernetes-1-25
   decorate: true
@@ -887,7 +930,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -910,11 +953,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-on-kubernetes-1-26
   decorate: true
@@ -934,7 +977,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -957,11 +1000,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-on-kubernetes-master
   decorate: true
@@ -981,7 +1024,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1004,7 +1047,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-on-kubernetes-1-26
   decorate: true
@@ -1024,7 +1071,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1047,11 +1094,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-on-kubernetes-master
   decorate: true
@@ -1071,7 +1118,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1094,7 +1141,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-1-24
   decorate: true
@@ -1114,7 +1165,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1137,11 +1188,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-1-25
   decorate: true
@@ -1161,7 +1212,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1184,11 +1235,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-1-26
   decorate: true
@@ -1208,7 +1259,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1231,11 +1282,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-master
   decorate: true
@@ -1255,7 +1306,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1278,7 +1329,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-test-on-kubernetes-1-25
   decorate: true
@@ -1298,7 +1353,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1321,11 +1376,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-test-on-kubernetes-1-26
   decorate: true
@@ -1345,7 +1400,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1368,11 +1423,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-test-on-kubernetes-master
   decorate: true
@@ -1392,7 +1447,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1415,7 +1470,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-test-on-kubernetes-1-26
   decorate: true
@@ -1435,7 +1494,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1458,11 +1517,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          memory: "9Gi"
+          cpu: 4
+        limits:
+          memory: "9Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-test-on-kubernetes-master
   decorate: true
@@ -1482,7 +1541,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1505,7 +1564,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-24
   decorate: true
@@ -1525,7 +1588,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1554,7 +1617,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-25
   decorate: true
@@ -1574,7 +1641,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1603,7 +1670,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-26
   decorate: true
@@ -1623,7 +1694,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1652,7 +1723,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-master
   decorate: true
@@ -1672,7 +1747,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1701,7 +1776,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-alpha-canary-on-kubernetes-master
   decorate: true
@@ -1721,7 +1800,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1750,7 +1829,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-24
   decorate: true
@@ -1770,7 +1853,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1799,7 +1882,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-25
   decorate: true
@@ -1819,7 +1906,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1848,7 +1935,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-26
   decorate: true
@@ -1868,7 +1959,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1897,7 +1988,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-master
   decorate: true
@@ -1917,7 +2012,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1946,7 +2041,11 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-alpha-canary-test-on-kubernetes-master
   decorate: true
@@ -1966,7 +2065,7 @@ periodics:
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       args:
@@ -1995,4 +2094,8 @@ periodics:
         privileged: true
       resources:
         requests:
-          cpu: 2000m
+          memory: "4Gi"
+          cpu: 4
+        limits:
+          memory: "4Gi"
+          cpu: 4

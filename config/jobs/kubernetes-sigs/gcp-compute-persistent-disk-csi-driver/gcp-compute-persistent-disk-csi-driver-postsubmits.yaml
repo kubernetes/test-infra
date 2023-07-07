@@ -1,41 +1,4 @@
 periodics:
-- name: ci-gcp-compute-persistent-disk-csi-driver-release-k8s-master-integration
-  interval: 4h
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
-      args:
-      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
-      - "--timeout=180" # Minutes (120m runs consistently time out)
-      - "--scenario=execute"
-      - "--" # end bootstrap args, scenario args below
-      - "test/run-k8s-integration-ci.sh"
-      env:
-      - name: GCE_PD_OVERLAY_NAME
-        value: "stable-master"
-      - name: GCE_PD_DO_DRIVER_BUILD
-        value: "false"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
-  annotations:
-    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: Kubernetes Master Driver Latest Release
-    testgrid-alert-email: gke-managed-storage-alerts@google.com
-    description: Kubernetes Integration tests for Kubernetes Master branch, Driver latest Release, and Stable Sidecars.  Used to verify stable is not broken by driver head.
 - name: ci-gcp-compute-persistent-disk-csi-driver-release-staging-k8s-master-integration
   interval: 4h
   labels:
@@ -43,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -80,7 +43,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -117,7 +80,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"

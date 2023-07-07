@@ -4,6 +4,7 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/bom"
+    cluster: eks-prow-build-cluster
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
@@ -14,6 +15,13 @@ presubmits:
         - run
         - mage.go
         - Test
+        resources:
+          requests:
+            cpu: 2
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 2Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: bom-test
@@ -23,6 +31,7 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/bom"
+    cluster: eks-prow-build-cluster
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
@@ -33,8 +42,42 @@ presubmits:
         - run
         - mage.go
         - Verify
+        resources:
+          requests:
+            cpu: 2
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 2Gi
     annotations:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: bom-verify
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
+  - name: pull-bom-check-embedded-data
+    always_run: true
+    decorate: true
+    path_alias: "sigs.k8s.io/bom"
+    cluster: eks-prow-build-cluster
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.20-bullseye
+        imagePullPolicy: Always
+        command:
+        - go
+        args:
+        - run
+        - mage.go
+        - CheckEmbeddedData
+        resources:
+          requests:
+            cpu: 2
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 2Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: bom-check-embedded-data
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'

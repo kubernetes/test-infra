@@ -7,7 +7,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         args:
           - --root=/go/src
           - --repo=k8s.io/kubernetes=master
@@ -47,7 +47,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=260
@@ -86,10 +86,10 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       args:
           - --repo=k8s.io/kubernetes=master
-          - --timeout=260
+          - --timeout=290
           - --root=/go/src
           - --scenario=kubernetes_e2e
           - --
@@ -101,7 +101,7 @@ periodics:
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --timeout=4h --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
-          - --timeout=240m
+          - --timeout=270m
       env:
       - name: GOPATH
         value: /go
@@ -120,6 +120,63 @@ periodics:
     testgrid-alert-email: skclark@redhat.com
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
+- name: ci-kubernetes-node-arm64-ubuntu-serial
+  interval: 4h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-arm64-ubuntu-serial
+    description: "Run serial node e2e tests on ARM64 environment on Ubuntu"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  decoration_config:
+    timeout: 180m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-experimental
+        command:
+        - runner.sh
+        args:
+          - kubetest2
+          - noop
+          - --test=node
+          - --
+          - --repo-root=.
+          - --gcp-zone=us-central1-a
+          - --parallelism=1
+          - --focus-regex=\[Serial\]
+          - --use-dockerized-build=true
+          - --target-build-arch=linux/arm64
+          - --skip-regex=\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:NodeProblemDetector\]|\[NodeFeature:OOMScoreAdj\]|\[NodeFeature:DevicePluginProbe\]|\[NodeConformance\]|\[Feature:DynamicResourceAllocation\]
+          - '--test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/image-config-serial.yaml
+        securityContext:
+          privileged: true
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
 - name: ci-kubernetes-node-swap-fedora
   cluster: k8s-infra-prow-build
   interval: 4h
@@ -128,7 +185,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         args:
           - --root=/go/src
           - "--job=$(JOB_NAME)"
@@ -177,7 +234,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -215,7 +272,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       args:
       - --root=/go/src
       - "--job=$(JOB_NAME)"
@@ -259,7 +316,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -285,6 +342,198 @@ periodics:
             cpu: 4
             memory: 6Gi
 
+
+- name: ci-kubernetes-node-e2e-containerd-standalone-mode-all-alpha
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=master
+      - --repo=github.com/containerd/containerd=main
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
+      - --deployment=node
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--standalone-mode=true --feature-gates=AllAlpha=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        requests:
+          cpu: 4
+          memory: 6Gi
+        limits:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-release-blocking
+    testgrid-tab-name: node-kubelet-containerd-standalone-mode-all-alpha
+    description: "Runs kubelet in standalone mode with all alpha features enabled"
+
+- name: ci-kubernetes-node-e2e-containerd-standalone-mode
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=master
+      - --repo=github.com/containerd/containerd=main
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
+      - --deployment=node
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--standalone-mode=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[Feature:StandaloneMode\]" --skip="\[Flaky\]|\[Serial\]"
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        requests:
+          cpu: 4
+          memory: 6Gi
+        limits:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-release-blocking
+    testgrid-tab-name: node-kubelet-containerd-standalone-mode
+    description: "Runs kubelet in standalone mode"
+
+- name: ci-kubernetes-node-kubelet-serial-topology-manager
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-topology-manager
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-multi-numa.yaml
+          - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --skip="" --focus="\[Feature:TopologyManager\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
+- name: ci-kubernetes-node-kubelet-serial-cpu-manager
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-cpu-manager
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-multi-numa.yaml
+          - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --skip="" --focus="\[Feature:CPUManager\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
+- name: ci-kubernetes-node-kubelet-serial-memory-manager
+  interval: 24h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-memory-manager
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-multi-numa.yaml
+          - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --skip="" --focus="\[Feature:MemoryManager\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
 #  interval: 12h
@@ -293,7 +542,7 @@ periodics:
 #    preset-k8s-ssh: "true"
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --timeout=90

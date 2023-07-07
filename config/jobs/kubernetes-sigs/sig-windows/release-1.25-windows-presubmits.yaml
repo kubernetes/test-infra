@@ -13,19 +13,24 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
       preset-capz-windows-2019: "true"
       preset-capz-containerd-1-6-latest: "true"
       preset-capz-windows-common-pull: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
+      # TODO: update to release-1.9 when Go 1.20 is backported to kubekins-e2e.
       base_ref: release-1.8
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: release-1.25
+      path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh

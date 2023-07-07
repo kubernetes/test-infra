@@ -28,17 +28,29 @@ presubmits:
   kubernetes/cloud-provider-vsphere:
 
   - name: pull-cloud-provider-vsphere-verify-fmt
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '\.go$|hack/check-format\.sh'
     decorate: true
+    branches:
+    - ^master$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - make
         args:
         - fmt
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
@@ -46,17 +58,29 @@ presubmits:
       description: Verifies the Golang sources have been formatted
 
   - name: pull-cloud-provider-vsphere-verify-lint
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '\.go$|hack/check-lint\.sh'
     decorate: true
+    branches:
+    - ^master$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - make
         args:
         - lint
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
@@ -64,17 +88,29 @@ presubmits:
       description: Verifies the Golang sources are linted
 
   - name: pull-cloud-provider-vsphere-verify-vet
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '\.go$|hack/check-vet\.sh'
     decorate: true
+    branches:
+    - ^master$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - make
         args:
         - vet
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
@@ -82,6 +118,7 @@ presubmits:
       description: Vets the Golang sources have been vetted
 
   - name: pull-cloud-provider-vsphere-verify-markdown
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '.*\.md$'
     decorate: true
@@ -98,6 +135,13 @@ presubmits:
         - -i
         - docs/book/node_modules
         - .
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-tab-name: pr-verify-markdown
@@ -105,6 +149,7 @@ presubmits:
       description: Verifies the markdown has been linted
 
   - name: pull-cloud-provider-vsphere-verify-shell
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '.*\.\w*sh$'
     decorate: true
@@ -114,6 +159,13 @@ presubmits:
       - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.6.0
         command:
         - /bin/shellcheck.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-tab-name: pr-verify-shell
@@ -121,17 +173,29 @@ presubmits:
       description: Verifies the shell scripts have been linted
 
   - name: pull-cloud-provider-vsphere-verify-staticcheck
+    cluster: eks-prow-build-cluster
     always_run: false
     run_if_changed: '\.go$|hack/check-staticcheck\.sh$|go.mod'
     decorate: true
+    branches:
+    - ^master$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - make
         args:
         - staticcheck
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
@@ -140,10 +204,12 @@ presubmits:
 
   # Builds the CCM and CSI binaries.
   - name: pull-cloud-provider-vsphere-build
+    cluster: eks-prow-build-cluster
     decorate: true
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -151,21 +217,30 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - "make"
         args:
         - "build"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
   # Executes the unit tests.
   - name: pull-cloud-provider-vsphere-unit-test
+    cluster: eks-prow-build-cluster
     decorate: true
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -173,24 +248,33 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - "make"
         args:
         - "unit-test"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
   # Executes the integration tests.
   - name: pull-cloud-provider-vsphere-integration-test
+    cluster: eks-prow-build-cluster
     decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -198,25 +282,34 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - "make"
         args:
         - "integration-test"
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
   # Executes the test coverage.
   - name: pull-cloud-provider-vsphere-coverage
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     extra_refs:
     - org: kubernetes
       repo: test-infra
@@ -224,7 +317,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - runner.sh
         - bash
@@ -242,6 +335,13 @@ presubmits:
           exit $result
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
@@ -259,16 +359,17 @@ presubmits:
       preset-kind-volume-mounts: "true"
     branches:
     - ^master$
-    - ^release-.*$
+    - ^release-1.2[7-9]$
+    - ^release-1.[3-9]\d$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
-    run_if_changed: '\.go$|go.mod|hack/e2e\.sh'
+    run_if_changed: '\.go$|go.mod|hack/e2e\.sh|test/e2e/'
     skip_report: false
     optional: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         command:
         - runner.sh
         args:
@@ -304,7 +405,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         resources:
           requests:
             cpu: "1000m"
@@ -334,7 +435,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         resources:
           requests:
             cpu: "1000m"

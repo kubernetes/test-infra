@@ -8,6 +8,8 @@ approvers:
 - jsturtevant
 reviewers:
 - Jont828
+- nawazkh
+- nojnhuh
 
 labels:
 - sig/cluster-lifecycle

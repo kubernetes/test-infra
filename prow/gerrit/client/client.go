@@ -99,15 +99,20 @@ type gerritProjects interface {
 	GetBranch(projectName, branchID string) (*gerrit.BranchInfo, *gerrit.Response, error)
 }
 
+type gerritRevision interface {
+	GetMergeable(changeID, revisionID string, opt *gerrit.MergableOptions) (*gerrit.MergeableInfo, *gerrit.Response, error)
+}
+
 // gerritInstanceHandler holds all actual gerrit handlers
 type gerritInstanceHandler struct {
 	instance string
 	projects map[string]*config.GerritQueryFilter
 
-	authService    gerritAuthentication
-	accountService gerritAccount
-	changeService  gerritChange
-	projectService gerritProjects
+	authService     gerritAuthentication
+	accountService  gerritAccount
+	changeService   gerritChange
+	projectService  gerritProjects
+	revisionService gerritRevision
 
 	log logrus.FieldLogger
 }
@@ -511,6 +516,20 @@ func (c *Client) Account(instance string) (*gerrit.AccountInfo, error) {
 	return c.accounts[instance], nil
 }
 
+func (c *Client) GetMergeableInfo(instance, changeID, revisionID string) (*gerrit.MergeableInfo, error) {
+	c.lock.RLock()
+	defer c.lock.Unlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		return &gerrit.MergeableInfo{}, fmt.Errorf("not activated Gerrit instance: %s", instance)
+	}
+	mergeableInfo, resp, err := h.revisionService.GetMergeable(changeID, revisionID, nil)
+	if err != nil {
+		return &gerrit.MergeableInfo{}, responseBodyError(err, resp)
+	}
+	return mergeableInfo, nil
+}
+
 // private handler implementation details
 
 func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, rateLimit int) []gerrit.ChangeInfo {
@@ -602,7 +621,7 @@ func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, p
 
 	var opt gerrit.QueryChangeOptions
 	opt.Query = append(opt.Query, strings.Join(append(additionalFilters, "project:"+project), "+"))
-	opt.AdditionalFields = []string{"ALL_REVISIONS", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES", "LABELS"}
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES", "LABELS"}
 
 	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
 	var start int

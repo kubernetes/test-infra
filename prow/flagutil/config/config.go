@@ -17,7 +17,6 @@ limitations under the License.
 package flagutil
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 
@@ -43,7 +42,6 @@ type ConfigOptions struct {
 	SupplementalProwConfigsFileNameSuffix string
 	// Inrepoconfig related flags
 	InRepoConfigCacheSize    int
-	InRepoConfigCacheCopies  int
 	InRepoConfigCacheDirBase string
 }
 
@@ -59,8 +57,7 @@ func (o *ConfigOptions) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.SupplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.SupplementalProwConfigsFileNameSuffix, "supplemental-prow-configs-filename", "_prowconfig.yaml", "Suffix for additional prow configs. Only files with this name will be considered. Deprecated and mutually exclusive with --supplemental-prow-configs-filename-suffix")
 	fs.StringVar(&o.SupplementalProwConfigsFileNameSuffix, "supplemental-prow-configs-filename-suffix", "_prowconfig.yaml", "Suffix for additional prow configs. Only files with this name will be considered")
-	fs.IntVar(&o.InRepoConfigCacheSize, "in-repo-config-cache-size", 100, "Cache size for ProwYAMLs read from in-repo configs. Each host receives its own cache.")
-	fs.IntVar(&o.InRepoConfigCacheCopies, "in-repo-config-cache-copies", 1, "Copy of caches for ProwYAMLs read from in-repo configs.")
+	fs.IntVar(&o.InRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs. Each host receives its own cache.")
 	fs.StringVar(&o.InRepoConfigCacheDirBase, "cache-dir-base", "", "Directory where the repo cache should be mounted.")
 }
 
@@ -74,9 +71,6 @@ func (o *ConfigOptions) Validate(_ bool) error {
 func (o *ConfigOptions) ValidateConfigOptional() error {
 	if o.JobConfigPath != "" && o.ConfigPath == "" {
 		return fmt.Errorf("if --%s is given, --%s must be given as well", o.JobConfigPathFlagName, o.ConfigPathFlagName)
-	}
-	if o.InRepoConfigCacheCopies < 1 {
-		return errors.New("in-repo-config-cache-copies must be at least 1")
 	}
 	return nil
 }

@@ -16,7 +16,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       command:
       - "./scripts/ci-test.sh"
       resources:
@@ -44,7 +44,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       command:
       - "./scripts/ci-test.sh"
       env:
@@ -87,7 +87,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -129,7 +129,7 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -143,7 +143,7 @@ periodics:
       # Note: We need ClusterClass for the clusterctl upgrade tests, so we're able to
       # create clusterctl with old versions with the right cgroupDriver configuration.
       - name: KUBERNETES_VERSION_MANAGEMENT
-        value: "stable-1.22"
+        value: "v1.22.17"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true

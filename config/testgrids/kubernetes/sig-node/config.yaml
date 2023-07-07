@@ -7,6 +7,7 @@ dashboard_groups:
     - sig-node-cri-o
     - sig-node-dynamic-resource-allocation
     - sig-node-presubmits
+    - sig-node-ec2
     # These dashboards are for out-of-tree SIG Node projects
     - sig-node-cadvisor
     - sig-node-cri-tools
@@ -26,11 +27,92 @@ dashboards:
     - name: pull-node-e2e
       test_group_name: pull-kubernetes-node-e2e-containerd
       base_options: width=10
-    - name: pull-e2e-gci
+    - name: pull-e2e-gce
       test_group_name: pull-kubernetes-e2e-containerd-gce
       base_options: width=10
-    - name: pull-e2e-podutil
-      test_group_name: pull-kubernetes-node-e2e-podutil
+    - name: pull-e2e-ec2
+      test_group_name: pull-kubernetes-node-e2e-containerd-ec2
+      base_options: width=10
+    - name: pull-e2e-serial-ec2
+      test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2
+      base_options: width=10
+    - name: pull-e2e-arm64-serial-ec2
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2
+      base_options: width=10
+    - name: pull-e2e-ec2-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-ec2-canary
+      base_options: width=10
+    - name: pull-e2e-ec2-eks-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-ec2-eks-canary
+      base_options: width=10
+    - name: pull-e2e-arm64-ec2
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-ec2
+      base_options: width=10
+    - name: pull-e2e-arm64-ec2-canary
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-ec2-canary
+      base_options: width=10
+    - name: pull-e2e-serial-ec2-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2-canary
+      base_options: width=10
+    - name: pull-e2e-serial-ec2-eks-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2-eks-canary
+      base_options: width=10
+    - name: pull-e2e-arm64-serial-ec2-canary
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
+      base_options: width=10
+    - name: pull-e2e-arm64-gce
+      test_group_name: pull-kubernetes-node-arm64-ubuntu-serial-gce
+      base_options: width=10
+
+- name: sig-node-ec2
+  dashboard_tab:
+    - name: pull-kubernetes-node-e2e-containerd-ec2
+      test_group_name: pull-kubernetes-node-e2e-containerd-ec2
+      base_options: width=10
+    - name: pull-kubernetes-node-e2e-containerd-ec2-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-ec2-canary
+      base_options: width=10
+    - name: pull-kubernetes-node-e2e-containerd-ec2-eks-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-ec2-eks-canary
+      base_options: width=10
+    - name: pull-kubernetes-node-arm64-e2e-containerd-ec2
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-ec2
+      base_options: width=10
+    - name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2
+      base_options: width=10
+    - name: pull-kubernetes-node-arm64-e2e-containerd-ec2-canary
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-ec2-canary
+      base_options: width=10
+    - name: pull-kubernetes-node-e2e-containerd-serial-ec2
+      test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2
+      base_options: width=10
+    - name: pull-kubernetes-node-e2e-containerd-serial-ec2-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2-canary
+      base_options: width=10
+    - name: pull-kubernetes-node-e2e-containerd-serial-ec2-eks-canary
+      test_group_name: pull-kubernetes-node-e2e-containerd-serial-ec2-eks-canary
+      base_options: width=10
+    - name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
+      test_group_name: pull-kubernetes-node-arm64-e2e-containerd-serial-ec2-canary
+      base_options: width=10
+    - name: ci-cgroupv1-containerd-node-e2e-ec2
+      test_group_name: ci-cgroupv1-containerd-node-e2e-ec2
+      base_options: width=10
+    - name: ci-cgroupv1-containerd-node-e2e-ec2-eks
+      test_group_name: ci-cgroupv1-containerd-node-e2e-ec2-eks
+      base_options: width=10
+    - name: ci-kubernetes-node-arm64-e2e-containerd-ec2
+      test_group_name: ci-kubernetes-node-arm64-e2e-containerd-ec2
+      base_options: width=10
+    - name: ci-cgroupv2-containerd-node-arm64-e2e-serial-ec2
+      test_group_name: ci-cgroupv2-containerd-node-arm64-e2e-serial-ec2
+      base_options: width=10
+    - name: ci-cgroupv1-containerd-node-e2e-serial-ec2
+      test_group_name: ci-cgroupv1-containerd-node-e2e-serial-ec2
+      base_options: width=10
+    - name: ci-cgroupv1-containerd-node-e2e-serial-ec2-eks
+      test_group_name: ci-cgroupv1-containerd-node-e2e-serial-ec2-eks
       base_options: width=10
 
 - name: sig-node-cri-o
@@ -67,5 +149,9 @@ dashboards:
     test_group_name: pull-kubernetes-kind-dra
     alert_options:
       alert_mail_to_addresses: patrick.ohly@intel.com
+  - name: pull-node-dra
+    test_group_name: pull-kubernetes-node-e2e-crio-dra
+    alert_options:
+      alert_mail_to_addresses: eduard.bartosh@intel.com
 - name: sig-node-presubmits
 - name: sig-node-image-pushes

@@ -1,0 +1,46 @@
+presubmits:
+  kubernetes-sigs/aws-fsx-openzfs-csi-driver:
+  - name: pull-aws-fsx-openzfs-csi-driver-unit
+    always_run: true
+    decorate: true
+    skip_branches:
+    - gh-pages
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: provider-aws-fsx-openzfs-csi-driver
+      testgrid-tab-name: unit-test
+      description: aws fsx openzfs csi driver unit test
+      testgrid-num-columns-recent: '30'
+  - name: pull-aws-fsx-openzfs-csi-driver-sanity
+    always_run: true
+    decorate: true
+    skip_branches:
+    - gh-pages
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-sanity
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-aws-fsx-openzfs-csi-driver
+      testgrid-tab-name: sanity-test
+      description: aws fsx openzfs csi driver sanity test
+      testgrid-num-columns-recent: '30'

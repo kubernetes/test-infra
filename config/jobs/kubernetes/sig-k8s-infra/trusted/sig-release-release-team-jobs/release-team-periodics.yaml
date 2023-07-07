@@ -1,5 +1,7 @@
 periodics:
-- name: periodic-sync-enhancements-github-project-1-27
+- name: periodic-sync-enhancements-github-project-1-28
+# temporarily disable job by with an impossible cron date instead of deleting it
+  # cron: '0 0 31 2 *'
   interval: 6h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
@@ -18,13 +20,13 @@ periodics:
       - ./release-team/hack/sync-enhancements-github-project-beta.sh
       env:
         - name: GITHUB_PROJECT_BETA_NUMBER
-          value: "117"
+          value: "140"
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:
               name: k8s-release-enhancements-triage-github-token
               key: token
-- name: periodic-sync-bug-triage-github-project-beta-1-27
+- name: periodic-sync-bug-triage-github-project-beta-1-28
   interval: 3h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
@@ -45,7 +47,7 @@ periodics:
         - name: PROJECT_NUMBER
           value: "80"
         - name: MILESTONE
-          value: "v1.27"
+          value: "v1.28"
         - name: GITHUB_TOKEN
           valueFrom:
             secretKeyRef:

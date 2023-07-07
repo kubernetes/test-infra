@@ -27,6 +27,7 @@ import (
 	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -168,6 +169,21 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		in, out := &in.DefaultMemoryRequest, &out.DefaultMemoryRequest
 		x := (*in).DeepCopy()
 		*out = &x
+	}
+	if in.PodPendingTimeout != nil {
+		in, out := &in.PodPendingTimeout, &out.PodPendingTimeout
+		*out = new(metav1.Duration)
+		**out = **in
+	}
+	if in.PodRunningTimeout != nil {
+		in, out := &in.PodRunningTimeout, &out.PodRunningTimeout
+		*out = new(metav1.Duration)
+		**out = **in
+	}
+	if in.PodUnscheduledTimeout != nil {
+		in, out := &in.PodUnscheduledTimeout, &out.PodUnscheduledTimeout
+		*out = new(metav1.Duration)
+		**out = **in
 	}
 	return
 }

@@ -29,7 +29,7 @@ periodics:
           --cloud-provider=gce \
           --create-args="--channel=alpha --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/release/latest.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -41,7 +41,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -106,7 +106,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -160,7 +160,7 @@ periodics:
         value: "ha-migration.k8s.local"
       - name: GCE_EXTRA_CREATE_ARGS
         value: --gce-service-account=default
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       imagePullPolicy: Always
       resources:
         limits:

@@ -1,0 +1,174 @@
+presubmits:
+  kubernetes-sigs/cluster-api-operator:
+  - name: pull-cluster-api-operator-build-release-0-3
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
+        command:
+        - runner.sh
+        - ./scripts/ci-build.sh
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-build-release-0-3
+  - name: pull-cluster-api-operator-make-release-0-3
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
+        command:
+        - runner.sh
+        - ./scripts/ci-make.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-make-release-0-3
+  - name: pull-cluster-api-operator-apidiff-release-0-3
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    optional: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
+        command:
+        - runner.sh
+        - ./scripts/ci-apidiff.sh
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-apidiff-release-0-3
+  - name: pull-cluster-api-operator-verify-release-0-3
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
+        command:
+        - "runner.sh"
+        - ./scripts/ci-verify.sh
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-verify-release-0-3
+  - name: pull-cluster-api-operator-test-release-0-3
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-0.3$
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
+        args:
+        - runner.sh
+        - ./scripts/ci-test.sh
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-test-release-0-3
+  - name: pull-cluster-api-operator-e2e-release-0-3
+    path_alias: "sigs.k8s.io/cluster-api-operator"
+    optional: false
+    decorate: true
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^release-0.3$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-e2e.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: cluster-lifecycle-github-token
+              key: cluster-lifecycle-github-token
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator-0.3
+      testgrid-tab-name: capi-operator-pr-e2e-release-0-3

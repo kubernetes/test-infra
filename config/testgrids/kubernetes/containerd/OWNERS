@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+# Synced to the root OWNERS file in k8s.io/kops as of 12/02/22
+approvers:
+- dims
+- mikebrow
+reviewers:
+- dims
+- mikebrow
+labels:
+- sig/node

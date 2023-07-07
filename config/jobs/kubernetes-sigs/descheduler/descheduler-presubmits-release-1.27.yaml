@@ -1,0 +1,145 @@
+# sigs.k8s.io/descheduler presubmits
+presubmits:
+  kubernetes-sigs/descheduler:
+  - name: pull-descheduler-verify-release-1-27
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-verify-release-1.27
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.27$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.20.3
+        command:
+        - make
+        args:
+        - verify
+  - name: pull-descheduler-verify-build-release-1-27
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-verify-build-release-1.27
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.27$
+    always_run: true
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.20.3
+        command:
+        - make
+        args:
+        - build
+  - name: pull-descheduler-unit-test-release-1-27
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-unit-test-release-1.27
+    decorate: true
+    path_alias: sigs.k8s.io/descheduler
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.27$
+    always_run: false
+    run_if_changed: '\.go$'
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.20.3
+        command:
+        - make
+        args:
+        - test-unit
+  - name: pull-descheduler-test-e2e-k8s-release-1-27-1-27
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-27-1.27
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - release-1.27
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.27.0"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-descheduler-test-e2e-k8s-release-1-27-1-26
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-27-1.26
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - release-1.27
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.26.3"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-descheduler-test-e2e-k8s-release-1-27-1-25
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-27-1.25
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - release-1.27
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.25.8"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true

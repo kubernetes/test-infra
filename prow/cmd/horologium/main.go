@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -30,10 +29,10 @@ import (
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/cluster"
 
+	pkgFlagutil "k8s.io/test-infra/pkg/flagutil"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
-	"k8s.io/test-infra/prow/flagutil"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
@@ -49,8 +48,9 @@ const (
 type options struct {
 	config configflagutil.ConfigOptions
 
-	kubernetes             flagutil.KubernetesOptions
+	kubernetes             prowflagutil.KubernetesOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	controllerManager      prowflagutil.ControllerManagerOptions
 	dryRun                 bool
 }
 
@@ -61,18 +61,18 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.config.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
+	o.controllerManager.TimeoutListingProwJobsDefault = 60 * time.Second
+	o.controllerManager.AddFlags(fs)
 
 	fs.Parse(args)
 	return o
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(o.dryRun); err != nil {
-		return err
-	}
-
-	if err := o.config.Validate(o.dryRun); err != nil {
-		return errors.New("--config-path is required")
+	for _, group := range []pkgFlagutil.OptionGroup{&o.kubernetes, &o.config, &o.controllerManager} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -115,9 +115,9 @@ func main() {
 		}
 		logrus.Info("Cache finished gracefully.")
 	})
-	cacheSyncCtx, cacheSyncCancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cacheSyncCancel()
-	if synced := cluster.GetCache().WaitForCacheSync(cacheSyncCtx); !synced {
+	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), o.controllerManager.TimeoutListingProwJobs)
+	defer mgrSyncCtxCancel()
+	if synced := cluster.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 		logrus.Fatal("Timed out waiting for cachesync")
 	}
 

@@ -16,5 +16,5 @@
 set -euo pipefail
 
 /register --reset -p yes
-/root/.docker/cli-plugins/docker-buildx create --use
-/root/.docker/cli-plugins/docker-buildx "$@"
+docker buildx create --use
+docker buildx "$@"

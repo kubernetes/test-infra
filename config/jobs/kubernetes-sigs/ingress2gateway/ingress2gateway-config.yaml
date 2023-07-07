@@ -1,0 +1,64 @@
+presubmits:
+  kubernetes-sigs/ingress2gateway:
+  - name: pull-ingress2gateway-verify
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-ingress2gateway
+      testgrid-tab-name: verify
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/ingress2gateway
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+          # generic runner script, handles DIND, bazelrc for caching, etc.
+          - runner.sh
+        args:
+          - make
+          - verify
+        # docker-in-docker needs privileged mode.
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
+  - name: pull-ingress2gateway-test
+    cluster: eks-prow-build-cluster
+    annotations:
+      testgrid-dashboards: sig-network-ingress2gateway
+      testgrid-tab-name: test
+    labels:
+      preset-kind-volume-mounts: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    path_alias: sigs.k8s.io/ingress2gateway
+    always_run: true
+    skip_report: false
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+          command:
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
+          args:
+            - make
+            - test
+          # docker-in-docker needs privileged mode.
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              cpu: 1
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 4Gi

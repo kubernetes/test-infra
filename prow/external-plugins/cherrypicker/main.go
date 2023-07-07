@@ -102,7 +102,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gitClient, err := o.github.GitClientFactory("", nil, o.dryRun)
+	gitClient, err := o.github.GitClientFactory("", nil, o.dryRun, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}

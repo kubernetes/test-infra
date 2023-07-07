@@ -1,0 +1,101 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-storage-kind-disruptive
+    always_run: false
+    optional: true
+    decorate: true
+    cluster: eks-prow-build-cluster
+    # All the files owned by sig-storage. Keep in sync across
+    # all sig-storage-jobs
+    #
+    # pkg/controller/volume
+    # pkg/kubelet/volumemanager
+    # pkg/volume
+    # pkg/util/mount
+    # test/e2e/storage
+    # test/e2e/testing-manifests/storage-csi
+    run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
+    skip_branches:
+      - release-\d+\.\d+
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-nonblocking
+      testgrid-tab-name: pull-kubernetes-e2e-storage-kind-disruptive
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Run storage tests that need disruption of the API server in a KIND cluster.
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
+        command:
+        - wrapper.sh
+        args:
+        - /bin/sh
+        - -xc
+        - >
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test k8s.io/kubernetes/cmd/kubectl" &&
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
+          kind build node-image --image node:latest &&
+          trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
+          kind create cluster --retain --image node:latest &&
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=1 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus="\[sig-storage\].*\[Feature:Kind\].*\[Disruptive\]"
+
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+
+periodics:
+  # This jobs runs storage tests that need Kubernetes In Docker (kind).
+  - name: ci-kubernetes-e2e-storage-kind-disruptive
+    interval: 12h
+    annotations:
+      testgrid-dashboards: sig-storage-kubernetes
+      testgrid-tab-name: kind-disruptive
+      testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+      description: Run storage tests that need disruption of the API server in a KIND cluster.
+    decorate: true
+    cluster: eks-prow-build-cluster
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
+        command:
+        - wrapper.sh
+        args:
+        - /bin/sh
+        - -xc
+        - >
+          make WHAT="github.com/onsi/ginkgo/v2/ginkgo k8s.io/kubernetes/test/e2e/e2e.test k8s.io/kubernetes/cmd/kubectl" &&
+          curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" kind &&
+          kind build node-image --image node:latest &&
+          trap 'kind export logs "${ARTIFACTS}/kind"; kind delete cluster' EXIT &&
+          kind create cluster --retain --image node:latest &&
+          KUBERNETES_PROVIDER=local KUBECONFIG=${HOME}/.kube/config GINKGO_PARALLEL_NODES=1 E2E_REPORT_DIR=${ARTIFACTS} hack/ginkgo-e2e.sh -ginkgo.focus="\[sig-storage\].*\[Feature:Kind\].*\[Disruptive\]"
+
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+          limits:
+            cpu: "2"
+            memory: "6Gi"

@@ -23,6 +23,10 @@ storage:
       contents:
         local: 30-infra-container.conf
       mode: 0644
+    - path: /etc/sysctl.d/99-e2e-sysctl.conf
+      contents:
+        local: 99-e2e-sysctl.conf
+      mode: 0644
     - path: /etc/ssh-key-secret/ssh-public
       contents:
         # base64 encoded "GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
@@ -30,11 +34,23 @@ storage:
       mode: 0644
 systemd:
   units:
+    - name: configure-sysctl.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Configure required sysctls.
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/lib/systemd/systemd-sysctl
+
+        [Install]
+        WantedBy=multi-user.target
     - name: tools-install.service
       enabled: true
       contents: |
         [Unit]
-        Description=Download and install requried tools.
+        Description=Download and install required tools.
         Before=crio-install.service
         After=network-online.target
 
@@ -76,10 +92,11 @@ systemd:
 
         [Service]
         Type=oneshot
-        Environment="COMMIT=fa0d058141343ee38b8339ea41f580c361271372"
+        Environment="COMMIT=0f501d4a7c33157e9662f2729c72f8c33baffe84"
 
         ExecStartPre=mount /tmp /tmp -o remount,exec,suid
-        ExecStartPre=ln -sf /usr/bin/runc /usr/local/bin/runc
+        ExecStartPre=mount -o remount,rw /usr
+        ExecStartPre=rm -f /usr/bin/runc
         ExecStartPre=bash -c '\
           curl --fail --retry 5 --retry-delay 3 --silent --show-error \
             https://raw.githubusercontent.com/cri-o/cri-o/$COMMIT/scripts/get |\

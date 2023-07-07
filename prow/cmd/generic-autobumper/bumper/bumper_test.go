@@ -41,6 +41,7 @@ func TestValidateOptions(t *testing.T) {
 		gerritCookieFile    *string
 		remoteName          *string
 		skipPullRequest     *bool
+		signoff             *bool
 		err                 bool
 		upstreamBaseChanged bool
 	}{
@@ -111,10 +112,14 @@ func TestValidateOptions(t *testing.T) {
 				Gerrit:          nil,
 				RemoteName:      "whatever-name",
 				SkipPullRequest: false,
+				Signoff:         false,
 			}
 
 			if tc.skipPullRequest != nil {
 				defaultOption.SkipPullRequest = *tc.skipPullRequest
+			}
+			if tc.signoff != nil {
+				defaultOption.Signoff = *tc.signoff
 			}
 			if tc.githubToken != nil {
 				defaultOption.GitHubToken = *tc.githubToken

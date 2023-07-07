@@ -28,7 +28,6 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	gerritadaptor "k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
@@ -47,7 +46,7 @@ import (
 
 const (
 	// tideEnablementLabel is the Gerrit label that has to be voted for enabling
-	// tide. By default a PR is not considered by tide unless the author of the
+	// Tide. By default a PR is not considered by Tide unless the author of the
 	// PR toggled this label.
 	tideEnablementLabel = "Prow-Auto-Submit"
 	// ref:
@@ -86,8 +85,8 @@ func (gcc *gerritContextChecker) MissingRequiredContexts([]string) []string {
 }
 
 type gerritClient interface {
-	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, addtionalFilters ...string) ([]gerrit.ChangeInfo, error)
-	GetChange(instance, id string, addtionalFeilds ...string) (*gerrit.ChangeInfo, error)
+	QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]gerrit.ChangeInfo, error)
+	GetChange(instance, id string, additionalFields ...string) (*gerrit.ChangeInfo, error)
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SubmitChange(instance, id string, wait bool) (*gerrit.ChangeInfo, error)
 	SetReview(instance, id, revision, message string, _ map[string]string) error
@@ -121,7 +120,7 @@ func NewGerritController(
 		newPoolPending:   make(chan bool),
 	}
 
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(configOptions.InRepoConfigCacheSize, cfgAgent, gc, configOptions.InRepoConfigCacheCopies)
+	cacheGetter, err := config.NewInRepoConfigCache(configOptions.InRepoConfigCacheSize, cfgAgent, gc)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
 	}
@@ -136,7 +135,7 @@ func NewGerritController(
 // Enforcing interface implementation check at compile time
 var _ provider = (*GerritProvider)(nil)
 
-// GerritProvider implements provider, used by tide Controller for
+// GerritProvider implements provider, used by Tide Controller for
 // interacting directly with Gerrit.
 //
 // Tide Controller should only use GerritProvider for communicating with Gerrit.
@@ -145,9 +144,9 @@ type GerritProvider struct {
 	gc          gerritClient
 	pjclientset ctrlruntimeclient.Client
 
-	cookiefilePath           string
-	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler
-	tokenPathOverride        string
+	cookiefilePath    string
+	inRepoConfigCache *config.InRepoConfigCache
+	tokenPathOverride string
 
 	logger *logrus.Entry
 }
@@ -156,7 +155,7 @@ func newGerritProvider(
 	logger *logrus.Entry,
 	cfg config.Getter,
 	pjclientset ctrlruntimeclient.Client,
-	inRepoConfigCacheHandler *config.InRepoConfigCacheHandler,
+	inRepoConfigCache *config.InRepoConfigCache,
 	cookiefilePath string,
 	tokenPathOverride string,
 ) *GerritProvider {
@@ -170,20 +169,20 @@ func newGerritProvider(
 	gerritClient.ApplyGlobalConfig(orgRepoConfigGetter, nil, cookiefilePath, tokenPathOverride, nil)
 
 	return &GerritProvider{
-		logger:                   logger,
-		cfg:                      cfg,
-		pjclientset:              pjclientset,
-		gc:                       gerritClient,
-		inRepoConfigCacheHandler: inRepoConfigCacheHandler,
-		cookiefilePath:           cookiefilePath,
-		tokenPathOverride:        tokenPathOverride,
+		logger:            logger,
+		cfg:               cfg,
+		pjclientset:       pjclientset,
+		gc:                gerritClient,
+		inRepoConfigCache: inRepoConfigCache,
+		cookiefilePath:    cookiefilePath,
+		tokenPathOverride: tokenPathOverride,
 	}
 }
 
-// Query returns all PRs from configured gerrit org/repos.
+// Query returns all PRs from configured Gerrit org/repos.
 func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
-	// lastUpdate is used by gerrit adapter for achieving incremental query. In
-	// tide case we want to get everything so use default time.Time, which
+	// lastUpdate is used by Gerrit adapter for achieving incremental query. In
+	// Tide case we want to get everything so use default time.Time, which
 	// should be 1970,1,1.
 	var lastUpdate time.Time
 
@@ -195,8 +194,6 @@ func (p *GerritProvider) Query() (map[string]CodeReviewCommon, error) {
 		changes  []gerrit.ChangeInfo
 	}
 	resChan := make(chan changesFromProject)
-	// This is querying serially, which would safely guard against quota issues.
-	// TODO(chaodai): parallize this to boot the performance.
 	for instance, projs := range p.cfg().Tide.Gerrit.Queries.AllRepos() {
 		instance, projs := instance, projs
 		for projName, projFilter := range projs {
@@ -279,7 +276,7 @@ func (p *GerritProvider) headContexts(crc *CodeReviewCommon) ([]Context, error) 
 		kube.RepoLabel:        crc.Repo,
 		kube.PullLabel:        strconv.Itoa(crc.Number),
 	}
-	var pjs v1.ProwJobList
+	var pjs prowapi.ProwJobList
 	if err := p.pjclientset.List(context.Background(), &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 		return nil, fmt.Errorf("Cannot list prowjob with selector %v", selector)
 	}
@@ -354,8 +351,8 @@ func (p *GerritProvider) prMergeMethod(crc *CodeReviewCommon) *types.PullRequest
 		return nil
 	}
 
-	// Translate merge methods to types that git could understand. The merge
-	// methods for gerrit are documented at
+	// Translate merge methods to types that Git could understand. The merge
+	// methods for Gerrit are documented at
 	// https://gerrit-review.googlesource.com/Documentation/config-gerrit.html#repository.
 	// Git can only understand MergeIfNecessary, MergeMerge, MergeRebase, MergeSquash.
 	switch pr.SubmitType {
@@ -385,8 +382,8 @@ func (p *GerritProvider) GetPresubmits(identifier string, baseSHAGetter config.R
 	presubmits := p.cfg().GetPresubmitsStatic(identifier)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
-	if p.inRepoConfigCacheHandler != nil {
-		presubmitsFromCache, err := p.inRepoConfigCacheHandler.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
+	if p.inRepoConfigCache != nil {
+		presubmitsFromCache, err := p.inRepoConfigCache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			return nil, fmt.Errorf("faled to get presubmits from cache: %v", err)
 		}

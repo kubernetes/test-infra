@@ -32,7 +32,7 @@ presubmits:
         - --env=KUBE_AUTOSCALER_MIN_NODES=3
         - --env=KUBE_AUTOSCALER_MAX_NODES=6
         - --env=KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
-        - --env=KUBE_ADMISSION_CONTROL=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota,Priority
+        - --env=KUBE_ADMISSION_CONTROL=NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,Priority
         - --env=ENABLE_POD_PRIORITY=true
         - --extract=local
         - --gcp-node-image=gci
@@ -44,7 +44,7 @@ presubmits:
         - --runtime-config=scheduling.k8s.io/v1alpha1=true
         - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
         - --timeout=400m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         securityContext:
           privileged: true
 
@@ -58,26 +58,37 @@ presubmits:
     decoration_config:
       timeout: 310m
     run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/horizontal_pod_autoscaling|test\/e2e\/framework\/autoscaling\/)'
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
+        - --build=quick
+        - --extract=local
         - --check-leaked-resources
         - --provider=gce
         - --gcp-zone=us-west1-b
         - --gcp-node-image=gci
         # Enable HPAContainerMetrics. Required for container metrics tests.
         - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
-        - --extract=ci/latest
         - --test_args=--ginkgo.focus=\[Feature:HPA\] --minStartupPods=8
         - --ginkgo-parallel=1
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-autoscaling-hpa-cpu
         - --timeout=300m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        securityContext:
+          privileged: true
 
   - name: pull-kubernetes-e2e-autoscaling-hpa-cm
     annotations:
@@ -89,9 +100,16 @@ presubmits:
     decoration_config:
       timeout: 310m
     run_if_changed: '^(pkg\/controller\/podautoscaler\/|test\/e2e\/autoscaling\/custom_metrics_stackdriver_autoscaling.go$)'
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - command:
@@ -101,12 +119,15 @@ presubmits:
         - --build=quick
         - --cluster=hpa
         - --extract=local
+        - --check-leaked-resources
         - --gcp-node-image=gci
-        - --gcp-project=k8s-jkns-gci-autoscaling
         - --gcp-zone=us-west1-b
         - --provider=gce
         # Enable HPAContainerMetrics and HPAScaleToZero. Required for container metrics and scale to zero tests.
         - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true,HPAScaleToZero=true
         - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-autoscaling-hpa-cm
         - --timeout=300m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        securityContext:
+          privileged: true

@@ -48,6 +48,7 @@ var (
 	companies = []string{
 		"canonical",
 		"cos",
+		"containerd",
 		"cri-o",
 		"istio",
 		"googleoss",
@@ -419,7 +420,7 @@ func isMergeBlocking(job prow_config.Presubmit) bool {
 	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "" || job.SkipIfOnlyChanged != "")
 }
 
-// All jobs in presubmits-kuberentes-blocking must be merge-blocking for kubernetes/kubernetes
+// All jobs in presubmits-kubernetes-blocking must be merge-blocking for kubernetes/kubernetes
 // All jobs that are merge-blocking for kubernetes/kubernetes must be in presubmits-kubernetes-blocking
 func TestPresubmitsKubernetesDashboards(t *testing.T) {
 	var dashboard *config_pb.Dashboard

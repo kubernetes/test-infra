@@ -9,7 +9,7 @@ presubmits:
     - ^release-0.3$
     spec:
       containers:
-      - image: golang:1.12
+      - image: public.ecr.aws/docker/library/golang:1.12
         command:
         - ./hack/ci-check-everything.sh
         resources:
@@ -27,7 +27,7 @@ presubmits:
     - ^release-0.3$
     spec:
       containers:
-      - image: golang:1.12
+      - image: public.ecr.aws/docker/library/golang:1.12
         command:
         - ./hack/apidiff.sh
     annotations:

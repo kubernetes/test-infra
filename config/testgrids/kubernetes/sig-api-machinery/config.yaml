@@ -19,10 +19,6 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gci-gce-flaky
       base_options: include-filter-by-regex=sig-api-machinery
       description: apimachinery gce flaky e2e tests for master branch
-    - name: gce-single-flake-attempt
-      test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
-      base_options: include-filter-by-regex=sig-api-machinery
-      description: apimachinery gce e2e tests for master branch with reduced flake attempt
     - name: gce-containerd
       test_group_name: ci-kubernetes-e2e-gci-gce-containerd
       base_options: include-filter-by-regex=sig-node

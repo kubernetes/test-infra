@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 
@@ -170,6 +171,8 @@ func (jb JobBase) GetPipelineRunSpec() (*pipelinev1beta1.PipelineRunSpec, error)
 	}
 	if found == nil && jb.PipelineRunSpec != nil {
 		var spec pipelinev1beta1.PipelineRunSpec
+
+		logrus.Warn("The AlphaV1 tektoncd/pipeline version is deprecated and it will be replaced by the BetaV1. It will be removed in July 2023")
 		if err := jb.PipelineRunSpec.ConvertTo(context.TODO(), &spec); err != nil {
 			return nil, err
 		}

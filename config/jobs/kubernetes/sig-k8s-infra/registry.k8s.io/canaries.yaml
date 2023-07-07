@@ -1,0 +1,144 @@
+presets:
+- labels:
+    preset-use-sandbox-registry: "true"
+  env:
+  - name: KUBE_TEST_REPO_LIST
+    value: https://raw.githubusercontent.com/kubernetes/registry.k8s.io/main/hack/images/default-sandbox.yaml
+  - name: KUBE_DOCKER_REGISTRY
+    value: registry-sandbox.k8s.io
+  - name: KUBE_ADDON_REGISTRY
+    value: registry-sandbox.k8s.io
+  - name: TEST_ETCD_DOCKER_REPOSITORY
+    value: registry-sandbox.k8s.io/etcd
+  - name: CONTAINERD_INFRA_CONTAINER
+    value: registry-sandbox.k8s.io/pause:3.8
+
+periodics:
+# should match registry-sandbox-e2e-aws except for the cluster field
+- name: registry-sandbox-e2e-gcp
+  cluster: k8s-infra-prow-build
+  interval: 10m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: registry.k8s.io
+    base_ref: main
+    # we don't need git history and we want this to run very quickly
+    # TODO: https://github.com/kubernetes/test-infra/issues/26590
+    clone_depth: 1
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
+    testgrid-days-of-results: '7'
+    testgrid-tab-name: registry-sandbox-e2e-gcp
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+  spec:
+    containers:
+    - image: golang
+      command:
+      - make
+      - e2e-test
+      resources:
+        limits:
+          cpu: 4
+          memory: 8Gi
+        requests:
+          cpu: 4
+          memory: 8Gi
+# should match registry-sandbox-e2e-gcp except for the cluster field
+- name: registry-sandbox-e2e-aws
+  cluster: eks-prow-build-cluster
+  interval: 10m
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: registry.k8s.io
+    base_ref: main
+    # we don't need git history and we want this to run very quickly
+    # TODO: https://github.com/kubernetes/test-infra/issues/26590
+    clone_depth: 1
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
+    testgrid-days-of-results: '7'
+    testgrid-tab-name: registry-sandbox-e2e-aws
+    testgrid-num-failures-to-alert: '1'
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+  spec:
+    containers:
+    - image: public.ecr.aws/docker/library/golang:latest
+      command:
+      - make
+      - e2e-test
+      resources:
+        limits:
+          cpu: 4
+          memory: 8Gi
+        requests:
+          cpu: 4
+          memory: 8Gi
+- name: e2e-kops-grid-gcr-mirror-canary
+  cluster: k8s-infra-prow-build
+  cron: '11 0-23/1 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --set=spec.cloudProvider.aws.ebsCSIDriver.enabled=false --discovery-store=s3://k8s-kops-prow/discovery" \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable-1.23.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-package-marker=stable-1.23.txt \
+          --focus-regex="\[Conformance\]" \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]" \
+          --parallel=25
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "2"
+          memory: 3Gi
+        requests:
+          cpu: "2"
+          memory: 3Gi
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/container_runtime: containerd
+    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/k8s_version: '1.23'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: kubenet
+    testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-registry
+    testgrid-days-of-results: '7'
+    testgrid-tab-name: kops-grid-gcr-mirror-canary

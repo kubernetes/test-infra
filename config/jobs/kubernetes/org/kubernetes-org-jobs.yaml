@@ -1,32 +1,49 @@
 presubmits:
   kubernetes/org:
   - name: pull-org-test-all
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: golang:1.18
+      - image: public.ecr.aws/docker/library/golang:1.18
         command:
         - make
         args:
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'
+
   - name: pull-org-verify-all
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: golang:1.18
+      - image: public.ecr.aws/docker/library/golang:1.18
         command:
         - make
         args:
         - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-num-columns-recent: '30'
       testgrid-create-test-group: 'true'

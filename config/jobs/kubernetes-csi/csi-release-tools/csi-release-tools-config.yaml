@@ -3,6 +3,7 @@
 presubmits:
   kubernetes-csi/csi-release-tools:
   - name: pull-kubernetes-csi-csi-release-tools
+    cluster: default
     always_run: true
     decorate: true
     skip_report: false
@@ -18,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -28,8 +29,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-release-tools-csi-test
+    cluster: default
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -51,7 +57,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -61,11 +67,16 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
   - name: pull-kubernetes-csi-release-tools-external-provisioner
+    cluster: default
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -87,7 +98,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -97,7 +108,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
@@ -112,6 +127,7 @@ presubmits:
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
   - name: pull-kubernetes-csi-release-tools-external-snapshotter
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -133,7 +149,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -143,7 +159,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
@@ -158,6 +178,7 @@ presubmits:
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
   - name: pull-kubernetes-csi-release-tools-csi-driver-host-path
+    cluster: default
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -179,7 +200,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -189,7 +210,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            cpu: 2000m
+            memory: "4Gi"
+            cpu: 4
+          limits:
+            memory: "4Gi"
+            cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path

@@ -50,7 +50,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -65,22 +65,69 @@ periodics:
             cpu: 4
             memory: "36Gi"
 
-- interval: 1h
+- name: ci-benchmark-scheduler-perf-master-eks-canary
   cluster: eks-prow-build-cluster
-  name: ci-kubernetes-kind-e2e-parallel-eks-canary
+  tags:
+  - "perfDashPrefix: scheduler-perf-benchmark"
+  - "perfDashJobType: benchmark"
+  interval: 2h30m
   annotations:
     testgrid-dashboards: sig-k8s-infra-canaries
-    testgrid-tab-name: kind-master-parallel-eks-canary
-    description: Uses kubetest to run e2e tests against a latest kubernetes master cluster created with sigs.k8s.io/kind
+    testgrid-tab-name: scheduler-perf-eks-canary
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  decoration_config:
+    timeout: 2h25m
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+      command:
+      - ./hack/jenkins/benchmark-dockerized.sh
+      args:
+      - ./test/integration/scheduler_perf
+      env:
+      - name: KUBE_TIMEOUT
+        value: --timeout=2h25m
+      - name: TEST_PREFIX
+        value: BenchmarkPerfScheduling
+      # Set the benchtime to a very low value so every test is ran at most once
+      # even on very powerful machines
+      - name: BENCHTIME
+        value: 1ns
+      # We need to constraint compute resources so all the tests
+      # finish approximately at the same time. More compute power
+      # can increase scheduling throughput and make consequent results
+      # incomparable.
+      resources:
+        requests:
+          cpu: 6
+          memory: "24Gi"
+        limits:
+          cpu: 6
+          memory: "24Gi"
+
+- interval: 1h
+  cluster: eks-prow-build-cluster
+  # This combines tests from ci-kubernetes-kind-conformance and sig-storage
+  # and runs them with JSON output in all components which support that.
+  # Also enables contextual logging and (to get more coverage) dynamic
+  # resource allocation.
+  name: ci-kubernetes-kind-e2e-json-logging-eks-canary
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: kind-json-logging-master-eks-canary
+    description: Conformance and storage tests with JSON logging enabled using sigs.k8s.io/kind
     testgrid-num-columns-recent: '6'
-    fork-per-release: "true"
-    fork-per-release-periodic-interval: 1h 2h 6h 24h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
   decorate: true
   decoration_config:
-    timeout: 60m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -88,16 +135,39 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
       command:
       - wrapper.sh
       - bash
       - -c
-      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
+      # The modified e2e-k8s.sh with support for FEATURE_GATES and RUNTIME_CONFIG comes from
+      # https://github.com/kubernetes-sigs/kind/pull/3023. Once that PR is merged and a
+      # kind release is done, pulling it separately via curl can be removed.
+      - >
+        curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" &&
+        curl -sSL https://github.com/pohly/kind/raw/e2e-feature-gates/hack/ci/e2e-k8s.sh >$(which e2e-k8s.sh) &&
+        chmod u+x $(which e2e-k8s.sh) &&
+        e2e-k8s.sh
+
       env:
+      # Options from https://github.com/kubernetes-sigs/kind/blob/d1eecc46e30cac9d35cd32dc52677ef75ec22e18/hack/ci/e2e-k8s.sh#L79-L83
+      - name: CLUSTER_LOG_FORMAT
+        value: json
+      - name: KIND_CLUSTER_LOG_LEVEL
+        # Default is 4, but we want to exercise more log calls and get more output.
+        value: "10"
+      - name: FEATURE_GATES
+        value: '{"DynamicResourceAllocation":true,"ContextualLogging":true}'
+      - name: RUNTIME_CONFIG
+        value: '{"resource.k8s.io/v1alpha2":"true"}'
+      # don't retry conformance tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
       - name: FOCUS
-        value: "."
+        value: \[Conformance\]|\[Driver:.csi-hostpath\]|DynamicResourceAllocation
       # TODO(bentheelder): reduce the skip list further
+      # NOTE: this skip list is from the standard periodic kind job, just to ensure
+      # we don't accidentally select any of these
       - name: SKIP
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity
       - name: PARALLEL
@@ -114,3 +184,53 @@ periodics:
           # this is mostly for building kubernetes
           memory: 9Gi
           cpu: 7
+
+- name: ci-kubernetes-e2e-ubuntu-gce-containerd-cdn-canary
+  interval: 1h
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - args:
+          - --timeout=70
+          - --bare
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-leaked-resources
+          - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.1
+          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.7
+          - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+          - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+          - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20230531
+          - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+          - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230531
+          - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+          - --env=KUBERNETES_RELEASE_URL=https://cdn.dl.k8s.io/release
+          - --env=KUBE_RELEASE_BUCKET_URL=https://cdn.dl.k8s.io/release
+          - --extract=ci/latest-fast
+          - --extract-ci-bucket=k8s-release-dev
+          - --gcp-master-image=ubuntu
+          - --gcp-node-image=ubuntu
+          - --gcp-nodes=4
+          - --gcp-zone=us-west1-b
+          - --ginkgo-parallel=30
+          - --provider=gce
+          - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+          - --timeout=50m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        resources:
+          limits:
+            cpu: 2
+            memory: 6Gi
+          requests:
+            cpu: 2
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: gce-ubuntu-master-containerd-cdn-canary
+    description: Uses kubetest to run e2e tests against a cluster created with cluster/kube-up using Fastly endpoint

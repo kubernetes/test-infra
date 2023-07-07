@@ -1,0 +1,211 @@
+presubmits:
+  kubernetes-sigs/cloud-provider-azure:
+    - name: pull-cloud-provider-azure-check-1-27
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      decorate: true
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      branches:
+        - release-1.27
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - test-check
+            resources:
+              limits:
+                memory: "9Gi"
+                cpu: "2"
+              requests:
+                memory: "9Gi"
+                cpu: "2"
+      annotations:
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-27-presubmit
+        testgrid-tab-name: pr-cloud-provider-azure-check-1-27
+        description: "Run lint check tests for cloud-provider-azure release-1.27."
+        testgrid-num-columns-recent: "30"
+    # pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-27
+    - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-27
+      skip_if_only_changed: "^docs/|^.pipelines/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      branches:
+        - release-1.27
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-cred-only: "true"
+        preset-azure-anonymous-pull: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cluster-api-provider-azure
+          base_ref: release-1.9
+          path_alias: sigs.k8s.io/cluster-api-provider-azure
+          workdir: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+                make test-ccm-e2e
+            securityContext:
+              privileged: true
+            env:
+              - name: TEST_CCM # CAPZ config
+                value: "true"
+              - name: KUBERNETES_VERSION # CAPZ config
+                value: "latest-1.27"
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+                value: "1"
+              - name: CLUSTER_TEMPLATE # CAPZ config
+                value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+                value: "Standard"
+              - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+                value: "capz"
+      annotations:
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-27-presubmit
+        testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-1-27
+        description: "Runs Azure specific tests with cloud-provider-azure release-1.27 (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss, using cluster-api-provider-azure."
+        testgrid-num-columns-recent: "30"
+    # pull-cloud-provider-azure-e2e-capz-1-27 runs kubernetes conformance tests.
+    - name: pull-cloud-provider-azure-e2e-capz-1-27
+      skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      decorate: true
+      decoration_config:
+        timeout: 5h
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      branches:
+        - release-1.27
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-cred-only: "true"
+        preset-azure-anonymous-pull: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cluster-api-provider-azure
+          base_ref: release-1.9
+          path_alias: sigs.k8s.io/cluster-api-provider-azure
+          workdir: true
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: release-1.27
+          path_alias: k8s.io/kubernetes
+          workdir: false
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+                cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+                make test-e2e-capz
+            securityContext:
+              privileged: true
+            env:
+              - name: TEST_CCM # CAPZ config
+                value: "true"
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+                value: "standard"
+              - name: KUBERNETES_VERSION # CAPZ config
+                value: "latest-1.27"
+              - name: GINKGO_ARGS # cloud-provider-azure config
+                value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+                value: "1"
+              - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
+                value: "capz"
+              - name: GINKGO_PARALLEL_NODES # cloud-provider-azure config
+                value: "30"
+      annotations:
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-27-presubmit
+        testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-27
+        description: "Runs Kubernetes conformance tests with cloud-provider-azure release-1.27 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
+        testgrid-num-columns-recent: "30"
+    # pull-cloud-provider-azure-e2e-ccm-1-27
+    - name: pull-cloud-provider-azure-e2e-ccm-capz-1-27
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$"
+      decorate: true
+      decoration_config:
+        timeout: 4h
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      branches:
+        - release-1.27
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-cred-only: "true"
+        preset-azure-anonymous-pull: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cluster-api-provider-azure
+          base_ref: release-1.9
+          path_alias: sigs.k8s.io/cluster-api-provider-azure
+          workdir: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+                make test-ccm-e2e
+            securityContext:
+              privileged: true
+            env:
+              - name: TEST_CCM # CAPZ config
+                value: "true"
+              - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
+                value: "standard"
+              - name: KUBERNETES_VERSION # CAPZ config
+                value: "latest-1.27"
+              - name: CONTROL_PLANE_MACHINE_COUNT # CAPZ config
+                value: "1"
+      annotations:
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-27-presubmit
+        testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-27
+        description: "Runs Azure specific tests with cloud-provider-azure release-1.27 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
+        testgrid-num-columns-recent: "30"
+    - name: pull-cloud-provider-azure-unit-1-27
+      skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$"
+      decorate: true
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      branches:
+        - release-1.27
+      labels:
+        preset-service-account: "true"
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+            command:
+              - runner.sh
+            args:
+              - make
+              - test-unit
+      annotations:
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-27-presubmit
+        testgrid-tab-name: pr-cloud-provider-azure-unit-1-27
+        description: "Run unit tests for cloud-provider-azure release-1.27."
+        testgrid-num-columns-recent: "30"

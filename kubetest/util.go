@@ -29,6 +29,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 )
 
 var httpTransport *http.Transport
@@ -206,20 +207,34 @@ func (g gkeVersion) String() string {
 	return fmt.Sprintf("%d.%d.%d-gke.%d", g.major, g.minor, g.patch, g.gkePatch)
 }
 
-func getGKELatestChannelVersion(raw []string) (string, error) {
-	if len(raw) == 0 {
-		return "", fmt.Errorf("channel doest not have valid versions")
-	}
+func convertToSortedGKEVersions(raw []string) ([]gkeVersion, error) {
 	v := make([]gkeVersion, 0, len(raw))
 	for _, s := range raw {
 		version, err := parseGkeVersion(s)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		v = append(v, *version)
 	}
 	sort.Slice(v, func(i, j int) bool { return v[i].greater(v[j]) })
-	return v[0].String(), nil
+	return v, nil
+}
+
+func getGKELatestForMinor(raw []string, backstep int) (string, error) {
+	versions, err := convertToSortedGKEVersions(raw)
+	if err != nil {
+		return "", err
+	}
+	if len(versions) == 0 {
+		return "", fmt.Errorf("channel does not have valid versions")
+	}
+	targetMinor := versions[0].minor - backstep
+	for _, v := range versions {
+		if v.minor == targetMinor {
+			return v.String(), nil
+		}
+	}
+	return "", fmt.Errorf("minor %d is not available in selected channel", targetMinor)
 }
 
 // (only works on gke)
@@ -286,8 +301,12 @@ func getChannelGKEVersion(project, zone, region, gkeChannel, extractionMethod st
 
 	for _, channel := range c.Channels {
 		if strings.EqualFold(channel.Channel, gkeChannel) {
-			if strings.EqualFold(extractionMethod, "latest") {
-				latestVersion, err := getGKELatestChannelVersion(channel.ValidVersions)
+			if strings.Contains(strings.ToLower(extractionMethod), "latest") {
+				backstep := 0
+				if unicode.IsDigit(rune(extractionMethod[0])) {
+					backstep = int(extractionMethod[0]) - '0'
+				}
+				latestVersion, err := getGKELatestForMinor(channel.ValidVersions, backstep)
 				if err != nil {
 					return "", err
 				}

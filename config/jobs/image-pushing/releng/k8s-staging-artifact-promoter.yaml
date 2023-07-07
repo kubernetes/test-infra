@@ -19,6 +19,7 @@ postsubmits:
               - --project=k8s-staging-artifact-promoter
               - --scratch-bucket=gs://k8s-staging-artifact-promoter-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
             env:
               - name: LOG_TO_STDOUT

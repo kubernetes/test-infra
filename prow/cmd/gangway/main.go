@@ -30,7 +30,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
-	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -157,11 +156,12 @@ func main() {
 		}
 	}
 
-	gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun)
+	gitClient, err := o.github.GitClientFactory(o.cookiefilePath, &o.config.InRepoConfigCacheDirBase, o.dryRun, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	cacheGetter, err := config.NewInRepoConfigCacheHandler(o.config.InRepoConfigCacheSize, configAgent, gitClient, o.config.InRepoConfigCacheCopies)
+
+	cacheGetter, err := config.NewInRepoConfigCache(o.config.InRepoConfigCacheSize, configAgent, gitClient)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
@@ -171,9 +171,9 @@ func main() {
 	healthHTTP := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
 	gw := gangway.Gangway{
-		ConfigAgent:              configAgent,
-		ProwJobClient:            prowjobClient,
-		InRepoConfigCacheHandler: cacheGetter,
+		ConfigAgent:       configAgent,
+		ProwJobClient:     prowjobClient,
+		InRepoConfigCache: cacheGetter,
 	}
 
 	lis, err := net.Listen("tcp", ":"+strconv.Itoa(o.port))
@@ -200,7 +200,7 @@ func main() {
 	// check requests will only happen when we finally call
 	// interrupts.ListenAndServe() down below.
 	healthcheckGrpc := health.NewServer()
-	healthgrpc.RegisterHealthServer(grpcServer, healthcheckGrpc)
+	healthpb.RegisterHealthServer(grpcServer, healthcheckGrpc)
 	healthcheckGrpc.SetServingStatus(serviceNameForHealthCheckGrpc, healthpb.HealthCheckResponse_SERVING)
 
 	// Register reflection service on gRPC server. This enables testing through

@@ -1,0 +1,181 @@
+presubmits:
+  kubernetes-sigs/jobset:
+  - name: pull-jobset-test-unit-main
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-jobset-test-unit-main
+      description: "Run jobset unit tests"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        env:
+        - name: GO_TEST_FLAGS
+          value: "-race -count 3"
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 8Gi
+  - name: pull-jobset-test-integration-main
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-jobset-test-integration-main
+      description: "Run jobset integration tests"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.20
+        command:
+        - make
+        args:
+        - test-integration
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 8Gi
+  - name: pull-jobset-test-e2e-main-1-24
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-jobset-test-e2e-main-1-24
+      description: "Run jobset end to end tests for Kubernetes 1.24"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        env:
+        - name: E2E_KIND_VERSION
+          value: kindest/node:v1.24.7
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test-e2e-kind
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 8Gi
+  - name: pull-jobset-test-e2e-main-1-25
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-jobset-test-e2e-main-1-25
+      description: "Run jobset end to end tests for Kubernetes 1.25"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        env:
+        - name: E2E_KIND_VERSION
+          value: kindest/node:v1.25.3
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test-e2e-kind
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 8Gi
+  - name: pull-jobset-test-e2e-main-1-26
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-jobset-test-e2e-main-1-26
+      description: "Run jobset end to end tests for Kubernetes 1.26"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        env:
+        - name: E2E_KIND_VERSION
+          value: kindest/node:v1.26.2
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        args:
+        - make
+        - test-e2e-kind
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 8Gi
+  - name: pull-jobset-verify-main
+    cluster: eks-prow-build-cluster
+    branches:
+    - ^main
+    skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
+    decorate: true
+    path_alias: sigs.k8s.io/jobset
+    annotations:
+      testgrid-dashboards: sig-apps
+      testgrid-tab-name: pull-jobset-verify-main
+      description: "Run jobset verify checks"
+    spec:
+      containers:
+      - image: public.ecr.aws/docker/library/golang:1.20
+        command:
+        - make
+        args:
+        - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 8Gi
+          requests:
+            cpu: 2
+            memory: 8Gi

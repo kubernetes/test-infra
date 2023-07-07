@@ -1,0 +1,10 @@
+# To copy an image between projects:
+# `gcloud compute --project <to-project> disks create <image name> --image=https://www.googleapis.com/compute/v1/projects/<from-project>/global/images/<image-name>`
+# `gcloud compute --project <to-project> images create <image-name> --source-disk=<image-name>`
+images:
+  ubuntu:
+    image_family: pipeline-1-25-arm64
+    machine: t2a-standard-2 # These tests need a lot of memory
+    metadata: "user-data</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/arm/init.yaml,cni-template</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/config.toml"
+    project: ubuntu-os-gke-cloud
+

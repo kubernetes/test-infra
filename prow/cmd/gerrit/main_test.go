@@ -20,6 +20,7 @@ import (
 	"flag"
 	"reflect"
 	"testing"
+	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -90,12 +91,12 @@ func TestFlags(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
-					InRepoConfigCacheSize:                 100,
-					InRepoConfigCacheCopies:               1,
+					InRepoConfigCacheSize:                 1000,
 				},
 				dryRun:                 false,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 				changeWorkerPoolSize:   1,
+				pushGatewayInterval:    time.Minute,
 			}
 			if tc.expected != nil {
 				tc.expected(expected)

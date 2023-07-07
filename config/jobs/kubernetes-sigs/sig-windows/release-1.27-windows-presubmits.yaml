@@ -1,0 +1,45 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-capz-windows-1-27
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
+    path_alias: k8s.io/kubernetes
+    branches:
+      - release-1.27
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+      preset-capz-windows-2022: "true"
+      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-windows-common-pull: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.9
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master # TODO: Update to release-1.27 once it's created
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
+        command:
+        - runner.sh
+        - ./scripts/ci-conformance.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-1.27
+      testgrid-num-columns-recent: '30'

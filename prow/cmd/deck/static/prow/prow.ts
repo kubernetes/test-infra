@@ -63,13 +63,15 @@ function optionsForRepo(repository: string): RepoOptions {
 
     opts.types[type] = true;
     opts.clusters[cluster] = true;
+    opts.states[state] = true;
+
+    
     const repoKey = `${org}/${repo}`;
     if (repoKey) {
       opts.repos[repoKey] = true;
     }
     if (!repository || repository === repoKey) {
       opts.jobs[job] = true;
-      opts.states[state] = true;
 
       if (pulls.length) {
         for (const pull of pulls) {

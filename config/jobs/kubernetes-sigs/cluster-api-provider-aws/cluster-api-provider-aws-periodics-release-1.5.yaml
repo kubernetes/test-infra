@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-aws-e2e-release-1-5
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -17,7 +18,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.24
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -35,12 +36,16 @@ periodics:
         requests:
           cpu: 2
           memory: "9Gi"
+        limits:
+          cpu: 2
+          memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
     testgrid-tab-name: periodic-e2e-release-1-5
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-eks-e2e-release-1-5
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -58,7 +63,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.24
       command:
         - "runner.sh"
         - "./scripts/ci-e2e-eks.sh"
@@ -73,12 +78,16 @@ periodics:
         requests:
           cpu: 2
           memory: "9Gi"
+        limits:
+          cpu: 2
+          memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
     testgrid-tab-name: periodic-eks-e2e-release-1-5
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance-release-1-5
+  cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
     timeout: 5h
@@ -96,7 +105,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.24
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -116,12 +125,16 @@ periodics:
           requests:
             cpu: 2
             memory: "9Gi"
+          limits:
+            cpu: 2
+            memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
     testgrid-tab-name: periodic-conformance-release-1-5
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance-with-k8s-ci-artifacts-release-1-5
+  cluster: eks-prow-build-cluster
   max_concurrency: 1
   labels:
     preset-dind-enabled: "true"
@@ -140,7 +153,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     - org: kubernetes-sigs
       repo: image-builder
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/image-builder"
     - org: kubernetes
       repo: kubernetes
@@ -148,7 +161,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.24
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
@@ -171,6 +184,9 @@ periodics:
             # this is mostly for building kubernetes
             memory: "9Gi"
             cpu: 2
+          limits:
+            cpu: 2
+            memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-1.5
     testgrid-tab-name: periodic-conformance-release-1-5-k8s-main

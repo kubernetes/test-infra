@@ -1,34 +1,51 @@
 presubmits:
   kubernetes-sigs/prometheus-adapter:
   - name: pull-prometheus-adapter-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/prometheus-adapter
     spec:
       containers:
-      - image: golang:1.18
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - make
         args:
         - verify
+        resources:
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-verify
   - name: pull-prometheus-adapter-test
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/prometheus-adapter
     spec:
       containers:
-      - image: golang:1.18
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - make
         args:
         - test
+        resources:
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-test
   - name: pull-prometheus-adapter-test-e2e
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     decoration_config:
@@ -39,7 +56,7 @@ presubmits:
     path_alias: sigs.k8s.io/prometheus-adapter
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         # generic runner script, handles DIND, etc.
         - runner.sh
@@ -52,6 +69,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-prometheus-adapter
       testgrid-tab-name: pr-test-e2e

@@ -77,7 +77,15 @@ type fakeRepoOwners struct {
 	dirDenylist []*regexp.Regexp
 }
 
+func (f *fakeRepoOwners) AllApprovers() sets.String {
+	return sets.String{}
+}
+
 func (f *fakeRepoOwners) AllOwners() sets.String {
+	return sets.String{}
+}
+
+func (f *fakeRepoOwners) AllReviewers() sets.String {
 	return sets.String{}
 }
 

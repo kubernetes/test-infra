@@ -71,6 +71,8 @@ type ClientFactoryOpts struct {
 	Censor Censor
 	// Path to the httpCookieFile that will be used to authenticate client
 	CookieFilePath string
+	// If set, cacheDir persist. Otherwise temp dir will be used for CacheDir
+	Persist *bool
 }
 
 // Apply allows to use a ClientFactoryOpts as Opt
@@ -99,6 +101,18 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	if cfo.CookieFilePath != "" {
 		target.CookieFilePath = cfo.CookieFilePath
 	}
+	if cfo.Persist != nil {
+		target.Persist = cfo.Persist
+	}
+}
+
+func defaultTempDir() *string {
+	switch runtime.GOOS {
+	case "linux":
+		return utilpointer.StringPtr("/var/tmp")
+	default:
+		return utilpointer.StringPtr("")
+	}
 }
 
 // ClientFactoryOpts allows to manipulate the options for a ClientFactory
@@ -109,12 +123,8 @@ func defaultClientFactoryOpts(cfo *ClientFactoryOpts) {
 		cfo.Host = "github.com"
 	}
 	if cfo.CacheDirBase == nil {
-		switch runtime.GOOS {
-		case "linux":
-			cfo.CacheDirBase = utilpointer.StringPtr("/var/tmp")
-		default:
-			cfo.CacheDirBase = utilpointer.StringPtr("")
-		}
+		// If we do not have a place to put cache, put it in temp dir.
+		cfo.CacheDirBase = defaultTempDir()
 	}
 	if cfo.Censor == nil {
 		cfo.Censor = func(in []byte) []byte { return in }
@@ -140,10 +150,15 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		}
 	}
 
-	cacheDir, err := os.MkdirTemp(*o.CacheDirBase, "gitcache")
-	if err != nil {
+	var cacheDir string
+	var err error
+	// If we want to persist the Cache between runs, use the cacheDirBase as the cache. Otherwise make a temp dir.
+	if o.Persist != nil && *o.Persist {
+		cacheDir = *o.CacheDirBase
+	} else if cacheDir, err = os.MkdirTemp(*o.CacheDirBase, "gitcache"); err != nil {
 		return nil, err
 	}
+
 	var remote RemoteResolverFactory
 	if o.UseSSH != nil && *o.UseSSH {
 		remote = &sshRemoteResolverFactory{
@@ -169,6 +184,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		repoLocks:      map[string]*sync.Mutex{},
 		logger:         logrus.WithField("client", "git"),
 		cookieFilePath: o.CookieFilePath,
+		verifiedRepos:  map[string]bool{},
 	}, nil
 }
 
@@ -180,13 +196,14 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 		return nil, err
 	}
 	return &clientFactory{
-		cacheDir:   cacheDir,
-		remote:     &pathResolverFactory{baseDir: baseDir},
-		gitUser:    gitUser,
-		censor:     censor,
-		masterLock: &sync.Mutex{},
-		repoLocks:  map[string]*sync.Mutex{},
-		logger:     logrus.WithField("client", "git"),
+		cacheDir:      cacheDir,
+		remote:        &pathResolverFactory{baseDir: baseDir},
+		gitUser:       gitUser,
+		censor:        censor,
+		masterLock:    &sync.Mutex{},
+		repoLocks:     map[string]*sync.Mutex{},
+		logger:        logrus.WithField("client", "git"),
+		verifiedRepos: map[string]bool{},
 	}, nil
 }
 
@@ -196,6 +213,7 @@ type clientFactory struct {
 	censor         Censor
 	logger         *logrus.Entry
 	cookieFilePath string
+	verifiedRepos  map[string]bool
 
 	// cacheDir is the root under which cached clones of repos are created
 	cacheDir string
@@ -205,6 +223,16 @@ type clientFactory struct {
 	masterLock *sync.Mutex
 	// repoLocks guard mutating access to subdirectories under the cacheDir
 	repoLocks map[string]*sync.Mutex
+}
+
+func cloneDir(cacheDir string, cacheClientCacher cacher) error {
+	if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
+		return err
+	}
+	if err := cacheClientCacher.MirrorClone(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // bootstrapClients returns a repository client and cloner for a dir.
@@ -222,8 +250,7 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	var remote RemoteResolverFactory
-	remote = c.remote
+	remote := c.remote
 	client := &repoClient{
 		publisher: publisher{
 			remotes: remotes{
@@ -267,7 +294,8 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		return nil, err
 	}
 
-	repoDir, err := os.MkdirTemp(c.cacheDirBase, "gitrepo")
+	// Put copies of the repo in temp dir.
+	repoDir, err := os.MkdirTemp(*defaultTempDir(), "gitrepo")
 	if err != nil {
 		return nil, err
 	}
@@ -284,20 +312,15 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	defer c.repoLocks[cacheDir].Unlock()
 	if _, err := os.Stat(path.Join(cacheDir, "HEAD")); os.IsNotExist(err) {
 		// we have not yet cloned this repo, we need to do a full clone
-		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
-			return nil, err
-		}
-		if err := cacheClientCacher.MirrorClone(); err != nil {
+		if err := cloneDir(cacheDir, cacheClientCacher); err != nil {
 			return nil, err
 		}
 	} else if err != nil {
 		// something unexpected happened
 		return nil, err
-	} else {
-		// we have cloned the repo previously, but will refresh it
-		if err := cacheClientCacher.RemoteUpdate(); err != nil {
-			return nil, err
-		}
+		// we have cloned the repo previously, ensure it is valid and refresh it
+	} else if err := c.ensureValidUpdatedCache(cacheDir, cacheClientCacher); err != nil {
+		return nil, err
 	}
 
 	// initialize the new derivative repo from the cache
@@ -306,6 +329,30 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	}
 
 	return repoClient, nil
+}
+
+// Ensures that the repos in the cache are valid, clean, and up to date
+func (c *clientFactory) ensureValidUpdatedCache(cacheDir string, cacheClientCacher cacher) error {
+	// We only need to verify that the repos are valid once on startup
+	if _, ok := c.verifiedRepos[cacheDir]; !ok {
+		// Ensure it is valid
+		if valid, _ := cacheClientCacher.Fsck(); !valid {
+			if err := os.RemoveAll(cacheDir); err != nil {
+				return err
+			}
+			if err := cloneDir(cacheDir, cacheClientCacher); err != nil {
+				return err
+			}
+			c.verifiedRepos[cacheDir] = true
+			return nil
+		}
+	}
+	// Ensure it is up to date
+	if err := cacheClientCacher.RemoteUpdate(); err != nil {
+		return err
+	}
+	c.verifiedRepos[cacheDir] = true
+	return nil
 }
 
 // Clean removes the caches used to generate clients

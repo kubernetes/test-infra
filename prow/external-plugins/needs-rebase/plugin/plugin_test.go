@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 	"sort"
 	"testing"
@@ -147,6 +148,12 @@ func (f *fghc) compareExpected(t *testing.T, org, repo string, num int, expected
 	}
 }
 
+func TestMain(m *testing.M) {
+	sleep = func(time.Duration) {}
+	code := m.Run()
+	os.Exit(code)
+}
+
 func TestHandleIssueCommentEvent(t *testing.T) {
 	t.Parallel()
 	pr := func() *github.PullRequest {
@@ -161,10 +168,6 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 		}
 		return &pr
 	}
-
-	oldSleep := sleep
-	sleep = func(time.Duration) {}
-	defer func() { sleep = oldSleep }()
 
 	testCases := []struct {
 		name string
@@ -252,9 +255,6 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 
 func TestHandlePullRequestEvent(t *testing.T) {
 	t.Parallel()
-	oldSleep := sleep
-	sleep = func(time.Duration) {}
-	defer func() { sleep = oldSleep }()
 
 	testCases := []struct {
 		name string

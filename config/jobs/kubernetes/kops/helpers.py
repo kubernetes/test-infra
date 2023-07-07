@@ -80,7 +80,7 @@ def k8s_version_info(k8s_version):
     test_package_dir = ''
     if k8s_version == 'latest':
         marker = 'latest.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
+        k8s_deploy_url = "https://dl.k8s.io/release/latest.txt"
     elif k8s_version == 'ci':
         marker = 'latest.txt'
         k8s_deploy_url = "https://storage.googleapis.com/k8s-release-dev/ci/latest.txt"
@@ -88,10 +88,10 @@ def k8s_version_info(k8s_version):
         test_package_dir = 'ci'
     elif k8s_version == 'stable':
         marker = 'stable.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+        k8s_deploy_url = "https://dl.k8s.io/release/stable.txt"
     elif k8s_version:
         marker = f"stable-{k8s_version}.txt"
-        k8s_deploy_url = f"https://storage.googleapis.com/kubernetes-release/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
+        k8s_deploy_url = f"https://dl.k8s.io/release/stable-{k8s_version}.txt" # pylint: disable=line-too-long
     else:
         raise Exception('missing required k8s_version')
     return marker, k8s_deploy_url, test_package_bucket, test_package_dir
@@ -139,9 +139,11 @@ distro_images = {
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
     'deb10': latest_aws_image('136693071363', 'debian-10-amd64-*'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
+    'deb12': latest_aws_image('136693071363', 'debian-12-amd64-*'),
     'flatcar': latest_aws_image('075585003325', 'Flatcar-beta-*-hvm'),
     'flatcararm64': latest_aws_image('075585003325', 'Flatcar-beta-*-hvm', 'arm64'),
     'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-*'),
+    'rhel9': latest_aws_image('309956199498', 'RHEL-9.*_HVM-*-x86_64-*'),
     'rocky8': latest_aws_image('792107900819', 'Rocky-8-ec2-8.*.x86_64'),
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
@@ -155,9 +157,11 @@ distros_ssh_user = {
     'amzn2': 'ec2-user',
     'deb10': 'admin',
     'deb11': 'admin',
+    'deb12': 'admin',
     'flatcar': 'core',
     'flatcararm64': 'core',
     'rhel8': 'ec2-user',
+    'rhel9': 'ec2-user',
     'rocky8': 'rocky',
     'u1804': 'ubuntu',
     'u2004': 'ubuntu',

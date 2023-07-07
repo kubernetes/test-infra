@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/ibm-vpc-block-csi-driver:
   - name: pull-ibm-vpc-block-csi-driver-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     labels:
@@ -14,14 +15,22 @@ presubmits:
       description: Build test in ibm-vpc-block-csi-driver repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
         - make
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         securityContext:
           privileged: true
   - name: pull-ibm-vpc-block-csi-driver-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -33,13 +42,21 @@ presubmits:
       description: Unit tests in ibm-vpc-block-csi-driver repo.
     spec:
       containers:
-      - image: golang:1.19.6
+      - image: public.ecr.aws/docker/library/golang:1.19.6
         command:
         - make
         args:
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
   - name: pull-ibm-vpc-block-csi-driver-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -51,13 +68,21 @@ presubmits:
       description: ibm-vpc-block-csi-driver basic code verification.
     spec:
       containers:
-      - image: golang:1.19.6
+      - image: public.ecr.aws/docker/library/golang:1.19.6
         command:
         - make
         args:
         - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
   - name: pull-ibm-vpc-block-csi-driver-sanity
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     skip_branches:
@@ -69,8 +94,15 @@ presubmits:
       description: ibm-vpc-block-csi-driver sanity execution.
     spec:
       containers:
-      - image: golang:1.19.6
+      - image: public.ecr.aws/docker/library/golang:1.19.6
         command:
         - make
         args:
         - test-sanity
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

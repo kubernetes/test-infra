@@ -7,6 +7,7 @@ dashboard_groups:
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
     - sig-network-gateway-api
+    - sig-network-ingress2gateway
     - sig-network-policy-api
     - sig-network-ingress-controller-conformance
     - sig-network-kind
@@ -28,10 +29,11 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: gce-cos-1.14-ingress
-      test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+    # TODO(1.28): Uncomment this when adding jobs for release-1.28 branch.
+    # - name: gce-cos-1.14-ingress
+    #   test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+    #   alert_options:
+    #     alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
     - name: gci-gce-ip-alias
       test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
       alert_options:
@@ -95,6 +97,7 @@ dashboards:
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
 - name: sig-network-gateway-api
+- name: sig-network-ingress2gateway
 - name: sig-network-policy-api
 - name: sig-network-ingress-controller-conformance
 - name: sig-network-kind

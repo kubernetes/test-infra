@@ -17,6 +17,7 @@ limitations under the License.
 package downwardapi
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -87,13 +88,15 @@ func TestEnvironmentForSpec(t *testing.T) {
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
 					Pulls: []prowapi.Pull{{
-						Number: 1,
-						Author: "author-name",
-						SHA:    "pull-sha",
+						Number:  1,
+						Author:  "author-name",
+						SHA:     "pull-sha",
+						HeadRef: "branch-name-1",
 					}, {
-						Number: 2,
-						Author: "other-author-name",
-						SHA:    "second-pull-sha",
+						Number:  2,
+						Author:  "other-author-name",
+						SHA:     "second-pull-sha",
+						HeadRef: "branch-name-2",
 					}},
 				},
 			},
@@ -103,7 +106,7 @@ func TestEnvironmentForSpec(t *testing.T) {
 				"BUILD_ID":      "0",
 				"PROW_JOB_ID":   "prowjob",
 				"JOB_TYPE":      "batch",
-				"JOB_SPEC":      `{"type":"batch","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"},{"number":2,"author":"other-author-name","sha":"second-pull-sha"}]}}`,
+				"JOB_SPEC":      `{"type":"batch","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha","head_ref":"branch-name-1"},{"number":2,"author":"other-author-name","sha":"second-pull-sha","head_ref":"branch-name-2"}]}}`,
 				"REPO_OWNER":    "org-name",
 				"REPO_NAME":     "repo-name",
 				"PULL_BASE_REF": "base-ref",
@@ -124,9 +127,10 @@ func TestEnvironmentForSpec(t *testing.T) {
 					BaseRef: "base-ref",
 					BaseSHA: "base-sha",
 					Pulls: []prowapi.Pull{{
-						Number: 1,
-						Author: "author-name",
-						SHA:    "pull-sha",
+						Number:  1,
+						Author:  "author-name",
+						SHA:     "pull-sha",
+						HeadRef: "branch-name",
 					}},
 				},
 			},
@@ -136,12 +140,13 @@ func TestEnvironmentForSpec(t *testing.T) {
 				"BUILD_ID":      "0",
 				"PROW_JOB_ID":   "prowjob",
 				"JOB_TYPE":      "presubmit",
-				"JOB_SPEC":      `{"type":"presubmit","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}]}}`,
+				"JOB_SPEC":      `{"type":"presubmit","job":"job-name","buildid":"0","prowjobid":"prowjob","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha","head_ref":"branch-name"}]}}`,
 				"REPO_OWNER":    "org-name",
 				"REPO_NAME":     "repo-name",
 				"PULL_BASE_REF": "base-ref",
 				"PULL_BASE_SHA": "base-sha",
 				"PULL_REFS":     "base-ref:base-sha,1:pull-sha",
+				"PULL_HEAD_REF": "branch-name",
 				"PULL_NUMBER":   "1",
 				"PULL_PULL_SHA": "pull-sha",
 			},
@@ -254,5 +259,12 @@ func TestGetRevisionFromSpec(t *testing.T) {
 		if actual, expected := GetRevisionFromSpec(&test.spec), test.expected; actual != expected {
 			t.Errorf("%s: got revision:%s but expected: %s", test.name, actual, expected)
 		}
+	}
+}
+
+func TestInCI(t *testing.T) {
+	os.Setenv("CI", "true")
+	if !InCI() {
+		t.Error("we expected InCI() to return true, but it returned false")
 	}
 }

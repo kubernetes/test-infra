@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kernel-module-management:
   - name: pull-kernel-module-management-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -9,10 +10,18 @@ presubmits:
       description: "build the kernel-module-management controller binary."
     spec:
       containers:
-      - image: golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - ci/prow/build
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
   - name: pull-kernel-module-management-check-api-changes
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -21,7 +30,7 @@ presubmits:
       description: "make sure deployment manifests and bundle are up-to-date."
     spec:
       containers:
-      - image: golang:1.20-alpine
+      - image: public.ecr.aws/docker/library/golang:1.20-alpine
         command: [sh]
         args:
         - -c
@@ -39,7 +48,15 @@ presubmits:
         env:
         - name: CGO_ENABLED
           value: '0'
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
   - name: pull-kernel-module-management-check-commits-count
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -51,7 +68,15 @@ presubmits:
       - image: docker.io/bitnami/git
         command:
         - ci/prow/check-commits-count
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
   - name: pull-kernel-module-management-lint
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -60,10 +85,18 @@ presubmits:
       description: "lint the source code of kernel-module-management."
     spec:
       containers:
-      - image: golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - ci/prow/lint
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
   - name: pull-kernel-module-management-unit-tests
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     annotations:
@@ -72,6 +105,13 @@ presubmits:
       description: "unit-tests the source code of kernel-module-management."
     spec:
       containers:
-      - image: golang:1.20
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - ci/prow/unit-tests
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi

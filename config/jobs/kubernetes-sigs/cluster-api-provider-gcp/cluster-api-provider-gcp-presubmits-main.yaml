@@ -5,17 +5,21 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
         - "./scripts/ci-test.sh"
         resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
           requests:
-            memory: "6Gi"
-            cpu: "2"
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-test
@@ -24,17 +28,21 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
         - "./scripts/ci-build.sh"
         resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
           requests:
-            memory: "6Gi"
-            cpu: "2"
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-build
@@ -50,7 +58,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -58,9 +66,12 @@ presubmits:
         - "runner.sh"
         - "./scripts/ci-make.sh"
         resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
           requests:
-            memory: "6Gi"
-            cpu: "2"
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-make
@@ -69,6 +80,7 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    cluster: eks-prow-build-cluster
     labels:
       # required for shellcheck in container.
       preset-dind-enabled: "true"
@@ -77,13 +89,20 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
         - "runner.sh"
         - "make"
         - "verify"
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-verify
@@ -102,7 +121,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -138,11 +157,11 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: image-builder
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -182,7 +201,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -217,7 +236,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -252,7 +271,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -276,17 +295,25 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     always_run: true
     optional: true
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
     branches:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
           - runner.sh
         args:
           - ./scripts/ci-apidiff.sh
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-apidiff-main
@@ -295,6 +322,7 @@ presubmits:
     optional: true
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    cluster: eks-prow-build-cluster
     extra_refs:
       - org: kubernetes
         repo: test-infra
@@ -302,7 +330,7 @@ presubmits:
         path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.26
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
         command:
         - runner.sh
         args:
@@ -320,6 +348,13 @@ presubmits:
           exit $result
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-coverage

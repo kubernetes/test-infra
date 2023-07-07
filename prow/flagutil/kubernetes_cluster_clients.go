@@ -17,6 +17,7 @@ limitations under the License.
 package flagutil
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -30,9 +31,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/fsnotify.v1"
 
+	k8sauthorizationv1 "k8s.io/api/authorization/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	authorizationv1 "k8s.io/client-go/kubernetes/typed/authorization/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -346,7 +350,7 @@ var clientCreationFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
 // BuildClusterManagers returns a manager per buildCluster.
 // Per default, LeaderElection and the metrics listener are disabled, as we assume
 // that there is another manager for ProwJobs that handles that.
-func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), opts ...func(*manager.Options)) (map[string]manager.Manager, error) {
+func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, requiredTestPodVerbs []string, callBack func(), opts ...func(*manager.Options)) (map[string]manager.Manager, error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -368,15 +372,31 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), o
 	for buildClusterName, buildClusterConfig := range o.clusterConfigs {
 		go func(name string, config rest.Config) {
 			defer threads.Done()
+			// This fails if we are unable to connect to the cluster --- either
+			// due to missing or expired kubeconfig secrets, or if some other
+			// auth-related executable (e.g., gke-gcloud-auth-plugin) is missing
+			// from the base image.
 			mgr, err := manager.New(&config, options)
-			lock.Lock()
-			defer lock.Unlock()
 			if err != nil {
 				clientCreationFailures.WithLabelValues(name).Add(1)
+				lock.Lock()
 				errs = append(errs, fmt.Errorf("failed to construct manager for cluster %s: %w", name, err))
+				lock.Unlock()
 				return
 			}
+
+			// Check to see if we are able to perform actions against pods in
+			// the build cluster. The actions are given in requiredTestPodVerbs.
+			if err := checkAuthorizations(config, options.Namespace, requiredTestPodVerbs); err != nil {
+				lock.Lock()
+				errs = append(errs, fmt.Errorf("failed pod resource authorization check: %w", err))
+				lock.Unlock()
+				return
+			}
+
+			lock.Lock()
 			res[name] = mgr
+			lock.Unlock()
 		}(buildClusterName, buildClusterConfig)
 	}
 	threads.Wait()
@@ -384,20 +404,32 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), o
 	aggregatedErr := utilerrors.NewAggregate(errs)
 
 	if aggregatedErr != nil {
-		// Retry the build clusters that failed to be connected initially, execute
-		// callback function when they become reachable later on.
-		// This is useful where a build cluster is not reachable transiently, for
-		// example API server upgrade caused connection problem.
+		// Retry the build clusters that failed to be connected initially. If
+		// suddenly we can connect to them successfully, execute the callback
+		// function (e.g., to terminate this pod to force a restart). This is
+		// useful where a build cluster is not reachable transiently, such as
+		// when an API server upgrade causes connection problems.
 		go func() {
 			for {
 				for buildClusterName, buildClusterConfig := range o.clusterConfigs {
+					// Do not check already-successfully-checked build clusters.
 					if _, ok := res[buildClusterName]; ok {
 						continue
 					}
-					if _, err := manager.New(&buildClusterConfig, options); err == nil {
-						logrus.WithField("build-cluster", buildClusterName).Info("Build cluster that failed to connect initially now worked.")
-						callBack()
+
+					// If there are any errors with this (still troublesome)
+					// build cluster, keep checking.
+					if _, err := manager.New(&buildClusterConfig, options); err != nil {
+						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
+						continue
 					}
+					if err := checkAuthorizations(buildClusterConfig, options.Namespace, requiredTestPodVerbs); err != nil {
+						logrus.WithField("build-cluster", buildClusterName).Tracef("failed to construct build cluster manager: %s", err)
+						continue
+					}
+
+					logrus.WithField("build-cluster", buildClusterName).Info("Build cluster that failed to connect initially now worked.")
+					callBack()
 				}
 				// Sleep arbitrarily amount of time
 				time.Sleep(5 * time.Second)
@@ -407,6 +439,67 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), o
 		logrus.Debug("No error constructing managers for build clusters, skip polling build clusters.")
 	}
 	return res, aggregatedErr
+}
+
+// checkAuthorizations checks if we are able to perform the required actions
+// against test pods for the provided pod verbs (requiredTestPodVerbs).
+func checkAuthorizations(buildClusterConfig rest.Config, namespace string, requiredTestPodVerbs []string) error {
+	client, err := authorizationv1.NewForConfig(&buildClusterConfig)
+	if err != nil {
+		return err
+	}
+	ssarInterface := client.SelfSubjectAccessReviews()
+
+	var errs []error
+	// Unfortunately we have to do multiple API requests because there is no way
+	// to check for multiple verbs on a resource at once. The closest
+	// alternative is the "*" wildcard verb, but that appears to be overbroad
+	// and fails on the integration test cluster. The approach we take here is
+	// essentially equivalent to the following kubectl command:
+	//
+	// 	 $ cat <<EOF | kubectl --context=kind-kind-prow-integration create -f - -v 8
+	//   apiVersion: authorization.k8s.io/v1
+	//   kind: SubjectAccessReview
+	//   spec:
+	//     resourceAttributes:
+	//       resource: pods
+	//       verb: list # also test for get, create, etc
+	//       namespace: test-pods
+	//     user: system:serviceaccount:default:prow-controller-manager
+	//   EOF
+	//
+	//  The difference in our case is that (1) we are running the below check
+	//  *inside* the main service cluster itself, (2) we are running the check
+	//  against an entirely different build cluster, and (3) we are using
+	//  SelfSubjectAccessReview so that we don't have to provide a `user` field
+	//  (so that this code can work with whatever user is the default when we're
+	//  connecting to the build cluster).
+	//
+	// See
+	// https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access
+	// for more information.
+	for _, verb := range requiredTestPodVerbs {
+		ssar := k8sauthorizationv1.SelfSubjectAccessReview{
+			Spec: k8sauthorizationv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &k8sauthorizationv1.ResourceAttributes{
+					Namespace: namespace,
+					Verb:      verb,
+					Resource:  "pods",
+				},
+			},
+		}
+		ssarExpanded, err := ssarInterface.Create(context.TODO(), &ssar, metav1.CreateOptions{})
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		if !ssarExpanded.Status.Allowed {
+			errs = append(errs, fmt.Errorf("unable to %q pods", verb))
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
 }
 
 // BuildClusterUncachedRuntimeClients returns ctrlruntimeclients for the build cluster in a non-caching implementation.

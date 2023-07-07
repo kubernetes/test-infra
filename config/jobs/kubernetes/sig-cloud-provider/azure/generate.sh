@@ -38,15 +38,15 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master"
 kubekins_e2e_image="${tmp/\-master/}"
-installCSIdrivers=""
-installCSIAzureFileDrivers=""
+installCSIdrivers=" ./deploy/install-driver.sh master local,snapshot,enable-avset &&"
+installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
 
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   kubernetes_version="latest"
-  capz_release="release-1.8"
+  capz_release="release-1.9"
 
   if [[ "${release}" == "master" ]]; then
     branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
@@ -59,11 +59,6 @@ for release in "$@"; do
     kubernetes_version+="-${release}"
     ccm_branch="release-${release}"
     capz_periodic_branch_name=${capz_release}
-  fi
-
-  if [[ "${release}" == "master" || "${release}" == "1.23" ]]; then
-    installCSIdrivers=" ./deploy/install-driver.sh master local,snapshot,enable-avset &&"
-    installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
   fi
 
   cat >"${output}" <<EOF
@@ -93,6 +88,10 @@ presubmits:
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: ${ccm_branch}
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: ${kubekins_e2e_image}-master
@@ -138,6 +137,10 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: ${ccm_branch}
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: ${kubekins_e2e_image}-master
@@ -185,6 +188,10 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
         repo: azurefile-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: ${ccm_branch}
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: ${kubekins_e2e_image}-master
@@ -231,6 +238,10 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
         repo: azurefile-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: ${ccm_branch}
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
         - image: ${kubekins_e2e_image}-master
@@ -275,6 +286,10 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
       base_ref: ${capz_release}
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: ${ccm_branch}
+      path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
       - image: ${kubekins_e2e_image}-master
@@ -293,46 +308,6 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
         - name: CONFORMANCE_NODES
           value: "25"
 $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-conformance)
-  - name: pull-kubernetes-e2e-capz-ha-control-plane
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    always_run: false
-    optional: true
-    path_alias: k8s.io/kubernetes
-    branches:
-      - ${branch}
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-    extra_refs:
-    - org: jackfrancis #TODO change back to kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: capz-ha-control-plane-tests #TODO change back to main
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    spec:
-      containers:
-      - image: ${kubekins_e2e_image}-master
-        command:
-        - runner.sh
-        - ./scripts/ci-conformance.sh
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 1
-            memory: "4Gi"
-        env:
-        - name: KUBETEST_CONF_PATH
-          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance.yaml
-        - name: CONFORMANCE_NODES
-          value: "1"
-        - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
-          value: "3"
-$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-ha-control-plane)
 periodics:
 - interval: 3h
   name: capz-conformance-${release/./-}
@@ -640,7 +615,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -693,7 +668,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -751,7 +726,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -811,7 +786,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -868,7 +843,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

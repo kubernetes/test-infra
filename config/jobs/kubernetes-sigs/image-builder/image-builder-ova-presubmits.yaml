@@ -13,13 +13,17 @@ presubmits:
       max_concurrency: 3
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
             args:
               - runner.sh
               - "./images/capi/scripts/ci-ova.sh"
             resources:
               requests:
                 cpu: "1000m"
+                memory: "4Gi"
+              limits:
+                cpu: "1000m"
+                memory: "4Gi"
             securityContext:
               privileged: true
               capabilities:

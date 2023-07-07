@@ -34,7 +34,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-100-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -118,7 +118,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-big-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -185,7 +185,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -251,7 +251,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -350,7 +350,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -439,7 +439,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-scale
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -515,7 +515,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -561,7 +561,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -632,7 +632,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -705,7 +705,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -788,7 +788,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20230206-22f4807bdc
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20230316-ac3134cff2
         command:
         - runner.sh
         args:
@@ -817,7 +817,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-all
     spec:
       containers:
-      - image: golang:1.13
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - make
         args:
@@ -865,7 +865,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: golang:1.18
+      - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - verify/test.sh
         resources:
@@ -911,7 +911,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-lint
     spec:
       containers:
-      - image: golangci/golangci-lint:v1.47.3
+      - image: golangci/golangci-lint:v1.51.2
         command:
         - make
         args:

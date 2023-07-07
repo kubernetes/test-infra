@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/node-problem-detector:
   - name: pull-npd-build
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -11,7 +12,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -20,6 +21,13 @@ presubmits:
         - >-
           ./test/build.sh install-lib &&
           make build
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -29,6 +37,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-test
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -38,7 +47,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -47,11 +56,19 @@ presubmits:
         - >-
           ./test/build.sh install-lib &&
           make test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-node
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -72,7 +89,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -91,6 +108,13 @@ presubmits:
           '--node-test-args=--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/"'
           '--test_args=--nodes=8 --focus=NodeProblemDetector'
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -98,6 +122,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-gci
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -110,7 +135,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -128,6 +153,13 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -135,6 +167,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-gci-custom-flags
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -147,7 +180,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -165,6 +198,13 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -172,6 +212,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-test
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -182,12 +223,14 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         env:
         - name: ZONE
           value: us-central1-a
         - name: IMAGE_FAMILY
-          value: cos-89-lts
+        # TODO: update to `cos-stable` once NPD dependencies have been upgraded.
+        # See https://github.com/kubernetes/test-infra/issues/29308#issuecomment-1522523412
+          value: cos-97-lts
         - name: IMAGE_PROJECT
           value: cos-cloud
         - name: BOSKOS_PROJECT_TYPE
@@ -200,10 +243,18 @@ presubmits:
         - >-
           ./test/build.sh install-lib &&
           SSH_USER=${USER} SSH_KEY=${JENKINS_GCE_SSH_PRIVATE_KEY_FILE} make e2e-test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-ubuntu
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -216,7 +267,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -234,6 +285,13 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -241,6 +299,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-kubernetes-gce-ubuntu-custom-flags
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -253,7 +312,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         args:
@@ -271,6 +330,13 @@ presubmits:
           --ginkgo-parallel=30
           --test_args=--ginkgo.focus=NodeProblemDetector
           --timeout=60m
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

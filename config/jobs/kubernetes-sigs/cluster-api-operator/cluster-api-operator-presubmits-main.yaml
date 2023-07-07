@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-operator:
   - name: pull-cluster-api-operator-build-main
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
     always_run: true
@@ -11,18 +12,25 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
         command:
         - runner.sh
         - ./scripts/ci-build.sh
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-build-main
   - name: pull-cluster-api-operator-make-main
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
-    always_run: false
-    optional: true
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -31,36 +39,52 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - command:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
+        command:
         - runner.sh
         - ./scripts/ci-make.sh
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-make-main
   - name: pull-cluster-api-operator-apidiff-main
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
-    always_run: true
     optional: true
     labels:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^main$
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - command:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
+        command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-apidiff-main
   - name: pull-cluster-api-operator-verify-main
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
     always_run: true
@@ -71,37 +95,51 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-verify-main
   - name: pull-cluster-api-operator-test-main
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-operator
-    always_run: true
     labels:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^main$
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
         args:
         - runner.sh
         - ./scripts/ci-test.sh
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-test-main
-  - name: pull-cluster-api-operator-e2e
+  - name: pull-cluster-api-operator-e2e-main
     path_alias: "sigs.k8s.io/cluster-api-operator"
     optional: false
     decorate: true
-    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
-    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
+    run_if_changed: '^((api|cmd|config|controllers|hack|internal|scripts|test|util|webhook)/|go\.mod|go\.sum|Dockerfile|Makefile)'
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -110,7 +148,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
         command:
           - runner.sh
         args:
@@ -124,6 +162,13 @@ presubmits:
             secretKeyRef:
               name: cluster-lifecycle-github-token
               key: cluster-lifecycle-github-token
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-e2e-main

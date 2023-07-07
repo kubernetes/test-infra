@@ -6,7 +6,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-        - image: golang:1.11.5
+        - image: public.ecr.aws/docker/library/golang:1.11.5
           command:
             - "./hack/verify-all.sh"
   - name: pull-slack-infra-build
@@ -15,7 +15,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-        - image: golang:1.11.5
+        - image: public.ecr.aws/docker/library/golang:1.11.5
           command:
             - "./hack/verify-build.sh"
   - name: pull-slack-infra-test
@@ -24,7 +24,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-        - image: golang:1.11.5
+        - image: public.ecr.aws/docker/library/golang:1.11.5
           command:
             - "go"
           args:

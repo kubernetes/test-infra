@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
   - name: pull-cloud-provider-openstack-check
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_branches:
     - gh-pages
@@ -8,7 +9,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -17,8 +18,16 @@ presubmits:
         - --
         - make
         - check
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
   - name: pull-cloud-provider-openstack-test
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_branches:
     - gh-pages
@@ -26,7 +35,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -35,3 +44,10 @@ presubmits:
         - --
         - make
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

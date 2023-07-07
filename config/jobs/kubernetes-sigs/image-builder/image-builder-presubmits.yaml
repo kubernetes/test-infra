@@ -11,7 +11,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         args:
           - runner.sh
           - "./images/capi/scripts/ci-azure-e2e.sh"
@@ -33,7 +33,7 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         args:
           - runner.sh
           - "./images/capi/scripts/ci-azure-e2e.sh"
@@ -47,6 +47,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-azure-sigs
   - name: json-sort-check
+    cluster: eks-prow-build-cluster
     decorate: true
     run_if_changed: 'images/capi/.*\.json$'
     decoration_config:
@@ -55,29 +56,41 @@ presubmits:
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-json-sort.sh"
           resources:
             requests:
               cpu: 1000m
+              memory: 4Gi
+            limits:
+              cpu: 1000m
+              memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-json-sort-check
   - name: pull-packer-validate
+    cluster: eks-prow-build-cluster
     decorate: true
-    run_if_changed: 'images/capi/Makefile|images/capi/packer/.*|images/capi/scripts/ci-packer-validate\.sh'
+    run_if_changed: 'images/capi/Makefile|images/capi/packer/.*|images/capi/scripts/ci-packer-validate\.sh|images/capi/scripts/ensure-packer\.sh'
     decoration_config:
       timeout: 20m
     max_concurrency: 5
     path_alias: sigs.k8s.io/image-builder
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           args:
           - runner.sh
           - "./images/capi/scripts/ci-packer-validate.sh"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 4Gi
+            limits:
+              cpu: 1000m
+              memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-packer-validate
@@ -93,7 +106,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-gce.sh"
@@ -110,6 +123,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-pull-image-builder-gcp-all
   - name: pull-goss-populate
+    cluster: eks-prow-build-cluster
     path_alias: sigs.k8s.io/image-builder
     run_if_changed: 'images/capi/packer/config/.*|images/capi/packer/goss/.*|images/capi/scripts/ci-goss-populate\.sh|images/capi/hack/generate-goss-specs\.py'
     decorate: true
@@ -118,10 +132,17 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-goss-populate.sh"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 4Gi
+            limits:
+              cpu: 1000m
+              memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-goss-populate
@@ -136,7 +157,7 @@ presubmits:
     max_concurrency: 5
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           args:
             - runner.sh
             - "./images/capi/scripts/ci-container-image.sh"

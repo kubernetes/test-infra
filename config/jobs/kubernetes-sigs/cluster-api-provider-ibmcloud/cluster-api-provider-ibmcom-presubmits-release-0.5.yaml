@@ -1,0 +1,170 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+  - name: pull-cluster-api-provider-ibmcloud-make-release-0-5
+    cluster: eks-prow-build-cluster
+    always_run: true
+    branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.5
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - command:
+        - "runner.sh"
+        - "./scripts/ci-make.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-make-release-0-5
+  - name: pull-cluster-api-provider-ibmcloud-test-release-0-5
+    cluster: eks-prow-build-cluster
+    always_run: true
+    branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.5
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
+        imagePullPolicy: Always
+        command:
+        - "./scripts/ci-test.sh"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-test-release-0-5
+  - name: pull-cluster-api-provider-ibmcloud-smoke-test-release-0-5
+    cluster: eks-prow-build-cluster
+    always_run: true
+    branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.5
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
+        imagePullPolicy: Always
+        env:
+        - name: "IBMCLOUD_API_KEY"
+          value: "dummyApiKey"
+        command:
+        - "runner.sh"
+        - "./scripts/ci-smoke-test.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-smoke-test-release-0-5
+  - name: pull-cluster-api-provider-ibmcloud-build-release-0-5
+    cluster: eks-prow-build-cluster
+    always_run: true
+    branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.5
+    optional: false
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
+        command:
+        - "./scripts/ci-build.sh"
+        resources:
+          limits:
+            memory: "6Gi"
+            cpu: "2"
+          requests:
+            memory: "6Gi"
+            cpu: "2"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-build-release-0-5
+  - name: pull-cluster-api-provider-ibmcloud-verify-release-0-5
+    cluster: eks-prow-build-cluster
+    always_run: true
+    branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.5
+    optional: false
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
+          command:
+            - "make"
+            - "verify"
+          resources:
+            limits:
+              cpu: "2"
+              memory: "6Gi"
+            requests:
+              cpu: "2"
+              memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-verify-release-0-5
+  - name: pull-cluster-api-provider-ibmcloud-apidiff-release-0-5
+    cluster: eks-prow-build-cluster
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
+    always_run: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    - ^release-0.5
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-apidiff.sh
+        resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          requests:
+            cpu: "2"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-apidiff-release-0-5

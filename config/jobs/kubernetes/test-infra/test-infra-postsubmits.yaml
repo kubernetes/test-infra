@@ -1,6 +1,7 @@
 postsubmits:
   kubernetes/test-infra:
   - name: post-test-infra-test-all
+    cluster: eks-prow-build-cluster
     branches:
     - master
     decorate: true
@@ -10,7 +11,7 @@ postsubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-test-infra
         command:
         - runner.sh
         args:
@@ -26,13 +27,10 @@ postsubmits:
             # This job is very CPU intensive as building prow images in
             # parallel
             cpu: "14"
-      tolerations:
-      - key: "highcpu"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
-      nodeSelector:
-        highcpu: "true"
+            memory: "16Gi"
+          limits:
+            cpu: "14"
+            memory: "16Gi"
     annotations:
       testgrid-dashboards: sig-testing-misc
       testgrid-tab-name: post-test-all

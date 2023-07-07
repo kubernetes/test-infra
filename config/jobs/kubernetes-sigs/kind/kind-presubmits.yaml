@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
         command:
         - wrapper.sh
         - ./hack/ci/build-all.sh
@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
         command:
         - wrapper.sh
         - make
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-experimental
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-experimental
         command:
         - wrapper.sh
         - make
@@ -48,51 +48,6 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
-  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
-  - name: pull-kind-e2e-kubernetes
-    cluster: k8s-infra-prow-build
-    always_run: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    decorate: true
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
-    path_alias: sigs.k8s.io/kind
-    decoration_config:
-      timeout: 60m
-      grace_period: 15m
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
-        command:
-        - wrapper.sh
-        - bash
-        - -c
-        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
-        env:
-        - name: FOCUS
-          value: "."
-        # TODO(bentheelder): reduce the skip list further
-        # NOTE: changes should filter down to pull-kubernetes-e2e-kind-canary
-        # and then pull-kubernetes-e2e-kind
-        - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
-        - name: PARALLEL
-          value: "true"
-        # we need privileged mode in order to do docker in docker
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: "4"
-            memory: 9000Mi
-          requests:
-            cpu: "4"
-            memory: 9000Mi
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   # GA-only variant
@@ -102,7 +57,8 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    always_run: true
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
+    optional: false
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -114,7 +70,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -145,7 +101,8 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    always_run: true
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
+    optional: false
     decorate: true
     extra_refs:
     - org: kubernetes
@@ -157,7 +114,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -188,8 +145,8 @@ presubmits:
   # Dual Stack enabled variant
   - name: pull-kind-conformance-parallel-dual-stack-ipv4-ipv6
     cluster: k8s-infra-prow-build
-    always_run: false
-    optional: true
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
+    optional: false
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -205,7 +162,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
         command:
         - wrapper.sh
         - bash
@@ -232,7 +189,100 @@ presubmits:
             cpu: "4"
             memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
-  - always_run: true
+  - name: pull-kind-e2e-kubernetes
+    cluster: k8s-infra-prow-build
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
+    optional: false
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-master
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: "."
+        # TODO(bentheelder): reduce the skip list further
+        # NOTE: changes should filter down to pull-kubernetes-e2e-kind-canary
+        # and then pull-kubernetes-e2e-kind
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - name: pull-kind-e2e-kubernetes-1-27
+    cluster: k8s-infra-prow-build
+    skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
+    optional: false
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: release-1.27
+      path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/kind
+    decoration_config:
+      timeout: 60m
+      grace_period: 15m
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-1.27
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: "."
+        # TODO(bentheelder): reduce the skip list further
+        # NOTE: changes should filter down to pull-kubernetes-e2e-kind-canary
+        # and then pull-kubernetes-e2e-kind
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing
+        - name: PARALLEL
+          value: "true"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
+    optional: false
     decorate: true
     decoration_config:
       grace_period: 15m0s
@@ -262,7 +312,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-1.26
+        image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-1.26
         name: ""
         resources:
           limits:
@@ -274,7 +324,8 @@ presubmits:
         securityContext:
           privileged: true
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
-  - always_run: true
+  - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
+    optional: false
     decorate: true
     decoration_config:
       grace_period: 15m0s
@@ -304,7 +355,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-1.25
+        image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-1.25
         name: ""
         resources:
           limits:
@@ -316,7 +367,8 @@ presubmits:
         securityContext:
           privileged: true
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
-  - always_run: true
+  - skip_if_only_changed: '(^site/)|(^images/)|(^logo/)|(^.github/)|(.md$)|(OWNERS$)|(^SECURITY_CONTACTS$)|(^netlify.toml$)'
+    optional: false
     decorate: true
     decoration_config:
       grace_period: 15m0s
@@ -346,49 +398,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-1.24
-        name: ""
-        resources:
-          limits:
-            cpu: "4"
-            memory: 9000Mi
-          requests:
-            cpu: "4"
-            memory: 9000Mi
-        securityContext:
-          privileged: true
-  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
-  - always_run: true
-    decorate: true
-    decoration_config:
-      grace_period: 15m0s
-      timeout: 1h0m0s
-    extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.23
-      path_alias: k8s.io/kubernetes
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    name: pull-kind-e2e-kubernetes-1-23
-    cluster: k8s-infra-prow-build
-    path_alias: sigs.k8s.io/kind
-    spec:
-      containers:
-      - command:
-        - wrapper.sh
-        - bash
-        - -c
-        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
-        env:
-        - name: FOCUS
-          value: .
-        - name: SKIP
-          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
-        - name: PARALLEL
-          value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20230222-b5208facd4-1.23
+        image: gcr.io/k8s-staging-test-infra/krte:v20230703-e6ae5b372a-1.24
         name: ""
         resources:
           limits:

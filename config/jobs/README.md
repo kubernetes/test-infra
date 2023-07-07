@@ -95,7 +95,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.12.5
+      - image: public.ecr.aws/docker/library/golang:1.12.5
         command:
         - /bin/bash
         args:
@@ -136,7 +136,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - "./scripts/ci-aws-cred-test.sh"
 ```

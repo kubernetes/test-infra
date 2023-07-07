@@ -1,11 +1,12 @@
 periodics:
-  - interval: 24h
+  - interval: 12h
     name: periodic-kueue-test-unit-main
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-unit-main
       description: "Run periodic kueue unit tests"
-      testgrid-num-columns-recent: '15'
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -19,21 +20,31 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: golang:1.19
+        - image: public.ecr.aws/docker/library/golang:1.20
           env:
             - name: GO_TEST_FLAGS
               value: "-race -count 3"
+            - name: GOMAXPROCS
+              value: "2"
           command:
             - make
           args:
             - test
-  - interval: 24h
+          resources:
+            requests:
+              cpu: "2"
+              memory: "8Gi"
+            limits:
+              cpu: "2"
+              memory: "8Gi"
+  - interval: 12h
     name: periodic-kueue-test-integration-main
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-integration-main
       description: "Run periodic kueue test-integration"
-      testgrid-num-columns-recent: '15'
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -47,18 +58,29 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: golang:1.19
+        - image: public.ecr.aws/docker/library/golang:1.20
           command:
             - make
           args:
             - test-integration
-  - interval: 24h
+          env:
+            - name: GOMAXPROCS
+              value: "4"
+          resources:
+            requests:
+              cpu: "4"
+              memory: "16Gi"
+            limits:
+              cpu: "4"
+              memory: "16Gi"
+  - interval: 12h
     name: periodic-kueue-test-e2e-main-1-24
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-24
       description: "Run periodic kueue end to end tests for Kubernetes 1.24"
-      testgrid-num-columns-recent: '15'
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -72,10 +94,12 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.24.7
+              value: kindest/node:v1.24.15
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.20
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -86,13 +110,21 @@ periodics:
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
-  - interval: 24h
+          resources:
+            requests:
+              cpu: "10"
+              memory: "40Gi"
+            limits:
+              cpu: "10"
+              memory: "40Gi"
+  - interval: 12h
     name: periodic-kueue-test-e2e-main-1-25
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-25
       description: "Run periodic kueue end to end tests for Kubernetes 1.25"
-      testgrid-num-columns-recent: '15'
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -106,10 +138,12 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.25.3
+              value: kindest/node:v1.25.11
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.20
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -120,13 +154,21 @@ periodics:
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
-  - interval: 24h
+          resources:
+            requests:
+              cpu: "10"
+              memory: "40Gi"
+            limits:
+              cpu: "10"
+              memory: "40Gi"
+  - interval: 12h
     name: periodic-kueue-test-e2e-main-1-26
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: periodic-kueue-test-e2e-main-1-26
       description: "Run periodic kueue end to end tests for Kubernetes 1.26"
-      testgrid-num-columns-recent: '15'
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -140,10 +182,12 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           env:
             - name: E2E_KIND_VERSION
-              value: kindest/node:v1.26.2
+              value: kindest/node:v1.26.6
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.20
           command:
             # generic runner script, handles DIND, bazelrc for caching, etc.
             - runner.sh
@@ -154,13 +198,21 @@ periodics:
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
-  - interval: 24h
-    name: periodic-kueue-verify-main
+          resources:
+            requests:
+              cpu: "10"
+              memory: "40Gi"
+            limits:
+              cpu: "10"
+              memory: "40Gi"
+  - interval: 12h
+    name: periodic-kueue-test-e2e-main-1-27
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: periodic-kueue-verify-main
-      description: "Run periodic kueue verify checks"
-      testgrid-num-columns-recent: '15'
+      testgrid-tab-name: periodic-kueue-test-e2e-main-1-27
+      description: "Run periodic kueue end to end tests for Kubernetes 1.27"
+      testgrid-num-columns-recent: '30'
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -174,8 +226,26 @@ periodics:
       timeout: 1h
     spec:
       containers:
-        - image: golang:1.19
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+          env:
+            - name: E2E_KIND_VERSION
+              value: kindest/node:v1.27.3
+            - name: BUILDER_IMAGE
+              value: public.ecr.aws/docker/library/golang:1.20
           command:
-            - make
+            # generic runner script, handles DIND, bazelrc for caching, etc.
+            - runner.sh
           args:
-            - verify
+            - make
+            - kind-image-build
+            - test-e2e
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: "10"
+              memory: "40Gi"
+            limits:
+              cpu: "10"
+              memory: "40Gi"

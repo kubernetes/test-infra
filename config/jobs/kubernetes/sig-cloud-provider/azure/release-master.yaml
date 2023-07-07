@@ -18,16 +18,20 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.8
+        base_ref: release-1.9
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -68,16 +72,20 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.8
+        base_ref: release-1.9
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: azuredisk-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azuredisk-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -120,16 +128,20 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.8
+        base_ref: release-1.9
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: azurefile-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -171,16 +183,20 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.8
+        base_ref: release-1.9
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
         repo: azurefile-csi-driver
         base_ref: master
         path_alias: sigs.k8s.io/azurefile-csi-driver
+      - org: kubernetes-sigs
+        repo: cloud-provider-azure
+        base_ref: master
+        path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -224,12 +240,16 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.8
+      base_ref: release-1.9
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
@@ -247,51 +267,6 @@ presubmits:
     annotations:
       testgrid-dashboards: provider-azure-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-conformance
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-      testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-ha-control-plane
-    decorate: true
-    decoration_config:
-      timeout: 4h
-    always_run: false
-    optional: true
-    path_alias: k8s.io/kubernetes
-    branches:
-      - master # TODO(releng): Remove once repo default branch has been renamed
-      - main
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-      preset-azure-cred-only: "true"
-      preset-azure-anonymous-pull: "true"
-    extra_refs:
-    - org: jackfrancis #TODO change back to kubernetes-sigs
-      repo: cluster-api-provider-azure
-      base_ref: capz-ha-control-plane-tests #TODO change back to main
-      path_alias: sigs.k8s.io/cluster-api-provider-azure
-      workdir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
-        command:
-        - runner.sh
-        - ./scripts/ci-conformance.sh
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 1
-            memory: "4Gi"
-        env:
-        - name: KUBETEST_CONF_PATH
-          value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance.yaml
-        - name: CONFORMANCE_NODES
-          value: "1"
-        - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
-          value: "3"
-    annotations:
-      testgrid-dashboards: provider-azure-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-capz-ha-control-plane
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-num-columns-recent: '30'
 periodics:
@@ -318,7 +293,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -371,7 +346,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -429,7 +404,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -489,7 +464,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -546,7 +521,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -588,7 +563,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -598,7 +573,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -634,7 +609,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -651,7 +626,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -692,7 +667,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -709,7 +684,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -752,7 +727,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -769,7 +744,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -809,7 +784,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.9
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -826,7 +801,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

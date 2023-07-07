@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-ibmcloud:
   - name: pull-cluster-api-provider-ccm-image
+    cluster: eks-prow-build-cluster
     run_if_changed: '^hack/ccm/'
     branches:
       - ^main$
@@ -24,10 +25,14 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.24
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.27
         imagePullPolicy: IfNotPresent
         resources:
+          limits:
+            cpu: "2"
+            memory: "6Gi"
           requests:
+            cpu: "2"
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud

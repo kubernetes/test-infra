@@ -1979,7 +1979,8 @@ func TestUpdateSize(t *testing.T) {
 			expected: 166,
 		},
 	}
-	for _, tc := range testCases {
+	for i := range testCases {
+		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			client, err := GetConfigMapClient(fake.NewSimpleClientset().CoreV1(), ns, nil, kube.DefaultClusterAlias)

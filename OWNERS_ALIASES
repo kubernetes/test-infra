@@ -26,7 +26,7 @@ aliases:
   sig-api-machinery-leads:
     - deads2k
     - fedebongio
-    - lavalamp
+    - jpbetz
   sig-apps-leads:
     - janetkuo
     - kow3ns
@@ -58,9 +58,18 @@ aliases:
     - neolit123
     - vincepri
   sig-contributor-experience-leads:
-    - alisondy
+    - MadhavJivrajani
+    - Priyankasaggu11929
     - cblecker
+    - jberkus
+    - kaslin
     - mrbobbytables
+    - nikhita
+    - palnabarun
+  sig-contributor-experience-technical-leads:
+    - MadhavJivrajani
+    - Priyankasaggu11929
+    - cblecker
     - nikhita
   sig-docs-leads:
     - divya-mohan0209
@@ -127,10 +136,6 @@ aliases:
     - floreks
     - maciaszczykm
     - shu-mutou
-  sig-usability-leads:
-    - hpandeycodeit
-    - morengab
-    - tashimi
   sig-windows-leads:
     - claudiubelu
     - jayunit100
@@ -263,28 +268,6 @@ aliases:
     - randomvariable
     - srm09
   # end sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
-
-  # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
-  controller-runtime-admins:
-  - vincepri
-  - mengqiy
-  - joelanford
-
-  controller-runtime-maintainers:
-  - vincepri
-  - joelanford
-
-  controller-runtime-approvers:
-  - gerred
-  - alvaroaleman
-
-  controller-runtime-reviewers:
-  - alenkacz
-  - vincepri
-  - alexeldeib
-
-  controller-runtime-emeritus-maintainers:
-  - pwittrock
 
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:

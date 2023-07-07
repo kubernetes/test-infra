@@ -11,7 +11,7 @@ presubmits:
       description: "Verify source code of node-feature-discovery: check formatting, lint etc."
     spec:
       containers:
-      - image: golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.19
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-verify-docs-release-0-12
@@ -39,6 +39,6 @@ presubmits:
       description: "Build node-feature-discovery binaries"
     spec:
       containers:
-      - image: golang:1.19
+      - image: public.ecr.aws/docker/library/golang:1.19
         command:
         - scripts/test-infra/build.sh

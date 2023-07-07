@@ -13,10 +13,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20230320-bf693f37b7"
-        initupload: "gcr.io/k8s-prow/initupload:v20230320-bf693f37b7"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20230320-bf693f37b7"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20230320-bf693f37b7"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20230705-6666368cff"
+        initupload: "gcr.io/k8s-prow/initupload:v20230705-6666368cff"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20230705-6666368cff"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20230705-6666368cff"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -53,6 +53,7 @@ sinker:
 
 deck:
   spyglass:
+    announcement: "Help migrate Prow jobs to community clusters! See <a href='https://github.com/kubernetes/test-infra/issues/29722'>k8s/test-infra#29722</a> for details."
     size_limit: 200000000 # 200MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
@@ -183,6 +184,8 @@ deck:
     - k8s-ovn
     - containerd-integration
     - ppc64le-kubernetes
+    - k8s-conform-s390x-k8s
+    - arm64-k8s-test
 
 prowjob_namespace: default
 pod_namespace: test-pods
@@ -193,8 +196,6 @@ managed_webhooks:
   respect_legacy_global_token: true
   # Config for orgs and repos that have been onboarded to this Prow instance.
   org_repo_config:
-    bazelbuild/rules_k8s:
-      token_created_after: 2020-06-24T00:10:00Z
     kubernetes:
       token_created_after: 2020-08-12T00:00:00Z
     kubernetes-client:
@@ -555,11 +556,16 @@ branch-protection:
         kernel-module-management:
           required_status_checks:
             contexts:
-              - in-cluster-build
+              - e2e
+              - e2e-hub
         kube-batch:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        kubectl-validate:
+          required_status_checks:
+            contexts:
+            - required
         kubernetes-scheduler-simulator:
           branches:
             gh-pages:
@@ -669,32 +675,6 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-      - master
-      - release-1.27
-    labels:
-      - lgtm
-      - approved
-      - "cncf-cla: yes"
-    missingLabels:
-      - do-not-merge
-      - do-not-merge/blocked-paths
-      - do-not-merge/cherry-pick-not-approved
-      - do-not-merge/contains-merge-commits
-      - do-not-merge/hold
-      - do-not-merge/invalid-commit-message
-      - do-not-merge/invalid-owners-file
-      - do-not-merge/needs-kind
-      - do-not-merge/needs-sig
-      - do-not-merge/release-note-label-needed
-      - do-not-merge/work-in-progress
-      - needs-rebase
-  - repos:
-      - kubernetes/kubernetes
-    milestone: v1.27
-    includedBranches:
-      - master
-      - release-1.27
     labels:
     - lgtm
     - approved

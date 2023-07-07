@@ -889,7 +889,8 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i := range tests {
+		test := tests[i]
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			t.Logf("Running scenario %q", test.name)
@@ -958,21 +959,39 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 }
 
 const (
-	baseDir        = ""
-	leafDir        = "a/b/c"
-	noParentsDir   = "d"
-	nonExistentDir = "DELETED_DIR"
+	baseDir            = ""
+	leafDir            = "a/b/c"
+	leafFilterDir      = "a/b/e"
+	noParentsDir       = "d"
+	noParentsFilterDir = "f"
+	nonExistentDir     = "DELETED_DIR"
+)
+
+var (
+	mdFileReg  = regexp.MustCompile(`.*\.md`)
+	txtFileReg = regexp.MustCompile(`.*\.txt`)
 )
 
 func TestGetApprovers(t *testing.T) {
 	ro := &RepoOwners{
 		approvers: map[string]map[*regexp.Regexp]sets.String{
-			baseDir:      regexpAll("alice", "bob"),
-			leafDir:      regexpAll("carl", "dave"),
+			baseDir: regexpAll("alice", "bob"),
+			leafDir: regexpAll("carl", "dave"),
+			leafFilterDir: {
+				mdFileReg:  sets.NewString("carl", "dave"),
+				txtFileReg: sets.NewString("elic"),
+			},
 			noParentsDir: regexpAll("mml"),
+			noParentsFilterDir: {
+				mdFileReg:  sets.NewString("carl", "dave"),
+				txtFileReg: sets.NewString("flex"),
+			},
 		},
 		options: map[string]dirOptions{
 			noParentsDir: {
+				NoParentOwners: true,
+			},
+			noParentsFilterDir: {
 				NoParentOwners: true,
 			},
 		},
@@ -999,11 +1018,32 @@ func TestGetApprovers(t *testing.T) {
 			expectedAllOwners:  ro.approvers[baseDir][nil].Union(ro.approvers[leafDir][nil]),
 		},
 		{
+			name:               "Modified regexp matched file in Leaf Dir Only",
+			filePath:           filepath.Join(leafFilterDir, "testFile.md"),
+			expectedOwnersPath: leafFilterDir,
+			expectedLeafOwners: ro.approvers[leafFilterDir][mdFileReg],
+			expectedAllOwners:  ro.approvers[baseDir][nil].Union(ro.approvers[leafFilterDir][mdFileReg]),
+		},
+		{
+			name:               "Modified not regexp matched file in Leaf Dir Only",
+			filePath:           filepath.Join(leafFilterDir, "testFile.dat"),
+			expectedOwnersPath: baseDir,
+			expectedLeafOwners: ro.approvers[baseDir][nil],
+			expectedAllOwners:  ro.approvers[baseDir][nil],
+		},
+		{
 			name:               "Modified NoParentOwners Dir Only",
 			filePath:           filepath.Join(noParentsDir, "testFile.go"),
 			expectedOwnersPath: noParentsDir,
 			expectedLeafOwners: ro.approvers[noParentsDir][nil],
 			expectedAllOwners:  ro.approvers[noParentsDir][nil],
+		},
+		{
+			name:               "Modified regexp matched file NoParentOwners Dir Only",
+			filePath:           filepath.Join(noParentsFilterDir, "testFile.txt"),
+			expectedOwnersPath: noParentsFilterDir,
+			expectedLeafOwners: ro.approvers[noParentsFilterDir][txtFileReg],
+			expectedAllOwners:  ro.approvers[noParentsFilterDir][txtFileReg],
 		},
 		{
 			name:               "Modified Nonexistent Dir (Default to Base)",
@@ -1344,5 +1384,51 @@ func TestRepoOwners_AllOwners(t *testing.T) {
 	foundOwners := ro.AllOwners()
 	if !foundOwners.Equal(sets.NewString(expectedOwners...)) {
 		t.Errorf("Expected Owners: %v\tFound Owners: %v ", expectedOwners, foundOwners.List())
+	}
+}
+
+func TestRepoOwners_AllApprovers(t *testing.T) {
+	expectedApprovers := []string{"alice", "bob", "cjwagner", "mml"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			"":                    regexpAll("cjwagner"),
+			"src":                 regexpAll(),
+			"src/dir":             regexpAll("bob"),
+			"src/dir/conformance": regexpAll("mml"),
+			"src/dir/subdir":      regexpAll("alice", "bob"),
+			"vendor":              regexpAll("alice"),
+		},
+		reviewers: map[string]map[*regexp.Regexp]sets.String{
+			"":               regexpAll("alice", "bob"),
+			"src/dir":        regexpAll("alice", "matthyx"),
+			"src/dir/subdir": regexpAll("alice", "bob"),
+		},
+	}
+	foundApprovers := ro.AllApprovers()
+	if !foundApprovers.Equal(sets.NewString(expectedApprovers...)) {
+		t.Errorf("Expected approvers: %v\tFound approvers: %v ", expectedApprovers, foundApprovers.List())
+	}
+}
+
+func TestRepoOwners_AllReviewers(t *testing.T) {
+	expectedReviewers := []string{"alice", "bob", "matthyx"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			"":                    regexpAll("cjwagner"),
+			"src":                 regexpAll(),
+			"src/dir":             regexpAll("bob"),
+			"src/dir/conformance": regexpAll("mml"),
+			"src/dir/subdir":      regexpAll("alice", "bob"),
+			"vendor":              regexpAll("alice"),
+		},
+		reviewers: map[string]map[*regexp.Regexp]sets.String{
+			"":               regexpAll("alice", "bob"),
+			"src/dir":        regexpAll("alice", "matthyx"),
+			"src/dir/subdir": regexpAll("alice", "bob"),
+		},
+	}
+	foundReviewers := ro.AllReviewers()
+	if !foundReviewers.Equal(sets.NewString(expectedReviewers...)) {
+		t.Errorf("Expected reviewers: %v\tFound reviewers: %v ", expectedReviewers, foundReviewers.List())
 	}
 }

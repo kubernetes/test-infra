@@ -1,0 +1,115 @@
+presubmits:
+  kubernetes/registry.k8s.io:
+  - name: pull-registry-verify
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-verify
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - make
+        - verify
+        # shellcheck has its own job so we don't need docker
+        - VERIFY_SHELLCHECK=false
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+  - name: pull-registry-shellcheck
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-shellcheck
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - make
+        - shellcheck
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-registry-test
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-test
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - make
+        - test
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+  - name: pull-registry-e2e
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-e2e
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - make
+        - e2e-test-local
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+  - name: pull-registry-build
+    cluster: k8s-infra-prow-build
+    decorate: true
+    always_run: true
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-registry
+      testgrid-tab-name: pull-registry-build
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+    spec:
+      containers:
+      - image: golang
+        command:
+        - make
+        - images
+        - build
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 4
+            memory: 8Gi

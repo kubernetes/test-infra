@@ -24,11 +24,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.18"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -75,11 +77,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.19"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -126,11 +130,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.20"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -177,11 +183,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.21"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -228,11 +236,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
       env:
+        - name: ALWAYS_BUILD_KIND_IMAGES
+          value: "true"
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.22"
         - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -279,11 +289,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
       env:
+      - name: ALWAYS_BUILD_KIND_IMAGES
+        value: "true"
       - name: KUBERNETES_VERSION_UPGRADE_FROM
         value: "stable-1.23"
       - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -330,11 +342,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.24"
           - name: KUBERNETES_VERSION_UPGRADE_TO
@@ -381,11 +395,13 @@ periodics:
   spec:
     serviceAccountName: prowjob-default-sa
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230222-b5208facd4-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.25
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          - name: ALWAYS_BUILD_KIND_IMAGES
+            value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.25"
           - name: KUBERNETES_VERSION_UPGRADE_TO
