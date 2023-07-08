@@ -155,7 +155,7 @@ job_cluster() {
   local repo=$1
 
   case "$repo" in
-   external-snapshotter|external-resizer)
+   external-provisioner|csi-driver-smb|csi-test|external-attacher|csi-driver-windows-poc|csi-driver-host-path|node-driver-registrar|volume-data-source-validator|csi-lib-utils|csi-driver-nvmf|csi-driver-nfs|csi-driver-iscsi|csi-proxy|external-health-monitor|csi-release-tools|lib-volume-populator|livenessprobe)
      echo "eks-prow-build-cluster"
      ;;
    *)
