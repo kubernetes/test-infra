@@ -335,6 +335,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        endpointslice:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         enhancements:
           restrictions: # only allow admins
             users: []
