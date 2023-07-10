@@ -1080,6 +1080,7 @@ def generate_presubmits_scale():
             networking='amazonvpc',
             always_run=False,
             artifacts='$(ARTIFACTS)',
+            test_timeout_minutes=450,
             env={
                 'CNI_PLUGIN': "amazonvpc",
                 'KUBE_NODE_COUNT': "500",
