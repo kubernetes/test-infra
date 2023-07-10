@@ -24,13 +24,11 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	tektonv1alpha1 "k8s.io/test-infra/prow/pipeline/clientset/versioned/typed/pipeline/v1alpha1"
 	tektonv1beta1 "k8s.io/test-infra/prow/pipeline/clientset/versioned/typed/pipeline/v1beta1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	TektonV1alpha1() tektonv1alpha1.TektonV1alpha1Interface
 	TektonV1beta1() tektonv1beta1.TektonV1beta1Interface
 }
 
@@ -38,13 +36,7 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	tektonV1alpha1 *tektonv1alpha1.TektonV1alpha1Client
-	tektonV1beta1  *tektonv1beta1.TektonV1beta1Client
-}
-
-// TektonV1alpha1 retrieves the TektonV1alpha1Client
-func (c *Clientset) TektonV1alpha1() tektonv1alpha1.TektonV1alpha1Interface {
-	return c.tektonV1alpha1
+	tektonV1beta1 *tektonv1beta1.TektonV1beta1Client
 }
 
 // TektonV1beta1 retrieves the TektonV1beta1Client
@@ -73,10 +65,6 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.tektonV1alpha1, err = tektonv1alpha1.NewForConfig(&configShallowCopy)
-	if err != nil {
-		return nil, err
-	}
 	cs.tektonV1beta1, err = tektonv1beta1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
@@ -93,7 +81,6 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.tektonV1alpha1 = tektonv1alpha1.NewForConfigOrDie(c)
 	cs.tektonV1beta1 = tektonv1beta1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
@@ -103,7 +90,6 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.tektonV1alpha1 = tektonv1alpha1.New(c)
 	cs.tektonV1beta1 = tektonv1beta1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)

@@ -25,7 +25,6 @@ import (
 	"regexp"
 	"testing"
 
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	coreapi "k8s.io/api/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -1443,7 +1442,7 @@ func TestUtilityConfigValidation(t *testing.T) {
 
 func TestJobBase_HasPipelineRunSpec(t *testing.T) {
 	type fields struct {
-		PipelineRunSpec       *pipelinev1alpha1.PipelineRunSpec
+		PipelineRunSpec       *pipelinev1beta1.PipelineRunSpec
 		TektonPipelineRunSpec *prowapi.TektonPipelineRunSpec
 	}
 	tests := []struct {
@@ -1456,7 +1455,7 @@ func TestJobBase_HasPipelineRunSpec(t *testing.T) {
 	}, {
 		name: "PipelineRunSpec set",
 		fields: fields{
-			PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{},
+			PipelineRunSpec: &pipelinev1beta1.PipelineRunSpec{},
 		},
 		want: true,
 	}, {
@@ -1476,7 +1475,7 @@ func TestJobBase_HasPipelineRunSpec(t *testing.T) {
 	}, {
 		name: "both set",
 		fields: fields{
-			PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{},
+			PipelineRunSpec: &pipelinev1beta1.PipelineRunSpec{},
 			TektonPipelineRunSpec: &prowapi.TektonPipelineRunSpec{
 				V1Beta1: &pipelinev1beta1.PipelineRunSpec{},
 			},
@@ -1498,7 +1497,7 @@ func TestJobBase_HasPipelineRunSpec(t *testing.T) {
 
 func TestJobBase_GetPipelineRunSpec(t *testing.T) {
 	type fields struct {
-		PipelineRunSpec       *pipelinev1alpha1.PipelineRunSpec
+		PipelineRunSpec       *pipelinev1beta1.PipelineRunSpec
 		TektonPipelineRunSpec *prowapi.TektonPipelineRunSpec
 	}
 	tests := []struct {
@@ -1518,12 +1517,12 @@ func TestJobBase_GetPipelineRunSpec(t *testing.T) {
 		{
 			name: "only PipelineRunSpec set",
 			fields: fields{
-				PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
+				PipelineRunSpec: &pipelinev1beta1.PipelineRunSpec{
 					ServiceAccountName: "robot",
-					Resources: []pipelinev1alpha1.PipelineResourceBinding{
+					Resources: []pipelinev1beta1.PipelineResourceBinding{
 						{
 							Name:        "implicit git resource",
-							ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "abc"},
+							ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "abc"},
 						},
 					},
 				},
@@ -1568,12 +1567,12 @@ func TestJobBase_GetPipelineRunSpec(t *testing.T) {
 		{
 			name: "PipelineRunSpec and TektonPipelineRunSpec set",
 			fields: fields{
-				PipelineRunSpec: &pipelinev1alpha1.PipelineRunSpec{
+				PipelineRunSpec: &pipelinev1beta1.PipelineRunSpec{
 					ServiceAccountName: "robot",
-					Resources: []pipelinev1alpha1.PipelineResourceBinding{
+					Resources: []pipelinev1beta1.PipelineResourceBinding{
 						{
 							Name:        "implicit git resource",
-							ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "abc"},
+							ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "abc"},
 						},
 					},
 				},
