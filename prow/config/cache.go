@@ -240,7 +240,31 @@ func keyToOrgRepo(key interface{}) (string, string, error) {
 // instead of computing it from scratch (cache miss). It also stores the
 // *ProwYAML into the cache if there is a cache miss.
 func (cache *InRepoConfigCache) GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+	prowYAML, err := cache.GetProwYAML(identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
 
+	c := cache.configAgent.Config()
+	return append(c.GetPresubmitsStatic(identifier), prowYAML.Presubmits...), nil
+}
+
+// GetPostsubmitsCached is like GetPostsubmits, but attempts to use a cache
+// lookup to get the *ProwYAML value (cache hit), instead of computing it from
+// scratch (cache miss). It also stores the *ProwYAML into the cache if there is
+// a cache miss.
+func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+	prowYAML, err := cache.GetProwYAML(identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	c := cache.configAgent.Config()
+	return append(c.GetPostsubmitsStatic(identifier), prowYAML.Postsubmits...), nil
+}
+
+// GetProwYAML returns the ProwYAML value stored in the InRepoConfigCache.
+func (cache *InRepoConfigCache) GetProwYAML(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	c := cache.configAgent.Config()
 
 	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
@@ -259,28 +283,7 @@ func (cache *InRepoConfigCache) GetPresubmits(identifier string, baseSHAGetter R
 		return nil, err
 	}
 
-	return append(c.GetPresubmitsStatic(identifier), newProwYAML.Presubmits...), nil
-}
-
-// GetPostsubmitsCached is like GetPostsubmits, but attempts to use a cache
-// lookup to get the *ProwYAML value (cache hit), instead of computing it from
-// scratch (cache miss). It also stores the *ProwYAML into the cache if there is
-// a cache miss.
-func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-
-	c := cache.configAgent.Config()
-
-	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
-	if err != nil {
-		return nil, err
-	}
-
-	newProwYAML := prowYAML.DeepCopy()
-	if err := DefaultAndValidateProwYAML(c, newProwYAML, identifier); err != nil {
-		return nil, err
-	}
-
-	return append(c.GetPostsubmitsStatic(identifier), newProwYAML.Postsubmits...), nil
+	return newProwYAML, nil
 }
 
 // getProwYAML performs a lookup of previously-calculated *ProwYAML objects. The
