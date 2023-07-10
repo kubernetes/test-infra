@@ -68,7 +68,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-node
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     branches:
     - master
     always_run: true
@@ -212,7 +212,7 @@ presubmits:
       testgrid-dashboards: presubmits-node-problem-detector
       testgrid-num-columns-recent: '30'
   - name: pull-npd-e2e-test
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     branches:
     - master
     always_run: true
