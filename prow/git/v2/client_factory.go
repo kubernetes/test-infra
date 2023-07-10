@@ -109,9 +109,9 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 func defaultTempDir() *string {
 	switch runtime.GOOS {
 	case "linux":
-		return utilpointer.StringPtr("/var/tmp")
+		return utilpointer.String("/var/tmp")
 	default:
-		return utilpointer.StringPtr("")
+		return utilpointer.String("")
 	}
 }
 

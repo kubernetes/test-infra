@@ -56,7 +56,7 @@ func NewLensServer(
 
 	mux := http.NewServeMux()
 
-	seenLens := sets.String{}
+	seenLens := sets.Set[string]{}
 	for _, lens := range lenses {
 		if seenLens.Has(lens.Config.LensName) {
 			return nil, fmt.Errorf("duplicate lens named %q", lens.Config.LensName)

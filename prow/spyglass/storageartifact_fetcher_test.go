@@ -462,7 +462,7 @@ func createConfigGetter(bucketNames ...string) config.Getter {
 	ca.Set(&config.Config{
 		ProwConfig: config.ProwConfig{
 			Deck: config.Deck{
-				AllKnownStorageBuckets: sets.NewString(bucketNames...),
+				AllKnownStorageBuckets: sets.New[string](bucketNames...),
 			},
 		},
 	})

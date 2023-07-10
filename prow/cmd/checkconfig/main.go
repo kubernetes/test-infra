@@ -96,7 +96,7 @@ func reportWarning(strict bool, errs utilerrors.Aggregate) {
 }
 
 func (o *options) warningEnabled(warning string) bool {
-	return sets.NewString(o.warnings.Strings()...).Difference(sets.NewString(o.excludeWarnings.Strings()...)).Has(warning)
+	return sets.New[string](o.warnings.Strings()...).Difference(sets.New[string](o.excludeWarnings.Strings()...)).Has(warning)
 }
 
 const (
@@ -461,14 +461,14 @@ func policyIsStrict(p config.Policy) bool {
 }
 
 func strictBranchesConfig(c config.ProwConfig) (*orgRepoConfig, error) {
-	strictOrgExceptions := make(map[string]sets.String)
-	strictRepos := sets.NewString()
+	strictOrgExceptions := make(map[string]sets.Set[string])
+	strictRepos := sets.New[string]()
 	for orgName := range c.BranchProtection.Orgs {
 		org := c.BranchProtection.GetOrg(orgName)
 		// First find explicitly configured repos and partition based on strictness.
 		// If any branch in a repo is strict we assume that the whole repo is to
 		// simplify this validation.
-		strictExplicitRepos, nonStrictExplicitRepos := sets.NewString(), sets.NewString()
+		strictExplicitRepos, nonStrictExplicitRepos := sets.New[string](), sets.New[string]()
 		for repoName := range org.Repos {
 			repo := org.GetRepo(repoName)
 			strict := policyIsStrict(repo.Policy)
@@ -636,13 +636,13 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 	}
 	requires := matcher{
 		matches: func(label string, query config.TideQuery) bool {
-			return sets.NewString(query.Labels...).Has(label)
+			return sets.New[string](query.Labels...).Has(label)
 		},
 		verb: "require",
 	}
 	forbids := matcher{
 		matches: func(label string, query config.TideQuery) bool {
-			return sets.NewString(query.MissingLabels...).Has(label)
+			return sets.New[string](query.MissingLabels...).Has(label)
 		},
 		verb: "forbid",
 	}
@@ -710,7 +710,7 @@ func validateTideRequirements(cfg *config.Config, pcfg *plugins.Configuration, i
 	return utilerrors.NewAggregate(validationErrs)
 }
 
-func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *orgRepoConfig {
+func newOrgRepoConfig(orgExceptions map[string]sets.Set[string], repos sets.Set[string]) *orgRepoConfig {
 	return &orgRepoConfig{
 		orgExceptions: orgExceptions,
 		repos:         repos,
@@ -721,9 +721,9 @@ func newOrgRepoConfig(orgExceptions map[string]sets.String, repos sets.String) *
 // allowlist and a mapping of denied repos for owning orgs
 type orgRepoConfig struct {
 	// orgExceptions holds explicit denylists of repos for owning orgs
-	orgExceptions map[string]sets.String
+	orgExceptions map[string]sets.Set[string]
 	// repos is an allowed list of repos
-	repos sets.String
+	repos sets.Set[string]
 }
 
 func (c *orgRepoConfig) items() []string {
@@ -731,14 +731,14 @@ func (c *orgRepoConfig) items() []string {
 	for org, excepts := range c.orgExceptions {
 		item := fmt.Sprintf("org: %s", org)
 		if excepts.Len() > 0 {
-			item = fmt.Sprintf("%s without repo(s) %s", item, strings.Join(excepts.List(), ", "))
-			for _, repo := range excepts.List() {
+			item = fmt.Sprintf("%s without repo(s) %s", item, strings.Join(sets.List(excepts), ", "))
+			for _, repo := range sets.List(excepts) {
 				item = fmt.Sprintf("%s '%s'", item, repo)
 			}
 		}
 		items = append(items, item)
 	}
-	for _, repo := range c.repos.List() {
+	for _, repo := range sets.List(c.repos) {
 		items = append(items, fmt.Sprintf("repo: %s", repo))
 	}
 	return items
@@ -748,14 +748,14 @@ func (c *orgRepoConfig) items() []string {
 // the repos specified by the receiver and the parameter orgRepoConfigs.
 func (c *orgRepoConfig) difference(c2 *orgRepoConfig) *orgRepoConfig {
 	res := &orgRepoConfig{
-		orgExceptions: make(map[string]sets.String),
-		repos:         sets.NewString().Union(c.repos),
+		orgExceptions: make(map[string]sets.Set[string]),
+		repos:         sets.New[string]().Union(c.repos),
 	}
 	for org, excepts1 := range c.orgExceptions {
 		if excepts2, ok := c2.orgExceptions[org]; ok {
 			res.repos.Insert(excepts2.Difference(excepts1).UnsortedList()...)
 		} else {
-			excepts := sets.NewString().Union(excepts1)
+			excepts := sets.New[string]().Union(excepts1)
 			// Add any applicable repos in repos2 to excepts
 			for _, repo := range c2.repos.UnsortedList() {
 				if parts := strings.SplitN(repo, "/", 2); len(parts) == 2 && parts[0] == org {
@@ -782,8 +782,8 @@ func (c *orgRepoConfig) difference(c2 *orgRepoConfig) *orgRepoConfig {
 // of the repos specified by the receiver and the parameter orgRepoConfigs.
 func (c *orgRepoConfig) intersection(c2 *orgRepoConfig) *orgRepoConfig {
 	res := &orgRepoConfig{
-		orgExceptions: make(map[string]sets.String),
-		repos:         sets.NewString(),
+		orgExceptions: make(map[string]sets.Set[string]),
+		repos:         sets.New[string](),
 	}
 	for org, excepts1 := range c.orgExceptions {
 		// Include common orgs, but union exceptions.
@@ -815,8 +815,8 @@ func (c *orgRepoConfig) intersection(c2 *orgRepoConfig) *orgRepoConfig {
 // repos specified by the receiver and the parameter orgRepoConfigs
 func (c *orgRepoConfig) union(c2 *orgRepoConfig) *orgRepoConfig {
 	res := &orgRepoConfig{
-		orgExceptions: make(map[string]sets.String),
-		repos:         sets.NewString(),
+		orgExceptions: make(map[string]sets.Set[string]),
+		repos:         sets.New[string](),
 	}
 
 	for org, excepts1 := range c.orgExceptions {
@@ -860,17 +860,17 @@ func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string, external 
 		orgs  []string
 		repos []string
 	)
-	var orgMap map[string]sets.String
+	var orgMap map[string]sets.Set[string]
 	if external {
 		orgs, repos = c.EnabledReposForExternalPlugin(plugin)
-		orgMap = make(map[string]sets.String, len(orgs))
+		orgMap = make(map[string]sets.Set[string], len(orgs))
 		for _, org := range orgs {
 			orgMap[org] = nil
 		}
 	} else {
 		_, repos, orgMap = c.EnabledReposForPlugin(plugin)
 	}
-	return newOrgRepoConfig(orgMap, sets.NewString(repos...))
+	return newOrgRepoConfig(orgMap, sets.New[string](repos...))
 }
 
 // ensureValidConfiguration enforces rules about tide and plugin config.
@@ -880,6 +880,7 @@ func enabledOrgReposForPlugin(c *plugins.Configuration, plugin string, external 
 // Specifically:
 //   - every item in the tide subset must also be in the plugins subset
 //   - every item in the plugins subset that is in the tide superset must also be in the tide subset
+//
 // For example:
 //   - if org/repo is configured in tide to require lgtm, it must have the lgtm plugin enabled
 //   - if org/repo is configured in tide, the tide configuration must require the same set of
@@ -980,7 +981,7 @@ func validateNeedsOkToTestLabel(cfg *config.Config) error {
 func validateManagedWebhooks(cfg *config.Config) error {
 	mw := cfg.ManagedWebhooks
 	var errs []error
-	orgs := sets.String{}
+	orgs := sets.Set[string]{}
 	for repo := range mw.OrgRepoConfig {
 		if !strings.Contains(repo, "/") {
 			org := repo
@@ -1112,7 +1113,7 @@ func verifyLabelPlugin(label plugins.Label) error {
 }
 
 func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
-	configuredRepos := sets.NewString()
+	configuredRepos := sets.New[string]()
 	for orgRepo := range cfg.JobConfig.PresubmitsStatic {
 		configuredRepos.Insert(orgRepo)
 	}
@@ -1120,7 +1121,7 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 		configuredRepos.Insert(orgRepo)
 	}
 
-	configured := newOrgRepoConfig(map[string]sets.String{}, configuredRepos)
+	configured := newOrgRepoConfig(map[string]sets.Set[string]{}, configuredRepos)
 	enabled := enabledOrgReposForPlugin(pcfg, trigger.PluginName, false)
 
 	if missing := configured.difference(enabled).items(); len(missing) > 0 {
@@ -1154,10 +1155,10 @@ func validateTideContextPolicy(cfg *config.Config) error {
 	// We can not know all possible branches without asking GitHub, so instead we verify
 	// all branches that are explicitly configured on any job. This will hopefully catch
 	// most cases.
-	allKnownOrgRepoBranches := map[string]sets.String{}
+	allKnownOrgRepoBranches := map[string]sets.Set[string]{}
 	for orgRepo, jobs := range cfg.PresubmitsStatic {
 		if _, ok := allKnownOrgRepoBranches[orgRepo]; !ok {
-			allKnownOrgRepoBranches[orgRepo] = sets.String{}
+			allKnownOrgRepoBranches[orgRepo] = sets.Set[string]{}
 		}
 
 		for _, job := range jobs {
@@ -1186,7 +1187,7 @@ func validateTideContextPolicy(cfg *config.Config) error {
 			// configs.
 			branches.Insert("master")
 		}
-		for _, branch := range branches.List() {
+		for _, branch := range sets.List(branches) {
 			if _, err := cfg.GetTideContextPolicy(nil, org, repo, branch, nil, ""); err != nil {
 				errs = append(errs, fmt.Errorf("context policy for %s branch in %s/%s is invalid: %w", branch, org, repo, err))
 			}
@@ -1196,7 +1197,7 @@ func validateTideContextPolicy(cfg *config.Config) error {
 	return utilerrors.NewAggregate(errs)
 }
 
-var agentsNotSupportingCluster = sets.NewString("jenkins")
+var agentsNotSupportingCluster = sets.New[string]("jenkins")
 
 func validateJobCluster(job config.JobBase, statuses map[string]plank.ClusterStatus) error {
 	if job.Cluster != "" && job.Cluster != kube.DefaultClusterAlias && agentsNotSupportingCluster.Has(job.Agent) {
@@ -1338,11 +1339,11 @@ func validateAdditionalConfigIsInOrgRepoDirectoryStructure(root string, filesyst
 				errMsg += " contains global config"
 				needsAnd = true
 			}
-			for _, org := range targetedOrgs.Delete(expectedTargetOrg).List() {
+			for _, org := range sets.List(targetedOrgs.Delete(expectedTargetOrg)) {
 				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for org %s", org), needsAnd)
 				needsAnd = true
 			}
-			for _, repo := range targetedRepos.List() {
+			for _, repo := range sets.List(targetedRepos) {
 				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for repo %s", repo), needsAnd)
 				needsAnd = true
 			}
@@ -1362,11 +1363,11 @@ func validateAdditionalConfigIsInOrgRepoDirectoryStructure(root string, filesyst
 				errMsg += " contains global config"
 				needsAnd = true
 			}
-			for _, org := range targetedOrgs.List() {
+			for _, org := range sets.List(targetedOrgs) {
 				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for org %s", org), needsAnd)
 				needsAnd = true
 			}
-			for _, repo := range targetedRepos.Delete(expectedTargetRepo).List() {
+			for _, repo := range sets.List(targetedRepos.Delete(expectedTargetRepo)) {
 				errMsg += prefixWithAndIfNeeded(fmt.Sprintf(" contains config for repo %s", repo), needsAnd)
 				needsAnd = true
 			}
@@ -1454,10 +1455,10 @@ func prefixWithAndIfNeeded(s string, needsAnd bool) string {
 }
 
 type hierarchicalConfig interface {
-	HasConfigFor() (bool, sets.String, sets.String)
+	HasConfigFor() (bool, sets.Set[string], sets.Set[string])
 }
 
-func getSupplementalConfigScope(path string, filesystem fs.FS, cfg hierarchicalConfig) (global bool, orgs sets.String, repos sets.String, err error) {
+func getSupplementalConfigScope(path string, filesystem fs.FS, cfg hierarchicalConfig) (global bool, orgs sets.Set[string], repos sets.Set[string], err error) {
 	data, err := fs.ReadFile(filesystem, path)
 	if err != nil {
 		return false, nil, nil, fmt.Errorf("failed to read %s: %w", path, err)
@@ -1474,18 +1475,18 @@ type ghAppListingClient interface {
 	ListAppInstallations() ([]github.AppInstallation, error)
 }
 
-func validateGitHubAppIsInstalled(client ghAppListingClient, allRepos sets.String) error {
+func validateGitHubAppIsInstalled(client ghAppListingClient, allRepos sets.Set[string]) error {
 	installations, err := client.ListAppInstallations()
 	if err != nil {
 		return fmt.Errorf("failed to list app installations from GitHub: %w", err)
 	}
-	orgsWithInstalledApp := sets.String{}
+	orgsWithInstalledApp := sets.Set[string]{}
 	for _, installation := range installations {
 		orgsWithInstalledApp.Insert(installation.Account.Login)
 	}
 
 	var errs []error
-	for _, repo := range allRepos.List() {
+	for _, repo := range sets.List(allRepos) {
 		if org := strings.Split(repo, "/")[0]; !orgsWithInstalledApp.Has(org) {
 			errs = append(errs, fmt.Errorf("There is configuration for the GitHub org %q but the GitHub app is not installed there", org))
 		}

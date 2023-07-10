@@ -61,16 +61,17 @@ func ShouldRespondWithHelp(body string, toRunOrSkip int) (bool, string) {
 }
 
 // HelpMessage returns a user friendly help message with the
-//  available /test commands that can be triggered
-func HelpMessage(org, repo, branch, note string, testAllNames, optionalTestCommands, requiredTestCommands sets.String) string {
+//
+//	available /test commands that can be triggered
+func HelpMessage(org, repo, branch, note string, testAllNames, optionalTestCommands, requiredTestCommands sets.Set[string]) string {
 	var resp string
 	if testAllNames.Len()+optionalTestCommands.Len()+requiredTestCommands.Len() == 0 {
 		return fmt.Sprintf("No presubmit jobs available for %s/%s@%s", org, repo, branch)
 	}
 
-	listBuilder := func(names sets.String) string {
+	listBuilder := func(names sets.Set[string]) string {
 		var list strings.Builder
-		for _, name := range names.List() {
+		for _, name := range sets.List(names) {
 			list.WriteString(fmt.Sprintf("\n* `%s`", name))
 		}
 		return list.String()

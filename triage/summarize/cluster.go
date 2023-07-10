@@ -38,13 +38,15 @@ memoize determines if memoized results should attempt to be retrieved, and if ne
 memoized to JSON.
 
 Takes:
-    {
-		testName1: [failure1, failure2, failure3, failure4, ...],
-		testName2: [failure5, failure6, failure7, failure8, failure9, ...],
-		...
-	}
+
+	    {
+			testName1: [failure1, failure2, failure3, failure4, ...],
+			testName2: [failure5, failure6, failure7, failure8, failure9, ...],
+			...
+		}
 
 Returns:
+
 	{
 		testName1: {
 			clusterText1: [failure1, failure4, ...],
@@ -176,6 +178,7 @@ memoize determines if memoized results should attempt to be retrieved, and if ne
 memoized to JSON.
 
 Takes:
+
 	{
 		testName1: {
 			clusterText1: [failure1, failure4, ...],
@@ -192,6 +195,7 @@ Takes:
 	}
 
 Returns:
+
 	{
 		clusterTextA: {
 			testName1: [failure1, failure4, ...],
@@ -335,9 +339,11 @@ clusterTest clusters a given a list of failures for one test.
 Failure texts are normalized prior to clustering to avoid needless entropy.
 
 Takes:
+
 	[]failure
 
 Returns:
+
 	{
 		clusterText1: [failure1, failure2, ...],
 		clusterText2: [failure3, failure4, failure5,...],

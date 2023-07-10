@@ -108,23 +108,23 @@ func (froc fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoown
 type fakeOwnersClient struct {
 	owners            map[string]string
 	approvers         map[string]layeredsets.String
-	leafApprovers     map[string]sets.String
+	leafApprovers     map[string]sets.Set[string]
 	reviewers         map[string]layeredsets.String
-	requiredReviewers map[string]sets.String
-	leafReviewers     map[string]sets.String
+	requiredReviewers map[string]sets.Set[string]
+	leafReviewers     map[string]sets.Set[string]
 	dirDenylist       []*regexp.Regexp
 }
 
-func (foc *fakeOwnersClient) AllApprovers() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllApprovers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (foc *fakeOwnersClient) AllOwners() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllOwners() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (foc *fakeOwnersClient) AllReviewers() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllReviewers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
@@ -135,7 +135,7 @@ func (foc *fakeOwnersClient) Approvers(path string) layeredsets.String {
 	return foc.approvers[path]
 }
 
-func (foc *fakeOwnersClient) LeafApprovers(path string) sets.String {
+func (foc *fakeOwnersClient) LeafApprovers(path string) sets.Set[string] {
 	return foc.leafApprovers[path]
 }
 
@@ -147,11 +147,11 @@ func (foc *fakeOwnersClient) Reviewers(path string) layeredsets.String {
 	return foc.reviewers[path]
 }
 
-func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
+func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.Set[string] {
 	return foc.requiredReviewers[path]
 }
 
-func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
+func (foc *fakeOwnersClient) LeafReviewers(path string) sets.Set[string] {
 	return foc.leafReviewers[path]
 }
 
@@ -159,8 +159,8 @@ func (foc *fakeOwnersClient) FindReviewersOwnersForFile(path string) string {
 	return foc.owners[path]
 }
 
-func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
@@ -205,8 +205,8 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 	return *full, err
 }
 
-func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 var (
@@ -228,20 +228,20 @@ var (
 		"ee.go": layeredsets.NewString("erick", "evan"),
 		"f.go":  layeredsets.NewString("author", "non-author"),
 	}
-	requiredReviewers = map[string]sets.String{
-		"a.go": sets.NewString("ben"),
+	requiredReviewers = map[string]sets.Set[string]{
+		"a.go": sets.New[string]("ben"),
 
-		"ee.go": sets.NewString("chris", "charles"),
+		"ee.go": sets.New[string]("chris", "charles"),
 	}
-	leafReviewers = map[string]sets.String{
-		"a.go":  sets.NewString("alice"),
-		"b.go":  sets.NewString("bob"),
-		"bb.go": sets.NewString("bob", "ben"),
-		"c.go":  sets.NewString("cole", "carl", "chad"),
+	leafReviewers = map[string]sets.Set[string]{
+		"a.go":  sets.New[string]("alice"),
+		"b.go":  sets.New[string]("bob"),
+		"bb.go": sets.New[string]("bob", "ben"),
+		"c.go":  sets.New[string]("cole", "carl", "chad"),
 
-		"e.go":  sets.NewString("erick", "ellen"),
-		"ee.go": sets.NewString("erick", "ellen"),
-		"f.go":  sets.NewString("author"),
+		"e.go":  sets.New[string]("erick", "ellen"),
+		"ee.go": sets.New[string]("erick", "ellen"),
+		"f.go":  sets.New[string]("author"),
 	}
 	testcases = []struct {
 		name                       string
@@ -442,15 +442,15 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 				"f.go":  layeredsets.NewString("approver1"),
 				"g.go":  layeredsets.NewString("Approver1"),
 			},
-			leafApprovers: map[string]sets.String{
-				"a.go": sets.NewString("alice"),
-				"b.go": sets.NewString("brad"),
-				"c.go": sets.NewString("evan"),
+			leafApprovers: map[string]sets.Set[string]{
+				"a.go": sets.New[string]("alice"),
+				"b.go": sets.New[string]("brad"),
+				"c.go": sets.New[string]("evan"),
 
-				"e.go":  sets.NewString("erick", "evan"),
-				"ee.go": sets.NewString("erick", "evan"),
-				"f.go":  sets.NewString("leafApprover1", "leafApprover2"),
-				"g.go":  sets.NewString("leafApprover1", "leafApprover2"),
+				"e.go":  sets.New[string]("erick", "evan"),
+				"ee.go": sets.New[string]("erick", "evan"),
+				"f.go":  sets.New[string]("leafApprover1", "leafApprover2"),
+				"g.go":  sets.New[string]("leafApprover1", "leafApprover2"),
 			},
 			reviewers: map[string]layeredsets.String{
 				"a.go": layeredsets.NewString("al"),
@@ -460,14 +460,14 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 				"e.go":  layeredsets.NewString("erick", "evan"),
 				"ee.go": layeredsets.NewString("erick", "evan"),
 			},
-			leafReviewers: map[string]sets.String{
-				"a.go":  sets.NewString("alice"),
-				"b.go":  sets.NewString("bob"),
-				"bb.go": sets.NewString("bob", "ben"),
-				"c.go":  sets.NewString("cole", "carl", "chad"),
+			leafReviewers: map[string]sets.Set[string]{
+				"a.go":  sets.New[string]("alice"),
+				"b.go":  sets.New[string]("bob"),
+				"bb.go": sets.New[string]("bob", "ben"),
+				"c.go":  sets.New[string]("cole", "carl", "chad"),
 
-				"e.go":  sets.NewString("erick", "ellen"),
-				"ee.go": sets.NewString("erick", "ellen"),
+				"e.go":  sets.New[string]("erick", "ellen"),
+				"ee.go": sets.New[string]("erick", "ellen"),
 			},
 		},
 	}
@@ -569,8 +569,8 @@ func TestHandlePullRequest(t *testing.T) {
 			owners: map[string]string{
 				"a.go": "1",
 			},
-			leafReviewers: map[string]sets.String{
-				"a.go": sets.NewString("al"),
+			leafReviewers: map[string]sets.Set[string]{
+				"a.go": sets.New[string]("al"),
 			},
 		},
 	}
@@ -673,8 +673,8 @@ func TestHandleGenericComment(t *testing.T) {
 			owners: map[string]string{
 				"a.go": "1",
 			},
-			leafReviewers: map[string]sets.String{
-				"a.go": sets.NewString("al"),
+			leafReviewers: map[string]sets.Set[string]{
+				"a.go": sets.New[string]("al"),
 			},
 		},
 	}
@@ -838,20 +838,20 @@ func TestPopActiveReviewer(t *testing.T) {
 				"b.go": layeredsets.NewString("brad"),
 				"c.go": layeredsets.NewString("busy-user"),
 			},
-			leafApprovers: map[string]sets.String{
-				"a.go": sets.NewString("alice"),
-				"b.go": sets.NewString("brad"),
-				"c.go": sets.NewString("busy-user"),
+			leafApprovers: map[string]sets.Set[string]{
+				"a.go": sets.New[string]("alice"),
+				"b.go": sets.New[string]("brad"),
+				"c.go": sets.New[string]("busy-user"),
 			},
 			reviewers: map[string]layeredsets.String{
 				"a.go": layeredsets.NewString("alice"),
 				"b.go": layeredsets.NewString("brad"),
 				"c.go": layeredsets.NewString("busy-user"),
 			},
-			leafReviewers: map[string]sets.String{
-				"a.go": sets.NewString("alice"),
-				"b.go": sets.NewString("brad"),
-				"c.go": sets.NewString("busy-user"),
+			leafReviewers: map[string]sets.Set[string]{
+				"a.go": sets.New[string]("alice"),
+				"b.go": sets.New[string]("brad"),
+				"c.go": sets.New[string]("busy-user"),
 			},
 		},
 	}

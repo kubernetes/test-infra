@@ -1561,7 +1561,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 			continue
 		}
 
-		modifiedConfigMaps := sets.NewString()
+		modifiedConfigMaps := sets.New[string]()
 		for _, action := range fkc.Fake.Actions() {
 			var obj runtime.Object
 			switch action := action.(type) {
@@ -1599,15 +1599,15 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 			}
 		}
 
-		expectedConfigMaps := sets.NewString()
+		expectedConfigMaps := sets.New[string]()
 		for _, configMap := range tc.expectedConfigMaps {
 			expectedConfigMaps.Insert(configMap.Name)
 		}
 		if missing := expectedConfigMaps.Difference(modifiedConfigMaps); missing.Len() > 0 {
-			t.Errorf("%s: did not update expected configmaps: %v", tc.name, missing.List())
+			t.Errorf("%s: did not update expected configmaps: %v", tc.name, sets.List(missing))
 		}
 		if extra := modifiedConfigMaps.Difference(expectedConfigMaps); extra.Len() > 0 {
-			t.Errorf("%s: found unexpectedly updated configmaps: %v", tc.name, extra.List())
+			t.Errorf("%s: found unexpectedly updated configmaps: %v", tc.name, sets.List(extra))
 		}
 
 		for _, expected := range tc.expectedConfigMaps {
@@ -1872,7 +1872,7 @@ func testUpdate(clients localgit.Clients, t *testing.T) {
 			continue
 		}
 
-		modifiedConfigMaps := sets.NewString()
+		modifiedConfigMaps := sets.New[string]()
 		for _, action := range fkc.Fake.Actions() {
 			var obj runtime.Object
 			switch action := action.(type) {

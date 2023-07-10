@@ -66,8 +66,8 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	}
 
 	if token != "" {
-		logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, func() sets.String {
-			return sets.NewString(token)
+		logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, func() sets.Set[string] {
+			return sets.New[string](token)
 		}))
 	}
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")

@@ -143,8 +143,8 @@ func TestGeneratePluginHelp(t *testing.T) {
 	if help == nil {
 		t.Fatal("NewHelpAgent returned nil HelpAgent struct pointer.")
 	}
-	if got, expected := sets.NewString(help.AllRepos...), sets.NewString(expectedAllRepos...); !got.Equal(expected) {
-		t.Errorf("Expected 'AllRepos' to be %q, but got %q.", expected.List(), got.List())
+	if got, expected := sets.New[string](help.AllRepos...), sets.New[string](expectedAllRepos...); !got.Equal(expected) {
+		t.Errorf("Expected 'AllRepos' to be %q, but got %q.", sets.List(expected), sets.List(got))
 	}
 	checkPluginsForRepo := func(expected, got map[string][]string) {
 		for _, plugins := range expected {
@@ -183,8 +183,8 @@ func registerNormalPlugins(t *testing.T, pluginsToEvents map[string][]string, pl
 	for plugin, events := range pluginsToEvents {
 		plugin := plugin
 		helpProvider := func(_ *plugins.Configuration, enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
-			if got, expected := sets.NewString(prowconfig.OrgReposToStrings(enabledRepos)...), sets.NewString(expectedRepos[plugin]...); !got.Equal(expected) {
-				t.Errorf("Plugin '%s' expected to be enabled on repos %q, but got %q.", plugin, expected.List(), got.List())
+			if got, expected := sets.New[string](prowconfig.OrgReposToStrings(enabledRepos)...), sets.New[string](expectedRepos[plugin]...); !got.Equal(expected) {
+				t.Errorf("Plugin '%s' expected to be enabled on repos %q, but got %q.", plugin, sets.List(expected), sets.List(got))
 			}
 			help := pluginHelp[plugin]
 			return &help, nil

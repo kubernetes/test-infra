@@ -220,7 +220,7 @@ func TestPush(t *testing.T) {
 
 }
 
-//Make sure we are sending message to proper sig mentions
+// Make sure we are sending message to proper sig mentions
 func TestComment(t *testing.T) {
 	orgMember := "cjwagner"
 	bot := "k8s-ci-robot"

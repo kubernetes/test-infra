@@ -21,15 +21,16 @@ import (
 	"path/filepath"
 	"strings"
 
-	"k8s.io/test-infra/prow/repoowners"
-
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/plugins/ownersconfig"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 const (
@@ -138,7 +139,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, info info, res
 
 	// Tag users by prepending @ to their names.
 	taggedNewOwners := make([]string, newOwners.Len())
-	for i, o := range newOwners.List() {
+	for i, o := range sets.List(newOwners) {
 		taggedNewOwners[i] = fmt.Sprintf("@%s", o)
 	}
 

@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 
@@ -40,7 +41,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"knative.dev/pkg/apis"
-	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 const (
@@ -924,99 +925,38 @@ func TestMakeResourcesBeta1(t *testing.T) {
 				pj.Spec.Refs = &prowjobv1.Refs{
 					CloneURI: "https://source.host/test/test.git",
 					BaseRef:  "feature-branch",
-					Pulls: []prowjobv1.Pull{
-						{
-							Number: 1,
-						},
-					},
+					Pulls:    []prowjobv1.Pull{{Number: 1}},
 				}
-				pj.Spec.TektonPipelineRunSpec.V1Beta1.Resources = []pipelinev1beta1.PipelineResourceBinding{
-					{
-						Name:        "implicit git resource",
-						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: config.ProwImplicitGitResource},
-					},
+				pj.Spec.TektonPipelineRunSpec.V1Beta1.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{
+						Name:    "implicit git resource",
+						TaskRef: &pipelinev1beta1.TaskRef{Name: config.ProwImplicitGitResource},
+					}},
 				}
+
 				return pj
 			},
 			pipelineRun: func(pr pipelinev1beta1.PipelineRun) pipelinev1beta1.PipelineRun {
-				pr.Spec.Params[4].Value = pipelinev1beta1.ArrayOrString{
+				pr.Spec.Params[4].Value = pipelinev1beta1.ParamValue{
 					Type:      pipelinev1beta1.ParamTypeString,
 					StringVal: string(prowjobv1.PresubmitJob),
 				}
 				pr.Spec.Params = append(pr.Spec.Params,
-					pipelinev1beta1.Param{
-						Name: "PULL_BASE_REF",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: "feature-branch",
-						},
-					},
-					pipelinev1beta1.Param{
-						Name: "PULL_BASE_SHA",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: "",
-						},
-					},
-					pipelinev1beta1.Param{
-						Name: "PULL_HEAD_REF",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: "",
-						},
-					},
-					pipelinev1beta1.Param{
-						Name: "PULL_NUMBER",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: "1",
-						},
-					},
-					pipelinev1beta1.Param{
-						Name: "PULL_PULL_SHA",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: "",
-						},
-					},
-					pipelinev1beta1.Param{
-						Name: "PULL_REFS",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: "feature-branch,1:",
-						},
-					},
-					pipelinev1beta1.Param{
-						Name: "REPO_NAME",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: "",
-						},
-					},
-					pipelinev1beta1.Param{
-						Name: "REPO_OWNER",
-						Value: pipelinev1beta1.ArrayOrString{
-							Type:      pipelinev1beta1.ParamTypeString,
-							StringVal: "",
-						},
-					},
+					pipelinev1beta1.Param{Name: "PULL_BASE_REF", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: "feature-branch"}},
+					pipelinev1beta1.Param{Name: "PULL_BASE_SHA", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
+					pipelinev1beta1.Param{Name: "PULL_HEAD_REF", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
+					pipelinev1beta1.Param{Name: "PULL_NUMBER", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: "1"}},
+					pipelinev1beta1.Param{Name: "PULL_PULL_SHA", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
+					pipelinev1beta1.Param{Name: "PULL_REFS", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: "feature-branch,1:"}},
+					pipelinev1beta1.Param{Name: "REPO_NAME", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
+					pipelinev1beta1.Param{Name: "REPO_OWNER", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString}},
 				)
-				pr.Spec.PipelineSpec = &pipelinev1beta1.PipelineSpec{
-					Tasks: []pipelinev1beta1.PipelineTask{
-						{
-							TaskRef: &pipelinev1beta1.TaskRef{
-								Name: "git-clone",
-							},
-							Params: []pipelinev1beta1.Param{
-								{
-									Name:  "url",
-									Value: pipelinev1beta1.ArrayOrString{StringVal: "https://source.host/test/test.git"},
-								},
-								{
-									Name:  "revision",
-									Value: pipelinev1beta1.ArrayOrString{StringVal: "pull/1/head"},
-								},
-							},
+				pr.Spec.PipelineSpec.Tasks = []pipelinev1beta1.PipelineTask{
+					{
+						TaskRef: &pipelinev1beta1.TaskRef{Name: "git-clone"},
+						Params: []pipelinev1beta1.Param{
+							{Name: "url", Value: pipelinev1beta1.ParamValue{StringVal: "https://source.host/test/test.git"}},
+							{Name: "revision", Value: pipelinev1beta1.ParamValue{StringVal: "pull/1/head"}},
 						},
 					},
 				}
@@ -1027,48 +967,28 @@ func TestMakeResourcesBeta1(t *testing.T) {
 			name: "configure sources when extra refs are configured",
 			job: func(pj prowjobv1.ProwJob) prowjobv1.ProwJob {
 				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "org0"}, {Org: "org1"}}
-				pj.Spec.TektonPipelineRunSpec.V1Beta1.Resources = []pipelinev1beta1.PipelineResourceBinding{
-					{
-						Name:        "git resource A",
-						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
-					},
-					{
-						Name:        "git resource B",
-						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
+				pj.Spec.TektonPipelineRunSpec.V1Beta1.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{
+						{Name: "git resource A", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_EXTRA_GIT_REF_0"}},
+						{Name: "git resource B", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_EXTRA_GIT_REF_1"}},
 					},
 				}
 				return pj
 			},
 			pipelineRun: func(pr pipelinev1beta1.PipelineRun) pipelinev1beta1.PipelineRun {
-				pr.Spec.PipelineSpec = &pipelinev1beta1.PipelineSpec{
-					Tasks: []pipelinev1beta1.PipelineTask{
-						{
-							TaskRef: &pipelinev1beta1.TaskRef{
-								Name: "git-clone",
-							},
-							Params: []pipelinev1beta1.Param{
-								{
-									Name:  "url",
-									Value: pipelinev1beta1.ArrayOrString{StringVal: "https://github.com/org0/.git"},
-								},
-								{
-									Name: "revision",
-								},
-							},
+				pr.Spec.PipelineSpec.Tasks = []pipelinev1beta1.PipelineTask{
+					{
+						TaskRef: &pipelinev1beta1.TaskRef{Name: "git-clone"},
+						Params: []pipelinev1beta1.Param{
+							{Name: "url", Value: pipelinev1beta1.ParamValue{StringVal: "https://github.com/org0/.git"}},
+							{Name: "revision"},
 						},
-						{
-							TaskRef: &pipelinev1beta1.TaskRef{
-								Name: "git-clone",
-							},
-							Params: []pipelinev1beta1.Param{
-								{
-									Name:  "url",
-									Value: pipelinev1beta1.ArrayOrString{StringVal: "https://github.com/org1/.git"},
-								},
-								{
-									Name: "revision",
-								},
-							},
+					},
+					{
+						TaskRef: &pipelinev1beta1.TaskRef{Name: "git-clone"},
+						Params: []pipelinev1beta1.Param{
+							{Name: "url", Value: pipelinev1beta1.ParamValue{StringVal: "https://github.com/org1/.git"}},
+							{Name: "revision"},
 						},
 					},
 				}
@@ -1078,14 +998,10 @@ func TestMakeResourcesBeta1(t *testing.T) {
 		{
 			name: "do not override unrelated git resources",
 			job: func(pj prowjobv1.ProwJob) prowjobv1.ProwJob {
-				pj.Spec.TektonPipelineRunSpec.V1Beta1.Resources = []pipelinev1beta1.PipelineResourceBinding{
-					{
-						Name:        "git resource A",
-						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_LOL_JK"},
-					},
-					{
-						Name:        "git resource B",
-						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "some-other-ref"},
+				pj.Spec.TektonPipelineRunSpec.V1Beta1.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{
+						{Name: "git resource A", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_EXTRA_GIT_REF_LOL_JK"}},
+						{Name: "git resource B", TaskRef: &pipelinev1beta1.TaskRef{Name: "some-other-ref"}},
 					},
 				}
 				return pj
@@ -1133,55 +1049,19 @@ func TestMakeResourcesBeta1(t *testing.T) {
 				Spec:       *pipelineRunSpec,
 			}
 			expectedRun.Spec.Params = []pipelinev1beta1.Param{
-				{
-					Name: "BUILD_ID",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: randomPipelineRunID,
-					},
-				},
-				{
-					Name: "CI",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: "true",
-					},
-				},
-				{
-					Name: "JOB_NAME",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: pj.Spec.Job,
-					},
-				},
-				{
-					Name: "JOB_SPEC",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: string(jobSpecRaw),
-					},
-				},
-				{
-					Name: "JOB_TYPE",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: string(prowjobv1.PeriodicJob),
-					},
-				},
-				{
-					Name: "PROW_JOB_ID",
-					Value: pipelinev1beta1.ArrayOrString{
-						Type:      pipelinev1beta1.ParamTypeString,
-						StringVal: pj.Name,
-					},
-				},
+				{Name: "BUILD_ID", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: randomPipelineRunID}},
+				{Name: "CI", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: "true"}},
+				{Name: "JOB_NAME", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: pj.Spec.Job}},
+				{Name: "JOB_SPEC", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: string(jobSpecRaw)}},
+				{Name: "JOB_TYPE", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: string(prowjobv1.PeriodicJob)}},
+				{Name: "PROW_JOB_ID", Value: pipelinev1beta1.ParamValue{Type: pipelinev1beta1.ParamTypeString, StringVal: pj.Name}},
 			}
 			if tc.pipelineRun != nil {
 				expectedRun = tc.pipelineRun(expectedRun)
 			}
 
-			if !equality.Semantic.DeepEqual(actualRun, &expectedRun) {
-				t.Errorf("pipelineruns do not match:\n%s", diff.ObjectReflectDiff(&expectedRun, actualRun))
+			if diff := cmp.Diff(actualRun, &expectedRun); diff != "" {
+				t.Error(diff)
 			}
 		})
 	}
@@ -1244,7 +1124,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "truly succeeded state returns success",
 			input: pipelinev1beta1.PipelineRunStatus{
-				Status: duckv1beta1.Status{
+				Status: duckv1.Status{
 					Conditions: []apis.Condition{
 						{
 							Type:    apis.ConditionSucceeded,
@@ -1261,7 +1141,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "falsely succeeded state returns failure",
 			input: pipelinev1beta1.PipelineRunStatus{
-				Status: duckv1beta1.Status{
+				Status: duckv1.Status{
 					Conditions: []apis.Condition{
 						{
 							Type:    apis.ConditionSucceeded,
@@ -1278,7 +1158,7 @@ func TestProwJobStatus(t *testing.T) {
 		{
 			name: "unstarted job returns pending/initializing",
 			input: pipelinev1beta1.PipelineRunStatus{
-				Status: duckv1beta1.Status{
+				Status: duckv1.Status{
 					Conditions: []apis.Condition{
 						{
 							Type:    apis.ConditionSucceeded,
@@ -1298,7 +1178,7 @@ func TestProwJobStatus(t *testing.T) {
 				PipelineRunStatusFields: pipelinev1beta1.PipelineRunStatusFields{
 					StartTime: now.DeepCopy(),
 				},
-				Status: duckv1beta1.Status{
+				Status: duckv1.Status{
 					Conditions: []apis.Condition{
 						{
 							Type:    apis.ConditionSucceeded,
@@ -1319,7 +1199,7 @@ func TestProwJobStatus(t *testing.T) {
 					StartTime:      now.DeepCopy(),
 					CompletionTime: later.DeepCopy(),
 				},
-				Status: duckv1beta1.Status{
+				Status: duckv1.Status{
 					Conditions: []apis.Condition{
 						{
 							Type:    apis.ConditionSucceeded,

@@ -467,7 +467,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 	}
-	deletedPods := sets.NewString(
+	deletedPods := sets.New[string](
 		"job-complete-pod-failed",
 		"job-complete-pod-pending",
 		"job-complete-pod-succeeded",
@@ -687,7 +687,7 @@ func TestClean(t *testing.T) {
 		},
 	}
 
-	deletedProwJobs := sets.NewString(
+	deletedProwJobs := sets.New[string](
 		"job-complete",
 		"old-failed",
 		"old-succeeded",
@@ -712,7 +712,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 	}
-	deletedPodsTrusted := sets.NewString("old-failed-trusted")
+	deletedPodsTrusted := sets.New[string]("old-failed-trusted")
 
 	fpjc := &clientWrapper{
 		Client:          fakectrlruntimeclient.NewFakeClient(prowJobs...),
@@ -741,7 +741,7 @@ func TestClean(t *testing.T) {
 	if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {
 		t.Fatalf("failed to get remaining prowjobs: %v", err)
 	}
-	actuallyDeletedProwJobs := sets.String{}
+	actuallyDeletedProwJobs := sets.Set[string]{}
 	for _, initalProwJob := range prowJobs {
 		actuallyDeletedProwJobs.Insert(initalProwJob.(metav1.Object).GetName())
 	}
@@ -802,7 +802,7 @@ func TestNotClean(t *testing.T) {
 		},
 	}
 
-	deletedPods := sets.NewString(
+	deletedPods := sets.New[string](
 		"job-complete-pod-succeeded",
 	)
 
@@ -832,19 +832,19 @@ func TestNotClean(t *testing.T) {
 	}
 	c.clean()
 	assertSetsEqual(deletedPods, podClientValid.deletedPods, t, "did not delete correct Pods")
-	assertSetsEqual(sets.String{}, podClientExcluded.deletedPods, t, "did not delete correct Pods")
+	assertSetsEqual(sets.Set[string]{}, podClientExcluded.deletedPods, t, "did not delete correct Pods")
 }
 
-func assertSetsEqual(expected, actual sets.String, t *testing.T, prefix string) {
+func assertSetsEqual(expected, actual sets.Set[string], t *testing.T, prefix string) {
 	if expected.Equal(actual) {
 		return
 	}
 
 	if missing := expected.Difference(actual); missing.Len() > 0 {
-		t.Errorf("%s: missing expected: %v", prefix, missing.List())
+		t.Errorf("%s: missing expected: %v", prefix, sets.List(missing))
 	}
 	if extra := actual.Difference(expected); extra.Len() > 0 {
-		t.Errorf("%s: found unexpected: %v", prefix, extra.List())
+		t.Errorf("%s: found unexpected: %v", prefix, sets.List(extra))
 	}
 }
 
@@ -852,7 +852,7 @@ func TestFlags(t *testing.T) {
 	cases := []struct {
 		name     string
 		args     map[string]string
-		del      sets.String
+		del      sets.Set[string]
 		expected func(*options)
 		err      bool
 	}{
@@ -888,7 +888,7 @@ func TestFlags(t *testing.T) {
 		{
 			name: "dry run defaults to true",
 			args: map[string]string{},
-			del:  sets.NewString("--dry-run"),
+			del:  sets.New[string]("--dry-run"),
 			expected: func(o *options) {
 				o.dryRun = true
 			},
@@ -976,7 +976,7 @@ func TestDeletePodToleratesNotFound(t *testing.T) {
 type podClientWrapper struct {
 	t *testing.T
 	ctrlruntimeclient.Client
-	deletedPods sets.String
+	deletedPods sets.Set[string]
 }
 
 func (c *podClientWrapper) Delete(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
@@ -996,7 +996,7 @@ func (c *podClientWrapper) Delete(ctx context.Context, obj ctrlruntimeclient.Obj
 		return err
 	}
 	if c.deletedPods == nil {
-		c.deletedPods = sets.String{}
+		c.deletedPods = sets.Set[string]{}
 	}
 	c.deletedPods.Insert(pod.Name)
 	return nil

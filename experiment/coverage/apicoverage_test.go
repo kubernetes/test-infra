@@ -23,7 +23,7 @@ import (
 	"testing"
 )
 
-//NOTE: This method is for avoiding flake tests instead of using reflect.DeepEqual()
+// NOTE: This method is for avoiding flake tests instead of using reflect.DeepEqual()
 func equalAPIArray(a, b apiArray) bool {
 	if a == nil && b == nil {
 		return true

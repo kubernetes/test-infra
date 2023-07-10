@@ -99,7 +99,7 @@ func getOpenAPISpec(url string) apiArray {
 	return parseOpenAPI(bytes)
 }
 
-//   I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://172.27.138.63:6443/api/v1/namespaces/kube-system/replicationcontrollers
+// I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://172.27.138.63:6443/api/v1/namespaces/kube-system/replicationcontrollers
 var reE2eAPILog = regexp.MustCompile(`round_trippers.go:\d+\] (GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH) (\S+)`)
 
 func parseE2eAPILog(fp io.Reader) apiArray {
@@ -127,7 +127,7 @@ func parseE2eAPILog(fp io.Reader) apiArray {
 	return apisLog
 }
 
-//   I0413 12:10:56.612005       1 wrap.go:42] PUT /apis/apiregistration.k8s.io/v1/apiservices/v1.apps/status: (1.671974ms) 200 [[kube-apiserver/v1.11.0 (linux/amd64) kubernetes/7297c1c] 127.0.0.1:44356]
+// I0413 12:10:56.612005       1 wrap.go:42] PUT /apis/apiregistration.k8s.io/v1/apiservices/v1.apps/status: (1.671974ms) 200 [[kube-apiserver/v1.11.0 (linux/amd64) kubernetes/7297c1c] 127.0.0.1:44356]
 var reAPIServerLog = regexp.MustCompile(`wrap.go:\d+\] (GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH) (\S+)`)
 
 func parseAPIServerLog(fp io.Reader) apiArray {
@@ -236,8 +236,8 @@ func getCoverageByLevel(apisTested, apisAll apiArray) coverageData {
 	return coverage
 }
 
-//NOTE: This is messy, but the regex doesn't support negative lookahead(?!) on golang.
-//This is just a workaround.
+// NOTE: This is messy, but the regex doesn't support negative lookahead(?!) on golang.
+// This is just a workaround.
 var reNotStableAPI = regexp.MustCompile(`\S+(alpha|beta)\S+`)
 var reAlphaAPI = regexp.MustCompile(`\S+alpha\S+`)
 var reBetaAPI = regexp.MustCompile(`\S+beta\S+`)

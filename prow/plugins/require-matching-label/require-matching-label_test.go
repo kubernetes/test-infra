@@ -28,16 +28,16 @@ import (
 )
 
 type fakeGitHub struct {
-	labels                               sets.String
-	IssueLabelsAdded, IssueLabelsRemoved sets.String
+	labels                               sets.Set[string]
+	IssueLabelsAdded, IssueLabelsRemoved sets.Set[string]
 	commented                            bool
 }
 
 func newFakeGitHub(initialLabels ...string) *fakeGitHub {
 	return &fakeGitHub{
-		labels:             sets.NewString(initialLabels...),
-		IssueLabelsAdded:   sets.NewString(),
-		IssueLabelsRemoved: sets.NewString(),
+		labels:             sets.New[string](initialLabels...),
+		IssueLabelsAdded:   sets.New[string](),
+		IssueLabelsRemoved: sets.New[string](),
 	}
 }
 
@@ -112,8 +112,8 @@ func TestHandle(t *testing.T) {
 		initialLabels []string
 
 		expectComment   bool
-		expectedAdded   sets.String
-		expectedRemoved sets.String
+		expectedAdded   sets.Set[string]
+		expectedRemoved sets.Set[string]
 	}{
 		{
 			name: "ignore PRs",
@@ -150,7 +150,7 @@ func TestHandle(t *testing.T) {
 				branch: "master",
 			},
 			initialLabels: []string{labels.LGTM},
-			expectedAdded: sets.NewString("needs-kind"),
+			expectedAdded: sets.New[string]("needs-kind"),
 		},
 		{
 			name: "remove needs-kind label from PR based on label change",
@@ -161,7 +161,7 @@ func TestHandle(t *testing.T) {
 				label:  "kind/best",
 			},
 			initialLabels:   []string{labels.LGTM, "needs-kind", "kind/best"},
-			expectedRemoved: sets.NewString("needs-kind"),
+			expectedRemoved: sets.New[string]("needs-kind"),
 		},
 		{
 			name: "don't remove needs-kind label from issue based on label change (ignore issues)",
@@ -190,7 +190,7 @@ func TestHandle(t *testing.T) {
 				label: "sig/bash",
 			},
 			initialLabels: []string{labels.LGTM, "kind/best"},
-			expectedAdded: sets.NewString("needs-sig"),
+			expectedAdded: sets.New[string]("needs-sig"),
 		},
 		{
 			name: "don't add org scoped needs-sig to issue when another sig/* label remains",
@@ -209,7 +209,7 @@ func TestHandle(t *testing.T) {
 				label: "cat",
 			},
 			initialLabels: []string{labels.LGTM, "wg/foo"},
-			expectedAdded: sets.NewString("needs-cat"),
+			expectedAdded: sets.New[string]("needs-cat"),
 			expectComment: true,
 		},
 		{
@@ -220,7 +220,7 @@ func TestHandle(t *testing.T) {
 				branch: "meow",
 			},
 			initialLabels: []string{labels.LGTM, "kind/best"},
-			expectedAdded: sets.NewString("needs-cat"),
+			expectedAdded: sets.New[string]("needs-cat"),
 			expectComment: true,
 		},
 		{
@@ -231,8 +231,8 @@ func TestHandle(t *testing.T) {
 				branch: "meow",
 			},
 			initialLabels:   []string{labels.LGTM, "needs-cat", "cat", "floof"},
-			expectedAdded:   sets.NewString("needs-kind"),
-			expectedRemoved: sets.NewString("needs-cat"),
+			expectedAdded:   sets.New[string]("needs-kind"),
+			expectedRemoved: sets.New[string]("needs-cat"),
 		},
 		{
 			name: "add branch scoped needs-cat to issue, remove org scoped needs-sig",
@@ -241,8 +241,8 @@ func TestHandle(t *testing.T) {
 				repo: "t-i",
 			},
 			initialLabels:   []string{labels.LGTM, "needs-sig", "wg/foo"},
-			expectedAdded:   sets.NewString("needs-cat"),
-			expectedRemoved: sets.NewString("needs-sig"),
+			expectedAdded:   sets.New[string]("needs-cat"),
+			expectedRemoved: sets.New[string]("needs-sig"),
 			expectComment:   true,
 		},
 	}
@@ -262,11 +262,11 @@ func TestHandle(t *testing.T) {
 		}
 
 		if !tc.expectedAdded.Equal(fghc.IssueLabelsAdded) {
-			t.Errorf("Expected the %q labels to be added, but got %q.", tc.expectedAdded.List(), fghc.IssueLabelsAdded.List())
+			t.Errorf("Expected the %q labels to be added, but got %q.", sets.List(tc.expectedAdded), sets.List(fghc.IssueLabelsAdded))
 		}
 
 		if !tc.expectedRemoved.Equal(fghc.IssueLabelsRemoved) {
-			t.Errorf("Expected the %q labels to be removed, but got %q.", tc.expectedRemoved.List(), fghc.IssueLabelsRemoved.List())
+			t.Errorf("Expected the %q labels to be removed, but got %q.", sets.List(tc.expectedRemoved), sets.List(fghc.IssueLabelsRemoved))
 		}
 	}
 }

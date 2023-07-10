@@ -516,7 +516,7 @@ func TestReleaseNotePR(t *testing.T) {
 func TestGetReleaseNote(t *testing.T) {
 	tests := []struct {
 		body                        string
-		labels                      sets.String
+		labels                      sets.Set[string]
 		expectedReleaseNote         string
 		expectedReleaseNoteVariable string
 	}{
@@ -577,25 +577,25 @@ func TestGetReleaseNote(t *testing.T) {
 		},
 		{
 			body:                        "",
-			labels:                      sets.NewString(labels.ReleaseNoteNone),
+			labels:                      sets.New[string](labels.ReleaseNoteNone),
 			expectedReleaseNote:         "",
 			expectedReleaseNoteVariable: labels.ReleaseNoteNone,
 		},
 		{
 			body:                        "",
-			labels:                      sets.NewString(labels.DeprecationLabel),
+			labels:                      sets.New[string](labels.DeprecationLabel),
 			expectedReleaseNote:         "",
 			expectedReleaseNoteVariable: labels.ReleaseNoteLabelNeeded,
 		},
 		{
 			body:                        "",
-			labels:                      sets.NewString(labels.ReleaseNoteNone, labels.DeprecationLabel),
+			labels:                      sets.New[string](labels.ReleaseNoteNone, labels.DeprecationLabel),
 			expectedReleaseNote:         "",
 			expectedReleaseNoteVariable: labels.ReleaseNoteLabelNeeded,
 		},
 		{
 			body:                        "```release-note\nNONE\n```",
-			labels:                      sets.NewString(labels.DeprecationLabel),
+			labels:                      sets.New[string](labels.DeprecationLabel),
 			expectedReleaseNote:         "NONE",
 			expectedReleaseNoteVariable: labels.ReleaseNoteLabelNeeded,
 		},

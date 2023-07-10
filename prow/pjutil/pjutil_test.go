@@ -361,9 +361,9 @@ func TestPartitionActive(t *testing.T) {
 	tests := []struct {
 		pjs []prowapi.ProwJob
 
-		pending   sets.String
-		triggered sets.String
-		aborted   sets.String
+		pending   sets.Set[string]
+		triggered sets.Set[string]
+		aborted   sets.Set[string]
 	}{
 		{
 			pjs: []prowapi.ProwJob{
@@ -425,9 +425,9 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 			},
-			pending:   sets.NewString("bar", "bak"),
-			triggered: sets.NewString("foo"),
-			aborted:   sets.NewString("aborted"),
+			pending:   sets.New[string]("bar", "bak"),
+			triggered: sets.New[string]("foo"),
+			aborted:   sets.New[string]("aborted"),
 		},
 	}
 

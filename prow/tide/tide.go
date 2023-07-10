@@ -666,13 +666,13 @@ func filterSubpool(provider provider, mergeAllowed func(*CodeReviewCommon) (stri
 
 // filterPR indicates if a PR should be filtered out of the subpool.
 // Specifically we filter out PRs that:
-// - Have known merge conflicts or invalid merge method.
-// - Have failing or missing status contexts.
-// - Have pending required status contexts that are not associated with a
-//   ProwJob. (This ensures that the 'tide' context indicates that the pending
-//   status is preventing merge. Required ProwJob statuses are allowed to be
-//   'pending' because this prevents kicking PRs from the pool when Tide is
-//   retesting them.)
+//   - Have known merge conflicts or invalid merge method.
+//   - Have failing or missing status contexts.
+//   - Have pending required status contexts that are not associated with a
+//     ProwJob. (This ensures that the 'tide' context indicates that the pending
+//     status is preventing merge. Required ProwJob statuses are allowed to be
+//     'pending' because this prevents kicking PRs from the pool when Tide is
+//     retesting them.)
 //
 // This function works for any source code provider.
 func filterPR(provider provider, mergeAllowed func(*CodeReviewCommon) (string, error), sp *subpool, pr *CodeReviewCommon) bool {
@@ -738,11 +738,11 @@ func requiredContextsMap(subpoolMap map[string]*subpool) map[string][]string {
 	requiredContextsMap := map[string][]string{}
 	for _, sp := range subpoolMap {
 		for _, pr := range sp.prs {
-			requiredContextsSet := sets.String{}
+			requiredContextsSet := sets.Set[string]{}
 			for _, requiredJob := range sp.presubmits[pr.Number] {
 				requiredContextsSet.Insert(requiredJob.Context)
 			}
-			requiredContextsMap[prKey(&pr)] = requiredContextsSet.List()
+			requiredContextsMap[prKey(&pr)] = sets.List(requiredContextsSet)
 		}
 	}
 	return requiredContextsMap
@@ -817,7 +817,7 @@ func hasAllLabels(pr CodeReviewCommon, wantLabels []string) bool {
 	if len(wantLabels) == 0 {
 		return true
 	}
-	prLabels := sets.NewString()
+	prLabels := sets.New[string]()
 	if labels := pr.GitHubLabels(); labels != nil {
 		for _, l2 := range labels.Nodes {
 			prLabels.Insert(string(l2.Name))
@@ -1354,7 +1354,7 @@ func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs 
 	// If PRs require the same job, we only want to trigger it once.
 	// If multiple required jobs have the same context, we assume the
 	// same shard will be run to provide those contexts
-	triggeredContexts := sets.NewString()
+	triggeredContexts := sets.New[string]()
 	for _, ps := range presubmits {
 		if triggeredContexts.Has(string(ps.Context)) {
 			continue
@@ -1511,7 +1511,7 @@ func (c *changedFilesAgent) prChanges(pr *CodeReviewCommon) config.ChangedFilesP
 
 func (c *changedFilesAgent) batchChanges(prs []CodeReviewCommon) config.ChangedFilesProvider {
 	return func() ([]string, error) {
-		result := sets.String{}
+		result := sets.Set[string]{}
 		for _, pr := range prs {
 			changes, err := c.prChanges(&pr)()
 			if err != nil {
@@ -1521,7 +1521,7 @@ func (c *changedFilesAgent) batchChanges(prs []CodeReviewCommon) config.ChangedF
 			result.Insert(changes...)
 		}
 
-		return result.List(), nil
+		return sets.List(result), nil
 	}
 }
 
@@ -1754,7 +1754,7 @@ type subpool struct {
 }
 
 func (sp subpool) TenantIDs() []string {
-	ids := sets.String{}
+	ids := sets.Set[string]{}
 	for _, pj := range sp.pjs {
 		if pj.Spec.ProwJobDefault == nil || pj.Spec.ProwJobDefault.TenantID == "" {
 			ids.Insert("")
@@ -1762,7 +1762,7 @@ func (sp subpool) TenantIDs() []string {
 			ids.Insert(pj.Spec.ProwJobDefault.TenantID)
 		}
 	}
-	return ids.List()
+	return sets.List(ids)
 }
 
 func poolKey(org, repo, branch string) string {
@@ -1944,13 +1944,13 @@ type searchQuery struct {
 
 // orgRepoQueryStrings returns the GitHub query strings for given orgs and
 // repos. Make sure that this is only used by GitHub interactor.
-func orgRepoQueryStrings(orgs, repos []string, orgExceptions map[string]sets.String) map[string]string {
+func orgRepoQueryStrings(orgs, repos []string, orgExceptions map[string]sets.Set[string]) map[string]string {
 	queriesByOrg := map[string]string{}
 
 	for _, org := range orgs {
 		queriesByOrg[org] = fmt.Sprintf(`org:"%s"`, org)
 
-		for _, exception := range orgExceptions[org].List() {
+		for _, exception := range sets.List(orgExceptions[org]) {
 			queriesByOrg[org] += fmt.Sprintf(` -repo:"%s"`, exception)
 		}
 	}
@@ -2038,7 +2038,6 @@ func nonFailedBatchByNameBaseAndPullsIndexFunc(obj ctrlruntimeclient.Object) []s
 	return []string{nonFailedBatchByNameBaseAndPullsIndexKey(pj.Spec.Job, pj.Spec.Refs)}
 }
 
-//
 func checkRunNodesToContexts(log *logrus.Entry, nodes []CheckRunNode) []Context {
 	var result []Context
 	for _, node := range nodes {

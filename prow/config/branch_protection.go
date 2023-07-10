@@ -138,9 +138,9 @@ func unionStrings(parent, child []string) []string {
 	if parent == nil {
 		return child
 	}
-	s := sets.NewString(parent...)
+	s := sets.New[string](parent...)
 	s.Insert(child...)
-	return s.List()
+	return sets.List(s)
 }
 
 func mergeContextPolicy(parent, child *ContextPolicy) *ContextPolicy {
@@ -530,7 +530,7 @@ func isUnprotected(policy Policy, allowDisabledPolicies bool, hasRequiredContext
 }
 
 func (c *Config) reposWithDisabledPolicy() []string {
-	repoWarns := sets.NewString()
+	repoWarns := sets.New[string]()
 	for orgName, org := range c.BranchProtection.Orgs {
 		for repoName := range org.Repos {
 			repoPolicy := c.BranchProtection.GetOrg(orgName).GetRepo(repoName)
@@ -539,7 +539,7 @@ func (c *Config) reposWithDisabledPolicy() []string {
 			}
 		}
 	}
-	return repoWarns.List()
+	return sets.List(repoWarns)
 }
 
 // boolValFromPtr returns the bool value from a bool pointer.
@@ -554,10 +554,10 @@ func boolValFromPtr(b *bool) bool {
 // a. a protection policy, or
 // b. a required context
 func (c *Config) unprotectedBranches(presubmits map[string][]Presubmit) []string {
-	branchWarns := sets.NewString()
+	branchWarns := sets.New[string]()
 	for orgName, org := range c.BranchProtection.Orgs {
 		for repoName, repo := range org.Repos {
-			branches := sets.NewString()
+			branches := sets.New[string]()
 			for branchName := range repo.Branches {
 				b, err := c.BranchProtection.GetOrg(orgName).GetRepo(repoName).GetBranch(branchName)
 				if err != nil {
@@ -573,16 +573,16 @@ func (c *Config) unprotectedBranches(presubmits map[string][]Presubmit) []string
 				}
 			}
 			if branches.Len() > 0 {
-				branchWarns.Insert(fmt.Sprintf("%s/%s=%s", orgName, repoName, strings.Join(branches.List(), ",")))
+				branchWarns.Insert(fmt.Sprintf("%s/%s=%s", orgName, repoName, strings.Join(sets.List(branches), ",")))
 			}
 		}
 	}
-	return branchWarns.List()
+	return sets.List(branchWarns)
 }
 
 // BranchProtectionWarnings logs two sets of warnings:
-// - The list of repos with unprotected branches,
-// - The list of repos with disabled policies, i.e. Protect set to false,
+//   - The list of repos with unprotected branches,
+//   - The list of repos with disabled policies, i.e. Protect set to false,
 //     because any branches not explicitly specified in the configuration will be unprotected.
 func (c *Config) BranchProtectionWarnings(logger *logrus.Entry, presubmits map[string][]Presubmit) {
 	if warnings := c.reposWithDisabledPolicy(); len(warnings) > 0 {
@@ -594,9 +594,9 @@ func (c *Config) BranchProtectionWarnings(logger *logrus.Entry, presubmits map[s
 }
 
 // BranchRequirements partitions status contexts for a given org, repo branch into three buckets:
-//  - contexts that are always required to be present
-//  - contexts that are required, _if_ present
-//  - contexts that are always optional
+//   - contexts that are always required to be present
+//   - contexts that are required, _if_ present
+//   - contexts that are always optional
 func BranchRequirements(branch string, jobs []Presubmit) ([]string, []string, []string) {
 	var required, requiredIfPresent, optional []string
 	for _, j := range jobs {

@@ -278,7 +278,7 @@ func TestAccumulateBatch(t *testing.T) {
 
 			inrepoconfig := config.InRepoConfig{}
 			if test.prowYAMLGetter != nil {
-				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.Bool(true)}
 			}
 			cfg := func() *config.Config {
 				return &config.Config{
@@ -3209,7 +3209,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				"foo/bar": {{Reporter: config.Reporter{Context: "wrong-repo"}, AlwaysRun: true}},
 			})
 			if tc.prowYAMLGetter != nil {
-				cfg.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+				cfg.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.Bool(true)}
 				cfg.ProwYAMLGetterWithDefaults = tc.prowYAMLGetter
 			}
 			cfgAgent := &config.Agent{}
@@ -3739,7 +3739,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 
 			inrepoconfig := config.InRepoConfig{}
 			if tc.prowYAMLGetter != nil {
-				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.Bool(true)}
 			}
 			cfg := func() *config.Config {
 				return &config.Config{
@@ -3839,7 +3839,7 @@ func getPR(org, name string, number int, opts ...func(*PullRequest)) *PullReques
 func TestCacheIndexFuncReturnsDifferentResultsForDifferentInputs(t *testing.T) {
 	type orgRepoBranch struct{ org, repo, branch string }
 
-	results := sets.String{}
+	results := sets.Set[string]{}
 	inputs := []orgRepoBranch{
 		{"org-a", "repo-a", "branch-a"},
 		{"org-a", "repo-a", "branch-b"},
@@ -4016,7 +4016,7 @@ func prowYAMLGetterForHeadRefs(headRefsToLookFor []string, ps []config.Presubmit
 			return nil, fmt.Errorf("expcted %d headrefs, got %d", len(headRefsToLookFor), len(headRefs))
 		}
 		var presubmits []config.Presubmit
-		if sets.NewString(headRefsToLookFor...).Equal(sets.NewString(headRefs...)) {
+		if sets.New[string](headRefsToLookFor...).Equal(sets.New[string](headRefs...)) {
 			presubmits = ps
 		}
 		return &config.ProwYAML{
@@ -4392,7 +4392,7 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 	tests := []struct {
 		name                         string
 		subpool                      func(*subpool)
-		prsFailingContextCheck       sets.Int
+		prsFailingContextCheck       sets.Set[int]
 		maxBatchSize                 int
 		prioritizeExistingBatchesMap map[string]bool
 
@@ -4470,7 +4470,7 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 		{
 			name:                   "Batch with pre-existing success job exists but one fails context check, new batch is picked",
 			subpool:                func(sp *subpool) {},
-			prsFailingContextCheck: sets.NewInt(1),
+			prsFailingContextCheck: sets.New[int](1),
 			expectedPullRequests: []CodeReviewCommon{
 				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
 			},

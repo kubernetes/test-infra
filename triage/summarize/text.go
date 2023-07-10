@@ -129,8 +129,8 @@ This will underestimate the edit distance in many cases:
 
 - ngrams hashing into the same bucket will get confused
 
-- a large-scale transposition will barely disturb ngram frequencies,
-	but will have a very large effect on edit distance.
+  - a large-scale transposition will barely disturb ngram frequencies,
+    but will have a very large effect on edit distance.
 
 It is useful to avoid more expensive precise computations when they are
 guaranteed to exceed some limit (being a lower bound), or as a proxy when

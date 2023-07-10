@@ -426,9 +426,9 @@ type fakeContextGetter struct {
 	errors map[orgRepoRef]error
 }
 
-func (f *fakeContextGetter) getContexts(key orgRepoRef) (sets.String, sets.String, error) {
-	allContexts := sets.NewString()
-	failedContexts := sets.NewString()
+func (f *fakeContextGetter) getContexts(key orgRepoRef) (sets.Set[string], sets.Set[string], error) {
+	allContexts := sets.New[string]()
+	failedContexts := sets.New[string]()
 	if err, exists := f.errors[key]; exists {
 		return failedContexts, allContexts, err
 	}
@@ -996,7 +996,7 @@ func TestPresubmitFilter(t *testing.T) {
 				fsg.status[key] = statuses
 			}
 
-			fakeContextGetter := func() (sets.String, sets.String, error) {
+			fakeContextGetter := func() (sets.Set[string], sets.Set[string], error) {
 
 				return fsg.getContexts(key)
 			}

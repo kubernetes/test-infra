@@ -60,8 +60,8 @@ func TestCensoringFormatter(t *testing.T) {
 		DisableColors:    true,
 		DisableTimestamp: true,
 	}
-	formatter := NewCensoringFormatter(baseFormatter, func() sets.String {
-		return sets.NewString("MYSTERY", "SECRET")
+	formatter := NewCensoringFormatter(baseFormatter, func() sets.Set[string] {
+		return sets.New[string]("MYSTERY", "SECRET")
 	})
 
 	for _, tc := range testCases {
@@ -101,27 +101,27 @@ func TestCensoringFormatterWithCornerCases(t *testing.T) {
 
 	testCases := []struct {
 		description string
-		secrets     sets.String
+		secrets     sets.Set[string]
 		expected    string
 	}{
 		{
 			description: "empty string",
-			secrets:     sets.NewString("SECRET", ""),
+			secrets:     sets.New[string]("SECRET", ""),
 			expected:    expectedEntry,
 		},
 		{
 			description: "leading line break",
-			secrets:     sets.NewString("\nSECRET", ""),
+			secrets:     sets.New[string]("\nSECRET", ""),
 			expected:    expectedEntry,
 		},
 		{
 			description: "tailing line break",
-			secrets:     sets.NewString("SECRET\n", ""),
+			secrets:     sets.New[string]("SECRET\n", ""),
 			expected:    expectedEntry,
 		},
 		{
 			description: "leading space and tailing space",
-			secrets:     sets.NewString(" SECRET ", ""),
+			secrets:     sets.New[string](" SECRET ", ""),
 			expected:    expectedEntry,
 		},
 	}
@@ -133,7 +133,7 @@ func TestCensoringFormatterWithCornerCases(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			formatter := NewCensoringFormatter(baseFormatter, func() sets.String {
+			formatter := NewCensoringFormatter(baseFormatter, func() sets.Set[string] {
 				return tc.secrets
 			})
 
@@ -151,8 +151,8 @@ func TestCensoringFormatterWithCornerCases(t *testing.T) {
 func TestCensoringFormatterDoesntDeadLockWhenUsedWithStandardLogger(t *testing.T) {
 	// The whitespace makes the censoring fornmatter emit a warning. If it uses the same global
 	// logger, that results in a deadlock.
-	logrus.SetFormatter(NewCensoringFormatter(logrus.StandardLogger().Formatter, func() sets.String {
-		return sets.NewString(" untrimmed")
+	logrus.SetFormatter(NewCensoringFormatter(logrus.StandardLogger().Formatter, func() sets.Set[string] {
+		return sets.New[string](" untrimmed")
 	}))
 	logrus.Info("test")
 }

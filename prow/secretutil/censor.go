@@ -53,10 +53,10 @@ var _ Censorer = &ReloadingCensorer{}
 // change the overall size of the input.
 // Censoring will attempt to be intelligent about how content is removed from
 // the input - when the ReloadingCensorer is given secrets to censor, we:
-//  - handle the case where whitespace is needed to be trimmed
-//  - censor not only the plaintext representation of the secret but also
-//    the base64-encoded representation of it, as it's common for k8s
-//    Secrets to contain information in this way
+//   - handle the case where whitespace is needed to be trimmed
+//   - censor not only the plaintext representation of the secret but also
+//     the base64-encoded representation of it, as it's common for k8s
+//     Secrets to contain information in this way
 func (c *ReloadingCensorer) Censor(input *[]byte) {
 	c.RLock()
 	// we know our replacer will never have to allocate, as our replacements

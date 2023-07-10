@@ -326,7 +326,7 @@ func (c *controller) clean() {
 
 	// Only delete pod if its prowjob is marked as finished
 	pjMap := map[string]*prowapi.ProwJob{}
-	isFinished := sets.NewString()
+	isFinished := sets.New[string]()
 
 	maxProwJobAge := c.config().Sinker.MaxProwJobAge.Duration
 	for i, prowJob := range prowJobs.Items {
@@ -484,7 +484,7 @@ func (c *controller) clean() {
 func (c *controller) cleanupKubernetesFinalizer(pod *corev1api.Pod, client ctrlruntimeclient.Client) error {
 
 	oldPod := pod.DeepCopy()
-	pod.Finalizers = sets.NewString(pod.Finalizers...).Delete(kubernetesreporterapi.FinalizerName).List()
+	pod.Finalizers = sets.List(sets.New[string](pod.Finalizers...).Delete(kubernetesreporterapi.FinalizerName))
 
 	if err := client.Patch(c.ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
 		return fmt.Errorf("failed to patch pod: %w", err)
@@ -535,7 +535,7 @@ func podNeedsKubernetesFinalizerCleanup(log *logrus.Entry, pj *prowapi.ProwJob, 
 		return true
 	}
 	// This is always a bug
-	if pj.Complete() && pj.Status.PrevReportStates[kubernetesreporterapi.ReporterName] == pj.Status.State && sets.NewString(pod.Finalizers...).Has(kubernetesreporterapi.FinalizerName) {
+	if pj.Complete() && pj.Status.PrevReportStates[kubernetesreporterapi.ReporterName] == pj.Status.State && sets.New[string](pod.Finalizers...).Has(kubernetesreporterapi.FinalizerName) {
 		log.WithField("pj", pj.Name).Errorf("BUG: Pod for prowjob still had the %s finalizer after completing and being successfully reported by the %s reporter", kubernetesreporterapi.FinalizerName, kubernetesreporterapi.ReporterName)
 
 		return true

@@ -339,7 +339,7 @@ func TestFailedJobs(t *testing.T) {
 	cases := []struct {
 		name     string
 		messages []gerrit.ChangeMessageInfo
-		expected sets.String
+		expected sets.Set[string]
 	}{
 		{
 			name: "basically works",
@@ -355,7 +355,7 @@ func TestFailedJobs(t *testing.T) {
 				}), nil),
 				message("also ignore this", nil),
 			},
-			expected: sets.NewString("should-fail", "should-abort"),
+			expected: sets.New[string]("should-fail", "should-abort"),
 		},
 		{
 			name: "ignore report from someone else",
@@ -371,7 +371,7 @@ func TestFailedJobs(t *testing.T) {
 					"should-fail": prowapi.FailureState,
 				}), nil),
 			},
-			expected: sets.NewString("should-fail"),
+			expected: sets.New[string]("should-fail"),
 		},
 		{
 			name: "ignore failures on other revisions",
@@ -387,7 +387,7 @@ func TestFailedJobs(t *testing.T) {
 					msg.RevisionNumber = old
 				}),
 			},
-			expected: sets.NewString("current-fail"),
+			expected: sets.New[string]("current-fail"),
 		},
 		{
 			name: "ignore jobs in my earlier report",
@@ -409,7 +409,7 @@ func TestFailedJobs(t *testing.T) {
 					"still-pass":       prowapi.SuccessState,
 				}), nil),
 			},
-			expected: sets.NewString("old-broken", "new-broken", "still-fail", "pass-then-failed"),
+			expected: sets.New[string]("old-broken", "new-broken", "still-fail", "pass-then-failed"),
 		},
 		{
 			// https://en.wikipedia.org/wiki/Gravitational_redshift
@@ -430,7 +430,7 @@ func TestFailedJobs(t *testing.T) {
 					change.Date.Time = change.Date.Time.Add(-time.Hour)
 				}),
 			},
-			expected: sets.NewString("earth-broken", "blackhole-broken", "fail-earth-pass-blackhole"),
+			expected: sets.New[string]("earth-broken", "blackhole-broken", "fail-earth-pass-blackhole"),
 		},
 	}
 
@@ -3141,22 +3141,22 @@ func TestProcessChange(t *testing.T) {
 func TestIsProjectExemptFromHelp(t *testing.T) {
 	var testcases = []struct {
 		name                   string
-		projectsExemptFromHelp map[string]sets.String
+		projectsExemptFromHelp map[string]sets.Set[string]
 		instance               string
 		project                string
 		expected               bool
 	}{
 		{
 			name:                   "no project is exempt",
-			projectsExemptFromHelp: map[string]sets.String{},
+			projectsExemptFromHelp: map[string]sets.Set[string]{},
 			instance:               "foo",
 			project:                "bar",
 			expected:               false,
 		},
 		{
 			name: "the instance does not match",
-			projectsExemptFromHelp: map[string]sets.String{
-				"foo": sets.NewString("bar"),
+			projectsExemptFromHelp: map[string]sets.Set[string]{
+				"foo": sets.New[string]("bar"),
 			},
 			instance: "fuz",
 			project:  "bar",
@@ -3164,8 +3164,8 @@ func TestIsProjectExemptFromHelp(t *testing.T) {
 		},
 		{
 			name: "the instance matches but the project does not",
-			projectsExemptFromHelp: map[string]sets.String{
-				"foo": sets.NewString("baz"),
+			projectsExemptFromHelp: map[string]sets.Set[string]{
+				"foo": sets.New[string]("baz"),
 			},
 			instance: "fuz",
 			project:  "bar",
@@ -3173,8 +3173,8 @@ func TestIsProjectExemptFromHelp(t *testing.T) {
 		},
 		{
 			name: "the project is exempt",
-			projectsExemptFromHelp: map[string]sets.String{
-				"foo": sets.NewString("bar"),
+			projectsExemptFromHelp: map[string]sets.Set[string]{
+				"foo": sets.New[string]("bar"),
 			},
 			instance: "foo",
 			project:  "bar",

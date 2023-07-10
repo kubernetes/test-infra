@@ -1767,9 +1767,9 @@ Instructions for interacting with me using PR comments are available [here](http
 				Bugs:             map[int]bugzilla.Bug{},
 				SubComponents:    map[int]map[string][]string{},
 				BugComments:      testCase.bugComments,
-				BugErrors:        sets.NewInt(),
+				BugErrors:        sets.New[int](),
 				BugErrorMessages: testCase.bugErrorMessages,
-				BugCreateErrors:  sets.NewString(),
+				BugCreateErrors:  sets.New[string](),
 				ExternalBugs:     map[int][]bugzilla.ExternalBug{},
 			}
 			for _, bug := range testCase.bugs {
@@ -1793,25 +1793,25 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.body != "" {
 				e.body = testCase.body
 			}
-			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name), sets.NewString("org/repo"))
+			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name), sets.New[string]("org/repo"))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
 
-			expected := sets.NewString()
+			expected := sets.New[string]()
 			for _, label := range testCase.expectedLabels {
 				expected.Insert(fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
 			}
 
-			actual := sets.NewString(gc.IssueLabelsExisting...)
+			actual := sets.New[string](gc.IssueLabelsExisting...)
 			actual.Insert(gc.IssueLabelsAdded...)
 			actual.Delete(gc.IssueLabelsRemoved...)
 
 			if missing := expected.Difference(actual); missing.Len() > 0 {
-				t.Errorf("%s: missing expected labels: %v", testCase.name, missing.List())
+				t.Errorf("%s: missing expected labels: %v", testCase.name, sets.List(missing))
 			}
 			if extra := actual.Difference(expected); extra.Len() > 0 {
-				t.Errorf("%s: unexpected labels: %v", testCase.name, extra.List())
+				t.Errorf("%s: unexpected labels: %v", testCase.name, sets.List(extra))
 			}
 
 			checkComments(gc, testCase.name, testCase.expectedComment, t)

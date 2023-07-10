@@ -469,7 +469,7 @@ func TestTideQuery(t *testing.T) {
 	}
 
 	elements := strings.Fields(q)
-	alreadySeen := sets.String{}
+	alreadySeen := sets.Set[string]{}
 	for _, element := range elements {
 		if alreadySeen.Has(element) {
 			t.Errorf("element %q was multiple times in the query string", element)
@@ -510,7 +510,7 @@ func TestOrgQueries(t *testing.T) {
 			}
 
 			elements := strings.Fields(query)
-			alreadySeen := sets.String{}
+			alreadySeen := sets.Set[string]{}
 			for _, element := range elements {
 				if alreadySeen.Has(element) {
 					t.Errorf("element %q was multiple times in the query string", element)
@@ -557,14 +557,14 @@ func TestOrgExceptionsAndRepos(t *testing.T) {
 		},
 	}
 
-	expectedOrgs := map[string]sets.String{
-		"foo":   sets.NewString(),
-		"k8s":   sets.NewString("k8s/k8s"),
-		"kuber": sets.NewString("kuber/netes"),
-		"org":   sets.NewString(),
-		"org2":  sets.NewString("org2/repo", "org2/repo2"),
+	expectedOrgs := map[string]sets.Set[string]{
+		"foo":   sets.New[string](),
+		"k8s":   sets.New[string]("k8s/k8s"),
+		"kuber": sets.New[string]("kuber/netes"),
+		"org":   sets.New[string](),
+		"org2":  sets.New[string]("org2/repo", "org2/repo2"),
 	}
-	expectedRepos := sets.NewString("foo/bar", "baz/bar", "org2/repo3")
+	expectedRepos := sets.New[string]("foo/bar", "baz/bar", "org2/repo3")
 
 	orgs, repos := queries.OrgExceptionsAndRepos()
 	if !reflect.DeepEqual(orgs, expectedOrgs) {
@@ -1456,7 +1456,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
-						Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)},
+						Enabled: map[string]*bool{"*": utilpointer.Bool(true)},
 					},
 				},
 			},
@@ -1504,7 +1504,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
-						Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)},
+						Enabled: map[string]*bool{"*": utilpointer.Bool(true)},
 					},
 				},
 			},
@@ -1969,7 +1969,7 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 			OptionalContexts:    tc.optional,
 		}
 		missingContexts := cp.MissingRequiredContexts(tc.existingContexts)
-		if !sets.NewString(missingContexts...).Equal(sets.NewString(tc.expectedContexts...)) {
+		if !sets.New[string](missingContexts...).Equal(sets.New[string](tc.expectedContexts...)) {
 			t.Errorf("%s - expected %v got %v", tc.name, tc.expectedContexts, missingContexts)
 		}
 	}

@@ -620,7 +620,7 @@ func Test_gatherOptions(t *testing.T) {
 	cases := []struct {
 		name       string
 		args       map[string]string
-		del        sets.String
+		del        sets.Set[string]
 		koDataPath string
 		expected   func(*options)
 		err        bool

@@ -92,7 +92,7 @@ func NewJobAgent(ctx context.Context, pjLister PJListingClient, hiddenOnly, show
 		kc: &filteringProwJobLister{
 			ctx:         ctx,
 			client:      pjLister,
-			hiddenRepos: func() sets.String { return sets.NewString(cfg().Deck.HiddenRepos...) },
+			hiddenRepos: func() sets.Set[string] { return sets.New[string](cfg().Deck.HiddenRepos...) },
 			hiddenOnly:  hiddenOnly,
 			showHidden:  showHidden,
 			tenantIDs:   tenantIDs,
@@ -107,7 +107,7 @@ type filteringProwJobLister struct {
 	ctx         context.Context
 	client      PJListingClient
 	cfg         config.Getter
-	hiddenRepos func() sets.String
+	hiddenRepos func() sets.Set[string]
 	hiddenOnly  bool
 	showHidden  bool
 	tenantIDs   []string

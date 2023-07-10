@@ -142,7 +142,7 @@ func FileUpload(file string) UploadFunc {
 func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 	return func(writer dataWriter) error {
 		if fi, err := os.Stat(file); err == nil {
-			opts.BufferSize = utilpointer.Int64Ptr(fi.Size())
+			opts.BufferSize = utilpointer.Int64(fi.Size())
 			if *opts.BufferSize > 25*1024*1024 {
 				*opts.BufferSize = 25 * 1024 * 1024
 			}

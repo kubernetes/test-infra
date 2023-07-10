@@ -500,7 +500,7 @@ type fakePullRequestService struct {
 	prCount   int
 }
 
-//	List returns 2 PRs per page of results.
+// List returns 2 PRs per page of results.
 func (f *fakePullRequestService) List(ctx context.Context, org, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
 	resp := &github.Response{
 		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}},

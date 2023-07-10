@@ -43,7 +43,7 @@ const (
 // Repo allows querying and interacting with OWNERS information in a repo.
 type Repo interface {
 	Approvers(path string) layeredsets.String
-	LeafApprovers(path string) sets.String
+	LeafApprovers(path string) sets.Set[string]
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
 	IsAutoApproveUnownedSubfolders(directory string) bool
@@ -71,8 +71,8 @@ func NewOwners(log *logrus.Entry, filenames []string, r Repo, s int64) Owners {
 }
 
 // GetApprovers returns a map from ownersFiles -> people that are approvers in them
-func (o Owners) GetApprovers() map[string]sets.String {
-	ownersToApprovers := map[string]sets.String{}
+func (o Owners) GetApprovers() map[string]sets.Set[string] {
+	ownersToApprovers := map[string]sets.Set[string]{}
 
 	for ownersFilename := range o.GetOwnersSet() {
 		ownersToApprovers[ownersFilename] = o.repo.Approvers(ownersFilename).Set()
@@ -82,8 +82,8 @@ func (o Owners) GetApprovers() map[string]sets.String {
 }
 
 // GetLeafApprovers returns a map from ownersFiles -> people that are approvers in them (only the leaf)
-func (o Owners) GetLeafApprovers() map[string]sets.String {
-	ownersToApprovers := map[string]sets.String{}
+func (o Owners) GetLeafApprovers() map[string]sets.Set[string] {
+	ownersToApprovers := map[string]sets.Set[string]{}
 
 	for fn := range o.GetOwnersSet() {
 		ownersToApprovers[fn] = o.repo.LeafApprovers(fn)
@@ -108,21 +108,21 @@ func (o Owners) GetAllPotentialApprovers() []string {
 }
 
 // GetReverseMap returns a map from people -> OWNERS files for which they are an approver
-func (o Owners) GetReverseMap(approvers map[string]sets.String) map[string]sets.String {
-	approverOwnersfiles := map[string]sets.String{}
+func (o Owners) GetReverseMap(approvers map[string]sets.Set[string]) map[string]sets.Set[string] {
+	approverOwnersfiles := map[string]sets.Set[string]{}
 	for ownersFile, approvers := range approvers {
 		for approver := range approvers {
 			if _, ok := approverOwnersfiles[approver]; ok {
 				approverOwnersfiles[approver].Insert(ownersFile)
 			} else {
-				approverOwnersfiles[approver] = sets.NewString(ownersFile)
+				approverOwnersfiles[approver] = sets.New[string](ownersFile)
 			}
 		}
 	}
 	return approverOwnersfiles
 }
 
-func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.String, unapproved sets.String) string {
+func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.Set[string], unapproved sets.Set[string]) string {
 	maxCovered := 0
 	var bestPerson string
 	for _, approver := range allApprovers {
@@ -137,7 +137,7 @@ func findMostCoveringApprover(allApprovers []string, reverseMap map[string]sets.
 
 // temporaryUnapprovedFiles returns the list of files that wouldn't be
 // approved by the given set of approvers.
-func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
+func (o Owners) temporaryUnapprovedFiles(approvers sets.Set[string]) sets.Set[string] {
 	ap := NewApprovers(o)
 	for approver := range approvers {
 		ap.AddApprover(approver, "", false)
@@ -147,15 +147,15 @@ func (o Owners) temporaryUnapprovedFiles(approvers sets.String) sets.String {
 
 // KeepCoveringApprovers finds who we should keep as suggested approvers given a pre-selection
 // knownApprovers must be a subset of potentialApprovers.
-func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownApprovers sets.String, potentialApprovers []string) sets.String {
+func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.Set[string], knownApprovers sets.Set[string], potentialApprovers []string) sets.Set[string] {
 	if len(potentialApprovers) == 0 {
 		o.log.Debug("No potential approvers exist to filter for relevance. Does this repo have OWNERS files?")
 	}
-	keptApprovers := sets.NewString()
+	keptApprovers := sets.New[string]()
 
 	unapproved := o.temporaryUnapprovedFiles(knownApprovers)
 
-	for _, suggestedApprover := range o.GetSuggestedApprovers(reverseMap, potentialApprovers).List() {
+	for _, suggestedApprover := range sets.List(o.GetSuggestedApprovers(reverseMap, potentialApprovers)) {
 		if reverseMap[suggestedApprover].Intersection(unapproved).Len() != 0 {
 			keptApprovers.Insert(suggestedApprover)
 		}
@@ -166,12 +166,12 @@ func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownAp
 
 // GetSuggestedApprovers solves the exact cover problem, finding an approver capable of
 // approving every OWNERS file in the PR
-func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potentialApprovers []string) sets.String {
+func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.Set[string], potentialApprovers []string) sets.Set[string] {
 	ap := NewApprovers(o)
 	for !ap.RequirementsMet() {
 		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
 		if newApprover == "" {
-			o.log.Debugf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
+			o.log.Debugf("Couldn't find/suggest approvers for each files. Unapproved: %q", sets.List(ap.UnapprovedFiles()))
 			return ap.GetCurrentApproversSet()
 		}
 		ap.AddApprover(newApprover, "", false)
@@ -181,8 +181,8 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 }
 
 // GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved
-func (o Owners) GetOwnersSet() sets.String {
-	owners := sets.NewString()
+func (o Owners) GetOwnersSet() sets.Set[string] {
+	owners := sets.New[string]()
 
 	var newFilenames []string
 	for _, toApprove := range o.filenames {
@@ -218,14 +218,14 @@ func (o Owners) GetShuffledApprovers() []string {
 // Subdirs will not be removed if they are configured to have no parent OWNERS files or if any
 // OWNERS file in the relative path between the subdir and the higher level dir is configured to
 // have no parent OWNERS files.
-func (o Owners) removeSubdirs(dirs sets.String) {
+func (o Owners) removeSubdirs(dirs sets.Set[string]) {
 	canonicalize := func(p string) string {
 		if p == "." {
 			return ""
 		}
 		return p
 	}
-	for _, dir := range dirs.List() {
+	for _, dir := range sets.List(dirs) {
 		path := dir
 		for {
 			if o.repo.IsNoParentOwners(path) || canonicalize(path) == "" {
@@ -263,22 +263,22 @@ func (a Approval) String() string {
 type Approvers struct {
 	owners          Owners
 	approvers       map[string]Approval // The keys of this map are normalized to lowercase.
-	assignees       sets.String
+	assignees       sets.Set[string]
 	AssociatedIssue int
 	RequireIssue    bool
 
 	ManuallyApproved func() bool
 }
 
-// CaseInsensitiveIntersection runs the intersection between to sets.String in a
+// CaseInsensitiveIntersection runs the intersection between to sets.Set[string] in a
 // case-insensitive way. It returns the lowercased intersection.
-func CaseInsensitiveIntersection(one, other sets.String) sets.String {
-	lower := sets.NewString()
+func CaseInsensitiveIntersection(one, other sets.Set[string]) sets.Set[string] {
+	lower := sets.New[string]()
 	for item := range other {
 		lower.Insert(strings.ToLower(item))
 	}
 
-	intersection := sets.NewString()
+	intersection := sets.New[string]()
 	for item := range one {
 		if lower.Has(strings.ToLower(item)) {
 			intersection.Insert(item)
@@ -292,7 +292,7 @@ func NewApprovers(owners Owners) Approvers {
 	return Approvers{
 		owners:    owners,
 		approvers: map[string]Approval{},
-		assignees: sets.NewString(),
+		assignees: sets.New[string](),
 
 		ManuallyApproved: func() bool {
 			return false
@@ -364,8 +364,8 @@ func (ap *Approvers) AddAssignees(logins ...string) {
 }
 
 // GetCurrentApproversSet returns the set of approvers (login only, normalized to lower case)
-func (ap Approvers) GetCurrentApproversSet() sets.String {
-	currentApprovers := sets.NewString()
+func (ap Approvers) GetCurrentApproversSet() sets.Set[string] {
+	currentApprovers := sets.New[string]()
 
 	for approver := range ap.approvers {
 		currentApprovers.Insert(approver)
@@ -375,8 +375,8 @@ func (ap Approvers) GetCurrentApproversSet() sets.String {
 }
 
 // GetCurrentApproversSetCased returns the set of approvers logins with the original cases.
-func (ap Approvers) GetCurrentApproversSetCased() sets.String {
-	currentApprovers := sets.NewString()
+func (ap Approvers) GetCurrentApproversSetCased() sets.Set[string] {
+	currentApprovers := sets.New[string]()
 
 	for _, approval := range ap.approvers {
 		currentApprovers.Insert(approval.Login)
@@ -387,8 +387,8 @@ func (ap Approvers) GetCurrentApproversSetCased() sets.String {
 
 // GetNoIssueApproversSet returns the set of "no-issue" approvers (login
 // only)
-func (ap Approvers) GetNoIssueApproversSet() sets.String {
-	approvers := sets.NewString()
+func (ap Approvers) GetNoIssueApproversSet() sets.Set[string] {
+	approvers := sets.New[string]()
 
 	for approver := range ap.NoIssueApprovers() {
 		approvers.Insert(approver)
@@ -398,8 +398,8 @@ func (ap Approvers) GetNoIssueApproversSet() sets.String {
 }
 
 // GetFilesApprovers returns a map from files -> list of current approvers.
-func (ap Approvers) GetFilesApprovers() map[string]sets.String {
-	filesApprovers := map[string]sets.String{}
+func (ap Approvers) GetFilesApprovers() map[string]sets.Set[string] {
+	filesApprovers := map[string]sets.Set[string]{}
 	currentApprovers := ap.GetCurrentApproversSetCased()
 	for ownersFilename, potentialApprovers := range ap.owners.GetApprovers() {
 		// The order of parameter matters here:
@@ -439,8 +439,8 @@ func (ap Approvers) NoIssueApprovers() map[string]Approval {
 }
 
 // UnapprovedFiles returns owners files that still need approval
-func (ap Approvers) UnapprovedFiles() sets.String {
-	unapproved := sets.NewString()
+func (ap Approvers) UnapprovedFiles() sets.Set[string] {
+	unapproved := sets.New[string]()
 	for fn, approvers := range ap.GetFilesApprovers() {
 		if len(approvers) == 0 {
 			unapproved.Insert(fn)
@@ -453,7 +453,7 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 func (ap Approvers) GetFiles(baseURL *url.URL, branch string) []File {
 	var allOwnersFiles []File
 	filesApprovers := ap.GetFilesApprovers()
-	for _, file := range ap.owners.GetOwnersSet().List() {
+	for _, file := range sets.List(ap.owners.GetOwnersSet()) {
 		if len(filesApprovers[file]) == 0 {
 			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{
 				baseURL:        baseURL,
@@ -501,9 +501,9 @@ func (ap Approvers) GetCCs() []string {
 	approversAndSuggested := currentApprovers.Union(suggested)
 	everyone := approversAndSuggested.Union(ap.assignees)
 	fullReverseMap := ap.owners.GetReverseMap(ap.owners.GetApprovers())
-	keepAssignees := ap.owners.KeepCoveringApprovers(fullReverseMap, approversAndSuggested, everyone.List())
+	keepAssignees := ap.owners.KeepCoveringApprovers(fullReverseMap, approversAndSuggested, sets.List(everyone))
 
-	return suggested.Union(keepAssignees).List()
+	return sets.List(suggested.Union(keepAssignees))
 }
 
 // AreFilesApproved returns a bool indicating whether or not OWNERS files associated with
@@ -534,7 +534,7 @@ func (ap Approvers) IsApproved() bool {
 func (ap Approvers) ListApprovals() []Approval {
 	approvals := []Approval{}
 
-	for _, approver := range ap.GetCurrentApproversSet().List() {
+	for _, approver := range sets.List(ap.GetCurrentApproversSet()) {
 		approvals = append(approvals, ap.approvers[approver])
 	}
 
@@ -545,7 +545,7 @@ func (ap Approvers) ListApprovals() []Approval {
 func (ap Approvers) ListNoIssueApprovals() []Approval {
 	approvals := []Approval{}
 
-	for _, approver := range ap.GetNoIssueApproversSet().List() {
+	for _, approver := range sets.List(ap.GetNoIssueApproversSet()) {
 		approvals = append(approvals, ap.approvers[approver])
 	}
 
@@ -554,12 +554,12 @@ func (ap Approvers) ListNoIssueApprovals() []Approval {
 
 // AssignedCCs returns potential approvers that are already assigned
 func (ap Approvers) AssignedCCs() []string {
-	return sets.NewString(ap.GetCCs()...).Intersection(ap.assignees).List()
+	return sets.List(sets.New[string](ap.GetCCs()...).Intersection(ap.assignees))
 }
 
 // SuggestedCCs returns potential approvers that are not already assigned
 func (ap Approvers) SuggestedCCs() []string {
-	return sets.NewString(ap.GetCCs()...).Difference(ap.assignees).List()
+	return sets.List(sets.New[string](ap.GetCCs()...).Difference(ap.assignees))
 }
 
 // File in an interface for files
@@ -573,7 +573,7 @@ type ApprovedFile struct {
 	filepath       string
 	ownersFilename string
 	// approvers is the set of users that approved this file change.
-	approvers sets.String
+	approvers sets.Set[string]
 	branch    string
 }
 
@@ -595,7 +595,7 @@ func (a ApprovedFile) String() string {
 		a.branch,
 		fullOwnersPath,
 	)
-	return fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(a.approvers.List(), ","))
+	return fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(sets.List(a.approvers), ","))
 }
 
 func (ua UnapprovedFile) String() string {

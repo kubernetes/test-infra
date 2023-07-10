@@ -88,9 +88,9 @@ func TestRunRequested(t *testing.T) {
 		pr *github.PullRequest
 
 		requestedJobs   []config.Presubmit
-		jobCreationErrs sets.String // job names which fail creation
+		jobCreationErrs sets.Set[string] // job names which fail creation
 
-		expectedJobs sets.String // by name
+		expectedJobs sets.Set[string] // by name
 		expectedErr  bool
 	}{
 		{
@@ -124,7 +124,7 @@ func TestRunRequested(t *testing.T) {
 				},
 				Reporter: config.Reporter{Context: "second-context"},
 			}},
-			expectedJobs: sets.NewString("first", "second"),
+			expectedJobs: sets.New[string]("first", "second"),
 		},
 		{
 			name: "all requested jobs get run",
@@ -153,7 +153,7 @@ func TestRunRequested(t *testing.T) {
 				},
 				Reporter: config.Reporter{Context: "second-context"},
 			}},
-			expectedJobs: sets.NewString("first", "second"),
+			expectedJobs: sets.New[string]("first", "second"),
 		},
 		{
 			name: "failure on job creation bubbles up but doesn't stop others from starting",
@@ -182,8 +182,8 @@ func TestRunRequested(t *testing.T) {
 				},
 				Reporter: config.Reporter{Context: "second-context"},
 			}},
-			jobCreationErrs: sets.NewString("first"),
-			expectedJobs:    sets.NewString("second"),
+			jobCreationErrs: sets.New[string]("first"),
+			expectedJobs:    sets.New[string]("second"),
 			expectedErr:     true,
 		},
 		{
@@ -201,7 +201,7 @@ func TestRunRequested(t *testing.T) {
 				Head: github.PullRequestBranch{
 					SHA: "foobar1",
 				},
-				Mergable: utilpointer.BoolPtr(false),
+				Mergable: utilpointer.Bool(false),
 			},
 			requestedJobs: []config.Presubmit{{
 				JobBase: config.JobBase{
@@ -214,7 +214,7 @@ func TestRunRequested(t *testing.T) {
 				},
 				Reporter: config.Reporter{Context: "second-context"},
 			}},
-			expectedJobs: sets.NewString(),
+			expectedJobs: sets.New[string](),
 		},
 	}
 
@@ -249,7 +249,7 @@ func TestRunRequested(t *testing.T) {
 				t.Errorf("unexpected error: %v", err)
 			}
 
-			observedCreatedProwJobs := sets.NewString()
+			observedCreatedProwJobs := sets.New[string]()
 			existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 			if err != nil {
 				t.Errorf("could not list current state of prow jobs: %v", err)
@@ -260,10 +260,10 @@ func TestRunRequested(t *testing.T) {
 			}
 
 			if missing := testCase.expectedJobs.Difference(observedCreatedProwJobs); missing.Len() > 0 {
-				t.Errorf("didn't create all expected ProwJobs, missing: %s", missing.List())
+				t.Errorf("didn't create all expected ProwJobs, missing: %s", sets.List(missing))
 			}
 			if extra := observedCreatedProwJobs.Difference(testCase.expectedJobs); extra.Len() > 0 {
-				t.Errorf("created unexpected ProwJobs: %s", extra.List())
+				t.Errorf("created unexpected ProwJobs: %s", sets.List(extra))
 			}
 		})
 	}
@@ -461,7 +461,7 @@ func TestGetPresubmits(t *testing.T) {
 		name string
 		cfg  *config.Config
 
-		expectedPresubmits sets.String
+		expectedPresubmits sets.Set[string]
 	}{
 		{
 			name: "Result of GetPresubmits is used by default",
@@ -481,11 +481,11 @@ func TestGetPresubmits(t *testing.T) {
 					},
 				},
 				ProwConfig: config.ProwConfig{
-					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.Bool(true)}},
 				},
 			},
 
-			expectedPresubmits: sets.NewString("my-inrepoconfig-presubmit", "my-static-presubmit"),
+			expectedPresubmits: sets.New[string]("my-inrepoconfig-presubmit", "my-static-presubmit"),
 		},
 		{
 			name: "Fallback to static presubmits",
@@ -505,11 +505,11 @@ func TestGetPresubmits(t *testing.T) {
 					},
 				},
 				ProwConfig: config.ProwConfig{
-					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.Bool(true)}},
 				},
 			},
 
-			expectedPresubmits: sets.NewString("my-static-presubmit"),
+			expectedPresubmits: sets.New[string]("my-static-presubmit"),
 		},
 	}
 
@@ -520,7 +520,7 @@ func TestGetPresubmits(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			presubmits := getPresubmits(logrus.NewEntry(logrus.New()), nil, tc.cfg, orgRepo, shaGetter, shaGetter)
-			actualPresubmits := sets.String{}
+			actualPresubmits := sets.Set[string]{}
 			for _, presubmit := range presubmits {
 				actualPresubmits.Insert(presubmit.Name)
 			}
@@ -539,7 +539,7 @@ func TestGetPostsubmits(t *testing.T) {
 		name string
 		cfg  *config.Config
 
-		expectedPostsubmits sets.String
+		expectedPostsubmits sets.Set[string]
 	}{
 		{
 			name: "Result of GetPostsubmits is used by default",
@@ -559,11 +559,11 @@ func TestGetPostsubmits(t *testing.T) {
 					},
 				},
 				ProwConfig: config.ProwConfig{
-					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.Bool(true)}},
 				},
 			},
 
-			expectedPostsubmits: sets.NewString("my-inrepoconfig-postsubmit", "my-static-postsubmit"),
+			expectedPostsubmits: sets.New[string]("my-inrepoconfig-postsubmit", "my-static-postsubmit"),
 		},
 		{
 			name: "Fallback to static postsubmits",
@@ -583,11 +583,11 @@ func TestGetPostsubmits(t *testing.T) {
 					},
 				},
 				ProwConfig: config.ProwConfig{
-					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+					InRepoConfig: config.InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.Bool(true)}},
 				},
 			},
 
-			expectedPostsubmits: sets.NewString("my-static-postsubmit"),
+			expectedPostsubmits: sets.New[string]("my-static-postsubmit"),
 		},
 	}
 
@@ -598,7 +598,7 @@ func TestGetPostsubmits(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			postsubmits := getPostsubmits(logrus.NewEntry(logrus.New()), nil, tc.cfg, orgRepo, shaGetter)
-			actualPostsubmits := sets.String{}
+			actualPostsubmits := sets.Set[string]{}
 			for _, postsubmit := range postsubmits {
 				actualPostsubmits.Insert(postsubmit.Name)
 			}

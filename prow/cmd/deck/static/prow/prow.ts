@@ -65,7 +65,7 @@ function optionsForRepo(repository: string): RepoOptions {
     opts.clusters[cluster] = true;
     opts.states[state] = true;
 
-    
+
     const repoKey = `${org}/${repo}`;
     if (repoKey) {
       opts.repos[repoKey] = true;

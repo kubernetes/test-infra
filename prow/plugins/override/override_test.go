@@ -57,26 +57,26 @@ func (froc *fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoow
 }
 
 type fakeOwnersClient struct {
-	topLevelApprovers sets.String
+	topLevelApprovers sets.Set[string]
 }
 
-func (foc *fakeOwnersClient) AllApprovers() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllApprovers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (foc *fakeOwnersClient) AllOwners() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllOwners() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (foc *fakeOwnersClient) AllReviewers() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllReviewers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
 	return ownersconfig.FakeFilenames
 }
 
-func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.Set[string] {
 	return foc.topLevelApprovers
 }
 
@@ -84,8 +84,8 @@ func (foc *fakeOwnersClient) Approvers(path string) layeredsets.String {
 	return layeredsets.String{}
 }
 
-func (foc *fakeOwnersClient) LeafApprovers(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) LeafApprovers(path string) sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (foc *fakeOwnersClient) FindApproverOwnersForFile(path string) string {
@@ -96,20 +96,20 @@ func (foc *fakeOwnersClient) Reviewers(path string) layeredsets.String {
 	return layeredsets.String{}
 }
 
-func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) LeafReviewers(path string) sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (foc *fakeOwnersClient) FindReviewersOwnersForFile(path string) string {
 	return ""
 }
 
-func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
@@ -133,7 +133,7 @@ type fakeClient struct {
 	statuses         []github.Status
 	branchProtection *github.BranchProtection
 	ps               []config.Presubmit
-	jobs             sets.String
+	jobs             sets.Set[string]
 	owners           ownersClient
 	checkruns        *github.CheckRunList
 	usesAppsAuth     bool
@@ -370,7 +370,7 @@ func TestHandle(t *testing.T) {
 		number            int
 		expected          []github.Status
 		expectedCheckRuns *github.CheckRunList
-		jobs              sets.String
+		jobs              sets.Set[string]
 		checkComments     []string
 		options           plugins.Override
 		approvers         []string
@@ -858,7 +858,7 @@ func TestHandle(t *testing.T) {
 					},
 				},
 			},
-			jobs: sets.NewString("prow-job"),
+			jobs: sets.New[string]("prow-job"),
 			expected: []github.Status{
 				{
 					Context:     "prow-job",
@@ -887,7 +887,7 @@ func TestHandle(t *testing.T) {
 					},
 				},
 			},
-			jobs: sets.NewString("ci/prow/prow-job"),
+			jobs: sets.New[string]("ci/prow/prow-job"),
 			expected: []github.Status{
 				{
 					Context:     "ci/prow/prow-job",
@@ -921,7 +921,7 @@ func TestHandle(t *testing.T) {
 					},
 				},
 			},
-			jobs: sets.NewString("ci/prow/prow-job"),
+			jobs: sets.New[string]("ci/prow/prow-job"),
 			expected: []github.Status{
 				{
 					Context:     "ci/prow/context",
@@ -955,7 +955,7 @@ func TestHandle(t *testing.T) {
 					},
 				},
 			},
-			jobs: sets.NewString("ci/prow/prow-job"),
+			jobs: sets.New[string]("ci/prow/prow-job"),
 			expected: []github.Status{
 				{
 					Context:     "ci/prow/prow-job",
@@ -1169,7 +1169,7 @@ func TestHandle(t *testing.T) {
 					},
 				},
 			},
-			jobs: sets.NewString("problematic-test"),
+			jobs: sets.New[string]("problematic-test"),
 			expected: []github.Status{
 				{
 					Context:     "problematic-test",
@@ -1227,21 +1227,21 @@ func TestHandle(t *testing.T) {
 
 			froc := &fakeRepoownersClient{
 				foc: &fakeOwnersClient{
-					topLevelApprovers: sets.NewString(tc.approvers...),
+					topLevelApprovers: sets.New[string](tc.approvers...),
 				},
 			}
 			fc := fakeClient{
 				statuses:         tc.contexts,
 				branchProtection: tc.branchProtection,
 				ps:               tc.presubmits,
-				jobs:             sets.String{},
+				jobs:             sets.Set[string]{},
 				owners:           froc,
 				checkruns:        tc.checkruns,
 				usesAppsAuth:     tc.usesAppsAuth,
 			}
 
 			if tc.jobs == nil {
-				tc.jobs = sets.String{}
+				tc.jobs = sets.Set[string]{}
 			}
 
 			err := handle(&fc, log, &event, tc.options)

@@ -20,7 +20,7 @@ import (
 	"context"
 	"errors"
 
-	cloudbuildpb "google.golang.org/genproto/googleapis/devtools/cloudbuild/v1"
+	"cloud.google.com/go/cloudbuild/apiv1/v2/cloudbuildpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -65,7 +65,7 @@ func (fc *FakeClient) ListBuildsByTag(ctx context.Context, project string, tags 
 	}
 	for _, bld := range bldsInProj {
 		bld := bld
-		if sets.NewString(bld.Tags...).HasAll(tags...) {
+		if sets.New[string](bld.Tags...).HasAll(tags...) {
 			res = append(res, bld)
 		}
 	}

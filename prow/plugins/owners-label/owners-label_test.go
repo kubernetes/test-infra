@@ -42,22 +42,22 @@ func formatLabels(labels ...string) []string {
 }
 
 type fakeOwnersClient struct {
-	labels map[string]sets.String
+	labels map[string]sets.Set[string]
 }
 
-func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
+func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.Set[string] {
 	return foc.labels[path]
 }
 
 // TestHandle tests that the handle function requests reviews from the correct number of unique users.
 func TestHandle(t *testing.T) {
 	foc := &fakeOwnersClient{
-		labels: map[string]sets.String{
-			"a.go": sets.NewString(labels.LGTM, labels.Approved, "kind/docs"),
-			"b.go": sets.NewString(labels.LGTM),
-			"c.go": sets.NewString(labels.LGTM, "dnm/frozen-docs"),
-			"d.sh": sets.NewString("dnm/bash"),
-			"e.sh": sets.NewString("dnm/bash"),
+		labels: map[string]sets.Set[string]{
+			"a.go": sets.New[string](labels.LGTM, labels.Approved, "kind/docs"),
+			"b.go": sets.New[string](labels.LGTM),
+			"c.go": sets.New[string](labels.LGTM, "dnm/frozen-docs"),
+			"d.sh": sets.New[string]("dnm/bash"),
+			"e.sh": sets.New[string]("dnm/bash"),
 		},
 	}
 

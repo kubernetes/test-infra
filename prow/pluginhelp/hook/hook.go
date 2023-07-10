@@ -178,8 +178,8 @@ func (ha *HelpAgent) GeneratePluginHelp() *pluginhelp.Help {
 	}
 }
 
-func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.String) []string {
-	all := sets.NewString()
+func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.Set[string]) []string {
+	all := sets.New[string]()
 	for repo := range config.Plugins {
 		all.Insert(repo)
 	}
@@ -187,7 +187,7 @@ func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.String) 
 		all.Insert(repo)
 	}
 
-	flattened := sets.NewString()
+	flattened := sets.New[string]()
 	for repo := range all {
 		if strings.Contains(repo, "/") {
 			flattened.Insert(repo)
@@ -195,7 +195,7 @@ func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.String) 
 		}
 		flattened = flattened.Union(orgToRepos[repo])
 	}
-	return flattened.List()
+	return sets.List(flattened)
 }
 
 func externalHelpProvider(endpoint string) externalplugins.ExternalPluginHelpProvider {
@@ -232,13 +232,13 @@ func externalHelpProvider(endpoint string) externalplugins.ExternalPluginHelpPro
 // reversePluginMaps inverts the Configuration.Plugins and Configuration.ExternalPlugins maps and
 // expands any org strings to org/repo strings.
 // The returned values map plugin names to the set of org/repo strings they are enabled on.
-func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets.String) (normal, external map[string][]prowconfig.OrgRepo) {
+func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets.Set[string]) (normal, external map[string][]prowconfig.OrgRepo) {
 	normal = map[string][]prowconfig.OrgRepo{}
 	for repo, enabledPlugins := range config.Plugins {
 		var repos []prowconfig.OrgRepo
 		if !strings.Contains(repo, "/") {
 			if flattened, ok := orgToRepos[repo]; ok {
-				repos = prowconfig.StringsToOrgRepos(flattened.List())
+				repos = prowconfig.StringsToOrgRepos(sets.List(flattened))
 			}
 		} else {
 			repos = []prowconfig.OrgRepo{*prowconfig.NewOrgRepo(repo)}
@@ -251,7 +251,7 @@ func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets
 	for repo, extPlugins := range config.ExternalPlugins {
 		var repos []prowconfig.OrgRepo
 		if flattened, ok := orgToRepos[repo]; ok {
-			repos = prowconfig.StringsToOrgRepos(flattened.List())
+			repos = prowconfig.StringsToOrgRepos(sets.List(flattened))
 		} else {
 			repos = []prowconfig.OrgRepo{*prowconfig.NewOrgRepo(repo)}
 		}
@@ -272,8 +272,8 @@ type orgAgent struct {
 
 	lock       sync.Mutex
 	nextSync   time.Time
-	orgs       sets.String
-	orgToRepos map[string]sets.String
+	orgs       sets.Set[string]
+	orgToRepos map[string]sets.Set[string]
 }
 
 func newOrgAgent(log *logrus.Entry, ghc githubClient, syncPeriod time.Duration) *orgAgent {
@@ -284,7 +284,7 @@ func newOrgAgent(log *logrus.Entry, ghc githubClient, syncPeriod time.Duration) 
 	}
 }
 
-func (oa *orgAgent) orgToReposMap(config *plugins.Configuration) map[string]sets.String {
+func (oa *orgAgent) orgToReposMap(config *plugins.Configuration) map[string]sets.Set[string] {
 	oa.lock.Lock()
 	defer oa.lock.Unlock()
 	// Only need to sync if either:
@@ -295,7 +295,7 @@ func (oa *orgAgent) orgToReposMap(config *plugins.Configuration) map[string]sets
 	if time.Now().After(oa.nextSync) {
 		syncReason = "the sync period elapsed"
 	} else if diff := orgsInConfig(config).Difference(oa.orgs); diff.Len() > 0 {
-		syncReason = fmt.Sprintf("the following orgs were added to the config: %q", diff.List())
+		syncReason = fmt.Sprintf("the following orgs were added to the config: %q", sets.List(diff))
 	}
 	if syncReason != "" {
 		oa.log.Infof("Syncing org to repos mapping because %s.", syncReason)
@@ -328,11 +328,11 @@ func (oa *orgAgent) sync(config *plugins.Configuration) {
 	// that could waste tokens if the call continues to fail for some reason.
 
 	orgs := orgsInConfig(config)
-	orgToRepos := map[string]sets.String{}
+	orgToRepos := map[string]sets.Set[string]{}
 
 	orgToReposLock := sync.Mutex{}
 	wg := sync.WaitGroup{}
-	for _, org := range orgs.List() {
+	for _, org := range sets.List(orgs) {
 		org := org
 		wg.Add(1)
 
@@ -342,10 +342,10 @@ func (oa *orgAgent) sync(config *plugins.Configuration) {
 			repos, err := reposForOrgOrUser(oa.ghc, org)
 			if err != nil {
 				oa.log.WithError(err).Errorf("Getting repos for org or user: %s.", org)
-				// Remove 'org' from 'orgs' here to force future resync?
+				// Remove 'org' from 'orgs' here to force future resync?w
 				return
 			}
-			repoSet := sets.NewString()
+			repoSet := sets.New[string]()
 			for _, repo := range repos {
 				repoSet.Insert(repo.FullName)
 			}
@@ -362,8 +362,8 @@ func (oa *orgAgent) sync(config *plugins.Configuration) {
 }
 
 // orgsInConfig gets all the org strings (not org/repo) in config.Plugins and config.ExternalPlugins.
-func orgsInConfig(config *plugins.Configuration) sets.String {
-	orgs := sets.NewString()
+func orgsInConfig(config *plugins.Configuration) sets.Set[string] {
+	orgs := sets.New[string]()
 	for repo := range config.Plugins {
 		if !strings.Contains(repo, "/") {
 			orgs.Insert(repo)

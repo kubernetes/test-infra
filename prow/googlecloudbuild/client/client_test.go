@@ -19,8 +19,8 @@ package client
 import (
 	"testing"
 
+	"cloud.google.com/go/cloudbuild/apiv1/v2/cloudbuildpb"
 	"github.com/google/go-cmp/cmp"
-	cloudbuildpb "google.golang.org/genproto/googleapis/devtools/cloudbuild/v1"
 )
 
 func TestProwLabel(t *testing.T) {

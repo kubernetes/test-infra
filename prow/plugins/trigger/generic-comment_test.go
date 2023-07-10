@@ -1362,7 +1362,7 @@ func TestHandleGenericComment(t *testing.T) {
 }
 
 func validate(t *testing.T, actions []clienttesting.Action, g *fakegithub.FakeClient, tc testcase) {
-	startedContexts := sets.NewString()
+	startedContexts := sets.New[string]()
 	for _, action := range actions {
 		switch action := action.(type) {
 		case clienttesting.CreateActionImpl:
@@ -1400,15 +1400,15 @@ func validate(t *testing.T, actions []clienttesting.Action, g *fakegithub.FakeCl
 func TestRetestFilter(t *testing.T) {
 	var testCases = []struct {
 		name           string
-		failedContexts sets.String
-		allContexts    sets.String
+		failedContexts sets.Set[string]
+		allContexts    sets.Set[string]
 		presubmits     []config.Presubmit
 		expected       [][]bool
 	}{
 		{
 			name:           "retest filter matches jobs that produce contexts which have failed",
-			failedContexts: sets.NewString("failed"),
-			allContexts:    sets.NewString("failed", "succeeded"),
+			failedContexts: sets.New[string]("failed"),
+			allContexts:    sets.New[string]("failed", "succeeded"),
 			presubmits: []config.Presubmit{
 				{
 					JobBase: config.JobBase{
@@ -1431,8 +1431,8 @@ func TestRetestFilter(t *testing.T) {
 		},
 		{
 			name:           "retest filter matches jobs that would run automatically and haven't yet ",
-			failedContexts: sets.NewString(),
-			allContexts:    sets.NewString("finished"),
+			failedContexts: sets.New[string](),
+			allContexts:    sets.New[string]("finished"),
 			presubmits: []config.Presubmit{
 				{
 					JobBase: config.JobBase{

@@ -550,32 +550,32 @@ func TestSyncClusterStatus(t *testing.T) {
 		location         string
 		statuses         map[string]ClusterStatus
 		expectedStatuses map[string]ClusterStatus // This is set to statuses ^^ if unspecified.
-		knownClusters    sets.String
+		knownClusters    sets.Set[string]
 		noWriteExpected  bool
 	}{
 		{
 			name:            "No location set, don't upload.",
 			statuses:        map[string]ClusterStatus{"default": ClusterStatusReachable},
-			knownClusters:   sets.NewString("default"),
+			knownClusters:   sets.New[string]("default"),
 			noWriteExpected: true,
 		},
 		{
 			name:          "Single cluster reachable",
 			location:      "gs://my-bucket/build-cluster-statuses.json",
 			statuses:      map[string]ClusterStatus{"default": ClusterStatusReachable},
-			knownClusters: sets.NewString("default"),
+			knownClusters: sets.New[string]("default"),
 		},
 		{
 			name:          "Single cluster unreachable",
 			location:      "gs://my-bucket/build-cluster-statuses.json",
 			statuses:      map[string]ClusterStatus{"default": ClusterStatusUnreachable},
-			knownClusters: sets.NewString("default"),
+			knownClusters: sets.New[string]("default"),
 		},
 		{
 			name:             "Single cluster build manager creation failed",
 			location:         "gs://my-bucket/build-cluster-statuses.json",
 			expectedStatuses: map[string]ClusterStatus{"default": ClusterStatusNoManager},
-			knownClusters:    sets.NewString("default"),
+			knownClusters:    sets.New[string]("default"),
 		},
 		{
 			name:     "Multiple clusters mixed reachability",
@@ -591,7 +591,7 @@ func TestSyncClusterStatus(t *testing.T) {
 				"sad-build-cluster":        ClusterStatusUnreachable,
 				"always-sad-build-cluster": ClusterStatusNoManager,
 			},
-			knownClusters: sets.NewString("default", "test-infra-trusted", "sad-build-cluster", "always-sad-build-cluster"),
+			knownClusters: sets.New[string]("default", "test-infra-trusted", "sad-build-cluster", "always-sad-build-cluster"),
 		},
 	}
 	for i := range tcs {

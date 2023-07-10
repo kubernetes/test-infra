@@ -643,7 +643,7 @@ func (bart *basicAuthRoundtripper) RoundTrip(req *http.Request) (*http.Response,
 	return bart.upstream.RoundTrip(req2)
 }
 
-var knownAuthTypes = sets.NewString("bearer", "basic", "negotiate")
+var knownAuthTypes = sets.New[string]("bearer", "basic", "negotiate")
 
 // maskAuthorizationHeader masks credential content from authorization headers
 // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization

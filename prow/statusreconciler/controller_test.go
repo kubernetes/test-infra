@@ -592,18 +592,18 @@ func (s migrationSet) has(item migration) bool {
 
 func newFakeMigrator(key orgRepo) fakeMigrator {
 	return fakeMigrator{
-		retireErrors:  map[orgRepo]sets.String{key: sets.NewString()},
+		retireErrors:  map[orgRepo]sets.Set[string]{key: sets.New[string]()},
 		migrateErrors: map[orgRepo]migrationSet{key: {}},
-		retired:       map[orgRepo]sets.String{key: sets.NewString()},
+		retired:       map[orgRepo]sets.Set[string]{key: sets.New[string]()},
 		migrated:      map[orgRepo]migrationSet{key: {}},
 	}
 }
 
 type fakeMigrator struct {
-	retireErrors  map[orgRepo]sets.String
+	retireErrors  map[orgRepo]sets.Set[string]
 	migrateErrors map[orgRepo]migrationSet
 
-	retired  map[orgRepo]sets.String
+	retired  map[orgRepo]sets.Set[string]
 	migrated map[orgRepo]migrationSet
 }
 
@@ -615,7 +615,7 @@ func (m *fakeMigrator) retire(org, repo, context string, _ func(string) bool) er
 	if _, exist := m.retired[key]; exist {
 		m.retired[key].Insert(context)
 	} else {
-		m.retired[key] = sets.NewString(context)
+		m.retired[key] = sets.New[string](context)
 	}
 	return nil
 }
@@ -638,8 +638,8 @@ func (m *fakeMigrator) migrate(org, repo, from, to string, _ func(string) bool) 
 
 func newfakeProwJobTriggerer() fakeProwJobTriggerer {
 	return fakeProwJobTriggerer{
-		errors:  map[prKey]sets.String{},
-		created: map[prKey]sets.String{},
+		errors:  map[prKey]sets.Set[string]{},
+		created: map[prKey]sets.Set[string]{},
 	}
 }
 
@@ -649,14 +649,14 @@ type prKey struct {
 }
 
 type fakeProwJobTriggerer struct {
-	errors  map[prKey]sets.String
-	created map[prKey]sets.String
+	errors  map[prKey]sets.Set[string]
+	created map[prKey]sets.Set[string]
 }
 
 func (c *fakeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs []config.Presubmit) error {
 	actions := []struct {
 		jobs    []config.Presubmit
-		records map[prKey]sets.String
+		records map[prKey]sets.Set[string]
 	}{
 		{
 			jobs:    requestedJobs,
@@ -664,7 +664,7 @@ func (c *fakeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs 
 		},
 	}
 	for _, action := range actions {
-		names := sets.NewString()
+		names := sets.New[string]()
 		key := prKey{org: pr.Base.Repo.Owner.Login, repo: pr.Base.Repo.Name, num: pr.Number}
 		for _, job := range action.jobs {
 			if jobErrors, exists := c.errors[key]; exists && jobErrors.Has(job.Name) {
@@ -684,7 +684,7 @@ func (c *fakeProwJobTriggerer) runAndSkip(pr *github.PullRequest, requestedJobs 
 func newFakeGitHubClient(key orgRepo) fakeGitHubClient {
 	return fakeGitHubClient{
 		prErrors:  orgRepoSet{},
-		refErrors: map[orgRepo]sets.String{key: sets.NewString()},
+		refErrors: map[orgRepo]sets.Set[string]{key: sets.New[string]()},
 		prs:       map[orgRepo][]github.PullRequest{key: {}},
 		refs:      map[orgRepo]map[string]string{key: {}},
 	}
@@ -692,8 +692,8 @@ func newFakeGitHubClient(key orgRepo) fakeGitHubClient {
 
 type fakeGitHubClient struct {
 	prErrors     orgRepoSet
-	refErrors    map[orgRepo]sets.String
-	changeErrors map[orgRepo]sets.Int
+	refErrors    map[orgRepo]sets.Set[string]
+	changeErrors map[orgRepo]sets.Set[int]
 
 	prs     map[orgRepo][]github.PullRequest
 	refs    map[orgRepo]map[string]string
@@ -890,15 +890,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString("org"),
+					addedPresubmitDenylist: sets.New[string]("org"),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -915,15 +915,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString("org/repo"),
+					addedPresubmitDenylist: sets.New[string]("org/repo"),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -940,15 +940,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
 					continueOnError:           true,
-					addedPresubmitDenylistAll: sets.NewString("org"),
+					addedPresubmitDenylistAll: sets.New[string]("org"),
 					prowJobTriggerer:          &fpjt,
 					githubClient:              &fghc,
 					statusMigrator:            &fsm,
 					trustedChecker:            &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]()}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
 			},
@@ -965,15 +965,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
 					continueOnError:           true,
-					addedPresubmitDenylistAll: sets.NewString("org/repo"),
+					addedPresubmitDenylistAll: sets.New[string]("org/repo"),
 					prowJobTriggerer:          &fpjt,
 					githubClient:              &fghc,
 					statusMigrator:            &fsm,
 					trustedChecker:            &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]()}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
 			},
@@ -990,16 +990,16 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString(),
+					addedPresubmitDenylist: sets.New[string](),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
+					expectedProwJob := map[prKey]sets.Set[string]{prOrgRepoKey: sets.New[string]("new-required-job")}
 					checkTriggerer(t, fpjt, expectedProwJob)
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -1016,15 +1016,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][prAuthorKey] = false
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString(),
+					addedPresubmitDenylist: sets.New[string](),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -1041,15 +1041,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][secondPrAuthorKey] = true
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString(),
+					addedPresubmitDenylist: sets.New[string](),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -1066,15 +1066,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][thirdPrAuthorKey] = true
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString(),
+					addedPresubmitDenylist: sets.New[string](),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{thirdPrOrgRepoKey: sets.NewString()})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{thirdPrOrgRepoKey: sets.New[string]()})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -1091,15 +1091,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.errors = map[orgRepo]prAuthorSet{orgRepoKey: {prAuthorKey: nil}}
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString(),
+					addedPresubmitDenylist: sets.New[string](),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -1109,7 +1109,7 @@ func TestControllerReconcile(t *testing.T) {
 			name: "trigger error means we should see no trigger, a retire and a migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
-				fpjt.errors[prOrgRepoKey] = sets.NewString("new-required-job")
+				fpjt.errors[prOrgRepoKey] = sets.New[string]("new-required-job")
 				fghc := newFakeGitHubClient(orgRepoKey)
 				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
@@ -1118,15 +1118,15 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.errors = map[orgRepo]prAuthorSet{orgRepoKey: {prAuthorKey: nil}}
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString(),
+					addedPresubmitDenylist: sets.New[string](),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					checkTriggerer(t, fpjt, map[prKey]sets.String{})
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkTriggerer(t, fpjt, map[prKey]sets.Set[string]{})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -1140,21 +1140,21 @@ func TestControllerReconcile(t *testing.T) {
 				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
 				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
 				fsm := newFakeMigrator(orgRepoKey)
-				fsm.retireErrors = map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}
+				fsm.retireErrors = map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}
 				ftc := newFakeTrustedChecker(orgRepoKey)
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString(),
+					addedPresubmitDenylist: sets.New[string](),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
+					expectedProwJob := map[prKey]sets.Set[string]{prOrgRepoKey: sets.New[string]("new-required-job")}
 					checkTriggerer(t, fpjt, expectedProwJob)
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]()}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
 				}
 				return controller, checker
 			},
@@ -1173,16 +1173,16 @@ func TestControllerReconcile(t *testing.T) {
 				ftc.trusted[orgRepoKey][prAuthorKey] = true
 				controller := Controller{
 					continueOnError:        true,
-					addedPresubmitDenylist: sets.NewString(),
+					addedPresubmitDenylist: sets.New[string](),
 					prowJobTriggerer:       &fpjt,
 					githubClient:           &fghc,
 					statusMigrator:         &fsm,
 					trustedChecker:         &ftc,
 				}
 				checker := func(t *testing.T) {
-					expectedProwJob := map[prKey]sets.String{prOrgRepoKey: sets.NewString("new-required-job")}
+					expectedProwJob := map[prKey]sets.Set[string]{prOrgRepoKey: sets.New[string]("new-required-job")}
 					checkTriggerer(t, fpjt, expectedProwJob)
-					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {}})
+					checkMigrator(t, fsm, map[orgRepo]sets.Set[string]{orgRepoKey: sets.New[string]("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
 			},
@@ -1209,14 +1209,14 @@ func logrusEntry() *logrus.Entry {
 	return logrus.NewEntry(logrus.StandardLogger())
 }
 
-func checkTriggerer(t *testing.T, triggerer fakeProwJobTriggerer, expectedCreatedJobs map[prKey]sets.String) {
+func checkTriggerer(t *testing.T, triggerer fakeProwJobTriggerer, expectedCreatedJobs map[prKey]sets.Set[string]) {
 	actual, expected := triggerer.created, expectedCreatedJobs
 	if diff := cmp.Diff(actual, expected, ignoreUnexported); diff != "" {
 		t.Errorf("did not create expected ProwJob: %s", diff)
 	}
 }
 
-func checkMigrator(t *testing.T, migrator fakeMigrator, expectedRetiredStatuses map[orgRepo]sets.String, expectedMigratedStatuses map[orgRepo]migrationSet) {
+func checkMigrator(t *testing.T, migrator fakeMigrator, expectedRetiredStatuses map[orgRepo]sets.Set[string], expectedMigratedStatuses map[orgRepo]migrationSet) {
 	if diff := cmp.Diff(migrator.retired, expectedRetiredStatuses, ignoreUnexported); diff != "" {
 		t.Errorf("did not retire correct statuses: %s", diff)
 	}

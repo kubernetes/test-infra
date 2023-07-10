@@ -62,11 +62,11 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 		}
 	}
 
-	artifactNamesSet := sets.NewString(artifactNames...)
+	artifactNamesSet := sets.New[string](artifactNames...)
 
 	jobName, buildID, err := common.KeyToJob(src)
 	if err != nil {
-		return artifactNamesSet.List(), fmt.Errorf("error parsing src: %w", err)
+		return sets.List(artifactNamesSet), fmt.Errorf("error parsing src: %w", err)
 	}
 
 	job, err := s.jobAgent.GetProwJob(jobName, buildID)
@@ -74,7 +74,7 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 		// we don't return the error because we assume that if we cannot get the prowjob from the jobAgent,
 		// then we must already have all the build-logs in gcs
 		logrus.Infof("unable to get prowjob from Pod: %v", err)
-		return artifactNamesSet.List(), nil
+		return sets.List(artifactNamesSet), nil
 	}
 
 	if job.Spec.PodSpec != nil {
@@ -89,7 +89,7 @@ func (s *Spyglass) ListArtifacts(ctx context.Context, src string) ([]string, err
 		}
 	}
 
-	return artifactNamesSet.List(), nil
+	return sets.List(artifactNamesSet), nil
 }
 
 // prowToGCS returns the GCS key corresponding to the given prow key

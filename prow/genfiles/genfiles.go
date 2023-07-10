@@ -21,25 +21,25 @@ limitations under the License.
 // begin with a `#` are ignored. A statement is a white-space delimited
 // key-value tuple.
 //
-//		statement = key val
+//	statement = key val
 //
 // where whitespace is ignored, and:
 //
-//		key = "path" | "file-name" | "path-prefix" |
-//		"file-prefix" | "paths-from-repo"
+//	key = "path" | "file-name" | "path-prefix" |
+//	"file-prefix" | "paths-from-repo"
 //
 // For example:
 //
-//		# Simple generated files config
-//		file-prefix	zz_generated.
-//		file-name	generated.pb.go
+//	# Simple generated files config
+//	file-prefix	zz_generated.
+//	file-name	generated.pb.go
 //
 // The statement's `key` specifies the type of the corresponding value:
-//  - "path": exact path to a single file
-//  - "file-name": exact leaf file name, regardless of path
-//  - "path-prefix": prefix match on the file path
-//  - "file-prefix": prefix match of the leaf filename (no path)
-//  - "paths-from-repo": load file paths from a file in repo
+//   - "path": exact path to a single file
+//   - "file-name": exact leaf file name, regardless of path
+//   - "path-prefix": prefix match on the file path
+//   - "file-prefix": prefix match of the leaf filename (no path)
+//   - "paths-from-repo": load file paths from a file in repo
 package genfiles
 
 import (

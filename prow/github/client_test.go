@@ -1402,7 +1402,7 @@ func TestRequestReview(t *testing.T) {
 		if len(ps) < 1 || len(ps) > 2 {
 			t.Fatalf("Wrong length patch: %v", ps)
 		}
-		if sets.NewString(ps["reviewers"]...).Has("not-a-collaborator") {
+		if sets.New[string](ps["reviewers"]...).Has("not-a-collaborator") {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}
@@ -3211,7 +3211,7 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to construct github client: %v", err)
 	}
-	toSkip := sets.NewString(
+	toSkip := sets.New[string](
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
 		// Bound to user, not org specific

@@ -1064,7 +1064,7 @@ func TestGetAllClones(t *testing.T) {
 		name            string
 		bugs            []Bug
 		bugToBeSearched Bug
-		expectedClones  sets.Int
+		expectedClones  sets.Set[int]
 	}{
 		{
 			name: "Clones for the root node",
@@ -1076,7 +1076,7 @@ func TestGetAllClones(t *testing.T) {
 				{Summary: "", ID: 5, DependsOn: []int{1}},
 			},
 			bugToBeSearched: Bug{Summary: "", ID: 1, Blocks: []int{2, 5}},
-			expectedClones:  sets.NewInt(1, 2, 3, 5),
+			expectedClones:  sets.New[int](1, 2, 3, 5),
 		},
 		{
 			name: "Clones for child of root",
@@ -1088,7 +1088,7 @@ func TestGetAllClones(t *testing.T) {
 				{Summary: "", ID: 5, DependsOn: []int{1}},
 			},
 			bugToBeSearched: Bug{Summary: "", ID: 2, DependsOn: []int{1}, Blocks: []int{3}},
-			expectedClones:  sets.NewInt(1, 2, 3, 5),
+			expectedClones:  sets.New[int](1, 2, 3, 5),
 		},
 		{
 			name: "Clones for grandchild of root",
@@ -1100,7 +1100,7 @@ func TestGetAllClones(t *testing.T) {
 				{Summary: "", ID: 5, DependsOn: []int{1}},
 			},
 			bugToBeSearched: Bug{Summary: "", ID: 3, DependsOn: []int{2}},
-			expectedClones:  sets.NewInt(1, 2, 3, 5),
+			expectedClones:  sets.New[int](1, 2, 3, 5),
 		},
 		{
 			name: "Clones when no clone is expected",
@@ -1112,7 +1112,7 @@ func TestGetAllClones(t *testing.T) {
 				{Summary: "", ID: 5, DependsOn: []int{1}},
 			},
 			bugToBeSearched: Bug{Summary: "Not a clone", ID: 4, DependsOn: []int{1}},
-			expectedClones:  sets.NewInt(4),
+			expectedClones:  sets.New[int](4),
 		},
 	}
 	for _, tc := range testcases {
@@ -1129,7 +1129,7 @@ func TestGetAllClones(t *testing.T) {
 			if err != nil {
 				t.Errorf("Error occurred when none was expected: %v", err)
 			}
-			actualCloneSet := sets.NewInt()
+			actualCloneSet := sets.New[int]()
 			for _, clone := range clones {
 				actualCloneSet.Insert(clone.ID)
 			}

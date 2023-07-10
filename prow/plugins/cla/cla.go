@@ -75,11 +75,11 @@ func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, se)
 }
 
-// 1. Check that the status event received from the webhook is for the CNCF-CLA.
-// 2. Use the github search API to search for the PRs which match the commit hash corresponding to the status event.
-// 3. For each issue that matches, check that the PR's HEAD commit hash against the commit hash for which the status
-//    was received. This is because we only care about the status associated with the last (latest) commit in a PR.
-// 4. Set the corresponding CLA label if needed.
+//  1. Check that the status event received from the webhook is for the CNCF-CLA.
+//  2. Use the github search API to search for the PRs which match the commit hash corresponding to the status event.
+//  3. For each issue that matches, check that the PR's HEAD commit hash against the commit hash for which the status
+//     was received. This is because we only care about the status associated with the last (latest) commit in a PR.
+//  4. Set the corresponding CLA label if needed.
 func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 	if se.State == "" || se.Context == "" {
 		return fmt.Errorf("invalid status event delivered with empty state/context")

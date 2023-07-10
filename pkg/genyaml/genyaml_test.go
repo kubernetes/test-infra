@@ -98,8 +98,8 @@ third line`,
 			expected: `"Some comment"`,
 		},
 		{
-			name: "Convert tab to space",
-			rawDoc: "tab	tab		tabtab",
+			name:     "Convert tab to space",
+			rawDoc:   "tab	tab		tabtab",
 			expected: "tab tab tabtab",
 		},
 		{

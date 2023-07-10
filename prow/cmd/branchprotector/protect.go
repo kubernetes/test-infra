@@ -424,18 +424,18 @@ func validateRestrictions(org, repo string, bp *github.BranchProtectionRequest, 
 
 	var errs []error
 	if bp.Restrictions.Apps != nil {
-		if unauthorized := sets.NewString(*bp.Restrictions.Apps...).Difference(sets.NewString(authorizedApps...)); unauthorized.Len() > 0 {
-			errs = append(errs, fmt.Errorf("the following apps are not authorized for %s/%s: %s", org, repo, unauthorized.List()))
+		if unauthorized := sets.New[string](*bp.Restrictions.Apps...).Difference(sets.New[string](authorizedApps...)); unauthorized.Len() > 0 {
+			errs = append(errs, fmt.Errorf("the following apps are not authorized for %s/%s: %s", org, repo, sets.List(unauthorized)))
 		}
 	}
 	if bp.Restrictions.Users != nil {
-		if unauthorized := sets.NewString(*bp.Restrictions.Users...).Difference(sets.NewString(authorizedCollaborators...)); unauthorized.Len() > 0 {
-			errs = append(errs, fmt.Errorf("the following collaborators are not authorized for %s/%s: %s", org, repo, unauthorized.List()))
+		if unauthorized := sets.New[string](*bp.Restrictions.Users...).Difference(sets.New[string](authorizedCollaborators...)); unauthorized.Len() > 0 {
+			errs = append(errs, fmt.Errorf("the following collaborators are not authorized for %s/%s: %s", org, repo, sets.List(unauthorized)))
 		}
 	}
 	if bp.Restrictions.Teams != nil {
-		if unauthorized := sets.NewString(*bp.Restrictions.Teams...).Difference(sets.NewString(authorizedTeams...)); unauthorized.Len() > 0 {
-			errs = append(errs, fmt.Errorf("the following teams are not authorized for %s/%s: %s", org, repo, unauthorized.List()))
+		if unauthorized := sets.New[string](*bp.Restrictions.Teams...).Difference(sets.New[string](authorizedTeams...)); unauthorized.Len() > 0 {
+			errs = append(errs, fmt.Errorf("the following teams are not authorized for %s/%s: %s", org, repo, sets.List(unauthorized)))
 		}
 	}
 	return errs

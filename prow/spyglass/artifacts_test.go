@@ -91,7 +91,7 @@ func TestSpyglass_ListArtifacts(t *testing.T) {
 			ca.Set(&config.Config{
 				ProwConfig: config.ProwConfig{
 					Deck: config.Deck{
-						AllKnownStorageBuckets: sets.NewString("test-bucket"),
+						AllKnownStorageBuckets: sets.New[string]("test-bucket"),
 					},
 				},
 			})

@@ -109,7 +109,7 @@ type JobConfig struct {
 
 	// AllRepos contains all Repos that have one or more jobs configured or
 	// for which a tide query is configured.
-	AllRepos sets.String `json:"-"`
+	AllRepos sets.Set[string] `json:"-"`
 
 	// ProwYAMLGetterWithDefaults is the function to get a ProwYAML with
 	// defaults based on the rest of the Config. Tests should provide their own
@@ -290,7 +290,7 @@ func keysForIdentifier(identifier string) []string {
 	candidates = append(candidates, "*")
 
 	var res []string
-	visited := sets.NewString()
+	visited := sets.New[string]()
 	for _, cand := range candidates {
 		if visited.Has(cand) {
 			continue
@@ -967,16 +967,16 @@ func (goc *GerritOrgRepoConfigs) AllRepos() map[string]map[string]*GerritQueryFi
 	return res
 }
 
-func (goc *GerritOrgRepoConfigs) OptOutHelpRepos() map[string]sets.String {
-	var res map[string]sets.String
+func (goc *GerritOrgRepoConfigs) OptOutHelpRepos() map[string]sets.Set[string] {
+	var res map[string]sets.Set[string]
 	for _, orgConfig := range *goc {
 		if !orgConfig.OptOutHelp {
 			continue
 		}
 		if res == nil {
-			res = make(map[string]sets.String)
+			res = make(map[string]sets.Set[string])
 		}
-		res[orgConfig.Org] = res[orgConfig.Org].Union(sets.NewString(orgConfig.Repos...))
+		res[orgConfig.Org] = res[orgConfig.Org].Union(sets.New[string](orgConfig.Repos...))
 	}
 	return res
 }
@@ -1205,7 +1205,7 @@ type Deck struct {
 	AdditionalAllowedBuckets []string `json:"additional_allowed_buckets,omitempty"`
 	// AllKnownStorageBuckets contains all storage buckets configured in all of the
 	// job configs.
-	AllKnownStorageBuckets sets.String `json:"-"`
+	AllKnownStorageBuckets sets.Set[string] `json:"-"`
 }
 
 // Validate performs validation and sanitization on the Deck object.
@@ -1256,7 +1256,7 @@ func (c *Config) ValidateStorageBucket(bucketName string) error {
 	}
 
 	if !c.Deck.AllKnownStorageBuckets.Has(bucketName) {
-		return NotAllowedBucketError(fmt.Errorf("bucket %q not in allowed list (%v)", bucketName, c.Deck.AllKnownStorageBuckets.List()))
+		return NotAllowedBucketError(fmt.Errorf("bucket %q not in allowed list (%v)", bucketName, sets.List(c.Deck.AllKnownStorageBuckets)))
 	}
 	return nil
 }
@@ -1270,8 +1270,8 @@ func (d *Deck) shouldValidateStorageBuckets() bool {
 	return !*d.SkipStoragePathValidation
 }
 
-func calculateStorageBuckets(c *Config) sets.String {
-	knownBuckets := sets.NewString(c.Deck.AdditionalAllowedBuckets...)
+func calculateStorageBuckets(c *Config) sets.Set[string] {
+	knownBuckets := sets.New[string](c.Deck.AdditionalAllowedBuckets...)
 	for _, dc := range c.Plank.DefaultDecorationConfigs {
 		if dc.Config != nil && dc.Config.GCSConfiguration != nil && dc.Config.GCSConfiguration.Bucket != "" {
 			knownBuckets.Insert(stripProviderPrefixFromBucket(dc.Config.GCSConfiguration.Bucket))
@@ -1635,7 +1635,7 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 	}
 	// we need to ensure all config files have unique basenames,
 	// since updateconfig plugin will use basename as a key in the configmap.
-	uniqueBasenames := sets.String{}
+	uniqueBasenames := sets.Set[string]{}
 
 	jobConfigCount := 0
 	allStart := time.Now()
@@ -1777,7 +1777,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 		nc.ConfigVersionSHA = string(content)
 	}
 
-	nc.AllRepos = sets.String{}
+	nc.AllRepos = sets.Set[string]{}
 	for _, query := range nc.Tide.Queries {
 		for _, repo := range query.Repos {
 			nc.AllRepos.Insert(repo)
@@ -2102,12 +2102,12 @@ func (c *Config) finalizeJobConfig() error {
 func (c *Config) validateComponentConfig() error {
 	for k, v := range c.Plank.JobURLPrefixConfig {
 		if _, err := url.Parse(v); err != nil {
-			return fmt.Errorf(`Invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
+			return fmt.Errorf(`invalid value for Planks job_url_prefix_config["%s"]: %v`, k, err)
 		}
 	}
 	if c.Gerrit.DeckURL != "" {
 		if _, err := url.Parse(c.Gerrit.DeckURL); err != nil {
-			return fmt.Errorf(`Invalid value for gerrit.deck_url: %v`, err)
+			return fmt.Errorf("invalid value for gerrit.deck_url: %v", err)
 		}
 	}
 
@@ -2195,7 +2195,7 @@ func (c Config) validateJobBase(v JobBase, jobType prowapi.ProwJobType) error {
 	if err := validateAnnotation(v.Annotations); err != nil {
 		return err
 	}
-	validJobQueueNames := sets.StringKeySet(c.Plank.JobQueueCapacities)
+	validJobQueueNames := sets.KeySet[string](c.Plank.JobQueueCapacities)
 	if err := validateJobQueueName(v.JobQueueName, validJobQueueNames); err != nil {
 		return err
 	}
@@ -2260,7 +2260,7 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 		gitRefs[fmt.Sprintf("%s/%s", ref.Org, ref.Repo)]++
 	}
 
-	dupes := sets.NewString()
+	dupes := sets.New[string]()
 	for gitRef, count := range gitRefs {
 		if count > 1 {
 			dupes.Insert(gitRef)
@@ -2268,8 +2268,8 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 	}
 
 	if dupes.Len() > 0 {
-		return fmt.Errorf("Invalid job %s on repo %s: the following refs specified more than once: %s",
-			jobBase.Name, repo, strings.Join(dupes.List(), ","))
+		return fmt.Errorf("invalid job %s on repo %s: the following refs specified more than once: %s",
+			jobBase.Name, repo, strings.Join(sets.List(dupes), ","))
 	}
 	return nil
 }
@@ -2315,7 +2315,7 @@ func (c Config) validatePeriodics(periodics []Periodic) error {
 	var errs []error
 
 	// validate no duplicated periodics.
-	validPeriodics := sets.NewString()
+	validPeriodics := sets.New[string]()
 	// Ensure that the periodic durations are valid and specs exist.
 	for j, p := range periodics {
 		if validPeriodics.Has(p.Name) {
@@ -2785,7 +2785,7 @@ func validateAnnotation(a map[string]string) error {
 	return nil
 }
 
-func validateJobQueueName(name string, validNames sets.String) error {
+func validateJobQueueName(name string, validNames sets.Set[string]) error {
 	if name != "" && !validNames.Has(name) {
 		return fmt.Errorf("invalid job queue name %s", name)
 	}
@@ -2796,7 +2796,7 @@ func validateAgent(v JobBase, podNamespace string) error {
 	k := string(prowapi.KubernetesAgent)
 	j := string(prowapi.JenkinsAgent)
 	p := string(prowapi.TektonAgent)
-	agents := sets.NewString(k, j, p)
+	agents := sets.New[string](k, j, p)
 	agent := v.Agent
 	switch {
 	case !agents.Has(agent):
@@ -2863,25 +2863,28 @@ func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Re
 	// be used or removed. (Specifying an unused extra ref must always be
 	// unintentional so we want to warn the user.)
 	extraIndexes := sets.NewInt()
-	for _, resource := range spec.Resources {
-		// Validate that periodic jobs don't request an implicit git ref.
-		if jobType == prowapi.PeriodicJob && resource.ResourceRef.Name == ProwImplicitGitResource {
-			return fmt.Errorf("periodic jobs do not have an implicit git ref to replace %s", ProwImplicitGitResource)
-		}
+	if spec.PipelineSpec != nil {
+		for _, task := range spec.PipelineSpec.Tasks {
+			// Validate that periodic jobs don't request an implicit git ref.
+			if jobType == prowapi.PeriodicJob && task.TaskRef.Name == ProwImplicitGitResource {
+				return fmt.Errorf("periodic jobs do not have an implicit git ref to replace %s", ProwImplicitGitResource)
+			}
 
-		match := ReProwExtraRef.FindStringSubmatch(resource.ResourceRef.Name)
-		if len(match) != 2 {
-			continue
+			match := ReProwExtraRef.FindStringSubmatch(task.TaskRef.Name)
+			if len(match) != 2 {
+				continue
+			}
+			if len(match[1]) > 1 && match[1][0] == '0' {
+				return fmt.Errorf("task %q: leading zeros are not allowed in PROW_EXTRA_GIT_REF_* indexes", task.Name)
+			}
+			i, _ := strconv.Atoi(match[1]) // This can't error based on the regexp.
+			extraIndexes.Insert(i)
 		}
-		if len(match[1]) > 1 && match[1][0] == '0' {
-			return fmt.Errorf("resource %q: leading zeros are not allowed in PROW_EXTRA_GIT_REF_* indexes", resource.Name)
-		}
-		i, _ := strconv.Atoi(match[1]) // This can't error based on the regexp.
-		extraIndexes.Insert(i)
 	}
+
 	for i := range extraRefs {
 		if !extraIndexes.Has(i) {
-			return fmt.Errorf("extra_refs[%d] is not used; some resource must reference PROW_EXTRA_GIT_REF_%d", i, i)
+			return fmt.Errorf("extra_refs[%d] is not used; some task must reference PROW_EXTRA_GIT_REF_%d", i, i)
 		}
 	}
 	if len(extraRefs) != extraIndexes.Len() {
@@ -2889,11 +2892,7 @@ func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Re
 		for i := range extraIndexes {
 			strs = append(strs, strconv.Itoa(i))
 		}
-		return fmt.Errorf(
-			"%d extra_refs are specified, but the following PROW_EXTRA_GIT_REF_* indexes are used: %s.",
-			len(extraRefs),
-			strings.Join(strs, ", "),
-		)
+		return fmt.Errorf("%d extra_refs are specified, but the following PROW_EXTRA_GIT_REF_* indexes are used: %s", len(extraRefs), strings.Join(strs, ", "))
 	}
 	return nil
 }
@@ -2919,7 +2918,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationCo
 	}
 
 	if len(spec.Containers) > 1 {
-		containerNames := sets.String{}
+		containerNames := sets.Set[string]{}
 		for _, container := range spec.Containers {
 			if container.Name == "" {
 				errs = append(errs, fmt.Errorf("container does not have name. all containers must have names when defining multiple containers"))
@@ -2937,7 +2936,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationCo
 	}
 
 	for i := range spec.Containers {
-		envNames := sets.String{}
+		envNames := sets.Set[string]{}
 		for _, env := range spec.Containers[i].Env {
 			if envNames.Has(env.Name) {
 				errs = append(errs, fmt.Errorf("env var named %q is defined more than once", env.Name))
@@ -2953,7 +2952,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationCo
 		}
 	}
 
-	volumeNames := sets.String{}
+	volumeNames := sets.Set[string]{}
 	decoratedVolumeNames := decorate.VolumeMounts(decorationConfig)
 	for _, volume := range spec.Volumes {
 		if volumeNames.Has(volume.Name) {
@@ -3012,7 +3011,7 @@ func validateTriggering(job Presubmit) error {
 	}
 
 	if (job.Trigger != "" && job.RerunCommand == "") || (job.Trigger == "" && job.RerunCommand != "") {
-		return fmt.Errorf("Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job %q", job.Name)
+		return fmt.Errorf("either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job %q", job.Name)
 	}
 
 	return nil
@@ -3027,7 +3026,7 @@ func validateReporting(j JobBase, r Reporter) error {
 	}
 	for label, value := range j.Labels {
 		if label == kube.GerritReportLabel && value != "" {
-			return fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", label)
+			return fmt.Errorf("gerrit report label %s set to non-empty string but job is configured to skip reporting.", label)
 		}
 	}
 	return nil
@@ -3347,10 +3346,10 @@ func truncate(in string, maxLen int) string {
 	return in[:half] + elide + in[len(in)-half:]
 }
 
-func (pc *ProwConfig) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
+func (pc *ProwConfig) HasConfigFor() (global bool, orgs sets.Set[string], repos sets.Set[string]) {
 	global = pc.hasGlobalConfig()
-	orgs = sets.String{}
-	repos = sets.String{}
+	orgs = sets.Set[string]{}
+	repos = sets.Set[string]{}
 
 	for org, orgConfig := range pc.BranchProtection.Orgs {
 		if isPolicySet(orgConfig.Policy) {

@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // GitHubEnablementOptions allows enable/disable functionality on a github org or
@@ -57,11 +58,11 @@ func (o *GitHubEnablementOptions) Validate(_ bool) error {
 	}
 
 	if intersection := o.enabledOrgs.StringSet().Intersection(o.disabledOrgs.StringSet()); len(intersection) != 0 {
-		errs = append(errs, fmt.Errorf("%v is in both --github-enabled-org and --github-disabled-org", intersection.List()))
+		errs = append(errs, fmt.Errorf("%v is in both --github-enabled-org and --github-disabled-org", sets.List(intersection)))
 	}
 
 	if intersection := o.enabledRepos.StringSet().Intersection(o.disabledRepos.StringSet()); len(intersection) != 0 {
-		errs = append(errs, fmt.Errorf("%v is in both --github-enabled-repo and --github-disabled-repo", intersection.List()))
+		errs = append(errs, fmt.Errorf("%v is in both --github-enabled-repo and --github-disabled-repo", sets.List(intersection)))
 	}
 
 	return utilerrors.NewAggregate(errs)

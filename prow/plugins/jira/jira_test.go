@@ -131,7 +131,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
 				Number:     3,
 			},
-			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			projectCache:   &threadsafeSet{data: sets.New[string]("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -154,7 +154,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
 				Number:     3,
 			},
-			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			projectCache:   &threadsafeSet{data: sets.New[string]("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -176,7 +176,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
 				Number:     3,
 			},
-			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			projectCache:   &threadsafeSet{data: sets.New[string]("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -198,7 +198,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
-			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			projectCache:   &threadsafeSet{data: sets.New[string]("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -220,7 +220,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo", Owner: github.User{Login: "org"}, Name: "repo"},
 				Number:     3,
 			},
-			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			projectCache:   &threadsafeSet{data: sets.New[string]("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			expectedNewLinks: []jira.RemoteLink{{Object: &jira.RemoteLinkObject{
 				URL:   "https://github.com/org/repo/issues/3",
@@ -242,7 +242,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
-			projectCache: &threadsafeSet{data: sets.NewString("abc")},
+			projectCache: &threadsafeSet{data: sets.New[string]("abc")},
 		},
 		{
 			name: "Link already exists, nothing to do",
@@ -253,7 +253,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
-			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			projectCache:   &threadsafeSet{data: sets.New[string]("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "org/repo#3: Some issue"}}}},
 		},
@@ -266,7 +266,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
-			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			projectCache:   &threadsafeSet{data: sets.New[string]("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
 			existingLinks: map[string][]jira.RemoteLink{
 				"ABC-123": {
@@ -298,7 +298,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
-			projectCache:   &threadsafeSet{data: sets.NewString("enterprise")},
+			projectCache:   &threadsafeSet{data: sets.New[string]("enterprise")},
 			cfg:            &plugins.Jira{DisabledJiraProjects: []string{"Enterprise"}},
 			existingIssues: []jira.Issue{{ID: "ENTERPRISE-4"}},
 		},
@@ -311,7 +311,7 @@ func TestHandle(t *testing.T) {
 				Repo:       github.Repo{FullName: "org/repo"},
 				Number:     3,
 			},
-			projectCache: &threadsafeSet{data: sets.NewString("abc")},
+			projectCache: &threadsafeSet{data: sets.New[string]("abc")},
 			cfg:          &plugins.Jira{DisabledJiraProjects: []string{"abc"}},
 		},
 		{
@@ -493,20 +493,20 @@ func TestProjectCachingJiraClient(t *testing.T) {
 			name:           "404 gets served from cache",
 			client:         &fakejira.FakeClient{},
 			issueToRequest: "issue-123",
-			cache:          &threadsafeSet{data: sets.String{}},
+			cache:          &threadsafeSet{data: sets.Set[string]{}},
 			expectedError:  jiraclient.NewNotFoundError(errors.New("404 from cache")),
 		},
 		{
 			name:           "Success",
 			client:         &fakejira.FakeClient{Issues: []*jira.Issue{&lowerCaseIssue}},
 			issueToRequest: "issue-123",
-			cache:          &threadsafeSet{data: sets.NewString("issue")},
+			cache:          &threadsafeSet{data: sets.New[string]("issue")},
 		},
 		{
 			name:           "Success case-insensitive",
 			client:         &fakejira.FakeClient{Issues: []*jira.Issue{&upperCaseIssue}},
 			issueToRequest: "ISSUE-123",
-			cache:          &threadsafeSet{data: sets.NewString("issue")},
+			cache:          &threadsafeSet{data: sets.New[string]("issue")},
 		},
 	}
 

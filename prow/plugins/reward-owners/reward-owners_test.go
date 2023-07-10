@@ -45,38 +45,38 @@ type fakeRepoOwners struct {
 func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames               { return ownersconfig.Filenames{} }
 func (f *fakeRepoOwners) FindApproverOwnersForFile(path string) string    { return "" }
 func (f *fakeRepoOwners) FindReviewersOwnersForFile(path string) string   { return "" }
-func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.String       { return nil }
+func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.Set[string]  { return nil }
 func (f *fakeRepoOwners) IsNoParentOwners(path string) bool               { return false }
 func (f *fakeRepoOwners) IsAutoApproveUnownedSubfolders(path string) bool { return false }
-func (f *fakeRepoOwners) LeafApprovers(path string) sets.String           { return nil }
+func (f *fakeRepoOwners) LeafApprovers(path string) sets.Set[string]      { return nil }
 func (f *fakeRepoOwners) Approvers(path string) layeredsets.String        { return layeredsets.String{} }
-func (f *fakeRepoOwners) LeafReviewers(path string) sets.String           { return nil }
+func (f *fakeRepoOwners) LeafReviewers(path string) sets.Set[string]      { return nil }
 func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	return repoowners.SimpleConfig{}, nil
 }
 func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	return repoowners.FullConfig{}, nil
 }
-func (f *fakeRepoOwners) Reviewers(path string) layeredsets.String  { return layeredsets.String{} }
-func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String { return nil }
-func (f *fakeRepoOwners) TopLevelApprovers() sets.String            { return nil }
+func (f *fakeRepoOwners) Reviewers(path string) layeredsets.String       { return layeredsets.String{} }
+func (f *fakeRepoOwners) RequiredReviewers(path string) sets.Set[string] { return nil }
+func (f *fakeRepoOwners) TopLevelApprovers() sets.Set[string]            { return nil }
 
-func (f *fakeRepoOwners) AllApprovers() sets.String {
+func (f *fakeRepoOwners) AllApprovers() sets.Set[string] {
 	return ownersBySha[f.sha]
 }
 
-func (f *fakeRepoOwners) AllOwners() sets.String {
+func (f *fakeRepoOwners) AllOwners() sets.Set[string] {
 	return ownersBySha[f.sha]
 }
 
-func (f *fakeRepoOwners) AllReviewers() sets.String {
+func (f *fakeRepoOwners) AllReviewers() sets.Set[string] {
 	return ownersBySha[f.sha]
 }
 
-var ownersBySha = map[string]sets.String{
-	"base":         sets.NewString("alice", "bob"),
-	"add cole":     sets.NewString("alice", "bob", "cole"),
-	"remove alice": sets.NewString("bob"),
+var ownersBySha = map[string]sets.Set[string]{
+	"base":         sets.New[string]("alice", "bob"),
+	"add cole":     sets.New[string]("alice", "bob", "cole"),
+	"remove alice": sets.New[string]("bob"),
 }
 
 func makeChanges(files []string) map[string]string {

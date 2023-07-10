@@ -569,7 +569,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			},
 			hiddenOnly: o.hiddenOnly,
 			showHidden: o.showHidden,
-			tenantIDs:  sets.NewString(o.tenantIDs.Strings()...),
+			tenantIDs:  sets.New[string](o.tenantIDs.Strings()...),
 			cfg:        cfg,
 		}
 		go func() {
@@ -628,7 +628,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			},
 		})
 
-		repos := cfg().AllRepos.List()
+		repos := sets.List(cfg().AllRepos)
 
 		prStatusAgent := prstatus.NewDashboardAgent(repos, &githubOAuthConfig, logrus.WithField("client", "pr-status"))
 
@@ -778,7 +778,7 @@ func handleProwJobs(ja *jobs.JobAgent, log *logrus.Entry) http.HandlerFunc {
 		jobs := ja.ProwJobs()
 		omit := r.URL.Query().Get("omit")
 
-		if set := sets.NewString(strings.Split(omit, ",")...); set.Len() > 0 {
+		if set := sets.New[string](strings.Split(omit, ",")...); set.Len() > 0 {
 			for i := range jobs {
 				jobs[i].ManagedFields = nil
 				if set.Has(Annotations) {
@@ -981,7 +981,7 @@ func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Gette
 	var lensIndexes []int
 lensesLoop:
 	for i, lfc := range cfg().Deck.Spyglass.Lenses {
-		matches := sets.String{}
+		matches := sets.Set[string]{}
 		for _, re := range lfc.RequiredFiles {
 			found := false
 			for _, a := range artifactNames {
@@ -1003,7 +1003,7 @@ lensesLoop:
 			}
 		}
 
-		lensCache[i] = matches.List()
+		lensCache[i] = sets.List(matches)
 		lensIndexes = append(lensIndexes, i)
 	}
 

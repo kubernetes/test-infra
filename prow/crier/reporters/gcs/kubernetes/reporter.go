@@ -143,13 +143,13 @@ func (gr *gcsK8sReporter) addFinalizer(ctx context.Context, pj *prowv1.ProwJob) 
 		return nil
 	}
 
-	finalizers := sets.NewString(pod.Finalizers...)
+	finalizers := sets.New[string](pod.Finalizers...)
 	if finalizers.Has(kubernetesreporterapi.FinalizerName) {
 		return nil
 	}
 
 	originalPod := pod.DeepCopy()
-	pod.Finalizers = finalizers.Insert(kubernetesreporterapi.FinalizerName).List()
+	pod.Finalizers = sets.List(finalizers.Insert(kubernetesreporterapi.FinalizerName))
 	patch := ctrlruntimeclient.MergeFrom(originalPod)
 	patchData, err := patch.Data(pod)
 	if err != nil {
@@ -216,7 +216,7 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, log *logrus.Entry, 
 		return nil
 	}
 
-	overWriteOpts := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(false)}
+	overWriteOpts := io.WriterOptions{PreconditionDoesNotExist: utilpointer.Bool(false)}
 	podInfoPath, err := providers.StoragePath(bucketName, path.Join(dir, "podinfo.json"))
 	if err != nil {
 		return fmt.Errorf("failed to resolve podinfo.json path: %v", err)
@@ -237,13 +237,13 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, log *logrus.Entry, 
 }
 
 func (gr *gcsK8sReporter) removeFinalizer(ctx context.Context, cluster string, pod *v1.Pod) error {
-	finalizers := sets.NewString(pod.Finalizers...)
+	finalizers := sets.New[string](pod.Finalizers...)
 	if !finalizers.Has(kubernetesreporterapi.FinalizerName) {
 		return nil
 	}
 
 	oldPod := pod.DeepCopy()
-	pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).List()
+	pod.Finalizers = sets.List(finalizers.Delete(kubernetesreporterapi.FinalizerName))
 	patch := ctrlruntimeclient.MergeFrom(oldPod)
 	rawPatch, err := patch.Data(pod)
 	if err != nil {

@@ -1156,9 +1156,9 @@ func TestTargetUrl(t *testing.T) {
 func TestOpenPRsQuery(t *testing.T) {
 	orgs := []string{"org", "kuber"}
 	repos := []string{"k8s/k8s", "k8s/t-i"}
-	exceptions := map[string]sets.String{
-		"org":            sets.NewString("org/repo1", "org/repo2"),
-		"irrelevant-org": sets.NewString("irrelevant-org/repo1", "irrelevant-org/repo2"),
+	exceptions := map[string]sets.Set[string]{
+		"org":            sets.New[string]("org/repo1", "org/repo2"),
+		"irrelevant-org": sets.New[string]("irrelevant-org/repo1", "irrelevant-org/repo2"),
 	}
 
 	queriesByOrg := openPRsQueries(orgs, repos, exceptions)

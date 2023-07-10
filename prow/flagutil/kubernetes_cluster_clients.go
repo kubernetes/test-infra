@@ -107,7 +107,7 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 		}
 		if o.kubeconfig == "" && o.kubeconfigDir == "" {
 			if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
-				for _, element := range sets.NewString(filepath.SplitList(envVal)...).List() {
+				for _, element := range sets.List(sets.New[string](filepath.SplitList(envVal)...)) {
 					err = watcher.Add(element)
 					if err != nil {
 						err = fmt.Errorf("failed to watch %s: %w", element, err)
@@ -527,9 +527,9 @@ func (o *KubernetesOptions) BuildClusterUncachedRuntimeClients(dryRun bool) (map
 	return clients, utilerrors.NewAggregate(errs)
 }
 
-func (o *KubernetesOptions) KnownClusters(dryRun bool) (sets.String, error) {
+func (o *KubernetesOptions) KnownClusters(dryRun bool) (sets.Set[string], error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
-	return sets.StringKeySet(o.clusterConfigs), nil
+	return sets.KeySet[string](o.clusterConfigs), nil
 }

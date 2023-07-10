@@ -715,7 +715,7 @@ func TestHandleComment(t *testing.T) {
 			commenter:         orgMember,
 			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
 			action:            github.GenericCommentActionCreated,
-			teams:             map[string]map[string]fakegithub.TeamWithMembers{"org": {"privileged-group": {Members: sets.NewString(orgMember)}}},
+			teams:             map[string]map[string]fakegithub.TeamWithMembers{"org": {"privileged-group": {Members: sets.New[string](orgMember)}}},
 			expectedNewLabels: formatWithPRInfo("restricted-label"),
 		},
 		{
@@ -745,7 +745,7 @@ func TestHandleComment(t *testing.T) {
 			commenter:             orgMember,
 			restrictedLabels:      map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
 			action:                github.GenericCommentActionCreated,
-			teams:                 map[string]map[string]fakegithub.TeamWithMembers{"org": {"privileged-group": {Members: sets.NewString(orgMember)}}},
+			teams:                 map[string]map[string]fakegithub.TeamWithMembers{"org": {"privileged-group": {Members: sets.New[string](orgMember)}}},
 			expectedRemovedLabels: formatWithPRInfo("restricted-label"),
 		},
 		{

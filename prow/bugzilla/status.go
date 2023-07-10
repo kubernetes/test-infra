@@ -23,6 +23,7 @@ import "fmt"
 //   - "status" if only resolution is empty
 //   - "any status with resolution RESOLUTION" if only status is empty
 //   - "" if both status and resolution are empty
+//
 // This is useful in user-facing messages that communicate bug state information
 func PrettyStatus(status, resolution string) string {
 	if resolution == "" {

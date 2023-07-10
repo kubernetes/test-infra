@@ -381,10 +381,10 @@ type orgClient interface {
 	UpdateOrgMembership(org, user string, admin bool) (*github.OrgMembership, error)
 }
 
-func configureOrgMembers(opt options, client orgClient, orgName string, orgConfig org.Config, invitees sets.String) error {
+func configureOrgMembers(opt options, client orgClient, orgName string, orgConfig org.Config, invitees sets.Set[string]) error {
 	// Get desired state
-	wantAdmins := sets.NewString(orgConfig.Admins...)
-	wantMembers := sets.NewString(orgConfig.Members...)
+	wantAdmins := sets.New[string](orgConfig.Admins...)
+	wantMembers := sets.New[string](orgConfig.Members...)
 
 	// Sanity desired state
 	if n := len(wantAdmins); n < opt.minAdmins {
@@ -408,8 +408,8 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	}
 
 	// Get current state
-	haveAdmins := sets.String{}
-	haveMembers := sets.String{}
+	haveAdmins := sets.Set[string]{}
+	haveMembers := sets.Set[string]{}
 	ms, err := client.ListOrgMembers(orgName, github.RoleAdmin)
 	if err != nil {
 		return fmt.Errorf("failed to list %s admins: %w", orgName, err)
@@ -436,9 +436,9 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		return fmt.Errorf("cannot delete %d memberships or %.3f of %s (exceeds limit of %.3f)", len(remove), d, orgName, opt.maximumDelta)
 	}
 
-	teamMembers := sets.String{}
-	teamNames := sets.String{}
-	duplicateTeamNames := sets.String{}
+	teamMembers := sets.Set[string]{}
+	teamNames := sets.Set[string]{}
+	duplicateTeamNames := sets.Set[string]{}
 	for name, team := range orgConfig.Teams {
 		teamMembers.Insert(team.Members...)
 		teamMembers.Insert(team.Maintainers...)
@@ -456,11 +456,11 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 
 	teamMembers = normalize(teamMembers)
 	if outside := teamMembers.Difference(want.all()); len(outside) > 0 {
-		return fmt.Errorf("all team members/maintainers must also be org members: %s", strings.Join(outside.List(), ", "))
+		return fmt.Errorf("all team members/maintainers must also be org members: %s", strings.Join(sets.List(outside), ", "))
 	}
 
 	if n := len(duplicateTeamNames); n > 0 {
-		return fmt.Errorf("team names must be unique (including previous names), %d duplicated names: %s", n, strings.Join(duplicateTeamNames.List(), ", "))
+		return fmt.Errorf("team names must be unique (including previous names), %d duplicated names: %s", n, strings.Join(sets.List(duplicateTeamNames), ", "))
 	}
 
 	adder := func(user string, super bool) error {
@@ -500,16 +500,16 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 }
 
 type memberships struct {
-	members sets.String
-	super   sets.String
+	members sets.Set[string]
+	super   sets.Set[string]
 }
 
-func (m memberships) all() sets.String {
+func (m memberships) all() sets.Set[string] {
 	return m.members.Union(m.super)
 }
 
-func normalize(s sets.String) sets.String {
-	out := sets.String{}
+func normalize(s sets.Set[string]) sets.Set[string] {
+	out := sets.Set[string]{}
 	for i := range s {
 		out.Insert(github.NormLogin(i))
 	}
@@ -521,11 +521,11 @@ func (m *memberships) normalize() {
 	m.super = normalize(m.super)
 }
 
-func configureMembers(have, want memberships, invitees sets.String, adder func(user string, super bool) error, remover func(user string) error) error {
+func configureMembers(have, want memberships, invitees sets.Set[string], adder func(user string, super bool) error, remover func(user string) error) error {
 	have.normalize()
 	want.normalize()
 	if both := want.super.Intersection(want.members); len(both) > 0 {
-		return fmt.Errorf("users in both roles: %s", strings.Join(both.List(), ", "))
+		return fmt.Errorf("users in both roles: %s", strings.Join(sets.List(both), ", "))
 	}
 	havePlusInvites := have.all().Union(invitees)
 	remove := havePlusInvites.Difference(want.all())
@@ -569,8 +569,8 @@ func findTeam(teams map[string]github.Team, name string, previousNames ...string
 // validateTeamNames returns an error if any current/previous names are used multiple times in the config.
 func validateTeamNames(orgConfig org.Config) error {
 	// Does the config duplicate any team names?
-	used := sets.String{}
-	dups := sets.String{}
+	used := sets.Set[string]{}
+	dups := sets.Set[string]{}
 	for name, orgTeam := range orgConfig.Teams {
 		if used.Has(name) {
 			dups.Insert(name)
@@ -586,7 +586,7 @@ func validateTeamNames(orgConfig org.Config) error {
 		}
 	}
 	if n := len(dups); n > 0 {
-		return fmt.Errorf("%d duplicated names: %s", n, strings.Join(dups.List(), ", "))
+		return fmt.Errorf("%d duplicated names: %s", n, strings.Join(sets.List(dups), ", "))
 	}
 	return nil
 }
@@ -605,7 +605,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 
 	// What teams exist?
 	teams := map[string]github.Team{}
-	slugs := sets.String{}
+	slugs := sets.Set[string]{}
 	teamList, err := client.ListTeams(orgName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list teams: %w", err)
@@ -645,7 +645,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	// What team are we using for each configured name, and which names are missing?
 	matches := map[string]github.Team{}
 	missing := map[string]org.Team{}
-	used := sets.String{}
+	used := sets.Set[string]{}
 	var match func(teams map[string]org.Team)
 	match = func(teams map[string]org.Team) {
 		for name, orgTeam := range teams {
@@ -700,7 +700,7 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 		// * another actor to delete team N after the ListTeams() call
 		// * github to reuse team N after someone deleted it
 		// Therefore used may now include IDs in unused, handle this situation.
-		logrus.Warnf("Will not delete %d team IDs reused by github: %v", len(reused), reused.List())
+		logrus.Warnf("Will not delete %d team IDs reused by github: %v", len(reused), sets.List(reused))
 		unused = unused.Difference(reused)
 	}
 	// Delete undeclared teams.
@@ -784,8 +784,8 @@ type inviteClient interface {
 	ListOrgInvitations(org string) ([]github.OrgInvitation, error)
 }
 
-func orgInvitations(opt options, client inviteClient, orgName string) (sets.String, error) {
-	invitees := sets.String{}
+func orgInvitations(opt options, client inviteClient, orgName string) (sets.Set[string], error) {
+	invitees := sets.Set[string]{}
 	if (!opt.fixOrgMembers && !opt.fixTeamMembers) || opt.ignoreInvitees {
 		return invitees, nil
 	}
@@ -1224,8 +1224,8 @@ type teamMembersClient interface {
 	UpdateTeamMembershipBySlug(org, teamSlug, user string, maintainer bool) (*github.TeamMembership, error)
 }
 
-func teamInvitations(client teamMembersClient, orgName, teamSlug string) (sets.String, error) {
-	invitees := sets.String{}
+func teamInvitations(client teamMembersClient, orgName, teamSlug string) (sets.Set[string], error) {
+	invitees := sets.Set[string]{}
 	is, err := client.ListTeamInvitationsBySlug(orgName, teamSlug)
 	if err != nil {
 		return nil, err
@@ -1242,12 +1242,12 @@ func teamInvitations(client teamMembersClient, orgName, teamSlug string) (sets.S
 // configureTeamMembers will add/update people to the appropriate role on the team, and remove anyone else.
 func configureTeamMembers(client teamMembersClient, orgName string, gt github.Team, team org.Team, ignoreInvitees bool) error {
 	// Get desired state
-	wantMaintainers := sets.NewString(team.Maintainers...)
-	wantMembers := sets.NewString(team.Members...)
+	wantMaintainers := sets.New[string](team.Maintainers...)
+	wantMembers := sets.New[string](team.Members...)
 
 	// Get current state
-	haveMaintainers := sets.String{}
-	haveMembers := sets.String{}
+	haveMaintainers := sets.Set[string]{}
+	haveMembers := sets.Set[string]{}
 
 	members, err := client.ListTeamMembersBySlug(orgName, gt.Slug, github.RoleMember)
 	if err != nil {
@@ -1265,7 +1265,7 @@ func configureTeamMembers(client teamMembersClient, orgName string, gt github.Te
 		haveMaintainers.Insert(m.Login)
 	}
 
-	invitees := sets.String{}
+	invitees := sets.Set[string]{}
 	if !ignoreInvitees {
 		invitees, err = teamInvitations(client, orgName, gt.Slug)
 		if err != nil {

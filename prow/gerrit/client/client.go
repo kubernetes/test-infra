@@ -731,7 +731,7 @@ func ChangedFilesProvider(changeInfo *ChangeInfo) config.ChangedFilesProvider {
 		if changeInfo == nil {
 			return nil, fmt.Errorf("programmer error! The passed '*ChangeInfo' was nil which shouldn't ever happen")
 		}
-		changed := sets.NewString()
+		changed := sets.New[string]()
 		revision := changeInfo.Revisions[changeInfo.CurrentRevision]
 		for file, info := range revision.Files {
 			changed.Insert(file)
@@ -741,7 +741,7 @@ func ChangedFilesProvider(changeInfo *ChangeInfo) config.ChangedFilesProvider {
 				changed.Insert(info.OldPath)
 			}
 		}
-		return changed.List(), nil
+		return sets.List(changed), nil
 	}
 }
 

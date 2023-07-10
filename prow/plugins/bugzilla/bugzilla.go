@@ -579,7 +579,7 @@ func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) str
 	}
 }
 
-func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
+func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.Set[string]) error {
 	comment := e.comment(gc)
 	// check if bug is part of a restricted group
 	if !e.missing {
@@ -908,7 +908,7 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 				// the BugZilla web UI shows one option for target release, but returns the
 				// field as a list in the REST API. We only care for the first item and it's
 				// not even clear if the list can have more than one item in the response
-				if sets.NewString(*options.DependentBugTargetReleases...).Has(bug.TargetRelease[0]) {
+				if sets.New[string](*options.DependentBugTargetReleases...).Has(bug.TargetRelease[0]) {
 					validations = append(validations, fmt.Sprintf("dependent "+bugLink+" targets the %q release, which is one of the valid target releases: %s", bug.ID, endpoint, bug.ID, bug.TargetRelease[0], strings.Join(*options.DependentBugTargetReleases, ", ")))
 				} else {
 					valid = false
@@ -940,7 +940,7 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 	return valid, validations, errors
 }
 
-func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
+func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.Set[string]) error {
 	comment := e.comment(gc)
 
 	if options.StateAfterMerge == nil {
@@ -1258,7 +1258,7 @@ func isBugAllowed(bug *bugzilla.Bug, allowedGroups []string) bool {
 		return true
 	}
 
-	allowed := sets.NewString(allowedGroups...)
+	allowed := sets.New[string](allowedGroups...)
 	for _, group := range bug.Groups {
 		if !allowed.Has(group) {
 			return false
