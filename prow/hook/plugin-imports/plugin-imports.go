@@ -64,6 +64,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/transfer-issue"
 	_ "k8s.io/test-infra/prow/plugins/trick-or-treat"
 	_ "k8s.io/test-infra/prow/plugins/trigger"
+	_ "k8s.io/test-infra/prow/plugins/updatebot"
 	_ "k8s.io/test-infra/prow/plugins/updateconfig"
 	_ "k8s.io/test-infra/prow/plugins/verify-owners"
 	_ "k8s.io/test-infra/prow/plugins/welcome"
