@@ -338,10 +338,13 @@ func (o *GitHubOptions) GitHubClientWithAccessToken(token string) (github.Client
 // github.go.
 func (o *GitHubOptions) GitClientFactory(cookieFilePath string, cacheDir *string, dryRun, persistCache bool) (gitv2.ClientFactory, error) {
 	var gitClientFactory gitv2.ClientFactory
-	if cookieFilePath != "" && o.TokenPath == "" && o.AppPrivateKeyPath == "" {
+	if (cookieFilePath != "" || o.TokenPath != "") && o.AppPrivateKeyPath == "" {
 		opts := gitv2.ClientFactoryOpts{
 			CookieFilePath: cookieFilePath,
 			Persist:        &persistCache,
+			Token:          secret.GetTokenGenerator(o.TokenPath),
+			Username:       gitv2.LoginGetter(o.userGenerator),
+			Censor:         secret.Censor,
 		}
 		if cacheDir != nil && *cacheDir != "" {
 			opts.CacheDirBase = cacheDir

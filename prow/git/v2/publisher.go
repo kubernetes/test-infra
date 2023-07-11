@@ -53,13 +53,21 @@ type publisher struct {
 // Commit adds all of the current content to the index and creates a commit
 func (p *publisher) Commit(title, body string) error {
 	p.logger.Infof("Committing changes with title %q", title)
-	name, email, err := p.info()
-	if err != nil {
-		return err
+	commitCommand := []string {"commit", "--message", title, "--message", body}
+	if p.info != nil {
+		name, email, err := p.info()
+		if err != nil {
+			return err
+		}
+		if name != "" && email != "" {
+			commitCommand = append(commitCommand, "--author", fmt.Sprintf("%s <%s>", name, email))
+		} else {
+			return fmt.Errorf("git user getter returns invalid identity, name: %s, email: %s", name, email)
+		}
 	}
 	commands := [][]string{
 		{"add", "--all"},
-		{"commit", "--message", title, "--message", body, "--author", fmt.Sprintf("%s <%s>", name, email)},
+		commitCommand,
 	}
 	for _, command := range commands {
 		if out, err := p.executor.Run(command...); err != nil {
