@@ -260,14 +260,6 @@ aliases:
     - justaugustus # subproject owner
     - mrbobbytables # subproject owner
 
-  # copied from sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
-  cluster-api-vsphere-maintainers:
-    - frapposelli
-    - yastij
-    - randomvariable
-    - srm09
-  # end sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
-
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
   - camilamacedo86
