@@ -78,6 +78,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -127,6 +128,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -178,6 +180,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -228,6 +231,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
@@ -280,6 +284,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
@@ -319,6 +324,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -365,6 +371,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -423,6 +430,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -483,6 +491,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -540,6 +549,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -602,6 +612,7 @@ EOF
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -648,6 +659,7 @@ EOF
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -706,6 +718,7 @@ EOF
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -766,6 +779,7 @@ EOF
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -823,6 +837,7 @@ EOF
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
