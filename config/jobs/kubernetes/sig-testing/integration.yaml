@@ -53,6 +53,11 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         command:
         - runner.sh
+        env:
+        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
+          value: "8"
+        - name: KUBE_TIMEOUT
+          value: "-timeout=1h30m"
         args:
         - ./hack/jenkins/test-dockerized.sh
         # docker-in-docker needs privileged mode
@@ -60,11 +65,11 @@ presubmits:
           privileged: true
         resources:
           limits:
-            cpu: 10
-            memory: 40Gi
+            cpu: 8
+            memory: 20Gi
           requests:
-            cpu: 10
-            memory: 40Gi
+            cpu: 8
+            memory: 20Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
