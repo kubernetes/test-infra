@@ -305,39 +305,3 @@ presubmits:
       testgrid-tab-name: pr-full-e2e
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs all e2e tests
-
-  - name: pull-cluster-api-provider-vsphere-e2e-v1alpha
-    branches:
-      - ^release-0.7$
-      - ^release-0.8$
-    labels:
-      preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
-      preset-cluster-api-provider-vsphere-gcs-creds: "true"
-      preset-kind-volume-mounts: "true"
-    always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|packaging|pkg|test)/|Dockerfile|Makefile|hack/e2e\.sh|go\.mod|go\.sum|main\.go)'
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    max_concurrency: 3
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
-          command:
-            - runner.sh
-          args:
-            - ./hack/e2e.sh
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-            capabilities:
-              add: ["NET_ADMIN"]
-          resources:
-            requests:
-              cpu: "4000m"
-              memory: "6Gi"
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-v1alpha
-      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
-      description: Runs e2e tests for v1alpha3 and v1alpha4 types
