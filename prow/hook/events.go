@@ -419,6 +419,33 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 	}
 }
 
+func (s *Server) handleWorkflowRunEvent(l *logrus.Entry, wre github.WorkflowRunEvent) {
+	defer s.wg.Done()
+	l = l.WithFields(logrus.Fields{
+		github.OrgLogField:  wre.Repo.Owner.Login,
+		github.RepoLogField: wre.Repo.Name,
+		"workflow_id":       wre.WorkflowRun.WorkflowID,
+	})
+	l.Infof("Workflow run %s.", wre.Action)
+	for p, h := range s.Plugins.WorkflowRunEventHandlers(wre.Repo.Owner.Login, wre.Repo.Name) {
+		s.wg.Add(1)
+		go func(p string, h plugins.WorkflowRunHandler) {
+			defer s.wg.Done()
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, wre.Repo.Owner.Login, s.Metrics.Metrics, l, p)
+			start := time.Now()
+			err := errorOnPanic(func() error { return h(agent, wre) })
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": wre.Action, "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
+			if err != nil {
+				agent.Logger.WithError(err).Error("Error handling WorkflowRunEvent.")
+				s.Metrics.PluginHandleErrors.With(labels).Inc()
+			}
+			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
+		}(p, h)
+	}
+
+}
+
+
 // genericCommentAction normalizes the action string to a GenericCommentEventAction or returns ""
 // if the action is unrelated to the comment text. (For example a PR 'label' action.)
 func genericCommentAction(action string) github.GenericCommentEventAction {

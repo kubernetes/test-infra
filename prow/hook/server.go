@@ -166,6 +166,17 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 			s.wg.Add(1)
 			go s.handleStatusEvent(l, se)
 		}
+	case "workflow_run":
+		var wre github.WorkflowRunEvent
+		if err := json.Unmarshal(payload, &wre); err != nil {
+			return err
+		}
+		wre.GUID = eventGUID
+		srcRepo = wre.Repo.FullName
+		if s.RepoEnabled(wre.Repo.Owner.Login, wre.Repo.Name) {
+			s.wg.Add(1)
+			go s.handleWorkflowRunEvent(l, wre)
+		}
 	default:
 		var ge github.GenericEvent
 		if err := json.Unmarshal(payload, &ge); err != nil {

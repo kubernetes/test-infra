@@ -62,6 +62,7 @@ var (
 	reviewEventHandlers        = map[string]ReviewEventHandler{}
 	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
 	statusEventHandlers        = map[string]StatusEventHandler{}
+	workflowRunEventHandlers   = map[string]WorkflowRunHandler{}
 	// CommentMap is used by many plugins for printing help messages defined in
 	// config.go.
 	CommentMap, _ = genyaml.NewCommentMap(nil)
@@ -165,6 +166,13 @@ type GenericCommentHandler func(Agent, github.GenericCommentEvent) error
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	genericCommentHandlers[name] = fn
+}
+
+type WorkflowRunHandler func(Agent, github.WorkflowRunEvent) error
+
+func RegisterWorkflowRunEventHandler(name string, fn WorkflowRunHandler, help HelpProvider) {
+	pluginHelp[name] = help
+	workflowRunEventHandlers[name] = fn
 }
 
 type PluginGitHubClient interface {
@@ -493,6 +501,20 @@ func (pa *ConfigAgent) StatusEventHandlers(owner, repo string) map[string]Status
 	hs := map[string]StatusEventHandler{}
 	for _, p := range pa.getPlugins(owner, repo) {
 		if h, ok := statusEventHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+
+	return hs
+}
+
+func (pa *ConfigAgent) WorkflowRunEventHandlers(owner, repo string) map[string]WorkflowRunHandler {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	hs := map[string]WorkflowRunHandler{}
+	for _, p := range pa.getPlugins(owner, repo) {
+		if h, ok := workflowRunEventHandlers[p]; ok {
 			hs[p] = h
 		}
 	}
