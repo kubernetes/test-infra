@@ -23,11 +23,6 @@ presubmits:
         - runner.sh
         args:
         - ./hack/jenkins/test-dockerized.sh
-        env:
-        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "6"
-        - name: KUBE_TIMEOUT
-          value: "1200s"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -94,10 +89,6 @@ presubmits:
         env:
         - name: GO_VERSION
           value: ""
-        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "6"
-        - name: KUBE_TIMEOUT
-          value: "1200s"
         args:
         - ./hack/jenkins/test-dockerized.sh
         # docker-in-docker needs privileged mode
@@ -131,11 +122,6 @@ presubmits:
         - runner.sh
         args:
         - ./hack/jenkins/test-dockerized.sh
-        env:
-        - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-          value: "6"
-        - name: KUBE_TIMEOUT
-          value: "1200s"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -176,10 +162,6 @@ periodics:
       env:
       - name: SHORT
         value: --short=false
-      - name: KUBE_INTEGRATION_TEST_MAX_CONCURRENCY
-        value: "6"
-      - name: KUBE_TIMEOUT
-        value: "1200s"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
