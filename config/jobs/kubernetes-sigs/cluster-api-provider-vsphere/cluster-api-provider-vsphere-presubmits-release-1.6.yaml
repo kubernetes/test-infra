@@ -22,7 +22,7 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-test-release-1-6
-      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs unit tests
 
   - name: pull-cluster-api-provider-vsphere-integration-test-release-1-6
@@ -55,7 +55,7 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-test-integration-release-1-6
-      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs integration tests
 
   - name: pull-cluster-api-provider-vsphere-e2e-release-1-6
@@ -93,7 +93,7 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-e2e-release-1-6
-      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs only PR Blocking e2e tests
 
   - name: pull-cluster-api-provider-vsphere-full-e2e-release-1-6
@@ -130,5 +130,5 @@ presubmits:
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-full-e2e-release-1-6
-      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs all e2e tests
