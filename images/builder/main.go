@@ -91,8 +91,11 @@ func runCmd(command string, args ...string) error {
 	return cmd.Run()
 }
 
-func getVersion() (string, error) {
+func getVersion(versionTagFilter string) (string, error) {
 	cmd := exec.Command("git", "describe", "--tags", "--always", "--dirty")
+	if versionTagFilter != "" {
+		cmd.Args = append(cmd.Args, "--match", versionTagFilter)
+	}
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -275,7 +278,7 @@ func runBuildJobs(o options) []error {
 	}
 
 	log.Println("Running build jobs...")
-	tag, err := getVersion()
+	tag, err := getVersion(o.versionTagFilter)
 	if err != nil {
 		return []error{fmt.Errorf("failed to get current tag: %w", err)}
 	}
@@ -324,16 +327,17 @@ func runBuildJobs(o options) []error {
 }
 
 type options struct {
-	buildDir       string
-	configDir      string
-	cloudbuildFile string
-	logDir         string
-	scratchBucket  string
-	project        string
-	allowDirty     bool
-	noSource       bool
-	variant        string
-	envPassthrough string
+	buildDir         string
+	configDir        string
+	cloudbuildFile   string
+	logDir           string
+	scratchBucket    string
+	project          string
+	allowDirty       bool
+	noSource         bool
+	variant          string
+	versionTagFilter string
+	envPassthrough   string
 
 	// withGitDirectory will include the .git directory when uploading the source to GCB
 	withGitDirectory bool
@@ -359,6 +363,7 @@ func parseFlags() options {
 	flag.BoolVar(&o.allowDirty, "allow-dirty", false, "If true, allow pushing dirty builds.")
 	flag.BoolVar(&o.noSource, "no-source", false, "If true, no source will be uploaded with this build.")
 	flag.StringVar(&o.variant, "variant", "", "If specified, build only the given variant. An error if no variants are defined.")
+	flag.StringVar(&o.versionTagFilter, "version-tag-filter", "", "If specified, only tags that match the specified glob pattern are used in version detection.")
 	flag.StringVar(&o.envPassthrough, "env-passthrough", "", "Comma-separated list of specified environment variables to be passed to GCB as substitutions with an _ prefix. If the variable doesn't exist, the substitution will exist but be empty.")
 	flag.BoolVar(&o.withGitDirectory, "with-git-dir", o.withGitDirectory, "If true, upload the .git directory to GCB, so we can e.g. get the git log and tag.")
 
