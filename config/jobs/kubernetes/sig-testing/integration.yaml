@@ -34,7 +34,7 @@ presubmits:
             cpu: 6
             memory: 15Gi
   - name: pull-kubernetes-integration-eks
-    cluster: eks-infra-prow-build
+    cluster: eks-prow-build-cluster
     always_run: false
     optional: true
     decorate: true
