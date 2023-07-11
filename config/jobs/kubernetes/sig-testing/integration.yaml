@@ -38,6 +38,38 @@ presubmits:
           requests:
             cpu: 6
             memory: 15Gi
+  - name: pull-kubernetes-integration-eks
+    cluster: eks-infra-prow-build
+    always_run: false
+    optional: true
+    decorate: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "false"
+      testgrid-dashboards: sig-testing-e2e-framework
+      testgrid-tab-name: integration-eks
+    path_alias: k8s.io/kubernetes
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/jenkins/test-dockerized.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            cpu: 10
+            memory: 40Gi
+          requests:
+            cpu: 10
+            memory: 40Gi
   - name: pull-kubernetes-integration-go-compatibility
     cluster: k8s-infra-prow-build
     always_run: true
