@@ -147,6 +147,8 @@ presubmits:
   - name: pull-release-notes-test
     always_run: true
     decorate: true
+    decoration_config:
+      timeout: 3h
     cluster: eks-prow-build-cluster
     spec:
       containers:
