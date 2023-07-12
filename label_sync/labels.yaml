@@ -314,7 +314,7 @@ default:
       target: both
       addedBy: humans
     - color: 15dd18
-      description: Indicates that a PR is ready to be merged.
+      description: '"Looks good to me", indicates that a PR is ready to be merged.'
       name: lgtm
       target: prs
       prowPlugin: lgtm
