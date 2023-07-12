@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: moonraker
+  namespace: default
+spec:
+  selector:
+    app: moonraker
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    protocol: TCP
+  type: ClusterIP
