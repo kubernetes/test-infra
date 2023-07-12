@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"net/http"
 	"sort"
 	"strconv"
@@ -476,9 +477,11 @@ func (c *syncController) Sync() error {
 	c.config().BranchProtectionWarnings(c.logger, c.config().PresubmitsStatic)
 
 	c.logger.Debug("Building tide pool.")
+	var queryErrors []error
 	prs, err := c.provider.Query()
 	if err != nil {
-		return fmt.Errorf("failed to query GitHub for prs: %w", err)
+		c.logger.WithError(err).Debug("failed to query GitHub for some prs")
+		queryErrors = append(queryErrors, err)
 	}
 	c.logger.WithFields(logrus.Fields{
 		"duration":       time.Since(start).String(),
@@ -542,7 +545,7 @@ func (c *syncController) Sync() error {
 	c.m.Unlock()
 
 	c.History.Flush()
-	return nil
+	return utilerrors.NewAggregate(queryErrors)
 }
 
 func (c *syncController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -666,13 +669,13 @@ func filterSubpool(provider provider, mergeAllowed func(*CodeReviewCommon) (stri
 
 // filterPR indicates if a PR should be filtered out of the subpool.
 // Specifically we filter out PRs that:
-// - Have known merge conflicts or invalid merge method.
-// - Have failing or missing status contexts.
-// - Have pending required status contexts that are not associated with a
-//   ProwJob. (This ensures that the 'tide' context indicates that the pending
-//   status is preventing merge. Required ProwJob statuses are allowed to be
-//   'pending' because this prevents kicking PRs from the pool when Tide is
-//   retesting them.)
+//   - Have known merge conflicts or invalid merge method.
+//   - Have failing or missing status contexts.
+//   - Have pending required status contexts that are not associated with a
+//     ProwJob. (This ensures that the 'tide' context indicates that the pending
+//     status is preventing merge. Required ProwJob statuses are allowed to be
+//     'pending' because this prevents kicking PRs from the pool when Tide is
+//     retesting them.)
 //
 // This function works for any source code provider.
 func filterPR(provider provider, mergeAllowed func(*CodeReviewCommon) (string, error), sp *subpool, pr *CodeReviewCommon) bool {
@@ -2038,7 +2041,6 @@ func nonFailedBatchByNameBaseAndPullsIndexFunc(obj ctrlruntimeclient.Object) []s
 	return []string{nonFailedBatchByNameBaseAndPullsIndexKey(pj.Spec.Job, pj.Spec.Refs)}
 }
 
-//
 func checkRunNodesToContexts(log *logrus.Entry, nodes []CheckRunNode) []Context {
 	var result []Context
 	for _, node := range nodes {
