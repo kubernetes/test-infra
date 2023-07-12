@@ -151,7 +151,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
@@ -186,7 +186,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
@@ -221,7 +221,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
@@ -256,7 +256,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
@@ -291,7 +291,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
@@ -326,7 +326,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
@@ -360,7 +360,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
@@ -395,7 +395,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
@@ -430,7 +430,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230111-cd1b3caf9c
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20230711-e33377c2b4
           command:
             - /run.sh
           args:
