@@ -160,6 +160,41 @@ func handleWorkflowRunEvent(agent plugins.Agent, workflowRunEvent github.Workflo
 	return nil
 }
 
+type TagExistError struct {
+	repo string
+	tag string
+}
+
+func (tee *TagExistError) Error() string {
+	return fmt.Sprintf("tag %s exists in repo %s", tee.tag, tee.repo)
+}
+
+func checkUpdateConflict(agent *plugins.Agent, context *UpdateContext, submodules []SubmoduleEntry) error {
+	// For speed and convenience, here we just check if there is a ref matching update to version
+	checkTag := fmt.Sprintf("tags/%s", context.UpdateToVersion)
+	client := agent.GitHubClient
+	_, err := client.GetRef(context.OwnerLogin, context.MainRepo, checkTag)
+	pattern := regexp.MustCompile(`status code 404`)
+	if err != nil {
+		if pattern.FindString(err.Error()) == "" {
+			return err
+		}
+	} else {
+		return &TagExistError{repo: context.MainRepo, tag: context.UpdateToVersion}
+	}
+	for _, submodule := range submodules {
+		_, err = client.GetRef(context.OwnerLogin, submodule.Name, checkTag)
+		if err != nil {
+			if pattern.FindString(err.Error()) == "" {
+				return err
+			}
+		} else {
+			return &TagExistError{repo: submodule.Name, tag: context.UpdateToVersion}
+		}
+	}
+	return nil
+}
+
 func triggerUpdate(agent *plugins.Agent, pullRequestEvent *github.PullRequestEvent) error {
 	githubClient := agent.GitHubClient
 	org := pullRequestEvent.Repo.Owner.Login
@@ -206,13 +241,10 @@ func triggerUpdate(agent *plugins.Agent, pullRequestEvent *github.PullRequestEve
 		context.UpdatePRNumber = pullRequestEvent.PullRequest.Number
 		context.UpdateSHA = pullRequestEvent.PullRequest.Head.SHA
 		context.BotUser, err = agent.GitHubClient.BotUser()
-		context.mut.Unlock()
 		if err != nil {
 			return fmt.Errorf("cannot get bot user, error: %w", err)
 		}
-
 		deliverTimeChan := make(chan time.Time, 1)
-
 		go func() {
 			// Create status for delivering PR
 			githubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
@@ -230,6 +262,18 @@ func triggerUpdate(agent *plugins.Agent, pullRequestEvent *github.PullRequestEve
 			deliverTimeChan <- time.Now()
 		}()
 
+		reportFailure := func(cause string) {
+			githubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
+				State: github.StatusFailure,
+				Context: "auto-update / deliver-pr",
+				Description: cause,
+			})
+			githubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
+				State:       github.StatusFailure,
+				Context:     "auto-update / update-submodules",
+				Description: cause,
+			})
+		}
 		context.UpdateToVersion = result[1]
 		context.UpdateBase = pullRequestEvent.PullRequest.Base.Ref
 		context.UpdatePR = &pullRequestEvent.PullRequest
@@ -237,19 +281,22 @@ func triggerUpdate(agent *plugins.Agent, pullRequestEvent *github.PullRequestEve
 		context.SubmoduleInfo = map[string]*SubmoduleContext{}
 		gitmodules, err := githubClient.GetFile(context.OwnerLogin, context.MainRepo, ".gitmodules", pullRequestEvent.PullRequest.Head.SHA)
 		if err != nil {
-			// Cannot find a gitmodules file, just return
-			return err
+			reportFailure("Cannot find .gitmodules")
+			return fmt.Errorf("cannot find .gitmodules, %w", err)
 		}
 		moduleEntries, err := ParseDotGitmodulesContent(gitmodules)
-		agent.Logger.Info(moduleEntries)
 		if err != nil {
-			return err
+			reportFailure("Cannot parse submodules from main repo")
+			return fmt.Errorf("cannot parse submodules from main repo, %w", err)
+		}
+		err = checkUpdateConflict(agent, context, moduleEntries)
+		if err != nil {
+			reportFailure("Update conflict")
+			return fmt.Errorf("update conflict, %w", err)
 		}
 		var sem sync.WaitGroup
 		sem.Add(len(moduleEntries))
-		context.mut.Lock()
 		context.Stage = DELIVERING
-		context.mut.Unlock()
 		for _, moduleEntry := range moduleEntries {
 			module := moduleEntry
 			submoduleContext := &SubmoduleContext{
@@ -264,6 +311,7 @@ func triggerUpdate(agent *plugins.Agent, pullRequestEvent *github.PullRequestEve
 				sem.Done()
 			}()
 		}
+		context.mut.Unlock()
 		go func() {
 			defer close(deliverTimeChan)
 			sem.Wait()
@@ -525,7 +573,7 @@ func concludeSubmoduleStatus(agent *plugins.Agent, submodule *SubmoduleContext, 
 		return fmt.Errorf("failed to update status for PR: %s, %w", submodule.PRInfo.HTMLURL, err)
 	}
 	err = checkAndUpdate(agent, context)
-	var notReady *NotReadyError
+	var notReady NotReadyError
 	if err != nil && !errors.As(err, &notReady) {
 		return fmt.Errorf("failed to update, %w", err)
 	}
@@ -750,11 +798,11 @@ type NotReadyError struct {
 
 var _ error = new(NotReadyError)
 
-func (e *NotReadyError) Error() string {
+func (e NotReadyError) Error() string {
 	return fmt.Sprintf(e.message + ", %v", e.err)
 }
 
-func (e *NotReadyError) Unwrap() error {
+func (e NotReadyError) Unwrap() error {
 	return e.err
 }
 
