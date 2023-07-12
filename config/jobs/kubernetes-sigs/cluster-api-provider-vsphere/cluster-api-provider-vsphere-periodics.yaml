@@ -6,6 +6,10 @@ periodics:
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-vsphere-maintainers
     interval: 24h
     extra_refs:
       - org: kubernetes-sigs
@@ -45,6 +49,10 @@ periodics:
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-vsphere-maintainers
     interval: 24h
     extra_refs:
       - org: kubernetes-sigs
@@ -84,6 +92,10 @@ periodics:
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-vsphere-maintainers
     interval: 24h
     extra_refs:
       - org: kubernetes-sigs
@@ -119,6 +131,10 @@ periodics:
   - name: periodic-cluster-api-provider-vsphere-coverage
     interval: 24h
     decorate: true
+    rerun_auth_config:
+      github_team_slugs:
+      - org: kubernetes-sigs
+        slug: cluster-api-provider-vsphere-maintainers
     path_alias: "sigs.k8s.io/cluster-api-provider-vsphere"
     extra_refs:
       - org: kubernetes-sigs
