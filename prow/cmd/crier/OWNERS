@@ -1,11 +1,10 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 reviewers:
-- chaodaiG
 - cjwagner
 approvers:
-- chaodaiG
 - cjwagner
 emeritus_approvers:
+- chaodaiG
 - fejta
 - krzyzacy
 labels:
