@@ -542,17 +542,8 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 			lastUpdate = timeNow
 			log.WithField("now", timeNow).Warn("lastState not found, defaulting to now")
 		}
-		changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, queryStringsFromQueryFilter(filters)...)
-		if err != nil {
-			clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultError).Inc()
-			// don't halt on error from one project, log & continue
-			log.WithError(err).WithFields(logrus.Fields{
-				"lastUpdate": lastUpdate,
-				"rateLimit":  rateLimit,
-			}).Error("Failed to query changes")
-			continue
-		}
-		clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultSuccess).Inc()
+		// Ignore the error, it is already logged and we want to continue on to other projects.
+		changes, _ := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, queryStringsFromQueryFilter(filters)...)
 		result = append(result, changes...)
 	}
 
@@ -617,6 +608,20 @@ func queryStringsFromQueryFilter(filters *config.GerritQueryFilter) []string {
 }
 
 func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]gerrit.ChangeInfo, error) {
+	changes, err := h.queryChangesForProjectWithoutMetrics(log, project, lastUpdate, rateLimit, additionalFilters...)
+	if err != nil {
+		clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultError).Inc()
+		log.WithError(err).WithFields(logrus.Fields{
+			"lastUpdate": lastUpdate,
+			"rateLimit":  rateLimit,
+		}).Error("Failed to query changes")
+	} else {
+		clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultSuccess).Inc()
+	}
+	return changes, err
+}
+
+func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]gerrit.ChangeInfo, error) {
 	var pending []gerrit.ChangeInfo
 
 	var opt gerrit.QueryChangeOptions
