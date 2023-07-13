@@ -149,6 +149,8 @@ func (st *SyncTime) Update(newState LastSyncState) error {
 		return nil
 	}
 
+	// TODO: consider writing to disk/storage in a separate thread so that processing is not blocked on writing the checkpoint file and to reduce the number of writes.
+	// Flushing this on termination would be important to avoid reprocessing events we've already handled.
 	w, err := st.opener.Writer(st.ctx, st.path)
 	if err != nil {
 		return fmt.Errorf("open for write %q: %w", st.path, err)

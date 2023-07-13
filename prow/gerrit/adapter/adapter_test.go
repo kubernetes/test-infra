@@ -88,8 +88,8 @@ func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[s
 	return nil
 }
 
-func (f *fgc) QueryChangesForInstance(instance string, lastState client.LastSyncState, rateLimit int) []client.ChangeInfo {
-	return nil
+func (f *fgc) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]gerrit.ChangeInfo, error) {
+	return nil, nil
 }
 
 func (f *fgc) SetReview(instance, id, revision, message string, labels map[string]string) error {
