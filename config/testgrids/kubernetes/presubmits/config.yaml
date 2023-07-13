@@ -37,6 +37,9 @@ dashboards:
   - name: pull-kubernetes-integration
     test_group_name: pull-kubernetes-integration
     base_options: width=10
+  - name: pull-kubernetes-integration-go-compatibility
+    test_group_name: pull-kubernetes-integration-go-compatibility
+    base_options: width=10
   - name: pull-kubernetes-verify
     test_group_name: pull-kubernetes-verify
     base_options: width=10

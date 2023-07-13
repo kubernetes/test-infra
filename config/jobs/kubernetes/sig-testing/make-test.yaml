@@ -39,7 +39,7 @@ presubmits:
     annotations:
       fork-per-release: "true"
       fork-per-release-replacements: "GO_VERSION= -> GO_VERSION={{.GoVersion}}"
-      testgrid-dashboards: sig-testing-canaries
+      testgrid-dashboards: presubmits-kubernetes-blocking
       description: run with GO_VERSION set to the original go version used for this branch
     decorate: true
     cluster: k8s-infra-prow-build
@@ -47,7 +47,6 @@ presubmits:
     - .* # per-release job
     labels:
       preset-service-account: "true"
-    optional: true
     always_run: true
     path_alias: k8s.io/kubernetes
     spec:
