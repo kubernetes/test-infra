@@ -1141,6 +1141,10 @@ plugins:
     - milestonestatus
     - release-note
     - require-matching-label
+  
+  kubernetes/cloud-provider-gcp:
+    plugins:
+    - require-matching-label
 
   kubernetes/cloud-provider-openstack:
     plugins:
