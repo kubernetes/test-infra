@@ -5,7 +5,6 @@ reviewers:
 - BenTheElder # lead
 - spiffxp # chair
 - stevekuznetsov # chair
-- chaodaiG # oncall
 - cjwagner # oncall, lead
 - mpherman2 # oncall
 approvers:
