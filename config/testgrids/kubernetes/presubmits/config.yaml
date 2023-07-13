@@ -137,6 +137,9 @@ dashboards:
     base_options: width=10
     alert_options:
       alert_mail_to_addresses: patrick.ohly@intel.com
+  - name: pull-kubernetes-e2e-gce-nodeoutofservicedetach-scale-disruptive
+    test_group_name: pull-kubernetes-e2e-gce-nodeoutofservicedetach-scale-disruptive
+    base_options: width=10
 - name: presubmits-kubernetes-scalability
 - name: presubmits-misc
 - name: presubmits-node-problem-detector

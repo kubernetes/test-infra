@@ -371,6 +371,54 @@ presubmits:
     annotations:
       testgrid-create-test-group: 'true'
 
+  - name: pull-kubernetes-e2e-gce-nodeoutofservicedetach-scale-disruptive
+    optional: true
+    run_if_changed: '^.*feature.*\.go'
+    branches:
+    # TODO(releng): Remove once repo default branch has been renamed
+    - master
+    - main
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=200
+        - --scenario=kubernetes_e2e
+        - --
+        - --ginkgo-parallel=1
+        - --build=quick
+        - --cluster=
+        - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false
+        - --env=KUBE_PROXY_DAEMONSET=true
+        - --env=ENABLE_POD_PRIORITY=true
+        - --env=ENABLE_APISERVER_TRACING=true
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --runtime-config=api/all=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-nodeoutofservicedetach-scale-disruptive
+        - --gcp-nodes=10
+        - --test_args=--ginkgo.focus=\[Feature:NodeOutOfServiceVolumeDetachScale\] --minStartupPods=8
+        - --timeout=180m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        resources:
+          requests:
+            memory: "6Gi"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-create-test-group: 'true'
+
   - name: pull-kubernetes-e2e-gce-serial
     cluster: k8s-infra-prow-build
     optional: true
