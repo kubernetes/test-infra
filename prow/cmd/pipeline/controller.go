@@ -685,18 +685,17 @@ func makePipelineGitTask(name string, refs prowjobv1.Refs, pj prowjobv1.ProwJob)
 		Params: []pipelinev1beta1.Param{
 			{
 				Name:  "url",
-				Value: pipelinev1beta1.ArrayOrString{StringVal: sourceURL},
+				Value: pipelinev1beta1.ParamValue{StringVal: sourceURL},
 			},
 			{
 				Name:  "revision",
-				Value: pipelinev1beta1.ArrayOrString{StringVal: revision},
+				Value: pipelinev1beta1.ParamValue{StringVal: revision},
 			},
 		},
 	}
 }
 
-// makePipeline creates a PipelineRun and substitutes ProwJob managed pipeline resources with ResourceSpec instead of ResourceRef
-// so that we don't have to take care of potentially dangling created pipeline resources.
+// makePipelineRun creates a pipeline run from prow job
 func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1beta1.PipelineRun, error) {
 	// First validate.
 	spec, err := pj.Spec.GetPipelineRunSpec()
@@ -724,43 +723,39 @@ func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1beta1.PipelineRun, error)
 	if err != nil {
 		return nil, err
 	}
-	for _, key := range sets.StringKeySet(env).List() {
+	for _, key := range sets.List(sets.KeySet[string](env)) {
 		val := env[key]
 		// TODO: make this handle existing values/substitutions.
 		p.Spec.Params = append(p.Spec.Params, pipelinev1beta1.Param{
 			Name: key,
-			Value: pipelinev1beta1.ArrayOrString{
+			Value: pipelinev1beta1.ParamValue{
 				Type:      pipelinev1beta1.ParamTypeString,
 				StringVal: val,
 			},
 		})
 	}
 
-	// Inject resources from prow job.
-	for _, res := range p.Spec.Resources {
-		refName := res.ResourceRef.Name
-		var refs prowjobv1.Refs
-		var suffix string
-		if refName == config.ProwImplicitGitResource {
-			if pj.Spec.Refs == nil {
-				return nil, fmt.Errorf("%q requested on a ProwJob without an implicit git ref", config.ProwImplicitGitResource)
+	if p.Spec.PipelineSpec != nil {
+		for i, task := range p.Spec.PipelineSpec.Tasks {
+			taskName := task.TaskRef.Name
+			var refs prowjobv1.Refs
+			var suffix string
+			if taskName == config.ProwImplicitGitResource {
+				if pj.Spec.Refs == nil {
+					return nil, fmt.Errorf("%q requested on a ProwJob without an implicit git ref", config.ProwImplicitGitResource)
+				}
+				refs = *pj.Spec.Refs
+				suffix = "-implicit-ref"
+			} else if match := config.ReProwExtraRef.FindStringSubmatch(taskName); len(match) == 2 {
+				index, _ := strconv.Atoi(match[1]) // We can't error because the regexp only matches digits.
+				refs = pj.Spec.ExtraRefs[index]    // ValidatePipelineRunSpec made sure this is safe.
+				suffix = fmt.Sprintf("-extra-ref-%d", index)
+			} else {
+				continue
 			}
-			refs = *pj.Spec.Refs
-			suffix = "-implicit-ref"
-		} else if match := config.ReProwExtraRef.FindStringSubmatch(refName); len(match) == 2 {
-			index, _ := strconv.Atoi(match[1]) // We can't error because the regexp only matches digits.
-			refs = pj.Spec.ExtraRefs[index]    // ValidatePipelineRunSpec made sure this is safe.
-			suffix = fmt.Sprintf("-extra-ref-%d", index)
-		} else {
-			continue
-		}
-		// Change resource ref to resource spec
-		name := pj.Name + suffix
-		task := makePipelineGitTask(name, refs, pj)
-		if p.Spec.PipelineSpec == nil {
-			p.Spec.PipelineSpec = &pipelinev1beta1.PipelineSpec{Tasks: []pipelinev1beta1.PipelineTask{task}}
-		} else {
-			p.Spec.PipelineSpec.Tasks = append(p.Spec.PipelineSpec.Tasks, task)
+
+			gitTask := makePipelineGitTask(pj.Name+suffix, refs, pj)
+			p.Spec.PipelineSpec.Tasks[i] = gitTask
 		}
 	}
 

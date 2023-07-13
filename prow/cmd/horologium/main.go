@@ -156,7 +156,7 @@ func sync(prowJobClient ctrlruntimeclient.Client, cfg *config.Config, cr cronCli
 		logrus.WithError(err).Error("Error syncing cron jobs.")
 	}
 
-	cronTriggers := sets.NewString()
+	cronTriggers := sets.New[string]()
 	for _, job := range cr.QueuedJobs() {
 		cronTriggers.Insert(job)
 	}

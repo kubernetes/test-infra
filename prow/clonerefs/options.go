@@ -199,7 +199,9 @@ func (r *gitRefs) String() string {
 
 // Set parses out a prowapi.Refs from the user string.
 // The following example shows all possible fields:
-//   org,repo=base-ref:base-sha[,pull-number:pull-sha]...
+//
+//	org,repo=base-ref:base-sha[,pull-number:pull-sha]...
+//
 // For the base ref and every pull number, the SHAs
 // are optional and any number of them may be set or
 // unset.

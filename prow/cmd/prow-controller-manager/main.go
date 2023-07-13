@@ -46,7 +46,7 @@ import (
 	_ "k8s.io/test-infra/prow/version"
 )
 
-var allControllers = sets.NewString(plank.ControllerName)
+var allControllers = sets.New[string](plank.ControllerName)
 
 type options struct {
 	totURL string
@@ -64,11 +64,11 @@ type options struct {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	o.enabledControllers = prowflagutil.NewStrings(allControllers.List()...)
+	o.enabledControllers = prowflagutil.NewStrings(sets.List(allControllers)...)
 	fs.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 
 	fs.StringVar(&o.selector, "label-selector", labels.Everything().String(), "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-	fs.Var(&o.enabledControllers, "enable-controller", fmt.Sprintf("Controllers to enable. Can be passed multiple times. Defaults to all controllers (%v)", allControllers.List()))
+	fs.Var(&o.enabledControllers, "enable-controller", fmt.Sprintf("Controllers to enable. Can be passed multiple times. Defaults to all controllers (%v)", sets.List(allControllers)))
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config, &o.storage} {
@@ -95,7 +95,7 @@ func (o *options) Validate() error {
 		}
 	}
 
-	if n := len(allControllers.Intersection(sets.NewString(o.enabledControllers.Strings()...))); n == 0 {
+	if n := len(allControllers.Intersection(sets.New[string](o.enabledControllers.Strings()...))); n == 0 {
 		errs = append(errs, errors.New("no controllers configured"))
 	}
 
@@ -211,7 +211,7 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
 	}
 
-	enabledControllersSet := sets.NewString(o.enabledControllers.Strings()...)
+	enabledControllersSet := sets.New[string](o.enabledControllers.Strings()...)
 	knownClusters, err := o.kubernetes.KnownClusters(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to resolve known clusters in kubeconfig.")

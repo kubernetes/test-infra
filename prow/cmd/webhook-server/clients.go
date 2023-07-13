@@ -83,7 +83,7 @@ func (g *GCPClient) checkSecret(ctx context.Context, secretName string) error {
 	return os.ErrNotExist
 }
 
-//for integration testing purposes. Not to be used in prod
+// for integration testing purposes. Not to be used in prod
 type localFSClient struct {
 	path   string
 	expiry int

@@ -268,10 +268,10 @@ func TestListProwJobs(t *testing.T) {
 		selector    string
 		prowJobs    []func(*prowapi.ProwJob) runtime.Object
 		listErr     bool
-		hiddenRepos sets.String
+		hiddenRepos sets.Set[string]
 		hiddenOnly  bool
 		showHidden  bool
-		expected    sets.String
+		expected    sets.Set[string]
 		expectedErr bool
 		tenantIDs   []string
 	}{
@@ -289,7 +289,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected: sets.NewString("first"),
+			expected: sets.New[string]("first"),
 		},
 		{
 			name:     "no hidden repos returns all prowjobs except those not matching label selector",
@@ -305,7 +305,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected: sets.NewString("second"),
+			expected: sets.New[string]("second"),
 		},
 		{
 			name:     "hidden repos excludes prowjobs from those repos",
@@ -324,8 +324,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString("first"),
+			hiddenRepos: sets.New[string]("org/repo"),
+			expected:    sets.New[string]("first"),
 		},
 		{
 			name:     "hidden repos doesn't exclude prowjobs from other repos",
@@ -344,8 +344,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString("first", "second"),
+			hiddenRepos: sets.New[string]("org/repo"),
+			expected:    sets.New[string]("first", "second"),
 		},
 		{
 			name:     "hidden orgs excludes prowjobs from those orgs",
@@ -364,8 +364,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("org"),
-			expected:    sets.NewString("first"),
+			hiddenRepos: sets.New[string]("org"),
+			expected:    sets.New[string]("first"),
 		},
 		{
 			name:     "hidden orgs doesn't exclude prowjobs from other orgs",
@@ -384,8 +384,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("org"),
-			expected:    sets.NewString("first", "second"),
+			hiddenRepos: sets.New[string]("org"),
+			expected:    sets.New[string]("first", "second"),
 		},
 		{
 			name:     "hidden repos excludes prowjobs from those repos even by extra_refs",
@@ -397,8 +397,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString(),
+			hiddenRepos: sets.New[string]("org/repo"),
+			expected:    sets.New[string](),
 		},
 		{
 			name:     "hidden orgs excludes prowjobs from those orgs even by extra_refs",
@@ -410,8 +410,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("org"),
-			expected:    sets.NewString(),
+			hiddenRepos: sets.New[string]("org"),
+			expected:    sets.New[string](),
 		},
 		{
 			name:     "prowjobs without refs are returned even with hidden repos filtering",
@@ -422,8 +422,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString("first"),
+			hiddenRepos: sets.New[string]("org/repo"),
+			expected:    sets.New[string]("first"),
 		},
 		{
 			name:     "all prowjobs are returned when showHidden is true",
@@ -439,8 +439,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("org/repo"),
-			expected:    sets.NewString("first", "second"),
+			hiddenRepos: sets.New[string]("org/repo"),
+			expected:    sets.New[string]("first", "second"),
 			showHidden:  true,
 		},
 		{
@@ -456,7 +456,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected: sets.NewString("shown"),
+			expected: sets.New[string]("shown"),
 		},
 		{
 			name: "hidden repo or org in extra_refs hides it",
@@ -472,7 +472,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+			hiddenRepos: sets.New[string]("hide/me", "hidden-org"),
 		},
 		{
 			name: "tenantID on lister will not show jobs without id",
@@ -487,7 +487,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:  sets.NewString(),
+			expected:  sets.New[string](),
 			tenantIDs: []string{"ID"},
 		},
 		{
@@ -503,7 +503,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:  sets.NewString("ID"),
+			expected:  sets.New[string]("ID"),
 			tenantIDs: []string{"ID"},
 		},
 		{
@@ -520,7 +520,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:  sets.NewString("ID"),
+			expected:  sets.New[string]("ID"),
 			tenantIDs: []string{"ID"},
 		},
 		{
@@ -542,7 +542,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:  sets.NewString("ID", "Other ID"),
+			expected:  sets.New[string]("ID", "Other ID"),
 			tenantIDs: []string{"ID", "Other ID"},
 		},
 		{
@@ -567,7 +567,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:  sets.NewString("ID", "Other ID"),
+			expected:  sets.New[string]("ID", "Other ID"),
 			tenantIDs: []string{"ID", "Other ID"},
 		},
 		{
@@ -586,8 +586,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:    sets.NewString("hidden-repo", "hidden-org"),
-			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+			expected:    sets.New[string]("hidden-repo", "hidden-org"),
+			hiddenRepos: sets.New[string]("hide/me", "hidden-org"),
 			tenantIDs:   []string{"ID"},
 		},
 		{
@@ -606,8 +606,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:    sets.NewString("hidden-repo", "hidden-org"),
-			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+			expected:    sets.New[string]("hidden-repo", "hidden-org"),
+			hiddenRepos: sets.New[string]("hide/me", "hidden-org"),
 			showHidden:  true,
 		},
 		{
@@ -626,8 +626,8 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:    sets.NewString("hidden-repo", "hidden-org"),
-			hiddenRepos: sets.NewString("hide/me", "hidden-org"),
+			expected:    sets.New[string]("hidden-repo", "hidden-org"),
+			hiddenRepos: sets.New[string]("hide/me", "hidden-org"),
 			hiddenOnly:  true,
 		},
 		{
@@ -645,7 +645,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:   sets.NewString("ID"),
+			expected:   sets.New[string]("ID"),
 			showHidden: true,
 		},
 		{
@@ -663,7 +663,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected:   sets.NewString("Hidden ID"),
+			expected:   sets.New[string]("Hidden ID"),
 			hiddenOnly: true,
 		},
 		{
@@ -680,7 +680,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected: sets.NewString(),
+			expected: sets.New[string](),
 		},
 		{
 			name: "pjs with Default ID will  show up on Deck with no tenantID",
@@ -696,7 +696,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected: sets.NewString("tenantedID"),
+			expected: sets.New[string]("tenantedID"),
 		},
 		{
 			name: "empty tenantID counts as no tenantID",
@@ -711,7 +711,7 @@ func TestListProwJobs(t *testing.T) {
 					return in
 				},
 			},
-			expected: sets.NewString("empty tenant id", "No ProwJobDefault"),
+			expected: sets.New[string]("empty tenant id", "No ProwJobDefault"),
 		},
 	}
 
@@ -726,7 +726,7 @@ func TestListProwJobs(t *testing.T) {
 		}
 		lister := filteringProwJobLister{
 			client: fakeProwJobClient,
-			hiddenRepos: func() sets.String {
+			hiddenRepos: func() sets.Set[string] {
 				return testCase.hiddenRepos
 			},
 			hiddenOnly: testCase.hiddenOnly,
@@ -743,16 +743,16 @@ func TestListProwJobs(t *testing.T) {
 			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 		}
 
-		filteredNames := sets.NewString()
+		filteredNames := sets.New[string]()
 		for _, prowJob := range filtered {
 			filteredNames.Insert(prowJob.Name)
 		}
 
 		if missing := testCase.expected.Difference(filteredNames); missing.Len() > 0 {
-			t.Errorf("%s: did not get expected jobs in filtered list: %v", testCase.name, missing.List())
+			t.Errorf("%s: did not get expected jobs in filtered list: %v", testCase.name, sets.List(missing))
 		}
 		if extra := filteredNames.Difference(testCase.expected); extra.Len() > 0 {
-			t.Errorf("%s: got unexpected jobs in filtered list: %v", testCase.name, extra.List())
+			t.Errorf("%s: got unexpected jobs in filtered list: %v", testCase.name, sets.List(extra))
 		}
 	}
 }

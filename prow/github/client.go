@@ -1126,7 +1126,7 @@ func (c *client) requestRetryWithContext(ctx context.Context, method, path, acce
 						authorizedScopes = "no"
 					}
 
-					want := sets.NewString()
+					want := sets.New[string]()
 					for _, acceptedScope := range strings.Split(acceptedScopes, ",") {
 						want.Insert(strings.TrimSpace(acceptedScope))
 					}
@@ -1230,7 +1230,7 @@ func toCurl(r *http.Request) string {
 	return fmt.Sprintf("curl -k -v -X%s %s '%s'", r.Method, headers, r.URL.String())
 }
 
-var knownAuthTypes = sets.NewString("bearer", "basic", "negotiate")
+var knownAuthTypes = sets.New[string]("bearer", "basic", "negotiate")
 
 // maskAuthorizationHeader masks credential content from authorization headers
 // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization

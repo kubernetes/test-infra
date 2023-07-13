@@ -120,7 +120,7 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 type fakeRepo struct {
 	approvers map[string]layeredsets.String
 	// directory -> approver
-	leafApprovers map[string]sets.String
+	leafApprovers map[string]sets.Set[string]
 	// toApprove -> directoryWithOwnersFile
 	approverOwners map[string]string
 	// dir -> allowed
@@ -135,7 +135,7 @@ func (fr fakeRepo) Filenames() ownersconfig.Filenames {
 func (fr fakeRepo) Approvers(path string) layeredsets.String {
 	return fr.approvers[path]
 }
-func (fr fakeRepo) LeafApprovers(path string) sets.String {
+func (fr fakeRepo) LeafApprovers(path string) sets.Set[string] {
 	return fr.leafApprovers[path]
 }
 func (fr fakeRepo) FindApproverOwnersForFile(path string) string {
@@ -147,7 +147,7 @@ func (fr fakeRepo) IsNoParentOwners(path string) bool {
 func (fr fakeRepo) IsAutoApproveUnownedSubfolders(ownerFilePath string) bool {
 	return fr.autoApproveUnownedSubfolders[ownerFilePath]
 }
-func (fr fakeRepo) TopLevelApprovers() sets.String {
+func (fr fakeRepo) TopLevelApprovers() sets.Set[string] {
 	return nil
 }
 
@@ -1241,10 +1241,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			"a/b": layeredsets.NewString("alice", "bob"),
 			"c":   layeredsets.NewString("cblecker", "cjwagner"),
 		},
-		leafApprovers: map[string]sets.String{
-			"a":   sets.NewString("alice"),
-			"a/b": sets.NewString("bob"),
-			"c":   sets.NewString("cblecker", "cjwagner"),
+		leafApprovers: map[string]sets.Set[string]{
+			"a":   sets.New[string]("alice"),
+			"a/b": sets.New[string]("bob"),
+			"c":   sets.New[string]("cblecker", "cjwagner"),
 		},
 		approverOwners: map[string]string{
 			"a/a.go":                   "a",
@@ -1380,36 +1380,36 @@ type fakeRepoOwners struct {
 	fakeRepo
 }
 
-func (fro fakeRepoOwners) AllApprovers() sets.String {
-	return sets.String{}
+func (fro fakeRepoOwners) AllApprovers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (fro fakeRepoOwners) AllOwners() sets.String {
-	return sets.String{}
+func (fro fakeRepoOwners) AllOwners() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (fro fakeRepoOwners) AllReviewers() sets.String {
-	return sets.String{}
+func (fro fakeRepoOwners) AllReviewers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (fro fakeRepoOwners) FindLabelsForFile(path string) sets.String {
-	return sets.NewString()
+func (fro fakeRepoOwners) FindLabelsForFile(path string) sets.Set[string] {
+	return sets.New[string]()
 }
 
 func (fro fakeRepoOwners) FindReviewersOwnersForFile(path string) string {
 	return ""
 }
 
-func (fro fakeRepoOwners) LeafReviewers(path string) sets.String {
-	return sets.NewString()
+func (fro fakeRepoOwners) LeafReviewers(path string) sets.Set[string] {
+	return sets.New[string]()
 }
 
 func (fro fakeRepoOwners) Reviewers(path string) layeredsets.String {
 	return layeredsets.NewString()
 }
 
-func (fro fakeRepoOwners) RequiredReviewers(path string) sets.String {
-	return sets.NewString()
+func (fro fakeRepoOwners) RequiredReviewers(path string) sets.Set[string] {
+	return sets.New[string]()
 }
 
 func TestHandleGenericComment(t *testing.T) {

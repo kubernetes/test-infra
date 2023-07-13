@@ -376,7 +376,7 @@ func TestCombineMetadata(t *testing.T) {
 				t.Errorf("maps do not match:\n%s", diff.ObjectReflectDiff(tc.expected, actual))
 			}
 
-			if !equality.Semantic.DeepEqual(sets.StringKeySet(expectedErrors), sets.StringKeySet(actualErrors)) { // ignore the error values
+			if !equality.Semantic.DeepEqual(sets.KeySet[string](expectedErrors), sets.KeySet[string](actualErrors)) { // ignore the error values
 				t.Errorf("errors do not match:\n%s", diff.ObjectReflectDiff(expectedErrors, actualErrors))
 			}
 		})

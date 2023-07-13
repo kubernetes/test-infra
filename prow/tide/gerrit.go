@@ -426,7 +426,7 @@ func (p *GerritProvider) jobIsRequiredByTide(ps *config.Presubmit, crc *CodeRevi
 		return true
 	}
 
-	requireLabels := sets.NewString()
+	requireLabels := sets.New[string]()
 	for l, info := range crc.Gerrit.Labels {
 		if !info.Optional {
 			requireLabels.Insert(l)

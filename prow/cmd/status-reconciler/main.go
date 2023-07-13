@@ -89,15 +89,15 @@ func (o *options) Validate() error {
 	return nil
 }
 
-func (o *options) getDenyList() sets.String {
+func (o *options) getDenyList() sets.Set[string] {
 	denyList := o.addedPresubmitDenylist.Strings()
 
-	return sets.NewString(denyList...)
+	return sets.New[string](denyList...)
 }
 
-func (o *options) getDenyListAll() sets.String {
+func (o *options) getDenyListAll() sets.Set[string] {
 	denyListAll := o.addedPresubmitDenylistAll.Strings()
-	return sets.NewString(denyListAll...)
+	return sets.New[string](denyListAll...)
 }
 
 func main() {

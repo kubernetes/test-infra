@@ -29,9 +29,9 @@ import (
 
 // copy copies entrypoint binary from source to destination. This is because
 // entrypoint image operates in two different modes:
-// 1) entrypoint container: copy the binary to shared mount drive `/tools`
-// 2) test container(s): use `/tools/entrypoint` as entrypoint, for collecting
-//    logs and artifacts.
+//  1. entrypoint container: copy the binary to shared mount drive `/tools`
+//  2. test container(s): use `/tools/entrypoint` as entrypoint, for collecting
+//     logs and artifacts.
 func copy(src, dst string) error {
 	logrus.Infof("src is %s", src)
 	// Get file info so that the mode can be used for copying

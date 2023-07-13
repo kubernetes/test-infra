@@ -44,9 +44,9 @@ func TestPresubmitContexts(t *testing.T) {
 	cases := []struct {
 		name       string
 		presubmits []config.Presubmit
-		failing    sets.String
-		failed     sets.String
-		all        sets.String
+		failing    sets.Set[string]
+		failed     sets.Set[string]
+		all        sets.Set[string]
 	}{
 		{
 			name: "basically works",
@@ -54,16 +54,16 @@ func TestPresubmitContexts(t *testing.T) {
 		{
 			name:       "simple case works",
 			presubmits: jobs("hello-fail", "world"),
-			failing:    sets.NewString("world"),
-			failed:     sets.NewString("world"),
-			all:        sets.NewString("hello-fail", "world"),
+			failing:    sets.New[string]("world"),
+			failed:     sets.New[string]("world"),
+			all:        sets.New[string]("hello-fail", "world"),
 		},
 		{
 			name:       "ignore failures from deleted jobs",
 			presubmits: jobs("failing", "passing"),
-			failing:    sets.NewString("failing", "deleted"),
-			failed:     sets.NewString("failing"),
-			all:        sets.NewString("failing", "passing"),
+			failing:    sets.New[string]("failing", "deleted"),
+			failed:     sets.New[string]("failing"),
+			all:        sets.New[string]("failing", "passing"),
 		},
 	}
 
@@ -202,8 +202,8 @@ func TestMessageFilter(t *testing.T) {
 	cases := []struct {
 		name     string
 		messages []gerrit.ChangeMessageInfo
-		failed   sets.String
-		all      sets.String
+		failed   sets.Set[string]
+		all      sets.Set[string]
 		checks   []check
 	}{
 		{
@@ -212,7 +212,7 @@ func TestMessageFilter(t *testing.T) {
 		{
 			name:     "/test foo works",
 			messages: []gerrit.ChangeMessageInfo{msg("/test foo", older), msg("/test bar", old)},
-			all:      sets.NewString("foo", "bar", "ignored"),
+			all:      sets.New[string]("foo", "bar", "ignored"),
 			checks: []check{
 				{
 					job:             job("foo", nil),
@@ -239,7 +239,7 @@ func TestMessageFilter(t *testing.T) {
 		{
 			name:     "/test all triggers multiple",
 			messages: []gerrit.ChangeMessageInfo{msg("/test all", old)},
-			all:      sets.NewString("foo", "bar"),
+			all:      sets.New[string]("foo", "bar"),
 			checks: []check{
 				{
 					job:             job("foo", nil),
@@ -260,8 +260,8 @@ func TestMessageFilter(t *testing.T) {
 		{
 			name:     "/retest triggers failures",
 			messages: []gerrit.ChangeMessageInfo{msg("/retest", old)},
-			failed:   sets.NewString("failed"),
-			all:      sets.NewString("foo", "bar", "failed"),
+			failed:   sets.New[string]("failed"),
+			all:      sets.New[string]("foo", "bar", "failed"),
 			checks: []check{
 				{
 					job:             job("foo", nil),
@@ -287,7 +287,7 @@ func TestMessageFilter(t *testing.T) {
 		{
 			name:     "draft->active by clicking `MARK AS ACTIVE` triggers multiple",
 			messages: []gerrit.ChangeMessageInfo{msg(client.ReadyForReviewMessageFixed, old)},
-			all:      sets.NewString("foo", "bar"),
+			all:      sets.New[string]("foo", "bar"),
 			checks: []check{
 				{
 					job:             job("foo", nil),
@@ -312,7 +312,7 @@ func TestMessageFilter(t *testing.T) {
 			(1 comment)
 			
 			`+client.ReadyForReviewMessageCustomizable, old)},
-			all: sets.NewString("foo", "bar"),
+			all: sets.New[string]("foo", "bar"),
 			checks: []check{
 				{
 					job:             job("foo", nil),

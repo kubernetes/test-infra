@@ -191,7 +191,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 	var missingLabels []string
 	for _, l1 := range q.Labels {
 		var found bool
-		altLabels := sets.NewString(strings.Split(l1, ",")...)
+		altLabels := sets.New[string](strings.Split(l1, ",")...)
 		for _, l2 := range pr.Labels.Nodes {
 			if altLabels.Has(string(l2.Name)) {
 				found = true
@@ -410,7 +410,7 @@ func (sc *statusController) setStatuses(all []CodeReviewCommon, pool map[string]
 	// queryMap caches which queries match a repo.
 	// Make a new one each sync loop as queries will change.
 	queryMap := c.Tide.Queries.QueryMap()
-	processed := sets.NewString()
+	processed := sets.New[string]()
 
 	process := func(pr *CodeReviewCommon) {
 		processed.Insert(prKey(pr))
@@ -621,8 +621,8 @@ func (sc *statusController) search() []CodeReviewCommon {
 	}
 
 	orgExceptions, repos := rawQueries.OrgExceptionsAndRepos()
-	orgs := sets.StringKeySet(orgExceptions)
-	queries := openPRsQueries(orgs.List(), repos.List(), orgExceptions)
+	orgs := sets.KeySet[string](orgExceptions)
+	queries := openPRsQueries(sets.List(orgs), sets.List(repos), orgExceptions)
 	if !sc.usesGitHubAppsAuth {
 		//The queries for each org need to have their order maintained, otherwise it may be falsely flagged for changing
 		var orgs []string
@@ -730,7 +730,7 @@ func newBaseSHAGetter(baseSHAs map[string]string, ghc githubClient, org, repo, b
 	}
 }
 
-func openPRsQueries(orgs, repos []string, orgExceptions map[string]sets.String) map[string]string {
+func openPRsQueries(orgs, repos []string, orgExceptions map[string]sets.Set[string]) map[string]string {
 	result := map[string]string{}
 	for org, query := range orgRepoQueryStrings(orgs, repos, orgExceptions) {
 		result[org] = "is:pr state:open sort:updated-asc archived:false " + query

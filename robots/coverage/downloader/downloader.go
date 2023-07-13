@@ -34,7 +34,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
-//listGcsObjects get the slice of gcs objects under a given path
+// listGcsObjects get the slice of gcs objects under a given path
 func listGcsObjects(ctx context.Context, client *storage.Client, bucketName, prefix, delim string) (
 	[]string, error) {
 

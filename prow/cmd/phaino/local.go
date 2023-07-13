@@ -302,7 +302,7 @@ func (opts *options) convertToLocal(ctx context.Context, log *logrus.Entry, pj p
 
 func (opts *options) resolveVolumeMounts(ctx context.Context, pj prowapi.ProwJob, container coreapi.Container,
 	getMount func(ctx context.Context, mount coreapi.VolumeMount) (string, error)) (map[string]string, error) {
-	skippedVolumesMounts := sets.NewString(opts.skippedVolumesMounts...)
+	skippedVolumesMounts := sets.New[string](opts.skippedVolumesMounts...)
 	// A map of volume mounts for the run.
 	// Key is the mount path and value is the local path.
 	volumeMounts := make(map[string]string)
@@ -336,7 +336,7 @@ func (opts *options) resolveVolumeMounts(ctx context.Context, pj prowapi.ProwJob
 }
 
 func (opts *options) resolveEnvVars(container coreapi.Container) map[string]string {
-	skippedEnvVars := sets.NewString(opts.skippedEnvVars...)
+	skippedEnvVars := sets.New[string](opts.skippedEnvVars...)
 	// A map of env vars for the run.
 	// Key is the env name and value is the env value.
 	envs := make(map[string]string)

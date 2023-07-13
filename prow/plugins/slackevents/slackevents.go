@@ -160,7 +160,7 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 }
 
 func isExempted(mw *plugins.MergeWarning, pe github.PushEvent) bool {
-	exemptedLogins := sets.String{}
+	exemptedLogins := sets.Set[string]{}
 	for _, login := range append(mw.ExemptUsers, mw.ExemptBranches[pe.Branch()]...) {
 		exemptedLogins.Insert(github.NormLogin(login))
 	}

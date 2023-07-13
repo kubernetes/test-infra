@@ -45,7 +45,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 }
 
 type ownersClient interface {
-	FindLabelsForFile(path string) sets.String
+	FindLabelsForFile(path string) sets.Set[string]
 }
 
 type githubClient interface {
@@ -78,9 +78,9 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.Pu
 	if err != nil {
 		return fmt.Errorf("error getting PR changes: %w", err)
 	}
-	neededLabels := sets.NewString()
+	neededLabels := sets.New[string]()
 	for _, change := range changes {
-		neededLabels.Insert(oc.FindLabelsForFile(change.Filename).List()...)
+		neededLabels.Insert(sets.List(oc.FindLabelsForFile(change.Filename))...)
 	}
 	if neededLabels.Len() == 0 {
 		// No labels requested for the given files. Return now to save API tokens.
@@ -96,17 +96,17 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.Pu
 		return err
 	}
 
-	RepoLabelsExisting := sets.NewString()
+	RepoLabelsExisting := sets.New[string]()
 	for _, label := range repoLabels {
 		RepoLabelsExisting.Insert(label.Name)
 	}
-	currentLabels := sets.NewString()
+	currentLabels := sets.New[string]()
 	for _, label := range issuelabels {
 		currentLabels.Insert(label.Name)
 	}
 
-	nonexistent := sets.NewString()
-	for _, labelToAdd := range neededLabels.Difference(currentLabels).List() {
+	nonexistent := sets.New[string]()
+	for _, labelToAdd := range sets.List(neededLabels.Difference(currentLabels)) {
 		if !RepoLabelsExisting.Has(labelToAdd) {
 			nonexistent.Insert(labelToAdd)
 			continue
@@ -117,7 +117,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.Pu
 	}
 
 	if nonexistent.Len() > 0 {
-		log.Warnf("Unable to add nonexistent labels: %q", nonexistent.List())
+		log.Warnf("Unable to add nonexistent labels: %q", sets.List(nonexistent))
 	}
 	return nil
 }

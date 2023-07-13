@@ -42,10 +42,10 @@ var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 // 2. optional presubmits commands that can be run with their trigger, e.g. '/test job'
 // 3. required presubmits commands that can be run with their trigger, e.g. '/test job'
 func AvailablePresubmits(changes config.ChangedFilesProvider, branch string,
-	presubmits []config.Presubmit, logger *logrus.Entry) (sets.String, sets.String, sets.String, error) {
-	runWithTestAllNames := sets.NewString()
-	optionalJobTriggerCommands := sets.NewString()
-	requiredJobsTriggerCommands := sets.NewString()
+	presubmits []config.Presubmit, logger *logrus.Entry) (sets.Set[string], sets.Set[string], sets.Set[string], error) {
+	runWithTestAllNames := sets.New[string]()
+	optionalJobTriggerCommands := sets.New[string]()
+	requiredJobsTriggerCommands := sets.New[string]()
 
 	runWithTestAll, err := FilterPresubmits(NewTestAllFilter(), changes, branch, presubmits, logger)
 	if err != nil {
@@ -77,10 +77,10 @@ func AvailablePresubmits(changes config.ChangedFilesProvider, branch string,
 }
 
 // Filter digests a presubmit config to determine if:
-//  - the presubmit matched the filter
-//  - we know that the presubmit is forced to run
-//  - what the default behavior should be if the presubmit
-//    runs conditionally and does not match trigger conditions
+//   - the presubmit matched the filter
+//   - we know that the presubmit is forced to run
+//   - what the default behavior should be if the presubmit
+//     runs conditionally and does not match trigger conditions
 type Filter interface {
 	ShouldRun(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool)
 	Name() string
@@ -219,10 +219,10 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 
 // RetestFilter builds a filter for `/retest`
 type RetestFilter struct {
-	failedContexts, allContexts sets.String
+	failedContexts, allContexts sets.Set[string]
 }
 
-func NewRetestFilter(failedContexts, allContexts sets.String) *RetestFilter {
+func NewRetestFilter(failedContexts, allContexts sets.Set[string]) *RetestFilter {
 	return &RetestFilter{
 		failedContexts: failedContexts,
 		allContexts:    allContexts,
@@ -239,10 +239,10 @@ func (rf *RetestFilter) Name() string {
 }
 
 type RetestRequiredFilter struct {
-	failedContexts, allContexts sets.String
+	failedContexts, allContexts sets.Set[string]
 }
 
-func NewRetestRequiredFilter(failedContexts, allContexts sets.String) *RetestRequiredFilter {
+func NewRetestRequiredFilter(failedContexts, allContexts sets.Set[string]) *RetestRequiredFilter {
 	return &RetestRequiredFilter{
 		failedContexts: failedContexts,
 		allContexts:    allContexts,
@@ -260,7 +260,7 @@ func (rrf *RetestRequiredFilter) Name() string {
 	return "retest-required-filter"
 }
 
-type contextGetter func() (sets.String, sets.String, error)
+type contextGetter func() (sets.Set[string], sets.Set[string], error)
 
 // PresubmitFilter creates a filter for presubmits
 func PresubmitFilter(honorOkToTest bool, contextGetter contextGetter, body string, logger logrus.FieldLogger) (Filter, error) {

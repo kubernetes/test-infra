@@ -30,8 +30,8 @@ import (
 )
 
 // presubmitContexts returns the set of failing and all job names contained in the reports.
-func presubmitContexts(failed sets.String, presubmits []config.Presubmit, logger logrus.FieldLogger) (sets.String, sets.String) {
-	allContexts := sets.String{}
+func presubmitContexts(failed sets.Set[string], presubmits []config.Presubmit, logger logrus.FieldLogger) (sets.Set[string], sets.Set[string]) {
+	allContexts := sets.Set[string]{}
 	for _, presubmit := range presubmits {
 		allContexts.Insert(presubmit.Name) // TODO(fejta): context, not name
 	}
@@ -58,9 +58,9 @@ func currentMessages(change gerrit.ChangeInfo, since time.Time) []gerrit.ChangeM
 // messageFilter returns filter that matches all /test all, /test foo, /retest comments since lastUpdate.
 //
 // The behavior of each message matches the behavior of pjutil.PresubmitFilter.
-func messageFilter(messages []gerrit.ChangeMessageInfo, failingContexts, allContexts sets.String, triggerTimes map[string]time.Time, logger logrus.FieldLogger) pjutil.Filter {
+func messageFilter(messages []gerrit.ChangeMessageInfo, failingContexts, allContexts sets.Set[string], triggerTimes map[string]time.Time, logger logrus.FieldLogger) pjutil.Filter {
 	var filters []pjutil.Filter
-	contextGetter := func() (sets.String, sets.String, error) {
+	contextGetter := func() (sets.Set[string], sets.Set[string], error) {
 		return failingContexts, allContexts, nil
 	}
 	for _, message := range messages {

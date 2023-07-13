@@ -65,105 +65,105 @@ func TestEnsureValidConfiguration(t *testing.T) {
 			name:          "plugin enabled on org without tide makes no error",
 			tideSubSet:    newOrgRepoConfig(nil, nil),
 			tideSuperSet:  newOrgRepoConfig(nil, nil),
-			pluginsSubSet: newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
+			pluginsSubSet: newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
 			expectedErr:   false,
 		},
 		{
 			name:          "plugin enabled on repo without tide makes no error",
 			tideSubSet:    newOrgRepoConfig(nil, nil),
 			tideSuperSet:  newOrgRepoConfig(nil, nil),
-			pluginsSubSet: newOrgRepoConfig(nil, sets.NewString("org/repo")),
+			pluginsSubSet: newOrgRepoConfig(nil, sets.New[string]("org/repo")),
 			expectedErr:   false,
 		},
 		{
 			name:          "plugin enabled on repo with tide on repo makes no error",
-			tideSubSet:    newOrgRepoConfig(nil, sets.NewString("org/repo")),
-			tideSuperSet:  newOrgRepoConfig(nil, sets.NewString("org/repo")),
-			pluginsSubSet: newOrgRepoConfig(nil, sets.NewString("org/repo")),
+			tideSubSet:    newOrgRepoConfig(nil, sets.New[string]("org/repo")),
+			tideSuperSet:  newOrgRepoConfig(nil, sets.New[string]("org/repo")),
+			pluginsSubSet: newOrgRepoConfig(nil, sets.New[string]("org/repo")),
 			expectedErr:   false,
 		},
 		{
 			name:          "plugin enabled on repo with tide on org makes error",
-			tideSubSet:    newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
-			tideSuperSet:  newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
-			pluginsSubSet: newOrgRepoConfig(nil, sets.NewString("org/repo")),
+			tideSubSet:    newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
+			tideSuperSet:  newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
+			pluginsSubSet: newOrgRepoConfig(nil, sets.New[string]("org/repo")),
 			expectedErr:   true,
 		},
 		{
 			name:          "plugin enabled on org with tide on repo makes no error",
-			tideSubSet:    newOrgRepoConfig(nil, sets.NewString("org/repo")),
-			tideSuperSet:  newOrgRepoConfig(nil, sets.NewString("org/repo")),
-			pluginsSubSet: newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
+			tideSubSet:    newOrgRepoConfig(nil, sets.New[string]("org/repo")),
+			tideSuperSet:  newOrgRepoConfig(nil, sets.New[string]("org/repo")),
+			pluginsSubSet: newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
 			expectedErr:   false,
 		},
 		{
 			name:          "plugin enabled on org with tide on org makes no error",
-			tideSubSet:    newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
-			tideSuperSet:  newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
-			pluginsSubSet: newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
+			tideSubSet:    newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
+			tideSuperSet:  newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
+			pluginsSubSet: newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
 			expectedErr:   false,
 		},
 		{
 			name:          "tide enabled on org without plugin makes error",
-			tideSubSet:    newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
-			tideSuperSet:  newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
+			tideSubSet:    newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
+			tideSuperSet:  newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
 			pluginsSubSet: newOrgRepoConfig(nil, nil),
 			expectedErr:   true,
 		},
 		{
 			name:          "tide enabled on repo without plugin makes error",
-			tideSubSet:    newOrgRepoConfig(nil, sets.NewString("org/repo")),
-			tideSuperSet:  newOrgRepoConfig(nil, sets.NewString("org/repo")),
+			tideSubSet:    newOrgRepoConfig(nil, sets.New[string]("org/repo")),
+			tideSuperSet:  newOrgRepoConfig(nil, sets.New[string]("org/repo")),
 			pluginsSubSet: newOrgRepoConfig(nil, nil),
 			expectedErr:   true,
 		},
 		{
 			name:          "plugin enabled on org with any tide record but no specific tide requirement makes error",
 			tideSubSet:    newOrgRepoConfig(nil, nil),
-			tideSuperSet:  newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
-			pluginsSubSet: newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
+			tideSuperSet:  newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
+			pluginsSubSet: newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
 			expectedErr:   true,
 		},
 		{
 			name:          "plugin enabled on repo with any tide record but no specific tide requirement makes error",
 			tideSubSet:    newOrgRepoConfig(nil, nil),
-			tideSuperSet:  newOrgRepoConfig(nil, sets.NewString("org/repo")),
-			pluginsSubSet: newOrgRepoConfig(nil, sets.NewString("org/repo")),
+			tideSuperSet:  newOrgRepoConfig(nil, sets.New[string]("org/repo")),
+			pluginsSubSet: newOrgRepoConfig(nil, sets.New[string]("org/repo")),
 			expectedErr:   true,
 		},
 		{
 			name:          "any tide org record but no specific tide requirement or plugin makes no error",
 			tideSubSet:    newOrgRepoConfig(nil, nil),
-			tideSuperSet:  newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
+			tideSuperSet:  newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
 			pluginsSubSet: newOrgRepoConfig(nil, nil),
 			expectedErr:   false,
 		},
 		{
 			name:          "any tide repo record but no specific tide requirement or plugin makes no error",
 			tideSubSet:    newOrgRepoConfig(nil, nil),
-			tideSuperSet:  newOrgRepoConfig(nil, sets.NewString("org/repo")),
+			tideSuperSet:  newOrgRepoConfig(nil, sets.New[string]("org/repo")),
 			pluginsSubSet: newOrgRepoConfig(nil, nil),
 			expectedErr:   false,
 		},
 		{
 			name:          "irrelevant repo exception in tide superset doesn't stop missing req error",
 			tideSubSet:    newOrgRepoConfig(nil, nil),
-			tideSuperSet:  newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, nil),
-			pluginsSubSet: newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
+			tideSuperSet:  newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, nil),
+			pluginsSubSet: newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
 			expectedErr:   true,
 		},
 		{
 			name:          "repo exception in tide superset (no missing req error)",
 			tideSubSet:    newOrgRepoConfig(nil, nil),
-			tideSuperSet:  newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, nil),
-			pluginsSubSet: newOrgRepoConfig(nil, sets.NewString("org/repo")),
+			tideSuperSet:  newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, nil),
+			pluginsSubSet: newOrgRepoConfig(nil, sets.New[string]("org/repo")),
 			expectedErr:   false,
 		},
 		{
 			name:          "repo exception in tide subset (new missing req error)",
-			tideSubSet:    newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, nil),
-			tideSuperSet:  newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
-			pluginsSubSet: newOrgRepoConfig(map[string]sets.String{"org": nil}, nil),
+			tideSubSet:    newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, nil),
+			tideSuperSet:  newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
+			pluginsSubSet: newOrgRepoConfig(map[string]sets.Set[string]{"org": nil}, nil),
 			expectedErr:   true,
 		},
 	}
@@ -188,57 +188,57 @@ func TestOrgRepoDifference(t *testing.T) {
 	}{
 		{
 			name:     "subtract nil",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString()),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]()),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "no overlap",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": nil}, sets.NewString("3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": nil}, sets.New[string]("3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "subtract self",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString()),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]()),
 		},
 		{
 			name:     "subtract superset",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo"), "org2": nil}, sets.NewString("4/1", "4/2", "5/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString()),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo"), "org2": nil}, sets.New[string]("4/1", "4/2", "5/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]()),
 		},
 		{
 			name:     "remove org with org",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/foo"), "2": nil}, sets.NewString("3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/foo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/foo"), "2": nil}, sets.New[string]("3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "shrink org with org",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo"), "2": nil}, sets.NewString("3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString("org/foo", "4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/foo"), "2": nil}, sets.New[string]("3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]("org/foo", "4/1", "4/2")),
 		},
 		{
 			name:     "shrink org with repo",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": nil}, sets.NewString("org/foo", "3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo")}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": nil}, sets.New[string]("org/foo", "3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/foo")}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "remove repo with org",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2", "4/3", "5/1")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": nil, "4": sets.NewString("4/2")}, sets.NewString("3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/2", "5/1")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2", "4/3", "5/1")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": nil, "4": sets.New[string]("4/2")}, sets.New[string]("3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/2", "5/1")),
 		},
 		{
 			name:     "remove repo with repo",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2", "4/3", "5/1")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": nil}, sets.NewString("3/1", "4/2", "4/3")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "5/1")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2", "4/3", "5/1")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": nil}, sets.New[string]("3/1", "4/2", "4/3")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "5/1")),
 		},
 	}
 
@@ -259,57 +259,57 @@ func TestOrgRepoIntersection(t *testing.T) {
 	}{
 		{
 			name:     "intersect empty",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString()),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString()),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]()),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]()),
 		},
 		{
 			name:     "no overlap",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": nil}, sets.NewString("3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString()),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": nil}, sets.New[string]("3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]()),
 		},
 		{
 			name:     "intersect self",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "intersect superset",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo"), "org2": nil}, sets.NewString("4/1", "4/2", "5/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo"), "org2": nil}, sets.New[string]("4/1", "4/2", "5/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "remove org",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org2": sets.NewString("org2/repo1")}, sets.NewString("4/1", "4/2", "5/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/foo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org2": sets.New[string]("org2/repo1")}, sets.New[string]("4/1", "4/2", "5/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "shrink org with org",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/bar")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo"), "2": nil}, sets.NewString("3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo", "org/bar")}, sets.NewString()),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/bar")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/foo"), "2": nil}, sets.New[string]("3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/foo", "org/bar")}, sets.New[string]()),
 		},
 		{
 			name:     "shrink org with repo",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": nil}, sets.NewString("org/repo", "org/foo", "3/1", "4/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString("org/foo", "4/1")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": nil}, sets.New[string]("org/repo", "org/foo", "3/1", "4/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]("org/foo", "4/1")),
 		},
 		{
 			name:     "remove repo with org",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2", "4/3", "5/1")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": nil, "4": sets.NewString("4/2")}, sets.NewString("3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString("4/1", "4/3")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2", "4/3", "5/1")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": nil, "4": sets.New[string]("4/2")}, sets.New[string]("3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]("4/1", "4/3")),
 		},
 		{
 			name:     "remove repo with repo",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2", "4/3", "5/1")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": nil}, sets.NewString("3/1", "4/2", "4/3")),
-			expected: newOrgRepoConfig(map[string]sets.String{}, sets.NewString("4/2", "4/3")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2", "4/3", "5/1")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": nil}, sets.New[string]("3/1", "4/2", "4/3")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]("4/2", "4/3")),
 		},
 	}
 
@@ -330,45 +330,45 @@ func TestOrgRepoUnion(t *testing.T) {
 	}{
 		{
 			name:     "second set empty, get first set back",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString()),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]()),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "no overlap, simple union",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"2": sets.NewString()}, sets.NewString("3/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo"), "2": sets.NewString()}, sets.NewString("4/1", "4/2", "3/1")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"2": sets.New[string]()}, sets.New[string]("3/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo"), "2": sets.New[string]()}, sets.New[string]("4/1", "4/2", "3/1")),
 		},
 		{
 			name:     "union self, get self back",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
 		},
 		{
 			name:     "union superset, get superset back",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString("4/1", "4/2")),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo"), "org2": sets.NewString()}, sets.NewString("4/1", "4/2", "5/1")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo"), "org2": sets.NewString()}, sets.NewString("4/1", "4/2", "5/1")),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]("4/1", "4/2")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo"), "org2": sets.New[string]()}, sets.New[string]("4/1", "4/2", "5/1")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo"), "org2": sets.New[string]()}, sets.New[string]("4/1", "4/2", "5/1")),
 		},
 		{
 			name:     "keep only common denied items for an org",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/bar")}, sets.NewString()),
-			b:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo", "org/foo")}, sets.NewString()),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString()),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/bar")}, sets.New[string]()),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo", "org/foo")}, sets.New[string]()),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]()),
 		},
 		{
 			name:     "remove items from an org denylist if they're in a repo allowlist",
-			a:        newOrgRepoConfig(map[string]sets.String{"org": sets.NewString("org/repo")}, sets.NewString()),
-			b:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString("org/repo")),
-			expected: newOrgRepoConfig(map[string]sets.String{"org": sets.NewString()}, sets.NewString()),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]("org/repo")}, sets.New[string]()),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]("org/repo")),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"org": sets.New[string]()}, sets.New[string]()),
 		},
 		{
 			name:     "remove repos when they're covered by an org allowlist",
-			a:        newOrgRepoConfig(map[string]sets.String{}, sets.NewString("4/1", "4/2", "4/3")),
-			b:        newOrgRepoConfig(map[string]sets.String{"4": sets.NewString("4/2")}, sets.NewString()),
-			expected: newOrgRepoConfig(map[string]sets.String{"4": sets.NewString()}, sets.NewString()),
+			a:        newOrgRepoConfig(map[string]sets.Set[string]{}, sets.New[string]("4/1", "4/2", "4/3")),
+			b:        newOrgRepoConfig(map[string]sets.Set[string]{"4": sets.New[string]("4/2")}, sets.New[string]()),
+			expected: newOrgRepoConfig(map[string]sets.Set[string]{"4": sets.New[string]()}, sets.New[string]()),
 		},
 	}
 
@@ -1517,7 +1517,7 @@ func TestValidateJobExtraRefs(t *testing.T) {
 					Repo: "repo",
 				},
 			},
-			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+			expected: fmt.Errorf("invalid job test on repo org/repo: the following refs specified more than once: %s",
 				"org/repo"),
 		},
 		{
@@ -1667,7 +1667,7 @@ func TestValidateTideContextPolicy(t *testing.T) {
 		{
 			name: "overlapping branch config, inrepoconfig enabled, error",
 			cfg: cfg(func(c *config.Config) {
-				c.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
+				c.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.Bool(true)}
 				c.PresubmitsStatic["a/b"] = []config.Presubmit{
 					{Reporter: config.Reporter{Context: "a"}, Brancher: config.Brancher{Branches: []string{"a"}}},
 					{AlwaysRun: true, Reporter: config.Reporter{Context: "a"}},
@@ -2147,7 +2147,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 		{
 			name: "Globally disabled, errors for global and org config",
 			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
-				bp.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Unmanaged = utilpointer.Bool(true)
 			}),
 
 			expectedErrorMsg: `[branch protection is globally set to unmanaged, but has configuration, branch protection config is globally set to unmanaged but has configuration for org my-org without setting the org to unmanaged: false]`,
@@ -2156,7 +2156,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 			name: "Org-level disabled, errors for org policy and repos",
 			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
 				p := bp.Orgs["my-org"]
-				p.Unmanaged = utilpointer.BoolPtr(true)
+				p.Unmanaged = utilpointer.Bool(true)
 				bp.Orgs["my-org"] = p
 			}),
 
@@ -2167,7 +2167,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 			name: "Repo-level disabled, errors for repo policy and branches",
 			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
 				p := bp.Orgs["my-org"].Repos["my-repo"]
-				p.Unmanaged = utilpointer.BoolPtr(true)
+				p.Unmanaged = utilpointer.Bool(true)
 				bp.Orgs["my-org"].Repos["my-repo"] = p
 			}),
 
@@ -2178,7 +2178,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 			name: "Branch-level disabled, errors for branch policy",
 			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
 				p := bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"]
-				p.Unmanaged = utilpointer.BoolPtr(true)
+				p.Unmanaged = utilpointer.Bool(true)
 				bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"] = p
 			}),
 
@@ -2188,10 +2188,10 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 			name: "unmanaged repo level is overridden by branch level, no errors",
 			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
 				repoP := bp.Orgs["my-org"].Repos["my-repo"]
-				repoP.Unmanaged = utilpointer.BoolPtr(true)
+				repoP.Unmanaged = utilpointer.Bool(true)
 				bp.Orgs["my-org"].Repos["my-repo"] = repoP
 				p := bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"]
-				p.Unmanaged = utilpointer.BoolPtr(false)
+				p.Unmanaged = utilpointer.Bool(false)
 				bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"] = p
 			}),
 		},
@@ -2221,14 +2221,14 @@ func TestValidateGitHubAppIsInstalled(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name          string
-		allRepos      sets.String
+		allRepos      sets.Set[string]
 		installations []github.AppInstallation
 
 		expectedErrorMsg string
 	}{
 		{
 			name:     "Installations exist",
-			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+			allRepos: sets.New[string]("org/repo", "org-a/repo-a", "org-b/repo-b"),
 			installations: []github.AppInstallation{
 				{Account: github.User{Login: "org"}},
 				{Account: github.User{Login: "org-a"}},
@@ -2237,7 +2237,7 @@ func TestValidateGitHubAppIsInstalled(t *testing.T) {
 		},
 		{
 			name:     "Some installations exist",
-			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+			allRepos: sets.New[string]("org/repo", "org-a/repo-a", "org-b/repo-b"),
 			installations: []github.AppInstallation{
 				{Account: github.User{Login: "org"}},
 				{Account: github.User{Login: "org-a"}},
@@ -2247,7 +2247,7 @@ func TestValidateGitHubAppIsInstalled(t *testing.T) {
 		},
 		{
 			name:     "No installations exist",
-			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+			allRepos: sets.New[string]("org/repo", "org-a/repo-a", "org-b/repo-b"),
 
 			expectedErrorMsg: `[There is configuration for the GitHub org "org-a" but the GitHub app is not installed there, There is configuration for the GitHub org "org-b" but the GitHub app is not installed there, There is configuration for the GitHub org "org" but the GitHub app is not installed there]`,
 		},

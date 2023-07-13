@@ -36,7 +36,7 @@ const (
 
 type FakeRepo struct {
 	approversMap                 map[string]layeredsets.String
-	leafApproversMap             map[string]sets.String
+	leafApproversMap             map[string]sets.Set[string]
 	noParentOwnersMap            map[string]bool
 	autoApproveUnownedSubfolders map[string]bool
 }
@@ -49,7 +49,7 @@ func (f FakeRepo) Approvers(path string) layeredsets.String {
 	return f.approversMap[path]
 }
 
-func (f FakeRepo) LeafApprovers(path string) sets.String {
+func (f FakeRepo) LeafApprovers(path string) sets.Set[string] {
 	return f.leafApproversMap[path]
 }
 
@@ -77,7 +77,7 @@ func canonicalize(path string) string {
 	return strings.TrimSuffix(path, "/")
 }
 
-func createFakeRepo(leafApproversMap map[string]sets.String, modify ...func(*FakeRepo)) FakeRepo {
+func createFakeRepo(leafApproversMap map[string]sets.Set[string], modify ...func(*FakeRepo)) FakeRepo {
 	// github doesn't use / at the root
 	a := map[string]layeredsets.String{}
 	for dir, approvers := range leafApproversMap {
@@ -102,30 +102,30 @@ func createFakeRepo(leafApproversMap map[string]sets.String, modify ...func(*Fak
 	return fr
 }
 
-func setToLower(s sets.String) sets.String {
-	lowered := sets.NewString()
-	for _, elem := range s.List() {
+func setToLower(s sets.Set[string]) sets.Set[string] {
+	lowered := sets.New[string]()
+	for _, elem := range sets.List(s) {
 		lowered.Insert(strings.ToLower(elem))
 	}
 	return lowered
 }
 
-func setToLowerMulti(s sets.String) layeredsets.String {
+func setToLowerMulti(s sets.Set[string]) layeredsets.String {
 	lowered := layeredsets.NewString()
-	for _, elem := range s.List() {
+	for _, elem := range sets.List(s) {
 		lowered.Insert(0, strings.ToLower(elem))
 	}
 	return lowered
 }
 
 func TestCreateFakeRepo(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	cApprovers := sets.NewString("Chris", "Carol")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -137,8 +137,8 @@ func TestCreateFakeRepo(t *testing.T) {
 	tests := []struct {
 		testName              string
 		ownersFile            string
-		expectedLeafApprovers sets.String
-		expectedApprovers     sets.String
+		expectedLeafApprovers sets.Set[string]
+		expectedApprovers     sets.Set[string]
 	}{
 		{
 			testName:              "Root Owners",
@@ -189,11 +189,11 @@ func TestCreateFakeRepo(t *testing.T) {
 }
 
 func TestGetLeafApprovers(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	FakeRepoMap := map[string]sets.String{
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":    rootApprovers,
 		"a":   aApprovers,
 		"b":   bApprovers,
@@ -203,34 +203,34 @@ func TestGetLeafApprovers(t *testing.T) {
 	tests := []struct {
 		testName    string
 		filenames   []string
-		expectedMap map[string]sets.String
+		expectedMap map[string]sets.Set[string]
 	}{
 		{
 			testName:    "Empty PR",
 			filenames:   []string{},
-			expectedMap: map[string]sets.String{},
+			expectedMap: map[string]sets.Set[string]{},
 		},
 		{
 			testName:    "Single Root File PR",
 			filenames:   []string{"kubernetes.go"},
-			expectedMap: map[string]sets.String{"": setToLower(rootApprovers)},
+			expectedMap: map[string]sets.Set[string]{"": setToLower(rootApprovers)},
 		},
 		{
 			testName:    "Internal Node File PR",
 			filenames:   []string{"a/test.go"},
-			expectedMap: map[string]sets.String{"a": setToLower(aApprovers)},
+			expectedMap: map[string]sets.Set[string]{"a": setToLower(aApprovers)},
 		},
 		{
 			testName:  "Two Leaf File PR",
 			filenames: []string{"a/d/test.go", "b/test.go"},
-			expectedMap: map[string]sets.String{
+			expectedMap: map[string]sets.Set[string]{
 				"a/d": setToLower(dApprovers),
 				"b":   setToLower(bApprovers)},
 		},
 		{
 			testName:  "Leaf and Parent 2 File PR",
 			filenames: []string{"a/test.go", "a/d/test.go"},
-			expectedMap: map[string]sets.String{
+			expectedMap: map[string]sets.Set[string]{
 				"a": setToLower(aApprovers),
 			},
 		},
@@ -250,11 +250,11 @@ func TestGetLeafApprovers(t *testing.T) {
 	}
 }
 func TestGetOwnersSet(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	FakeRepoMap := map[string]sets.String{
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":    rootApprovers,
 		"a":   aApprovers,
 		"b":   bApprovers,
@@ -264,37 +264,37 @@ func TestGetOwnersSet(t *testing.T) {
 	tests := []struct {
 		testName            string
 		filenames           []string
-		expectedOwnersFiles sets.String
+		expectedOwnersFiles sets.Set[string]
 	}{
 		{
 			testName:            "Empty PR",
 			filenames:           []string{},
-			expectedOwnersFiles: sets.NewString(),
+			expectedOwnersFiles: sets.New[string](),
 		},
 		{
 			testName:            "Single Root File PR",
 			filenames:           []string{"kubernetes.go"},
-			expectedOwnersFiles: sets.NewString(""),
+			expectedOwnersFiles: sets.New[string](""),
 		},
 		{
 			testName:            "Multiple Root File PR",
 			filenames:           []string{"test.go", "kubernetes.go"},
-			expectedOwnersFiles: sets.NewString(""),
+			expectedOwnersFiles: sets.New[string](""),
 		},
 		{
 			testName:            "Internal Node File PR",
 			filenames:           []string{"a/test.go"},
-			expectedOwnersFiles: sets.NewString("a"),
+			expectedOwnersFiles: sets.New[string]("a"),
 		},
 		{
 			testName:            "Two Leaf File PR",
 			filenames:           []string{"a/test.go", "b/test.go"},
-			expectedOwnersFiles: sets.NewString("a", "b"),
+			expectedOwnersFiles: sets.New[string]("a", "b"),
 		},
 		{
 			testName:            "Leaf and Parent 2 File PR",
 			filenames:           []string{"a/test.go", "a/c/test.go"},
-			expectedOwnersFiles: sets.NewString("a"),
+			expectedOwnersFiles: sets.New[string]("a"),
 		},
 	}
 
@@ -313,13 +313,13 @@ func TestGetOwnersSet(t *testing.T) {
 }
 
 func TestGetSuggestedApprovers(t *testing.T) {
-	var rootApprovers = sets.NewString("Alice", "Bob")
-	var aApprovers = sets.NewString("Art", "Anne")
-	var bApprovers = sets.NewString("Bill", "Ben", "Barbara")
-	var dApprovers = sets.NewString("David", "Dan", "Debbie")
-	var eApprovers = sets.NewString("Eve", "Erin")
+	var rootApprovers = sets.New[string]("Alice", "Bob")
+	var aApprovers = sets.New[string]("Art", "Anne")
+	var bApprovers = sets.New[string]("Bill", "Ben", "Barbara")
+	var dApprovers = sets.New[string]("David", "Dan", "Debbie")
+	var eApprovers = sets.New[string]("Eve", "Erin")
 	var edcApprovers = eApprovers.Union(dApprovers)
-	var FakeRepoMap = map[string]sets.String{
+	var FakeRepoMap = map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -330,47 +330,47 @@ func TestGetSuggestedApprovers(t *testing.T) {
 		testName  string
 		filenames []string
 		// need at least one person from each set
-		expectedOwners []sets.String
+		expectedOwners []sets.Set[string]
 	}{
 		{
 			testName:       "Empty PR",
 			filenames:      []string{},
-			expectedOwners: []sets.String{},
+			expectedOwners: []sets.Set[string]{},
 		},
 		{
 			testName:       "Single Root File PR",
 			filenames:      []string{"kubernetes.go"},
-			expectedOwners: []sets.String{setToLower(rootApprovers)},
+			expectedOwners: []sets.Set[string]{setToLower(rootApprovers)},
 		},
 		{
 			testName:       "Internal Node File PR",
 			filenames:      []string{"a/test.go"},
-			expectedOwners: []sets.String{setToLower(aApprovers)},
+			expectedOwners: []sets.Set[string]{setToLower(aApprovers)},
 		},
 		{
 			testName:       "Multiple Files Internal Node File PR",
 			filenames:      []string{"a/test.go", "a/test1.go"},
-			expectedOwners: []sets.String{setToLower(aApprovers)},
+			expectedOwners: []sets.Set[string]{setToLower(aApprovers)},
 		},
 		{
 			testName:       "Two Leaf File PR",
 			filenames:      []string{"a/test.go", "b/test.go"},
-			expectedOwners: []sets.String{setToLower(aApprovers), setToLower(bApprovers)},
+			expectedOwners: []sets.Set[string]{setToLower(aApprovers), setToLower(bApprovers)},
 		},
 		{
 			testName:       "Leaf and Parent 2 File PR",
 			filenames:      []string{"a/test.go", "a/d/test.go"},
-			expectedOwners: []sets.String{setToLower(aApprovers)},
+			expectedOwners: []sets.Set[string]{setToLower(aApprovers)},
 		},
 		{
 			testName:       "Combo and B",
 			filenames:      []string{"a/combo/test.go", "b/test.go"},
-			expectedOwners: []sets.String{setToLower(edcApprovers), setToLower(bApprovers)},
+			expectedOwners: []sets.Set[string]{setToLower(edcApprovers), setToLower(bApprovers)},
 		},
 		{
 			testName:       "Lowest Leaf",
 			filenames:      []string{"a/combo/test.go"},
-			expectedOwners: []sets.String{setToLower(edcApprovers)},
+			expectedOwners: []sets.Set[string]{setToLower(edcApprovers)},
 		},
 	}
 
@@ -392,14 +392,14 @@ func TestGetSuggestedApprovers(t *testing.T) {
 }
 
 func TestGetAllPotentialApprovers(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	cApprovers := sets.NewString("Chris", "Carol")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -421,42 +421,42 @@ func TestGetAllPotentialApprovers(t *testing.T) {
 		{
 			testName:          "Single Root File PR",
 			filenames:         []string{"kubernetes.go"},
-			expectedApprovers: setToLower(rootApprovers).List(),
+			expectedApprovers: sets.List(setToLower(rootApprovers)),
 		},
 		{
 			testName:          "Internal Node File PR",
 			filenames:         []string{"a/test.go"},
-			expectedApprovers: setToLower(aApprovers).List(),
+			expectedApprovers: sets.List(setToLower(aApprovers)),
 		},
 		{
 			testName:          "One Leaf One Internal Node File PR",
 			filenames:         []string{"a/test.go", "b/test.go"},
-			expectedApprovers: setToLower(aApprovers.Union(bApprovers)).List(),
+			expectedApprovers: sets.List(setToLower(aApprovers.Union(bApprovers))),
 		},
 		{
 			testName:          "Two Leaf Files PR",
 			filenames:         []string{"a/d/test.go", "c/test.go"},
-			expectedApprovers: setToLower(dApprovers.Union(cApprovers)).List(),
+			expectedApprovers: sets.List(setToLower(dApprovers.Union(cApprovers))),
 		},
 		{
 			testName:          "Leaf and Parent 2 File PR",
 			filenames:         []string{"a/test.go", "a/combo/test.go"},
-			expectedApprovers: setToLower(aApprovers).List(),
+			expectedApprovers: sets.List(setToLower(aApprovers)),
 		},
 		{
 			testName:          "Two Leafs",
 			filenames:         []string{"a/d/test.go", "b/test.go"},
-			expectedApprovers: setToLower(dApprovers.Union(bApprovers)).List(),
+			expectedApprovers: sets.List(setToLower(dApprovers.Union(bApprovers))),
 		},
 		{
 			testName:          "Lowest Leaf",
 			filenames:         []string{"a/combo/test.go"},
-			expectedApprovers: setToLower(edcApprovers).List(),
+			expectedApprovers: sets.List(setToLower(edcApprovers)),
 		},
 		{
 			testName:          "Root And Everything Else PR",
 			filenames:         []string{"a/combo/test.go", "b/test.go", "c/test.go", "d/test.go"},
-			expectedApprovers: setToLower(rootApprovers).List(),
+			expectedApprovers: sets.List(setToLower(rootApprovers)),
 		},
 	}
 
@@ -475,14 +475,14 @@ func TestGetAllPotentialApprovers(t *testing.T) {
 }
 
 func TestFindMostCoveringApprover(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	cApprovers := sets.NewString("Chris", "Carol")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -493,50 +493,50 @@ func TestFindMostCoveringApprover(t *testing.T) {
 	tests := []struct {
 		testName   string
 		filenames  []string
-		unapproved sets.String
+		unapproved sets.Set[string]
 		// because most covering could be two or more people
-		expectedMostCovering sets.String
+		expectedMostCovering sets.Set[string]
 	}{
 		{
 			testName:             "Empty PR",
 			filenames:            []string{},
-			unapproved:           sets.String{},
-			expectedMostCovering: sets.NewString(""),
+			unapproved:           sets.Set[string]{},
+			expectedMostCovering: sets.New[string](""),
 		},
 		{
 			testName:             "Single Root File PR",
 			filenames:            []string{"kubernetes.go"},
-			unapproved:           sets.NewString(""),
+			unapproved:           sets.New[string](""),
 			expectedMostCovering: setToLower(rootApprovers),
 		},
 		{
 			testName:             "Internal Node File PR",
 			filenames:            []string{"a/test.go"},
-			unapproved:           sets.NewString("a"),
+			unapproved:           sets.New[string]("a"),
 			expectedMostCovering: setToLower(aApprovers),
 		},
 		{
 			testName:             "Combo and Intersecting Leaf PR",
 			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
-			unapproved:           sets.NewString("a/combo", "a/d"),
+			unapproved:           sets.New[string]("a/combo", "a/d"),
 			expectedMostCovering: setToLower(edcApprovers.Intersection(dApprovers)),
 		},
 		{
 			testName:             "Three Leaf PR Only B Approved",
 			filenames:            []string{"a/combo/test.go", "c/test.go", "b/test.go"},
-			unapproved:           sets.NewString("a/combo", "c/"),
+			unapproved:           sets.New[string]("a/combo", "c/"),
 			expectedMostCovering: setToLower(edcApprovers.Intersection(cApprovers)),
 		},
 		{
 			testName:             "Three Leaf PR Only B Left Unapproved",
 			filenames:            []string{"a/combo/test.go", "a/d/test.go", "b/test.go"},
-			unapproved:           sets.NewString("b"),
+			unapproved:           sets.New[string]("b"),
 			expectedMostCovering: setToLower(bApprovers),
 		},
 		{
 			testName:             "Leaf and Parent 2 File PR",
 			filenames:            []string{"a/test.go", "a/d/test.go"},
-			unapproved:           sets.NewString("a", "a/d"),
+			unapproved:           sets.New[string]("a", "a/d"),
 			expectedMostCovering: setToLower(aApprovers.Union(dApprovers)),
 		},
 	}
@@ -549,20 +549,20 @@ func TestFindMostCoveringApprover(t *testing.T) {
 			log:       logrus.WithField("plugin", "some_plugin"),
 		}
 		bestPerson := findMostCoveringApprover(testOwners.GetAllPotentialApprovers(), testOwners.GetReverseMap(testOwners.GetLeafApprovers()), test.unapproved)
-		if test.expectedMostCovering.Intersection(sets.NewString(bestPerson)).Len() != 1 {
+		if test.expectedMostCovering.Intersection(sets.New[string](bestPerson)).Len() != 1 {
 			t.Errorf("Failed for test %v.  Didn't correct approvers list.  Expected: %v. Found %v", test.testName, test.expectedMostCovering, bestPerson)
 		}
 	}
 }
 
 func TestGetReverseMap(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	cApprovers := sets.NewString("Chris", "Carol")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"c":       cApprovers,
@@ -572,32 +572,32 @@ func TestGetReverseMap(t *testing.T) {
 	tests := []struct {
 		testName       string
 		filenames      []string
-		expectedRevMap map[string]sets.String // people -> files they can approve
+		expectedRevMap map[string]sets.Set[string] // people -> files they can approve
 	}{
 		{
 			testName:       "Empty PR",
 			filenames:      []string{},
-			expectedRevMap: map[string]sets.String{},
+			expectedRevMap: map[string]sets.Set[string]{},
 		},
 		{
 			testName:  "Single Root File PR",
 			filenames: []string{"kubernetes.go"},
-			expectedRevMap: map[string]sets.String{
-				"alice": sets.NewString(""),
-				"bob":   sets.NewString(""),
+			expectedRevMap: map[string]sets.Set[string]{
+				"alice": sets.New[string](""),
+				"bob":   sets.New[string](""),
 			},
 		},
 		{
 			testName:  "Two Leaf PRs",
 			filenames: []string{"a/combo/test.go", "a/d/test.go"},
-			expectedRevMap: map[string]sets.String{
-				"david":  sets.NewString("a/d", "a/combo"),
-				"dan":    sets.NewString("a/d", "a/combo"),
-				"debbie": sets.NewString("a/d", "a/combo"),
-				"eve":    sets.NewString("a/combo"),
-				"erin":   sets.NewString("a/combo"),
-				"chris":  sets.NewString("a/combo"),
-				"carol":  sets.NewString("a/combo"),
+			expectedRevMap: map[string]sets.Set[string]{
+				"david":  sets.New[string]("a/d", "a/combo"),
+				"dan":    sets.New[string]("a/d", "a/combo"),
+				"debbie": sets.New[string]("a/d", "a/combo"),
+				"eve":    sets.New[string]("a/combo"),
+				"erin":   sets.New[string]("a/combo"),
+				"chris":  sets.New[string]("a/combo"),
+				"carol":  sets.New[string]("a/combo"),
 			},
 		},
 	}
@@ -626,14 +626,14 @@ func TestGetReverseMap(t *testing.T) {
 }
 
 func TestGetShuffledApprovers(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	cApprovers := sets.NewString("Chris", "Carol")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -696,48 +696,48 @@ func TestGetShuffledApprovers(t *testing.T) {
 func TestRemoveSubdirs(t *testing.T) {
 	tests := []struct {
 		testName       string
-		directories    sets.String
+		directories    sets.Set[string]
 		noParentOwners map[string]bool
 
-		expected sets.String
+		expected sets.Set[string]
 	}{
 		{
 			testName:    "Empty PR",
-			directories: sets.NewString(),
-			expected:    sets.NewString(),
+			directories: sets.New[string](),
+			expected:    sets.New[string](),
 		},
 		{
 			testName:    "Root and One Level Below PR",
-			directories: sets.NewString("", "a/"),
-			expected:    sets.NewString(""),
+			directories: sets.New[string]("", "a/"),
+			expected:    sets.New[string](""),
 		},
 		{
 			testName:    "Two Separate Branches",
-			directories: sets.NewString("a/", "c/"),
-			expected:    sets.NewString("a/", "c/"),
+			directories: sets.New[string]("a/", "c/"),
+			expected:    sets.New[string]("a/", "c/"),
 		},
 		{
 			testName:    "Lots of Branches and Leaves",
-			directories: sets.NewString("a", "a/combo", "a/d", "b", "c"),
-			expected:    sets.NewString("a", "b", "c"),
+			directories: sets.New[string]("a", "a/combo", "a/d", "b", "c"),
+			expected:    sets.New[string]("a", "b", "c"),
 		},
 		{
 			testName:       "NoParentOwners",
-			directories:    sets.NewString("a", "a/combo"),
+			directories:    sets.New[string]("a", "a/combo"),
 			noParentOwners: map[string]bool{"a/combo": true},
-			expected:       sets.NewString("a", "a/combo"),
+			expected:       sets.New[string]("a", "a/combo"),
 		},
 		{
 			testName:       "NoParentOwners in relative path",
-			directories:    sets.NewString("a", "a/b/combo"),
+			directories:    sets.New[string]("a", "a/b/combo"),
 			noParentOwners: map[string]bool{"a/b": true},
-			expected:       sets.NewString("a", "a/b/combo"),
+			expected:       sets.New[string]("a", "a/b/combo"),
 		},
 		{
 			testName:       "NoParentOwners with child",
-			directories:    sets.NewString("a", "a/b", "a/b/combo"),
+			directories:    sets.New[string]("a", "a/b", "a/b/combo"),
 			noParentOwners: map[string]bool{"a/b": true},
-			expected:       sets.NewString("a", "a/b"),
+			expected:       sets.New[string]("a", "a/b"),
 		},
 	}
 
@@ -748,7 +748,7 @@ func TestRemoveSubdirs(t *testing.T) {
 		o := &Owners{repo: FakeRepo{noParentOwnersMap: test.noParentOwners}}
 		o.removeSubdirs(test.directories)
 		if !reflect.DeepEqual(test.expected, test.directories) {
-			t.Errorf("Failed to remove subdirectories for test %v.  Expected files: %q. Found %q", test.testName, test.expected.List(), test.directories.List())
+			t.Errorf("Failed to remove subdirectories for test %v.  Expected files: %q. Found %q", test.testName, sets.List(test.expected), sets.List(test.directories))
 
 		}
 	}

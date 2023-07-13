@@ -33,7 +33,7 @@ import (
 	"k8s.io/test-infra/prow/plank"
 )
 
-var agentsNotSupportingCluster = sets.NewString("jenkins")
+var agentsNotSupportingCluster = sets.New[string]("jenkins")
 
 const (
 	denied   = "DENIED"

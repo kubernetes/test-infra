@@ -77,16 +77,16 @@ type fakeRepoOwners struct {
 	dirDenylist []*regexp.Regexp
 }
 
-func (f *fakeRepoOwners) AllApprovers() sets.String {
-	return sets.String{}
+func (f *fakeRepoOwners) AllApprovers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (f *fakeRepoOwners) AllOwners() sets.String {
-	return sets.String{}
+func (f *fakeRepoOwners) AllOwners() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (f *fakeRepoOwners) AllReviewers() sets.String {
-	return sets.String{}
+func (f *fakeRepoOwners) AllReviewers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames {
@@ -110,15 +110,15 @@ var _ repoowners.RepoOwner = &fakeRepoOwners{}
 
 func (f *fakeRepoOwners) FindApproverOwnersForFile(path string) string    { return "" }
 func (f *fakeRepoOwners) FindReviewersOwnersForFile(path string) string   { return "" }
-func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.String       { return nil }
+func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.Set[string]  { return nil }
 func (f *fakeRepoOwners) IsNoParentOwners(path string) bool               { return false }
 func (f *fakeRepoOwners) IsAutoApproveUnownedSubfolders(path string) bool { return false }
-func (f *fakeRepoOwners) LeafApprovers(path string) sets.String           { return nil }
+func (f *fakeRepoOwners) LeafApprovers(path string) sets.Set[string]      { return nil }
 func (f *fakeRepoOwners) Approvers(path string) layeredsets.String        { return f.approvers[path] }
-func (f *fakeRepoOwners) LeafReviewers(path string) sets.String           { return nil }
+func (f *fakeRepoOwners) LeafReviewers(path string) sets.Set[string]      { return nil }
 func (f *fakeRepoOwners) Reviewers(path string) layeredsets.String        { return f.reviewers[path] }
-func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String       { return nil }
-func (f *fakeRepoOwners) TopLevelApprovers() sets.String                  { return nil }
+func (f *fakeRepoOwners) RequiredReviewers(path string) sets.Set[string]  { return nil }
+func (f *fakeRepoOwners) TopLevelApprovers() sets.Set[string]             { return nil }
 
 func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)

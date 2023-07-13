@@ -248,14 +248,14 @@ func authorizedTopLevelOwner(oc ownersClient, allowTopLevelOwners bool, log *log
 }
 
 func validateGitHubTeamSlugs(teamSlugs map[string][]string, org, repo string, githubTeams []github.Team) error {
-	validSlugs := sets.NewString()
+	validSlugs := sets.New[string]()
 	for _, team := range githubTeams {
 		validSlugs.Insert(team.Slug)
 	}
-	invalidSlugs := sets.NewString(teamSlugs[fmt.Sprintf("%s/%s", org, repo)]...).Difference(validSlugs)
+	invalidSlugs := sets.New[string](teamSlugs[fmt.Sprintf("%s/%s", org, repo)]...).Difference(validSlugs)
 
 	if invalidSlugs.Len() > 0 {
-		return fmt.Errorf("invalid team slug(s): %s", strings.Join(invalidSlugs.List(), ","))
+		return fmt.Errorf("invalid team slug(s): %s", strings.Join(sets.List(invalidSlugs), ","))
 	}
 	return nil
 }
@@ -337,7 +337,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	number := e.Number
 	user := e.User.Login
 
-	overrides := sets.NewString()
+	overrides := sets.New[string]()
 	for _, m := range mat {
 		if m[1] == "" {
 			resp := "/override requires failed status contexts to operate on, but none was given"
@@ -418,7 +418,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
 	}
 
-	contexts := sets.NewString()
+	contexts := sets.New[string]()
 	for _, status := range statuses {
 		if status.State == github.StatusSuccess {
 			continue
@@ -467,19 +467,19 @@ Only the following failed contexts/checkruns were expected:
 %s
 
 If you are trying to override a checkrun that has a space in it, you must put a double quote on the context.
-`, formatList(unknown.List()), formatList(contexts.List()))
+`, formatList(sets.List(unknown)), formatList(sets.List(contexts)))
 		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
-	done := sets.String{}
-	contextsWithCreatedJobs := sets.String{}
+	done := sets.Set[string]{}
+	contextsWithCreatedJobs := sets.Set[string]{}
 
 	defer func() {
 		if len(done) == 0 {
 			return
 		}
-		msg := fmt.Sprintf("Overrode contexts on behalf of %s: %s", user, strings.Join(done.List(), ", "))
+		msg := fmt.Sprintf("Overrode contexts on behalf of %s: %s", user, strings.Join(sets.List(done), ", "))
 		log.Info(msg)
 		oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
 	}()

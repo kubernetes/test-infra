@@ -156,7 +156,7 @@ type FakeClient struct {
 
 type TeamWithMembers struct {
 	Team    github.Team
-	Members sets.String
+	Members sets.Set[string]
 }
 
 func (f *FakeClient) BotUser() (*github.UserData, error) {
@@ -571,10 +571,10 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 	defer f.lock.RUnlock()
 	re := regexp.MustCompile(fmt.Sprintf(`^%s/%s#%d:(.*)$`, owner, repo, number))
 	la := []github.Label{}
-	allLabels := sets.NewString(f.IssueLabelsExisting...)
+	allLabels := sets.New[string](f.IssueLabelsExisting...)
 	allLabels.Insert(f.IssueLabelsAdded...)
 	allLabels.Delete(f.IssueLabelsRemoved...)
-	for _, l := range allLabels.List() {
+	for _, l := range sets.List(allLabels) {
 		groups := re.FindStringSubmatch(l)
 		if groups != nil {
 			la = append(la, github.Label{Name: groups[1]})
@@ -594,7 +594,7 @@ func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string)
 	defer f.lock.Unlock()
 	for _, label := range labels {
 		labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
-		if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
+		if sets.New[string](f.IssueLabelsAdded...).Has(labelString) {
 			return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 		}
 		if f.RepoLabelsExisting == nil {

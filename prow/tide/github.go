@@ -516,8 +516,6 @@ func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[types.PullReques
 // isAllowed checks if a PR does not have merge conflicts and requests an
 // allowed merge method. If there is no error it returns a string explanation if
 // not allowed or "" if allowed.
-//
-//
 func (m *mergeChecker) isAllowedToMerge(crc *CodeReviewCommon) (string, error) {
 	// Get PullRequest struct for GitHub specific logic
 	pr := crc.GitHub

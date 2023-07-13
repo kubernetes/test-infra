@@ -96,18 +96,18 @@ func (c *Cron) SyncConfig(cfg *config.Config) error {
 		}
 	}
 
-	periodicNames := sets.NewString()
+	periodicNames := sets.New[string]()
 	for _, p := range cfg.AllPeriodics() {
 		periodicNames.Insert(p.Name)
 	}
 
-	existing := sets.NewString()
+	existing := sets.New[string]()
 	for k := range c.jobs {
 		existing.Insert(k)
 	}
 
 	var removalErrors []error
-	for _, job := range existing.Difference(periodicNames).List() {
+	for _, job := range sets.List(existing.Difference(periodicNames)) {
 		if err := c.removeJob(job); err != nil {
 			removalErrors = append(removalErrors, err)
 		}

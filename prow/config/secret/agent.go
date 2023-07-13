@@ -172,10 +172,10 @@ func (a *agent) Censor(content []byte) []byte {
 	return secretutil.AdaptCensorer(a.ReloadingCensorer)(content)
 }
 
-func (a *agent) getSecrets() sets.String {
+func (a *agent) getSecrets() sets.Set[string] {
 	a.RLock()
 	defer a.RUnlock()
-	secrets := sets.NewString()
+	secrets := sets.New[string]()
 	for _, v := range a.secretsMap {
 		secrets.Insert(string(v.getRaw()))
 	}

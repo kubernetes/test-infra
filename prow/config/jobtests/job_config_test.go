@@ -51,9 +51,9 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func missingVolumesForContainer(mounts []v1.VolumeMount, volumes []v1.Volume) sets.String {
-	mountNames := sets.NewString()
-	volumeNames := sets.NewString()
+func missingVolumesForContainer(mounts []v1.VolumeMount, volumes []v1.Volume) sets.Set[string] {
+	mountNames := sets.New[string]()
+	volumeNames := sets.New[string]()
 	for _, m := range mounts {
 		mountNames.Insert(m.Name)
 	}
@@ -63,8 +63,8 @@ func missingVolumesForContainer(mounts []v1.VolumeMount, volumes []v1.Volume) se
 	return mountNames.Difference(volumeNames)
 }
 
-func missingVolumesForSpec(spec *v1.PodSpec) map[string]sets.String {
-	malformed := map[string]sets.String{}
+func missingVolumesForSpec(spec *v1.PodSpec) map[string]sets.Set[string] {
+	malformed := map[string]sets.Set[string]{}
 	for _, container := range spec.InitContainers {
 		malformed[container.Name] = missingVolumesForContainer(container.VolumeMounts, spec.Volumes)
 	}
@@ -74,9 +74,9 @@ func missingVolumesForSpec(spec *v1.PodSpec) map[string]sets.String {
 	return malformed
 }
 
-func missingMountsForSpec(spec *v1.PodSpec) sets.String {
-	mountNames := sets.NewString()
-	volumeNames := sets.NewString()
+func missingMountsForSpec(spec *v1.PodSpec) sets.Set[string] {
+	mountNames := sets.New[string]()
+	volumeNames := sets.New[string]()
 	for _, container := range spec.Containers {
 		for _, m := range container.VolumeMounts {
 			mountNames.Insert(m.Name)
@@ -115,11 +115,11 @@ func TestMountsHaveVolumes(t *testing.T) {
 func validateVolumesAndMounts(name string, spec *v1.PodSpec, t *testing.T) {
 	for container, missingVolumes := range missingVolumesForSpec(spec) {
 		if len(missingVolumes) > 0 {
-			t.Errorf("job %s in container %s has mounts that are missing volumes: %v", name, container, missingVolumes.List())
+			t.Errorf("job %s in container %s has mounts that are missing volumes: %v", name, container, sets.List(missingVolumes))
 		}
 	}
 	if missingMounts := missingMountsForSpec(spec); len(missingMounts) > 0 {
-		t.Errorf("job %s has volumes that are not mounted: %v", name, missingMounts.List())
+		t.Errorf("job %s has volumes that are not mounted: %v", name, sets.List(missingMounts))
 	}
 }
 

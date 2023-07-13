@@ -293,15 +293,15 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []strin
 
 // validateContextOverlap ensures that there will be no overlap in contexts between a set of jobs running and a set to skip
 func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
-	requestedContexts := sets.NewString()
+	requestedContexts := sets.New[string]()
 	for _, job := range toRun {
 		requestedContexts.Insert(job.Context)
 	}
-	skippedContexts := sets.NewString()
+	skippedContexts := sets.New[string]()
 	for _, job := range toSkip {
 		skippedContexts.Insert(job.Context)
 	}
-	if overlap := requestedContexts.Intersection(skippedContexts).List(); len(overlap) > 0 {
+	if overlap := sets.List(requestedContexts.Intersection(skippedContexts)); len(overlap) > 0 {
 		return fmt.Errorf("the following contexts are both triggered and skipped: %s", strings.Join(overlap, ", "))
 	}
 

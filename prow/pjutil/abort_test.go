@@ -41,7 +41,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 	cases := []struct {
 		name               string
 		pjs                []prowv1.ProwJob
-		expectedAbortedPJs sets.String
+		expectedAbortedPJs sets.Set[string]
 	}{
 		{
 			name: "terminate all older presubmit jobs",
@@ -118,7 +118,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedAbortedPJs: sets.NewString("old", "older"),
+			expectedAbortedPJs: sets.New[string]("old", "older"),
 		},
 		{
 			name: "Don't terminate older batch jobs",
@@ -195,7 +195,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedAbortedPJs: sets.NewString(),
+			expectedAbortedPJs: sets.New[string](),
 		},
 		{
 			name: "terminate older jobs with different orders of refs",
@@ -229,7 +229,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedAbortedPJs: sets.NewString("old"),
+			expectedAbortedPJs: sets.New[string]("old"),
 		},
 		{
 			name: "terminate older jobs with different orders of extra refs",
@@ -283,7 +283,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedAbortedPJs: sets.NewString("old"),
+			expectedAbortedPJs: sets.New[string]("old"),
 		},
 		{
 			name: "terminate older jobs with no main refs, only extra refs",
@@ -321,7 +321,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedAbortedPJs: sets.NewString("old"),
+			expectedAbortedPJs: sets.New[string]("old"),
 		},
 		{
 			name: "terminate older jobs with different base SHA",
@@ -357,7 +357,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedAbortedPJs: sets.NewString("old"),
+			expectedAbortedPJs: sets.New[string]("old"),
 		},
 		{
 			name: "don't terminate older jobs with different base refs",
@@ -393,7 +393,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedAbortedPJs: sets.NewString(),
+			expectedAbortedPJs: sets.New[string](),
 		},
 		{
 			name: "terminate older jobs with different pull sha",
@@ -427,7 +427,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 					},
 				},
 			},
-			expectedAbortedPJs: sets.NewString("old"),
+			expectedAbortedPJs: sets.New[string]("old"),
 		},
 	}
 
@@ -450,7 +450,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				t.Fatalf("failed to list prowjobs: %v", err)
 			}
 
-			actuallyAbortedJobs := sets.String{}
+			actuallyAbortedJobs := sets.Set[string]{}
 			for _, job := range actualPJs.Items {
 				if job.Status.State == prowv1.AbortedState {
 					if job.Complete() {
@@ -464,7 +464,7 @@ func TestTerminateOlderJobs(t *testing.T) {
 				t.Errorf("%s: did not replace the expected jobs: %v", tc.name, missing.Len())
 			}
 			if extra := actuallyAbortedJobs.Difference(tc.expectedAbortedPJs); extra.Len() > 0 {
-				t.Errorf("%s: found unexpectedly replaced job: %v", tc.name, extra.List())
+				t.Errorf("%s: found unexpectedly replaced job: %v", tc.name, sets.List(extra))
 			}
 
 			// Validate that terminated PJs are marked terminated in the passed slice.

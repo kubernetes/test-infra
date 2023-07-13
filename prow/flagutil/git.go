@@ -89,7 +89,7 @@ func (o *GitOptions) GitClient(userClient github.UserClient, token func() []byte
 	}
 	opts := git.ClientFactoryOpts{
 		Host:     o.host,
-		UseSSH:   utilpointer.BoolPtr(o.useSSH),
+		UseSSH:   utilpointer.Bool(o.useSSH),
 		Username: username,
 		Token:    token,
 		GitUser:  gitUser,

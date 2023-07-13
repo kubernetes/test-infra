@@ -40,8 +40,9 @@ func makeRequest(policy branchprotection.Policy, enableAppsRestrictions bool) gi
 
 // makeAdmins returns true iff *val == true, else false
 // TODO(skuznets): the API documentation tells us to pass
-//    `nil` to unset, but that is broken so we need to pass
-//    false. Change back when it's fixed
+//
+//	`nil` to unset, but that is broken so we need to pass
+//	false. Change back when it's fixed
 func makeAdmins(val *bool) *bool {
 	if val != nil {
 		return val
@@ -64,7 +65,7 @@ func makeChecks(cp *branchprotection.ContextPolicy) *github.RequiredStatusChecks
 		return nil
 	}
 	return &github.RequiredStatusChecks{
-		Contexts: append([]string{}, sets.NewString(cp.Contexts...).List()...),
+		Contexts: append([]string{}, sets.List(sets.New[string](cp.Contexts...))...),
 		Strict:   makeBool(cp.Strict),
 	}
 }
@@ -77,8 +78,8 @@ func makeDismissalRestrictions(rp *branchprotection.DismissalRestrictions) *gith
 	if rp == nil {
 		return nil
 	}
-	teams := append([]string{}, sets.NewString(rp.Teams...).List()...)
-	users := append([]string{}, sets.NewString(rp.Users...).List()...)
+	teams := append([]string{}, sets.List(sets.New[string](rp.Teams...))...)
+	users := append([]string{}, sets.List(sets.New[string](rp.Users...))...)
 	return &github.DismissalRestrictionsRequest{
 		Teams: &teams,
 		Users: &users,
@@ -93,8 +94,8 @@ func makeBypassRestrictions(rp *branchprotection.BypassRestrictions) *github.Byp
 	if rp == nil {
 		return nil
 	}
-	teams := append([]string{}, sets.NewString(rp.Teams...).List()...)
-	users := append([]string{}, sets.NewString(rp.Users...).List()...)
+	teams := append([]string{}, sets.List(sets.New[string](rp.Teams...))...)
+	users := append([]string{}, sets.List(sets.New[string](rp.Users...))...)
 	return &github.BypassRestrictionsRequest{
 		Teams: &teams,
 		Users: &users,
@@ -114,11 +115,11 @@ func makeRestrictions(rp *branchprotection.Restrictions, enableAppsRestrictions 
 	// TODO: consider removing feature flag in the future
 	var apps *[]string
 	if enableAppsRestrictions {
-		a := append([]string{}, sets.NewString(rp.Apps...).List()...)
+		a := append([]string{}, sets.List(sets.New[string](rp.Apps...))...)
 		apps = &a
 	}
-	teams := append([]string{}, sets.NewString(rp.Teams...).List()...)
-	users := append([]string{}, sets.NewString(rp.Users...).List()...)
+	teams := append([]string{}, sets.List(sets.New[string](rp.Teams...))...)
+	users := append([]string{}, sets.List(sets.New[string](rp.Users...))...)
 	return &github.RestrictionsRequest{
 		Apps:  apps,
 		Teams: &teams,

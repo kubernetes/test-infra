@@ -31,14 +31,14 @@ import (
 )
 
 func TestUnapprovedFiles(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	cApprovers := sets.NewString("Chris", "Carol")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -49,61 +49,61 @@ func TestUnapprovedFiles(t *testing.T) {
 	tests := []struct {
 		testName           string
 		filenames          []string
-		currentlyApproved  sets.String
-		expectedUnapproved sets.String
+		currentlyApproved  sets.Set[string]
+		expectedUnapproved sets.Set[string]
 	}{
 		{
 			testName:           "Empty PR",
 			filenames:          []string{},
-			currentlyApproved:  sets.NewString(),
-			expectedUnapproved: sets.NewString(),
+			currentlyApproved:  sets.New[string](),
+			expectedUnapproved: sets.New[string](),
 		},
 		{
 			testName:           "Single Root File PR Approved",
 			filenames:          []string{"kubernetes.go"},
-			currentlyApproved:  sets.NewString(rootApprovers.List()[0]),
-			expectedUnapproved: sets.NewString(),
+			currentlyApproved:  sets.New[string](sets.List(rootApprovers)[0]),
+			expectedUnapproved: sets.New[string](),
 		},
 		{
 			testName:           "Single Root File PR No One Approved",
 			filenames:          []string{"kubernetes.go"},
-			currentlyApproved:  sets.NewString(),
-			expectedUnapproved: sets.NewString(""),
+			currentlyApproved:  sets.New[string](),
+			expectedUnapproved: sets.New[string](""),
 		},
 		{
 			testName:           "B Only UnApproved",
 			currentlyApproved:  bApprovers,
-			expectedUnapproved: sets.NewString(),
+			expectedUnapproved: sets.New[string](),
 		},
 		{
 			testName:           "B Files Approved at Root",
 			filenames:          []string{"b/test.go", "b/test_1.go"},
 			currentlyApproved:  rootApprovers,
-			expectedUnapproved: sets.NewString(),
+			expectedUnapproved: sets.New[string](),
 		},
 		{
 			testName:           "B Only UnApproved",
 			filenames:          []string{"b/test_1.go", "b/test.go"},
-			currentlyApproved:  sets.NewString(),
-			expectedUnapproved: sets.NewString("b"),
+			currentlyApproved:  sets.New[string](),
+			expectedUnapproved: sets.New[string]("b"),
 		},
 		{
 			testName:           "Combo and Other; Neither Approved",
 			filenames:          []string{"a/combo/test.go", "a/d/test.go"},
-			currentlyApproved:  sets.NewString(),
-			expectedUnapproved: sets.NewString("a/combo", "a/d"),
+			currentlyApproved:  sets.New[string](),
+			expectedUnapproved: sets.New[string]("a/combo", "a/d"),
 		},
 		{
 			testName:           "Combo and Other; Combo Approved",
 			filenames:          []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved:  edcApprovers.Difference(dApprovers),
-			expectedUnapproved: sets.NewString("a/d"),
+			expectedUnapproved: sets.New[string]("a/d"),
 		},
 		{
 			testName:           "Combo and Other; Both Approved",
 			filenames:          []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved:  edcApprovers.Intersection(dApprovers),
-			expectedUnapproved: sets.NewString(),
+			expectedUnapproved: sets.New[string](),
 		},
 	}
 
@@ -121,14 +121,14 @@ func TestUnapprovedFiles(t *testing.T) {
 }
 
 func TestGetFiles(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	cApprovers := sets.NewString("Chris", "Carol")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -139,25 +139,25 @@ func TestGetFiles(t *testing.T) {
 	tests := []struct {
 		testName          string
 		filenames         []string
-		currentlyApproved sets.String
+		currentlyApproved sets.Set[string]
 		expectedFiles     []File
 	}{
 		{
 			testName:          "Empty PR",
 			filenames:         []string{},
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			expectedFiles:     []File{},
 		},
 		{
 			testName:          "Single Root File PR Approved",
 			filenames:         []string{"kubernetes.go"},
-			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
-			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", ownersconfig.DefaultOwnersFile, sets.NewString(rootApprovers.List()[0]), "master"}},
+			currentlyApproved: sets.New[string](sets.List(rootApprovers)[0]),
+			expectedFiles:     []File{ApprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", ownersconfig.DefaultOwnersFile, sets.New[string](sets.List(rootApprovers)[0]), "master"}},
 		},
 		{
 			testName:          "Single File PR in B No One Approved",
 			filenames:         []string{"b/test.go"},
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "b", ownersconfig.DefaultOwnersFile, "master"}},
 		},
 		{
@@ -169,13 +169,13 @@ func TestGetFiles(t *testing.T) {
 		{
 			testName:          "Single Root File PR No One Approved",
 			filenames:         []string{"kubernetes.go"},
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			expectedFiles:     []File{UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "", ownersconfig.DefaultOwnersFile, "master"}},
 		},
 		{
 			testName:          "Combo and Other; Neither Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			expectedFiles: []File{
 				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/combo", ownersconfig.DefaultOwnersFile, "master"},
 				UnapprovedFile{&url.URL{Scheme: "https", Host: "github.com", Path: "org/repo"}, "a/d", ownersconfig.DefaultOwnersFile, "master"},
@@ -236,14 +236,14 @@ func TestGetFiles(t *testing.T) {
 }
 
 func TestGetCCs(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	cApprovers := sets.NewString("Chris", "Carol")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -254,7 +254,7 @@ func TestGetCCs(t *testing.T) {
 	tests := []struct {
 		testName          string
 		filenames         []string
-		currentlyApproved sets.String
+		currentlyApproved sets.Set[string]
 		// testSeed affects who is chosen for CC
 		testSeed  int64
 		assignees []string
@@ -266,7 +266,7 @@ func TestGetCCs(t *testing.T) {
 		{
 			testName:             "Empty PR",
 			filenames:            []string{},
-			currentlyApproved:    sets.NewString(),
+			currentlyApproved:    sets.New[string](),
 			testSeed:             0,
 			expectedCCs:          []string{},
 			expectedAssignedCCs:  []string{},
@@ -275,7 +275,7 @@ func TestGetCCs(t *testing.T) {
 		{
 			testName:             "Single Root FFile PR Approved",
 			filenames:            []string{"kubernetes.go"},
-			currentlyApproved:    sets.NewString(rootApprovers.List()[0]),
+			currentlyApproved:    sets.New[string](sets.List(rootApprovers)[0]),
 			testSeed:             13,
 			expectedCCs:          []string{},
 			expectedAssignedCCs:  []string{},
@@ -284,7 +284,7 @@ func TestGetCCs(t *testing.T) {
 		{
 			testName:             "Single Root File PR Unapproved Seed = 13",
 			filenames:            []string{"kubernetes.go"},
-			currentlyApproved:    sets.NewString(),
+			currentlyApproved:    sets.New[string](),
 			testSeed:             13,
 			expectedCCs:          []string{"alice"},
 			expectedAssignedCCs:  []string{},
@@ -294,7 +294,7 @@ func TestGetCCs(t *testing.T) {
 			testName:             "Single Root File PR No One Seed = 10",
 			filenames:            []string{"kubernetes.go"},
 			testSeed:             10,
-			currentlyApproved:    sets.NewString(),
+			currentlyApproved:    sets.New[string](),
 			expectedCCs:          []string{"bob"},
 			expectedAssignedCCs:  []string{},
 			expectedSuggestedCCs: []string{"bob"},
@@ -303,7 +303,7 @@ func TestGetCCs(t *testing.T) {
 			testName:             "Combo and Other; Neither Approved",
 			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
 			testSeed:             0,
-			currentlyApproved:    sets.NewString(),
+			currentlyApproved:    sets.New[string](),
 			expectedCCs:          []string{"dan"},
 			expectedAssignedCCs:  []string{},
 			expectedSuggestedCCs: []string{"dan"},
@@ -330,7 +330,7 @@ func TestGetCCs(t *testing.T) {
 			testName:          "Combo, C, D; None Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go", "c/test"},
 			testSeed:          0,
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			// chris can approve c and combo, debbie can approve d
 			expectedCCs:          []string{"chris", "debbie"},
 			expectedAssignedCCs:  []string{},
@@ -340,7 +340,7 @@ func TestGetCCs(t *testing.T) {
 			testName:          "A, B, C; Nothing Approved",
 			filenames:         []string{"a/test.go", "b/test.go", "c/test"},
 			testSeed:          0,
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			// Need an approver from each of the three owners files
 			expectedCCs:          []string{"anne", "bill", "carol"},
 			expectedAssignedCCs:  []string{},
@@ -351,7 +351,7 @@ func TestGetCCs(t *testing.T) {
 			filenames: []string{"a/test.go", "b/test.go", "c/test"},
 			testSeed:  0,
 			// Approvers are valid approvers, but not the one we would suggest
-			currentlyApproved: sets.NewString("Art", "Ben"),
+			currentlyApproved: sets.New[string]("Art", "Ben"),
 			// We don't suggest approvers for a and b, only for unapproved c.
 			expectedCCs:          []string{"carol"},
 			expectedAssignedCCs:  []string{},
@@ -362,7 +362,7 @@ func TestGetCCs(t *testing.T) {
 			filenames: []string{"a/test.go", "b/test.go", "c/test"},
 			testSeed:  0,
 			// Approvers are valid approvers, but not the one we would suggest
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			assignees:         []string{"Art", "Ben"},
 			// We suggest assigned people rather than "suggested" people
 			// Suggested would be "Anne", "Bill", "Carol" if no one was assigned.
@@ -374,7 +374,7 @@ func TestGetCCs(t *testing.T) {
 			testName:          "A, B, C; Nothing approved, but SOME assignees can approve",
 			filenames:         []string{"a/test.go", "b/test.go", "c/test"},
 			testSeed:          0,
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			// Assignees are a mix of potential approvers and random people
 			assignees: []string{"Art", "Ben", "John", "Jack"},
 			// We suggest assigned people rather than "suggested" people
@@ -386,7 +386,7 @@ func TestGetCCs(t *testing.T) {
 			testName:          "Assignee is top OWNER, No one has approved",
 			filenames:         []string{"a/test.go"},
 			testSeed:          0,
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			// Assignee is a root approver
 			assignees:            []string{"alice"},
 			expectedCCs:          []string{"alice"},
@@ -418,14 +418,14 @@ func TestGetCCs(t *testing.T) {
 }
 
 func TestIsApproved(t *testing.T) {
-	rootApprovers := sets.NewString("Alice", "Bob")
-	aApprovers := sets.NewString("Art", "Anne")
-	bApprovers := sets.NewString("Bill", "Ben", "Barbara")
-	cApprovers := sets.NewString("Chris", "Carol")
-	dApprovers := sets.NewString("David", "Dan", "Debbie")
-	eApprovers := sets.NewString("Eve", "Erin")
+	rootApprovers := sets.New[string]("Alice", "Bob")
+	aApprovers := sets.New[string]("Art", "Anne")
+	bApprovers := sets.New[string]("Bill", "Ben", "Barbara")
+	cApprovers := sets.New[string]("Chris", "Carol")
+	dApprovers := sets.New[string]("David", "Dan", "Debbie")
+	eApprovers := sets.New[string]("Eve", "Erin")
 	edcApprovers := eApprovers.Union(dApprovers).Union(cApprovers)
-	FakeRepoMap := map[string]sets.String{
+	FakeRepoMap := map[string]sets.Set[string]{
 		"":        rootApprovers,
 		"a":       aApprovers,
 		"b":       bApprovers,
@@ -438,21 +438,21 @@ func TestIsApproved(t *testing.T) {
 		testName                        string
 		filenames                       []string
 		autoApproveUnownedSubfoldersMap map[string]bool
-		currentlyApproved               sets.String
+		currentlyApproved               sets.Set[string]
 		testSeed                        int64
 		isApproved                      bool
 	}{
 		{
 			testName:          "Empty PR",
 			filenames:         []string{},
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			testSeed:          0,
 			isApproved:        false,
 		},
 		{
 			testName:          "Single Root File PR Approved",
 			filenames:         []string{"kubernetes.go"},
-			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
+			currentlyApproved: sets.New[string](sets.List(rootApprovers)[0]),
 			testSeed:          3,
 			isApproved:        true,
 		},
@@ -460,14 +460,14 @@ func TestIsApproved(t *testing.T) {
 			testName:          "Single Root File PR No One Approved",
 			filenames:         []string{"kubernetes.go"},
 			testSeed:          0,
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			isApproved:        false,
 		},
 		{
 			testName:          "Combo and Other; Neither Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			testSeed:          0,
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			isApproved:        false,
 		},
 		{
@@ -481,7 +481,7 @@ func TestIsApproved(t *testing.T) {
 			testName:          "A, B, C; Nothing Approved",
 			filenames:         []string{"a/test.go", "b/test.go", "c/test"},
 			testSeed:          0,
-			currentlyApproved: sets.NewString(),
+			currentlyApproved: sets.New[string](),
 			isApproved:        false,
 		},
 		{
@@ -502,7 +502,7 @@ func TestIsApproved(t *testing.T) {
 			testName:          "A, B, C; Approved At the Leaves",
 			filenames:         []string{"a/test.go", "b/test.go", "c/test"},
 			testSeed:          0,
-			currentlyApproved: sets.NewString("Anne", "Ben", "Carol"),
+			currentlyApproved: sets.New[string]("Anne", "Ben", "Carol"),
 			isApproved:        true,
 		},
 		{
@@ -533,7 +533,7 @@ func TestIsApproved(t *testing.T) {
 			testName:                        "Subfolder in folder with AutoApproveUnownedSubfolders and approved file, approved",
 			filenames:                       []string{"b/approved.go", "a/new-folder/test.go"},
 			autoApproveUnownedSubfoldersMap: map[string]bool{"a": true},
-			currentlyApproved:               sets.NewString(bApprovers.List()[0]),
+			currentlyApproved:               sets.New[string](sets.List(bApprovers)[0]),
 			isApproved:                      true,
 		},
 		{
@@ -565,9 +565,9 @@ func TestIsApproved(t *testing.T) {
 }
 
 func TestIsApprovedWithIssue(t *testing.T) {
-	aApprovers := sets.NewString("Author", "Anne", "Carl")
-	bApprovers := sets.NewString("Bill", "Carl")
-	FakeRepoMap := map[string]sets.String{"a": aApprovers, "b": bApprovers}
+	aApprovers := sets.New[string]("Author", "Anne", "Carl")
+	bApprovers := sets.New[string]("Bill", "Carl")
+	FakeRepoMap := map[string]sets.Set[string]{"a": aApprovers, "b": bApprovers}
 	tests := []struct {
 		testName          string
 		filenames         []string
@@ -709,22 +709,22 @@ func TestGetFilesApprovers(t *testing.T) {
 		testName       string
 		filenames      []string
 		approvers      []string
-		owners         map[string]sets.String
-		expectedStatus map[string]sets.String
+		owners         map[string]sets.Set[string]
+		expectedStatus map[string]sets.Set[string]
 	}{
 		{
 			testName:       "Empty PR",
 			filenames:      []string{},
 			approvers:      []string{},
-			owners:         map[string]sets.String{},
-			expectedStatus: map[string]sets.String{},
+			owners:         map[string]sets.Set[string]{},
+			expectedStatus: map[string]sets.Set[string]{},
 		},
 		{
 			testName:       "No approvers",
 			filenames:      []string{"a/a", "c"},
 			approvers:      []string{},
-			owners:         map[string]sets.String{"": sets.NewString("RootOwner")},
-			expectedStatus: map[string]sets.String{"": {}},
+			owners:         map[string]sets.Set[string]{"": sets.New[string]("RootOwner")},
+			expectedStatus: map[string]sets.Set[string]{"": {}},
 		},
 		{
 			testName: "Approvers approves some",
@@ -733,13 +733,13 @@ func TestGetFilesApprovers(t *testing.T) {
 				"c/c",
 			},
 			approvers: []string{"CApprover"},
-			owners: map[string]sets.String{
-				"a": sets.NewString("AApprover"),
-				"c": sets.NewString("CApprover"),
+			owners: map[string]sets.Set[string]{
+				"a": sets.New[string]("AApprover"),
+				"c": sets.New[string]("CApprover"),
 			},
-			expectedStatus: map[string]sets.String{
+			expectedStatus: map[string]sets.Set[string]{
 				"a": {},
-				"c": sets.NewString("CApprover"),
+				"c": sets.New[string]("CApprover"),
 			},
 		},
 		{
@@ -749,22 +749,22 @@ func TestGetFilesApprovers(t *testing.T) {
 				"c/c",
 			},
 			approvers: []string{"RootApprover", "CApprover"},
-			owners: map[string]sets.String{
-				"":  sets.NewString("RootApprover"),
-				"a": sets.NewString("AApprover"),
-				"c": sets.NewString("CApprover"),
+			owners: map[string]sets.Set[string]{
+				"":  sets.New[string]("RootApprover"),
+				"a": sets.New[string]("AApprover"),
+				"c": sets.New[string]("CApprover"),
 			},
-			expectedStatus: map[string]sets.String{
-				"a": sets.NewString("RootApprover"),
-				"c": sets.NewString("RootApprover", "CApprover"),
+			expectedStatus: map[string]sets.Set[string]{
+				"a": sets.New[string]("RootApprover"),
+				"c": sets.New[string]("RootApprover", "CApprover"),
 			},
 		},
 		{
 			testName:       "Case-insensitive approvers",
 			filenames:      []string{"file"},
 			approvers:      []string{"RootApprover"},
-			owners:         map[string]sets.String{"": sets.NewString("rOOtaPProver")},
-			expectedStatus: map[string]sets.String{"": sets.NewString("RootApprover")},
+			owners:         map[string]sets.Set[string]{"": sets.New[string]("rOOtaPProver")},
+			expectedStatus: map[string]sets.Set[string]{"": sets.New[string]("RootApprover")},
 		},
 	}
 
@@ -784,9 +784,9 @@ func TestGetMessage(t *testing.T) {
 	ap := NewApprovers(
 		Owners{
 			filenames: []string{"a/a.go", "b/b.go"},
-			repo: createFakeRepo(map[string]sets.String{
-				"a": sets.NewString("Alice"),
-				"b": sets.NewString("Bill"),
+			repo: createFakeRepo(map[string]sets.Set[string]{
+				"a": sets.New[string]("Alice"),
+				"b": sets.New[string]("Bill"),
 			}),
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
@@ -822,10 +822,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 	ap = NewApprovers(
 		Owners{
 			filenames: []string{"a/a.go", "b/b.go", "c/c.go"},
-			repo: createFakeRepo(map[string]sets.String{
-				"a": sets.NewString("Alice"),
-				"b": sets.NewString("Bill"),
-				"c": sets.NewString("Bob"),
+			repo: createFakeRepo(map[string]sets.Set[string]{
+				"a": sets.New[string]("Alice"),
+				"b": sets.New[string]("Bill"),
+				"c": sets.New[string]("Bob"),
 			}),
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
@@ -864,9 +864,9 @@ func TestGetMessageAllApproved(t *testing.T) {
 	ap := NewApprovers(
 		Owners{
 			filenames: []string{"a/a.go", "b/b.go"},
-			repo: createFakeRepo(map[string]sets.String{
-				"a": sets.NewString("Alice"),
-				"b": sets.NewString("Bill"),
+			repo: createFakeRepo(map[string]sets.Set[string]{
+				"a": sets.New[string]("Alice"),
+				"b": sets.New[string]("Bill"),
 			}),
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
@@ -906,9 +906,9 @@ func TestGetMessageNoneApproved(t *testing.T) {
 	ap := NewApprovers(
 		Owners{
 			filenames: []string{"a/a.go", "b/b.go"},
-			repo: createFakeRepo(map[string]sets.String{
-				"a": sets.NewString("Alice"),
-				"b": sets.NewString("Bill"),
+			repo: createFakeRepo(map[string]sets.Set[string]{
+				"a": sets.New[string]("Alice"),
+				"b": sets.New[string]("Bill"),
 			}),
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
@@ -945,9 +945,9 @@ func TestGetMessageApprovedIssueAssociated(t *testing.T) {
 	ap := NewApprovers(
 		Owners{
 			filenames: []string{"a/a.go", "b/b.go"},
-			repo: createFakeRepo(map[string]sets.String{
-				"a": sets.NewString("Alice"),
-				"b": sets.NewString("Bill"),
+			repo: createFakeRepo(map[string]sets.Set[string]{
+				"a": sets.New[string]("Alice"),
+				"b": sets.New[string]("Bill"),
 			}),
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
@@ -989,9 +989,9 @@ func TestGetMessageApprovedNoIssueByPassed(t *testing.T) {
 	ap := NewApprovers(
 		Owners{
 			filenames: []string{"a/a.go", "b/b.md"},
-			repo: createFakeRepo(map[string]sets.String{
-				"a": sets.NewString("Alice"),
-				"b": sets.NewString("Bill"),
+			repo: createFakeRepo(map[string]sets.Set[string]{
+				"a": sets.New[string]("Alice"),
+				"b": sets.New[string]("Bill"),
 			}),
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
@@ -1032,10 +1032,10 @@ func TestGetMessageMDOwners(t *testing.T) {
 	ap := NewApprovers(
 		Owners{
 			filenames: []string{"a/a.go", "b/README.md"},
-			repo: createFakeRepo(map[string]sets.String{
-				"a":           sets.NewString("Alice"),
-				"b":           sets.NewString("Bill"),
-				"b/README.md": sets.NewString("Doctor"),
+			repo: createFakeRepo(map[string]sets.Set[string]{
+				"a":           sets.New[string]("Alice"),
+				"b":           sets.New[string]("Bill"),
+				"b/README.md": sets.New[string]("Doctor"),
 			}),
 			log: logrus.WithField("plugin", "some_plugin"),
 		},
@@ -1072,10 +1072,10 @@ func TestGetMessageDifferentGitHubLink(t *testing.T) {
 	ap := NewApprovers(
 		Owners{
 			filenames: []string{"a/a.go", "b/README.md"},
-			repo: createFakeRepo(map[string]sets.String{
-				"a":           sets.NewString("Alice"),
-				"b":           sets.NewString("Bill"),
-				"b/README.md": sets.NewString("Doctor"),
+			repo: createFakeRepo(map[string]sets.Set[string]{
+				"a":           sets.New[string]("Alice"),
+				"b":           sets.New[string]("Bill"),
+				"b/README.md": sets.New[string]("Doctor"),
 			}),
 			log: logrus.WithField("plugin", "some_plugin"),
 		},

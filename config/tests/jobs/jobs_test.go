@@ -437,8 +437,8 @@ func validateImagePushingImage(spec *coreapi.PodSpec) error {
 func TestTrustedJobSecretsRestricted(t *testing.T) {
 	type labels map[string]string
 
-	getSecretsFromPreset := func(labels labels) sets.String {
-		secrets := sets.NewString()
+	getSecretsFromPreset := func(labels labels) sets.Set[string] {
+		secrets := sets.New[string]()
 		for _, preset := range c.Presets {
 			match := true
 			for k, v1 := range preset.Labels {
@@ -465,11 +465,11 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 	}
 
 	secretsRestricted := map[string]struct {
-		secrets            sets.String
+		secrets            sets.Set[string]
 		isTrusted          bool
 		allowedInPresubmit bool
 	}{
-		"kubernetes-sigs/sig-storage-local-static-provisioner": {secrets: sets.NewString("sig-storage-local-static-provisioner-pusher"), isTrusted: true},
+		"kubernetes-sigs/sig-storage-local-static-provisioner": {secrets: sets.New[string]("sig-storage-local-static-provisioner-pusher"), isTrusted: true},
 		"kubernetes-csi/csi-driver-nfs":                        {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
 		"kubernetes-csi/csi-driver-smb":                        {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
 		"kubernetes-sigs/azuredisk-csi-driver":                 {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"}), allowedInPresubmit: true},
@@ -484,9 +484,9 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 		"kubernetes/sig-release":                               {secrets: getSecretsFromPreset(labels{"preset-azure-cred": "true"})},
 		"kubernetes-sigs/cluster-api-provider-azure":           {secrets: getSecretsFromPreset(labels{"preset-azure-cred-only": "true"}), allowedInPresubmit: true},
 	}
-	allSecrets := sets.String{}
+	allSecrets := sets.Set[string]{}
 	for _, s := range secretsRestricted {
-		allSecrets.Insert(s.secrets.List()...)
+		allSecrets.Insert(sets.List(s.secrets)...)
 	}
 
 	isSecretUsedByContainer := func(secret string, container coreapi.Container) bool {
@@ -550,14 +550,14 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 		org, project, _ := getJobOrgProjectBasename(job.SourcePath)
 		s, ok := secretsRestricted[filepath.Join(org, project)]
 		allowedInPresubmit := ok && s.allowedInPresubmit
-		for _, secret := range allSecrets.List() {
+		for _, secret := range sets.List(allSecrets) {
 			if isSecretUsed(secret, job.JobBase) && !allowedInPresubmit {
 				t.Errorf("%q defined in %q may not use secret %q in %q cluster", job.Name, job.SourcePath, secret, job.Cluster)
 			}
 		}
 	}
 
-	secretsCanUseByPath := func(path string) sets.String {
+	secretsCanUseByPath := func(path string) sets.Set[string] {
 		org, project, basename := getJobOrgProjectBasename(path)
 		s, ok := secretsRestricted[filepath.Join(org, project)]
 		if !ok || (s.isTrusted && basename != fmt.Sprintf("%s-trusted.yaml", project)) {
@@ -582,7 +582,7 @@ func TestTrustedJobSecretsRestricted(t *testing.T) {
 			continue
 		}
 		secretsCanUse := secretsCanUseByPath(job.SourcePath)
-		for _, secret := range allSecrets.List() {
+		for _, secret := range sets.List(allSecrets) {
 			if secretsCanUse != nil && secretsCanUse.Has(secret) {
 				t.Logf("allow secret %v for job %s defined in %s", secret, job.Name, job.SourcePath)
 				continue

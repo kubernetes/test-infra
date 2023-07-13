@@ -34,8 +34,9 @@ the License.
 /*
 Package berghelraoch is a modification of the original Berghel-Roach edit
 distance (based on prior work by Ukkonen) described in
-  ACM Transactions on Information Systems, Vol. 14, No. 1,
-  January 1996, pages 94-106.
+
+	ACM Transactions on Information Systems, Vol. 14, No. 1,
+	January 1996, pages 94-106.
 
 I observed that only O(d) prior computations are required
 to compute edit distance.  Rather than keeping all prior
@@ -55,12 +56,12 @@ D[i,j] holds the distance for string1[0..i]=>string2[0..j].
 The matrix is initially populated with the trivial values
 D[0,j]=j and D[i,0]=i; and then expanded with the rule:
 
-   D[i,j] = min( D[i-1,j]+1,       // insertion
-                 D[i,j-1]+1,       // deletion
-                 (D[i-1,j-1]
-                  + (string1[i]==string2[j])
-                     ? 0           // match
-                     : 1           // substitution ) )
+	D[i,j] = min( D[i-1,j]+1,       // insertion
+	              D[i,j-1]+1,       // deletion
+	              (D[i-1,j-1]
+	               + (string1[i]==string2[j])
+	                  ? 0           // match
+	                  : 1           // substitution ) )
 
 Ukkonen observed that each diagonal of the matrix must increase
 by either 0 or 1 from row to row.  If D[i,j] = p, then the
@@ -73,12 +74,12 @@ distance is the D[n,m] cell, on the (n-m) diagonal; it is
 the value of p for which f(n-m, p) = m.  The function f can
 also be computed dynamically, according to a simple recursion:
 
-   f(k,p) {
-     contains_p = max(f(k-1,p-1), f(k,p-1)+1, f(k+1,p-1)+1)
-     while (string1[contains_p] == string2[contains_p + k])
-       contains_p++;
-     return contains_p;
-   }
+	f(k,p) {
+	  contains_p = max(f(k-1,p-1), f(k,p-1)+1, f(k+1,p-1)+1)
+	  while (string1[contains_p] == string2[contains_p + k])
+	    contains_p++;
+	  return contains_p;
+	}
 
 The max() expression finds a row where the k-th diagonal must
 contain p by virtue of an edit from the prior, same, or following
@@ -89,11 +90,10 @@ and column-to-column changes are at most +/- 1.
 The original Ukkonen algorithm computed f(k,p) roughly as
 follows:
 
-   for (p = 0; ; p++) {
-     compute f(k,p) for all valid k
-     if (f(n-m, p) == m) return p;
-   }
-
+	for (p = 0; ; p++) {
+	  compute f(k,p) for all valid k
+	  if (f(n-m, p) == m) return p;
+	}
 
 Berghel and Roach observed that many values of f(k,p) are
 computed unnecessarily, and reorganized the computation into
@@ -109,20 +109,19 @@ f(k,p) is only meaningful when abs(k) is no greater than p,
 one of the Berghel-Roach reviewers noted that we can compute
 the bounds for i:
 
-   (main+i &le p-i) implies (i &le; (p-main)/2)
+	(main+i &le p-i) implies (i &le; (p-main)/2)
 
 (where main+i is limited on the positive side) and similarly
 
-   (-(main-i) &le p-i) implies (i &le; (p+main)/2).
+	(-(main-i) &le p-i) implies (i &le; (p+main)/2).
 
 (where main-i is limited on the negative side).
 
 This reduces the computation sequence to
 
-  for (i = (p-main)/2; i > 0; i--) compute f(main+i,p-i);
-  for (i = (p+main)/2; i > 0; i--) compute f(main-i,p-i);
-  if (f(main, p) == m) return p;
-
+	for (i = (p-main)/2; i > 0; i--) compute f(main+i,p-i);
+	for (i = (p+main)/2; i > 0; i--) compute f(main-i,p-i);
+	if (f(main, p) == m) return p;
 
 The original Berghel-Roach algorithm recorded prior values
 of f(k,p) in a matrix, using O(distance^2) space, enabling
@@ -133,20 +132,20 @@ The requisite prior k-1, k, and k+1 values are conveniently
 computed in the current round and the two preceding it.
 For example, on the higher-diagonal side, we compute:
 
-   current[i] = f(main+i, p-i)
+	current[i] = f(main+i, p-i)
 
 We keep the two prior rounds of results, where p was one and two
 smaller.  So, from the preceidng round
 
-   last[i] = f(main+i, (p-1)-i)
+	  last[i] = f(main+i, (p-1)-i)
 
- and from the prior round, but one position back:
+	and from the prior round, but one position back:
 
-   prior[i-1] = f(main+(i-1), (p-2)-(i-1))
+	  prior[i-1] = f(main+(i-1), (p-2)-(i-1))
 
 In the current round, one iteration earlier:
 
-   current[i+1] = f(main+(i+1), p-(i+1))
+	current[i+1] = f(main+(i+1), p-(i+1))
 
 Note that the distance in all of these evaluates to p-i-1,
 and the diagonals are (main+i) and its neighbors... just
@@ -167,8 +166,8 @@ where a real value of f(k,p) is undefined.  [The original Berghel-Roach
 algorithm prefills its F matrix with these values, but we fill
 them as we go, as needed.]  We define
 
-   f(-p-1,p) = p, so that we start diagonal -p with row p,
-   f(p+1,p) = -1, so that we start diagonal p with row 0.
+	f(-p-1,p) = p, so that we start diagonal -p with row p,
+	f(p+1,p) = -1, so that we start diagonal p with row 0.
 
 (We also allow f(p+2,p)=f(-p-2,p)=-1, causing those values to
 have no effect in the starting row computation.]

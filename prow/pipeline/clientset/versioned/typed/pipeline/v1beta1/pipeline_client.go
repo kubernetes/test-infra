@@ -27,6 +27,7 @@ import (
 type TektonV1beta1Interface interface {
 	RESTClient() rest.Interface
 	ClusterTasksGetter
+	CustomRunsGetter
 	PipelinesGetter
 	PipelineRunsGetter
 	TasksGetter
@@ -40,6 +41,10 @@ type TektonV1beta1Client struct {
 
 func (c *TektonV1beta1Client) ClusterTasks() ClusterTaskInterface {
 	return newClusterTasks(c)
+}
+
+func (c *TektonV1beta1Client) CustomRuns(namespace string) CustomRunInterface {
+	return newCustomRuns(c, namespace)
 }
 
 func (c *TektonV1beta1Client) Pipelines(namespace string) PipelineInterface {

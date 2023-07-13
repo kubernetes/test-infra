@@ -1305,7 +1305,7 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 		c: config.Config{
 			ProwConfig: config.ProwConfig{
 				Deck: config.Deck{
-					AllKnownStorageBuckets: sets.NewString("job", "kubernetes-jenkins", "multi-container-one-log"),
+					AllKnownStorageBuckets: sets.New[string]("job", "kubernetes-jenkins", "multi-container-one-log"),
 				},
 				Plank: config.Plank{
 					JobURLPrefixConfig: map[string]string{"*": "https://gubernator.example.com/build/"},
@@ -1594,7 +1594,7 @@ func TestExtraLinks(t *testing.T) {
 				c: config.Config{
 					ProwConfig: config.ProwConfig{
 						Deck: config.Deck{
-							AllKnownStorageBuckets: sets.NewString("test-bucket"),
+							AllKnownStorageBuckets: sets.New[string]("test-bucket"),
 						},
 					},
 				},

@@ -38,7 +38,7 @@ import (
 )
 
 // NewController constructs a new controller to reconcile stauses on config change
-func NewController(continueOnError bool, addedPresubmitDenylist sets.String, addedPresubmitDenylistAll sets.String, opener io.Opener, configOpts configflagutil.ConfigOptions, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
+func NewController(continueOnError bool, addedPresubmitDenylist, addedPresubmitDenylistAll sets.Set[string], opener io.Opener, configOpts configflagutil.ConfigOptions, statusURI string, prowJobClient prowv1.ProwJobInterface, githubClient github.Client, pluginAgent *plugins.ConfigAgent) *Controller {
 	sc := &statusController{
 		logger:     logrus.WithField("client", "statusController"),
 		opener:     opener,
@@ -147,8 +147,8 @@ func (c *githubTrustedChecker) trustedPullRequest(author, org, repo string, num 
 // Controller reconciles statuses on PRs when config changes impact blocking presubmits
 type Controller struct {
 	continueOnError           bool
-	addedPresubmitDenylist    sets.String
-	addedPresubmitDenylistAll sets.String
+	addedPresubmitDenylist    sets.Set[string]
+	addedPresubmitDenylistAll sets.Set[string]
 	prowJobTriggerer          prowJobTriggerer
 	githubClient              githubClient
 	statusMigrator            statusMigrator

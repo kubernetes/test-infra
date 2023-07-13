@@ -199,8 +199,8 @@ func main() {
 	})
 }
 
-//get or creates the necessary ca secret files and returns the ca-cert file name, priv-key file name and tempDir name
-//for use by the http listenAndServe
+// get or creates the necessary ca secret files and returns the ca-cert file name, priv-key file name and tempDir name
+// for use by the http listenAndServe
 func handleSecrets(client ClientInterface, ctx context.Context, clientoptions clientOptions, cl ctrlruntimeclient.Client) (string, string, error) {
 	var cert string
 	var privKey string

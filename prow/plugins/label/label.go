@@ -174,7 +174,7 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 		issueLabels[i] = l.Name
 	}
 
-	RepoLabelsExisting := sets.String{}
+	RepoLabelsExisting := sets.Set[string]{}
 	for _, l := range repoLabels {
 		RepoLabelsExisting.Insert(strings.ToLower(l.Name))
 	}
@@ -187,7 +187,7 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 		nonMemberTriageAccepted bool
 	)
 
-	additionalLabelSet := sets.String{}
+	additionalLabelSet := sets.Set[string]{}
 	for _, label := range config.AdditionalLabels {
 		additionalLabelSet.Insert(strings.ToLower(label))
 	}
@@ -286,7 +286,7 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 
 	if len(nonexistent) > 0 {
 		log.Infof("Nonexistent labels: %v", nonexistent)
-		msg := fmt.Sprintf("The label(s) `%s` cannot be applied. These labels are supported: `%s`. Is this label configured under `labels -> additional_labels` or `labels -> restricted_labels` in `plugin.yaml`?", strings.Join(nonexistent, ", "), strings.Join(append(config.AdditionalLabels, sets.StringKeySet(restrictedLabels).List()...), ", "))
+		msg := fmt.Sprintf("The label(s) `%s` cannot be applied. These labels are supported: `%s`. Is this label configured under `labels -> additional_labels` or `labels -> restricted_labels` in `plugin.yaml`?", strings.Join(nonexistent, ", "), strings.Join(append(config.AdditionalLabels, sets.List(sets.KeySet[string](restrictedLabels))...), ", "))
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
@@ -359,8 +359,8 @@ func handleLabelAdd(gc githubClient, log *logrus.Entry, config plugins.Label, e 
 	return nil
 }
 
-func labelsWithCategory(labels []string, category string) sets.String {
-	categorized := sets.String{}
+func labelsWithCategory(labels []string, category string) sets.Set[string] {
+	categorized := sets.Set[string]{}
 	prefix := category + "/"
 	for _, s := range labels {
 		if strings.HasPrefix(s, prefix) {

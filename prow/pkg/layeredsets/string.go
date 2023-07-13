@@ -23,8 +23,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-// String is a layered set implemented as a slice of sets.String.
-type String []sets.String
+// String is a layered set implemented as a slice of sets.Set[string].
+type String []sets.Set[string]
 
 // NewString creates a String from a list of values.
 func NewString(items ...string) String {
@@ -45,7 +45,7 @@ func NewStringFromSlices(items ...[]string) String {
 // Insert adds items to the set.
 func (s *String) Insert(layerID int, items ...string) {
 	for len(*s) < layerID+1 {
-		*s = append(*s, sets.NewString())
+		*s = append(*s, sets.New[string]())
 	}
 	for _, item := range items {
 		if !s.Has(item) {
@@ -72,10 +72,10 @@ func (s String) Has(item string) bool {
 }
 
 // Difference returns a set of objects that are not in s2
-func (s String) Difference(s2 sets.String) String {
+func (s String) Difference(s2 sets.Set[string]) String {
 	result := NewString()
 	for layerID, layer := range s {
-		for _, key := range layer.List() {
+		for _, key := range sets.List(layer) {
 			if !s2.Has(key) {
 				result.Insert(layerID, key)
 			}
@@ -88,10 +88,10 @@ func (s String) Difference(s2 sets.String) String {
 func (s String) Union(s2 String) String {
 	result := NewString()
 	for layerID, layer := range s {
-		result.Insert(layerID, layer.List()...)
+		result.Insert(layerID, sets.List(layer)...)
 	}
 	for layerID, layer := range s2 {
-		result.Insert(layerID, layer.List()...)
+		result.Insert(layerID, sets.List(layer)...)
 	}
 	return result
 }
@@ -100,7 +100,7 @@ func (s String) Union(s2 String) String {
 func (s String) PopRandom() string {
 	for _, layer := range s {
 		if layer.Len() > 0 {
-			list := layer.List()
+			list := sets.List(layer)
 			sort.Strings(list)
 			sel := list[rand.Intn(len(list))]
 			s.Delete(sel)
@@ -127,7 +127,7 @@ func (s String) Equal(s2 String) bool {
 func (s String) List() []string {
 	var res []string
 	for _, layer := range s {
-		res = append(res, layer.List()...)
+		res = append(res, sets.List(layer)...)
 	}
 	return res
 }
@@ -141,9 +141,9 @@ func (s String) UnsortedList() []string {
 	return res
 }
 
-// Set converts the multiset into a regular sets.String for compatibility.
-func (s String) Set() sets.String {
-	ss := sets.String{}
+// Set converts the multiset into a regular sets.Set[string] for compatibility.
+func (s String) Set() sets.Set[string] {
+	ss := sets.Set[string]{}
 	return ss.Insert(s.List()...)
 }
 

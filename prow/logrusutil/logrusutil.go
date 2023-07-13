@@ -107,9 +107,9 @@ func (f CensoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 // NewCensoringFormatter generates a `CensoringFormatter` with
 // a formatter as delegate and a set of strings to censor
-func NewCensoringFormatter(f logrus.Formatter, getSecrets func() sets.String) CensoringFormatter {
+func NewCensoringFormatter(f logrus.Formatter, getSecrets func() sets.Set[string]) CensoringFormatter {
 	censorer := secretutil.NewCensorer()
-	censorer.Refresh(getSecrets().List()...)
+	censorer.Refresh(sets.List(getSecrets())...)
 	return NewFormatterWithCensor(f, censorer)
 }
 

@@ -30,9 +30,9 @@ type Fake struct {
 	EndpointString   string
 	Bugs             map[int]Bug
 	BugComments      map[int][]Comment
-	BugErrors        sets.Int
+	BugErrors        sets.Set[int]
 	BugErrorMessages map[int]string
-	BugCreateErrors  sets.String
+	BugCreateErrors  sets.Set[string]
 	ExternalBugs     map[int][]ExternalBug
 	SubComponents    map[int]map[string][]string
 	SearchedBugs     []*Bug
@@ -97,7 +97,7 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 		if len(update.DependsOn.Set) > 0 {
 			bug.DependsOn = update.DependsOn.Set
 		} else {
-			bug.DependsOn = sets.NewInt(bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...).List()
+			bug.DependsOn = sets.List(sets.New[int](bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...))
 		}
 		for _, blockerID := range bug.DependsOn {
 			blockerBug := c.Bugs[blockerID]
@@ -109,7 +109,7 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 		if len(update.Blocks.Set) > 0 {
 			bug.Blocks = update.Blocks.Set
 		} else {
-			bug.Blocks = sets.NewInt(bug.Blocks...).Insert(update.Blocks.Add...).Delete(update.Blocks.Remove...).List()
+			bug.Blocks = sets.List(sets.New[int](bug.Blocks...).Insert(update.Blocks.Add...).Delete(update.Blocks.Remove...))
 		}
 		for _, blockerID := range bug.Blocks {
 			blockerBug := c.Bugs[blockerID]

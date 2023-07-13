@@ -49,9 +49,9 @@ func (s *Strings) Strings() []string {
 	return s.vals
 }
 
-// StringSet returns a sets.String  of strings set for this value instance.
-func (s *Strings) StringSet() sets.String {
-	return sets.NewString(s.Strings()...)
+// StringSet returns a sets.Set[string]  of strings set for this value instance.
+func (s *Strings) StringSet() sets.Set[string] {
+	return sets.New[string](s.Strings()...)
 }
 
 // String returns a concatenated string of all the values joined by commas.

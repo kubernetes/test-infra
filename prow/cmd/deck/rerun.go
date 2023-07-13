@@ -42,7 +42,7 @@ import (
 var (
 	// Stores the annotations and labels that are generated
 	// and specified within components.
-	ComponentSpecifiedAnnotationsAndLabels = sets.NewString(
+	ComponentSpecifiedAnnotationsAndLabels = sets.New[string](
 		// Labels
 		kube.GerritRevision,
 		kube.GerritPatchset,

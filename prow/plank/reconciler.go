@@ -72,7 +72,7 @@ const (
 func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
-	knownClusters sets.String,
+	knownClusters sets.Set[string],
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -84,7 +84,7 @@ func Add(
 func add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
-	knownClusters sets.String,
+	knownClusters sets.Set[string],
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -205,7 +205,7 @@ const (
 	ClusterStatusNoManager   ClusterStatus = "No-Manager"
 )
 
-func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters sets.String) func(context.Context) error {
+func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters sets.Set[string]) func(context.Context) error {
 	return func(ctx context.Context) error {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -381,7 +381,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			if !ok {
 				return nil, fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
-			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+			if finalizers := sets.New[string](pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
 				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
 				oldPod := pod.DeepCopy()
 				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
@@ -401,7 +401,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 			return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 		}
 
-		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+		if finalizers := sets.New[string](pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
 			// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
 			oldPod := pod.DeepCopy()
 			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
@@ -423,7 +423,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 				return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 
-			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
+			if finalizers := sets.New[string](pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
 				// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
 				oldPod := pod.DeepCopy()
 				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()

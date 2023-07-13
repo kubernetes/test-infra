@@ -1180,7 +1180,7 @@ func TestProwJobToPod_setsTerminationGracePeriodSeconds(t *testing.T) {
 			name: "Existing GracePeriodSeconds is not overwritten",
 			prowjob: &prowapi.ProwJob{
 				Spec: prowapi.ProwJobSpec{
-					PodSpec: &coreapi.PodSpec{TerminationGracePeriodSeconds: utilpointer.Int64Ptr(60), Containers: []coreapi.Container{{}}},
+					PodSpec: &coreapi.PodSpec{TerminationGracePeriodSeconds: utilpointer.Int64(60), Containers: []coreapi.Container{{}}},
 					DecorationConfig: &prowapi.DecorationConfig{
 						UtilityImages: &prowapi.UtilityImages{},
 						Timeout:       &prowapi.Duration{Duration: 10 * time.Second},
@@ -1383,7 +1383,7 @@ func TestDecorate(t *testing.T) {
 						},
 						GCSCredentialsSecret:        &gCSCredentialsSecret,
 						DefaultServiceAccountName:   &defaultServiceAccountName,
-						SetLimitEqualsMemoryRequest: utilpointer.BoolPtr(true),
+						SetLimitEqualsMemoryRequest: utilpointer.Bool(true),
 					},
 					Refs: &prowapi.Refs{
 						Org: "org", Repo: "repo", BaseRef: "main", BaseSHA: "abcd1234",
@@ -1444,7 +1444,7 @@ func TestDecorate(t *testing.T) {
 						},
 						GCSCredentialsSecret:        &gCSCredentialsSecret,
 						DefaultServiceAccountName:   &defaultServiceAccountName,
-						SetLimitEqualsMemoryRequest: utilpointer.BoolPtr(true),
+						SetLimitEqualsMemoryRequest: utilpointer.Bool(true),
 						DefaultMemoryRequest:        resourcePtr("4Gi"),
 					},
 					Refs: &prowapi.Refs{

@@ -230,8 +230,8 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				t.Fatalf("assembleTargets() error = %v, wantErr %v", err, testCase.wantErr)
 			}
 
-			want := sets.NewString(testCase.expected...)
-			got := sets.NewString()
+			want := sets.New[string](testCase.expected...)
+			got := sets.New[string]()
 			for uploadPath := range targets {
 				got.Insert(uploadPath)
 			}
@@ -239,8 +239,8 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				t.Errorf("assembleTargets() got unexpected target diff (-want +got):\n%s", diff)
 			}
 
-			want = sets.NewString(testCase.wantExtra...)
-			got = sets.NewString()
+			want = sets.New[string](testCase.wantExtra...)
+			got = sets.New[string]()
 			for et := range extraTargets {
 				got.Insert(et)
 			}

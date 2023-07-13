@@ -208,8 +208,8 @@ func parsePullURL(u *url.URL) (org, repo string, pr int, err error) {
 }
 
 // getStorageDirsForPR returns a map from bucket names -> set of "directories" containing presubmit data
-func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient git.ClientFactory, org, repo, cloneURI string, prNumber int) (map[string]sets.String, error) {
-	toSearch := make(map[string]sets.String)
+func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitClient git.ClientFactory, org, repo, cloneURI string, prNumber int) (map[string]sets.Set[string], error) {
+	toSearch := make(map[string]sets.Set[string])
 	fullRepo := org + "/" + repo
 
 	if c.InRepoConfigEnabled(fullRepo) && gitHubClient == nil {
@@ -257,7 +257,7 @@ func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitCli
 			bucketName = "gs://" + bucketName
 		}
 		if _, ok := toSearch[bucketName]; !ok {
-			toSearch[bucketName] = sets.String{}
+			toSearch[bucketName] = sets.Set[string]{}
 		}
 		toSearch[bucketName].Insert(gcsPath)
 	}

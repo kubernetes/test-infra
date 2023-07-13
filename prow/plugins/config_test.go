@@ -1452,7 +1452,7 @@ func TestConfigUpdaterResolve(t *testing.T) {
 				Maps: map[string]ConfigMapSpec{"map": {
 					Name:          "name",
 					Key:           "key",
-					GZIP:          utilpointer.BoolPtr(true),
+					GZIP:          utilpointer.Bool(true),
 					ClusterGroups: []string{"some-group", "another-group"}},
 				},
 			},
@@ -1460,7 +1460,7 @@ func TestConfigUpdaterResolve(t *testing.T) {
 				Maps: map[string]ConfigMapSpec{"map": {
 					Name: "name",
 					Key:  "key",
-					GZIP: utilpointer.BoolPtr(true),
+					GZIP: utilpointer.Bool(true),
 					Clusters: map[string][]string{
 						"cluster-a": {"namespace-a"},
 						"cluster-b": {"namespace-b"},
@@ -1516,25 +1516,25 @@ orgA/repoB:
 		name              string
 		wantOrgs          []string
 		wantRepos         []string
-		wantExcludedRepos map[string]sets.String
+		wantExcludedRepos map[string]sets.Set[string]
 	}{
 		{
 			name:              "pluginCommon",
 			wantOrgs:          []string{"orgA"},
 			wantRepos:         []string{"orgA/repoB"},
-			wantExcludedRepos: map[string]sets.String{"orgA": {}},
+			wantExcludedRepos: map[string]sets.Set[string]{"orgA": {}},
 		},
 		{
 			name:              "pluginNotForRepoB",
 			wantOrgs:          []string{"orgA"},
 			wantRepos:         nil,
-			wantExcludedRepos: map[string]sets.String{"orgA": {"orgA/repoB": {}}},
+			wantExcludedRepos: map[string]sets.Set[string]{"orgA": {"orgA/repoB": {}}},
 		},
 		{
 			name:              "pluginOnlyForRepoB",
 			wantOrgs:          nil,
 			wantRepos:         []string{"orgA/repoB"},
-			wantExcludedRepos: map[string]sets.String{},
+			wantExcludedRepos: map[string]sets.Set[string]{},
 		},
 	}
 	for _, tc := range testCases {
@@ -2043,11 +2043,11 @@ func TestHasConfigFor(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name            string
-		resultGenerator func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String)
+		resultGenerator func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string])
 	}{
 		{
 			name: "Any non-empty config with empty Plugins and Bugzilla is considered to be global",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				fuzzedConfig.Plugins = nil
 				fuzzedConfig.Bugzilla = Bugzilla{}
 				fuzzedConfig.Approve = nil
@@ -2061,10 +2061,10 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config with plugins is considered to be for the orgs and repos references there",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				// exclude non-plugins configs to test plugins specifically
 				fuzzedConfig = &Configuration{Plugins: fuzzedConfig.Plugins}
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 				for orgOrRepo := range fuzzedConfig.Plugins {
 					if strings.Contains(orgOrRepo, "/") {
 						expectRepos.Insert(orgOrRepo)
@@ -2077,10 +2077,10 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config with bugzilla is considered to be for the orgs and repos references there",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				// exclude non-plugins configs to test bugzilla specifically
 				fuzzedConfig = &Configuration{Bugzilla: fuzzedConfig.Bugzilla}
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 				for org, orgConfig := range fuzzedConfig.Bugzilla.Orgs {
 					if orgConfig.Default != nil {
 						expectOrgs.Insert(org)
@@ -2094,9 +2094,9 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config with approve is considered to be for the orgs and repos references there",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				fuzzedConfig = &Configuration{Approve: fuzzedConfig.Approve}
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 
 				for _, approveConfig := range fuzzedConfig.Approve {
 					for _, orgOrRepo := range approveConfig.Repos {
@@ -2113,9 +2113,9 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config with lgtm is considered to be for the orgs and repos references there",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				fuzzedConfig = &Configuration{Lgtm: fuzzedConfig.Lgtm}
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 
 				for _, lgtm := range fuzzedConfig.Lgtm {
 					for _, orgOrRepo := range lgtm.Repos {
@@ -2132,9 +2132,9 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config with triggers is considered to be for the orgs and repos references there",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				fuzzedConfig = &Configuration{Triggers: fuzzedConfig.Triggers}
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 
 				for _, trigger := range fuzzedConfig.Triggers {
 					for _, orgOrRepo := range trigger.Repos {
@@ -2151,9 +2151,9 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config with welcome is considered to be for the orgs and repos references there",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				fuzzedConfig = &Configuration{Welcome: fuzzedConfig.Welcome}
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 
 				for _, welcome := range fuzzedConfig.Welcome {
 					for _, orgOrRepo := range welcome.Repos {
@@ -2170,9 +2170,9 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config with external-plugins is considered to be for the orgs and repos references there",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				fuzzedConfig = &Configuration{ExternalPlugins: fuzzedConfig.ExternalPlugins}
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 
 				for orgOrRepo := range fuzzedConfig.ExternalPlugins {
 					if strings.Contains(orgOrRepo, "/") {
@@ -2186,13 +2186,13 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config with label.restricted_labels is considered to be for the org and repos references there",
-			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.Set[string], expectRepos sets.Set[string]) {
 				fuzzedConfig = &Configuration{Label: fuzzedConfig.Label}
 				if len(fuzzedConfig.Label.AdditionalLabels) > 0 {
 					expectGlobal = true
 				}
 
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 
 				for orgOrRepo := range fuzzedConfig.Label.RestrictedLabels {
 					if orgOrRepo == "*" {

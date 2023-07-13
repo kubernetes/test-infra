@@ -37,7 +37,7 @@ type lister interface {
 	List(selector labels.Selector) ([]*prowapi.ProwJob, error)
 }
 
-//https://godoc.org/github.com/prometheus/client_golang/prometheus#Collector
+// https://godoc.org/github.com/prometheus/client_golang/prometheus#Collector
 type prowJobCollector struct {
 	lister lister
 }
@@ -112,7 +112,7 @@ func getLatest(jobs []*prowapi.ProwJob) map[string]*prowapi.ProwJob {
 }
 
 var (
-	labelKeyDenylist = sets.NewString(
+	labelKeyDenylist = sets.New[string](
 		kube.CreatedByProw,
 		kube.ProwJobTypeLabel,
 		kube.ProwJobIDLabel,

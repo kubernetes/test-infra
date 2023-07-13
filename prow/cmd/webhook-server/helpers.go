@@ -51,7 +51,7 @@ const (
 	validatePath                 = "/validate"
 )
 
-//for unit testing purposes
+// for unit testing purposes
 var genCertFunc = genCert
 
 func genCert(expiry int, dnsNames []string) (string, string, string, error) {

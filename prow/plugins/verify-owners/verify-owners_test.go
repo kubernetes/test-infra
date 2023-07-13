@@ -211,23 +211,23 @@ func (froc fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoown
 type fakeOwnersClient struct {
 	owners            map[string]string
 	approvers         map[string]layeredsets.String
-	leafApprovers     map[string]sets.String
+	leafApprovers     map[string]sets.Set[string]
 	reviewers         map[string]layeredsets.String
-	requiredReviewers map[string]sets.String
-	leafReviewers     map[string]sets.String
+	requiredReviewers map[string]sets.Set[string]
+	leafReviewers     map[string]sets.Set[string]
 	dirIgnorelist     []*regexp.Regexp
 }
 
-func (foc *fakeOwnersClient) AllApprovers() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllApprovers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (foc *fakeOwnersClient) AllOwners() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllOwners() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
-func (foc *fakeOwnersClient) AllReviewers() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) AllReviewers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
@@ -238,7 +238,7 @@ func (foc *fakeOwnersClient) Approvers(path string) layeredsets.String {
 	return foc.approvers[path]
 }
 
-func (foc *fakeOwnersClient) LeafApprovers(path string) sets.String {
+func (foc *fakeOwnersClient) LeafApprovers(path string) sets.Set[string] {
 	return foc.leafApprovers[path]
 }
 
@@ -250,11 +250,11 @@ func (foc *fakeOwnersClient) Reviewers(path string) layeredsets.String {
 	return foc.reviewers[path]
 }
 
-func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
+func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.Set[string] {
 	return foc.requiredReviewers[path]
 }
 
-func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
+func (foc *fakeOwnersClient) LeafReviewers(path string) sets.Set[string] {
 	return foc.leafReviewers[path]
 }
 
@@ -262,8 +262,8 @@ func (foc *fakeOwnersClient) FindReviewersOwnersForFile(path string) string {
 	return foc.owners[path]
 }
 
-func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) FindLabelsForFile(path string) sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
@@ -308,8 +308,8 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 	return *full, err
 }
 
-func (foc *fakeOwnersClient) TopLevelApprovers() sets.String {
-	return sets.String{}
+func (foc *fakeOwnersClient) TopLevelApprovers() sets.Set[string] {
+	return sets.Set[string]{}
 }
 
 func makeFakeRepoOwnersClient() fakeRepoownersClient {

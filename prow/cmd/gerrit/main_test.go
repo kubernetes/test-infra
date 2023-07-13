@@ -32,7 +32,7 @@ func TestFlags(t *testing.T) {
 	cases := []struct {
 		name     string
 		args     map[string]string
-		del      sets.String
+		del      sets.Set[string]
 		expected func(*options)
 		err      bool
 	}{
@@ -59,7 +59,7 @@ func TestFlags(t *testing.T) {
 		},
 		{
 			name:     "dry run defaults to false",
-			del:      sets.NewString("--dry-run"),
+			del:      sets.New[string]("--dry-run"),
 			expected: func(o *options) {},
 		},
 		{

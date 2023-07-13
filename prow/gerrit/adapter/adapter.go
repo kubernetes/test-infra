@@ -113,7 +113,7 @@ type Controller struct {
 	prowJobClient               prowJobClient
 	gc                          gerritClient
 	tracker                     LastSyncTracker
-	projectsOptOutHelp          map[string]sets.String
+	projectsOptOutHelp          map[string]sets.Set[string]
 	lock                        sync.RWMutex
 	cookieFilePath              string
 	configAgent                 *config.Agent
@@ -134,7 +134,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 	ca *config.Agent, cookiefilePath, tokenPathOverride, lastSyncFallback string, workerPoolSize int, inRepoConfigCache *config.InRepoConfigCache) *Controller {
 
 	cfg := ca.Config
-	projectsOptOutHelpMap := map[string]sets.String{}
+	projectsOptOutHelpMap := map[string]sets.Set[string]{}
 	if cfg().Gerrit.OrgReposConfig != nil {
 		projectsOptOutHelpMap = cfg().Gerrit.OrgReposConfig.OptOutHelpRepos()
 	}
@@ -378,8 +378,8 @@ func LabelsAndAnnotations(instance string, jobLabels, jobAnnotations map[string]
 // Failing means the job is complete and not passing.
 // Scans messages for prow reports, which lists jobs and whether they passed.
 // Job is included in the set if the latest report has it failing.
-func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo) sets.String {
-	failures := sets.String{}
+func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo) sets.Set[string] {
+	failures := sets.Set[string]{}
 	times := map[string]time.Time{}
 	for _, message := range messages {
 		if message.Author.AccountID != account { // Ignore reports from other accounts
@@ -712,7 +712,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 // isProjectOptOutHelp returns if the project is opt-out from getting help
 // information about how to run presubmit tests on their changes.
-func isProjectOptOutHelp(projectsOptOutHelp map[string]sets.String, instance, project string) bool {
+func isProjectOptOutHelp(projectsOptOutHelp map[string]sets.Set[string], instance, project string) bool {
 	ps, ok := projectsOptOutHelp[instance]
 	if !ok {
 		return false

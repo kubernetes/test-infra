@@ -182,22 +182,23 @@ type GitHubClient interface {
 // FilterPresubmits determines which presubmits should run. We only want to
 // trigger jobs that should run, but the pool of jobs we filter to those that
 // should run depends on the type of trigger we just got:
-//  - if we get a /test foo, we only want to consider those jobs that match;
-//    jobs will default to run unless we can determine they shouldn't
-//  - if we got a /retest, we only want to consider those jobs that have
-//    already run and posted failing contexts to the PR or those jobs that
-//    have not yet run but would otherwise match /test all; jobs will default
-//    to run unless we can determine they shouldn't
-//  - if we got a /test all or an /ok-to-test, we want to consider any job
-//    that doesn't explicitly require a human trigger comment; jobs will
-//    default to not run unless we can determine that they should
+//   - if we get a /test foo, we only want to consider those jobs that match;
+//     jobs will default to run unless we can determine they shouldn't
+//   - if we got a /retest, we only want to consider those jobs that have
+//     already run and posted failing contexts to the PR or those jobs that
+//     have not yet run but would otherwise match /test all; jobs will default
+//     to run unless we can determine they shouldn't
+//   - if we got a /test all or an /ok-to-test, we want to consider any job
+//     that doesn't explicitly require a human trigger comment; jobs will
+//     default to not run unless we can determine that they should
+//
 // If a comment that we get matches more than one of the above patterns, we
 // consider the set of matching presubmits the union of the results from the
 // matching cases.
 func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string, pr *github.PullRequest, presubmits []config.Presubmit, logger *logrus.Entry) ([]config.Presubmit, error) {
 	org, repo, sha := pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.SHA
 
-	contextGetter := func() (sets.String, sets.String, error) {
+	contextGetter := func() (sets.Set[string], sets.Set[string], error) {
 		combinedStatus, err := gitHubClient.GetCombinedStatus(org, repo, sha)
 		if err != nil {
 			return nil, nil, err
@@ -216,9 +217,9 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 	return pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 }
 
-func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.String) {
-	allContexts := sets.String{}
-	failedContexts := sets.String{}
+func getContexts(combinedStatus *github.CombinedStatus) (sets.Set[string], sets.Set[string]) {
+	allContexts := sets.Set[string]{}
+	failedContexts := sets.Set[string]{}
 	if combinedStatus != nil {
 		for _, status := range combinedStatus.Statuses {
 			allContexts.Insert(status.Context)

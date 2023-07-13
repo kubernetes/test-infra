@@ -68,8 +68,8 @@ func Labels() []string {
 }
 
 // VolumeMounts returns a string set with *MountName consts in it.
-func VolumeMounts(dc *prowapi.DecorationConfig) sets.String {
-	ret := sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+func VolumeMounts(dc *prowapi.DecorationConfig) sets.Set[string] {
+	ret := sets.New[string](logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
 	if dc == nil {
 		return ret
 	}
@@ -84,18 +84,18 @@ func VolumeMounts(dc *prowapi.DecorationConfig) sets.String {
 }
 
 // VolumeMountsOnTestContainer returns a string set with *MountName consts in it which are applied to the test container.
-func VolumeMountsOnTestContainer() sets.String {
-	return sets.NewString(logMountName, codeMountName, toolsMountName)
+func VolumeMountsOnTestContainer() sets.Set[string] {
+	return sets.New[string](logMountName, codeMountName, toolsMountName)
 }
 
 // VolumeMountPathsOnTestContainer returns a string set with *MountPath consts in it which are applied to the test container.
-func VolumeMountPathsOnTestContainer() sets.String {
-	return sets.NewString(logMountPath, codeMountPath, toolsMountPath)
+func VolumeMountPathsOnTestContainer() sets.Set[string] {
+	return sets.New[string](logMountPath, codeMountPath, toolsMountPath)
 }
 
 // PodUtilsContainerNames returns a string set with pod utility container name consts in it.
-func PodUtilsContainerNames() sets.String {
-	return sets.NewString(cloneRefsName, initUploadName, entrypointName, sidecarName)
+func PodUtilsContainerNames() sets.Set[string] {
+	return sets.New[string](cloneRefsName, initUploadName, entrypointName, sidecarName)
 }
 
 // LabelsAndAnnotationsForSpec returns a minimal set of labels to add to prowjobs or its owned resources.
@@ -757,7 +757,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		spec.Containers[i].Env = append(container.Env, KubeEnv(rawEnv)...)
 	}
 
-	secretVolumes := sets.NewString()
+	secretVolumes := sets.New[string]()
 	for _, volume := range spec.Volumes {
 		if volume.VolumeSource.Secret != nil {
 			secretVolumes.Insert(volume.Name)

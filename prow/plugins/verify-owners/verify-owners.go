@@ -420,10 +420,10 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 		labels = simple.Config.Labels
 	}
 	// Check labels against ban list
-	if sets.NewString(labels...).HasAny(bannedLabels...) {
+	if sets.New[string](labels...).HasAny(bannedLabels...) {
 		return &messageWithLine{
 			lineNumber,
-			fmt.Sprintf("File contains banned labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(bannedLabels...)).List()),
+			fmt.Sprintf("File contains banned labels: %s.", sets.List(sets.New[string](labels...).Intersection(sets.New[string](bannedLabels...)))),
 		}, nil
 	}
 	// Check approvers isn't empty
@@ -451,11 +451,11 @@ func markdownFriendlyComment(org, joinOrgURL string, nonTrustedUsers map[string]
 	return strings.Join(commentLines, "\n")
 }
 
-func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, dir, patch string, ownerAliasesModified, skipTrustedUserCheck bool, filenames ownersconfig.Filenames) (map[string]nonTrustedReasons, sets.String, repoowners.RepoAliases, error) {
+func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, dir, patch string, ownerAliasesModified, skipTrustedUserCheck bool, filenames ownersconfig.Filenames) (map[string]nonTrustedReasons, sets.Set[string], repoowners.RepoAliases, error) {
 	repoAliases := make(repoowners.RepoAliases)
 	// nonTrustedUsers is a map of non-trusted users to the reasons they were not trusted
 	nonTrustedUsers := map[string]nonTrustedReasons{}
-	trustedUsers := sets.String{}
+	trustedUsers := sets.Set[string]{}
 	var err error
 
 	// If OWNERS_ALIASES exists, get all aliases.
@@ -473,7 +473,7 @@ func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, trigger
 
 	// If OWNERS_ALIASES file was modified, check if newly added owners are trusted.
 	if ownerAliasesModified && !skipTrustedUserCheck {
-		allOwners := repoAliases.ExpandAllAliases().List()
+		allOwners := sets.List(repoAliases.ExpandAllAliases())
 		for _, owner := range allOwners {
 			nonTrustedUsers, err = checkIfTrustedUser(ghc, log, triggerConfig, owner, patch, filenames.OwnersAliases, org, repo, nonTrustedUsers, trustedUsers, repoAliases)
 			if err != nil {
@@ -485,7 +485,7 @@ func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, trigger
 	return nonTrustedUsers, trustedUsers, repoAliases, nil
 }
 
-func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, patch, fileName string, owners []string, nonTrustedUsers map[string]nonTrustedReasons, trustedUsers sets.String, repoAliases repoowners.RepoAliases) (map[string]nonTrustedReasons, error) {
+func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, org, repo, patch, fileName string, owners []string, nonTrustedUsers map[string]nonTrustedReasons, trustedUsers sets.Set[string], repoAliases repoowners.RepoAliases) (map[string]nonTrustedReasons, error) {
 	var err error
 	for _, owner := range owners {
 		// ignore if owner is an alias
@@ -504,7 +504,7 @@ func nonTrustedUsersInOwners(ghc githubClient, log *logrus.Entry, triggerConfig 
 // checkIfTrustedUser looks for newly addded owners by checking if they are in the patch
 // and then checks if the owner is a trusted user.
 // returns a map from user to reasons for not being trusted
-func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, owner, patch, fileName, org, repo string, nonTrustedUsers map[string]nonTrustedReasons, trustedUsers sets.String, repoAliases repoowners.RepoAliases) (map[string]nonTrustedReasons, error) {
+func checkIfTrustedUser(ghc githubClient, log *logrus.Entry, triggerConfig plugins.Trigger, owner, patch, fileName, org, repo string, nonTrustedUsers map[string]nonTrustedReasons, trustedUsers sets.Set[string], repoAliases repoowners.RepoAliases) (map[string]nonTrustedReasons, error) {
 	// cap the number of checks to avoid exhausting tokens in case of large OWNERS refactors.
 	if len(nonTrustedUsers)+trustedUsers.Len() > 50 {
 		return nonTrustedUsers, nil

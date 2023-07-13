@@ -723,7 +723,7 @@ func TestFilter(t *testing.T) {
 			hiddenOnly: test.hiddenOnly,
 			showHidden: test.showHidden,
 			log:        logrus.WithField("agent", "tide"),
-			tenantIDs:  sets.NewString(test.tenantIDs...),
+			tenantIDs:  sets.New[string](test.tenantIDs...),
 			cfg:        func() *config.Config { return &test.cfg },
 		}
 

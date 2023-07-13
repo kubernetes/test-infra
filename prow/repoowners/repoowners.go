@@ -236,27 +236,27 @@ func NewClient(
 }
 
 // RepoAliases defines groups of people to be used in OWNERS files
-type RepoAliases map[string]sets.String
+type RepoAliases map[string]sets.Set[string]
 
 // RepoOwner is an interface to work with repoowners
 type RepoOwner interface {
 	FindApproverOwnersForFile(path string) string
 	FindReviewersOwnersForFile(path string) string
-	FindLabelsForFile(path string) sets.String
+	FindLabelsForFile(path string) sets.Set[string]
 	IsNoParentOwners(path string) bool
 	IsAutoApproveUnownedSubfolders(directory string) bool
-	LeafApprovers(path string) sets.String
+	LeafApprovers(path string) sets.Set[string]
 	Approvers(path string) layeredsets.String
-	LeafReviewers(path string) sets.String
+	LeafReviewers(path string) sets.Set[string]
 	Reviewers(path string) layeredsets.String
-	RequiredReviewers(path string) sets.String
+	RequiredReviewers(path string) sets.Set[string]
 	ParseSimpleConfig(path string) (SimpleConfig, error)
 	ParseFullConfig(path string) (FullConfig, error)
-	TopLevelApprovers() sets.String
+	TopLevelApprovers() sets.Set[string]
 	Filenames() ownersconfig.Filenames
-	AllOwners() sets.String
-	AllApprovers() sets.String
-	AllReviewers() sets.String
+	AllOwners() sets.Set[string]
+	AllApprovers() sets.Set[string]
+	AllReviewers() sets.Set[string]
 }
 
 var _ RepoOwner = &RepoOwners{}
@@ -265,10 +265,10 @@ var _ RepoOwner = &RepoOwners{}
 type RepoOwners struct {
 	RepoAliases
 
-	approvers         map[string]map[*regexp.Regexp]sets.String
-	reviewers         map[string]map[*regexp.Regexp]sets.String
-	requiredReviewers map[string]map[*regexp.Regexp]sets.String
-	labels            map[string]map[*regexp.Regexp]sets.String
+	approvers         map[string]map[*regexp.Regexp]sets.Set[string]
+	reviewers         map[string]map[*regexp.Regexp]sets.Set[string]
+	requiredReviewers map[string]map[*regexp.Regexp]sets.Set[string]
+	labels            map[string]map[*regexp.Regexp]sets.Set[string]
 	options           map[string]dirOptions
 
 	baseDir      string
@@ -424,7 +424,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 }
 
 // ExpandAlias returns members of an alias
-func (a RepoAliases) ExpandAlias(alias string) sets.String {
+func (a RepoAliases) ExpandAlias(alias string) sets.Set[string] {
 	if a == nil {
 		return nil
 	}
@@ -432,13 +432,13 @@ func (a RepoAliases) ExpandAlias(alias string) sets.String {
 }
 
 // ExpandAliases returns members of multiple aliases, duplicates are pruned
-func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
+func (a RepoAliases) ExpandAliases(logins sets.Set[string]) sets.Set[string] {
 	if a == nil {
 		return logins
 	}
 	// Make logins a copy of the original set to avoid modifying the original.
 	logins = logins.Union(nil)
-	for _, login := range logins.List() {
+	for _, login := range sets.List(logins) {
 		if expanded, ok := a[github.NormLogin(login)]; ok {
 			logins.Delete(login)
 			logins = logins.Union(expanded)
@@ -448,12 +448,12 @@ func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 }
 
 // ExpandAllAliases returns members of all aliases mentioned, duplicates are pruned
-func (a RepoAliases) ExpandAllAliases() sets.String {
+func (a RepoAliases) ExpandAllAliases() sets.Set[string] {
 	if a == nil {
 		return nil
 	}
 
-	var result, users sets.String
+	var result, users sets.Set[string]
 	for alias := range a {
 		users = a.ExpandAlias(alias)
 		result = result.Union(users)
@@ -487,10 +487,10 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorel
 		filenames:    filenames,
 		log:          log,
 
-		approvers:         make(map[string]map[*regexp.Regexp]sets.String),
-		reviewers:         make(map[string]map[*regexp.Regexp]sets.String),
-		requiredReviewers: make(map[string]map[*regexp.Regexp]sets.String),
-		labels:            make(map[string]map[*regexp.Regexp]sets.String),
+		approvers:         make(map[string]map[*regexp.Regexp]sets.Set[string]),
+		reviewers:         make(map[string]map[*regexp.Regexp]sets.Set[string]),
+		requiredReviewers: make(map[string]map[*regexp.Regexp]sets.Set[string]),
+		labels:            make(map[string]map[*regexp.Regexp]sets.Set[string]),
 		options:           make(map[string]dirOptions),
 
 		dirDenylist: dirIgnorelist,
@@ -693,8 +693,8 @@ func decodeOwnersMdConfig(path string, config *SimpleConfig) error {
 }
 
 // NormLogins normalizes logins
-func NormLogins(logins []string) sets.String {
-	normed := sets.NewString()
+func NormLogins(logins []string) sets.Set[string] {
+	normed := sets.New[string]()
 	for _, login := range logins {
 		normed.Insert(github.NormLogin(login))
 	}
@@ -706,27 +706,27 @@ var defaultDirOptions = dirOptions{}
 func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *Config) {
 	if len(config.Approvers) > 0 {
 		if o.approvers[path] == nil {
-			o.approvers[path] = make(map[*regexp.Regexp]sets.String)
+			o.approvers[path] = make(map[*regexp.Regexp]sets.Set[string])
 		}
 		o.approvers[path][re] = o.ExpandAliases(NormLogins(config.Approvers))
 	}
 	if len(config.Reviewers) > 0 {
 		if o.reviewers[path] == nil {
-			o.reviewers[path] = make(map[*regexp.Regexp]sets.String)
+			o.reviewers[path] = make(map[*regexp.Regexp]sets.Set[string])
 		}
 		o.reviewers[path][re] = o.ExpandAliases(NormLogins(config.Reviewers))
 	}
 	if len(config.RequiredReviewers) > 0 {
 		if o.requiredReviewers[path] == nil {
-			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.String)
+			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.Set[string])
 		}
 		o.requiredReviewers[path][re] = o.ExpandAliases(NormLogins(config.RequiredReviewers))
 	}
 	if len(config.Labels) > 0 {
 		if o.labels[path] == nil {
-			o.labels[path] = make(map[*regexp.Regexp]sets.String)
+			o.labels[path] = make(map[*regexp.Regexp]sets.Set[string])
 		}
-		o.labels[path][re] = sets.NewString(config.Labels...)
+		o.labels[path][re] = sets.New[string](config.Labels...)
 	}
 }
 
@@ -737,15 +737,15 @@ func (o *RepoOwners) applyOptionsToPath(path string, opts dirOptions) {
 }
 
 func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
-	collabs := sets.NewString()
+	collabs := sets.New[string]()
 	for _, keeper := range toKeep {
 		collabs.Insert(github.NormLogin(keeper.Login))
 	}
 
-	filter := func(ownerMap map[string]map[*regexp.Regexp]sets.String) map[string]map[*regexp.Regexp]sets.String {
-		filtered := make(map[string]map[*regexp.Regexp]sets.String)
+	filter := func(ownerMap map[string]map[*regexp.Regexp]sets.Set[string]) map[string]map[*regexp.Regexp]sets.Set[string] {
+		filtered := make(map[string]map[*regexp.Regexp]sets.Set[string])
 		for path, reMap := range ownerMap {
-			filtered[path] = make(map[*regexp.Regexp]sets.String)
+			filtered[path] = make(map[*regexp.Regexp]sets.Set[string])
 			for re, unfiltered := range reMap {
 				filtered[path][re] = unfiltered.Intersection(collabs)
 			}
@@ -761,7 +761,7 @@ func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
 
 // findOwnersForFile returns the OWNERS file path furthest down the tree for a specified file
 // using ownerMap to check for entries
-func findOwnersForFile(log *logrus.Entry, path string, ownerMap map[string]map[*regexp.Regexp]sets.String) string {
+func findOwnersForFile(log *logrus.Entry, path string, ownerMap map[string]map[*regexp.Regexp]sets.Set[string]) string {
 	d := path
 
 	for ; d != baseDirConvention; d = canonicalize(filepath.Dir(d)) {
@@ -796,7 +796,7 @@ func (o *RepoOwners) FindReviewersOwnersForFile(path string) string {
 
 // FindLabelsForFile returns a set of labels which should be applied to PRs
 // modifying files under the given path.
-func (o *RepoOwners) FindLabelsForFile(path string) sets.String {
+func (o *RepoOwners) FindLabelsForFile(path string) sets.Set[string] {
 	return o.entriesForFile(path, o.labels, false).Set()
 }
 
@@ -814,7 +814,7 @@ func (o *RepoOwners) IsAutoApproveUnownedSubfolders(ownersFilePath string) bool 
 // and not directory as the final directory will be discounted if enableMDYAML is true
 // leafOnly indicates whether only the OWNERS deepest in the tree (closest to the file)
 // should be returned or if all OWNERS in filepath should be returned
-func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.Regexp]sets.String, leafOnly bool) layeredsets.String {
+func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.Regexp]sets.Set[string], leafOnly bool) layeredsets.String {
 	d := path
 	if !o.enableMDYAML || !strings.HasSuffix(path, ".md") {
 		d = canonicalize(d)
@@ -830,7 +830,7 @@ func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.R
 		}
 		for re, s := range people[d] {
 			if re == nil || re.MatchString(relative) {
-				out.Insert(layerID, s.List()...)
+				out.Insert(layerID, sets.List(s)...)
 			}
 		}
 		if leafOnly && out.Len() > 0 {
@@ -852,7 +852,7 @@ func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.R
 // LeafApprovers returns a set of users who are the closest approvers to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
-func (o *RepoOwners) LeafApprovers(path string) sets.String {
+func (o *RepoOwners) LeafApprovers(path string) sets.Set[string] {
 	return o.entriesForFile(path, o.approvers, true).Set()
 }
 
@@ -867,7 +867,7 @@ func (o *RepoOwners) Approvers(path string) layeredsets.String {
 // LeafReviewers returns a set of users who are the closest reviewers to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
-func (o *RepoOwners) LeafReviewers(path string) sets.String {
+func (o *RepoOwners) LeafReviewers(path string) sets.Set[string] {
 	return o.entriesForFile(path, o.reviewers, true).Set()
 }
 
@@ -883,11 +883,11 @@ func (o *RepoOwners) Reviewers(path string) layeredsets.String {
 // requested file (including required_reviewers in parent dirs' OWNERS).
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
-func (o *RepoOwners) RequiredReviewers(path string) sets.String {
+func (o *RepoOwners) RequiredReviewers(path string) sets.Set[string] {
 	return o.entriesForFile(path, o.requiredReviewers, false).Set()
 }
 
-func (o *RepoOwners) TopLevelApprovers() sets.String {
+func (o *RepoOwners) TopLevelApprovers() sets.Set[string] {
 	return o.entriesForFile(".", o.approvers, true).Set()
 }
 
@@ -896,8 +896,8 @@ func (o *RepoOwners) TopLevelApprovers() sets.String {
 // If pkg/OWNERS has user1 as approver and user2 as reviewer,
 // and pkg/util has user3 as approver and user4 as reviewer,
 // the function will return user1, user2, user3, and user4.
-func (o *RepoOwners) AllOwners() sets.String {
-	allOwners := sets.NewString()
+func (o *RepoOwners) AllOwners() sets.Set[string] {
+	allOwners := sets.New[string]()
 
 	allOwners = allOwners.Union(o.AllApprovers())
 	allOwners = allOwners.Union(o.AllReviewers())
@@ -910,8 +910,8 @@ func (o *RepoOwners) AllOwners() sets.String {
 // If pkg/OWNERS has user1 as approver and user2 as reviewer,
 // and pkg/util has user3 as approver and user4 as reviewer,
 // the function will return user1, and user3.
-func (o *RepoOwners) AllApprovers() sets.String {
-	allApprovers := sets.NewString()
+func (o *RepoOwners) AllApprovers() sets.Set[string] {
+	allApprovers := sets.New[string]()
 	for _, pv := range o.approvers {
 		for _, rv := range pv {
 			allApprovers = allApprovers.Union(rv)
@@ -926,8 +926,8 @@ func (o *RepoOwners) AllApprovers() sets.String {
 // If pkg/OWNERS has user1 as approver and user2 as reviewer,
 // and pkg/util has user3 as approver and user4 as reviewer,
 // the function will return user2, and user4.
-func (o *RepoOwners) AllReviewers() sets.String {
-	allReviewers := sets.NewString()
+func (o *RepoOwners) AllReviewers() sets.Set[string] {
+	allReviewers := sets.New[string]()
 	for _, pv := range o.reviewers {
 		for _, rv := range pv {
 			allReviewers = allReviewers.Union(rv)

@@ -40,7 +40,7 @@ const (
 
 type fakeClient struct {
 	commentsAdded map[int][]string
-	prs           map[string]sets.Int
+	prs           map[string]sets.Set[int]
 
 	// orgMembers maps org name to a list of member names.
 	orgMembers map[string][]string
@@ -52,7 +52,7 @@ type fakeClient struct {
 func newFakeClient() *fakeClient {
 	return &fakeClient{
 		commentsAdded: make(map[int][]string),
-		prs:           make(map[string]sets.Int),
+		prs:           make(map[string]sets.Set[int]),
 		orgMembers:    make(map[string][]string),
 	}
 }
@@ -117,14 +117,14 @@ var (
 func (fc *fakeClient) AddPR(owner, repo string, author github.User, number int) {
 	key := fmt.Sprintf("%s,%s,%s", github.NormLogin(owner), github.NormLogin(repo), github.NormLogin(author.Login))
 	if _, ok := fc.prs[key]; !ok {
-		fc.prs[key] = sets.Int{}
+		fc.prs[key] = sets.Set[int]{}
 	}
 	fc.prs[key].Insert(number)
 }
 
 // ClearPRs removes all PRs from the client
 func (fc *fakeClient) ClearPRs() {
-	fc.prs = make(map[string]sets.Int)
+	fc.prs = make(map[string]sets.Set[int])
 }
 
 // FindIssuesWithOrg fails if the query does not match the expected query regex and
@@ -142,7 +142,7 @@ func (fc *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]gi
 	key := fmt.Sprintf("%s,%s,%s", github.NormLogin(owner), github.NormLogin(repo), github.NormLogin(author))
 
 	issues := []github.Issue{}
-	for _, number := range fc.prs[key].List() {
+	for _, number := range sets.List(fc.prs[key]) {
 		issues = append(issues, github.Issue{
 			Number: number,
 		})

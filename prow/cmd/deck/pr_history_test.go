@@ -54,7 +54,7 @@ func (bucket fakeBucket) getStorageProvider() string {
 }
 
 func (bucket fakeBucket) listSubDirs(_ context.Context, prefix string) ([]string, error) {
-	dirs := sets.String{}
+	dirs := sets.Set[string]{}
 	for k := range bucket.objects {
 		if !strings.HasPrefix(k, prefix) {
 			continue
@@ -63,7 +63,7 @@ func (bucket fakeBucket) listSubDirs(_ context.Context, prefix string) ([]string
 		dir := strings.Split(suffix, "/")[0]
 		dirs.Insert(dir)
 	}
-	return dirs.List(), nil
+	return sets.List(dirs), nil
 }
 
 func (bucket fakeBucket) listAll(_ context.Context, prefix string) ([]string, error) {
@@ -298,7 +298,7 @@ var testBucket = fakeBucket{
 
 func TestListJobBuilds(t *testing.T) {
 	jobPrefixes := []string{"pr-logs/pull/123/build-snowman/", "pr-logs/pull/765/eat-bread/"}
-	expected := map[string]sets.String{
+	expected := map[string]sets.Set[string]{
 		"build-snowman": {"456": {}, "789": {}},
 		"eat-bread":     {"999": {}},
 	}
@@ -545,7 +545,7 @@ func Test_getPRHistory(t *testing.T) {
 					}),
 			},
 			Deck: config.Deck{
-				AllKnownStorageBuckets: sets.NewString("kubernetes-jenkins"),
+				AllKnownStorageBuckets: sets.New[string]("kubernetes-jenkins"),
 			},
 		},
 	}

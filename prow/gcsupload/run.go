@@ -159,9 +159,10 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 }
 
 // PathsForJob determines the following for a job:
-//  - path in blob storage under the bucket where job artifacts will be uploaded for:
-//     - the job
-//     - this specific run of the job (if any subdir is present)
+//   - path in blob storage under the bucket where job artifacts will be uploaded for:
+//   - the job
+//   - this specific run of the job (if any subdir is present)
+//
 // The builder for the job is also returned for use in other path resolution.
 func PathsForJob(options *prowapi.GCSConfiguration, spec *downwardapi.JobSpec, subdir string) (string, string, gcs.RepoPathBuilder) {
 	builder := builderForStrategy(options.PathStrategy, options.DefaultOrg, options.DefaultRepo)

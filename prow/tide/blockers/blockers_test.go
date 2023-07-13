@@ -77,11 +77,11 @@ func TestParseBranches(t *testing.T) {
 func TestBlockerQuery(t *testing.T) {
 	tcs := []struct {
 		orgRepoQuery string
-		expected     sets.String
+		expected     sets.Set[string]
 	}{
 		{
 			orgRepoQuery: "org:\"k8s\"",
-			expected: sets.NewString(
+			expected: sets.New[string](
 				"is:issue",
 				"state:open",
 				"label:\"blocker\"",
@@ -90,7 +90,7 @@ func TestBlockerQuery(t *testing.T) {
 		},
 		{
 			orgRepoQuery: "repo:\"k8s/t-i\"",
-			expected: sets.NewString(
+			expected: sets.New[string](
 				"is:issue",
 				"state:open",
 				"label:\"blocker\"",
@@ -99,7 +99,7 @@ func TestBlockerQuery(t *testing.T) {
 		},
 		{
 			orgRepoQuery: "org:\"k8s\" org:\"kuber\"",
-			expected: sets.NewString(
+			expected: sets.New[string](
 				"is:issue",
 				"state:open",
 				"label:\"blocker\"",
@@ -109,7 +109,7 @@ func TestBlockerQuery(t *testing.T) {
 		},
 		{
 			orgRepoQuery: "repo:\"k8s/t-i\" repo:\"k8s/k8s\"",
-			expected: sets.NewString(
+			expected: sets.New[string](
 				"is:issue",
 				"state:open",
 				"label:\"blocker\"",
@@ -119,7 +119,7 @@ func TestBlockerQuery(t *testing.T) {
 		},
 		{
 			orgRepoQuery: "org:\"k8s\" org:\"kuber\" repo:\"k8s/t-i\" repo:\"k8s/k8s\"",
-			expected: sets.NewString(
+			expected: sets.New[string](
 				"is:issue",
 				"state:open",
 				"label:\"blocker\"",
@@ -132,7 +132,7 @@ func TestBlockerQuery(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		got := sets.NewString(blockerQuery("blocker", tc.orgRepoQuery)...)
+		got := sets.New[string](blockerQuery("blocker", tc.orgRepoQuery)...)
 		if diff := cmp.Diff(got, tc.expected); diff != "" {
 			t.Errorf("Actual result differs from expected: %s", diff)
 		}
@@ -163,7 +163,7 @@ func testIssue(number int, title, org, repo string) Issue {
 func TestBlockers(t *testing.T) {
 	type check struct {
 		org, repo, branch string
-		blockers          sets.Int
+		blockers          sets.Set[int]
 	}
 
 	tcs := []struct {
@@ -179,7 +179,7 @@ func TestBlockers(t *testing.T) {
 					org:      "org",
 					repo:     "repo",
 					branch:   "branch",
-					blockers: sets.NewInt(),
+					blockers: sets.New[int](),
 				},
 			},
 		},
@@ -193,19 +193,19 @@ func TestBlockers(t *testing.T) {
 					org:      "k",
 					repo:     "t-i",
 					branch:   "feature",
-					blockers: sets.NewInt(5),
+					blockers: sets.New[int](5),
 				},
 				{
 					org:      "k",
 					repo:     "t-i",
 					branch:   "master",
-					blockers: sets.NewInt(5),
+					blockers: sets.New[int](5),
 				},
 				{
 					org:      "k",
 					repo:     "k",
 					branch:   "master",
-					blockers: sets.NewInt(),
+					blockers: sets.New[int](),
 				},
 			},
 		},
@@ -219,7 +219,7 @@ func TestBlockers(t *testing.T) {
 					org:      "k",
 					repo:     "t-i",
 					branch:   "release-1.11",
-					blockers: sets.NewInt(6),
+					blockers: sets.New[int](6),
 				},
 			},
 		},
@@ -233,7 +233,7 @@ func TestBlockers(t *testing.T) {
 					org:      "k",
 					repo:     "t-i",
 					branch:   "slash/in/name",
-					blockers: sets.NewInt(6),
+					blockers: sets.New[int](6),
 				},
 			},
 		},
@@ -248,19 +248,19 @@ func TestBlockers(t *testing.T) {
 					org:      "k",
 					repo:     "t-i",
 					branch:   "feature",
-					blockers: sets.NewInt(5, 6),
+					blockers: sets.New[int](5, 6),
 				},
 				{
 					org:      "k",
 					repo:     "t-i",
 					branch:   "master",
-					blockers: sets.NewInt(5, 6),
+					blockers: sets.New[int](5, 6),
 				},
 				{
 					org:      "k",
 					repo:     "k",
 					branch:   "master",
-					blockers: sets.NewInt(),
+					blockers: sets.New[int](),
 				},
 			},
 		},
@@ -275,31 +275,31 @@ func TestBlockers(t *testing.T) {
 					org:      "k",
 					repo:     "t-i",
 					branch:   "feature",
-					blockers: sets.NewInt(5),
+					blockers: sets.New[int](5),
 				},
 				{
 					org:      "k",
 					repo:     "t-i",
 					branch:   "master",
-					blockers: sets.NewInt(5),
+					blockers: sets.New[int](5),
 				},
 				{
 					org:      "k",
 					repo:     "community",
 					branch:   "feature",
-					blockers: sets.NewInt(6),
+					blockers: sets.New[int](6),
 				},
 				{
 					org:      "k",
 					repo:     "community",
 					branch:   "master",
-					blockers: sets.NewInt(6),
+					blockers: sets.New[int](6),
 				},
 				{
 					org:      "k",
 					repo:     "k",
 					branch:   "master",
-					blockers: sets.NewInt(),
+					blockers: sets.New[int](),
 				},
 			},
 		},
@@ -314,31 +314,31 @@ func TestBlockers(t *testing.T) {
 					org:      "k",
 					repo:     "t-i",
 					branch:   "feature",
-					blockers: sets.NewInt(5),
+					blockers: sets.New[int](5),
 				},
 				{
 					org:      "k",
 					repo:     "t-i",
 					branch:   "master",
-					blockers: sets.NewInt(5),
+					blockers: sets.New[int](5),
 				},
 				{
 					org:      "k",
 					repo:     "community",
 					branch:   "feature",
-					blockers: sets.NewInt(6),
+					blockers: sets.New[int](6),
 				},
 				{
 					org:      "k",
 					repo:     "community",
 					branch:   "master",
-					blockers: sets.NewInt(),
+					blockers: sets.New[int](),
 				},
 				{
 					org:      "k",
 					repo:     "k",
 					branch:   "master",
-					blockers: sets.NewInt(),
+					blockers: sets.New[int](),
 				},
 			},
 		},
@@ -353,19 +353,19 @@ func TestBlockers(t *testing.T) {
 					org:      "k",
 					repo:     "t-i",
 					branch:   "feature",
-					blockers: sets.NewInt(5, 6),
+					blockers: sets.New[int](5, 6),
 				},
 				{
 					org:      "k",
 					repo:     "t-i",
 					branch:   "master",
-					blockers: sets.NewInt(5),
+					blockers: sets.New[int](5),
 				},
 				{
 					org:      "k",
 					repo:     "k",
 					branch:   "master",
-					blockers: sets.NewInt(),
+					blockers: sets.New[int](),
 				},
 			},
 		},
@@ -383,31 +383,31 @@ func TestBlockers(t *testing.T) {
 					org:      "k",
 					repo:     "t-i",
 					branch:   "feature",
-					blockers: sets.NewInt(5, 6, 7, 9),
+					blockers: sets.New[int](5, 6, 7, 9),
 				},
 				{
 					org:      "k",
 					repo:     "t-i",
 					branch:   "master",
-					blockers: sets.NewInt(5, 6, 8, 9),
+					blockers: sets.New[int](5, 6, 8, 9),
 				},
 				{
 					org:      "k",
 					repo:     "t-i",
 					branch:   "foo",
-					blockers: sets.NewInt(5, 6, 9),
+					blockers: sets.New[int](5, 6, 9),
 				},
 				{
 					org:      "k",
 					repo:     "t-i",
 					branch:   "bar",
-					blockers: sets.NewInt(5, 6),
+					blockers: sets.New[int](5, 6),
 				},
 				{
 					org:      "k",
 					repo:     "k",
 					branch:   "master",
-					blockers: sets.NewInt(),
+					blockers: sets.New[int](),
 				},
 			},
 		},
@@ -418,7 +418,7 @@ func TestBlockers(t *testing.T) {
 		b := fromIssues(tc.issues, logrus.WithField("test", tc.name))
 		for _, c := range tc.checks {
 			actuals := b.GetApplicable(c.org, c.repo, c.branch)
-			nums := sets.NewInt()
+			nums := sets.New[int]()
 			for _, actual := range actuals {
 				// Check blocker URLs:
 				if actual.URL != strconv.Itoa(actual.Number) {

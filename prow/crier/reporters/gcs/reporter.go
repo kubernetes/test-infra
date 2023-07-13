@@ -155,7 +155,7 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 	// something new.
 	// Add a new var for better readability.
 	overwrite := existing
-	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)}
+	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.Bool(!overwrite)}
 	return io.WriteContent(ctx, log, gr.opener, startedFilePath, output, overwriteOpt)
 }
 
@@ -187,7 +187,7 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 		return nil
 	}
 	//PreconditionDoesNotExist:true means create only when file not exist.
-	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(true)}
+	overwriteOpt := io.WriterOptions{PreconditionDoesNotExist: utilpointer.Bool(true)}
 	finishedFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.FinishedStatusFile))
 	if err != nil {
 		return fmt.Errorf("failed to resolve finished.json path: %v", err)
@@ -211,7 +211,7 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj 
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload pod info")
 		return nil
 	}
-	overWriteOpts := io.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(false)}
+	overWriteOpts := io.WriterOptions{PreconditionDoesNotExist: utilpointer.Bool(false)}
 	prowJobFilePath, err := providers.StoragePath(bucketName, path.Join(dir, prowv1.ProwJobFile))
 	if err != nil {
 		return fmt.Errorf("failed to resolve prowjob.json path: %v", err)

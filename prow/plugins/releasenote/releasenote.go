@@ -183,7 +183,7 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 		}
 	}
 
-	currentLabels := sets.String{}
+	currentLabels := sets.Set[string]{}
 	for _, label := range ic.Issue.Labels {
 		currentLabels.Insert(label.Name)
 	}
@@ -198,7 +198,7 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 	)
 }
 
-func removeOtherLabels(remover func(string) error, label string, labelSet []string, currentLabels sets.String) error {
+func removeOtherLabels(remover func(string) error, label string, labelSet []string, currentLabels sets.Set[string]) error {
 	var errs []error
 	for _, elem := range labelSet {
 		if elem != label && currentLabels.Has(elem) {
@@ -312,7 +312,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 }
 
 // clearStaleComments deletes old comments that are no longer applicable.
-func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String, comments []github.IssueComment) error {
+func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.Set[string], comments []github.IssueComment) error {
 	// If the PR must follow the process and hasn't yet completed the process, don't remove comments.
 	if prMustFollowRelNoteProcess(gc, log, pr, prLabels, false) && !releaseNoteAlreadyAdded(prLabels) {
 		return nil
@@ -343,7 +343,7 @@ func containsNoneCommand(comments []github.IssueComment) bool {
 	return false
 }
 
-func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String) {
+func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.Set[string]) {
 	org := pr.Repo.Owner.Login
 	repo := pr.Repo.Name
 	format := "Failed to remove the label %q from %s/%s#%d."
@@ -356,7 +356,7 @@ func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.P
 
 // determineReleaseNoteLabel returns the label to be added based on the contents of the 'release-note'
 // section of a PR's body text, as well as the set of PR's labels.
-func determineReleaseNoteLabel(body string, prLabels sets.String) string {
+func determineReleaseNoteLabel(body string, prLabels sets.Set[string]) string {
 	composedReleaseNote := strings.ToLower(strings.TrimSpace(getReleaseNote(body)))
 	hasNoneNoteInPRBody := noneRe.MatchString(composedReleaseNote)
 	hasDeprecationLabel := prLabels.Has(labels.DeprecationLabel)
@@ -389,11 +389,11 @@ func getReleaseNote(body string) string {
 	return strings.TrimSpace(potentialMatch[1])
 }
 
-func releaseNoteAlreadyAdded(prLabels sets.String) bool {
+func releaseNoteAlreadyAdded(prLabels sets.Set[string]) bool {
 	return prLabels.HasAny(labels.ReleaseNote, labels.ReleaseNoteActionRequired, labels.ReleaseNoteNone)
 }
 
-func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String, comment bool) bool {
+func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.Set[string], comment bool) bool {
 	if pr.PullRequest.Base.Ref == "master" {
 		return true
 	}
@@ -461,8 +461,8 @@ func getCherrypickParentPRNums(body string) []int {
 	return out
 }
 
-func labelsSet(labels []github.Label) sets.String {
-	prLabels := sets.String{}
+func labelsSet(labels []github.Label) sets.Set[string] {
+	prLabels := sets.Set[string]{}
 	for _, label := range labels {
 		prLabels.Insert(label.Name)
 	}

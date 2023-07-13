@@ -839,10 +839,13 @@ func main() {
 }
 
 // parseCommaDelimitedList parses values in the format:
-//   org/repo,org2/repo2,org/repo3
+//
+//	org/repo,org2/repo2,org/repo3
+//
 // into a mapping of org to repos, i.e.:
-//   org:  repo, repo3
-//   org2: repo2
+//
+//	org:  repo, repo3
+//	org2: repo2
 func parseCommaDelimitedList(list string) (map[string][]string, error) {
 	mapping := map[string][]string{}
 	for _, r := range strings.Split(list, ",") {

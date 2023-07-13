@@ -1240,9 +1240,9 @@ func TestValidateAgent(t *testing.T) {
 }
 
 func TestValidatePodSpec(t *testing.T) {
-	periodEnv := sets.NewString(downwardapi.EnvForType(prowapi.PeriodicJob)...)
-	postEnv := sets.NewString(downwardapi.EnvForType(prowapi.PostsubmitJob)...)
-	preEnv := sets.NewString(downwardapi.EnvForType(prowapi.PresubmitJob)...)
+	periodEnv := sets.New[string](downwardapi.EnvForType(prowapi.PeriodicJob)...)
+	postEnv := sets.New[string](downwardapi.EnvForType(prowapi.PostsubmitJob)...)
+	preEnv := sets.New[string](downwardapi.EnvForType(prowapi.PresubmitJob)...)
 	cases := []struct {
 		name             string
 		jobType          prowapi.ProwJobType
@@ -1326,7 +1326,7 @@ func TestValidatePodSpec(t *testing.T) {
 			name: "reject reserved mount name",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
-					Name:      decorate.VolumeMounts(nil).List()[0],
+					Name:      sets.List(decorate.VolumeMounts(nil))[0],
 					MountPath: "/whatever",
 				})
 			},
@@ -1336,7 +1336,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "fun",
-					MountPath: decorate.VolumeMountPathsOnTestContainer().List()[0],
+					MountPath: sets.List(decorate.VolumeMountPathsOnTestContainer())[0],
 				})
 			},
 		},
@@ -1345,7 +1345,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Dir(decorate.VolumeMountPathsOnTestContainer().List()[0]),
+					MountPath: filepath.Dir(sets.List(decorate.VolumeMountPathsOnTestContainer())[0]),
 				})
 				s.Volumes = append(s.Volumes, v1.Volume{
 					Name: "foo",
@@ -1358,7 +1358,7 @@ func TestValidatePodSpec(t *testing.T) {
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
 					Name:      "foo",
-					MountPath: filepath.Join(decorate.VolumeMountPathsOnTestContainer().List()[0], "extra"),
+					MountPath: filepath.Join(sets.List(decorate.VolumeMountPathsOnTestContainer())[0], "extra"),
 				})
 				s.Volumes = append(s.Volumes, v1.Volume{
 					Name: "foo",
@@ -1414,7 +1414,7 @@ func TestValidatePodSpec(t *testing.T) {
 		{
 			name: "reject reserved volume",
 			spec: func(s *v1.PodSpec) {
-				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts(nil).List()[0]})
+				s.Volumes = append(s.Volumes, v1.Volume{Name: sets.List(decorate.VolumeMounts(nil))[0]})
 			},
 		},
 		{
@@ -1489,10 +1489,8 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			name:    "reject implicit ref for periodic",
 			jobType: prowapi.PeriodicJob,
 			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
-					Name:        "git ref",
-					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
-				})
+				s.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{Name: "git ref", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_IMPLICIT_GIT_REF"}}}}
 			},
 			pass: false,
 		},
@@ -1500,10 +1498,8 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			name:    "allow implicit ref for presubmit",
 			jobType: prowapi.PresubmitJob,
 			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
-					Name:        "git ref",
-					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
-				})
+				s.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{Name: "git ref", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_IMPLICIT_GIT_REF"}}}}
 			},
 			pass: true,
 		},
@@ -1511,30 +1507,24 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 			name:    "allow implicit ref for postsubmit",
 			jobType: prowapi.PostsubmitJob,
 			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
-					Name:        "git ref",
-					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
-				})
+				s.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{Name: "git ref", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_IMPLICIT_GIT_REF"}}}}
 			},
 			pass: true,
 		},
 		{
 			name: "reject extra refs usage with no extra refs",
 			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
-					Name:        "git ref",
-					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
-				})
+				s.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{Name: "git ref", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_EXTRA_GIT_REF_0"}}}}
 			},
 			pass: false,
 		},
 		{
 			name: "allow extra refs usage with extra refs",
 			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
-					Name:        "git ref",
-					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
-				})
+				s.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{Name: "git ref", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_EXTRA_GIT_REF_0"}}}}
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},
 			pass:      true,
@@ -1542,10 +1532,8 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 		{
 			name: "reject wrong extra refs index usage",
 			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
-					Name:        "git ref",
-					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
-				})
+				s.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{Name: "git ref", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_EXTRA_GIT_REF_1"}}}}
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},
 			pass:      false,
@@ -1558,20 +1546,16 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 		{
 			name: "allow unrelated resource refs",
 			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
-					Name:        "git ref",
-					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "some-other-ref"},
-				})
+				s.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{Name: "git ref", TaskRef: &pipelinev1beta1.TaskRef{Name: "some-other-ref"}}}}
 			},
 			pass: true,
 		},
 		{
 			name: "reject leading zeros when extra ref usage is otherwise valid",
 			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
-					Name:        "git ref",
-					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_000"},
-				})
+				s.PipelineSpec = &pipelinev1beta1.PipelineSpec{
+					Tasks: []pipelinev1beta1.PipelineTask{{Name: "git ref", TaskRef: &pipelinev1beta1.TaskRef{Name: "PROW_EXTRA_GIT_REF_000"}}}}
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},
 			pass:      false,
@@ -2058,7 +2042,7 @@ func TestValidateRefs(t *testing.T) {
 					Repo: "repo",
 				},
 			},
-			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+			expected: fmt.Errorf("invalid job test on repo org/repo: the following refs specified more than once: %s",
 				"org/repo"),
 		},
 		{
@@ -2081,7 +2065,7 @@ func TestValidateRefs(t *testing.T) {
 					Repo: "foo",
 				},
 			},
-			expected: fmt.Errorf("Invalid job test on repo org/repo: the following refs specified more than once: %s",
+			expected: fmt.Errorf("invalid job test on repo org/repo: the following refs specified more than once: %s",
 				"org/foo,org/repo"),
 		},
 		{
@@ -2146,7 +2130,7 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 			labels: map[string]string{
 				kube.GerritReportLabel: "label",
 			},
-			expected: fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", kube.GerritReportLabel),
+			expected: fmt.Errorf("gerrit report label %s set to non-empty string but job is configured to skip reporting.", kube.GerritReportLabel),
 		},
 	}
 
@@ -2246,7 +2230,7 @@ func TestGerritOptOutHelpRepos(t *testing.T) {
 	tests := []struct {
 		name string
 		in   *GerritOrgRepoConfigs
-		want map[string]sets.String
+		want map[string]sets.Set[string]
 	}{
 		{
 			name: "multiple-org",
@@ -2262,9 +2246,9 @@ func TestGerritOptOutHelpRepos(t *testing.T) {
 					OptOutHelp: true,
 				},
 			},
-			want: map[string]sets.String{
-				"org-1": sets.NewString("repo-1"),
-				"org-2": sets.NewString("repo-2"),
+			want: map[string]sets.Set[string]{
+				"org-1": sets.New[string]("repo-1"),
+				"org-2": sets.New[string]("repo-2"),
 			},
 		},
 		{
@@ -2281,8 +2265,8 @@ func TestGerritOptOutHelpRepos(t *testing.T) {
 					OptOutHelp: true,
 				},
 			},
-			want: map[string]sets.String{
-				"org-1": sets.NewString("repo-1", "repo-2"),
+			want: map[string]sets.Set[string]{
+				"org-1": sets.New[string]("repo-1", "repo-2"),
 			},
 		},
 		{
@@ -2298,8 +2282,8 @@ func TestGerritOptOutHelpRepos(t *testing.T) {
 					OptOutHelp: true,
 				},
 			},
-			want: map[string]sets.String{
-				"org-1": sets.NewString("repo-2"),
+			want: map[string]sets.Set[string]{
+				"org-1": sets.New[string]("repo-2"),
 			},
 		},
 		{
@@ -2895,7 +2879,7 @@ postsubmits:
         command: ["ride"]`,
 			},
 			verify: func(c *Config) error {
-				if diff := c.AllRepos.Difference(sets.NewString("k/k", "k/test-infra", "stranded/fish")); len(diff) != 0 {
+				if diff := c.AllRepos.Difference(sets.New[string]("k/k", "k/test-infra", "stranded/fish")); len(diff) != 0 {
 					return fmt.Errorf("expected no diff, got %q", diff)
 				}
 				return nil
@@ -3366,18 +3350,18 @@ postsubmits:
 func TestReadJobConfigProwIgnore(t *testing.T) {
 	expectExactly := func(expected ...string) func(c *JobConfig) error {
 		return func(c *JobConfig) error {
-			expected := sets.NewString(expected...)
-			actual := sets.NewString()
+			expected := sets.New[string](expected...)
+			actual := sets.New[string]()
 			for _, pres := range c.PresubmitsStatic {
 				for _, pre := range pres {
 					actual.Insert(pre.Name)
 				}
 			}
 			if diff := expected.Difference(actual); diff.Len() > 0 {
-				return fmt.Errorf("missing expected job(s): %q", diff.List())
+				return fmt.Errorf("missing expected job(s): %q", sets.List(diff))
 			}
 			if diff := actual.Difference(expected); diff.Len() > 0 {
-				return fmt.Errorf("found unexpected job(s): %q", diff.List())
+				return fmt.Errorf("found unexpected job(s): %q", sets.List(diff))
 			}
 			return nil
 		}
@@ -7329,7 +7313,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"org/repo": utilpointer.BoolPtr(true),
+							"org/repo": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7343,7 +7327,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"org": utilpointer.BoolPtr(true),
+							"org": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7357,7 +7341,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"*": utilpointer.BoolPtr(true),
+							"*": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7376,7 +7360,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"host-name": utilpointer.BoolPtr(true),
+							"host-name": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7390,7 +7374,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"host-name": utilpointer.BoolPtr(true),
+							"host-name": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7404,7 +7388,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"host-name": utilpointer.BoolPtr(true),
+							"host-name": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7418,7 +7402,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"host-name": utilpointer.BoolPtr(true),
+							"host-name": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7432,7 +7416,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"host-name/repo/name": utilpointer.BoolPtr(true),
+							"host-name/repo/name": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7446,7 +7430,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
 						Enabled: map[string]*bool{
-							"host-name/repo/name": utilpointer.BoolPtr(true),
+							"host-name/repo/name": utilpointer.Bool(true),
 						},
 					},
 				},
@@ -7499,7 +7483,7 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 	org, repo := "org", "repo"
 	c := &Config{
 		ProwConfig: ProwConfig{
-			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.Bool(true)}},
 		},
 		JobConfig: JobConfig{
 			PresubmitsStatic: map[string][]Presubmit{
@@ -7537,7 +7521,7 @@ func TestGetPostsubmitsReturnsStaticAndInrepoconfigPostsubmits(t *testing.T) {
 	org, repo := "org", "repo"
 	c := &Config{
 		ProwConfig: ProwConfig{
-			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.BoolPtr(true)}},
+			InRepoConfig: InRepoConfig{Enabled: map[string]*bool{"*": utilpointer.Bool(true)}},
 		},
 		JobConfig: JobConfig{
 			PostsubmitsStatic: map[string][]Postsubmit{
@@ -7830,7 +7814,7 @@ func TestValidatePresubmits(t *testing.T) {
 		{
 			name:          "Invalid triggering config causes error",
 			presubmits:    []Presubmit{{Trigger: "some-trigger", JobBase: JobBase{Name: "my-job"}, Reporter: Reporter{Context: "foo"}}},
-			expectedError: `Either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job "my-job"`,
+			expectedError: `either both of job.Trigger and job.RerunCommand must be set, wasnt the case for job "my-job"`,
 		},
 		{
 			name:          "Invalid reporting config causes error",
@@ -8665,11 +8649,11 @@ func TestHasConfigFor(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name            string
-		resultGenerator func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String)
+		resultGenerator func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs, expectRepos sets.Set[string])
 	}{
 		{
 			name: "Any non-empty config with empty branchprotection and Tide properties is considered global",
-			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs, expectRepos sets.Set[string]) {
 				fuzzedConfig.BranchProtection = BranchProtection{}
 				fuzzedConfig.SlackReporterConfigs = SlackReporterConfigs{}
 				fuzzedConfig.Tide.MergeType = nil
@@ -8679,8 +8663,8 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config that is empty except for branchprotection.orgs with empty repo is considered to be for those orgs",
-			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
-				expectOrgs = sets.String{}
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs, expectRepos sets.Set[string]) {
+				expectOrgs = sets.Set[string]{}
 				result := &ProwConfig{BranchProtection: BranchProtection{Orgs: map[string]Org{}}}
 				for org, orgVal := range fuzzedConfig.BranchProtection.Orgs {
 					orgVal.Repos = nil
@@ -8692,8 +8676,8 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config that is empty except for repos in branchprotection config is considered to be for those repos",
-			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
-				expectRepos = sets.String{}
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs, expectRepos sets.Set[string]) {
+				expectRepos = sets.Set[string]{}
 				result := &ProwConfig{BranchProtection: BranchProtection{Orgs: map[string]Org{}}}
 				for org, orgVal := range fuzzedConfig.BranchProtection.Orgs {
 					result.BranchProtection.Orgs[org] = Org{Repos: map[string]Repo{}}
@@ -8707,8 +8691,8 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config that is empty except for tide.merge_method is considered to be for those orgs or repos",
-			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs, expectRepos sets.Set[string]) {
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 				result := &ProwConfig{Tide: Tide{TideGitHubConfig: TideGitHubConfig{MergeType: fuzzedConfig.Tide.MergeType}}}
 				for orgOrRepo := range result.Tide.MergeType {
 					if strings.Contains(orgOrRepo, "/") {
@@ -8723,8 +8707,8 @@ func TestHasConfigFor(t *testing.T) {
 		},
 		{
 			name: "Any config that is empty except for tide.queries is considered to be for those orgs or repos",
-			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
-				expectOrgs, expectRepos = sets.String{}, sets.String{}
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs, expectRepos sets.Set[string]) {
+				expectOrgs, expectRepos = sets.Set[string]{}, sets.Set[string]{}
 				result := &ProwConfig{Tide: Tide{TideGitHubConfig: TideGitHubConfig{Queries: fuzzedConfig.Tide.Queries}}}
 				for _, query := range result.Tide.Queries {
 					expectOrgs.Insert(query.Orgs...)
@@ -8783,49 +8767,49 @@ func TestCalculateStorageBuckets(t *testing.T) {
 	testCases := []struct {
 		name     string
 		in       *Config
-		expected sets.String
+		expected sets.Set[string]
 	}{
 		{
 			name: "S3 provider prefix gets removed from Plank config",
 			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowapi.DecorationConfig{
 				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "s3://prow-logs"},
 			}}}}}},
-			expected: sets.NewString("prow-logs"),
+			expected: sets.New[string]("prow-logs"),
 		},
 		{
 			name: "GS provider prefix gets removed from Plank config",
 			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowapi.DecorationConfig{
 				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "gs://prow-logs"},
 			}}}}}},
-			expected: sets.NewString("prow-logs"),
+			expected: sets.New[string]("prow-logs"),
 		},
 		{
 			name: "No provider prefix, nothing to do",
 			in: &Config{ProwConfig: ProwConfig{Plank: Plank{DefaultDecorationConfigs: []*DefaultDecorationConfigEntry{{Config: &prowapi.DecorationConfig{
 				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "kubernetes-jenkins"},
 			}}}}}},
-			expected: sets.NewString("kubernetes-jenkins"),
+			expected: sets.New[string]("kubernetes-jenkins"),
 		},
 		{
 			name: "S3 provider prefix gets removed from periodic config",
 			in: &Config{JobConfig: JobConfig{Periodics: []Periodic{{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowapi.DecorationConfig{
 				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "s3://prow-logs"},
 			}}}}}}},
-			expected: sets.NewString("prow-logs"),
+			expected: sets.New[string]("prow-logs"),
 		},
 		{
 			name: "S3 provider prefix gets removed from presubmit config",
 			in: &Config{JobConfig: JobConfig{PresubmitsStatic: map[string][]Presubmit{"": {{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowapi.DecorationConfig{
 				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "s3://prow-logs"},
 			}}}}}}}},
-			expected: sets.NewString("prow-logs"),
+			expected: sets.New[string]("prow-logs"),
 		},
 		{
 			name: "S3 provider prefix gets removed from postsubmit config",
 			in: &Config{JobConfig: JobConfig{PostsubmitsStatic: map[string][]Postsubmit{"": {{JobBase: JobBase{UtilityConfig: UtilityConfig{DecorationConfig: &prowapi.DecorationConfig{
 				GCSConfiguration: &prowapi.GCSConfiguration{Bucket: "s3://prow-logs"},
 			}}}}}}}},
-			expected: sets.NewString("prow-logs"),
+			expected: sets.New[string]("prow-logs"),
 		},
 	}
 

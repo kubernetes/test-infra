@@ -41,7 +41,7 @@ const (
 
 var (
 	issueNameRegex = regexp.MustCompile(`\b([a-zA-Z]+-[0-9]+)(\s|:|$|]|\))`)
-	projectCache   = &threadsafeSet{data: sets.String{}}
+	projectCache   = &threadsafeSet{data: sets.Set[string]{}}
 )
 
 func extractCandidatesFromText(t string) []string {
@@ -113,7 +113,7 @@ func handleWithProjectCache(jc jiraclient.Client, ghc githubClient, cfg *plugins
 	}
 
 	var errs []error
-	referencedIssues := sets.String{}
+	referencedIssues := sets.Set[string]{}
 	for _, match := range issueCandidateNames {
 		if referencedIssues.Has(match) {
 			continue
@@ -129,7 +129,7 @@ func handleWithProjectCache(jc jiraclient.Client, ghc githubClient, cfg *plugins
 	}
 
 	wg := &sync.WaitGroup{}
-	for _, issue := range referencedIssues.List() {
+	for _, issue := range sets.List(referencedIssues) {
 		wg.Add(1)
 		go func(issue string) {
 			defer wg.Done()
@@ -326,7 +326,7 @@ func filterOutDisabledJiraProjects(candidateNames []string, cfg *plugins.Jira) [
 		return candidateNames
 	}
 
-	candidateSet := sets.NewString(candidateNames...)
+	candidateSet := sets.New[string](candidateNames...)
 	for _, excludedProject := range cfg.DisabledJiraProjects {
 		for _, candidate := range candidateNames {
 			if strings.HasPrefix(strings.ToLower(candidate), strings.ToLower(excludedProject)) {
@@ -358,7 +358,7 @@ func (c *projectCachingJiraClient) GetIssue(id string) (*jira.Issue, error) {
 }
 
 type threadsafeSet struct {
-	data sets.String
+	data sets.Set[string]
 	lock sync.RWMutex
 }
 

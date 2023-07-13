@@ -128,7 +128,7 @@ func TestTerminateDupes(t *testing.T) {
 
 		PJs []prowapi.ProwJob
 
-		TerminatedPJs sets.String
+		TerminatedPJs sets.Set[string]
 	}
 	testcases := []testCase{
 		{
@@ -226,7 +226,7 @@ func TestTerminateDupes(t *testing.T) {
 				},
 			},
 
-			TerminatedPJs: sets.NewString("old", "older", "old_j2", "old_j3"),
+			TerminatedPJs: sets.New[string]("old", "older", "old_j2", "old_j3"),
 		},
 		{
 			Name: "should also terminate pods",
@@ -258,7 +258,7 @@ func TestTerminateDupes(t *testing.T) {
 				},
 			},
 
-			TerminatedPJs: sets.NewString("old"),
+			TerminatedPJs: sets.New[string]("old"),
 		},
 	}
 
@@ -300,10 +300,10 @@ func TestTerminateDupes(t *testing.T) {
 
 			observedCompletedProwJobs := fakeProwJobClient.patched
 			if missing := tc.TerminatedPJs.Difference(observedCompletedProwJobs); missing.Len() > 0 {
-				t.Errorf("did not delete expected prowJobs: %v", missing.List())
+				t.Errorf("did not delete expected prowJobs: %v", sets.List(missing))
 			}
 			if extra := observedCompletedProwJobs.Difference(tc.TerminatedPJs); extra.Len() > 0 {
-				t.Errorf("found unexpectedly deleted prowJobs: %v", extra.List())
+				t.Errorf("found unexpectedly deleted prowJobs: %v", sets.List(extra))
 			}
 		})
 	}
@@ -2206,12 +2206,12 @@ func TestMaxConcurency(t *testing.T) {
 
 type patchTrackingFakeClient struct {
 	ctrlruntimeclient.Client
-	patched sets.String
+	patched sets.Set[string]
 }
 
 func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj ctrlruntimeclient.Object, patch ctrlruntimeclient.Patch, opts ...ctrlruntimeclient.PatchOption) error {
 	if c.patched == nil {
-		c.patched = sets.NewString()
+		c.patched = sets.New[string]()
 	}
 	c.patched.Insert(obj.GetName())
 	return c.Client.Patch(ctx, obj, patch, opts...)
@@ -2220,7 +2220,7 @@ func (c *patchTrackingFakeClient) Patch(ctx context.Context, obj ctrlruntimeclie
 type deleteTrackingFakeClient struct {
 	deleteError error
 	ctrlruntimeclient.Client
-	deleted sets.String
+	deleted sets.Set[string]
 }
 
 func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.DeleteOption) error {
@@ -2228,7 +2228,7 @@ func (c *deleteTrackingFakeClient) Delete(ctx context.Context, obj ctrlruntimecl
 		return c.deleteError
 	}
 	if c.deleted == nil {
-		c.deleted = sets.String{}
+		c.deleted = sets.Set[string]{}
 	}
 	if err := c.Client.Delete(ctx, obj, opts...); err != nil {
 		return err

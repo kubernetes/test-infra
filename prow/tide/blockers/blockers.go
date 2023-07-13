@@ -74,13 +74,13 @@ func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 
 // FindAll finds issues with label in the specified orgs/repos that should block tide.
 func FindAll(ghc githubClient, log *logrus.Entry, label string, orgRepoTokensByOrg map[string]string, splitQueryByOrg bool) (Blockers, error) {
-	queries := map[string]sets.String{}
+	queries := map[string]sets.Set[string]{}
 	for org, query := range orgRepoTokensByOrg {
 		if splitQueryByOrg {
-			queries[org] = sets.NewString(blockerQuery(label, query)...)
+			queries[org] = sets.New[string](blockerQuery(label, query)...)
 		} else {
 			if queries[""] == nil {
-				queries[""] = sets.String{}
+				queries[""] = sets.Set[string]{}
 			}
 			queries[""].Insert(blockerQuery(label, query)...)
 		}
@@ -94,7 +94,7 @@ func FindAll(ghc githubClient, log *logrus.Entry, label string, orgRepoTokensByO
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	for org, query := range queries {
-		org, query := org, strings.Join(query.List(), " ")
+		org, query := org, strings.Join(sets.List(query), " ")
 		wg.Add(1)
 
 		go func() {
