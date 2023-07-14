@@ -32,6 +32,9 @@ dashboards:
     - name: Gardener, v1.26 Alibaba Cloud
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
       test_group_name: ci-gardener-e2e-conformance-alicloud-v1.26
+    - name: Gardener, v1.26 vSphere
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on vSphere"
+      test_group_name: ci-gardener-e2e-conformance-vsphere-v1.26
     - name: Gardener, v1.25 AWS
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
       test_group_name: ci-gardener-e2e-conformance-aws-v1.25
@@ -173,6 +176,11 @@ dashboards:
     - name: Gardener, v1.26 Alibaba Cloud
       description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Alibaba Cloud"
       test_group_name: ci-gardener-e2e-conformance-alicloud-v1.26
+      alert_options:
+        alert_mail_to_addresses: gardener-oq@listserv.sap.com
+    - name: Gardener, v1.26 vSphere
+      description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on vSphere"
+      test_group_name: ci-gardener-e2e-conformance-vsphere-v1.26
       alert_options:
         alert_mail_to_addresses: gardener-oq@listserv.sap.com
     - name: Gardener, v1.25 AWS
@@ -421,6 +429,11 @@ test_groups:
   disable_prowjob_analysis: true
 - name: ci-gardener-e2e-conformance-alicloud-v1.26
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-alicloud-v1.26
+  alert_stale_results_hours: 168
+  num_failures_to_alert: 1
+  disable_prowjob_analysis: true
+- name: ci-gardener-e2e-conformance-vsphere-v1.26
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-vsphere-v1.26
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
   disable_prowjob_analysis: true
