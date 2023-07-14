@@ -288,19 +288,34 @@ func (c *Controller) Sync() {
 		c.tracker.Update(latest)
 	}
 
+	// Identify projects without worker threads
+	id := func(instance, project string) string { return fmt.Sprintf("%s/%s", instance, project) }
+	needsWorker := map[string][]string{}
+	needsWorkerCount := 0
 	for instance, projects := range c.config().Gerrit.OrgReposConfig.AllRepos() {
 		for project := range projects {
-			id := fmt.Sprintf("%s/%s", instance, project)
-			if _, ok := c.projectsWithWorker[id]; ok {
+			if _, ok := c.projectsWithWorker[id(instance, project)]; ok {
 				// The worker thread is already up for this project, nothing needs
 				// to be done.
 				continue
 			}
-			c.projectsWithWorker[id] = true
-
-			// First time see this instance, spin up a worker thread for it
+			needsWorker[instance] = append(needsWorker[instance], project)
+			needsWorkerCount++
+		}
+	}
+	// First time seeing these projects, spin up worker threads for them.
+	staggerIncement := c.config().Gerrit.TickInterval.Duration / time.Duration(needsWorkerCount)
+	staggerPosition := 0
+	for instance, projects := range needsWorker {
+		for _, project := range projects {
+			c.projectsWithWorker[id(instance, project)] = true
 			logrus.WithFields(logrus.Fields{"instance": instance, "repo": project}).Info("Starting worker for project.")
-			go func(instance, project string) {
+			go func(instance, project string, staggerPosition int) {
+				// Stagger new worker threads across the loop period to reduce load on the Gerrit API and Git server.
+				napTime := staggerIncement * time.Duration(staggerPosition)
+				time.Sleep(napTime)
+
+				// Now start the repo worker thread.
 				previousRun := time.Now()
 				for {
 					timeDiff := time.Until(previousRun.Add(c.config().Gerrit.TickInterval.Duration))
@@ -310,7 +325,8 @@ func (c *Controller) Sync() {
 					previousRun = time.Now()
 					processSingleProject(instance, project)
 				}
-			}(instance, project)
+			}(instance, project, staggerPosition)
+			staggerPosition++
 		}
 	}
 }
