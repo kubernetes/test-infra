@@ -29,6 +29,7 @@ import (
 	gerrit "github.com/andygrunwald/go-gerrit"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"
 )
@@ -292,12 +293,14 @@ func TestUpdateClients(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			client := &Client{
-				handlers: make(map[string]*gerritInstanceHandler),
+				handlers:                 make(map[string]*gerritInstanceHandler),
+				instanceConcurrencyLimit: 5,
 			}
 			for instance, projects := range tc.existingInstances {
 				client.handlers[instance] = &gerritInstanceHandler{
-					instance: instance,
-					projects: projects,
+					instance:           instance,
+					projects:           projects,
+					concurrencyLimiter: semaphore.NewWeighted(5),
 				}
 			}
 
@@ -849,6 +852,7 @@ func TestQueryChange(t *testing.T) {
 
 	for _, tc := range testcases {
 		client := &Client{
+			instanceConcurrencyLimit: 5,
 			handlers: map[string]*gerritInstanceHandler{
 				"foo": {
 					instance: "foo",
@@ -858,7 +862,8 @@ func TestQueryChange(t *testing.T) {
 						instance: "foo",
 						comments: tc.comments,
 					},
-					log: logrus.WithField("host", "foo"),
+					concurrencyLimiter: semaphore.NewWeighted(5),
+					log:                logrus.WithField("host", "foo"),
 				},
 				"baz": {
 					instance: "baz",
@@ -867,7 +872,8 @@ func TestQueryChange(t *testing.T) {
 						changes:  tc.changes,
 						instance: "baz",
 					},
-					log: logrus.WithField("host", "baz"),
+					concurrencyLimiter: semaphore.NewWeighted(5),
+					log:                logrus.WithField("host", "baz"),
 				},
 			},
 		}
