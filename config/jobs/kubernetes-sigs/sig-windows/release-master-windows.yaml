@@ -83,10 +83,11 @@ periodics:
     preset-capz-windows-2019: "true"
     preset-capz-containerd-1-7-latest: "true"
     preset-windows-private-registry-cred: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.9
+    base_ref: release-1.10
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: false
   - org: kubernetes-sigs
@@ -486,10 +487,11 @@ periodics:
     preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
     preset-windows-private-registry-cred: "true"
     preset-capz-windows-common: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.9
+    base_ref: release-1.10
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: windows-testing

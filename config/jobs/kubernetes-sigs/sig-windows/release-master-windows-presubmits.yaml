@@ -28,10 +28,11 @@ presubmits:
       preset-capz-windows-2019: "true"
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.9
+      base_ref: release-1.10
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -73,10 +74,11 @@ presubmits:
       preset-capz-containerd-1-7-latest: "true"
       preset-capz-windows-common-pull: "true"
       preset-windows-private-registry-cred: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.9
+      base_ref: release-1.10
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: false
     - org: kubernetes-sigs
@@ -128,10 +130,11 @@ presubmits:
       preset-capz-windows-2022: "true"
       preset-capz-windows-common-pull: "true"
       preset-windows-private-registry-cred: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: false
       - org: kubernetes-sigs
@@ -184,10 +187,11 @@ presubmits:
       preset-capz-windows-common-pull: "true"
       preset-windows-private-registry-cred: "true"
       preset-capz-containerd-1-7-latest: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: false
       - org: kubernetes-sigs
@@ -242,10 +246,11 @@ presubmits:
       preset-windows-private-registry-cred: "true"
       preset-capz-windows-common: "true"
       preset-capz-containerd-1-7-latest: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.9
+      base_ref: release-1.10
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: false
     - org: kubernetes-sigs

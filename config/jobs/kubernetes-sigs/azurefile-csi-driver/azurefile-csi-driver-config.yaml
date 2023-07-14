@@ -237,10 +237,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -361,10 +362,11 @@ presubmits:
       preset-azure-cred-only: "true"
       preset-azure-windows: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -466,10 +468,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -565,10 +568,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -615,10 +619,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -669,10 +674,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -721,10 +727,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -777,10 +784,11 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.9
+        base_ref: release-1.10
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
