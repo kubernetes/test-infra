@@ -8,11 +8,11 @@ import (
 )
 
 func TestUpdateChangelog(t *testing.T) {
-	context := &UpdateContext{
+	context := &Session{
 		MainRepo:   "dtk",
 		OwnerLogin: "peeweep-test",
-		UpdateHead: "topic-update",
-		UpdateBase: "master",
+		UpdateHeadBranch: "topic-update",
+		UpdateBaseBranch: "master",
 		UpdateToVersion: "6.0.2",
 	}
 	err := UpdateChangelog(logrus.NewEntry(logrus.New()), &config.Submodule{

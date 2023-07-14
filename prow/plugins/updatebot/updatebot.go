@@ -6,27 +6,23 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+	utypes "k8s.io/test-infra/prow/plugins/updatebot/internal"
 )
 
 const (
 	PluginName string = "updatebot"
 )
 
-const (
-	IDLE = iota
-	PROCESSING
-	DELIVERING
-	WAITING
-	UPDATING
-)
-
-type SubmoduleContext struct {
-	BaseInfo  *SubmoduleEntry
+type SubmoduleInfo struct {
+	BaseInfo  Submodule
 	PRInfo    *github.PullRequest
 	Status    *github.Status
 	MergedSHA string
@@ -37,24 +33,113 @@ var UpdateMainRepo = []string{
 	"dtk",
 }
 
-var Contexts = map[string]*UpdateContext{}
+var Sessions = map[string]*Session{}
 
-type UpdateContext struct {
-	MainRepo        string
-	OwnerLogin      string
-	UpdatePRNumber  int
-	UpdatePR        *github.PullRequest
-	UpdateSHA       string
-	SubmoduleInfo   map[string]*SubmoduleContext
-	UpdateToVersion string
-	UpdateHead      string // Temporary branch used to update
-	UpdateBase      string
-	BotUser         *github.UserData
-	Stage           int // Stage of the update process
+type Session struct {
+	ID               string
+	MainRepo         string
+	OwnerLogin       string
+	UpdatePRNumber   int
+	UpdatePR         *github.PullRequest
+	UpdateSHA        string
+	Submodules       map[string]*SubmoduleInfo
+	UpdateToVersion  string
+	UpdateHeadBranch string // Temporary branch used to update
+	UpdateBaseBranch string
+	BotUser          *github.UserData
+	Client           plugins.PluginGitHubClient
+	Git              git.ClientFactory
+	Logger           *logrus.Entry
 
-	mut                       sync.Mutex
-	sem                       sync.WaitGroup
+	Stage                     utypes.Stage // int of the update process
+	mut                       sync.RWMutex
 	UpdateSubmodulesStartedAt time.Time
+}
+
+func (session *Session) merge() error {
+	if !session.Stage.Start() {
+		return nil
+	}
+	err := session.Client.Merge(session.OwnerLogin, session.MainRepo, session.UpdatePRNumber, github.MergeDetails{
+		MergeMethod: "rebase",
+		SHA:         session.UpdateSHA,
+	})
+	if err != nil {
+		return fmt.Errorf("cannot merge update pull request. %w", err)
+	}
+	session.requestStage(utypes.IDLE)
+	return nil
+}
+
+func (session *Session) requestStage(stage int) {
+	session.Stage.Request(stage)
+	switch stage {
+	case utypes.PROCESSING:
+		go session.process()
+	case utypes.DELIVERING:
+		go session.deliver()
+	case utypes.WAITING:
+		go session.waitingTrigger()
+	case utypes.SUBMERGING:
+		go session.handleSubmodulePR()
+	case utypes.UPDATING:
+		go session.updateSubmodule()
+	case utypes.MERGING:
+		go session.merge()
+	}
+}
+
+func (session *Session) createStatus(status github.Status) error {
+	return session.Client.CreateStatus(session.OwnerLogin, session.MainRepo, session.UpdateSHA, status)
+}
+
+func (session *Session) fail(status github.Status, cause string, err error) error {
+	status.State = github.StatusFailure
+	status.Description = cause
+	session.createStatus(status)
+	if err != nil {
+		return fmt.Errorf("%s %w", status.Description, err)
+	} else {
+		return fmt.Errorf(status.Description)
+	}
+}
+
+func (session *Session) succeed(status github.Status, description string) {
+	status.State = github.StatusSuccess
+	status.Description = description
+	session.createStatus(status)
+}
+
+func (session *Session) pending(status github.Status, description string) {
+	status.State = github.StatusPending
+	status.Description = description
+	session.createStatus(status)
+}
+
+func (session *Session) checkUpdateConflict() error {
+	// For speed and convenience, here we just check if there is a ref matching update to version
+	checkTag := fmt.Sprintf("tags/%s", session.UpdateToVersion)
+	client := session.Client
+	_, err := client.GetRef(session.OwnerLogin, session.MainRepo, checkTag)
+	pattern := regexp.MustCompile(`status code 404`)
+	if err != nil {
+		if pattern.FindString(err.Error()) == "" {
+			return err
+		}
+	} else {
+		return &TagExistError{repo: session.MainRepo, tag: session.UpdateToVersion}
+	}
+	for _, submodule := range session.Submodules {
+		_, err = client.GetRef(session.OwnerLogin, submodule.BaseInfo.Name, checkTag)
+		if err != nil {
+			if pattern.FindString(err.Error()) == "" {
+				return err
+			}
+		} else {
+			return &TagExistError{repo: submodule.BaseInfo.Name, tag: session.UpdateToVersion}
+		}
+	}
+	return nil
 }
 
 func init() {
@@ -62,6 +147,7 @@ func init() {
 	plugins.RegisterReviewEventHandler(PluginName, handleReviewEvent, nil)
 	plugins.RegisterStatusEventHandler(PluginName, handleStatusEvent, nil)
 	plugins.RegisterWorkflowRunEventHandler(PluginName, handleWorkflowRunEvent, nil)
+	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, nil)
 }
 
 func handlePullRequestEvent(agent plugins.Agent, pullRequestEvent github.PullRequestEvent) error {
@@ -69,12 +155,12 @@ func handlePullRequestEvent(agent plugins.Agent, pullRequestEvent github.PullReq
 	case github.PullRequestActionOpened, github.PullRequestActionReopened, github.PullRequestActionSynchronize:
 		for _, repo := range UpdateMainRepo {
 			if repo == pullRequestEvent.Repo.Name {
-				return triggerUpdate(&agent, &pullRequestEvent)
+				return triggerUpdate(&agent, &pullRequestEvent.PullRequest)
 			}
 		}
-		for _, context := range Contexts {
-			if pullRequestEvent.Repo.Owner.Login == context.OwnerLogin {
-				for _, submodule := range context.SubmoduleInfo {
+		for _, session := range Sessions {
+			if pullRequestEvent.Repo.Owner.Login == session.OwnerLogin {
+				for _, submodule := range session.Submodules {
 					if pullRequestEvent.Repo.Name == submodule.BaseInfo.Name {
 						submodule.PRInfo = &pullRequestEvent.PullRequest
 						break
@@ -84,14 +170,16 @@ func handlePullRequestEvent(agent plugins.Agent, pullRequestEvent github.PullReq
 		}
 	case github.PullRequestActionClosed:
 		// Handle submodule merge event, user may manually merge submodule's pull request when it's ready
-		for _, context := range Contexts {
-			if pullRequestEvent.Repo.Owner.Login == context.OwnerLogin {
-				for _, submodule := range context.SubmoduleInfo {
+		for _, session := range Sessions {
+			if pullRequestEvent.Repo.Owner.Login == session.OwnerLogin {
+				for _, submodule := range session.Submodules {
 					if pullRequestEvent.Repo.Name == submodule.BaseInfo.Name {
 						if submodule.PRInfo.Number == pullRequestEvent.Number &&
 							!submodule.PRInfo.Merged && pullRequestEvent.PullRequest.Merged {
 							submodule.MergedSHA = *pullRequestEvent.PullRequest.MergeSHA
-							context.sem.Done() // One submodule pull request is just merged
+							if session.submoduleMerged() {
+								session.requestStage(utypes.UPDATING)
+							}
 						}
 						submodule.PRInfo = &pullRequestEvent.PullRequest
 						break
@@ -106,9 +194,13 @@ func handlePullRequestEvent(agent plugins.Agent, pullRequestEvent github.PullReq
 func handleReviewEvent(agent plugins.Agent, reviewEvent github.ReviewEvent) error {
 	switch reviewEvent.Action {
 	case github.ReviewActionSubmitted:
-		context, exist := Contexts[reviewEvent.Repo.Name]
-		if exist && reviewEvent.PullRequest.Number == context.UpdatePRNumber {
-			return checkAndUpdate(&agent, context)
+		owner := reviewEvent.Repo.Owner.Login
+		repo := reviewEvent.Repo.Name
+		number := reviewEvent.PullRequest.Number
+		SHA := reviewEvent.PullRequest.Base.SHA
+		session, exist := Sessions[generateSessionID(owner, repo, number, SHA)]
+		if exist && reviewEvent.PullRequest.Number == session.UpdatePRNumber {
+			return session.checkAndUpdate()
 		}
 	default:
 		break
@@ -117,12 +209,12 @@ func handleReviewEvent(agent plugins.Agent, reviewEvent github.ReviewEvent) erro
 }
 
 func handleStatusEvent(agent plugins.Agent, statusEvent github.StatusEvent) error {
-	// First look for the context
-	for _, context := range Contexts {
-		if context.OwnerLogin == statusEvent.Repo.Owner.Login {
-			for _, submodule := range context.SubmoduleInfo {
-				if submodule.BaseInfo.Name == statusEvent.Repo.Name {
-					return concludeSubmoduleStatus(&agent, submodule, context)
+	// First look for the session
+	for _, session := range Sessions {
+		if session.OwnerLogin == statusEvent.Repo.Owner.Login {
+			for _, submodule := range session.Submodules {
+				if submodule.BaseInfo.Name == statusEvent.Repo.Name && submodule.PRInfo.Head.SHA == statusEvent.SHA {
+					return session.concludeSubmoduleStatus(submodule)
 				}
 			}
 		}
@@ -138,16 +230,16 @@ func handleWorkflowRunEvent(agent plugins.Agent, workflowRunEvent github.Workflo
 			return nil
 		}
 		for _, pullRequest := range workflowRunEvent.WorkflowRun.PullRequests {
-			for _, context := range Contexts {
-				if context.OwnerLogin == workflowRunEvent.Repo.Owner.Login {
-					if context.MainRepo == workflowRunEvent.Repo.Name && pullRequest.Number == context.UpdatePRNumber {
+			for _, session := range Sessions {
+				if session.OwnerLogin == workflowRunEvent.Repo.Owner.Login {
+					if session.MainRepo == workflowRunEvent.Repo.Name && pullRequest.Number == session.UpdatePRNumber {
 						if workflowRunEvent.WorkflowRun.Conclusion == "success" || workflowRunEvent.WorkflowRun.Conclusion == "skipped" {
-							return checkAndUpdate(&agent, context)
+							return session.checkAndUpdate()
 						}
 					} else {
-						for _, submodule := range context.SubmoduleInfo {
+						for _, submodule := range session.Submodules {
 							if submodule.BaseInfo.Name == workflowRunEvent.Repo.Name {
-								return concludeSubmoduleStatus(&agent, submodule, context)
+								return session.concludeSubmoduleStatus(submodule)
 							}
 						}
 					}
@@ -160,59 +252,230 @@ func handleWorkflowRunEvent(agent plugins.Agent, workflowRunEvent github.Workflo
 	return nil
 }
 
+func handleGenericCommentEvent(agent plugins.Agent, genericCommentEvent github.GenericCommentEvent) error {
+	switch genericCommentEvent.Action {
+	case github.GenericCommentActionCreated:
+		if genericCommentEvent.IsPR {
+			// Check if there is a session whose stage is not IDLE
+			owner := genericCommentEvent.Repo.Owner.Login
+			repo := genericCommentEvent.Repo.Name
+			number := genericCommentEvent.Number
+			pullRequest, err := agent.GitHubClient.GetPullRequest(owner, repo, number)
+			if err != nil {
+				return fmt.Errorf("cannot get pull request for status. %w", err)
+			}
+			SHA := pullRequest.Head.SHA
+			id := generateSessionID(owner, repo, number, SHA)
+			session, exist := Sessions[id]
+			if exist {
+				if session.UpdatePRNumber == genericCommentEvent.Number {
+					switch genericCommentEvent.Body {
+					case "/retrigger":
+						return triggerUpdate(&agent, pullRequest)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 type TagExistError struct {
 	repo string
-	tag string
+	tag  string
 }
 
 func (tee *TagExistError) Error() string {
 	return fmt.Sprintf("tag %s exists in repo %s", tee.tag, tee.repo)
 }
 
-func checkUpdateConflict(agent *plugins.Agent, context *UpdateContext, submodules []SubmoduleEntry) error {
-	// For speed and convenience, here we just check if there is a ref matching update to version
-	checkTag := fmt.Sprintf("tags/%s", context.UpdateToVersion)
-	client := agent.GitHubClient
-	_, err := client.GetRef(context.OwnerLogin, context.MainRepo, checkTag)
-	pattern := regexp.MustCompile(`status code 404`)
-	if err != nil {
-		if pattern.FindString(err.Error()) == "" {
-			return err
-		}
-	} else {
-		return &TagExistError{repo: context.MainRepo, tag: context.UpdateToVersion}
+func generateSessionID(owner, repo string, number int, SHA string) string {
+	return fmt.Sprintf("/%s/%s/%d/%s", owner, repo, number, SHA)
+}
+
+func (session *Session) process() error {
+	if !session.Stage.Start() {
+		return nil
 	}
-	for _, submodule := range submodules {
-		_, err = client.GetRef(context.OwnerLogin, submodule.Name, checkTag)
+	err := func() error {
+		processStatus := github.Status{
+			State:       github.StatusPending,
+			Context:     "auto-update / extract-meta",
+			Description: "Extracting meta information from pull request...",
+		}
+		session.createStatus(processStatus)
+		gitmodules, err := session.Client.GetFile(session.OwnerLogin, session.MainRepo, ".gitmodules", session.UpdateSHA)
 		if err != nil {
-			if pattern.FindString(err.Error()) == "" {
-				return err
+			return session.fail(processStatus, "Cannot find .gitmodules.", err)
+		}
+		moduleEntries, err := ParseDotGitmodulesContent(gitmodules)
+		if err != nil {
+			return session.fail(processStatus, "Cannot parse submodules from main repo.", err)
+		}
+		session.mut.Lock()
+		defer session.mut.Unlock()
+		for _, entry := range moduleEntries {
+			session.Submodules[entry.Name] = &SubmoduleInfo{
+				BaseInfo: entry,
 			}
-		} else {
-			return &TagExistError{repo: submodule.Name, tag: context.UpdateToVersion}
+		}
+		err = session.checkUpdateConflict()
+		if err != nil {
+			return session.fail(processStatus, "Update conflict.", err)
+		}
+		session.succeed(processStatus, fmt.Sprintf("Successful in %s", time.Since(session.Stage.StartedAt()).Round(time.Second)))
+		return nil
+	}()
+	if err == nil {
+		session.requestStage(utypes.DELIVERING)
+	}
+	return err
+}
+
+func (session *Session) deliver() error {
+	if !session.Stage.Start() {
+		return nil
+	}
+	err := func() error {
+		deliverStatus := github.Status{
+			Context: "auto-update / deliver-pr",
+		}
+		startedAt := time.Now()
+		session.pending(deliverStatus, "Delivering pull requests to submodules...")
+		var wg sync.WaitGroup
+		wg.Add(len(session.Submodules))
+		errChan := make(chan error, len(session.Submodules))
+		for _, submodule := range session.Submodules {
+			go func(s *Session, module *SubmoduleInfo) {
+				errChan <- s.deliverUpdatePR(module)
+				wg.Done()
+			}(session, submodule)
+		}
+		wg.Wait()
+		close(errChan)
+		for err := range errChan {
+			if err != nil {
+				return session.fail(deliverStatus, "Deliver failed.", nil)
+			}
+		}
+		session.succeed(deliverStatus, fmt.Sprintf("Successful in %s.", time.Since(startedAt).Round(time.Second)))
+		return nil
+	}()
+	if err == nil {
+		session.requestStage(utypes.WAITING)
+	}
+	return err
+}
+
+func (session *Session) waitingTrigger() error {
+	if !session.Stage.Start() {
+		return nil
+	}
+	time.Sleep(10 * time.Second)
+	return session.conclude()
+}
+
+func (session *Session) conclude() error {
+	var errs []error
+	for _, submodule := range session.Submodules {
+		err := session.concludeSubmoduleStatus(submodule)
+		errs = append(errs, err)
+	}
+	for _, err := range errs {
+		if err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-func triggerUpdate(agent *plugins.Agent, pullRequestEvent *github.PullRequestEvent) error {
-	githubClient := agent.GitHubClient
-	org := pullRequestEvent.Repo.Owner.Login
-	repo := pullRequestEvent.Repo.Name
-	PRNumber := pullRequestEvent.PullRequest.Number
-	commits, err := githubClient.ListPRCommits(org, repo, PRNumber)
-	update := false
-	var changelogCommitFile *github.CommitFile
-	for _, commit := range commits {
-		commitDetail, err := githubClient.GetSingleCommit(org, repo, commit.SHA)
-		if err != nil {
-			return err
+func (session *Session) submoduleMerged() bool {
+	for _, submodule := range session.Submodules {
+		if !submodule.PRInfo.Merged {
+			return false
 		}
-		for _, file := range commitDetail.Files {
-			if file.Filename == "debian/changelog" {
-				update = true
-				changelogCommitFile = &file
-			}
+	}
+	return true
+}
+
+func (session *Session) concludeSubmoduleStatus(submodule *SubmoduleInfo) error {
+	// Check if already merged
+	if submodule.PRInfo.Merged || submodule.Status == nil {
+		return nil
+	}
+	owner := session.OwnerLogin
+	repo := submodule.BaseInfo.Name
+	SHA := submodule.PRInfo.Head.SHA
+	status := commitStatus(session.Client, owner, repo, SHA)
+	if submodule.Status.State == status {
+		// Do not need update
+		return nil
+	}
+	submodule.Status.State = status
+	switch status {
+	case github.StatusPending:
+		submodule.Status.Description = "Waiting for checks to complete..."
+	case github.StatusError:
+		submodule.Status.Description = "Something went wrong!"
+	case github.StatusFailure:
+		submodule.Status.Description = fmt.Sprintf("Failed in %s", time.Since(submodule.StartedAt).Round(time.Second))
+	case github.StatusSuccess:
+		submodule.Status.Description = fmt.Sprintf("Successful in %s.", time.Since(submodule.StartedAt).Round(time.Second))
+	}
+	err := session.createStatus(*submodule.Status)
+	if err != nil {
+		return fmt.Errorf("failed to update status for PR: %s, %w", submodule.PRInfo.HTMLURL, err)
+	}
+	err = session.checkAndUpdate()
+	var notReady NotReadyError
+	if err != nil && !errors.As(err, &notReady) {
+		return fmt.Errorf("failed to update, %w", err)
+	}
+	return nil
+}
+
+func triggerUpdate(agent *plugins.Agent, pullRequest *github.PullRequest) error {
+	gc := agent.GitHubClient
+	owner := pullRequest.Base.Repo.Owner.Login
+	repo := pullRequest.Base.Repo.Name
+	number := pullRequest.Number
+	SHA := pullRequest.Head.SHA
+	id := generateSessionID(owner, repo, number, SHA)
+	fail := func(description string, cause error) error {
+		gc.CreateStatus(owner, repo, SHA, github.Status{
+			State:       github.StatusFailure,
+			Context:     "auto-update / deliver-pr",
+			Description: description,
+		})
+		gc.CreateStatus(owner, repo, SHA, github.Status{
+			State:       github.StatusFailure,
+			Context:     "auto-update / update-submodules",
+			Description: description,
+		})
+		if cause != nil {
+			return fmt.Errorf("%s %w", strings.ToLower(description), cause)
+		} else {
+			return fmt.Errorf(description)
+		}
+	}
+	commits, err := gc.ListPRCommits(owner, repo, number)
+	if err != nil {
+		return fail("Cannot get pull request commits.", err)
+	}
+	if len(commits) != 1 {
+		return fail("There should be one and just one commit.", nil)
+	}
+	commit := commits[0]
+	update := false
+	commitDetail, err := gc.GetSingleCommit(owner, repo, commit.SHA)
+	if err != nil {
+		return fail("Cannot get commit for pull request.", err)
+	}
+	var changelogCommitFile github.CommitFile
+	for _, file := range commitDetail.Files {
+		if file.Filename == "debian/changelog" {
+			update = true
+			changelogCommitFile = file
 		}
 	}
 	if update {
@@ -220,134 +483,38 @@ func triggerUpdate(agent *plugins.Agent, pullRequestEvent *github.PullRequestEve
 		result := versionPattern.FindStringSubmatch(changelogCommitFile.Patch)
 		if len(result) < 3 {
 			// At least we have one whole match and two groups
-			return fmt.Errorf("cannot find version in changelog")
+			return fail("Cannot find version in changelog.", nil)
 		}
-		// Create a new update context
-		context, exist := Contexts[pullRequestEvent.Repo.Name]
-		if exist {
-			// Only reconstruct the context if not in UPDATING stage
-			if context.Stage == UPDATING {
-				return fmt.Errorf("there is an update process ongoing")
+		// Create a new update session
+		session, exist := Sessions[id]
+		if !exist || session.Stage.Is(utypes.IDLE) {
+			session = &Session{}
+			Sessions[id] = session
+			session.mut.Lock()
+			session.MainRepo = repo
+			session.OwnerLogin = owner
+			session.UpdatePR = pullRequest
+			session.UpdatePRNumber = number
+			session.UpdateSHA = pullRequest.Head.SHA
+			session.Client = agent.GitHubClient
+			session.Git = agent.GitClient
+			session.BotUser, err = agent.GitHubClient.BotUser()
+			if err != nil {
+				return fail("Cannot get bot user.", err)
 			}
+			session.UpdateToVersion = result[1]
+			session.UpdateBaseBranch = pullRequest.Base.Ref
+			// Just build submodule info at this time to ensure submoduleInfo track is correct
+			session.Submodules = map[string]*SubmoduleInfo{}
+			session.UpdateHeadBranch = "topic-update"
+			session.mut.Unlock()
+			session.requestStage(utypes.PROCESSING)
 		} else {
-			context = &UpdateContext{}
-			Contexts[pullRequestEvent.Repo.Name] = context
+			session.requestStage(session.Stage.Value())
 		}
-		context.mut.Lock()
-		context.Stage = PROCESSING
-		context.MainRepo = pullRequestEvent.Repo.Name
-		context.OwnerLogin = pullRequestEvent.Repo.Owner.Login
-		context.UpdatePR = &pullRequestEvent.PullRequest
-		context.UpdatePRNumber = pullRequestEvent.PullRequest.Number
-		context.UpdateSHA = pullRequestEvent.PullRequest.Head.SHA
-		context.BotUser, err = agent.GitHubClient.BotUser()
-		if err != nil {
-			return fmt.Errorf("cannot get bot user, error: %w", err)
-		}
-		deliverTimeChan := make(chan time.Time, 1)
-		go func() {
-			// Create status for delivering PR
-			githubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
-				State:       github.StatusPending,
-				Context:     "auto-update / deliver-pr",
-				Description: "Delivering pull requests to submodules...",
-			})
-			// Create submoduleStatus for updating submodules
-			githubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
-				State:       github.StatusPending,
-				Context:     "auto-update / update-submodules",
-				Description: "Waiting for submodules to be updated...",
-			})
-			context.UpdateSubmodulesStartedAt = time.Now()
-			deliverTimeChan <- time.Now()
-		}()
-
-		reportFailure := func(cause string) {
-			githubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
-				State: github.StatusFailure,
-				Context: "auto-update / deliver-pr",
-				Description: cause,
-			})
-			githubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
-				State:       github.StatusFailure,
-				Context:     "auto-update / update-submodules",
-				Description: cause,
-			})
-		}
-		context.UpdateToVersion = result[1]
-		context.UpdateBase = pullRequestEvent.PullRequest.Base.Ref
-		context.UpdatePR = &pullRequestEvent.PullRequest
-		// Just build submodule info at this time to ensure submoduleInfo track is correct
-		context.SubmoduleInfo = map[string]*SubmoduleContext{}
-		gitmodules, err := githubClient.GetFile(context.OwnerLogin, context.MainRepo, ".gitmodules", pullRequestEvent.PullRequest.Head.SHA)
-		if err != nil {
-			reportFailure("Cannot find .gitmodules")
-			return fmt.Errorf("cannot find .gitmodules, %w", err)
-		}
-		moduleEntries, err := ParseDotGitmodulesContent(gitmodules)
-		if err != nil {
-			reportFailure("Cannot parse submodules from main repo")
-			return fmt.Errorf("cannot parse submodules from main repo, %w", err)
-		}
-		err = checkUpdateConflict(agent, context, moduleEntries)
-		if err != nil {
-			reportFailure("Update conflict")
-			return fmt.Errorf("update conflict, %w", err)
-		}
-		var sem sync.WaitGroup
-		sem.Add(len(moduleEntries))
-		context.Stage = DELIVERING
-		for _, moduleEntry := range moduleEntries {
-			module := moduleEntry
-			submoduleContext := &SubmoduleContext{
-				BaseInfo: &module,
-			}
-			context.SubmoduleInfo[moduleEntry.Name] = submoduleContext
-			go func() {
-				err := deliverUpdatePR(agent, context, submoduleContext)
-				if err != nil {
-					agent.Logger.WithError(err).Warnf("Cannot deliver update pull request for %s/%s", context.OwnerLogin, submoduleContext.BaseInfo.Name)
-				}
-				sem.Done()
-			}()
-		}
-		context.mut.Unlock()
-		go func() {
-			defer close(deliverTimeChan)
-			sem.Wait()
-			context.mut.Lock()
-			context.Stage = WAITING
-			context.mut.Unlock()
-			deliverStartedAt := <-deliverTimeChan
-			agent.GitHubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
-				State:       github.StatusSuccess,
-				Context:     "auto-update / deliver-pr",
-				Description: fmt.Sprintf("Successful in %s.", time.Since(deliverStartedAt).Round(time.Second)),
-			})
-		}()
 	}
 	return err
 }
-
-// func checksCompleted(agent *plugins.Agent, owner, repo, SHA string) bool {
-// 	checkRunList, err := agent.GitHubClient.ListCheckRuns(owner, repo, SHA)
-// 	if err != nil {
-// 		agent.Logger.WithError(err).Warnf("Cannot list check runs for %s/%s, SHA: %s", owner, repo, SHA)
-// 		return false
-// 	}
-// 	hasPending := false
-// 	for _, checkRun := range checkRunList.CheckRuns {
-// 		if checkRun.Status == "completed" {
-// 			if checkRun.Conclusion == "cancelled" || checkRun.Conclusion == "failure" {
-// 				// If there is one cancelled or failed check, consider this commit as checks completed
-// 				return true
-// 			}
-// 		} else {
-// 			hasPending = true
-// 		}
-// 	}
-// 	return !hasPending
-// }
 
 // Make sure param is correct
 func moreImportantStatus(result, single string) string {
@@ -372,10 +539,10 @@ func moreImportantStatus(result, single string) string {
 	}
 }
 
-func combinedStatus(agent *plugins.Agent, owner, repo, SHA string) string {
-	statuses, err := agent.GitHubClient.GetCombinedStatus(owner, repo, SHA)
+func combinedStatus(client plugins.PluginGitHubClient, owner, repo, SHA string) string {
+	statuses, err := client.GetCombinedStatus(owner, repo, SHA)
 	if err != nil {
-		agent.Logger.WithError(err).Warnf("Cannot list statuses for %s/%s, SHA: %s", owner, repo, SHA)
+		logrus.WithError(err).Warnf("Cannot list statuses for %s/%s, SHA: %s", owner, repo, SHA)
 		return github.StatusPending
 	}
 	result := github.StatusSuccess
@@ -388,22 +555,11 @@ func combinedStatus(agent *plugins.Agent, owner, repo, SHA string) string {
 	return result
 }
 
-// func allCompleted(agent *plugins.Agent, owner, repo, SHA string) bool {
-// 	checksChan := make(chan bool, 1)
-// 	defer close(checksChan)
-// 	go func() {
-// 		checksChan <- checksCompleted(agent, owner, repo, SHA)
-// 	}()
-// 	statusCompleted := (combinedStatus(agent, owner, repo, SHA) != github.StatusPending)
-// 	checks := <-checksChan
-// 	return checks && statusCompleted
-// }
-
 // If all checks are passed (success or skipped), return true
-func checksPassed(agent *plugins.Agent, owner, repo, SHA string) bool {
-	checks, err := agent.GitHubClient.ListCheckRuns(owner, repo, SHA)
+func checksPassed(client plugins.PluginGitHubClient, owner, repo, SHA string) bool {
+	checks, err := client.ListCheckRuns(owner, repo, SHA)
 	if err != nil {
-		agent.Logger.WithError(err).Warnf("Cannot list check runs for %s/%s, SHA: %s", owner, repo, SHA)
+		logrus.WithError(err).Warnf("Cannot list check runs for %s/%s, SHA: %s", owner, repo, SHA)
 		return false
 	}
 	for _, check := range checks.CheckRuns {
@@ -414,18 +570,17 @@ func checksPassed(agent *plugins.Agent, owner, repo, SHA string) bool {
 	return true
 }
 
-
 func moreImportantConclusion(prev, next string) string {
 	priority := map[string]int{
-		"skipped": 1,
-		"neutral": 2,
-		"success": 3,
-		"stale": 4,
-		"pending": 5,
+		"skipped":         1,
+		"neutral":         2,
+		"success":         3,
+		"stale":           4,
+		"pending":         5,
 		"action_required": 6,
-		"failure": 7,
-		"timed_out": 8,
-		"cancelled": 9,
+		"failure":         7,
+		"timed_out":       8,
+		"cancelled":       9,
 	}
 	prevP, nextP := priority[prev], priority[next]
 	if nextP > prevP {
@@ -435,12 +590,10 @@ func moreImportantConclusion(prev, next string) string {
 	}
 }
 
-func commitStatus(agent *plugins.Agent, owner, repo, SHA string) string {
-	client := agent.GitHubClient
-	entry := agent.Logger
+func commitStatus(client plugins.PluginGitHubClient, owner, repo, SHA string) string {
 	checks, err := client.ListCheckRuns(owner, repo, SHA)
 	if err != nil {
-		entry.WithError(err).Warnf("Cannot list check runs for %s/%s, SHA: %s", owner, repo, SHA)
+		logrus.WithError(err).Warnf("Cannot list check runs for %s/%s, SHA: %s", owner, repo, SHA)
 		return github.StatusPending
 	}
 	conclusion := "skipped"
@@ -463,24 +616,11 @@ func commitStatus(agent *plugins.Agent, owner, repo, SHA string) string {
 	default:
 		status = github.StatusSuccess
 	}
-	return moreImportantStatus(status, combinedStatus(agent, owner, repo, SHA))
+	return moreImportantStatus(status, combinedStatus(client, owner, repo, SHA))
 }
 
-// For a commit SHA, if all checks on it and all statuses for it are successful or skipped, then return true
-// func allPassed(agent *plugins.Agent, owner, repo, SHA string) bool {
-// 	statusChan := make(chan bool, 1)
-// 	defer close(statusChan)
-// 	go func() {
-// 		statusChan <- (combinedStatus(agent, owner, repo, SHA) == github.StatusSuccess)
-// 	}()
-// 	passed := checksPassed(agent, owner, repo, SHA)
-// 	statusPassed := <-statusChan
-// 	return passed && statusPassed
-// }
-
-func prApproved(agent *plugins.Agent, pullRequest *github.PullRequest, context *UpdateContext) bool {
-	client := agent.GitHubClient
-	entry := agent.Logger
+func prApproved(client plugins.PluginGitHubClient, pullRequest *github.PullRequest) bool {
+	entry := logrus.New()
 	owner := pullRequest.Base.Repo.Owner.Login
 	repo := pullRequest.Base.Repo.Name
 
@@ -531,11 +671,10 @@ func prApproved(agent *plugins.Agent, pullRequest *github.PullRequest, context *
 		}
 	}
 	return true
-
 }
 
-func submodulesReady(context *UpdateContext) bool {
-	for _, submodule := range context.SubmoduleInfo {
+func (session *Session) submodulesReady() bool {
+	for _, submodule := range session.Submodules {
 		if submodule.Status.State != github.StatusSuccess {
 			return false
 		}
@@ -543,51 +682,17 @@ func submodulesReady(context *UpdateContext) bool {
 	return true
 }
 
-// Give submodule status a conclusion, success or failure, only conclude when all checks and statuses are finished
-func concludeSubmoduleStatus(agent *plugins.Agent, submodule *SubmoduleContext, context *UpdateContext) error {
-	// Check if already merged
-	if submodule.PRInfo.Merged {
+func (session *Session) handleSubmodulePR() error {
+	if !session.Stage.Start() {
 		return nil
 	}
-	owner := context.OwnerLogin
-	repo := submodule.BaseInfo.Name
-	SHA := submodule.PRInfo.Head.SHA
-	status := commitStatus(agent, owner, repo, SHA)
-	if submodule.Status.State == status {
-		// Do not need update
-		return nil
-	}
-	submodule.Status.State = status
-	switch status {
-	case github.StatusPending:
-		submodule.Status.Description = "Waiting for checks to complete..."
-	case github.StatusError:
-		submodule.Status.Description = "Something went wrong!"
-	case github.StatusFailure:
-		submodule.Status.Description = fmt.Sprintf("Failed in %s", time.Since(submodule.StartedAt).Round(time.Second))
-	case github.StatusSuccess:
-		submodule.Status.Description = fmt.Sprintf("Successful in %s.", time.Since(submodule.StartedAt).Round(time.Second))
-	}
-	err := agent.GitHubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdatePR.Head.SHA, *submodule.Status)
-	if err != nil {
-		return fmt.Errorf("failed to update status for PR: %s, %w", submodule.PRInfo.HTMLURL, err)
-	}
-	err = checkAndUpdate(agent, context)
-	var notReady NotReadyError
-	if err != nil && !errors.As(err, &notReady) {
-		return fmt.Errorf("failed to update, %w", err)
-	}
-	return nil
-}
-
-func handleSubmodulePR(agent *plugins.Agent, context *UpdateContext) error {
-	for _, submodule := range context.SubmoduleInfo {
+	for _, submodule := range session.Submodules {
 		if submodule.Status.State != "success" {
 			return fmt.Errorf("cannot handle submodule pull requests, pull request %s for submodule %s is not ready", submodule.PRInfo.HTMLURL, submodule.BaseInfo.Name)
 		}
 	}
-	for _, submodule := range context.SubmoduleInfo {
-		err := agent.GitHubClient.Merge(context.OwnerLogin, submodule.BaseInfo.Name, submodule.PRInfo.Number, github.MergeDetails{
+	for _, submodule := range session.Submodules {
+		err := session.Client.Merge(session.OwnerLogin, submodule.BaseInfo.Name, submodule.PRInfo.Number, github.MergeDetails{
 			MergeMethod: "rebase",
 			SHA:         submodule.PRInfo.Head.SHA,
 		})
@@ -598,196 +703,159 @@ func handleSubmodulePR(agent *plugins.Agent, context *UpdateContext) error {
 	return nil
 }
 
-func updateSubmodule(agent *plugins.Agent, context *UpdateContext) error {
-	repo, err := agent.GitClient.ClientFor(context.OwnerLogin, context.MainRepo)
-	if err != nil {
-		return fmt.Errorf("cannot create git client for %s/%s, error: %w", context.OwnerLogin, context.MainRepo, err)
+func (session *Session) updateSubmodule() error {
+	if !session.Stage.Start() {
+		return nil
 	}
-	defer repo.Clean()
-
-	err = repo.Checkout(context.UpdateBase)
-	if err != nil {
-		return err
-	}
-
-	update := exec.Command("git", "submodule", "update", "--init", "--recursive")
-	update.Dir = repo.Directory()
-	err = update.Run()
-	if err != nil {
-		agent.Logger.WithError(err).Warnf("cannot init submodule for %s/%s", context.OwnerLogin, context.MainRepo)
-		return err
-	}
-	for _, submodule := range context.SubmoduleInfo {
-		submoduleWD := filepath.Join(repo.Directory(), submodule.BaseInfo.Path)
-		fetch := exec.Command("git", "fetch", "--all")
-		fetch.Dir = submoduleWD
-		err = fetch.Run()
+	err := func() error {
+		repo, err := session.Git.ClientFor(session.OwnerLogin, session.MainRepo)
 		if err != nil {
-			return fmt.Errorf("cannot fetch update from all submodules, error: %w", err)
+			return fmt.Errorf("cannot create git client for %s/%s, error: %w", session.OwnerLogin, session.MainRepo, err)
 		}
-		checkout := exec.Command("git", "checkout", submodule.MergedSHA)
-		checkout.Dir = submoduleWD
-		err = checkout.Run()
-		if err != nil {
-			return fmt.Errorf("cannot checkout to %s for submodule %s/%s, %w",
-				submodule.MergedSHA,
-				context.OwnerLogin,
-				submodule.BaseInfo.Name,
-				err,
-			)
-		}
-	}
-	if context.BotUser == nil {
-		context.BotUser, err = agent.GitHubClient.BotUser()
-		if err != nil {
-			return fmt.Errorf("cannot get bot user data, %w", err)
-		}
-	}
-	repo.Config("user.name", context.BotUser.Login)
-	repo.Config("user.email", context.BotUser.Email)
-	repo.Commit("chore: update submodules", fmt.Sprintf("Update submodules to version %s.", context.UpdateToVersion))
-	defer agent.GitHubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdateSHA, github.Status{
-		State:       github.StatusSuccess,
-		Context:     "auto-update / update-submodules",
-		Description: fmt.Sprintf("Successful in %s.", time.Since(context.UpdateSubmodulesStartedAt).Round(time.Second)),
-	})
-	return repo.PushToCentral(context.UpdateBase, true)
-}
+		defer repo.Clean()
 
-func logUpdate(agent *plugins.Agent, context *UpdateContext) (err error) {
-	if context.Stage == UPDATING || context.Stage == IDLE {
-		return fmt.Errorf("there is already a update process")
-	}
-	context.mut.Lock()
-	context.Stage = UPDATING
-	context.mut.Unlock()
-	defer func() {
-		if err == nil {
-			context.mut.Lock()
-			context.Stage = IDLE
-			context.mut.Unlock()
+		err = repo.Checkout(session.UpdateBaseBranch)
+		if err != nil {
+			return err
 		}
+
+		update := exec.Command("git", "submodule", "update", "--init", "--recursive")
+		update.Dir = repo.Directory()
+		err = update.Run()
+		if err != nil {
+			session.Logger.WithError(err).Warnf("cannot init submodule for %s/%s", session.OwnerLogin, session.MainRepo)
+			return err
+		}
+		for _, submodule := range session.Submodules {
+			submoduleWD := filepath.Join(repo.Directory(), submodule.BaseInfo.Path)
+			fetch := exec.Command("git", "fetch", "--all")
+			fetch.Dir = submoduleWD
+			err = fetch.Run()
+			if err != nil {
+				return fmt.Errorf("cannot fetch update from all submodules, error: %w", err)
+			}
+			checkout := exec.Command("git", "checkout", submodule.MergedSHA)
+			checkout.Dir = submoduleWD
+			err = checkout.Run()
+			if err != nil {
+				return fmt.Errorf("cannot checkout to %s for submodule %s/%s, %w",
+					submodule.MergedSHA,
+					session.OwnerLogin,
+					submodule.BaseInfo.Name,
+					err,
+				)
+			}
+		}
+		if session.BotUser == nil {
+			session.BotUser, err = session.Client.BotUser()
+			if err != nil {
+				return fmt.Errorf("cannot get bot user data, %w", err)
+			}
+		}
+		repo.Config("user.name", session.BotUser.Login)
+		repo.Config("user.email", session.BotUser.Email)
+		repo.Commit("chore: update submodules", fmt.Sprintf("Update submodules to version %s.", session.UpdateToVersion))
+		defer session.createStatus(github.Status{
+			State:       github.StatusSuccess,
+			Context:     "auto-update / update-submodules",
+			Description: fmt.Sprintf("Successful in %s.", time.Since(session.UpdateSubmodulesStartedAt).Round(time.Second)),
+		})
+		return repo.PushToCentral(session.UpdateBaseBranch, true)
 	}()
-	agent.Logger.Infof("Updating %s/%s...", context.OwnerLogin, context.MainRepo)
-
-	err = handleSubmodulePR(agent, context)
-	if err != nil {
-		agent.Logger.WithError(err).Warnf("Cannot merge all submodules' pull requests")
-		return
+	if err == nil {
+		session.requestStage(utypes.MERGING)
 	}
-
-	context.sem.Wait()
-
-	err = updateSubmodule(agent, context)
-	if err != nil {
-		agent.Logger.WithError(err).Warnf("Cannot update submodule")
-		return
-	}
-
-	time.Sleep(10 * time.Second)
-	err = agent.GitHubClient.Merge(context.OwnerLogin, context.MainRepo, context.UpdatePRNumber, github.MergeDetails{
-		MergeMethod: "rebase",
-		SHA:         context.UpdateSHA,
-	})
-
-	if err != nil {
-		agent.Logger.WithError(err).Warnf("Cannot merge main update pull request")
-		return
-	}
-
-	return
+	return err
 }
 
-func updateChangelog(agent *plugins.Agent, submoduleContext *SubmoduleContext, context *UpdateContext) error {
-	repo, err := agent.GitClient.ClientFor(context.OwnerLogin, submoduleContext.BaseInfo.Name)
+func (session *Session) updateChangelog(submodule *SubmoduleInfo) error {
+	repo, err := session.Git.ClientFor(session.OwnerLogin, submodule.BaseInfo.Name)
 	if err != nil {
 		return err
 	}
 	defer repo.Clean()
 
-	err = repo.Checkout(submoduleContext.BaseInfo.Branch)
+	err = repo.Checkout(submodule.BaseInfo.Branch)
 	if err != nil {
 		return err
 	}
 
-	err = repo.CheckoutNewBranch(context.UpdateHead)
+	err = repo.CheckoutNewBranch(session.UpdateHeadBranch)
 	if err != nil {
 		return err
 	}
 
-	gbp := exec.Command("gbp", "deepin-changelog", "-N", context.UpdateToVersion, "--spawn-editor=never", "--distribution=unstable", "--force-distribution", "--git-author", "--ignore-branch")
+	gbp := exec.Command("gbp", "deepin-changelog", "-N", session.UpdateToVersion, "--spawn-editor=never", "--distribution=unstable", "--force-distribution", "--git-author", "--ignore-branch")
 	gbp.Dir = repo.Directory()
 	err = gbp.Run()
 	if err != nil {
-		agent.Logger.WithError(err).Warn("Execute gbp failed")
-		return err
+		return fmt.Errorf("execute gbp failed! %w", err)
 	}
 
-	if context.BotUser == nil {
-		context.BotUser, err = agent.GitHubClient.BotUser()
+	if session.BotUser == nil {
+		session.BotUser, err = session.Client.BotUser()
 		if err != nil {
 			return fmt.Errorf("cannot get bot user data, %w", err)
 		}
 	}
-	repo.Config("user.name", context.BotUser.Login)
-	repo.Config("user.email", context.BotUser.Email)
-	err = repo.Commit("chore: update changelog", fmt.Sprintf("Release %s.", context.UpdateToVersion))
+	repo.Config("user.name", session.BotUser.Login)
+	repo.Config("user.email", session.BotUser.Email)
+	err = repo.Commit("chore: update changelog", fmt.Sprintf("Release %s.", session.UpdateToVersion))
 	if err != nil {
 		return err
 	}
 
-	return repo.PushToCentral(context.UpdateHead, true)
-
+	return repo.PushToCentral(session.UpdateHeadBranch, true)
 }
 
-func deliverUpdatePR(agent *plugins.Agent, context *UpdateContext, submoduleContext *SubmoduleContext) error {
-	submoduleContext.Status = &github.Status{
-		State:       github.StatusPending,
-		Context:     fmt.Sprintf("auto-update / check-update (%s)", submoduleContext.BaseInfo.Name),
-		Description: "Creating pull request for update...",
-		TargetURL:   submoduleContext.BaseInfo.URL,
-	}
-	submoduleContext.StartedAt = time.Now()
-	go agent.GitHubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdatePR.Head.SHA, *submoduleContext.Status)
-	context.UpdateHead = "topic-update"
-	err := updateChangelog(agent, submoduleContext, context)
-	if err != nil {
-		return err
-	}
-	pullRequests, err := agent.GitHubClient.GetPullRequests(context.OwnerLogin, submoduleContext.BaseInfo.Name)
-	if err != nil {
-		return err
-	}
-	for _, pullRequest := range pullRequests {
-		if pullRequest.Head.Repo == pullRequest.Base.Repo && pullRequest.Head.Ref == context.UpdateHead && pullRequest.Base.Ref == context.UpdateBase {
-			submoduleContext.PRInfo = &pullRequest
-			break
+func (session *Session) deliverUpdatePR(submodule *SubmoduleInfo) error {
+	gc := session.Client
+	if submodule.Status == nil || submodule.Status.Description == "Creating pull request for update..." {
+		submodule.Status = &github.Status{
+			State:       github.StatusPending,
+			Context:     fmt.Sprintf("auto-update / check-update (%s)", submodule.BaseInfo.Name),
+			Description: "Creating pull request for update...",
+			TargetURL:   submodule.BaseInfo.URL,
 		}
-	}
-	if submoduleContext.PRInfo == nil {
-		// Create a new PR
-		number, err := agent.GitHubClient.CreatePullRequest(
-			context.OwnerLogin,
-			submoduleContext.BaseInfo.Name,
-			"chore: update changelog",
-			fmt.Sprintf("Release %s.", context.UpdateToVersion),
-			context.UpdateHead,
-			context.UpdateBase,
-			true,
-		)
+		submodule.StartedAt = time.Now()
+		session.createStatus(*submodule.Status)
+		err := session.updateChangelog(submodule)
 		if err != nil {
 			return err
 		}
-		submoduleContext.PRInfo, err = agent.GitHubClient.GetPullRequest(context.OwnerLogin, submoduleContext.BaseInfo.Name, number)
+		pullRequests, err := gc.GetPullRequests(session.OwnerLogin, submodule.BaseInfo.Name)
 		if err != nil {
 			return err
 		}
+		for _, pullRequest := range pullRequests {
+			if pullRequest.Head.Repo == pullRequest.Base.Repo && pullRequest.Head.Ref == session.UpdateHeadBranch && pullRequest.Base.Ref == session.UpdateBaseBranch {
+				submodule.PRInfo = &pullRequest
+				break
+			}
+		}
+		if submodule.PRInfo == nil {
+			// Create a new PR
+			number, err := gc.CreatePullRequest(
+				session.OwnerLogin,
+				submodule.BaseInfo.Name,
+				"chore: update changelog",
+				fmt.Sprintf("Release %s.", session.UpdateToVersion),
+				session.UpdateHeadBranch,
+				session.UpdateBaseBranch,
+				true,
+			)
+			if err != nil {
+				return err
+			}
+			submodule.PRInfo, err = gc.GetPullRequest(session.OwnerLogin, submodule.BaseInfo.Name, number)
+			if err != nil {
+				return err
+			}
+		}
+		submodule.Status.TargetURL = submodule.PRInfo.HTMLURL
+		submodule.Status.Description = "Waiting for checks to complete..."
+		session.createStatus(*submodule.Status)
 	}
-	submoduleContext.Status.TargetURL = submoduleContext.PRInfo.HTMLURL
-	submoduleContext.Status.Description = "Waiting for checks to complete..."
-	context.sem.Add(1)
-	go agent.GitHubClient.CreateStatus(context.OwnerLogin, context.MainRepo, context.UpdatePR.Head.SHA, *submoduleContext.Status)
-	go handleEmptyChecks(agent, submoduleContext, context)
 	return nil
 }
 
@@ -799,25 +867,21 @@ type NotReadyError struct {
 var _ error = new(NotReadyError)
 
 func (e NotReadyError) Error() string {
-	return fmt.Sprintf(e.message + ", %v", e.err)
+	return fmt.Sprintf(e.message+", %v", e.err)
 }
 
 func (e NotReadyError) Unwrap() error {
 	return e.err
 }
 
-
-func checkAndUpdate(agent *plugins.Agent, context *UpdateContext) error {
-	approved := prApproved(agent, context.UpdatePR, context)
-	passed := checksPassed(agent, context.OwnerLogin, context.MainRepo, context.UpdateSHA)
-	if approved && passed && submodulesReady(context) {
-		return logUpdate(agent, context)
+func (session *Session) checkAndUpdate() error {
+	client := session.Client
+	approved := prApproved(client, session.UpdatePR)
+	passed := checksPassed(client, session.OwnerLogin, session.MainRepo, session.UpdateSHA)
+	if approved && passed && session.submodulesReady() {
+		session.requestStage(utypes.SUBMERGING)
+		return nil
 	} else {
 		return &NotReadyError{message: "update pull request and submodules are not ready"}
 	}
-}
-
-func handleEmptyChecks(agent *plugins.Agent, submodule *SubmoduleContext, context *UpdateContext) {
-	time.Sleep(10 * time.Second)
-	concludeSubmoduleStatus(agent, submodule, context)
 }

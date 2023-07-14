@@ -13,27 +13,27 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-type SubmoduleEntry struct {
+type Submodule struct {
 	Name   string
 	Path   string
 	URL    string
 	Branch string
 }
 
-func ParseDotGitmodulesContent(content []byte) ([]SubmoduleEntry, error) {
+func ParseDotGitmodulesContent(content []byte) ([]Submodule, error) {
 	file, err := ini.Load(content)
 	if err != nil {
 		return nil, err
 	}
 	sections := file.Sections()
-	var result []SubmoduleEntry
+	var result []Submodule
 	for _, section := range sections {
 		rg := regexp.MustCompile(`submodule\s"(.*)"`)
 		match := rg.FindStringSubmatch(section.Name())
 		if len(match) != 2 {
 			continue
 		}
-		entry := SubmoduleEntry{
+		entry := Submodule{
 			Name:   match[1],
 			Path:   section.Key("path").String(),
 			URL:    section.Key("url").String(),
@@ -44,7 +44,7 @@ func ParseDotGitmodulesContent(content []byte) ([]SubmoduleEntry, error) {
 	return result, nil
 }
 
-func UpdateChangelog(entry *logrus.Entry, submodule *config.Submodule, context *UpdateContext) error {
+func UpdateChangelog(entry *logrus.Entry, submodule *config.Submodule, context *Session) error {
 	cwd, err := os.MkdirTemp("", "updatebot*")
 	defer os.RemoveAll(cwd)
 	if err != nil {
@@ -65,7 +65,7 @@ func UpdateChangelog(entry *logrus.Entry, submodule *config.Submodule, context *
 		return err
 	}
 	base, err := repo.Head()
-	updateBranch := plumbing.NewBranchReferenceName(context.UpdateHead)
+	updateBranch := plumbing.NewBranchReferenceName(context.UpdateHeadBranch)
 	if err != nil {
 		entry.WithError(err).Warn("Cannot get update base branch")
 		return err
