@@ -135,7 +135,7 @@ type JobReport struct {
 func NewReporter(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, cookiefilePath string, pjclientset ctrlruntimeclient.Client) (*Client, error) {
 	// Initialize an empty client, the orgs/repos will be filled in by
 	// ApplyGlobalConfig later.
-	gc, err := client.NewClient(nil)
+	gc, err := client.NewClient(nil, 5)
 	if err != nil {
 		return nil, err
 	}

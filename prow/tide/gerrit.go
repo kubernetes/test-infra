@@ -159,7 +159,7 @@ func newGerritProvider(
 	cookiefilePath string,
 	tokenPathOverride string,
 ) *GerritProvider {
-	gerritClient, err := client.NewClient(nil)
+	gerritClient, err := client.NewClient(nil, 5)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}

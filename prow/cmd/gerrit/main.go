@@ -84,13 +84,14 @@ type options struct {
 	config            configflagutil.ConfigOptions
 	// lastSyncFallback is the path to sync the latest timestamp
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
-	lastSyncFallback       string
-	dryRun                 bool
-	kubernetes             prowflagutil.KubernetesOptions
-	storage                prowflagutil.StorageClientOptions
-	instrumentationOptions prowflagutil.InstrumentationOptions
-	changeWorkerPoolSize   int
-	pushGatewayInterval    time.Duration
+	lastSyncFallback         string
+	dryRun                   bool
+	kubernetes               prowflagutil.KubernetesOptions
+	storage                  prowflagutil.StorageClientOptions
+	instrumentationOptions   prowflagutil.InstrumentationOptions
+	changeWorkerPoolSize     int
+	pushGatewayInterval      time.Duration
+	instanceConcurrencyLimit uint
 }
 
 func (o *options) validate() error {
@@ -129,6 +130,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
 	fs.IntVar(&o.changeWorkerPoolSize, "change-worker-pool-size", 1, "Number of workers processing changes for each instance.")
 	fs.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics for disk space are pushed.")
+	fs.UintVar(&o.instanceConcurrencyLimit, "instance-concurrency-limit", 5, "Number of concurrent calls that can be made to any single Gerrit host instance simultaneously.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
@@ -185,7 +187,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, cacheGetter)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, o.instanceConcurrencyLimit, cacheGetter)
 
 	logrus.Infof("Starting gerrit fetcher")
 

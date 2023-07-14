@@ -93,10 +93,11 @@ func TestFlags(t *testing.T) {
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 					InRepoConfigCacheSize:                 1000,
 				},
-				dryRun:                 false,
-				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
-				changeWorkerPoolSize:   1,
-				pushGatewayInterval:    time.Minute,
+				dryRun:                   false,
+				instrumentationOptions:   flagutil.DefaultInstrumentationOptions(),
+				changeWorkerPoolSize:     1,
+				pushGatewayInterval:      time.Minute,
+				instanceConcurrencyLimit: 5,
 			}
 			if tc.expected != nil {
 				tc.expected(expected)

@@ -109,7 +109,7 @@ func TestGerrit(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			gerritClient, err := client.NewClient(map[string]map[string]*config.GerritQueryFilter{gerritServer: {"fakegerritserver": nil}})
+			gerritClient, err := client.NewClient(map[string]map[string]*config.GerritQueryFilter{gerritServer: {"fakegerritserver": nil}}, 5)
 			if err != nil {
 				t.Fatalf("Failed creating gerritClient: %v", err)
 			}
