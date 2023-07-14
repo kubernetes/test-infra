@@ -291,7 +291,7 @@ func (c *Controller) Sync() {
 	// Identify projects without worker threads
 	id := func(instance, project string) string { return fmt.Sprintf("%s/%s", instance, project) }
 	needsWorker := map[string][]string{}
-	needsWorkerCount := 0
+	needsWorkerCount := map[string]int{}
 	for instance, projects := range c.config().Gerrit.OrgReposConfig.AllRepos() {
 		for project := range projects {
 			if _, ok := c.projectsWithWorker[id(instance, project)]; ok {
@@ -300,13 +300,13 @@ func (c *Controller) Sync() {
 				continue
 			}
 			needsWorker[instance] = append(needsWorker[instance], project)
-			needsWorkerCount++
+			needsWorkerCount[instance]++
 		}
 	}
 	// First time seeing these projects, spin up worker threads for them.
-	staggerIncement := c.config().Gerrit.TickInterval.Duration / time.Duration(needsWorkerCount)
 	staggerPosition := 0
 	for instance, projects := range needsWorker {
+		staggerIncement := c.config().Gerrit.TickInterval.Duration / time.Duration(needsWorkerCount[instance])
 		for _, project := range projects {
 			c.projectsWithWorker[id(instance, project)] = true
 			logrus.WithFields(logrus.Fields{"instance": instance, "repo": project}).Info("Starting worker for project.")
