@@ -66,10 +66,12 @@ var gerritMetrics = struct {
 	triggerLatency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_trigger_latency",
 		Help:    "Histogram of seconds between triggering event and ProwJob creation time.",
-		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600, 7200},
 	}, []string{
 		"org",
-		// Omit repo to avoid excessive cardinality due to the number of buckets.
+		// We would normally omit 'repo' to avoid excessive cardinality due to the number of buckets, but we need the data.
+		// Hopefully this isn't excessive enough to cause metric scraping issues.
+		"repo",
 	}),
 	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_process_duration",
@@ -667,7 +669,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 					return err
 				}
-				gerritMetrics.triggerLatency.WithLabelValues(instance).Observe(float64(time.Since(msg.Date.Time).Seconds()))
+				gerritMetrics.triggerLatency.WithLabelValues(instance, change.Project).Observe(float64(time.Since(msg.Date.Time).Seconds()))
 				// Only respond to the first message that requests help information.
 				break
 			}
@@ -693,7 +695,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		}
 		logger.Infof("Triggered new job")
 		if eventTime, ok := triggerTimes[pj.Spec.Job]; ok {
-			gerritMetrics.triggerLatency.WithLabelValues(instance).Observe(float64(time.Since(eventTime).Seconds()))
+			gerritMetrics.triggerLatency.WithLabelValues(instance, change.Project).Observe(float64(time.Since(eventTime).Seconds()))
 		}
 		triggeredJobs = append(triggeredJobs, triggeredJob{
 			name:   jSpec.spec.Job,
