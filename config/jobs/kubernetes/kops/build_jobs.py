@@ -923,6 +923,8 @@ def generate_network_plugins():
         distro = 'u2204'
         if plugin == 'amazon-vpc':
             distro = 'u2004'
+        if plugin in ['canal', 'flannel', 'kuberouter']:
+            k8s_version = '1.27'
         results.append(
             build_test(
                 distro=distro,
@@ -1172,6 +1174,8 @@ def generate_presubmits_network_plugins():
         if plugin == 'amazonvpc':
             distro = 'u2004'
             optional = True
+        if plugin in ['canal', 'flannel', 'kuberouter']:
+            k8s_version = '1.27'
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
             optional = True
