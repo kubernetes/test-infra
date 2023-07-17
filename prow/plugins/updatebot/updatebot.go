@@ -60,6 +60,7 @@ func (session *Session) merge() error {
 	if !session.Stage.Start() {
 		return nil
 	}
+	time.Sleep(10 * time.Second)
 	err := session.Client.Merge(session.OwnerLogin, session.MainRepo, session.UpdatePRNumber, github.MergeDetails{
 		MergeMethod: "rebase",
 		SHA:         session.UpdateSHA,
@@ -116,6 +117,75 @@ func (session *Session) pending(status github.Status, description string) {
 	session.createStatus(status)
 }
 
+type GitClientError struct {
+	owner string
+	repo string
+	msg string
+	err error
+}
+
+func (gce GitClientError) Error() string {
+	if gce.err != nil {
+		return fmt.Sprintf("%s/%s %s, %v", gce.owner, gce.repo, gce.msg, gce.err)
+	} else {
+		return fmt.Sprintf("%s/%s %s", gce.owner, gce.repo, gce.msg)
+	}
+}
+
+func (s *Session) checkSubmoduleTagConflict(submodule *SubmoduleInfo) error {
+	repo, err := s.Git.ClientFor(s.OwnerLogin, submodule.BaseInfo.Name)
+	if err != nil {
+		return &GitClientError{owner: s.OwnerLogin, repo: submodule.BaseInfo.Name, msg: "cannot create repo client", err: err}
+	}
+	repo.Checkout(s.UpdateBaseBranch)
+
+	// Firstly check if the tag exist
+	listTag := exec.Command("git", "tag", "-l", s.UpdateToVersion)
+	listTag.Dir = repo.Directory()
+	result, err := listTag.Output()
+	if err != nil {
+		return &GitClientError{
+			owner: s.OwnerLogin,
+			repo: submodule.BaseInfo.Name,
+			msg: "list tag error",
+			err: err,
+		}
+	}
+	if strings.TrimSpace(string(result)) != s.UpdateToVersion {
+		// Tag does not exist, fine!
+		return nil
+	}
+	// If exists, check if the tag is just created
+	describe := exec.Command("git", "describe")
+	describe.Dir = repo.Directory()
+	result, err = describe.Output()
+	if err != nil {
+		return &GitClientError{
+			owner: s.OwnerLogin,
+			repo: submodule.BaseInfo.Name,
+			msg: "decribe error",
+			err: err,
+		}
+	}
+	if strings.TrimSpace(string(result)) == s.UpdateToVersion {
+		// Just create the tag, fine. Retrive current merged SHA
+		retrive := exec.Command("git", "log", "HEAD", "--pretty=format:%H", "-1")
+		retrive.Dir = repo.Directory()
+		result, err = retrive.Output()
+		if err != nil {
+			return &GitClientError{
+				owner: s.OwnerLogin,
+				repo: submodule.BaseInfo.Name,
+				msg: "cannot retrive current SHA",
+				err: err,
+			}
+		}
+		submodule.MergedSHA = string(result)
+		return nil
+	}
+	return nil
+}
+
 func (session *Session) checkUpdateConflict() error {
 	// For speed and convenience, here we just check if there is a ref matching update to version
 	checkTag := fmt.Sprintf("tags/%s", session.UpdateToVersion)
@@ -129,14 +199,18 @@ func (session *Session) checkUpdateConflict() error {
 	} else {
 		return &TagExistError{repo: session.MainRepo, tag: session.UpdateToVersion}
 	}
+	// There is a special case when not all submodules' tags are consistent. This may be caused by a failed
+	// update process. When submodule's head equals to the tag ref, we assume the user wants to synchronize
+	// the tag, this won't cause a tag conflict.
 	for _, submodule := range session.Submodules {
-		_, err = client.GetRef(session.OwnerLogin, submodule.BaseInfo.Name, checkTag)
+		err = session.checkSubmoduleTagConflict(submodule)
+		var gce GitClientError
 		if err != nil {
-			if pattern.FindString(err.Error()) == "" {
-				return err
+			if errors.As(err, &gce) {
+				return &gce
+			} else {
+				return &TagExistError{repo: session.MainRepo, tag: session.UpdateToVersion}
 			}
-		} else {
-			return &TagExistError{repo: submodule.BaseInfo.Name, tag: session.UpdateToVersion}
 		}
 	}
 	return nil
@@ -264,16 +338,9 @@ func handleGenericCommentEvent(agent plugins.Agent, genericCommentEvent github.G
 			if err != nil {
 				return fmt.Errorf("cannot get pull request for status. %w", err)
 			}
-			SHA := pullRequest.Head.SHA
-			id := generateSessionID(owner, repo, number, SHA)
-			session, exist := Sessions[id]
-			if exist {
-				if session.UpdatePRNumber == genericCommentEvent.Number {
-					switch genericCommentEvent.Body {
-					case "/retrigger":
-						return triggerUpdate(&agent, pullRequest)
-					}
-				}
+			switch genericCommentEvent.Body {
+			case "/retrigger":
+				return triggerUpdate(&agent, pullRequest)
 			}
 		}
 	}
@@ -323,7 +390,7 @@ func (session *Session) process() error {
 		if err != nil {
 			return session.fail(processStatus, "Update conflict.", err)
 		}
-		session.succeed(processStatus, fmt.Sprintf("Successful in %s", time.Since(session.Stage.StartedAt()).Round(time.Second)))
+		session.succeed(processStatus, fmt.Sprintf("Successful in %s.", time.Since(session.Stage.StartedAt()).Round(time.Second)))
 		return nil
 	}()
 	if err == nil {
@@ -391,7 +458,7 @@ func (session *Session) conclude() error {
 
 func (session *Session) submoduleMerged() bool {
 	for _, submodule := range session.Submodules {
-		if !submodule.PRInfo.Merged {
+		if submodule.MergedSHA != "" {
 			return false
 		}
 	}
@@ -400,7 +467,14 @@ func (session *Session) submoduleMerged() bool {
 
 func (session *Session) concludeSubmoduleStatus(submodule *SubmoduleInfo) error {
 	// Check if already merged
-	if submodule.PRInfo.Merged || submodule.Status == nil {
+	if submodule.MergedSHA != "" {
+		err := session.checkAndUpdate()
+		var notReady NotReadyError
+		if err != nil && !errors.As(err, &notReady) {
+			return fmt.Errorf("failed to update, %w", err)
+		}
+		return nil
+	} else if submodule.Status == nil {
 		return nil
 	}
 	owner := session.OwnerLogin
@@ -479,15 +553,15 @@ func triggerUpdate(agent *plugins.Agent, pullRequest *github.PullRequest) error 
 		}
 	}
 	if update {
-		versionPattern := regexp.MustCompile(`\+dtk\s\((?P<version>\d+(\.\d+)*)\)`)
-		result := versionPattern.FindStringSubmatch(changelogCommitFile.Patch)
-		if len(result) < 3 {
-			// At least we have one whole match and two groups
-			return fail("Cannot find version in changelog.", nil)
-		}
 		// Create a new update session
 		session, exist := Sessions[id]
 		if !exist || session.Stage.Is(utypes.IDLE) {
+			versionPattern := regexp.MustCompile(`\+dtk\s\((?P<version>\d+(\.\d+)*)\)`)
+			result := versionPattern.FindStringSubmatch(changelogCommitFile.Patch)
+			if len(result) < 3 {
+				// At least we have one whole match and two groups
+				return fail("Cannot find version in changelog.", nil)
+			}
 			session = &Session{}
 			Sessions[id] = session
 			session.mut.Lock()
@@ -691,7 +765,12 @@ func (session *Session) handleSubmodulePR() error {
 			return fmt.Errorf("cannot handle submodule pull requests, pull request %s for submodule %s is not ready", submodule.PRInfo.HTMLURL, submodule.BaseInfo.Name)
 		}
 	}
+	mergedCount := 0
 	for _, submodule := range session.Submodules {
+		if submodule.MergedSHA != "" {
+			mergedCount++
+			continue
+		}
 		err := session.Client.Merge(session.OwnerLogin, submodule.BaseInfo.Name, submodule.PRInfo.Number, github.MergeDetails{
 			MergeMethod: "rebase",
 			SHA:         submodule.PRInfo.Head.SHA,
@@ -699,6 +778,9 @@ func (session *Session) handleSubmodulePR() error {
 		if err != nil {
 			return fmt.Errorf("cannot merge pull request %s, error: %w", submodule.PRInfo.HTMLURL, err)
 		}
+	}
+	if mergedCount == len(session.Submodules) {
+		session.requestStage(utypes.UPDATING)
 	}
 	return nil
 }
@@ -758,7 +840,7 @@ func (session *Session) updateSubmodule() error {
 		defer session.createStatus(github.Status{
 			State:       github.StatusSuccess,
 			Context:     "auto-update / update-submodules",
-			Description: fmt.Sprintf("Successful in %s.", time.Since(session.UpdateSubmodulesStartedAt).Round(time.Second)),
+			Description: fmt.Sprintf("Successful in %s.", time.Since(session.Stage.StartedAt()).Round(time.Second)),
 		})
 		return repo.PushToCentral(session.UpdateBaseBranch, true)
 	}()
@@ -808,30 +890,81 @@ func (session *Session) updateChangelog(submodule *SubmoduleInfo) error {
 	return repo.PushToCentral(session.UpdateHeadBranch, true)
 }
 
+type NotFoundError struct {
+	target string
+	err error
+}
+
+var _ error = &NotFoundError{}
+
+func (nfe *NotFoundError) Error() string {
+	if nfe.err != nil {
+		return fmt.Sprintf("%s not found, %v", nfe.target, nfe.err)
+	} else {
+		return fmt.Sprintf("%s not found", nfe.target)
+	}
+}
+
+func filteredStatusFromGitHub(client plugins.PluginGitHubClient, owner, repo, SHA, context string) (*github.Status, error) {
+	combined, err := client.GetCombinedStatus(owner, repo, SHA)
+	if err != nil {
+		return nil, err
+	}
+	for _, status := range combined.Statuses {
+		if status.Context == context {
+			return &status, nil
+		}
+	}
+	return nil, &NotFoundError{target: context, err: nil}
+}
+
 func (session *Session) deliverUpdatePR(submodule *SubmoduleInfo) error {
 	gc := session.Client
-	if submodule.Status == nil || submodule.Status.Description == "Creating pull request for update..." {
-		submodule.Status = &github.Status{
-			State:       github.StatusPending,
-			Context:     fmt.Sprintf("auto-update / check-update (%s)", submodule.BaseInfo.Name),
-			Description: "Creating pull request for update...",
-			TargetURL:   submodule.BaseInfo.URL,
+	if submodule.Status == nil {
+		// Firstly read status from GitHub
+		remoteStatus, err := filteredStatusFromGitHub(
+			session.Client,
+			session.OwnerLogin,
+			session.MainRepo,
+			session.UpdateSHA,
+			fmt.Sprintf("auto-update / check-update (%s)", submodule.BaseInfo.Name),
+		)
+		if err == nil {
+			submodule.Status = remoteStatus
+		} else {
+			// Create a new status locally
+			submodule.Status = &github.Status{
+				State:       github.StatusPending,
+				Context:  fmt.Sprintf("auto-update / check-update (%s)", submodule.BaseInfo.Name),
+				Description: "Creating pull request for update...",
+				TargetURL:   submodule.BaseInfo.URL,
+			}
+			session.createStatus(*submodule.Status)
 		}
-		submodule.StartedAt = time.Now()
+	}
+	// Get pull request as long as possible
+	pullRequests, err := gc.GetPullRequests(session.OwnerLogin, submodule.BaseInfo.Name)
+	if err != nil {
+		return err
+	}
+	for _, pullRequest := range pullRequests {
+		if pullRequest.Head.Repo == pullRequest.Base.Repo && pullRequest.Head.Ref == session.UpdateHeadBranch && pullRequest.Base.Ref == session.UpdateBaseBranch {
+			submodule.PRInfo = &pullRequest
+			break
+		}
+	}
+	if submodule.MergedSHA != "" {
+		// Already merged and tagged. Do not need to deliver PR
+		submodule.Status.State = github.StatusSuccess
+		submodule.Status.Description = "Already merged or tagged."
+		submodule.Status.TargetURL = submodule.BaseInfo.URL
 		session.createStatus(*submodule.Status)
+	} else if submodule.Status.Description == "Creating pull request for update..." {
+		// Just need to process status which is creating pull request
+		submodule.StartedAt = time.Now()
 		err := session.updateChangelog(submodule)
 		if err != nil {
 			return err
-		}
-		pullRequests, err := gc.GetPullRequests(session.OwnerLogin, submodule.BaseInfo.Name)
-		if err != nil {
-			return err
-		}
-		for _, pullRequest := range pullRequests {
-			if pullRequest.Head.Repo == pullRequest.Base.Repo && pullRequest.Head.Ref == session.UpdateHeadBranch && pullRequest.Base.Ref == session.UpdateBaseBranch {
-				submodule.PRInfo = &pullRequest
-				break
-			}
 		}
 		if submodule.PRInfo == nil {
 			// Create a new PR
