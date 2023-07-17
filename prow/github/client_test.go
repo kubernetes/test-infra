@@ -32,7 +32,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"testing"
 	"time"
 
@@ -42,7 +41,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/utils/diff"
 
-	"k8s.io/test-infra/ghproxy/ghcache"
+	"k8s.io/test-infra/prow/throttle"
 	"k8s.io/test-infra/prow/version"
 )
 
@@ -65,11 +64,11 @@ func getClient(url string) *client {
 
 	logger := logrus.New()
 	logger.SetLevel(logrus.DebugLevel)
-	return &client{
+	c := &client{
 		logger: logrus.NewEntry(logger),
 		delegate: &delegate{
 			time:     &testTime{},
-			throttle: throttler{throttlerDelegate: &throttlerDelegate{}},
+			throttle: ghThrottler{Throttler: &throttle.Throttler{}},
 			getToken: getToken,
 			censor: func(content []byte) []byte {
 				return content
@@ -86,6 +85,8 @@ func getClient(url string) *client {
 			maxSleepTime:  DefaultMaxSleepTime,
 		},
 	}
+	c.wrapThrottler()
+	return c
 }
 
 func TestRequestRateLimit(t *testing.T) {
@@ -2177,160 +2178,6 @@ func TestRemoveTeamMembershipBySlug(t *testing.T) {
 	}
 }
 
-func TestThrottle(t *testing.T) {
-	logrus.SetLevel(logrus.DebugLevel)
-	t.Parallel()
-	testCases := []struct {
-		name string
-
-		setupThrottling  func(t *testing.T, c *client)
-		expectThrottling bool
-	}{
-		{
-			name: "No apps auth, global throttler",
-			setupThrottling: func(t *testing.T, c *client) {
-				if err := c.Throttle(1, 2); err != nil {
-					t.Fatalf("calling Throttle failed: %v", err)
-				}
-			},
-			expectThrottling: true,
-		},
-		{
-			name: "Apps auth, our org is throttled",
-			setupThrottling: func(t *testing.T, c *client) {
-				c.usesAppsAuth = true
-				if err := c.Throttle(1, 2, "org"); err != nil {
-					t.Fatalf("calling Throttle failed: %v", err)
-				}
-			},
-			expectThrottling: true,
-		},
-		{
-			name: "Apps auth, different org is throttled, ours is not",
-			setupThrottling: func(t *testing.T, c *client) {
-				c.usesAppsAuth = true
-				if err := c.Throttle(1, 2, "something-else"); err != nil {
-					t.Fatalf("calling Throttle failed: %v", err)
-				}
-			},
-		},
-		{
-			name: "Apps auth, global throttler and throttler for our org",
-			setupThrottling: func(t *testing.T, c *client) {
-				c.usesAppsAuth = true
-				// Make sure this is not the budget we end up using.
-				if err := c.Throttle(100, 100); err != nil {
-					t.Fatalf("failed to set global throttler: %v", err)
-				}
-				if err := c.Throttle(1, 2, "org"); err != nil {
-					t.Fatalf("throttling our org failed: %v", err)
-				}
-			},
-			expectThrottling: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path == "/repos/org/repo/issues/1/events" {
-					b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionClosed}})
-					if err != nil {
-						t.Fatalf("Didn't expect error: %v", err)
-					}
-					fmt.Fprint(w, string(b))
-				} else if r.URL.Path == "/repos/org/repo/issues/2/events" {
-					w.Header().Set(ghcache.CacheModeHeader, string(ghcache.ModeRevalidated))
-					b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionOpened}})
-					if err != nil {
-						t.Fatalf("Didn't expect error: %v", err)
-					}
-					fmt.Fprint(w, string(b))
-				} else {
-					t.Fatalf("Bad request path: %s", r.URL.Path)
-				}
-			}))
-			c := getClient(ts.URL)
-			tc.setupThrottling(t, c)
-			throttlerKey := throttlerGlobalKey
-			if c.usesAppsAuth {
-				throttlerKey = "org"
-			}
-
-			if c.client != &c.throttle {
-				t.Errorf("Bad client %v, expecting %v", c.client, &c.throttle)
-			}
-			var expectItems int
-			if tc.expectThrottling {
-				expectItems = 2
-			}
-			if n := len(c.throttle.throttle[throttlerKey]); n != expectItems {
-				t.Fatalf("Expected %d items in throttle channel, found %d", expectItems, n)
-			}
-			if n := cap(c.throttle.throttle[throttlerKey]); n != expectItems {
-				t.Fatalf("Expected throttle channel capacity of %d, found %d", expectItems, n)
-			}
-			check := func(events []ListedIssueEvent, err error, expectedAction IssueEventAction) {
-				t.Helper()
-				if err != nil {
-					t.Errorf("Unexpected error: %v", err)
-				}
-				if len(events) != 1 || events[0].Event != expectedAction {
-					t.Errorf("Expected one %q event, found: %v", string(expectedAction), events)
-				}
-				if tc.expectThrottling {
-					if len(c.throttle.throttle[throttlerKey]) != 1 {
-						t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle[throttlerKey]))
-					}
-				} else if _, throttleChannelExists := c.throttle.throttle[throttlerKey]; throttleChannelExists {
-					t.Error("didn't expect throttling, but throttler existed")
-				}
-			}
-			events, err := c.ListIssueEvents("org", "repo", 1)
-			check(events, err, IssueActionClosed)
-			// The following 2 calls should be refunded.
-			events, err = c.ListIssueEvents("org", "repo", 2)
-			check(events, err, IssueActionOpened)
-			events, err = c.ListIssueEvents("org", "repo", 2)
-			check(events, err, IssueActionOpened)
-
-			// Check that calls are delayed while throttled.
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			go func() {
-				if _, err := c.ListIssueEvents("org", "repo", 1); err != nil {
-					t.Errorf("Unexpected error: %v", err)
-				}
-				if _, err := c.ListIssueEvents("org", "repo", 1); err != nil {
-					t.Errorf("Unexpected error: %v", err)
-				}
-				cancel()
-			}()
-			slowed := false
-			for ctx.Err() == nil {
-				// Wait for the client to get throttled
-				val := c.throttle.slow[throttlerKey]
-				if val == nil || atomic.LoadInt32(val) == 0 {
-					continue
-				}
-				// Throttled, now add to the channel
-				slowed = true
-				select {
-				case c.throttle.throttle[throttlerKey] <- time.Now(): // Add items to the channel
-				case <-ctx.Done():
-				}
-			}
-			if slowed != tc.expectThrottling {
-				t.Errorf("expected throttling: %t, got throttled: %t", tc.expectThrottling, slowed)
-			}
-			if err := ctx.Err(); err != context.Canceled {
-				t.Errorf("Expected context cancellation did not happen: %v", err)
-			}
-		})
-	}
-}
-
 func TestGetBranches(t *testing.T) {
 	ts := simpleTestServer(t, "/repos/org/repo/branches", []Branch{
 		{Name: "master", Protected: false},
@@ -3247,8 +3094,8 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 				}
 				return &http.Response{Body: io.NopCloser(&bytes.Buffer{})}, nil
 			}}
-			ghClient.(*client).client.(*http.Client).Transport = checkingRoundTripper
-			ghClient.(*client).gqlc.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
+			ghClient.(*client).client.(*ghThrottler).http.(*http.Client).Transport = checkingRoundTripper
+			ghClient.(*client).gqlc.(*ghThrottler).graph.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
 
 			// We don't care about the result at all, the verification happens via the roundTripper
 			_ = call()
