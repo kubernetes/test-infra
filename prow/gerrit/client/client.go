@@ -33,11 +33,11 @@ import (
 	gerrit "github.com/andygrunwald/go-gerrit"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/throttle"
 	"k8s.io/test-infra/prow/version"
 )
 
@@ -109,12 +109,11 @@ type gerritInstanceHandler struct {
 	instance string
 	projects map[string]*config.GerritQueryFilter
 
-	authService        gerritAuthentication
-	accountService     gerritAccount
-	changeService      gerritChange
-	projectService     gerritProjects
-	revisionService    gerritRevision
-	concurrencyLimiter *semaphore.Weighted
+	authService     gerritAuthentication
+	accountService  gerritAccount
+	changeService   gerritChange
+	projectService  gerritProjects
+	revisionService gerritRevision
 
 	log logrus.FieldLogger
 }
@@ -128,8 +127,6 @@ type Client struct {
 	authentication func() (string, error)
 	previousToken  string
 	lock           sync.RWMutex
-
-	instanceConcurrencyLimit uint
 }
 
 // ChangeInfo is a gerrit.ChangeInfo
@@ -155,42 +152,47 @@ func (l LastSyncState) DeepCopy() LastSyncState {
 	return result
 }
 
-type roundTripperWithHeader struct {
+type roundTripperWithThrottleAndHeader struct {
 	upstream http.RoundTripper
+	throttle.Throttler
 }
 
-func (rt *roundTripperWithHeader) RoundTrip(r *http.Request) (*http.Response, error) {
+func (rt *roundTripperWithThrottleAndHeader) RoundTrip(r *http.Request) (*http.Response, error) {
 	r.Header.Add("user-agent", "prow")
 	// Also include component name
 	r.Header.Add("user-agent", "prow/"+version.Name)
+	// Gerrit quotas are shared across all orgs so we can omit the org field to use the global thottler.
+	rt.Wait(r.Context(), "")
 	return rt.upstream.RoundTrip(r)
 }
 
 // NewClient returns a new gerrit client
-func NewClient(instances map[string]map[string]*config.GerritQueryFilter, instanceConcurrencyLimit uint) (*Client, error) {
+func NewClient(instances map[string]map[string]*config.GerritQueryFilter, maxQPS, maxBurst int) (*Client, error) {
 	c := &Client{
-		handlers:                 map[string]*gerritInstanceHandler{},
-		accounts:                 map[string]*gerrit.AccountInfo{},
-		instanceConcurrencyLimit: instanceConcurrencyLimit,
+		handlers: map[string]*gerritInstanceHandler{},
+		accounts: map[string]*gerrit.AccountInfo{},
 	}
+	roundTripper := &roundTripperWithThrottleAndHeader{upstream: http.DefaultTransport}
+	roundTripper.Throttle(maxQPS*3600, maxBurst)
+
 	for instance := range instances {
 		httpClient := http.Client{
-			Transport: &roundTripperWithHeader{upstream: http.DefaultTransport},
+			Transport: roundTripper,
 		}
+
 		gc, err := gerrit.NewClient(instance, &httpClient)
 		if err != nil {
 			return nil, err
 		}
 
 		c.handlers[instance] = &gerritInstanceHandler{
-			instance:           instance,
-			projects:           instances[instance],
-			authService:        gc.Authentication,
-			accountService:     gc.Accounts,
-			changeService:      gc.Changes,
-			projectService:     gc.Projects,
-			concurrencyLimiter: semaphore.NewWeighted(int64(c.instanceConcurrencyLimit)),
-			log:                logrus.WithField("host", instance),
+			instance:       instance,
+			projects:       instances[instance],
+			authService:    gc.Authentication,
+			accountService: gc.Accounts,
+			changeService:  gc.Changes,
+			projectService: gc.Projects,
+			log:            logrus.WithField("host", instance),
 		}
 	}
 
@@ -330,14 +332,13 @@ func (c *Client) UpdateClients(instances map[string]map[string]*config.GerritQue
 		}
 
 		newHandlers[instance] = &gerritInstanceHandler{
-			instance:           instance,
-			projects:           instances[instance],
-			authService:        gc.Authentication,
-			accountService:     gc.Accounts,
-			changeService:      gc.Changes,
-			projectService:     gc.Projects,
-			concurrencyLimiter: semaphore.NewWeighted(int64(c.instanceConcurrencyLimit)),
-			log:                logrus.WithField("host", instance),
+			instance:       instance,
+			projects:       instances[instance],
+			authService:    gc.Authentication,
+			accountService: gc.Accounts,
+			changeService:  gc.Changes,
+			projectService: gc.Projects,
+			log:            logrus.WithField("host", instance),
 		}
 	}
 	c.handlers = newHandlers
@@ -412,9 +413,8 @@ func (c *Client) GetChange(instance, id string, addtionalFields ...string) (*Cha
 		return nil, fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	h.concurrencyLimiter.Acquire(context.Background(), 1)
 	info, resp, err := h.changeService.GetChange(id, &gerrit.ChangeOptions{AdditionalFields: addtionalFields})
-	h.concurrencyLimiter.Release(1)
+
 	if err != nil {
 		return nil, fmt.Errorf("error getting current change: %w", responseBodyError(err, resp))
 	}
@@ -430,9 +430,8 @@ func (c *Client) SubmitChange(instance, id string, wait bool) (*ChangeInfo, erro
 		return nil, fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	h.concurrencyLimiter.Acquire(context.Background(), 1)
 	info, resp, err := h.changeService.SubmitChange(id, &gerrit.SubmitInput{WaitForMerge: wait})
-	h.concurrencyLimiter.Release(1)
+
 	if err != nil {
 		return nil, fmt.Errorf("error submitting current change: %w", responseBodyError(err, resp))
 	}
@@ -448,9 +447,8 @@ func (c *Client) ChangeExist(instance, id string) (bool, error) {
 		return false, fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	h.concurrencyLimiter.Acquire(context.Background(), 1)
 	_, resp, err := h.changeService.GetChange(id, nil)
-	h.concurrencyLimiter.Release(1)
+
 	if err != nil {
 		if resp.StatusCode == http.StatusNotFound {
 			return false, nil
@@ -480,9 +478,8 @@ func (c *Client) SetReview(instance, id, revision, message string, labels map[st
 		return fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	h.concurrencyLimiter.Acquire(context.Background(), 1)
 	_, resp, err := h.changeService.SetReview(id, revision, &gerrit.ReviewInput{Message: message, Labels: labels})
-	h.concurrencyLimiter.Release(1)
+
 	if err != nil {
 		return fmt.Errorf("cannot comment to gerrit: %w", responseBodyError(err, resp))
 	}
@@ -499,9 +496,8 @@ func (c *Client) GetBranchRevision(instance, project, branch string) (string, er
 		return "", fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	h.concurrencyLimiter.Acquire(context.Background(), 1)
 	res, resp, err := h.projectService.GetBranch(project, branch)
-	h.concurrencyLimiter.Release(1)
+
 	if err != nil {
 		return "", responseBodyError(err, resp)
 	}
@@ -522,9 +518,7 @@ func (c *Client) Account(instance string) (*gerrit.AccountInfo, error) {
 		return nil, errors.New("no handlers found")
 	}
 
-	handler.concurrencyLimiter.Acquire(context.Background(), 1)
 	self, resp, err := handler.accountService.GetAccount("self")
-	handler.concurrencyLimiter.Release(1)
 	if err != nil {
 		return nil, fmt.Errorf("GetAccount() failed with new authentication: %w", responseBodyError(err, resp))
 
@@ -541,9 +535,8 @@ func (c *Client) GetMergeableInfo(instance, changeID, revisionID string) (*gerri
 		return &gerrit.MergeableInfo{}, fmt.Errorf("not activated Gerrit instance: %s", instance)
 	}
 
-	h.concurrencyLimiter.Acquire(context.Background(), 1)
 	mergeableInfo, resp, err := h.revisionService.GetMergeable(changeID, revisionID, nil)
-	h.concurrencyLimiter.Release(1)
+
 	if err != nil {
 		return &gerrit.MergeableInfo{}, responseBodyError(err, resp)
 	}
@@ -575,9 +568,9 @@ func parseStamp(value gerrit.Timestamp) time.Time {
 }
 
 func (h *gerritInstanceHandler) injectPatchsetMessages(change *gerrit.ChangeInfo) error {
-	h.concurrencyLimiter.Acquire(context.Background(), 1)
+
 	out, _, err := h.changeService.ListChangeComments(change.ID)
-	h.concurrencyLimiter.Release(1)
+
 	if err != nil {
 		return err
 	}
@@ -661,9 +654,9 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 		log := log.WithField("start", opt.Start)
 		// The change output is sorted by the last update time, most recently updated to oldest updated.
 		// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
-		h.concurrencyLimiter.Acquire(context.Background(), 1)
+
 		changes, resp, err := h.changeService.QueryChanges(&opt)
-		h.concurrencyLimiter.Release(1)
+
 		if err != nil {
 			// should not happen? Let next sync loop catch up
 			return nil, responseBodyError(err, resp)
@@ -784,9 +777,8 @@ func (c *Client) HasRelatedChanges(instance, id, revision string) (bool, error) 
 		return false, fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	h.concurrencyLimiter.Acquire(context.Background(), 1)
 	info, resp, err := h.changeService.GetRelatedChanges(id, revision)
-	h.concurrencyLimiter.Release(1)
+
 	if err != nil {
 		return false, fmt.Errorf("error getting related changes: %w", responseBodyError(err, resp))
 	}

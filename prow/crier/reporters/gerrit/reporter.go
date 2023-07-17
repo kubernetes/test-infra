@@ -132,10 +132,10 @@ type JobReport struct {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, cookiefilePath string, pjclientset ctrlruntimeclient.Client) (*Client, error) {
+func NewReporter(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, cookiefilePath string, pjclientset ctrlruntimeclient.Client, maxQPS, maxBurst int) (*Client, error) {
 	// Initialize an empty client, the orgs/repos will be filled in by
 	// ApplyGlobalConfig later.
-	gc, err := client.NewClient(nil, 5)
+	gc, err := client.NewClient(nil, maxQPS, maxBurst)
 	if err != nil {
 		return nil, err
 	}

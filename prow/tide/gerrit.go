@@ -104,6 +104,7 @@ func NewGerritController(
 	logger *logrus.Entry,
 	configOptions configflagutil.ConfigOptions,
 	cookieFilePath string,
+	maxQPS, maxBurst int,
 ) (*Controller, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
@@ -124,7 +125,7 @@ func NewGerritController(
 	if err != nil {
 		return nil, fmt.Errorf("failed creating inrepoconfig cache getter: %v", err)
 	}
-	provider := newGerritProvider(logger, cfgAgent.Config, mgr.GetClient(), cacheGetter, cookieFilePath, "")
+	provider := newGerritProvider(logger, cfgAgent.Config, mgr.GetClient(), cacheGetter, cookieFilePath, "", maxQPS, maxBurst)
 	syncCtrl, err := newSyncController(ctx, logger, mgr, provider, cfgAgent.Config, gc, hist, false, statusUpdate)
 	if err != nil {
 		return nil, err
@@ -158,8 +159,9 @@ func newGerritProvider(
 	inRepoConfigCache *config.InRepoConfigCache,
 	cookiefilePath string,
 	tokenPathOverride string,
+	maxQPS, maxBurst int,
 ) *GerritProvider {
-	gerritClient, err := client.NewClient(nil, 5)
+	gerritClient, err := client.NewClient(nil, maxQPS, maxBurst)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
