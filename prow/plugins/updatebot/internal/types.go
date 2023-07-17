@@ -36,6 +36,7 @@ func (s *Stage) Start() bool {
 		return false
 	} else {
 		s.started = true
+		s.startedAt = time.Now()
 		return true
 	}
 }
