@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kube-storage-version-migrator:
   - name: pull-kube-storage-version-migrator-disruptive
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     labels:
@@ -27,6 +28,13 @@ presubmits:
         - --timeout=50m
         - --runtime-config=internal.apiserver.k8s.io/v1alpha1=true
         - --env=KUBE_FEATURE_GATES=StorageVersionAPI=true,APIServerIdentity=true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
