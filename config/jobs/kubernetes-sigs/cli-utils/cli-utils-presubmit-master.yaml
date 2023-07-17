@@ -17,11 +17,11 @@ presubmits:
         - prow-presubmit-check
         resources:
           requests:
-            memory: "8000Mi"
-            cpu: 4000m
+            memory: "4Gi"
+            cpu: 6
           limits:
-            memory: "8000Mi"
-            cpu: 4000m
+            memory: "4Gi"
+            cpu: 6
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: cli-utils-presubmit-master
@@ -49,11 +49,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "8000Mi"
-            cpu: 4000m
+            memory: 750Mi
+            cpu: 2500m
           limits:
-            memory: "8000Mi"
-            cpu: 4000m
+            memory: 750Mi
+            cpu: 2500m
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: cli-utils-presubmit-master-e2e
@@ -81,11 +81,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "8000Mi"
-            cpu: 4000m
+            memory: 1Gi
+            cpu: 2500m
           limits:
-            memory: "8000Mi"
-            cpu: 4000m
+            memory: 1Gi
+            cpu: 2500m
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: cli-utils-presubmit-master-stress
