@@ -137,6 +137,7 @@ func (s *Session) checkSubmoduleTagConflict(submodule *SubmoduleInfo) error {
 	if err != nil {
 		return &GitClientError{owner: s.OwnerLogin, repo: submodule.BaseInfo.Name, msg: "cannot create repo client", err: err}
 	}
+	defer repo.Clean()
 	repo.Checkout(s.UpdateBaseBranch)
 
 	// Firstly check if the tag exist
@@ -182,8 +183,9 @@ func (s *Session) checkSubmoduleTagConflict(submodule *SubmoduleInfo) error {
 		}
 		submodule.MergedSHA = string(result)
 		return nil
+	} else {
+		return &TagExistError{repo: submodule.BaseInfo.Name, tag: s.UpdateToVersion}
 	}
-	return nil
 }
 
 func (session *Session) checkUpdateConflict() error {
@@ -202,16 +204,21 @@ func (session *Session) checkUpdateConflict() error {
 	// There is a special case when not all submodules' tags are consistent. This may be caused by a failed
 	// update process. When submodule's head equals to the tag ref, we assume the user wants to synchronize
 	// the tag, this won't cause a tag conflict.
+	var wg sync.WaitGroup
+	var errs []error
+	wg.Add(len(session.Submodules))
 	for _, submodule := range session.Submodules {
-		err = session.checkSubmoduleTagConflict(submodule)
-		var gce GitClientError
-		if err != nil {
-			if errors.As(err, &gce) {
-				return &gce
-			} else {
-				return &TagExistError{repo: session.MainRepo, tag: session.UpdateToVersion}
+		go func(s *Session, module *SubmoduleInfo) {
+			err := s.checkSubmoduleTagConflict(module)
+			if err != nil {
+				errs = append(errs, err)
 			}
-		}
+			wg.Done()
+		}(session, submodule)
+	}
+	wg.Wait()
+	if errs != nil {
+		return errs[0]
 	}
 	return nil
 }
