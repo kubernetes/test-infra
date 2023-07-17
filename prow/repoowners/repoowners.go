@@ -839,7 +839,7 @@ func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.R
 		if d == baseDirConvention {
 			break
 		}
-		if o.options[d].NoParentOwners {
+		if o.options[d].NoParentOwners && out.Len() > 0 {
 			break
 		}
 		d = filepath.Dir(d)

@@ -1046,6 +1046,13 @@ func TestGetApprovers(t *testing.T) {
 			expectedAllOwners:  ro.approvers[noParentsFilterDir][txtFileReg],
 		},
 		{
+			name:               "Modified regexp not matched file in NoParentOwners Dir Only",
+			filePath:           filepath.Join(noParentsFilterDir, "testFile.go_to_parent"),
+			expectedOwnersPath: baseDir,
+			expectedLeafOwners: ro.approvers[baseDir][nil],
+			expectedAllOwners:  ro.approvers[baseDir][nil],
+		},
+		{
 			name:               "Modified Nonexistent Dir (Default to Base)",
 			filePath:           filepath.Join(nonExistentDir, "testFile.md"),
 			expectedOwnersPath: baseDir,
