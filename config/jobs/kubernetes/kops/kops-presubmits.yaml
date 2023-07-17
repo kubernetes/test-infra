@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kops:
   - name: pull-kops-build
+    cluster: eks-prow-build-cluster
     skip_branches:
     - release-1.23
     - release-1.22
@@ -23,10 +24,15 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: build
   - name: pull-kops-test
+    cluster: eks-prow-build-cluster
     skip_branches:
     - release-1.23
     - release-1.22
@@ -49,6 +55,10 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: test
@@ -155,6 +165,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: e2e-do-kubetest2
   - name: pull-kops-verify-generated
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -170,10 +181,18 @@ presubmits:
         args:
         - "make"
         - "verify-generate"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-generated
   - name: pull-kops-verify-gomod
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -191,10 +210,18 @@ presubmits:
         args:
         - "make"
         - "verify-gomod"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gomod
   - name: pull-kops-verify-boilerplate
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -210,10 +237,18 @@ presubmits:
         args:
         - "make"
         - "verify-boilerplate"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-boilerplate
   - name: pull-kops-verify-gofmt
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -234,10 +269,15 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gofmt
   - name: pull-kops-verify-gofmt-go118
+    cluster: eks-prow-build-cluster
     branches:
     - release-1.24
     - release-1.23
@@ -260,10 +300,15 @@ presubmits:
         resources:
           requests:
             memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-gofmt-go118
   - name: pull-kops-verify-govet
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -279,10 +324,18 @@ presubmits:
         args:
         - "make"
         - "govet"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-govet
   - name: pull-kops-verify-golangci-lint
+    cluster: eks-prow-build-cluster
     branches:
       - master
     always_run: true
@@ -300,10 +353,18 @@ presubmits:
         args:
         - "make"
         - "verify-golangci-lint"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-golangci-lint
   - name: pull-kops-verify-hashes
+    cluster: eks-prow-build-cluster
     skip_report: false
     run_if_changed: '^upup\/pkg\/fi\/cloudup\/(containerd|docker)'
     labels:
@@ -320,10 +381,18 @@ presubmits:
         args:
         - "make"
         - "verify-hashes"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-hashes
   - name: pull-kops-verify-terraform
+    cluster: eks-prow-build-cluster
     skip_report: false
     run_if_changed: '^tests\/integration\/update_cluster\/'
     labels:
@@ -341,6 +410,13 @@ presubmits:
         args:
         - "make"
         - "verify-terraform"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -370,5 +446,9 @@ postsubmits:
         resources:
           requests:
             memory: "2Gi"
+            cpu: 2
+          limits:
+            memory: "2Gi"
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
