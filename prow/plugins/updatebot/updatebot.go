@@ -60,11 +60,7 @@ func (session *Session) merge() error {
 	if !session.Stage.Start() {
 		return nil
 	}
-	time.Sleep(10 * time.Second)
-	err := session.Client.Merge(session.OwnerLogin, session.MainRepo, session.UpdatePRNumber, github.MergeDetails{
-		MergeMethod: "rebase",
-		SHA:         session.UpdateSHA,
-	})
+	err := session.Client.AddLabel(session.OwnerLogin, session.MainRepo, session.UpdatePRNumber, "approved")
 	if err != nil {
 		return fmt.Errorf("cannot merge update pull request. %w", err)
 	}
@@ -769,10 +765,7 @@ func (session *Session) handleSubmodulePR() error {
 			mergedCount++
 			continue
 		}
-		err := session.Client.Merge(session.OwnerLogin, submodule.BaseInfo.Name, submodule.PRInfo.Number, github.MergeDetails{
-			MergeMethod: "rebase",
-			SHA:         submodule.PRInfo.Head.SHA,
-		})
+		err := session.Client.AddLabel(session.OwnerLogin, submodule.BaseInfo.Name, submodule.PRInfo.Number, "skip-review")
 		if err != nil {
 			return fmt.Errorf("cannot merge pull request %s, error: %w", submodule.PRInfo.HTMLURL, err)
 		}
