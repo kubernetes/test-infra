@@ -473,41 +473,32 @@ func (session *Session) submoduleMerged() bool {
 }
 
 func (session *Session) concludeSubmoduleStatus(submodule *SubmoduleInfo) error {
-	// Check if already merged
-	if submodule.MergedSHA != "" {
-		err := session.checkAndUpdate()
-		var notReady NotReadyError
-		if err != nil && !errors.As(err, &notReady) {
-			return fmt.Errorf("failed to update, %w", err)
+	if submodule.Status == nil {
+		return nil
+	} else if submodule.MergedSHA == "" {
+		owner := session.OwnerLogin
+		repo := submodule.BaseInfo.Name
+		SHA := submodule.PRInfo.Head.SHA
+		status := commitStatus(session.Client, owner, repo, SHA)
+		if submodule.Status.State != status {
+			submodule.Status.State = status
+			switch status {
+			case github.StatusPending:
+				submodule.Status.Description = "Waiting for checks to complete..."
+			case github.StatusError:
+				submodule.Status.Description = "Something went wrong!"
+			case github.StatusFailure:
+				submodule.Status.Description = fmt.Sprintf("Failed in %s", time.Since(submodule.StartedAt).Round(time.Second))
+			case github.StatusSuccess:
+				submodule.Status.Description = fmt.Sprintf("Successful in %s.", time.Since(submodule.StartedAt).Round(time.Second))
+			}
+			err := session.createStatus(*submodule.Status)
+			if err != nil {
+				return fmt.Errorf("failed to update status for PR: %s, %w", submodule.PRInfo.HTMLURL, err)
+			}
 		}
-		return nil
-	} else if submodule.Status == nil {
-		return nil
 	}
-	owner := session.OwnerLogin
-	repo := submodule.BaseInfo.Name
-	SHA := submodule.PRInfo.Head.SHA
-	status := commitStatus(session.Client, owner, repo, SHA)
-	if submodule.Status.State == status {
-		// Do not need update
-		return nil
-	}
-	submodule.Status.State = status
-	switch status {
-	case github.StatusPending:
-		submodule.Status.Description = "Waiting for checks to complete..."
-	case github.StatusError:
-		submodule.Status.Description = "Something went wrong!"
-	case github.StatusFailure:
-		submodule.Status.Description = fmt.Sprintf("Failed in %s", time.Since(submodule.StartedAt).Round(time.Second))
-	case github.StatusSuccess:
-		submodule.Status.Description = fmt.Sprintf("Successful in %s.", time.Since(submodule.StartedAt).Round(time.Second))
-	}
-	err := session.createStatus(*submodule.Status)
-	if err != nil {
-		return fmt.Errorf("failed to update status for PR: %s, %w", submodule.PRInfo.HTMLURL, err)
-	}
-	err = session.checkAndUpdate()
+	err := session.checkAndUpdate()
 	var notReady NotReadyError
 	if err != nil && !errors.As(err, &notReady) {
 		return fmt.Errorf("failed to update, %w", err)
