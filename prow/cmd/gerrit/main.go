@@ -89,6 +89,7 @@ type options struct {
 	kubernetes               prowflagutil.KubernetesOptions
 	storage                  prowflagutil.StorageClientOptions
 	instrumentationOptions   prowflagutil.InstrumentationOptions
+	gerrit                   prowflagutil.GerritOptions
 	changeWorkerPoolSize     int
 	pushGatewayInterval      time.Duration
 	instanceConcurrencyLimit uint
@@ -102,8 +103,10 @@ func (o *options) validate() error {
 		logrus.Info("--cookiefile is not set, using anonymous authentication")
 	}
 
-	if err := o.config.Validate(o.dryRun); err != nil {
-		return err
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config, &o.gerrit} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
 	}
 
 	if o.lastSyncFallback == "" {
@@ -130,8 +133,9 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
 	fs.IntVar(&o.changeWorkerPoolSize, "change-worker-pool-size", 1, "Number of workers processing changes for each instance.")
 	fs.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics for disk space are pushed.")
-	fs.UintVar(&o.instanceConcurrencyLimit, "instance-concurrency-limit", 5, "Number of concurrent calls that can be made to any single Gerrit host instance simultaneously.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
+	// TODO(cjwagner): remove deprecated flag.
+	fs.UintVar(&o.instanceConcurrencyLimit, "instance-concurrency-limit", 5, "[DEPRECATED] Number of concurrent calls that can be made to any single Gerrit host instance simultaneously.")
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config, &o.gerrit} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(args)
@@ -187,7 +191,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating InRepoConfigCacheGetter.")
 	}
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, o.instanceConcurrencyLimit, cacheGetter)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.changeWorkerPoolSize, o.gerrit.MaxQPS, o.gerrit.MaxBurst, cacheGetter)
 
 	logrus.Infof("Starting gerrit fetcher")
 

@@ -416,21 +416,11 @@ func TestAppsAuth(t *testing.T) {
 				t.Fatalf("failed to construct client: %v", err)
 			}
 
-			if _, ok := ghClient.(*client); !ok {
-				t.Fatal("ghclient is not a *client")
-			}
-			if _, ok := ghClient.(*client).client.(*http.Client); !ok {
-				t.Fatal("the ghclients client is not a *http.Client")
-			}
-			if _, ok := ghClient.(*client).client.(*http.Client).Transport.(*appsRoundTripper); !ok {
-				t.Fatal("the ghclients didn't get configured to use the appsRoundTripper")
-			}
+			appsRoundTripper := validateAppsRoundTripper(t, ghClient)
 
 			roundTripper := &fakeRoundTripper{
 				responses: tc.responses,
 			}
-
-			appsRoundTripper := ghClient.(*client).client.(*http.Client).Transport.(*appsRoundTripper)
 			appsRoundTripper.upstream = roundTripper
 			if tc.cachedAppSlug != nil {
 				appsRoundTripper.appSlug = *tc.cachedAppSlug
@@ -453,6 +443,22 @@ func TestAppsAuth(t *testing.T) {
 	}
 }
 
+func validateAppsRoundTripper(t *testing.T, ghClient interface{}) *appsRoundTripper {
+	if _, ok := ghClient.(*client); !ok {
+		t.Fatalf("ghclient is a %T not a *client", ghClient)
+	}
+	if _, ok := ghClient.(*client).client.(*ghThrottler); !ok {
+		t.Fatalf("the ghclients client is a %T not a *throttler", ghClient.(*client).client)
+	}
+	if _, ok := ghClient.(*client).client.(*ghThrottler).http.(*http.Client); !ok {
+		t.Fatalf("the ghclients client is a %T not a *http.Client", ghClient.(*client).client.(*ghThrottler).http)
+	}
+	if _, ok := ghClient.(*client).client.(*ghThrottler).http.(*http.Client).Transport.(*appsRoundTripper); !ok {
+		t.Fatalf("the ghclients didn't get configured to use the appsRoundTripper, found %T instead", ghClient.(*client).client.(*ghThrottler).http.(*http.Client).Transport)
+	}
+	return ghClient.(*client).client.(*ghThrottler).http.(*http.Client).Transport.(*appsRoundTripper)
+}
+
 func TestAppsRoundTripperThreadSafety(t *testing.T) {
 	const appID = "13"
 	// Can not be smaller, otherwise the JWT signature generation
@@ -467,19 +473,9 @@ func TestAppsRoundTripperThreadSafety(t *testing.T) {
 		t.Fatalf("failed to construct github client: %v", err)
 	}
 
-	if _, ok := ghClient.(*client); !ok {
-		t.Fatal("ghclient is not a *client")
-	}
-	if _, ok := ghClient.(*client).client.(*http.Client); !ok {
-		t.Fatal("the ghclients client is not a *http.Client")
-	}
-	if _, ok := ghClient.(*client).client.(*http.Client).Transport.(*appsRoundTripper); !ok {
-		t.Fatal("the ghclients didn't get configured to use the appsRoundTripper")
-	}
-
 	// installation and token for requests to "org" are cached, but need to be fetched for requests
 	// to "other-org"
-	appsRoundTripper := ghClient.(*client).client.(*http.Client).Transport.(*appsRoundTripper)
+	appsRoundTripper := validateAppsRoundTripper(t, ghClient)
 	appsRoundTripper.installations = map[string]AppInstallation{"org": {ID: 1}}
 	appsRoundTripper.tokens = map[int64]*AppInstallationToken{1: {Token: "the-token", ExpiresAt: time.Now().Add(time.Hour)}}
 	appsRoundTripper.upstream = &fakeRoundTripper{

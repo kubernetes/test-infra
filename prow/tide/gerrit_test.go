@@ -290,7 +290,7 @@ func TestQuery(t *testing.T) {
 				},
 			}
 
-			fc := newGerritProvider(logrus.WithContext(context.Background()), func() *config.Config { return &cfg }, nil, nil, "", "")
+			fc := newGerritProvider(logrus.WithContext(context.Background()), func() *config.Config { return &cfg }, nil, nil, "", "", 0, 0)
 			fgc := newFakeGerritClient()
 
 			for instance, projs := range tc.prs {

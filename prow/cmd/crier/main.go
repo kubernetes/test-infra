@@ -49,6 +49,7 @@ type options struct {
 	cookiefilePath   string
 	github           prowflagutil.GitHubOptions
 	githubEnablement prowflagutil.GitHubEnablementOptions
+	gerrit           prowflagutil.GerritOptions
 
 	config configflagutil.ConfigOptions
 
@@ -84,6 +85,9 @@ func (o *options) validate() error {
 	if o.gerritWorkers > 0 {
 		if o.cookiefilePath == "" {
 			logrus.Info("--cookiefile is not set, using anonymous authentication")
+		}
+		if err := o.gerrit.Validate(o.dryrun); err != nil {
+			return err
 		}
 	}
 
@@ -126,6 +130,7 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 
 	o.config.AddFlags(fs)
 	o.github.AddFlags(fs)
+	o.gerrit.AddFlags(fs)
 	o.client.AddFlags(fs)
 	o.storage.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
@@ -212,7 +217,7 @@ func main() {
 		orgRepoConfigGetter := func() *config.GerritOrgRepoConfigs {
 			return cfg().Gerrit.OrgReposConfig
 		}
-		gerritReporter, err := gerritreporter.NewReporter(orgRepoConfigGetter, o.cookiefilePath, mgr.GetClient())
+		gerritReporter, err := gerritreporter.NewReporter(orgRepoConfigGetter, o.cookiefilePath, mgr.GetClient(), o.gerrit.MaxQPS, o.gerrit.MaxBurst)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error starting gerrit reporter")
 		}

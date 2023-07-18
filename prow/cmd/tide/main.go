@@ -57,6 +57,7 @@ type options struct {
 	runOnce                bool
 	kubernetes             prowflagutil.KubernetesOptions
 	github                 prowflagutil.GitHubOptions
+	gerrit                 prowflagutil.GerritOptions
 	storage                prowflagutil.StorageClientOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	controllerManager      prowflagutil.ControllerManagerOptions
@@ -84,13 +85,20 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config, &o.controllerManager} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.config, &o.controllerManager} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
 	}
 	if o.providerName != "" && !sets.NewString(githubProviderName, gerritProviderName).Has(o.providerName) {
 		return errors.New("--provider should be github or gerrit")
+	}
+	var providerFlagGroup flagutil.OptionGroup = &o.github
+	if o.providerName == gerritProviderName {
+		providerFlagGroup = &o.gerrit
+	}
+	if err := providerFlagGroup.Validate(o.dryRun); err != nil {
+		return err
 	}
 	return nil
 }
@@ -101,7 +109,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
 	o.github.AddCustomizedFlags(fs, prowflagutil.DisableThrottlerOptions())
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config, &o.gerrit} {
 		group.AddFlags(fs)
 	}
 	fs.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
@@ -212,6 +220,8 @@ func main() {
 			nil,
 			o.config,
 			o.cookiefilePath,
+			o.gerrit.MaxQPS,
+			o.gerrit.MaxBurst,
 		)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error creating Tide controller.")
