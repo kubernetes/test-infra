@@ -22,11 +22,15 @@ const (
 	MERGING
 )
 
-func (s *Stage) Request(stage int) {
+func (s *Stage) Request(stage int) bool {
 	s.mut.Lock()
 	defer s.mut.Unlock()
+	if s.stage == stage {
+		return false
+	}
 	s.stage = stage
 	s.started = false
+	return true
 }
 
 func (s *Stage) Start() bool {

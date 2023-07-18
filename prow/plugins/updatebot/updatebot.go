@@ -68,8 +68,10 @@ func (session *Session) merge() error {
 	return nil
 }
 
-func (session *Session) requestStage(stage int) {
-	session.Stage.Request(stage)
+func (session *Session) requestStage(stage int) bool {
+	if !session.Stage.Request(stage) {
+		return false
+	}
 	switch stage {
 	case utypes.PROCESSING:
 		go session.process()
@@ -84,6 +86,7 @@ func (session *Session) requestStage(stage int) {
 	case utypes.MERGING:
 		go session.merge()
 	}
+	return true
 }
 
 func (session *Session) createStatus(status github.Status) error {
