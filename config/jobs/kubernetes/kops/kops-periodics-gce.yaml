@@ -119,11 +119,11 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/extra_flags: --channel=alpha
-    test.kops.k8s.io/k8s_version: latest
+    test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-ci, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-latest
 
