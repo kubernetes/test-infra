@@ -254,12 +254,9 @@ periodics:
           limits:
             cpu: 2
             memory: "2Gi"
-- name: ci-kubernetes-e2e-gci-gce-scalability-consistent-list-from-cache-on
+- name: ci-kubernetes-e2e-gci-gce-scalability-consistent-list-from-cache-on-large-objects
   cluster: k8s-infra-prow-build
   interval: 24h
-  tags:
-  - "perfDashPrefix: consistent-list-from-cache-on"
-  - "perfDashJobType: consistent-list-from-cache"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -280,7 +277,7 @@ periodics:
     path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: consistent-list-from-cache-on
+    testgrid-tab-name: consistent-list-from-cache-on-large-objects
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
@@ -314,6 +311,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/request-benchmark/config.yaml
+      - --test-cmd-args=--k8s-clients-number=100
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=60m
       - --use-logexporter
@@ -325,12 +323,9 @@ periodics:
         limits:
           cpu: 2
           memory: "2Gi"
-- name: ci-kubernetes-e2e-gci-gce-scalability-consistent-list-from-cache-off
+- name: ci-kubernetes-e2e-gci-gce-scalability-consistent-list-from-cache-off-large-objects
   cluster: k8s-infra-prow-build
   interval: 24h
-  tags:
-  - "perfDashPrefix: consistent-list-from-cache-off"
-  - "perfDashJobType: consistent-list-from-cache"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -351,7 +346,7 @@ periodics:
     path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: consistent-list-from-cache-off
+    testgrid-tab-name: consistent-list-from-cache-off-large-objects
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
@@ -385,6 +380,145 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/request-benchmark/config.yaml
+      - --test-cmd-args=--k8s-clients-number=100
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=60m
+      - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      resources:
+        requests:
+          cpu: 2
+          memory: "2Gi"
+        limits:
+          cpu: 2
+          memory: "2Gi"
+- name: ci-kubernetes-e2e-gci-gce-scalability-consistent-list-from-cache-on-small-objects
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: consistent-list-from-cache-on-small-objects
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
+      - --env=KUBE_GCE_PRIVATE_CLUSTER=false #TODO(#29500): revert when private cluster setup is fixed
+      - --env=KUBE_FEATURE_GATES=ConsistentListFromCache=true
+      - --env=CL2_BENCHMARK_CONFIG_MAP_BYTES=1000
+      - --env=CL2_BENCHMARK_CONFIG_MAP_NUMBER=300000
+      - --env=CL2_BENCHMARK_INFLIGHT=10
+      - --env=CL2_BENCHMARK_QPS=100
+      - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-master-size=n1-standard-96
+      - --gcp-node-size=e2-standard-16
+      - --gcp-nodes=1
+      - --gcp-project-type=scalability-project
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+      - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
+      - --test-cmd-args=--testconfig=testing/request-benchmark/config.yaml
+      - --test-cmd-args=--k8s-clients-number=100
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=60m
+      - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      resources:
+        requests:
+          cpu: 2
+          memory: "2Gi"
+        limits:
+          cpu: 2
+          memory: "2Gi"
+- name: ci-kubernetes-e2e-gci-gce-scalability-consistent-list-from-cache-off-small-objects
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: consistent-list-from-cache-off-small-objects
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
+      - --env=KUBE_GCE_PRIVATE_CLUSTER=false #TODO(#29500): revert when private cluster setup is fixed
+      - --env=KUBE_FEATURE_GATES=ConsistentListFromCache=false
+      - --env=CL2_BENCHMARK_CONFIG_MAP_BYTES=1000
+      - --env=CL2_BENCHMARK_CONFIG_MAP_NUMBER=300000
+      - --env=CL2_BENCHMARK_INFLIGHT=10
+      - --env=CL2_BENCHMARK_QPS=100
+      - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-master-size=n1-standard-96
+      - --gcp-node-size=e2-standard-16
+      - --gcp-nodes=1
+      - --gcp-project-type=scalability-project
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+      - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+      - --test-cmd-args=--nodes=1
+      - --test-cmd-args=--provider=gce
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
+      - --test-cmd-args=--testconfig=testing/request-benchmark/config.yaml
+      - --test-cmd-args=--k8s-clients-number=100
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=60m
       - --use-logexporter
