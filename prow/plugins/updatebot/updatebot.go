@@ -274,9 +274,9 @@ func handleReviewEvent(agent plugins.Agent, reviewEvent github.ReviewEvent) erro
 		owner := reviewEvent.Repo.Owner.Login
 		repo := reviewEvent.Repo.Name
 		number := reviewEvent.PullRequest.Number
-		SHA := reviewEvent.PullRequest.Base.SHA
+		SHA := reviewEvent.PullRequest.Head.SHA
 		session, exist := Sessions[generateSessionID(owner, repo, number, SHA)]
-		if exist && reviewEvent.PullRequest.Number == session.UpdatePRNumber {
+		if exist {
 			return session.checkAndUpdate()
 		}
 	default:
