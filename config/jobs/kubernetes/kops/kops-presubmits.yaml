@@ -23,11 +23,11 @@ presubmits:
         - "version-dist"
         resources:
           requests:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
           limits:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: build
@@ -54,11 +54,11 @@ presubmits:
         - "test"
         resources:
           requests:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
           limits:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: test
@@ -326,11 +326,11 @@ presubmits:
         - "govet"
         resources:
           requests:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
           limits:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-govet
@@ -355,11 +355,11 @@ presubmits:
         - "verify-golangci-lint"
         resources:
           requests:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
           limits:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-golangci-lint
@@ -383,11 +383,11 @@ presubmits:
         - "verify-hashes"
         resources:
           requests:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
           limits:
-            memory: "2Gi"
-            cpu: 2
+            memory: "16Gi"
+            cpu: 16
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-hashes
