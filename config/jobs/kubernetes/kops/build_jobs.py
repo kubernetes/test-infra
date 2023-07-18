@@ -481,20 +481,23 @@ def generate_misc():
                        'KOPS_CONTROL_PLANE_SIZE': '3',
                    }),
 
-        # A one-off scenario testing arm64
-        build_test(name_override="kops-scenario-arm64",
+        # Test Cilium against ci k8s test suite
+        build_test(name_override="kops-aws-cni-cilium-k8s-ci",
                    cloud="aws",
                    distro="u2204arm64",
+                   k8s_version="ci",
+                   networking="cilium",
                    runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
-                   extra_dashboards=['kops-misc']),
+                   extra_dashboards=['kops-network-plugins']),
 
         # A special test for Calico CNI on Debian 11
         build_test(name_override="kops-aws-cni-calico-deb11",
                    cloud="aws",
                    distro="deb11",
+                   k8s_version="stable",
                    networking="calico",
                    runs_per_day=3,
                    extra_dashboards=['kops-network-plugins']),
@@ -502,6 +505,7 @@ def generate_misc():
         build_test(name_override="kops-aws-cni-calico-flatcar",
                    cloud="aws",
                    distro="flatcararm64",
+                   k8s_version="stable",
                    networking="calico",
                    runs_per_day=3,
                    extra_dashboards=['kops-distros', 'kops-network-plugins']),
@@ -1126,11 +1130,10 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.27', '1.26', '1.25', '1.24', '1.23', '1.22']:
+    for version in ['1.27', '1.26', '1.25', '1.24', '1.23']:
         results.append(
             build_test(
                 k8s_version=version,
-                irsa=version >= '1.22',
                 kops_channel='alpha',
                 name_override=f"kops-aws-k8s-{version.replace('.', '-')}",
                 networking='calico',
@@ -1480,16 +1483,6 @@ def generate_presubmits_e2e():
             tab_name='e2e-aws-1-23',
             always_run=False,
         ),
-        presubmit_test(
-            branch='master',
-            k8s_version='1.22',
-            kops_channel='alpha',
-            name='pull-kops-latest-e2e-aws-k8s-1-22',
-            networking='calico',
-            extra_flags=['--set=cluster.spec.cloudControllerManager.cloudProvider=aws'],
-            tab_name='e2e-aws-1-22',
-            always_run=False,
-        ),
 
         presubmit_test(
             distro='channels',
@@ -1538,16 +1531,6 @@ def generate_presubmits_e2e():
             name='pull-kops-e2e-k8s-aws-calico-1-23',
             networking='calico',
             tab_name='e2e-1-23',
-            always_run=True,
-        ),
-        presubmit_test(
-            distro='channels',
-            branch='release-1.22',
-            k8s_version='1.22',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-aws-calico-1-22',
-            networking='calico',
-            tab_name='e2e-1-22',
             always_run=True,
         ),
         presubmit_test(
