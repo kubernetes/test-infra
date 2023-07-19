@@ -347,7 +347,7 @@ presubmits:
         - --timeout=200
         - --scenario=kubernetes_e2e
         - --
-        - --ginkgo-parallel=1
+        - --ginkgo-parallel=8
         - --build=quick
         - --cluster=
         - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false
@@ -360,12 +360,16 @@ presubmits:
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-cos-alpha-features
-        - --test_args=--ginkgo.focus=\[Feature:(WatchList|AdmissionWebhookMatchConditions|GRPCContainerProbe|InPlacePodVerticalScaling|ProbeTerminationGracePeriod|APIServerTracing|APISelfSubjectReview|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|StatefulSetMinReadySeconds|ProxyTerminatingEndpoints|NodeOutOfServiceVolumeDetach|CSINodeExpandSecret)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:(WatchList|AdmissionWebhookMatchConditions|GRPCContainerProbe|InPlacePodVerticalScaling|ProbeTerminationGracePeriod|APIServerTracing|APISelfSubjectReview|SidecarContainers|StorageVersionAPI|PodPreset|StatefulSetAutoDeletePVC|StatefulSetMinReadySeconds|ProxyTerminatingEndpoints|NodeOutOfServiceVolumeDetach|CSINodeExpandSecret)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0|\[Serial\]|\[Disruptive\] --minStartupPods=8
         - --timeout=180m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         resources:
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 14Gi
+          limits:
+            cpu: 4
+            memory: 14Gi
         securityContext:
           privileged: true
     annotations:
