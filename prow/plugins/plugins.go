@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	rocketchatclient "k8s.io/test-infra/prow/rocketchat"
 	"os"
 	"path/filepath"
 	"strings"
@@ -265,6 +266,7 @@ type ClientAgent struct {
 	OwnersClient              repoowners.Interface
 	BugzillaClient            bugzilla.Client
 	JiraClient                jira.Client
+	RocketChatClient          *rocketchatclient.Client
 }
 
 // ConfigAgent contains the agent mutex and the Agent configuration.

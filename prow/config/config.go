@@ -133,17 +133,18 @@ type JobConfig struct {
 // ProwConfig is config for all prow controllers.
 type ProwConfig struct {
 	// The git sha from which this config was generated.
-	ConfigVersionSHA     string               `json:"config_version_sha,omitempty"`
-	Tide                 Tide                 `json:"tide,omitempty"`
-	Plank                Plank                `json:"plank,omitempty"`
-	Sinker               Sinker               `json:"sinker,omitempty"`
-	Deck                 Deck                 `json:"deck,omitempty"`
-	BranchProtection     BranchProtection     `json:"branch-protection"`
-	Gerrit               Gerrit               `json:"gerrit"`
-	GitHubReporter       GitHubReporter       `json:"github_reporter"`
-	Horologium           Horologium           `json:"horologium"`
-	SlackReporterConfigs SlackReporterConfigs `json:"slack_reporter_configs,omitempty"`
-	InRepoConfig         InRepoConfig         `json:"in_repo_config"`
+	ConfigVersionSHA          string                    `json:"config_version_sha,omitempty"`
+	Tide                      Tide                      `json:"tide,omitempty"`
+	Plank                     Plank                     `json:"plank,omitempty"`
+	Sinker                    Sinker                    `json:"sinker,omitempty"`
+	Deck                      Deck                      `json:"deck,omitempty"`
+	BranchProtection          BranchProtection          `json:"branch-protection"`
+	Gerrit                    Gerrit                    `json:"gerrit"`
+	GitHubReporter            GitHubReporter            `json:"github_reporter"`
+	Horologium                Horologium                `json:"horologium"`
+	SlackReporterConfigs      SlackReporterConfigs      `json:"slack_reporter_configs,omitempty"`
+	RocketChatReporterConfigs RocketChatReporterConfigs `json:"rocketchat_reporter_configs,omitempty"`
+	InRepoConfig              InRepoConfig              `json:"in_repo_config"`
 
 	// Gangway contains configurations needed by the the Prow API server of the
 	// same name. It encodes an allowlist of API clients and what kinds of Prow
@@ -1571,6 +1572,37 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 	}
 
 	return nil
+}
+
+// RocketChatReporter represents the config for the RocketChat reporter. The channel can be overridden
+// on the job via the .reporter_config.rocketchat.channel property.
+type RocketChatReporter struct {
+	JobTypesToReport                 []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
+	prowapi.RocketChatReporterConfig `json:",inline"`
+}
+
+// RocketChatReporterConfigs represents the config for the RocketChat reporter(s).
+// Use `org/repo`, `org` or `*` as key and an `RocketChatReporter` struct as value.
+type RocketChatReporterConfigs map[string]RocketChatReporter
+
+// RocketChatReporterConfig represents the config for the Slack reporter(s).
+// Use `org/repo`, `org` or `*` as key and an `RocketChatReporter` struct as value.
+type RocketChatReporterConfig map[string]RocketChatReporter
+
+func (cfg RocketChatReporterConfigs) GetRocketChatReporter(refs *prowapi.Refs) RocketChatReporter {
+	if refs == nil {
+		return cfg["*"]
+	}
+
+	if rocketChat, ok := cfg[fmt.Sprintf("%s/%s", refs.Org, refs.Repo)]; ok {
+		return rocketChat
+	}
+
+	if slack, ok := cfg[refs.Org]; ok {
+		return slack
+	}
+
+	return cfg["*"]
 }
 
 // Load loads and parses the config at path.

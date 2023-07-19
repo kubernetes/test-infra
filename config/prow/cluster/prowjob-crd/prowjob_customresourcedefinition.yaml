@@ -29391,6 +29391,31 @@ spec:
               reporter_config:
                 description: ReporterConfig holds reporter-specific configuration
                 properties:
+                  rocketchat:
+                    properties:
+                      channel:
+                        type: string
+                      host:
+                        type: string
+                      job_states_to_report:
+                        items:
+                          description: ProwJobState specifies whether the job is running
+                          type: string
+                        type: array
+                      report:
+                        description: 'Report is derived from JobStatesToReport, it''s
+                          used for differentiating nil from empty slice, as yaml roundtrip
+                          by design can''t tell the difference when omitempty is supplied.
+                          See https://github.com/kubernetes/test-infra/pull/24168
+                          for details Priority-wise, it goes by following order: -
+                          `report: true/false`` in job config - `JobStatesToReport:
+                          <anything including empty slice>` in job config - `report:
+                          true/false`` in global config - `JobStatesToReport:` in
+                          global config'
+                        type: boolean
+                      report_template:
+                        type: string
+                    type: object
                   slack:
                     properties:
                       channel:

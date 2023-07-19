@@ -146,6 +146,48 @@ func TestOptions(t *testing.T) {
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			},
 		},
+		//RocketChat Reporter
+		{
+			name: "rocketCcat workers, sets workers",
+			args: []string{"--rocketchat-workers=13", "--rocketchat-webhook-file=/bar/baz", "--config-path=foo"},
+			expected: &options{
+				rocketChatWorkers:     13,
+				rocketChatWebhookFile: "/bar/baz",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 1000,
+				},
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
+			},
+		},
+		{
+			name: "rocketchat missing --rocketchat-token, rejects",
+			args: []string{"--rocketchat-workers=1", "--config-path=foo"},
+		},
+		{
+			name: "rocketchat with --dry-run, sets",
+			args: []string{"--rocketchat-workers=13", "--rocketchat-webhook-file=/bar/baz", "--config-path=foo", "--dry-run"},
+			expected: &options{
+				rocketChatWorkers:     13,
+				rocketChatWebhookFile: "/bar/baz",
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "foo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					InRepoConfigCacheSize:                 1000,
+				},
+				dryrun:                 true,
+				github:                 defaultGitHubOptions,
+				k8sReportFraction:      1.0,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
+			},
+		},
 		{
 			name: "k8s-gcs enables k8s-gcs",
 			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo"},
