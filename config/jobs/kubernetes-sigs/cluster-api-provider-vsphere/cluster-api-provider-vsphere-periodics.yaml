@@ -177,3 +177,41 @@ periodics:
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       testgrid-num-failures-to-alert: "4"
       description: Shows test coverage for CAPV
+
+  - name: periodic-cluster-api-provider-vsphere-experimental-failure-on-purpose
+    interval: 1h
+    decorate: true
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes-sigs
+          slug: cluster-api-provider-vsphere-maintainers
+    path_alias: "sigs.k8s.io/cluster-api-provider-vsphere"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-vsphere
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-vsphere"
+      - org: kubernetes
+        repo: test-infra
+        base_ref: master
+        path_alias: k8s.io/test-infra
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
+          command:
+            # This job should fail every time by calling a script which does not exist.
+            - does-not-exist.sh
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["NET_ADMIN"]
+          resources:
+            requests:
+              cpu: "4000m"
+              memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: periodic-test-experimental-failure-on-purpose
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: "1"
+      description: Should fail to test alert email address
