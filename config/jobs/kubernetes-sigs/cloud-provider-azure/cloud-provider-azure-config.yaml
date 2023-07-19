@@ -582,7 +582,7 @@ presubmits:
             - name: KUBERNETES_VERSION # CAPZ config
               value: "latest"
             - name: CLUSTER_TEMPLATE # CAPZ config
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-no-win.yaml
             - name: AZURE_LOADBALANCER_SKU # cloud-provider-azure config
               value: "Standard"
             - name: CUSTOM_CLOUD_PROVIDER_CONFIG # CAPZ config
@@ -597,8 +597,6 @@ presubmits:
               value: "false"
             - name: TEST_MULTI_SLB
               value: "true"
-            - name: WINDOWS_WORKER_MACHINE_COUNT
-              value: "2"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz
