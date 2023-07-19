@@ -81,11 +81,11 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "16Gi"
-            cpu: 6000m
+            memory: "32Gi"
+            cpu: 12
           limits:
-            memory: "16Gi"
-            cpu: 6000m
+            memory: "32Gi"
+            cpu: 12
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: cli-utils-presubmit-master-stress
