@@ -66,16 +66,10 @@ type Client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger Logger
 
-	tokenGenerator func() []byte
-	fake           bool
+	fake bool
 
 	webhookURL string
 }
-
-const (
-	botName      = "prow"
-	botIconEmoji = ":prow:"
-)
 
 // NewClient creates a RocketChat client with an API token.
 func NewClient(webhook func() []byte) *Client {
@@ -102,14 +96,6 @@ func (sl *Client) log(methodName string, args ...interface{}) {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
 	sl.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
-}
-
-func (sl *Client) urlValues() *url.Values {
-	uv := url.Values{}
-	uv.Add("username", botName)
-	uv.Add("icon_emoji", botIconEmoji)
-	uv.Add("token", string(sl.tokenGenerator()))
-	return &uv
 }
 
 func (sl *Client) postMessage(url string, uv *url.Values) error {
@@ -143,7 +129,6 @@ func (sl *Client) WriteMessage(text, channel string) error {
 		return nil
 	}
 
-	//var uv = sl.urlValues()
 	uv := url.Values{}
 	if channel != "" {
 		uv.Add("channel", channel)
