@@ -20,16 +20,16 @@ const (
 	SUBMERGING
 	UPDATING
 	MERGING
+	DONE
 )
 
 func (s *Stage) Request(stage int) bool {
 	s.mut.Lock()
 	defer s.mut.Unlock()
-	if s.stage == stage {
+	if stage < s.stage {
 		return false
 	}
 	s.stage = stage
-	s.started = false
 	return true
 }
 
@@ -61,4 +61,11 @@ func (s *Stage) Is(stage int) bool {
 	s.mut.RLock()
 	defer s.mut.RUnlock()
 	return s.stage == stage
+}
+
+
+func (s *Stage) Release() {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+	s.started = false
 }

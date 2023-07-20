@@ -60,11 +60,12 @@ func (session *Session) merge() error {
 	if !session.Stage.Start() {
 		return nil
 	}
+	defer session.Stage.Release()
 	err := session.Client.AddLabel(session.OwnerLogin, session.MainRepo, session.UpdatePRNumber, "approved")
 	if err != nil {
 		return fmt.Errorf("cannot merge update pull request. %w", err)
 	}
-	session.requestStage(utypes.IDLE)
+	session.requestStage(utypes.DONE)
 	return nil
 }
 
@@ -370,6 +371,7 @@ func (session *Session) process() error {
 	if !session.Stage.Start() {
 		return nil
 	}
+	defer session.Stage.Release()
 	err := func() error {
 		processStatus := github.Status{
 			State:       github.StatusPending,
@@ -409,6 +411,7 @@ func (session *Session) deliver() error {
 	if !session.Stage.Start() {
 		return nil
 	}
+	defer session.Stage.Release()
 	err := func() error {
 		deliverStatus := github.Status{
 			Context: "auto-update / deliver-pr",
@@ -444,6 +447,7 @@ func (session *Session) waitingTrigger() error {
 	if !session.Stage.Start() {
 		return nil
 	}
+	defer session.Stage.Release()
 	time.Sleep(10 * time.Second)
 	return session.conclude()
 }
@@ -757,6 +761,7 @@ func (session *Session) handleSubmodulePR() error {
 	if !session.Stage.Start() {
 		return nil
 	}
+	defer session.Stage.Release()
 	for _, submodule := range session.Submodules {
 		if submodule.Status.State != "success" {
 			return fmt.Errorf("cannot handle submodule pull requests, pull request %s for submodule %s is not ready", submodule.PRInfo.HTMLURL, submodule.BaseInfo.Name)
@@ -783,6 +788,7 @@ func (session *Session) updateSubmodule() error {
 	if !session.Stage.Start() {
 		return nil
 	}
+	defer session.Stage.Release()
 	err := func() error {
 		repo, err := session.Git.ClientFor(session.OwnerLogin, session.MainRepo)
 		if err != nil {
