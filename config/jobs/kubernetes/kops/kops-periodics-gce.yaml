@@ -29,7 +29,7 @@ periodics:
           --cloud-provider=gce \
           --create-args="--channel=alpha --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://dl.k8s.io/release/latest.txt \
+          --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
