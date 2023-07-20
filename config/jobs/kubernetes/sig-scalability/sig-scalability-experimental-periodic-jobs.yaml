@@ -292,7 +292,7 @@ periodics:
       - --env=CL2_BENCHMARK_CONFIG_MAP_BYTES=1000000
       - --env=CL2_BENCHMARK_CONFIG_MAP_NUMBER=300
       - --env=CL2_BENCHMARK_INFLIGHT=10
-      - --env=CL2_BENCHMARK_QPS=100
+      - --env=CL2_BENCHMARK_QPS=1
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -361,7 +361,7 @@ periodics:
       - --env=CL2_BENCHMARK_CONFIG_MAP_BYTES=1000000
       - --env=CL2_BENCHMARK_CONFIG_MAP_NUMBER=300
       - --env=CL2_BENCHMARK_INFLIGHT=10
-      - --env=CL2_BENCHMARK_QPS=100
+      - --env=CL2_BENCHMARK_QPS=1
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -430,7 +430,7 @@ periodics:
       - --env=CL2_BENCHMARK_CONFIG_MAP_BYTES=1000
       - --env=CL2_BENCHMARK_CONFIG_MAP_NUMBER=300000
       - --env=CL2_BENCHMARK_INFLIGHT=10
-      - --env=CL2_BENCHMARK_QPS=100
+      - --env=CL2_BENCHMARK_QPS=1
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -499,7 +499,7 @@ periodics:
       - --env=CL2_BENCHMARK_CONFIG_MAP_BYTES=1000
       - --env=CL2_BENCHMARK_CONFIG_MAP_NUMBER=300000
       - --env=CL2_BENCHMARK_INFLIGHT=10
-      - --env=CL2_BENCHMARK_QPS=100
+      - --env=CL2_BENCHMARK_QPS=1
       - --env=CL2_BENCHMARK_URI=/api/v1/namespaces/%namespace%/configmaps?labelSelector=empty=selector
       - --extract=ci/latest
       - --gcp-node-image=gci
