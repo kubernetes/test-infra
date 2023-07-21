@@ -1,0 +1,20 @@
+# See the OWNERS file documentation:
+#  https://github.com/kubernetes/community/blob/HEAD/contributors/guide/owners.md
+# Synced to the root OWNERS file in sigs.k8s.io/external-dns as of 07/21/23
+
+approvers:
+  - raffo
+  - njuettner
+  - seanmalloy
+  - szuecs
+
+reviewers:
+  - johngmyers
+  - njuettner
+  - raffo
+  - seanmalloy
+  - szuecs
+
+emeritus_approvers:
+  - hjacobs
+  - linki
