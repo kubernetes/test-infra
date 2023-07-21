@@ -23,6 +23,14 @@ const (
 	DONE
 )
 
+func CreateStage(stage int) Stage {
+	return Stage{
+		stage: stage,
+		started: false,
+		startedAt: time.Now(),
+	}
+}
+
 func (s *Stage) Request(stage int) bool {
 	s.mut.Lock()
 	defer s.mut.Unlock()
