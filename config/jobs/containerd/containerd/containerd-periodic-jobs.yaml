@@ -1,10 +1,10 @@
 # These CI/post-submit jobs are used by Kubernetes tests to fetch a recent build of containerd instead of building containerd on every run.
+# The intervals are specifically set to 24h as these jobs also run as postsubmits for main and last 2 releases
 periodics:
-- name: ci-containerd-build-canary
-  interval: 30m
+- name: ci-containerd-build
+  interval: 24h
   labels:
     preset-service-account: "true"
-    preset-dind-enabled: "true"
   cluster: k8s-infra-prow-build
   decorate: true
   extra_refs:
@@ -30,9 +30,113 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
-      securityContext:
-        privileged: true
   annotations:
     testgrid-dashboards: sig-node-containerd,containerd-periodic
-    testgrid-tab-name: containerd-build-canary
+    testgrid-tab-name: ci-containerd-build
     description: "builds development in progress branch of upstream containerd"
+
+- name: ci-containerd-build-1-6
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: release/1.6
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+      command:
+      - runner.sh
+      args:
+      - test/build.sh
+      env:
+      - name: DEPLOY_DIR
+        value: release-1.6
+      - name: DEPLOY_BUCKET
+        value: k8s-staging-cri-tools
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
+    testgrid-tab-name: ci-containerd-build-1.6
+    description: "builds release/1.6 branch of upstream containerd"
+
+- name: ci-containerd-build-1-7
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: release/1.7
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+        command:
+          - runner.sh
+        args:
+          - test/build.sh
+        env:
+          - name: DEPLOY_DIR
+            value: release-1.7
+          - name: DEPLOY_BUCKET
+            value: k8s-staging-cri-tools
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
+    testgrid-tab-name: ci-containerd-build-1.7
+    description: "builds release/1.7 branch of upstream containerd"
+
+- name: ci-containerd-build-test-images
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+    - org: containerd
+      repo: containerd
+      base_ref: main
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+        command:
+          - runner.sh
+        args:
+          - test/build-test-images.sh
+        env:
+          - name: DEPLOY_DIR
+            value: main
+          - name: PROJECT
+            value: k8s-staging-cri-tools
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  annotations:
+    testgrid-dashboards: sig-node-containerd,containerd-periodic
+    testgrid-tab-name: ci-containerd-build-test-images
+    description: "builds test images for development in progress branch of upstream containerd"
