@@ -42,10 +42,10 @@ presubmits:
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20230531
         - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230531
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
         - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
@@ -108,10 +108,10 @@ presubmits:
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20230531
         - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230531
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
         - --ginkgo-parallel=15
@@ -177,10 +177,10 @@ presubmits:
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20230531
         - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230531
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_PROXY_MODE=ipvs
         - --gcp-master-image=ubuntu
@@ -683,10 +683,10 @@ periodics:
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
       - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-      - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+      - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2204-jammy-v20230531
       - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
       - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-      - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+      - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2204-jammy-v20230531
       - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
       - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
       - --ginkgo-parallel=15
