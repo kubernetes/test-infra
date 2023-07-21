@@ -6,6 +6,7 @@ presubmits:
     - main
     - release/1.6
     - release/1.7
+    cluster: k8s-infra-prow-build
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-containerd,containerd-presubmits
@@ -21,10 +22,16 @@ presubmits:
         - runner.sh
         args:
         - ./test/build.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-
+        env:
+        - name: DEPLOY_BUCKET
+          value: k8s-staging-cri-tools
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
   - name: pull-containerd-node-e2e
     always_run: true
     max_concurrency: 8
@@ -76,6 +83,68 @@ presubmits:
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
+  - name: pull-containerd-node-e2e-canary
+    always_run: true
+    max_concurrency: 8
+    decorate: true
+    cluster: k8s-infra-prow-build
+    branches:
+    - main
+    decoration_config:
+      timeout: 100m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-containerd,containerd-presubmits
+      testgrid-tab-name: pull-containerd-node-e2e
+      description: run node e2e tests
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - name: pull-containerd-node-e2e
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        env:
+        - name: USE_TEST_INFRA_LOG_DUMPING
+          value: "true"
+        - name: DEPLOY_BUCKET
+          value: k8s-staging-cri-tools
+        command:
+        - sh
+        - -c
+        - >
+          runner.sh
+          ./test/build.sh
+          &&
+          cd ${GOPATH}/src/k8s.io/kubernetes
+          &&
+          kubetest2
+          noop
+          --test=node
+          --
+          --repo-root=.
+          --gcp-zone=us-west1-b
+          --parallelism=8
+          --focus-regex="\[NodeConformance\]\[NodeFeature:.+\]|\[NodeFeature\]"
+          --skip-regex="\[Flaky\]|\[Slow\]|\[Serial\]"
+          --node-env="PULL_REFS=$(PULL_REFS)" # doesn't exist yet in kubetest2 or in k/k
+          --test-args='--container-runtime-process-name=/home/containerd/usr/local/bin/containerd --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"'
+          --image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main-presubmit/image-config-presubmit.yaml
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
   - name: pull-containerd-node-e2e-1-7
     always_run: true
     max_concurrency: 8
