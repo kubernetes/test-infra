@@ -142,6 +142,11 @@ func (f *fakeGitHubClient) GetRef(org, repo, ref string) (string, error) {
 	return f.ref, nil
 }
 
+func (f *fakeGitHubClient) ListTeamMembersBySlug(org, repo, slug string) ([]github.TeamMember, error) {
+	result := make([]github.TeamMember, 0, 1)
+	return result, nil
+}
+
 func getTestClient(
 	files map[string][]byte,
 	enableMdYaml,
