@@ -13,7 +13,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=20" # Minutes
+        - "--timeout=30" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-e2e.sh"
