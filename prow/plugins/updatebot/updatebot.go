@@ -468,7 +468,7 @@ func (session *Session) conclude() error {
 
 func (session *Session) submoduleMerged() bool {
 	for _, submodule := range session.Submodules {
-		if submodule.MergedSHA != "" {
+		if submodule.MergedSHA == "" {
 			return false
 		}
 	}
