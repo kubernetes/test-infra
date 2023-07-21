@@ -33,7 +33,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -72,7 +72,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -116,7 +116,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -168,7 +168,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -214,7 +214,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -269,7 +269,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -317,7 +317,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -366,7 +366,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -408,7 +408,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -455,7 +455,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -510,7 +510,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
@@ -559,7 +559,7 @@ periodics:
     spec:
       serviceAccountName: node-e2e-tests
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
           command:
             - runner.sh
           args:
