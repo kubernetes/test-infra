@@ -50,6 +50,8 @@ presubmits:
   - name: pull-publishing-bot-test-kubernetes-master
     always_run: false
     decorate: true
+    decoration_config:
+      timeout: 3h
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: pull-publishing-bot-test-k8s-master
