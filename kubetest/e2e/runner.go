@@ -163,7 +163,7 @@ func (t *GinkgoTester) Run(control *process.Control, extraArgs []string) error {
 	}...)
 
 	a.addIfNonEmpty("kubeconfig", t.Kubeconfig)
-	a.addInt("ginkgo.flakeAttempts", t.FlakeAttempts)
+	a.addInt("ginkgo.flake-attempts", t.FlakeAttempts)
 	a.addIfNonEmpty("provider", t.Provider)
 	a.addIfNonEmpty("gce-project", t.GCEProject)
 	a.addIfNonEmpty("gce-zone", t.GCEZone)
