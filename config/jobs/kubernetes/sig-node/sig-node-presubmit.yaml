@@ -657,7 +657,7 @@ presubmits:
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd"
             - --node-tests=true
             - --provider=gce
-            - --test_args=--nodes=1 --skip="" --focus="\[Feature:CPUManager\]"
+            - --test_args=--nodes=1 --skip="\[NodeAlphaFeature:.+\]" --focus="\[Feature:CPUManager\]"
             - --timeout=180m
           env:
             - name: GOPATH
@@ -715,7 +715,7 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --parallelism=1
         - --focus-regex=\[Feature:CPUManager\]
-        - --skip-regex=\[Flaky\]|\[Slow\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[NodeAlphaFeature:.+\]
         - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --cgroup-driver=systemd"
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
   - name: pull-kubernetes-node-kubelet-serial-topology-manager
