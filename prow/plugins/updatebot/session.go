@@ -80,20 +80,6 @@ func GenerateSessionID(owner, repo string, number int, SHA string) string {
 	return fmt.Sprintf("/%s/%s/%d/%s", owner, repo, number, SHA)
 }
 
-var UpdateMainRepo = []string{
-	"peeweep-test/dtk",
-}
-
-func ShouldTrigger(owner, repo string) bool {
-	fullName := fmt.Sprintf("%s/%s", owner, repo)
-	for _, mainRepo := range UpdateMainRepo {
-		if fullName == mainRepo {
-			return true
-		}
-	}
-	return false
-}
-
 var Sessions = map[string]*Session{}
 
 type SubmoduleInfo struct {

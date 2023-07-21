@@ -140,9 +140,6 @@ func TriggerUpdate(agent *plugins.Agent, pullRequest *github.PullRequest) (err e
 	repo := pullRequest.Base.Repo.Name
 	number := pullRequest.Number
 	SHA := pullRequest.Head.SHA
-	if !ShouldTrigger(owner, repo) {
-		return nil
-	}
 	id := GenerateSessionID(owner, repo, number, SHA)
 	session := FindSession(id)
 	if session != nil && !session.IsStage(utypes.IDLE) {
