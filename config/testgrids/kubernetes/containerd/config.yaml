@@ -3,7 +3,9 @@ dashboard_groups:
   dashboard_names:
   - containerd-presubmits
   - containerd-periodic
+  - containerd-postsubmits
 
 dashboards:
   - name: containerd-periodic
   - name: containerd-presubmits
+  - name: containerd-postsubmits

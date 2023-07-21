@@ -1,0 +1,130 @@
+# These CI/post-submit jobs are used by Kubernetes tests to fetch a recent build of containerd instead of building containerd on every run.
+postsubmits:
+  containerd/containerd:
+    - name: post-containerd-build
+      labels:
+        preset-service-account: "true"
+      cluster: k8s-infra-prow-build
+      decorate: true
+      branches:
+        - main
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+            command:
+              - runner.sh
+            args:
+              - test/build.sh
+            env:
+              - name: DEPLOY_DIR
+                value: main
+              - name: DEPLOY_BUCKET
+                value: k8s-staging-cri-tools
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-dashboards: sig-node-containerd,containerd-postsubmits
+        testgrid-tab-name: post-containerd-build
+        description: "builds development in progress branch of upstream containerd"
+
+    - name: post-containerd-build-1-6
+      labels:
+        preset-service-account: "true"
+      cluster: k8s-infra-prow-build
+      decorate: true
+      branches:
+        - release/1.6
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+            command:
+              - runner.sh
+            args:
+              - test/build.sh
+            env:
+              - name: DEPLOY_DIR
+                value: release-1.6
+              - name: DEPLOY_BUCKET
+                value: k8s-staging-cri-tools
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-dashboards: sig-node-containerd,containerd-postsubmits
+        testgrid-tab-name: post-containerd-build-1.6
+        description: "builds release/1.6 branch of upstream containerd"
+
+    - name: post-containerd-build-1-7
+      labels:
+        preset-service-account: "true"
+      cluster: k8s-infra-prow-build
+      decorate: true
+      branches:
+        - release/1.7
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+            command:
+              - runner.sh
+            args:
+              - test/build.sh
+            env:
+              - name: DEPLOY_DIR
+                value: release-1.7
+              - name: DEPLOY_BUCKET
+                value: k8s-staging-cri-tools
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+      annotations:
+        testgrid-dashboards: sig-node-containerd,containerd-postsubmits
+        testgrid-tab-name: post-containerd-build-1.7
+        description: "builds release/1.7 branch of upstream containerd"
+
+    - name: post-containerd-build-test-images
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+      cluster: k8s-infra-prow-build
+      decorate: true
+      branches:
+        - main
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230616-e730b60769-master
+            command:
+              - runner.sh
+            args:
+              - test/build-test-images.sh
+            env:
+              - name: DEPLOY_DIR
+                value: main
+              - name: PROJECT
+                value: k8s-staging-cri-tools
+            resources:
+              limits:
+                cpu: 4
+                memory: 6Gi
+              requests:
+                cpu: 4
+                memory: 6Gi
+            # docker-in-docker needs privileged mode
+            securityContext:
+              privileged: true
+      annotations:
+        testgrid-dashboards: sig-node-containerd,containerd-postsubmits
+        testgrid-tab-name: post-containerd-build-test-images
+        description: "builds test images for development in progress branch of upstream containerd"
