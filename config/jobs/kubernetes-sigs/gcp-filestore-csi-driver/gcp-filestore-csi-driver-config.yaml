@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/gcp-filestore-csi-driver:
   - name: pull-gcp-filestore-csi-driver-e2e
+    cluster: k8s-infra-prow-build
     always_run: true
     labels:
       preset-service-account: "true"
@@ -17,10 +18,18 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run_e2e.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         env:
         - name: ZONE
           value: us-central1-c
   - name: pull-gcp-filestore-csi-driver-sanity
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -36,7 +45,15 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run_sanity.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-gcp-filestore-csi-driver-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -52,7 +69,15 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run_unit.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-gcp-filestore-csi-driver-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -68,7 +93,15 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "hack/verify_all.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-gcp-filestore-csi-driver-kubernetes-integration
+    cluster: k8s-infra-prow-build
     always_run: false
     run_if_changed: '^(pkg\/|cmd\/|test\/|hack\/|vendor\/)'
     labels:
@@ -95,4 +128,7 @@ presubmits:
             # this is mostly for building kubernetes
             memory: "9000Mi"
             # during the tests more like 3-20m is used
+            cpu: 2000m
+          limits:
+            memory: "9000Mi"
             cpu: 2000m
