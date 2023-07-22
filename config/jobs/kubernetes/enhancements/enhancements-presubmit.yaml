@@ -13,11 +13,11 @@ presubmits:
               - "export PATH=$PATH:$GOPATH/bin && ./hack/verify.sh"
             resources:
               limits:
-                cpu: 2
-                memory: 4Gi
+                cpu: 4
+                memory: 1Gi
               requests:
-                cpu: 2
-                memory: 4Gi
+                cpu: 4
+                memory: 1Gi
     - name: pull-enhancements-test
       cluster: eks-prow-build-cluster
       always_run: true
@@ -32,7 +32,7 @@ presubmits:
             resources:
               limits:
                 cpu: 2
-                memory: 4Gi
+                memory: 1Gi
               requests:
                 cpu: 2
-                memory: 4Gi
+                memory: 1Gi
