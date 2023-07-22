@@ -59,7 +59,7 @@ presubmits:
       testgrid-tab-name: cli-utils-presubmit-master-e2e
       description: cli-utils presubmit e2e tests on master branch
   - name: cli-utils-presubmit-master-stress
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/cli-utils
