@@ -1,11 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 approvers:
-- justinsb
+- CecileRobertMichon
 - fabriziopandini
+- justinsb
 - neolit123
+- pacoxu # kubeadm approver
+- SataQiu # kubeadm approver
 - vincepri
-- SataQiu
-- pacoxu
 emeritus_approvers:
 - luxas
 - timothysc
