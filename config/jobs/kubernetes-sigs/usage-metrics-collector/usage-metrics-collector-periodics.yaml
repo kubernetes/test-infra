@@ -1,5 +1,6 @@
 periodics:
 - name: ci-usage-metrics-collector-test
+  cluster: eks-prow-build-cluster
   interval: 8h
   decorate: true
   extra_refs:
@@ -17,7 +18,7 @@ periodics:
         resources:
           requests:
             cpu: 1
-            memory: "1Gi"
+            memory: "2Gi"
           limits:
             cpu: 1
             memory: "2Gi"
