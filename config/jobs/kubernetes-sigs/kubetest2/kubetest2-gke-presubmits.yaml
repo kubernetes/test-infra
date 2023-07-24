@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kubetest2:
   - name: pull-kubetest2-gke-up-down-singlecluster
+    cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: "kubetest2-gke/.*"
     labels:
@@ -15,7 +16,15 @@ presubmits:
         - "./kubetest2-gke/ci-tests/buildupdown.sh"
         - "--cluster-topology"
         - "singlecluster"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-kubetest2-gke-up-down-multicluster
+    cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: "kubetest2-gke/.*"
     labels:
@@ -30,3 +39,10 @@ presubmits:
         - "./kubetest2-gke/ci-tests/buildupdown.sh"
         - "--cluster-topology"
         - "multicluster"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

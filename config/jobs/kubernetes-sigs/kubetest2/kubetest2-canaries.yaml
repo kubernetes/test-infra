@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/kubetest2:
   - name: gce-build-up-down
+    cluster: k8s-infra-prow-build
     decorate: true
     run_if_changed: "kubetest2-gce/.*"
     labels:
@@ -20,5 +21,12 @@ presubmits:
         - "runner.sh"
         args:
         - "./kubetest2-gce/ci-tests/buildupdown.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
         securityContext:
           privileged: true
