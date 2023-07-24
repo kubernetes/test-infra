@@ -82,10 +82,10 @@ presubmits:
         resources:
           requests:
             memory: "8000Mi"
-            cpu: 8000m
+            cpu: 7000m
           limits:
             memory: "8000Mi"
-            cpu: 8000m
+            cpu: 7000m
     annotations:
       testgrid-dashboards: sig-cli-misc
       testgrid-tab-name: cli-utils-presubmit-master-stress
