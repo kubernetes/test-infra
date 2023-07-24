@@ -62,6 +62,10 @@ type Options struct {
 	// Primarily useful in case a subsequent entrypoint will read this entrypoint's marker
 	AlwaysZero bool `json:"always_zero,omitempty"`
 
+	// PropagateErrorCode will cause entrypoint to propagate the error code from its child.
+	// Primarily useful in case you want to exit with a specific error code.
+	PropagateErrorCode bool `json:"propagate_error_code,omitempty"`
+
 	CopyModeOnly bool   `json:"copy_mode_only,omitempty"`
 	CopyDst      string `json:"copy_dst,omitempty"`
 
@@ -73,6 +77,9 @@ type Options struct {
 func (o *Options) Validate() error {
 	if len(o.Args) == 0 {
 		return errors.New("no process to wrap specified")
+	}
+	if o.PropagateErrorCode && o.AlwaysZero {
+		return errors.New("cannot propagate error code and always exit zero")
 	}
 
 	return o.Options.Validate()
@@ -103,6 +110,7 @@ func (o *Options) AddFlags(flags *flag.FlagSet) {
 	flags.StringVar(&o.ArtifactDir, "artifact-dir", "", "directory where test artifacts should be placed for upload to persistent storage")
 	flags.BoolVar(&o.CopyModeOnly, "copy-mode-only", false, "If true, copy current binary to /tools/entrypoint, dst can be overridden by --copy-destination")
 	flags.StringVar(&o.CopyDst, "copy-destination", defaultCopyDst, "Must be used with --copy-mode-only, default is /tools/entrypoint")
+	flags.BoolVar(&o.PropagateErrorCode, "propagate-error-code", false, "If true, propagate the error code from the child process")
 	o.Options.AddFlags(flags)
 }
 
