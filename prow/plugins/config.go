@@ -94,6 +94,7 @@ type Configuration struct {
 	Welcome              []Welcome                    `json:"welcome,omitempty"`
 	Override             Override                     `json:"override,omitempty"`
 	Help                 Help                         `json:"help,omitempty"`
+	UpdateBot            UpdateBot                    `json:"updatebot,omitempty"`
 }
 
 type Help struct {
@@ -463,6 +464,10 @@ type Trigger struct {
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
 	// TriggerGitHubWorkflows enables workflows run by github to be triggered by prow.
 	TriggerGitHubWorkflows bool `json:"trigger_github_workflows,omitempty"`
+}
+
+type UpdateBot struct {
+	Repos []string `json:"repos,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.

@@ -140,7 +140,16 @@ func TriggerUpdate(agent plugins.Agent, pullRequest *github.PullRequest) (err er
 	repo := pullRequest.Base.Repo.Name
 	number := pullRequest.Number
 	SHA := pullRequest.Head.SHA
-	if !ShouldTrigger(owner, repo) {
+	shouldTrigger := func(org, repo string) bool {
+		fullName := fmt.Sprintf("%s/%s", org, repo)
+		for _, mainRepo := range agent.PluginConfig.UpdateBot.Repos {
+			if fullName == mainRepo {
+				return true
+			}
+		}
+		return false
+	}
+	if !shouldTrigger(owner, repo) {
 		return nil
 	}
 	repoOwners, err := agent.OwnersClient.LoadRepoOwners(owner, repo, pullRequest.Base.Ref)
