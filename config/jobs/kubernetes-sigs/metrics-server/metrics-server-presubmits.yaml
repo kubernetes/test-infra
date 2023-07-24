@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/metrics-server:
   - name: pull-metrics-server-verify
+    cluster: eks-prow-build-cluster
     decorate: true
     skip_branches:
       - gh-pages
@@ -14,10 +15,18 @@ presubmits:
         - runner.sh
         - make
         - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-instrumentation-metrics-server
       testgrid-tab-name: pr-verify
   - name: pull-metrics-server-test-unit
+    cluster: eks-prow-build-cluster
     decorate: true
     skip_branches:
       - gh-pages
@@ -34,6 +43,9 @@ presubmits:
         - make
         - test-unit
         resources:
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
           requests:
             cpu: "6000m"
             memory: "6Gi"
@@ -41,6 +53,7 @@ presubmits:
       testgrid-dashboards: sig-instrumentation-metrics-server
       testgrid-tab-name: pr-test-unit
   - name: pull-metrics-server-test-version
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
     decorate: true
@@ -60,13 +73,17 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
           requests:
-            cpu: "4000m"
+            cpu: "6000m"
             memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-metrics-server
       testgrid-tab-name: pr-test-version
   - name: pull-metrics-server-test-e2e
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -87,6 +104,9 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
           requests:
             cpu: "6000m"
             memory: "6Gi"
@@ -94,6 +114,7 @@ presubmits:
       testgrid-dashboards: sig-instrumentation-metrics-server
       testgrid-tab-name: pr-test-e2e
   - name: pull-metrics-server-test-e2e-ha
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -116,6 +137,9 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
           requests:
             cpu: "6000m"
             memory: "6Gi"
@@ -123,6 +147,7 @@ presubmits:
       testgrid-dashboards: sig-instrumentation-metrics-server
       testgrid-tab-name: pr-test-e2e-ha
   - name: pull-metrics-server-test-e2e-helm
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -145,6 +170,9 @@ presubmits:
           securityContext:
             privileged: true
           resources:
+            limits:
+              cpu: "6000m"
+              memory: "6Gi"
             requests:
               cpu: "6000m"
               memory: "6Gi"
