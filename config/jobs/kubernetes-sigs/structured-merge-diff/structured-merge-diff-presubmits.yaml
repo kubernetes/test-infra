@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/structured-merge-diff:
   - name: pull-structured-merge-diff-test
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
     always_run: true
@@ -15,11 +16,19 @@ presubmits:
         - test
         - -race
         - ./...
+        resources:
+          requests:
+            cpu: "6000m"
+            memory: "6Gi"
+          limits:
+            cpu: "6000m"
+            memory: "6Gi"
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-test
       testgrid-num-columns-recent: '30'
   - name: pull-structured-merge-diff-vet
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
     always_run: true
@@ -33,11 +42,19 @@ presubmits:
         args:
         - vet
         - ./...
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-vet
       testgrid-num-columns-recent: '30'
   - name: pull-structured-merge-diff-gofmt
+    cluster: eks-prow-build-cluster
     labels:
       preset-service-account: "true"
     always_run: true
@@ -50,11 +67,19 @@ presubmits:
         - bash
         - -c
         - test -z "$({ find . -name "*.go" | grep -v "\\/vendor\\/" | xargs gofmt -s -d | tee /dev/stderr; })"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-structured-merge-diff
       testgrid-tab-name: pr-gofmt
       testgrid-num-columns-recent: '30'
   - name: pull-structured-merge-diff-benchmark
+    cluster: eks-prow-build-cluster
     always_run: false
     skip_report: true
     decorate: true
