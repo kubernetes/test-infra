@@ -17,56 +17,6 @@ import (
 	utypes "k8s.io/test-infra/prow/plugins/updatebot/internal"
 )
 
-type GitClientError struct {
-	owner string
-	repo string
-	msg string
-	err error
-}
-
-func (gce GitClientError) Error() string {
-	if gce.err != nil {
-		return fmt.Sprintf("%s/%s %s, %v", gce.owner, gce.repo, gce.msg, gce.err)
-	} else {
-		return fmt.Sprintf("%s/%s %s", gce.owner, gce.repo, gce.msg)
-	}
-}
-
-type TagExistError struct {
-	repo string
-	tag  string
-}
-
-func (tee TagExistError) Error() string {
-	return fmt.Sprintf("tag %s exists in repo %s", tee.tag, tee.repo)
-}
-
-type NotFoundError struct {
-	target string
-	err error
-}
-
-func (nfe NotFoundError) Error() string {
-	if nfe.err != nil {
-		return fmt.Sprintf("%s not found, %v", nfe.target, nfe.err)
-	} else {
-		return fmt.Sprintf("%s not found", nfe.target)
-	}
-}
-
-type NotReadyError struct {
-	err     error
-	message string
-}
-
-func (e NotReadyError) Error() string {
-	return fmt.Sprintf(e.message + ", %v", e.err)
-}
-
-func (e NotReadyError) Unwrap() error {
-	return e.err
-}
-
 func FindSession(ID string) *Session {
 	session, exist := Sessions[ID]
 	if exist {
