@@ -24,7 +24,7 @@ func init() {
 func handlePullRequestEvent(agent plugins.Agent, pullRequestEvent github.PullRequestEvent) error {
 	switch pullRequestEvent.Action {
 	case github.PullRequestActionOpened, github.PullRequestActionReopened, github.PullRequestActionSynchronize:
-		TriggerUpdate(&agent, &pullRequestEvent.PullRequest)
+		TriggerUpdate(agent, &pullRequestEvent.PullRequest)
 		for _, session := range Sessions {
 			if pullRequestEvent.Repo.Owner.Login == session.OwnerLogin {
 				for _, submodule := range session.Submodules {
@@ -127,14 +127,14 @@ func handleGenericCommentEvent(agent plugins.Agent, genericCommentEvent github.G
 			}
 			switch genericCommentEvent.Body {
 			case "/retrigger":
-				return TriggerUpdate(&agent, pullRequest)
+				return TriggerUpdate(agent, pullRequest)
 			}
 		}
 	}
 	return nil
 }
 
-func TriggerUpdate(agent *plugins.Agent, pullRequest *github.PullRequest) (err error) {
+func TriggerUpdate(agent plugins.Agent, pullRequest *github.PullRequest) (err error) {
 	gc := agent.GitHubClient
 	owner := pullRequest.Base.Repo.Owner.Login
 	repo := pullRequest.Base.Repo.Name
