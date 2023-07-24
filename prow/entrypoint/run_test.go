@@ -20,6 +20,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"syscall"
 	"testing"
 	"time"
 
@@ -32,6 +33,8 @@ func TestOptions_Run(t *testing.T) {
 		name           string
 		args           []string
 		alwaysZero     bool
+		interrupt      bool
+		propagate      bool
 		invalidMarker  bool
 		previousMarker string
 		timeout        time.Duration
@@ -127,6 +130,44 @@ func TestOptions_Run(t *testing.T) {
 			expectedMarker: "0",
 			expectedCode:   0,
 		},
+
+		{
+			name:      "interrupt, propagate child error",
+			interrupt: true,
+			propagate: true,
+			args: []string{"bash", "-c", `function cleanup() {
+CHILDREN=$(jobs -p)
+if test -n "${CHILDREN}"
+then
+kill ${CHILDREN} && wait
+fi
+exit 3
+}
+trap cleanup SIGINT SIGTERM EXIT
+sleep infinity &
+wait`},
+			expectedLog:    "level=error msg=\"Entrypoint received interrupt: terminated\"\nlevel=error msg=\"Process gracefully exited before 15s grace period\"\n",
+			expectedMarker: "3",
+			expectedCode:   3,
+		},
+		{
+			name:      "interrupt, do not propagate child error",
+			interrupt: true,
+			args: []string{"bash", "-c", `function cleanup() {
+CHILDREN=$(jobs -p)
+if test -n "${CHILDREN}"
+then
+kill ${CHILDREN} && wait
+fi
+exit 3
+}
+trap cleanup SIGINT SIGTERM EXIT
+sleep infinity &
+wait`},
+			expectedLog:    "level=error msg=\"Entrypoint received interrupt: terminated\"\nlevel=error msg=\"Process gracefully exited before 15s grace period\"\n",
+			expectedMarker: "130",
+			expectedCode:   130,
+		},
 		{
 			name:           "run failing command as normal if previous marker passed",
 			previousMarker: "0",
@@ -150,11 +191,13 @@ func TestOptions_Run(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			tmpDir := t.TempDir()
+			interrupt := make(chan os.Signal, 1)
 
 			options := Options{
-				AlwaysZero:  testCase.alwaysZero,
-				Timeout:     testCase.timeout,
-				GracePeriod: testCase.gracePeriod,
+				AlwaysZero:         testCase.alwaysZero,
+				PropagateErrorCode: testCase.propagate,
+				Timeout:            testCase.timeout,
+				GracePeriod:        testCase.gracePeriod,
 				Options: &wrapper.Options{
 					Args:       testCase.args,
 					ProcessLog: path.Join(tmpDir, "process-log.txt"),
@@ -174,7 +217,14 @@ func TestOptions_Run(t *testing.T) {
 				options.MarkerFile = "/this/had/better/not/be/a/real/file!@!#$%#$^#%&*&&*()*"
 			}
 
-			if code := options.Run(); code != testCase.expectedCode {
+			if testCase.interrupt {
+				go func() {
+					time.Sleep(200 * time.Millisecond)
+					interrupt <- syscall.SIGTERM
+				}()
+			}
+
+			if code := options.internalRun(interrupt); code != testCase.expectedCode {
 				t.Errorf("%s: expected exit code %d != actual %d", testCase.name, testCase.expectedCode, code)
 			}
 
