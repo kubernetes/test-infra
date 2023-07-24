@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/slack-infra:
   - name: pull-slack-infra-verify
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/slack-infra
     always_run: true
@@ -9,7 +10,15 @@ presubmits:
         - image: public.ecr.aws/docker/library/golang:1.11.5
           command:
             - "./hack/verify-all.sh"
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
   - name: pull-slack-infra-build
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/slack-infra
     always_run: true
@@ -18,7 +27,15 @@ presubmits:
         - image: public.ecr.aws/docker/library/golang:1.11.5
           command:
             - "./hack/verify-build.sh"
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
   - name: pull-slack-infra-test
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/slack-infra
     always_run: true
@@ -30,6 +47,13 @@ presubmits:
           args:
             - "test"
             - "./..."
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
           env:
             - name: GO111MODULE
               value: "on"
