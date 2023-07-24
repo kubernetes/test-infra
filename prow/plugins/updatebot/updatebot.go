@@ -140,6 +140,9 @@ func TriggerUpdate(agent *plugins.Agent, pullRequest *github.PullRequest) (err e
 	repo := pullRequest.Base.Repo.Name
 	number := pullRequest.Number
 	SHA := pullRequest.Head.SHA
+	if !ShouldTrigger(owner, repo) {
+		return nil
+	}
 	repoOwners, err := agent.OwnersClient.LoadRepoOwners(owner, repo, pullRequest.Base.Ref)
 	if err != nil {
 		return fmt.Errorf("cannot get repo owners, %w", err)
