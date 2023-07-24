@@ -140,6 +140,13 @@ func TriggerUpdate(agent *plugins.Agent, pullRequest *github.PullRequest) (err e
 	repo := pullRequest.Base.Repo.Name
 	number := pullRequest.Number
 	SHA := pullRequest.Head.SHA
+	repoOwners, err := agent.OwnersClient.LoadRepoOwners(owner, repo, pullRequest.Base.Ref)
+	if err != nil {
+		return fmt.Errorf("cannot get repo owners, %w", err)
+	}
+	if !repoOwners.AllOwners().Has(pullRequest.User.Login) {
+		return &NotAuthorizedError{user: pullRequest.User.Login}
+	}
 	id := GenerateSessionID(owner, repo, number, SHA)
 	session := FindSession(id)
 	if session != nil && !session.IsStage(utypes.IDLE) {

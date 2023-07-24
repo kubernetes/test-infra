@@ -72,6 +72,14 @@ func (e NotReadyError) Unwrap() error {
 	return e.err
 }
 
+type NotAuthorizedError struct {
+	user string
+}
+
+func (nae NotAuthorizedError) Error() string {
+	return fmt.Sprintf("User %s is not authorized", nae.user)
+}
+
 func ParseDotGitmodulesContent(content []byte) ([]Submodule, error) {
 	file, err := ini.Load(content)
 	if err != nil {
