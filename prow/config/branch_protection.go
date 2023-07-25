@@ -40,6 +40,9 @@ type Policy struct {
 	Admins *bool `json:"enforce_admins,omitempty"`
 	// Restrictions limits who can merge
 	Restrictions *Restrictions `json:"restrictions,omitempty"`
+	// RequireManuallyTriggeredJobs enforces a context presence when job runs conditionally, but not automatically,
+	// that results in params always_run: false, optional: false, and skip_if_only_change, run_if_changed not present.
+	RequireManuallyTriggeredJobs *bool `json:"require_manually_triggered_jobs,omitempty"`
 	// RequiredPullRequestReviews specifies github approval/review criteria.
 	RequiredPullRequestReviews *ReviewPolicy `json:"required_pull_request_reviews,omitempty"`
 	// RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
@@ -62,8 +65,8 @@ func (p Policy) Managed() bool {
 }
 
 func (p Policy) defined() bool {
-	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequiredPullRequestReviews != nil ||
-		p.RequiredLinearHistory != nil || p.AllowForcePushes != nil || p.AllowDeletions != nil
+	return p.Protect != nil || p.RequiredStatusChecks != nil || p.Admins != nil || p.Restrictions != nil || p.RequireManuallyTriggeredJobs != nil ||
+		p.RequiredPullRequestReviews != nil || p.RequiredLinearHistory != nil || p.AllowForcePushes != nil || p.AllowDeletions != nil
 }
 
 // ContextPolicy configures required github contexts.
@@ -462,7 +465,7 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 	policy := b.Policy
 
 	// Automatically require contexts from prow which must always be present
-	if prowContexts, requiredIfPresentContexts, optionalContexts := BranchRequirements(branch, presubmits); c.shouldManageRequiredStatusCheck(prowContexts, requiredIfPresentContexts, optionalContexts) {
+	if prowContexts, requiredIfPresentContexts, optionalContexts := BranchRequirements(branch, presubmits, policy.RequireManuallyTriggeredJobs); c.shouldManageRequiredStatusCheck(prowContexts, requiredIfPresentContexts, optionalContexts) {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies != nil && *c.BranchProtection.AllowDisabledJobPolicies {
@@ -567,7 +570,7 @@ func (c *Config) unprotectedBranches(presubmits map[string][]Presubmit) []string
 				if err != nil || policy == nil {
 					continue
 				}
-				requiredContexts, _, _ := BranchRequirements(branchName, presubmits[orgName+"/"+repoName])
+				requiredContexts, _, _ := BranchRequirements(branchName, presubmits[orgName+"/"+repoName], policy.RequireManuallyTriggeredJobs)
 				if isUnprotected(*policy, boolValFromPtr(c.BranchProtection.AllowDisabledPolicies), len(requiredContexts) > 0, boolValFromPtr(c.BranchProtection.AllowDisabledJobPolicies)) {
 					branches.Insert(branchName)
 				}
@@ -597,19 +600,27 @@ func (c *Config) BranchProtectionWarnings(logger *logrus.Entry, presubmits map[s
 //   - contexts that are always required to be present
 //   - contexts that are required, _if_ present
 //   - contexts that are always optional
-func BranchRequirements(branch string, jobs []Presubmit) ([]string, []string, []string) {
+func BranchRequirements(branch string, jobs []Presubmit, requireManuallyTriggeredJobs *bool) ([]string, []string, []string) {
 	var required, requiredIfPresent, optional []string
+	var manuallyTriggeredJobs bool
+	if requireManuallyTriggeredJobs != nil && *requireManuallyTriggeredJobs {
+		manuallyTriggeredJobs = true
+	}
 	for _, j := range jobs {
 		if !j.CouldRun(branch) {
 			continue
 		}
-
 		if j.ContextRequired() {
-			if j.TriggersConditionally() {
+			switch {
+			case manuallyTriggeredJobs && j.NeedsExplicitTrigger():
+				// require jobs marked as always_run: false, optional: false,
+				// with no skip_if_only_changed and no run_if_changed
+				required = append(required, j.Context)
+			case j.TriggersConditionally():
 				// jobs that trigger conditionally cannot be
 				// required as their status may not exist on PRs
 				requiredIfPresent = append(requiredIfPresent, j.Context)
-			} else {
+			default:
 				// jobs that produce required contexts and will
 				// always run should be required at all times
 				required = append(required, j.Context)

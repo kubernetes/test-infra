@@ -324,6 +324,7 @@ func TestApply(test *testing.T) {
 func TestBranchRequirements(t *testing.T) {
 	cases := []struct {
 		name                            string
+		requireManuallyTriggeredJobs    bool
 		config                          []Presubmit
 		masterExpected, otherExpected   []string
 		masterOptional, otherOptional   []string
@@ -392,6 +393,73 @@ func TestBranchRequirements(t *testing.T) {
 			otherIfPresent:  []string{"run-if-changed", "skip-if-only-changed", "not-always"},
 			otherOptional:   []string{"skip-report", "optional"},
 		},
+		{
+			name:                         "require non optional jobs",
+			requireManuallyTriggeredJobs: true,
+			config: []Presubmit{
+				{
+					AlwaysRun: false,
+					Reporter: Reporter{
+						Context:    "always-run false",
+						SkipReport: false,
+					},
+				},
+				{
+					AlwaysRun: false,
+					Reporter: Reporter{
+						Context:    "always-run false skip master",
+						SkipReport: false,
+					},
+					Brancher: Brancher{
+						SkipBranches: []string{"master"},
+					},
+				},
+				{
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						RunIfChanged: "foo",
+					},
+					AlwaysRun: false,
+					Reporter: Reporter{
+						Context:    "run-if-changed",
+						SkipReport: false,
+					},
+				},
+				{
+					RegexpChangeMatcher: RegexpChangeMatcher{
+						SkipIfOnlyChanged: "foo",
+					},
+					AlwaysRun: false,
+					Reporter: Reporter{
+						Context:    "skip-if-only-changed",
+						SkipReport: false,
+					},
+				},
+				{
+					AlwaysRun: true,
+					Reporter: Reporter{
+						Context:    "skip-report",
+						SkipReport: true,
+					},
+					Brancher: Brancher{
+						SkipBranches: []string{"master"},
+					},
+				},
+				{
+					AlwaysRun: true,
+					Reporter: Reporter{
+						Context:    "optional",
+						SkipReport: false,
+					},
+					Optional: true,
+				},
+			},
+			masterExpected:  []string{"always-run false"},
+			masterIfPresent: []string{"run-if-changed", "skip-if-only-changed"},
+			masterOptional:  []string{"optional"},
+			otherExpected:   []string{"always-run false", "always-run false skip master"},
+			otherIfPresent:  []string{"run-if-changed", "skip-if-only-changed"},
+			otherOptional:   []string{"skip-report", "optional"},
+		},
 	}
 
 	for _, tc := range cases {
@@ -401,7 +469,7 @@ func TestBranchRequirements(t *testing.T) {
 		presubmits := map[string][]Presubmit{
 			"o/r": tc.config,
 		}
-		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("master", presubmits["o/r"])
+		masterActual, masterActualIfPresent, masterOptional := BranchRequirements("master", presubmits["o/r"], &tc.requireManuallyTriggeredJobs)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("%s: identified incorrect required contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActual, tc.masterExpected))
 		}
@@ -411,7 +479,7 @@ func TestBranchRequirements(t *testing.T) {
 		if !reflect.DeepEqual(masterActualIfPresent, tc.masterIfPresent) {
 			t.Errorf("%s: identified incorrect if-present contexts on branch master: %s", tc.name, diff.ObjectReflectDiff(masterActualIfPresent, tc.masterIfPresent))
 		}
-		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("other", presubmits["o/r"])
+		otherActual, otherActualIfPresent, otherOptional := BranchRequirements("other", presubmits["o/r"], &tc.requireManuallyTriggeredJobs)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("%s: identified incorrect required contexts on branch other: : %s", tc.name, diff.ObjectReflectDiff(otherActual, tc.otherExpected))
 		}

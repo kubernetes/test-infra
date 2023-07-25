@@ -875,6 +875,7 @@ func parseTideContextPolicyOptions(org, repo, branch string, options TideContext
 // If none are set, it will use the prow jobs configured and use the default github combined status.
 // Otherwise if set it will use the branch protection setting, or the listed jobs.
 func (c Config) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter RefGetter, headSHA string) (*TideContextPolicy, error) {
+	var requireManuallyTriggeredJobs *bool
 	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
 	// Adding required and optional contexts from options
 	required := sets.New[string](options.RequiredContexts...)
@@ -889,21 +890,24 @@ func (c Config) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, bra
 		return nil, fmt.Errorf("failed to get presubmits: %w", err)
 	}
 
-	// automatically generate required and optional entries for Prow Jobs
-	prowRequired, prowRequiredIfPresent, prowOptional := BranchRequirements(branch, presubmits)
-	required.Insert(prowRequired...)
-	requiredIfPresent.Insert(prowRequiredIfPresent...)
-	optional.Insert(prowOptional...)
-
 	// Using Branch protection configuration
 	if options.FromBranchProtection != nil && *options.FromBranchProtection {
 		bp, err := c.GetBranchProtection(org, repo, branch, presubmits)
 		if err != nil {
 			logrus.WithError(err).Warningf("Error getting branch protection for %s/%s+%s", org, repo, branch)
-		} else if bp != nil && bp.Protect != nil && *bp.Protect && bp.RequiredStatusChecks != nil {
-			required.Insert(bp.RequiredStatusChecks.Contexts...)
+		} else if bp != nil {
+			requireManuallyTriggeredJobs = bp.RequireManuallyTriggeredJobs
+			if bp.Protect != nil && *bp.Protect && bp.RequiredStatusChecks != nil {
+				required.Insert(bp.RequiredStatusChecks.Contexts...)
+			}
 		}
 	}
+
+	// automatically generate required and optional entries for Prow Jobs
+	prowRequired, prowRequiredIfPresent, prowOptional := BranchRequirements(branch, presubmits, requireManuallyTriggeredJobs)
+	required.Insert(prowRequired...)
+	requiredIfPresent.Insert(prowRequiredIfPresent...)
+	optional.Insert(prowOptional...)
 
 	t := &TideContextPolicy{
 		RequiredContexts:          sets.List(required),
