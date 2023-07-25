@@ -384,11 +384,6 @@ func (session *Session) HandleSubmodulePR() error {
 		return nil
 	}
 	defer session.stage.Release()
-	for _, submodule := range session.Submodules {
-		if submodule.Status.State != "success" {
-			return fmt.Errorf("cannot handle submodule pull requests, pull request %s for submodule %s is not ready", submodule.PRInfo.HTMLURL, submodule.BaseInfo.Name)
-		}
-	}
 	mergedCount := 0
 	for _, submodule := range session.Submodules {
 		// In case HandleSubmodulePR is invoked directly, refresh pull request here
@@ -397,6 +392,9 @@ func (session *Session) HandleSubmodulePR() error {
 			RemotePR, err := session.Client.GetPullRequest(submodule.PRInfo.Base.Repo.Owner.Login, submodule.PRInfo.Base.Repo.Name, submodule.PRInfo.Number)
 			if err != nil {
 				submodule.PRInfo = RemotePR
+				if RemotePR.Merged && RemotePR.MergeSHA != nil {
+					submodule.MergedSHA = *RemotePR.MergeSHA
+				}
 			}
 		}
 		if submodule.MergedSHA != "" {
