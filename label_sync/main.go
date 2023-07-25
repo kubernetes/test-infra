@@ -693,7 +693,7 @@ func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 		for updateErr := range errChan {
 			updateErrs = append(updateErrs, updateErr)
 		}
-		overallErr = fmt.Errorf("failed to list labels: %v", updateErrs)
+		overallErr = fmt.Errorf("failed to update labels: %v", updateErrs)
 	}
 
 	return overallErr
