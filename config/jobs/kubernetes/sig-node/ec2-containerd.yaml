@@ -180,6 +180,8 @@ periodics:
               value: "true"
             - name: BUILD_EKS_AMI_OS
               value: "al2023"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
@@ -232,6 +234,8 @@ periodics:
               value: "true"
             - name: TARGET_BUILD_ARCH
               value: "linux/arm64"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
@@ -281,6 +285,8 @@ periodics:
               value: "true"
             - name: TARGET_BUILD_ARCH
               value: "linux/arm64"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
@@ -331,6 +337,8 @@ periodics:
               value: "true"
             - name: TARGET_BUILD_ARCH
               value: "linux/arm64"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
@@ -374,6 +382,10 @@ periodics:
           env:
             - name: FOCUS
               value: \[Serial\]
+            - name: IMAGE_CONFIG_DIR
+              value: config
+            - name: IMAGE_CONFIG_FILE
+              value: aws-instance.yaml
             - name: SKIP
               value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
             - name: TEST_ARGS
@@ -420,6 +432,8 @@ periodics:
               value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
             - name: BUILD_EKS_AMI
               value: "true"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
@@ -473,6 +487,8 @@ periodics:
               value: "true"
             - name: TARGET_BUILD_ARCH
               value: "linux/arm64"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
@@ -524,6 +540,8 @@ periodics:
               value: "true"
             - name: BUILD_EKS_AMI_OS
               value: "al2023"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
@@ -579,6 +597,8 @@ periodics:
               value: "true"
             - name: TARGET_BUILD_ARCH
               value: "linux/arm64"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
