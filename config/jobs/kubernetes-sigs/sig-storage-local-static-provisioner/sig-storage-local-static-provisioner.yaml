@@ -135,7 +135,7 @@ periodics:
       - name: EXTRACT_STRATEGY
         value: ci/latest
       - NAME: PROVISIONER_E2E_IMAGE
-        value: quay.io/external_storage/local-volume-provisioner:canary
+        value: gcr.io/k8s-staging-sig-storage/local-volume-provisioner:canary
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
