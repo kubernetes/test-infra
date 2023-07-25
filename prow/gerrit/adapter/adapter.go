@@ -52,6 +52,7 @@ const (
 var gerritMetrics = struct {
 	processingResults     *prometheus.CounterVec
 	triggerLatency        *prometheus.HistogramVec
+	triggerHelpLatency    *prometheus.HistogramVec
 	changeProcessDuration *prometheus.HistogramVec
 	changeSyncDuration    *prometheus.HistogramVec
 }{
@@ -73,6 +74,13 @@ var gerritMetrics = struct {
 		// Hopefully this isn't excessive enough to cause metric scraping issues.
 		"repo",
 	}),
+	triggerHelpLatency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_trigger_help_latency",
+		Help:    "Histogram of seconds between triggering event (help) and ProwJob creation time.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200},
+	}, []string{
+		"org",
+	}),
 	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_process_duration",
 		Help:    "Histogram of seconds spent processing a single gerrit instance.",
@@ -90,6 +98,7 @@ var gerritMetrics = struct {
 func init() {
 	prometheus.MustRegister(gerritMetrics.processingResults)
 	prometheus.MustRegister(gerritMetrics.triggerLatency)
+	prometheus.MustRegister(gerritMetrics.triggerHelpLatency)
 	prometheus.MustRegister(gerritMetrics.changeProcessDuration)
 	prometheus.MustRegister(gerritMetrics.changeSyncDuration)
 }
@@ -633,7 +642,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 					return err
 				}
-				gerritMetrics.triggerLatency.WithLabelValues(instance, change.Project).Observe(float64(time.Since(msg.Date.Time).Seconds()))
+				gerritMetrics.triggerHelpLatency.WithLabelValues(instance).Observe(float64(time.Since(msg.Date.Time).Seconds()))
 				// Only respond to the first message that requests help information.
 				break
 			}
