@@ -1585,7 +1585,7 @@ type RocketChatReporter struct {
 // Use `org/repo`, `org` or `*` as key and an `RocketChatReporter` struct as value.
 type RocketChatReporterConfigs map[string]RocketChatReporter
 
-// RocketChatReporterConfig represents the config for the Slack reporter(s).
+// RocketChatReporterConfig represents the config for the RocketChat reporter(s).
 // Use `org/repo`, `org` or `*` as key and an `RocketChatReporter` struct as value.
 type RocketChatReporterConfig map[string]RocketChatReporter
 
@@ -1598,11 +1598,38 @@ func (cfg RocketChatReporterConfigs) GetRocketChatReporter(refs *prowapi.Refs) R
 		return rocketChat
 	}
 
-	if slack, ok := cfg[refs.Org]; ok {
-		return slack
+	if rocketChat, ok := cfg[refs.Org]; ok {
+		return rocketChat
 	}
 
 	return cfg["*"]
+}
+
+func (cfg RocketChatReporterConfigs) HasGlobalConfig() bool {
+	_, exists := cfg["*"]
+	return exists
+}
+
+func (cfg *RocketChatReporter) DefaultAndValidate() error {
+	// Default ReportTemplate.
+	if cfg.ReportTemplate == "" {
+		cfg.ReportTemplate = `Job {{.Spec.Job}} of type {{.Spec.Type}} ended with state {{.Status.State}}. <{{.Status.URL}}|View logs>`
+	}
+
+	if cfg.Channel == "" {
+		return errors.New("channel must be set")
+	}
+
+	// Validate ReportTemplate.
+	tmpl, err := template.New("").Parse(cfg.ReportTemplate)
+	if err != nil {
+		return fmt.Errorf("failed to parse template: %w", err)
+	}
+	if err := tmpl.Execute(&bytes.Buffer{}, &prowapi.ProwJob{}); err != nil {
+		return fmt.Errorf("failed to execute report_template: %w", err)
+	}
+
+	return nil
 }
 
 // Load loads and parses the config at path.
@@ -2161,6 +2188,15 @@ func (c *Config) validateComponentConfig() error {
 				return fmt.Errorf("failed to validate slackreporter config: %w", err)
 			}
 			c.SlackReporterConfigs[k] = config
+		}
+	}
+
+	if c.RocketChatReporterConfigs != nil {
+		for k, config := range c.RocketChatReporterConfigs {
+			if err := config.DefaultAndValidate(); err != nil {
+				return fmt.Errorf("failed to validate rocketchatreporter config: %w", err)
+			}
+			c.RocketChatReporterConfigs[k] = config
 		}
 	}
 

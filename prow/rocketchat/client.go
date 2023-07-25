@@ -61,7 +61,7 @@ type Logger interface {
 }
 
 // Client allows you to provide connection to RocketChat API Server
-// It contains a token that allows to authenticate connection to post and work with channels in the domain
+// It contains a secret webhookURL that allows to authenticate connection to post and work with channels in the domain
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger Logger
@@ -71,7 +71,7 @@ type Client struct {
 	webhookURL string
 }
 
-// NewClient creates a RocketChat client with an API token.
+// NewClient creates a RocketChat client with a secret webhookURL.
 func NewClient(webhook func() []byte) *Client {
 	webhookURL := string(webhook())
 	return &Client{

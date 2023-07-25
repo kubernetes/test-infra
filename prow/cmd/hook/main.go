@@ -18,7 +18,6 @@ package main
 
 import (
 	"flag"
-	"k8s.io/test-infra/prow/rocketchat"
 	"net/http"
 	"os"
 	"strconv"
@@ -47,6 +46,7 @@ import (
 	"k8s.io/test-infra/prow/plugins/jira"
 	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
+	"k8s.io/test-infra/prow/rocketchat"
 	"k8s.io/test-infra/prow/slack"
 
 	_ "k8s.io/test-infra/prow/version"
@@ -102,8 +102,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
-	fs.StringVar(&o.rocketChatWebhookFile, "rocketchat-webhook-file", "", "Path to the file containing the RocketChat webhook url to use.")
-	fs.StringVar(&o.rocketChatChannel, "rocketchat-channel", "", "Channel to send message to.") // TODO: robin: Remove
+	fs.StringVar(&o.rocketChatWebhookFile, "rocketchat-webhook-file", "", "Path to the file containing the secret RocketChat webhook url to use.")
+	fs.StringVar(&o.rocketChatChannel, "rocketchat-channel", "", "Channel to send message to.")
 	fs.Parse(args)
 	return o
 }
