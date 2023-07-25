@@ -4,12 +4,14 @@ approvers:
 - CecileRobertMichon
 - jackfrancis
 - mboersma
-- marosset
-- jsturtevant
+- nojnhuh
+- sonasingh46
 reviewers:
 - Jont828
+- jsturtevant
+- marosset
 - nawazkh
-- nojnhuh
+- willie-yao
 
 labels:
 - sig/cluster-lifecycle
