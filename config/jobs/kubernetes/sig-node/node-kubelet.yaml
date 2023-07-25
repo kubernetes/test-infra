@@ -145,9 +145,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-      # experimental have the kubetest2 binaries
-      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         command:
         - runner.sh
         args:
