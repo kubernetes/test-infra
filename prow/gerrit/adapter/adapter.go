@@ -83,16 +83,16 @@ var gerritMetrics = struct {
 	}),
 	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_process_duration",
-		Help:    "Histogram of seconds spent processing a single gerrit instance.",
+		Help:    "Histogram of seconds spent processing a single gerrit instance or repo.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{
-		"org",
+		"org", "repo",
 	}),
 	changeSyncDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_change_sync_duration",
-		Help:    "Histogram of seconds spent syncing changes from a single gerrit instance.",
+		Help:    "Histogram of seconds spent syncing changes from a single gerrit instance or repo.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
-	}, []string{"org"}),
+	}, []string{"org", "repo"}),
 }
 
 func init() {
@@ -250,7 +250,7 @@ func (c *Controller) Sync() {
 
 		now := time.Now()
 		defer func() {
-			gerritMetrics.changeProcessDuration.WithLabelValues(instance).Observe(float64(time.Since(now).Seconds()))
+			gerritMetrics.changeProcessDuration.WithLabelValues(instance, project).Observe(float64(time.Since(now).Seconds()))
 		}()
 
 		// Ignore the error. It is already logged.
@@ -280,7 +280,7 @@ func (c *Controller) Sync() {
 			changeChan <- Change{changeInfo: change, instance: instance}
 		}
 		wg.Wait()
-		gerritMetrics.changeSyncDuration.WithLabelValues(instance).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
+		gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
 		close(changeChan)
 		c.tracker.Update(latest)
 	}
