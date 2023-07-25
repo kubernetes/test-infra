@@ -16,11 +16,11 @@ presubmits:
         - "./scripts/ci-test.sh"
         resources:
           requests:
-            cpu: "8"
-            memory: "16Gi"
+            cpu: "16"
+            memory: "32Gi"
           limits:
-            cpu: "8"
-            memory: "16Gi"
+            cpu: "16"
+            memory: "32Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws-2.0
       testgrid-tab-name: pr-test-release-2-0
