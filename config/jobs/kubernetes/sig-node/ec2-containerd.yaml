@@ -6,6 +6,8 @@ presets:
         value: linux/amd64
       - name: AWS_REGION
         value: us-east-1
+      - name: AWS_DEFAULT_REGION
+        value: us-east-1
       - name: SSH_USER
         value: ec2-user
       - name: DELETE_INSTANCES

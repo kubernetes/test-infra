@@ -123,7 +123,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-cos-kubetest2
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         resources:
           requests:
             cpu: 4

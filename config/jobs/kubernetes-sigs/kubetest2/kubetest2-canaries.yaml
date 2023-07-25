@@ -152,7 +152,7 @@ presubmits:
       testgrid-dashboards: sig-testing-canaries
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         resources:
           limits:
             cpu: 4
@@ -170,7 +170,7 @@ presubmits:
           set -o pipefail;
           set -o xtrace;
           make install-all;
-          cd ${GOPATH}/src/sigs.k8s.io/kubernetes;
+          cd ${GOPATH}/src/k8s.io/kubernetes;
           kubetest2 noop --test=node -- \
             --provider=gce --repo-root=. --gcp-zone=us-west1-b --focus-regex="\[NodeConformance\]" \
             --test-args='--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"' \

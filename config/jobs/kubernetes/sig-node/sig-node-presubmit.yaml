@@ -257,7 +257,7 @@ presubmits:
       testgrid-num-failures-to-alert: "10"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         command:
         - runner.sh
         args:
@@ -312,9 +312,7 @@ presubmits:
       testgrid-num-failures-to-alert: "10"
     spec:
       containers:
-      # experimental have the kubetest2 binaries
-      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         resources:
           limits:
             cpu: 4
@@ -411,9 +409,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      # experimental have the kubetest2 binaries
-      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         env:
         - name: GOPATH
           value: /go
@@ -552,9 +548,7 @@ presubmits:
       testgrid-tab-name: pr-node-kubelet-serial-containerd-kubetest2
     spec:
       containers:
-      # experimental have the kubetest2 binaries
-      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         env:
         - name: GOPATH
           value: /go
@@ -651,9 +645,7 @@ presubmits:
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager-kubetest2
     spec:
       containers:
-      # experimental have the kubetest2 binaries
-      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         env:
         - name: GOPATH
           value: /go
@@ -749,9 +741,7 @@ presubmits:
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager-kubetest2
     spec:
       containers:
-      # experimental have the kubetest2 binaries
-      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         env:
         - name: GOPATH
           value: /go
@@ -937,9 +927,7 @@ presubmits:
       testgrid-tab-name: pr-crio-cgrpv2-gce-e2e-kubetest2
     spec:
       containers:
-      # experimental have the kubetest2 binaries
-      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         resources:
           limits:
             cpu: 4
@@ -1134,9 +1122,7 @@ presubmits:
       testgrid-tab-name: pr-crio-gce-e2e-kubetest2
     spec:
       containers:
-      # experimental have the kubetest2 binaries
-      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
         resources:
           limits:
             cpu: 4
