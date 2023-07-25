@@ -192,14 +192,12 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 type Change struct {
 	changeInfo gerrit.ChangeInfo
 	instance   string
-	tracker    time.Time
 }
 
 func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup) {
 	for changeStruct := range changeChan {
 		change := changeStruct.changeInfo
 		instance := changeStruct.instance
-		tracker := changeStruct.tracker
 
 		log := log.WithFields(logrus.Fields{
 			"branch":   change.Branch,
@@ -208,17 +206,12 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 			"revision": change.CurrentRevision,
 		})
 
-		log.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for gerrit change to be picked up by a worker thread.")
-		tracker = time.Now()
-
 		result := client.ResultSuccess
 		if err := c.processChange(log, instance, change); err != nil {
 			result = client.ResultError
 			log.WithError(err).Info("Failed to process change")
 		}
 		gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
-
-		log.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for gerrit change to be processed by a worker thread.")
 
 		c.latestMux.Lock()
 		lastTime, ok := latest[instance][change.Project]
@@ -252,10 +245,9 @@ func (c *Controller) Sync() {
 		}()
 
 		// Ignore the error. It is already logged.
-		changes, _ := c.gc.QueryChangesForProject(instance, project, syncTime, c.config().Gerrit.RateLimit)
 		timeQueryChangesForProject := time.Now()
-		log.WithFields(logrus.Fields{"host": instance, "repo": project, "changes": len(changes), "duration(s)": time.Since(now).Seconds()}).Info("Time taken querying for gerrit changes")
 
+		changes, _ := c.gc.QueryChangesForProject(instance, project, syncTime, c.config().Gerrit.RateLimit)
 		if len(changes) == 0 {
 			return
 		}
@@ -275,14 +267,8 @@ func (c *Controller) Sync() {
 		for i := 0; i < c.workerPoolSize; i++ {
 			go c.syncChange(latest, changeChan, log, &wg)
 		}
-
-		// Trying to understand the performance bottleneck.
-		// Would like to understand how much time a change waits until being
-		// picked up by `c.syncChange`, this will probably be used as an
-		// indicator for deciding the most optimal number of `workerPoolSize`.
-		timeBeforeSent := time.Now()
 		for _, change := range changes {
-			changeChan <- Change{changeInfo: change, instance: instance, tracker: timeBeforeSent}
+			changeChan <- Change{changeInfo: change, instance: instance}
 		}
 		wg.Wait()
 		gerritMetrics.changeSyncDuration.WithLabelValues(instance).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
@@ -465,13 +451,6 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
 func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
-	tracker := time.Now()
-	defer func() {
-		// tracker will reset in `processChange` function, and this is the time
-		// taken for a gerrit change to be processed after the last reset.
-		logger.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for gerrit change to be processed.")
-	}()
-
 	cloneURI := source.CloneURIFromOrgRepo(instance, change.Project)
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
 	if err != nil {
@@ -528,12 +507,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		return "", nil
 	}
 
-	logger.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for preparing to process gerrit changes.")
-	tracker = time.Now()
-
 	switch change.Status {
 	case client.Merged:
-		logger := logger.WithField("status", client.Merged)
 		var postsubmits []config.Postsubmit
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
@@ -544,10 +519,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				break
 			}
 		}
-		// Suspect that inrepoconfig takes long time, add a log for its duration
-		logger.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for finding jobs for gerrit change.")
-		tracker = time.Now()
-
 		// Postsubmit jobs are triggered only once. Still try to fall back on
 		// static jobs if failed to retrieve inrepoconfig jobs.
 		if err != nil {
@@ -578,7 +549,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 	case client.New:
-		logger := logger.WithField("status", client.New)
 		var presubmits []config.Presubmit
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
@@ -588,12 +558,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				break
 			}
 		}
-
-		// We suspect that inrepoconfig takes a long time, so add a log for its
-		// duration.
-		logger.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for finding jobs for gerrit change.")
-		tracker = time.Now()
-
 		if err != nil {
 			// Reports error back to Gerrit. handleInRepoConfigError is
 			// responsible for not sending the same message again and again on
