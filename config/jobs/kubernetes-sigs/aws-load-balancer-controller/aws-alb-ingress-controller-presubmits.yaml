@@ -27,7 +27,7 @@ presubmits:
       description: aws load balancer controller code lint
       testgrid-num-columns-recent: '30'
   - name: pull-aws-load-balancer-controller-unit-test
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     labels:
