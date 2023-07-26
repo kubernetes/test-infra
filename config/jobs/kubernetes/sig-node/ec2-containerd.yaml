@@ -253,7 +253,7 @@ periodics:
               cpu: 8
               memory: 10Gi
   - name: ci-kubernetes-node-arm64-e2e-containerd-ec2
-    interval: 12h
+    interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: ci-kubernetes-node-arm64-e2e-containerd-ec2
@@ -356,7 +356,7 @@ periodics:
               cpu: 8
               memory: 10Gi
   - name: ci-cgroupv1-containerd-node-e2e-serial-ec2
-    interval: 12h
+    interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: ci-cgroupv1-containerd-node-e2e-serial-ec2
@@ -400,7 +400,7 @@ periodics:
               cpu: 8
               memory: 10Gi
   - name: ci-cgroupv1-containerd-node-e2e-serial-ec2-eks
-    interval: 12h
+    interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: ci-cgroupv1-containerd-node-e2e-serial-ec2-eks
@@ -448,7 +448,7 @@ periodics:
               cpu: 8
               memory: 10Gi
   - name: ci-cgroupv1-containerd-node-arm64-e2e-serial-ec2-eks
-    interval: 12h
+    interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: ci-cgroupv1-containerd-node-arm64-e2e-serial-ec2-eks
@@ -506,7 +506,7 @@ periodics:
               cpu: 8
               memory: 10Gi
   - name: ci-cgroupv1-containerd-node-al2023-e2e-serial-ec2-eks
-    interval: 12h
+    interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: ci-cgroupv1-containerd-node-al2023-e2e-serial-ec2-eks
@@ -556,7 +556,7 @@ periodics:
               cpu: 8
               memory: 10Gi
   - name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-serial-ec2-eks
-    interval: 12h
+    interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-serial-ec2-eks
