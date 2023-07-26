@@ -116,6 +116,10 @@ presubmits:
           env:
             - name: FOCUS
               value: NodeConformance
+            - name: IMAGE_CONFIG_DIR
+              value: config
+            - name: IMAGE_CONFIG_FILE
+              value: aws-instance.yaml
             - name: TEST_ARGS
               value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           resources:
@@ -163,6 +167,8 @@ presubmits:
               value: "true"
             - name: TARGET_BUILD_ARCH
               value: "linux/arm64"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
@@ -217,6 +223,8 @@ presubmits:
               value: "true"
             - name: TARGET_BUILD_ARCH
               value: "linux/arm64"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
@@ -2117,6 +2125,10 @@ presubmits:
           env:
             - name: FOCUS
               value: \[Serial\]
+            - name: IMAGE_CONFIG_DIR
+              value: config
+            - name: IMAGE_CONFIG_FILE
+              value: aws-instance.yaml
             - name: SKIP
               value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
             - name: TEST_ARGS
@@ -2158,6 +2170,10 @@ presubmits:
             env:
               - name: FOCUS
                 value: NodeConformance
+              - name: IMAGE_CONFIG_DIR
+                value: config
+              - name: IMAGE_CONFIG_FILE
+                value: aws-instance.yaml
               - name: TEST_ARGS
                 value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
             resources:
@@ -2198,6 +2214,8 @@ presubmits:
                 value: NodeConformance
               - name: BUILD_EKS_AMI
                 value: "true"
+              - name: IMAGE_CONFIG_DIR
+                value: config
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance-eks.yaml
               - name: TEST_ARGS
@@ -2243,6 +2261,8 @@ presubmits:
                 value: "true"
               - name: TARGET_BUILD_ARCH
                 value: "linux/arm64"
+              - name: IMAGE_CONFIG_DIR
+                value: config
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance-arm64.yaml
               - name: TEST_ARGS
@@ -2286,6 +2306,10 @@ presubmits:
             env:
               - name: FOCUS
                 value: \[Serial\]
+              - name: IMAGE_CONFIG_DIR
+                value: config
+              - name: IMAGE_CONFIG_FILE
+                value: aws-instance.yaml
               - name: SKIP
                 value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
               - name: TEST_ARGS
@@ -2332,6 +2356,8 @@ presubmits:
                 value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
               - name: BUILD_EKS_AMI
                 value: "true"
+              - name: IMAGE_CONFIG_DIR
+                value: config
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance-eks.yaml
               - name: TEST_ARGS
@@ -2379,6 +2405,8 @@ presubmits:
                 value: "true"
               - name: TARGET_BUILD_ARCH
                 value: "linux/arm64"
+              - name: IMAGE_CONFIG_DIR
+                value: config
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance-arm64.yaml
               - name: TEST_ARGS
