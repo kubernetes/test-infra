@@ -58,7 +58,7 @@ var gerritMetrics = struct {
 }{
 	processingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "gerrit_processing_results",
-		Help: "Count of change processing by instance, repo, and result.",
+		Help: "Count of change processing by instance, repo, and result (ERROR or SUCCESS).",
 	}, []string{
 		"org",
 		"repo",
@@ -83,14 +83,14 @@ var gerritMetrics = struct {
 	}),
 	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_process_duration",
-		Help:    "Histogram of seconds spent processing a single gerrit instance or repo.",
+		Help:    "Histogram of seconds spent processing changes, by instance and repo. Includes gerrit_repo_query_latency and gerrit_instance_change_sync_duration.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{
 		"org", "repo",
 	}),
 	changeSyncDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_change_sync_duration",
-		Help:    "Histogram of seconds spent syncing changes from a single gerrit instance or repo.",
+		Help:    "Histogram of seconds spent syncing changes (syncChange()) from a single gerrit instance or repo.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{"org", "repo"}),
 }
