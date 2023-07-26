@@ -62,6 +62,9 @@ branch-protection:
                                 - ""
                             # Protect overrides whether branch protection is enabled if set.
                             protect: false
+                            # RequireManuallyTriggeredJobs enforces a context presence when job runs conditionally, but not automatically,
+                            # that results in params always_run: false, optional: false, and skip_if_only_change, run_if_changed not present.
+                            require_manually_triggered_jobs: false
                             # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
                             required_linear_history: false
                             # RequiredPullRequestReviews specifies github approval/review criteria.
@@ -113,6 +116,9 @@ branch-protection:
                         - ""
                     # Protect overrides whether branch protection is enabled if set.
                     protect: false
+                    # RequireManuallyTriggeredJobs enforces a context presence when job runs conditionally, but not automatically,
+                    # that results in params always_run: false, optional: false, and skip_if_only_change, run_if_changed not present.
+                    require_manually_triggered_jobs: false
                     # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
                     required_linear_history: false
                     # RequiredPullRequestReviews specifies github approval/review criteria.
@@ -152,6 +158,9 @@ branch-protection:
                             - ""
                     # Unmanaged makes us not manage the branchprotection.
                     unmanaged: false
+            # RequireManuallyTriggeredJobs enforces a context presence when job runs conditionally, but not automatically,
+            # that results in params always_run: false, optional: false, and skip_if_only_change, run_if_changed not present.
+            require_manually_triggered_jobs: false
             # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
             required_linear_history: false
             # RequiredPullRequestReviews specifies github approval/review criteria.
@@ -200,6 +209,9 @@ branch-protection:
     # ProtectReposWithOptionalJobs will make the Branchprotector manage required status
     # contexts on repositories that only have optional jobs (default: false)
     protect_repos_with_optional_jobs: false
+    # RequireManuallyTriggeredJobs enforces a context presence when job runs conditionally, but not automatically,
+    # that results in params always_run: false, optional: false, and skip_if_only_change, run_if_changed not present.
+    require_manually_triggered_jobs: false
     # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
     required_linear_history: false
     # RequiredPullRequestReviews specifies github approval/review criteria.
