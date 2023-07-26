@@ -261,6 +261,7 @@ func (c *Controller) Sync() {
 			return
 		}
 
+		timeSyncChangesForProject := time.Now()
 		var wg sync.WaitGroup
 		wg.Add(len(changes))
 
@@ -280,7 +281,7 @@ func (c *Controller) Sync() {
 			changeChan <- Change{changeInfo: change, instance: instance}
 		}
 		wg.Wait()
-		gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
+		gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeSyncChangesForProject).Seconds())))
 		close(changeChan)
 		c.tracker.Update(latest)
 	}
