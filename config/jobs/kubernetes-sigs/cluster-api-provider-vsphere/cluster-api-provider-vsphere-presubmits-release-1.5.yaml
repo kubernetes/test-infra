@@ -133,3 +133,41 @@ presubmits:
       testgrid-tab-name: pr-full-e2e-release-1-5
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs all e2e tests
+
+  - name: pull-cluster-api-provider-vsphere-conformance-1-5
+    branches:
+      - ^release-1.5$
+    labels:
+      preset-dind-enabled: "true"
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
+    max_concurrency: 3
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.24
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[Conformance\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
+      testgrid-tab-name: pr-conformance-1-5
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
+      description: Runs conformance tests for CAPV
