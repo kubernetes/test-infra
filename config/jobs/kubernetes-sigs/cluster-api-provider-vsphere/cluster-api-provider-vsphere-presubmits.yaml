@@ -136,42 +136,19 @@ presubmits:
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Verifies the shell scripts have been linted
 
-  - name: pull-cluster-api-provider-vsphere-verify-crds
-    always_run: false
-    optional: true
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg)/|Makefile|hack/verify-crds\.sh|go\.mod|go\.sum)'
+  - name: pull-cluster-api-provider-vsphere-verify-main
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
         command:
-        - hack/verify-crds.sh
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-verify-crds
-      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
-      description: Verifies the CRDs have been updated
-
-  - name: pull-cluster-api-provider-vsphere-verify-gen
-    always_run: false
-    optional: true
-    run_if_changed: '^((apis|config|contrib|controllers|packaging|pkg|templates)/|Makefile|go\.mod|go\.sum)'
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
-        command:
-        - runner.sh
-        args:
         - make
-        - verify-gen
+        - verify
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-verify-gen
+      testgrid-tab-name: pr-verify
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
-      description: Verifies generated files are up to date
 
   - name: pull-cluster-api-provider-vsphere-test
     branches:
