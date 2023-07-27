@@ -471,8 +471,9 @@ milestone_applier:
   kubernetes/test-infra:
     master: v1.28
   kubernetes-sigs/kueue:
-    main: v0.4
+    main: v0.5
     release-0.3: v0.3
+    release-0.4: v0.4
   kubernetes/k8s.io:
     main: v1.28
   kubernetes/kops:
