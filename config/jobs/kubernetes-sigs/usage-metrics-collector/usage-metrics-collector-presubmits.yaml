@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/usage-metrics-collector:
   - name: pull-usage-metrics-collector-verify
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/usage-metrics-collector
     always_run: true
@@ -12,10 +13,18 @@ presubmits:
         - runner.sh
         - make
         - verify
+        resources:
+          requests:
+            cpu: 1
+            memory: "2Gi"
+          limits:
+            cpu: 1
+            memory: "2Gi"
     annotations:
       testgrid-dashboards: sig-instrumentation-usage-metrics-collector
       testgrid-tab-name: pr-verify
   - name: pull-usage-metrics-collector-test
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/usage-metrics-collector
     always_run: true
@@ -30,7 +39,7 @@ presubmits:
         resources:
           requests:
             cpu: 1
-            memory: "1Gi"
+            memory: "2Gi"
           limits:
             cpu: 1
             memory: "2Gi"
