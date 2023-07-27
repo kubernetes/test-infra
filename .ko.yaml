@@ -14,7 +14,7 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/gerrit: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/grandmatriarch: gcr.io/cloud-builders/gcloud@sha256:5b49dfb5e366dd75a5fc6d5d447be584f8f229c5a790ee0c3b0bd0cf70ec41dd
   k8s.io/test-infra/prow/cmd/gcsupload: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
-  k8s.io/test-infra/prow/cmd/hook: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
+  k8s.io/test-infra/prow/cmd/hook: hub.deepin.com/prow/hook-base:latest
   k8s.io/test-infra/prow/cmd/hmac: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
   k8s.io/test-infra/prow/cmd/horologium: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
   k8s.io/test-infra/prow/cmd/initupload: gcr.io/k8s-prow/git:v20220215-ddc3ad9
