@@ -48,10 +48,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-24-on-kubernetes-master
     # Explicitly needs to be started with /test.
@@ -145,10 +145,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-25-on-kubernetes-master
     # Explicitly needs to be started with /test.
@@ -339,10 +339,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-24-test-on-kubernetes-1-24
     cluster: default
@@ -390,10 +390,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-24-test-on-kubernetes-master
     # Explicitly needs to be started with /test.
@@ -487,10 +487,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-1-25-test-on-kubernetes-master
     # Explicitly needs to be started with /test.
@@ -681,10 +681,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-csi-driver-host-path-unit
     cluster: default
@@ -906,10 +906,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-on-kubernetes-1-25
@@ -1047,10 +1047,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-on-kubernetes-1-26
@@ -1141,10 +1141,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-24-test-on-kubernetes-1-24
@@ -1329,10 +1329,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-25-test-on-kubernetes-1-25
@@ -1470,10 +1470,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-1-26-test-on-kubernetes-1-26
@@ -1564,10 +1564,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-24
@@ -1617,10 +1617,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-25
@@ -1670,10 +1670,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-1-26
@@ -1723,10 +1723,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-on-kubernetes-master
@@ -1776,10 +1776,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-alpha-canary-on-kubernetes-master
@@ -1829,10 +1829,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-24
@@ -1882,10 +1882,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-25
@@ -1935,10 +1935,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-1-26
@@ -1988,10 +1988,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-canary-test-on-kubernetes-master
@@ -2041,10 +2041,10 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
 - interval: 6h
   name: ci-kubernetes-csi-alpha-canary-test-on-kubernetes-master
@@ -2094,8 +2094,8 @@ periodics:
         privileged: true
       resources:
         requests:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
         limits:
-          memory: "4Gi"
+          memory: "9Gi"
           cpu: 4
