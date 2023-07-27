@@ -22,7 +22,6 @@ postsubmits:
         - runner.sh
         args:
         - ./hack/release.sh
-        - -l
         - -p
         # we need privileged mode in order to do docker in docker
         securityContext:
@@ -55,7 +54,6 @@ postsubmits:
         args:
         - ./hack/release.sh
         - -p
-        - -l
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
