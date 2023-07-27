@@ -134,6 +134,7 @@ func init() {
 	prometheus.MustRegister(gerritMetrics.changeProcessDuration)
 	prometheus.MustRegister(gerritMetrics.changeSyncDuration)
 	prometheus.MustRegister(gerritMetrics.gerritRepoQueryDuration)
+	prometheus.MustRegister(gerritMetrics.pickupChangeLatency)
 }
 
 type prowJobClient interface {
