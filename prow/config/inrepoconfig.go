@@ -25,8 +25,10 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	gitignore "github.com/denormal/go-gitignore"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	gerritsource "k8s.io/test-infra/prow/gerrit/source"
@@ -40,6 +42,33 @@ const (
 	inRepoConfigFileName = ".prow.yaml"
 	inRepoConfigDirName  = ".prow"
 )
+
+var inrepoconfigMetrics = struct {
+	gitCloneDuration *prometheus.HistogramVec
+	gitOtherDuration *prometheus.HistogramVec
+}{
+	gitCloneDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "inrepoconfig_git_client_acquisition_duration",
+		Help:    "Seconds taken for acquiring a git client (may include an initial clone operation).",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200},
+	}, []string{
+		"org",
+		"repo",
+	}),
+	gitOtherDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "inrepoconfig_git_other_duration",
+		Help:    "Seconds taken after acquiring a git client and performing all other git operations (to read the ProwYAML of the repo).",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200},
+	}, []string{
+		"org",
+		"repo",
+	}),
+}
+
+func init() {
+	prometheus.MustRegister(inrepoconfigMetrics.gitCloneDuration)
+	prometheus.MustRegister(inrepoconfigMetrics.gitOtherDuration)
+}
 
 // +k8s:deepcopy-gen=true
 
@@ -88,14 +117,19 @@ func prowYAMLGetter(
 	if orgRepo.Repo == "" {
 		return nil, fmt.Errorf("didn't get two results when splitting repo identifier %q", identifier)
 	}
+
+	timeBeforeClone := time.Now()
 	repo, err := gc.ClientFor(orgRepo.Org, orgRepo.Repo)
+	inrepoconfigMetrics.gitCloneDuration.WithLabelValues(orgRepo.Org, orgRepo.Repo).Observe((float64(time.Since(timeBeforeClone).Seconds())))
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone repo for %q: %w", identifier, err)
 	}
+	timeAfterClone := time.Now()
 	defer func() {
 		if err := repo.Clean(); err != nil {
 			log.WithError(err).Error("Failed to clean up repo.")
 		}
+		inrepoconfigMetrics.gitOtherDuration.WithLabelValues(orgRepo.Org, orgRepo.Repo).Observe((float64(time.Since(timeAfterClone).Seconds())))
 	}()
 
 	if err := repo.Config("user.name", "prow"); err != nil {

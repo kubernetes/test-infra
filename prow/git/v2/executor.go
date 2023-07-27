@@ -19,7 +19,6 @@ package git
 import (
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -65,7 +64,6 @@ type censoringExecutor struct {
 
 func (e *censoringExecutor) Run(args ...string) ([]byte, error) {
 	logger := e.logger.WithField("args", strings.Join(args, " "))
-	now := time.Now()
 	b, err := e.execute(e.dir, e.git, args...)
 	b = e.censor(b)
 	if err != nil {
@@ -73,6 +71,5 @@ func (e *censoringExecutor) Run(args ...string) ([]byte, error) {
 	} else {
 		logger.Debug("Running command succeeded.")
 	}
-	logger.WithFields(logrus.Fields{"duration": time.Since(now), "dir": e.dir}).Info("Time taken to execute command.")
 	return b, err
 }

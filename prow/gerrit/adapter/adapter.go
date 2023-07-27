@@ -50,14 +50,27 @@ const (
 )
 
 var gerritMetrics = struct {
-	processingResults     *prometheus.CounterVec
-	triggerLatency        *prometheus.HistogramVec
-	changeProcessDuration *prometheus.HistogramVec
-	changeSyncDuration    *prometheus.HistogramVec
+	processingResults           *prometheus.CounterVec
+	inrepoconfigResults         *prometheus.CounterVec
+	triggerLatency              *prometheus.HistogramVec
+	triggerHelpLatency          *prometheus.HistogramVec
+	changeProcessDuration       *prometheus.HistogramVec
+	processSingleChangeDuration *prometheus.HistogramVec
+	changeSyncDuration          *prometheus.HistogramVec
+	gerritRepoQueryDuration     *prometheus.HistogramVec
+	pickupChangeLatency         *prometheus.HistogramVec
 }{
 	processingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "gerrit_processing_results",
-		Help: "Count of change processing by instance, repo, and result.",
+		Help: "Count of change processing by instance, repo, and result (ERROR or SUCCESS).",
+	}, []string{
+		"org",
+		"repo",
+		"result",
+	}),
+	inrepoconfigResults: prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "gerrit_inrepoconfig_results",
+		Help: "Count of retrieving inrepoconfigs by instance, repo, and result (ERROR or SUCCESS).",
 	}, []string{
 		"org",
 		"repo",
@@ -73,25 +86,54 @@ var gerritMetrics = struct {
 		// Hopefully this isn't excessive enough to cause metric scraping issues.
 		"repo",
 	}),
-	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "gerrit_instance_process_duration",
-		Help:    "Histogram of seconds spent processing a single gerrit instance.",
-		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+	triggerHelpLatency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_trigger_help_latency",
+		Help:    "Histogram of seconds between triggering event (help) and ProwJob creation time.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200},
 	}, []string{
 		"org",
 	}),
+	processSingleChangeDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_process_single_change_duration",
+		Help:    "Histogram of seconds spent processing a single gerrit change, by instance and repo.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200},
+	}, []string{
+		"org",
+		"repo",
+	}),
+	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_instance_process_duration",
+		Help:    "Histogram of seconds spent processing changes, by instance and repo. This measures the portion of a sync after we've queried for changes.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+	}, []string{
+		"org", "repo",
+	}),
 	changeSyncDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_change_sync_duration",
-		Help:    "Histogram of seconds spent syncing changes from a single gerrit instance.",
+		Help:    "Histogram of seconds spent syncing changes from a single gerrit instance or repo. Includes gerrit_repo_query_duration and gerrit_instance_process_duration.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
-	}, []string{"org"}),
+	}, []string{"org", "repo"}),
+	gerritRepoQueryDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_repo_query_duration",
+		Help:    "Histogram of seconds spent querying a repo's changes. Includes time spent for rate limiting ourselves.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300},
+	}, []string{"org", "repo", "result"}),
+	pickupChangeLatency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_pickup_change_latency",
+		Help:    "Histogram of seconds a query result had to wait after it was retrieved from the Gerrit API but before it was picked up for processing by a worker thread.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300},
+	}, []string{"org", "repo"}),
 }
 
 func init() {
 	prometheus.MustRegister(gerritMetrics.processingResults)
+	prometheus.MustRegister(gerritMetrics.inrepoconfigResults)
 	prometheus.MustRegister(gerritMetrics.triggerLatency)
+	prometheus.MustRegister(gerritMetrics.triggerHelpLatency)
+	prometheus.MustRegister(gerritMetrics.processSingleChangeDuration)
 	prometheus.MustRegister(gerritMetrics.changeProcessDuration)
 	prometheus.MustRegister(gerritMetrics.changeSyncDuration)
+	prometheus.MustRegister(gerritMetrics.gerritRepoQueryDuration)
 }
 
 type prowJobClient interface {
@@ -192,14 +234,14 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 type Change struct {
 	changeInfo gerrit.ChangeInfo
 	instance   string
-	tracker    time.Time
+	created    time.Time
 }
 
-func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup) {
+func (c *Controller) processChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup) {
 	for changeStruct := range changeChan {
 		change := changeStruct.changeInfo
 		instance := changeStruct.instance
-		tracker := changeStruct.tracker
+		gerritMetrics.pickupChangeLatency.WithLabelValues(instance, change.Project).Observe(float64(time.Since(changeStruct.created).Seconds()))
 
 		log := log.WithFields(logrus.Fields{
 			"branch":   change.Branch,
@@ -208,17 +250,14 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 			"revision": change.CurrentRevision,
 		})
 
-		log.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for gerrit change to be picked up by a worker thread.")
-		tracker = time.Now()
+		now := time.Now()
 
 		result := client.ResultSuccess
-		if err := c.processChange(log, instance, change); err != nil {
+		if err := c.triggerJobs(log, instance, change); err != nil {
 			result = client.ResultError
-			log.WithError(err).Info("Failed to process change")
+			log.WithError(err).Info("Failed to trigger jobs based on change")
 		}
 		gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
-
-		log.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for gerrit change to be processed by a worker thread.")
 
 		c.latestMux.Lock()
 		lastTime, ok := latest[instance][change.Project]
@@ -228,6 +267,8 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 		}
 		c.latestMux.Unlock()
 		wg.Done()
+
+		gerritMetrics.processSingleChangeDuration.WithLabelValues(instance, change.Project).Observe(float64(time.Since(now).Seconds()))
 	}
 }
 
@@ -248,18 +289,26 @@ func (c *Controller) Sync() {
 
 		now := time.Now()
 		defer func() {
-			gerritMetrics.changeProcessDuration.WithLabelValues(instance).Observe(float64(time.Since(now).Seconds()))
+			gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe(float64(time.Since(now).Seconds()))
 		}()
 
 		// Ignore the error. It is already logged.
-		changes, _ := c.gc.QueryChangesForProject(instance, project, syncTime, c.config().Gerrit.RateLimit)
 		timeQueryChangesForProject := time.Now()
-		log.WithFields(logrus.Fields{"host": instance, "repo": project, "changes": len(changes), "duration(s)": time.Since(now).Seconds()}).Info("Time taken querying for gerrit changes")
+
+		changes, err := c.gc.QueryChangesForProject(instance, project, syncTime, c.config().Gerrit.RateLimit)
+		queryResult := func() string {
+			if err == nil {
+				return client.ResultSuccess
+			}
+			return client.ResultError
+		}()
+		gerritMetrics.gerritRepoQueryDuration.WithLabelValues(instance, project, queryResult).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
 
 		if len(changes) == 0 {
 			return
 		}
 
+		timeProcessChangesForProject := time.Now()
 		var wg sync.WaitGroup
 		wg.Add(len(changes))
 
@@ -273,19 +322,17 @@ func (c *Controller) Sync() {
 
 		changeChan := make(chan Change)
 		for i := 0; i < c.workerPoolSize; i++ {
-			go c.syncChange(latest, changeChan, log, &wg)
+			go c.processChange(latest, changeChan, log, &wg)
 		}
-
-		// Trying to understand the performance bottleneck.
-		// Would like to understand how much time a change waits until being
-		// picked up by `c.syncChange`, this will probably be used as an
-		// indicator for deciding the most optimal number of `workerPoolSize`.
-		timeBeforeSent := time.Now()
+		// We need to call time.Now() outside this loop since <- will block
+		// while there are no more available worker threads possibly causing
+		// time.Now() to be called later than intended.
+		timeChangesCreated := time.Now()
 		for _, change := range changes {
-			changeChan <- Change{changeInfo: change, instance: instance, tracker: timeBeforeSent}
+			changeChan <- Change{changeInfo: change, instance: instance, created: timeChangesCreated}
 		}
 		wg.Wait()
-		gerritMetrics.changeSyncDuration.WithLabelValues(instance).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
+		gerritMetrics.changeProcessDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeProcessChangesForProject).Seconds())))
 		close(changeChan)
 		c.tracker.Update(latest)
 	}
@@ -463,15 +510,8 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 	return nil
 }
 
-// processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
-func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
-	tracker := time.Now()
-	defer func() {
-		// tracker will reset in `processChange` function, and this is the time
-		// taken for a gerrit change to be processed after the last reset.
-		logger.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for gerrit change to be processed.")
-	}()
-
+// triggerJobs creates new presubmit/postsubmit prowjobs base off the gerrit changes
+func (c *Controller) triggerJobs(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
 	cloneURI := source.CloneURIFromOrgRepo(instance, change.Project)
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
 	if err != nil {
@@ -528,29 +568,27 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		return "", nil
 	}
 
-	logger.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for preparing to process gerrit changes.")
-	tracker = time.Now()
-
 	switch change.Status {
 	case client.Merged:
-		logger := logger.WithField("status", client.Merged)
 		var postsubmits []config.Postsubmit
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
 			postsubmits, err = c.inRepoConfigCache.GetPostsubmits(cloneURI, baseSHAGetter, headSHAGetter)
 			// Break if there was no error, or if there was a merge conflict
-			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
+			if err == nil {
+				gerritMetrics.inrepoconfigResults.WithLabelValues(instance, change.Project, client.ResultSuccess).Inc()
+				break
+			}
+			if strings.Contains(err.Error(), "Merge conflict in") {
 				break
 			}
 		}
-		// Suspect that inrepoconfig takes long time, add a log for its duration
-		logger.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for finding jobs for gerrit change.")
-		tracker = time.Now()
-
 		// Postsubmit jobs are triggered only once. Still try to fall back on
 		// static jobs if failed to retrieve inrepoconfig jobs.
 		if err != nil {
+			gerritMetrics.inrepoconfigResults.WithLabelValues(instance, change.Project, client.ResultError).Inc()
+
 			// Reports error back to Gerrit. handleInRepoConfigError is
 			// responsible for not sending the same message again and again on
 			// the same commit.
@@ -578,7 +616,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 	case client.New:
-		logger := logger.WithField("status", client.New)
 		var presubmits []config.Presubmit
 		// Gerrit server might be unavailable intermittently, retry inrepoconfig
 		// processing for increased reliability.
@@ -588,12 +625,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				break
 			}
 		}
-
-		// We suspect that inrepoconfig takes a long time, so add a log for its
-		// duration.
-		logger.WithField("duration(s)", time.Since(tracker).Seconds()).Debug("Time taken for finding jobs for gerrit change.")
-		tracker = time.Now()
-
 		if err != nil {
 			// Reports error back to Gerrit. handleInRepoConfigError is
 			// responsible for not sending the same message again and again on
@@ -669,7 +700,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 					return err
 				}
-				gerritMetrics.triggerLatency.WithLabelValues(instance, change.Project).Observe(float64(time.Since(msg.Date.Time).Seconds()))
+				gerritMetrics.triggerHelpLatency.WithLabelValues(instance).Observe(float64(time.Since(msg.Date.Time).Seconds()))
 				// Only respond to the first message that requests help information.
 				break
 			}

@@ -444,7 +444,7 @@ func TestFailedJobs(t *testing.T) {
 }
 
 func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCache, error) {
-	// processChange takes a ClientFactory. If provided a nil clientFactory it will skip inRepoConfig
+	// triggerJobs takes a ClientFactory. If provided a nil clientFactory it will skip inRepoConfig
 	// otherwise it will get the prow yaml using the client provided. We are mocking ProwYamlGetter
 	// so we are creating a localClientFactory but leaving it unpopulated.
 	var cf git.ClientFactory
@@ -474,7 +474,7 @@ func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCache, erro
 	return cache, nil
 }
 
-func TestProcessChange(t *testing.T) {
+func TestTriggerJobs(t *testing.T) {
 	testInstance := "https://gerrit"
 	var testcases = []struct {
 		name           string
@@ -3082,7 +3082,7 @@ func TestProcessChange(t *testing.T) {
 				inRepoConfigFailuresTracker: make(map[string]bool),
 			}
 
-			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)
+			err = c.triggerJobs(logrus.WithField("name", tc.name), tc.instance, tc.change)
 			if tc.wantError {
 				if err == nil {
 					t.Fatal("Expected error, got nil.")
