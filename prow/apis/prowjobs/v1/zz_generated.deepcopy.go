@@ -184,6 +184,21 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = new(metav1.Duration)
 		**out = **in
 	}
+	if in.RunAsUser != nil {
+		in, out := &in.RunAsUser, &out.RunAsUser
+		*out = new(int64)
+		**out = **in
+	}
+	if in.RunAsGroup != nil {
+		in, out := &in.RunAsGroup, &out.RunAsGroup
+		*out = new(int64)
+		**out = **in
+	}
+	if in.FsGroup != nil {
+		in, out := &in.FsGroup, &out.FsGroup
+		*out = new(int64)
+		**out = **in
+	}
 	return
 }
 

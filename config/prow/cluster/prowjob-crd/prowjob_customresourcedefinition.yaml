@@ -159,6 +159,14 @@ spec:
                       service account that should be used by the pod if one is not
                       specified in the podspec.
                     type: string
+                  fs_group:
+                    description: FsGroup defines special supplemental group ID used
+                      in all containers in a Pod. This allows to change the ownership
+                      of particular volumes by kubelet. This field will not override
+                      the existing ProwJob's PodSecurityContext. Equivalent to PodSecurityContext's
+                      FsGroup
+                    format: int64
+                    type: integer
                   gcs_configuration:
                     description: GCSConfiguration holds options for pushing logs and
                       artifacts to GCS from a job.
@@ -385,6 +393,20 @@ spec:
                             type: object
                         type: object
                     type: object
+                  run_as_group:
+                    description: RunAsGroup defines GID of process in all containers
+                      running in a Pod. This field will not override the existing
+                      ProwJob's PodSecurityContext. Equivalent to PodSecurityContext's
+                      RunAsGroup
+                    format: int64
+                    type: integer
+                  run_as_user:
+                    description: RunAsUser defines UID for process in all containers
+                      running in a Pod. This field will not override the existing
+                      ProwJob's PodSecurityContext. Equivalent to PodSecurityContext's
+                      RunAsUser
+                    format: int64
+                    type: integer
                   s3_credentials_secret:
                     description: S3CredentialsSecret is the name of the Kubernetes
                       secret that holds blob storage push credentials.
