@@ -103,14 +103,14 @@ var gerritMetrics = struct {
 	}),
 	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_process_duration",
-		Help:    "Histogram of seconds spent processing changes, by instance and repo. Includes gerrit_repo_query_duration and gerrit_instance_change_sync_duration.",
+		Help:    "Histogram of seconds spent processing changes, by instance and repo. This measures the portion of a sync after we've queried for changes.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{
 		"org", "repo",
 	}),
 	changeSyncDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_change_sync_duration",
-		Help:    "Histogram of seconds spent syncing changes (syncChange()) from a single gerrit instance or repo.",
+		Help:    "Histogram of seconds spent syncing changes from a single gerrit instance or repo. Includes gerrit_repo_query_duration and gerrit_instance_process_duration.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{"org", "repo"}),
 	gerritRepoQueryDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
@@ -237,7 +237,7 @@ type Change struct {
 	created    time.Time
 }
 
-func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup) {
+func (c *Controller) processChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup) {
 	for changeStruct := range changeChan {
 		change := changeStruct.changeInfo
 		instance := changeStruct.instance
@@ -253,9 +253,9 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 		now := time.Now()
 
 		result := client.ResultSuccess
-		if err := c.processChange(log, instance, change); err != nil {
+		if err := c.triggerJobs(log, instance, change); err != nil {
 			result = client.ResultError
-			log.WithError(err).Info("Failed to process change")
+			log.WithError(err).Info("Failed to trigger jobs based on change")
 		}
 		gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
 
@@ -289,7 +289,7 @@ func (c *Controller) Sync() {
 
 		now := time.Now()
 		defer func() {
-			gerritMetrics.changeProcessDuration.WithLabelValues(instance, project).Observe(float64(time.Since(now).Seconds()))
+			gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe(float64(time.Since(now).Seconds()))
 		}()
 
 		// Ignore the error. It is already logged.
@@ -308,7 +308,7 @@ func (c *Controller) Sync() {
 			return
 		}
 
-		timeSyncChangesForProject := time.Now()
+		timeProcessChangesForProject := time.Now()
 		var wg sync.WaitGroup
 		wg.Add(len(changes))
 
@@ -322,7 +322,7 @@ func (c *Controller) Sync() {
 
 		changeChan := make(chan Change)
 		for i := 0; i < c.workerPoolSize; i++ {
-			go c.syncChange(latest, changeChan, log, &wg)
+			go c.processChange(latest, changeChan, log, &wg)
 		}
 		// We need to call time.Now() outside this loop since <- will block
 		// while there are no more available worker threads possibly causing
@@ -332,7 +332,7 @@ func (c *Controller) Sync() {
 			changeChan <- Change{changeInfo: change, instance: instance, created: timeChangesCreated}
 		}
 		wg.Wait()
-		gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeSyncChangesForProject).Seconds())))
+		gerritMetrics.changeProcessDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeProcessChangesForProject).Seconds())))
 		close(changeChan)
 		c.tracker.Update(latest)
 	}
@@ -510,8 +510,8 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 	return nil
 }
 
-// processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
-func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
+// triggerJobs creates new presubmit/postsubmit prowjobs base off the gerrit changes
+func (c *Controller) triggerJobs(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
 	cloneURI := source.CloneURIFromOrgRepo(instance, change.Project)
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
 	if err != nil {
