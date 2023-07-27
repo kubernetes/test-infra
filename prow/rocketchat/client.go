@@ -25,46 +25,15 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/clientutil"
 )
-
-// HostsFlag is the flag type for rocketchat hosts while initializing rocketchat client
-type HostsFlag map[string]string
-
-func (h *HostsFlag) String() string {
-	var hosts []string
-	for host, tokenPath := range *h {
-		hosts = append(hosts, host+"="+tokenPath)
-	}
-	return strings.Join(hosts, " ")
-}
-
-// Set populates ProjectsFlag upon flag.Parse()
-func (h *HostsFlag) Set(value string) error {
-	if len(*h) == 0 {
-		*h = map[string]string{}
-	}
-	parts := strings.SplitN(value, "=", 2)
-	if len(parts) != 2 {
-		return fmt.Errorf("%s not in the form of host=token-path", value)
-	}
-	host, tokenPath := parts[0], parts[1]
-	if _, ok := (*h)[host]; ok {
-		return fmt.Errorf("duplicate host: %s", host)
-	}
-	(*h)[host] = tokenPath
-	return nil
-}
-
-// Logger provides an interface to log debug messages.
-type Logger interface {
-	Debugf(s string, v ...interface{})
-}
 
 // Client allows you to provide connection to RocketChat API Server
 // It contains a secret webhookURL that allows to authenticate connection to post and work with channels in the domain
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
-	logger Logger
+	logger clientutil.Logger
 
 	fake bool
 

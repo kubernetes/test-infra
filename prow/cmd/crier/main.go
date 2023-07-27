@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/clientutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
@@ -42,8 +43,6 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
-	rocketchatclient "k8s.io/test-infra/prow/rocketchat"
-	slackclient "k8s.io/test-infra/prow/slack"
 )
 
 type options struct {
@@ -65,8 +64,8 @@ type options struct {
 
 	slackTokenFile                   string
 	rocketChatWebhookFile            string
-	additionalSlackTokenFiles        slackclient.HostsFlag
-	additionalRocketChatWebhookFiles rocketchatclient.HostsFlag
+	additionalSlackTokenFiles        clientutil.HostsFlag
+	additionalRocketChatWebhookFiles clientutil.HostsFlag
 
 	storage prowflagutil.StorageClientOptions
 
