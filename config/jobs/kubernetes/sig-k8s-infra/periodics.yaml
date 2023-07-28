@@ -50,7 +50,7 @@ periodics:
       runAsUser: 2001
       runAsGroup: 2010
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         securityContext:
           allowPrivilegeEscalation: false
         command:
@@ -84,7 +84,7 @@ periodics:
     timeout: 2h25m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -135,7 +135,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20230719-72ce785784-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20230727-ea685f8747-master
       command:
       - wrapper.sh
       - bash
@@ -222,7 +222,7 @@ periodics:
           - --provider=gce
           - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
           - --timeout=50m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         resources:
           limits:
             cpu: 2
