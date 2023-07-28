@@ -48,10 +48,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-external-snapshotter-1-24-on-kubernetes-master
     # Explicitly needs to be started with /test.
@@ -145,10 +145,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-external-snapshotter-1-25-on-kubernetes-master
     # Explicitly needs to be started with /test.
@@ -339,10 +339,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-external-snapshotter-unit
     cluster: eks-prow-build-cluster

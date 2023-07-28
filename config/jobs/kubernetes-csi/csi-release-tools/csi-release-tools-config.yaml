@@ -29,10 +29,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-release-tools-csi-test
     cluster: default
@@ -67,10 +67,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
@@ -108,10 +108,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
@@ -159,10 +159,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
@@ -210,10 +210,10 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
         env:
         - name: PULL_TEST_REPO_DIR
