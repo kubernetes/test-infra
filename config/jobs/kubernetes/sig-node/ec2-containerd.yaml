@@ -41,6 +41,10 @@ periodics:
           args:
             - hack/make-rules/test-e2e-node.sh
           env:
+            - name: IMAGE_CONFIG_DIR
+              value: config
+            - name: IMAGE_CONFIG_FILE
+              value: aws-instance.yaml
             - name: FOCUS
               value: \[NodeConformance\]
             - name: TEST_ARGS
@@ -84,6 +88,8 @@ periodics:
               value: \[NodeConformance\]
             - name: BUILD_EKS_AMI
               value: "true"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
@@ -134,6 +140,8 @@ periodics:
               value: "true"
             - name: TARGET_BUILD_ARCH
               value: "linux/arm64"
+            - name: IMAGE_CONFIG_DIR
+              value: config
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
