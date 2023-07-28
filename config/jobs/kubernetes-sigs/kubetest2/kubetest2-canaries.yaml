@@ -102,6 +102,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-testing-canaries
     spec:
+      serviceAccountName: node-e2e-tests
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
         resources:
