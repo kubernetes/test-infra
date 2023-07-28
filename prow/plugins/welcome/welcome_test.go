@@ -109,6 +109,11 @@ func (fc *fakeClient) addCollaborator(user string) {
 	fc.collaborators = append(fc.collaborators, user)
 }
 
+func (fc *fakeClient) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
+	result := make([]github.TeamMember, 0, 1)
+	return result, nil
+}
+
 var (
 	expectedQueryRegex = regexp.MustCompile(`is:pr repo:(.+)/(.+) author:(.+)`)
 )

@@ -162,6 +162,7 @@ type githubClient interface {
 	TriggerGitHubWorkflow(org, repo string, id int) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 }
 
 type trustedPullRequestClient interface {
@@ -191,6 +192,7 @@ type trustedUserClient interface {
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	BotUserChecker() (func(candidate string) bool, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 }
 
 func getClient(pc plugins.Agent) Client {
@@ -246,6 +248,16 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []strin
 		return errorResponse, fmt.Errorf("error in IsMember(%s): %w", org, err)
 	} else if member {
 		return okResponse, nil
+	}
+
+	// Next check the org team.
+	teamInfo := strings.Split(user, "/")
+	if len(teamInfo) == 2 {
+		if _, err := ghc.ListTeamMembersBySlug(org, teamInfo[1], "all"); err != nil {
+			return errorResponse, fmt.Errorf("error in ListTeamMembersBySlug(%s, %s): %w", org, teamInfo[1], err)
+		} else {
+			return okResponse, nil
+		}
 	}
 
 	// Next check if the user is a collaborator if that is allowed, this is more

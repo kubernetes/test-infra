@@ -117,6 +117,7 @@ type gitHubClient interface {
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	BotUserChecker() (func(candidate string) bool, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 }
 
 type commentPruner interface {

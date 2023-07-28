@@ -737,36 +737,33 @@ func (o *RepoOwners) applyOptionsToPath(path string, opts dirOptions) {
 	}
 }
 
-// Extend github team to appproves/reviewers list
+// resolveGitHubTeamMembers extend github team to appproves/reviewers list
 // If appproves/reviewers name contains '/', like 'myorg/developer'
-// It will be recognized as github team.
-func extendGithubTeam(ars sets.String, ghc githubClient) sets.String {
-	newArs := sets.NewString()
-	for ar := range ars {
-		if strings.Contains(ar, "/") {
-			arInfo := strings.Split(ar, "/")
-			if len(arInfo) == 2 {
-				org := arInfo[0]
-				teamName := arInfo[1]
-				members, err := ghc.ListTeamMembersBySlug(org, teamName, "all")
-				if err != nil {
-					logrus.Warnf("Get github team[%s] members failed: %v", ar, err)
-					continue
-				}
+// It will be recognized as github team and return extended owner sets.
+func resolveGitHubTeamMembers(ownerSets sets.Set[string], ghc githubClient) sets.Set[string] {
+	newOwnerSet := sets.New[string]()
+	for ownerSet := range ownerSets {
+		ownerSetInfo := strings.Split(ownerSet, "/")
+		if len(ownerSetInfo) == 2 {
+			org := ownerSetInfo[0]
+			teamName := ownerSetInfo[1]
+			members, err := ghc.ListTeamMembersBySlug(org, teamName, "all")
+			if err != nil {
+				logrus.WithError(err).Warnf("Get github team[%s] members failed.", ownerSet)
+				continue
+			}
 
-				for _, member := range members {
-					newArs.Insert(member.Login)
-				}
+			for _, member := range members {
+				newOwnerSet.Insert(member.Login)
 			}
 		}
 	}
 
-	logrus.Infof("newApprovers: %v", newArs)
-	return ars.Union(newArs)
+	return ownerSets.Union(newOwnerSet)
 }
 
 func (o *RepoOwners) filterCollaborators(toKeep []github.User, ghc githubClient) *RepoOwners {
-	collabs := sets.NewString()
+	collabs := sets.New[string]()
 	for _, keeper := range toKeep {
 		collabs.Insert(github.NormLogin(keeper.Login))
 	}
@@ -776,7 +773,7 @@ func (o *RepoOwners) filterCollaborators(toKeep []github.User, ghc githubClient)
 		for path, reMap := range ownerMap {
 			filtered[path] = make(map[*regexp.Regexp]sets.Set[string])
 			for re, unfiltered := range reMap {
-				extendUnfiltered := extendGithubTeam(unfiltered, ghc)
+				extendUnfiltered := resolveGitHubTeamMembers(unfiltered, ghc)
 				filtered[path][re] = extendUnfiltered.Intersection(collabs)
 			}
 		}
