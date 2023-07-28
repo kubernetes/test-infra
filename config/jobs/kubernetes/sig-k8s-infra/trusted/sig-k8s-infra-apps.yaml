@@ -171,7 +171,7 @@ postsubmits:
       decorate: true
       max_concurrency: 1
       # intended for ignoring changes to README.md or OWNERS
-      run_if_changed: '^apps\/k8s-io\/(.*.yaml|deploy.sh)$'
+      run_if_changed: '^apps\/k8s-io\/(.*.yaml|deploy.sh|test.py)$'
       branches:
       - ^main$
       reporter_config:
