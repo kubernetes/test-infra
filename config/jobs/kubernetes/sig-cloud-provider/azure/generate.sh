@@ -626,7 +626,7 @@ EOF
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+    - image: ${kubekins_e2e_image}-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
