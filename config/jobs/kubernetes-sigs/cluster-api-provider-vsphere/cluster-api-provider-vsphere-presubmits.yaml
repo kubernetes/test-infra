@@ -137,6 +137,7 @@ presubmits:
       description: Verifies the shell scripts have been linted
 
   - name: pull-cluster-api-provider-vsphere-verify-main
+    always_run: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
