@@ -281,7 +281,7 @@ presubmits:
         #   Given that individual controllers have separate QPS limits, we allow
         #   scheduler to keep up with the load from deployment, daemonset and job
         #   performing pod creations at once.
-        - --env=SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
+        - --env=SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=500 --kube-api-burst=500
         # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
         - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
@@ -733,7 +733,7 @@ presubmits:
         #   Given that individual controllers have separate QPS limits, we allow
         #   scheduler to keep up with the load from deployment, daemonset and job
         #   performing pod creations at once.
-        - --env=SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=300 --kube-api-burst=300
+        - --env=SCHEDULER_TEST_ARGS=--profiling --contention-profiling --kube-api-qps=500 --kube-api-burst=500
         # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
         - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0 --profiling --contention-profiling
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
