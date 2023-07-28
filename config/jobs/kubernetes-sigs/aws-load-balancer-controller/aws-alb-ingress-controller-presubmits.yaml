@@ -42,10 +42,10 @@ presubmits:
         - unit-test
         resources:
           limits:
-            cpu: 8
+            cpu: 6
             memory: 4Gi
           requests:
-            cpu: 8
+            cpu: 6
             memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-load-balancer-controller
