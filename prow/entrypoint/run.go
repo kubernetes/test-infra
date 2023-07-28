@@ -74,7 +74,12 @@ var (
 // Run executes the test process then writes the exit code to the marker file.
 // This function returns the status code that should be passed to os.Exit().
 func (o Options) Run() int {
-	code, err := o.ExecuteProcess()
+	interrupt := make(chan os.Signal, 1)
+	return o.internalRun(interrupt)
+}
+
+func (o Options) internalRun(interrupt chan os.Signal) int {
+	code, err := o.ExecuteProcess(interrupt)
 	if err != nil {
 		logrus.WithError(err).Error("Error executing test process")
 	}
@@ -90,7 +95,7 @@ func (o Options) Run() int {
 
 // ExecuteProcess creates the artifact directory then executes the process as
 // configured, writing the output to the process log.
-func (o Options) ExecuteProcess() (int, error) {
+func (o Options) ExecuteProcess(signaledInterrupt chan os.Signal) (int, error) {
 	if o.ArtifactDir != "" {
 		if err := os.MkdirAll(o.ArtifactDir, os.ModePerm); err != nil {
 			return InternalErrorCode, fmt.Errorf("could not create artifact directory(%s): %w", o.ArtifactDir, err)
@@ -108,7 +113,7 @@ func (o Options) ExecuteProcess() (int, error) {
 
 	// if we get asked to terminate we need to forward
 	// that to the wrapped process as if it timed out
-	interrupt := make(chan os.Signal, 1)
+	interrupt := signaledInterrupt
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	if o.PreviousMarker != "" {
@@ -175,10 +180,18 @@ func (o Options) ExecuteProcess() (int, error) {
 	if cancelled {
 		if aborted {
 			commandErr = errAborted
-			returnCode = AbortedErrorCode
+			if o.PropagateErrorCode {
+				returnCode = command.ProcessState.ExitCode()
+			} else {
+				returnCode = AbortedErrorCode
+			}
 		} else {
 			commandErr = errTimedOut
-			returnCode = InternalErrorCode
+			if o.PropagateErrorCode {
+				returnCode = command.ProcessState.ExitCode()
+			} else {
+				returnCode = InternalErrorCode
+			}
 		}
 	} else {
 		if status, ok := command.ProcessState.Sys().(syscall.WaitStatus); ok {
