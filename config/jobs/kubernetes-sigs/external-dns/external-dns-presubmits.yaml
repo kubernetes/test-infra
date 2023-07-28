@@ -1,0 +1,54 @@
+presubmits:
+  kubernetes-sigs/external-dns:
+  - name: pull-external-dns-lint
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - lint
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-network-external-dns
+      testgrid-tab-name: lint
+      description: external-dns code lint
+      testgrid-num-columns-recent: '30'
+  - name: pull-external-dns-unit-test
+    cluster: eks-prow-build-cluster
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+        resources:
+          limits:
+            cpu: 1
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: sig-network-external-dns
+      testgrid-tab-name: unit test
+      description: external-dns unit tests
+      testgrid-num-columns-recent: '30'
