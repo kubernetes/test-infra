@@ -75,3 +75,81 @@ presubmits:
       testgrid-tab-name: e2e test
       description: aws load balancer controller e2e tests
       testgrid-num-columns-recent: '30'
+  - name: pull-aws-load-balancer-controller-unit-2
+    cluster: eks-prow-build-cluster
+    always_run: false
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit-test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-tab-name: unit test 2
+      description: aws load balancer controller unit tests
+      testgrid-num-columns-recent: '30'
+  - name: pull-aws-load-balancer-controller-unit-3
+    cluster: eks-prow-build-cluster
+    always_run: false
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit-test
+        resources:
+          limits:
+            cpu: 3
+            memory: 4Gi
+          requests:
+            cpu: 3
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-tab-name: unit test 3
+      description: aws load balancer controller unit tests
+      testgrid-num-columns-recent: '30'
+  - name: pull-aws-load-balancer-controller-unit-4
+    cluster: eks-prow-build-cluster
+    always_run: false
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit-test
+        resources:
+          limits:
+            cpu: 4
+            memory: 4Gi
+          requests:
+            cpu: 4
+            memory: 4Gi
+    annotations:
+      testgrid-dashboards: provider-aws-load-balancer-controller
+      testgrid-tab-name: unit test 4
+      description: aws load balancer controller unit tests
+      testgrid-num-columns-recent: '30'
