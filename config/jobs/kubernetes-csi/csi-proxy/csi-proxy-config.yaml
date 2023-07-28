@@ -29,8 +29,8 @@ presubmits:
           privileged: true
         resources:
           requests:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
           limits:
-            memory: "4Gi"
+            memory: "9Gi"
             cpu: 4
