@@ -2,7 +2,7 @@ presubmits:
   kubernetes-sigs/external-dns:
   - name: pull-external-dns-lint
     cluster: eks-prow-build-cluster
-    always_run: true
+    always_run: false
     decorate: true
     labels:
       preset-service-account: "true"
