@@ -156,11 +156,11 @@ periodics:
             requests:
               cpu: 8
               memory: 10Gi
-  - name: ci-cgroupv1-containerd-node-al2023-e2e-ec2-eks
+  - name: ci-cgroupv2-containerd-node-al2023-e2e-ec2-eks
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
-      testgrid-tab-name: cgroupv1-containerd-node-al2023-e2e-ec2-eks
+      testgrid-tab-name: ci-cgroupv2-containerd-node-al2023-e2e-ec2-eks
       testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     labels:
       preset-e2e-containerd-ec2: "true"
@@ -203,11 +203,11 @@ periodics:
             requests:
               cpu: 8
               memory: 10Gi
-  - name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-ec2-eks
+  - name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-ec2-eks
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
-      testgrid-tab-name: cgroupv1-containerd-node-arm64-al2023-e2e-ec2-eks
+      testgrid-tab-name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-ec2-eks
       testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     labels:
       preset-e2e-containerd-ec2: "true"
@@ -513,11 +513,11 @@ periodics:
             requests:
               cpu: 8
               memory: 10Gi
-  - name: ci-cgroupv1-containerd-node-al2023-e2e-serial-ec2-eks
+  - name: ci-cgroupv2-containerd-node-al2023-e2e-serial-ec2-eks
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
-      testgrid-tab-name: ci-cgroupv1-containerd-node-al2023-e2e-serial-ec2-eks
+      testgrid-tab-name: ci-cgroupv2-containerd-node-al2023-e2e-serial-ec2-eks
     decoration_config:
       timeout: 240m
     labels:
@@ -563,11 +563,11 @@ periodics:
             requests:
               cpu: 8
               memory: 10Gi
-  - name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-serial-ec2-eks
+  - name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-serial-ec2-eks
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd
-      testgrid-tab-name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-serial-ec2-eks
+      testgrid-tab-name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-serial-ec2-eks
     decoration_config:
       timeout: 240m
     labels:
