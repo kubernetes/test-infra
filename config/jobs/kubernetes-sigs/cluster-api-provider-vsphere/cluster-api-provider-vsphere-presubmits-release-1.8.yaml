@@ -1,8 +1,8 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
-  - name: pull-cluster-api-provider-vsphere-apidiff-release-1-6
+  - name: pull-cluster-api-provider-vsphere-apidiff-release-1-8
     branches:
-    - ^release-1.6$
+    - ^release-1-8$
     always_run: false
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
@@ -11,20 +11,20 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         command:
         - runner.sh
         args:
         - ./hack/ci-apidiff.sh
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-apidiff-release-1-6
+      testgrid-tab-name: pr-apidiff-release-1-8
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Checks for API changes in the PR
 
-  - name: pull-cluster-api-provider-vsphere-verify-release-1-6
+  - name: pull-cluster-api-provider-vsphere-verify-release-1-8
     branches:
-    - ^release-1.6$
+    - ^release-1-8$
     labels:
       preset-dind-enabled: "true"
     always_run: true
@@ -32,7 +32,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         command:
         - runner.sh
         args:
@@ -43,12 +43,12 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-verify-release-1-6
+      testgrid-tab-name: pr-verify-release-1-8
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
 
-  - name: pull-cluster-api-provider-vsphere-test-release-1-6
+  - name: pull-cluster-api-provider-vsphere-test-release-1-8
     branches:
-    - ^release-1.6$
+    - ^release-1-8$
     always_run: false
     # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
     run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
@@ -56,7 +56,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         resources:
           requests:
             cpu: "500m"
@@ -67,13 +67,13 @@ presubmits:
         - test
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-test-release-1-6
+      testgrid-tab-name: pr-test-release-1-8
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs unit tests
 
-  - name: pull-cluster-api-provider-vsphere-test-integration-release-1-6
+  - name: pull-cluster-api-provider-vsphere-test-integration-release-1-8
     branches:
-    - ^release-1.6$
+    - ^release-1-8$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -84,7 +84,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -101,13 +101,13 @@ presubmits:
         - test-integration
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-test-integration-release-1-6
+      testgrid-tab-name: pr-test-integration-release-1-8
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs integration tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-release-1-6
+  - name: pull-cluster-api-provider-vsphere-e2e-release-1-8
     branches:
-    - ^release-1.6$
+    - ^release-1-8$
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -121,7 +121,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         command:
         - runner.sh
         args:
@@ -140,13 +140,13 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-release-1-6
+      testgrid-tab-name: pr-e2e-release-1-8
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs only PR Blocking e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e-full-release-1-6
+  - name: pull-cluster-api-provider-vsphere-e2e-full-release-1-8
     branches:
-    - ^release-1.6$
+    - ^release-1-8$
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -158,7 +158,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         command:
         - runner.sh
         args:
@@ -177,13 +177,13 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e-full-release-1-6
+      testgrid-tab-name: pr-e2e-full-release-1-8
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs all e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-conformance-release-1-6
+  - name: pull-cluster-api-provider-vsphere-conformance-release-1-8
     branches:
-    - ^release-1.6$
+    - ^release-1-8$
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -195,7 +195,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         command:
         - runner.sh
         args:
@@ -214,6 +214,6 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-conformance-release-1-6
+      testgrid-tab-name: pr-conformance-release-1-8
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs conformance tests for CAPV
