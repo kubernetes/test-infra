@@ -105,8 +105,8 @@ dashboards:
     - name: ci-cgroupv1-containerd-node-arm64-e2e-ec2-eks
       test_group_name: ci-cgroupv1-containerd-node-arm64-e2e-ec2-eks
       base_options: width=10
-    - name: ci-cgroupv1-containerd-node-al2023-e2e-ec2-eks
-      test_group_name: ci-cgroupv1-containerd-node-al2023-e2e-ec2-eks
+    - name: ci-cgroupv2-containerd-node-al2023-e2e-ec2-eks
+      test_group_name: ci-cgroupv2-containerd-node-al2023-e2e-ec2-eks
       base_options: width=10
     - name: ci-kubernetes-node-arm64-e2e-containerd-ec2
       test_group_name: ci-kubernetes-node-arm64-e2e-containerd-ec2
@@ -123,14 +123,14 @@ dashboards:
     - name: ci-cgroupv1-containerd-node-arm64-e2e-serial-ec2-eks
       test_group_name: ci-cgroupv1-containerd-node-arm64-e2e-serial-ec2-eks
       base_options: width=10
-    - name: ci-cgroupv1-containerd-node-al2023-e2e-serial-ec2-eks
-      test_group_name: ci-cgroupv1-containerd-node-al2023-e2e-serial-ec2-eks
+    - name: ci-cgroupv2-containerd-node-al2023-e2e-serial-ec2-eks
+      test_group_name: ci-cgroupv2-containerd-node-al2023-e2e-serial-ec2-eks
       base_options: width=10
-    - name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-serial-ec2-eks
-      test_group_name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-serial-ec2-eks
+    - name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-serial-ec2-eks
+      test_group_name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-serial-ec2-eks
       base_options: width=10
-    - name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-ec2-eks
-      test_group_name: ci-cgroupv1-containerd-node-arm64-al2023-e2e-ec2-eks
+    - name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-ec2-eks
+      test_group_name: ci-cgroupv2-containerd-node-arm64-al2023-e2e-ec2-eks
       base_options: width=10
 
 - name: sig-node-cri-o
