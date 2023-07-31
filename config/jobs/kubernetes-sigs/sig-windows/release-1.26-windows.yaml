@@ -44,7 +44,7 @@ periodics:
     - command:
       - runner.sh
       - ./scripts/ci-conformance.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-1.26
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.26
       name: ""
       resources:
         requests:
@@ -89,7 +89,7 @@ periodics:
     workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230703-e6ae5b372a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
           - "runner.sh"
           - "env"

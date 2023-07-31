@@ -35,7 +35,7 @@ presubmits:
       - ^feature/plugins-.+$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           command:
             # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
             - runner.sh
@@ -70,7 +70,7 @@ presubmits:
       - ^feature/plugins-.+$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           command:
             # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
             - runner.sh
@@ -105,7 +105,7 @@ presubmits:
       - ^feature/plugins-.+$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           command:
             # see https://github.com/kubernetes/test-infra/blob/bb41c9ee91b50fffa843e2a6fbc0fe361999f682/config/prow/config.yaml#L590-L613
             - runner.sh

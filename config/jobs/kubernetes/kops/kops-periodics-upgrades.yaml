@@ -43,7 +43,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -111,7 +111,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -175,7 +175,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -245,7 +245,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -307,7 +307,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -375,7 +375,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -439,7 +439,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -509,7 +509,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -571,7 +571,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -639,7 +639,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -703,7 +703,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -773,7 +773,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -835,7 +835,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -903,7 +903,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -967,7 +967,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1037,7 +1037,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1101,7 +1101,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1171,7 +1171,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1235,7 +1235,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1305,7 +1305,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1369,7 +1369,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1439,7 +1439,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1503,7 +1503,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1573,7 +1573,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1637,7 +1637,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1707,7 +1707,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1771,7 +1771,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1841,7 +1841,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1905,7 +1905,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1975,7 +1975,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2039,7 +2039,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2109,7 +2109,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2173,7 +2173,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2243,7 +2243,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2307,7 +2307,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2377,7 +2377,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2441,7 +2441,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2511,7 +2511,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2575,7 +2575,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2645,7 +2645,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2709,7 +2709,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2779,7 +2779,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2843,7 +2843,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2913,7 +2913,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -2977,7 +2977,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3047,7 +3047,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3111,7 +3111,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3181,7 +3181,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3245,7 +3245,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3315,7 +3315,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3379,7 +3379,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3449,7 +3449,7 @@ periodics:
         value: "ubuntu"
       - name: KOPS_IRSA
         value: "true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3511,7 +3511,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3579,7 +3579,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3641,7 +3641,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -3709,7 +3709,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:

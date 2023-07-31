@@ -17,7 +17,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -53,7 +53,7 @@ presubmits:
   #     timeout: 3h
   #   spec:
   #     containers:
-  #       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+  #       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
   #         env:
   #         - name: "BOSKOS_HOST"
   #           value: "boskos.test-pods.svc.cluster.local"
@@ -87,7 +87,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -124,7 +124,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -154,7 +154,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - make
         args:
@@ -181,7 +181,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - make
         args:
@@ -215,7 +215,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"

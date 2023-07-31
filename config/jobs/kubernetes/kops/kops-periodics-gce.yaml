@@ -41,7 +41,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -106,7 +106,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -160,7 +160,7 @@ periodics:
         value: "ha-migration.k8s.local"
       - name: GCE_EXTRA_CREATE_ARGS
         value: --gce-service-account=default
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
       imagePullPolicy: Always
       resources:
         limits:

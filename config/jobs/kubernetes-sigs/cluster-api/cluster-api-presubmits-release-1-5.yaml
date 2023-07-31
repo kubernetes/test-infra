@@ -12,7 +12,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         command:
         - runner.sh
         - ./scripts/ci-build.sh
@@ -35,7 +35,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-apidiff-release-1-5
@@ -53,7 +53,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         command:
         - "runner.sh"
         - ./scripts/ci-verify.sh
@@ -77,7 +77,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -100,7 +100,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         args:
         - runner.sh
         - ./scripts/ci-test.sh
@@ -136,7 +136,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         args:
         - runner.sh
         - ./scripts/ci-e2e.sh
@@ -173,7 +173,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -205,7 +205,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -237,7 +237,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
           args:
             - runner.sh
             - "./scripts/ci-e2e.sh"
@@ -275,7 +275,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -315,7 +315,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -359,7 +359,7 @@ presubmits:
     spec:
       serviceAccountName: prowjob-default-sa
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-1.27
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         args:
         - runner.sh
         - "./scripts/ci-e2e.sh"

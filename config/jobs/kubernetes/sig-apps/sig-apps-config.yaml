@@ -17,7 +17,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230719-72ce785784-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-statefulset
