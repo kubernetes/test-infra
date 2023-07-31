@@ -390,7 +390,7 @@ func (session *Session) HandleSubmodulePR() error {
 		if submodule.PRInfo != nil {
 			// Has PRInfo tracked
 			RemotePR, err := session.Client.GetPullRequest(submodule.PRInfo.Base.Repo.Owner.Login, submodule.PRInfo.Base.Repo.Name, submodule.PRInfo.Number)
-			if err != nil {
+			if err == nil {
 				submodule.PRInfo = RemotePR
 				if RemotePR.Merged && RemotePR.MergeSHA != nil {
 					submodule.MergedSHA = *RemotePR.MergeSHA
