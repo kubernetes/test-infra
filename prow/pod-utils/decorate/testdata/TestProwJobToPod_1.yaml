@@ -130,6 +130,7 @@ spec:
     - mountPath: /tools
       name: tools
   restartPolicy: Never
+  securityContext: {}
   terminationGracePeriodSeconds: 12
   volumes:
   - emptyDir: {}

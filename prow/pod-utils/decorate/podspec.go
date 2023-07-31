@@ -831,6 +831,21 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		}
 	}
 
+	if pj.Spec.DecorationConfig != nil {
+		if spec.SecurityContext == nil {
+			spec.SecurityContext = new(coreapi.PodSecurityContext)
+		}
+		if pj.Spec.DecorationConfig.RunAsUser != nil && spec.SecurityContext.RunAsUser == nil {
+			spec.SecurityContext.RunAsUser = pj.Spec.DecorationConfig.RunAsUser
+		}
+		if pj.Spec.DecorationConfig.RunAsGroup != nil && spec.SecurityContext.RunAsGroup == nil {
+			spec.SecurityContext.RunAsGroup = pj.Spec.DecorationConfig.RunAsGroup
+		}
+		if pj.Spec.DecorationConfig.FsGroup != nil && spec.SecurityContext.FSGroup == nil {
+			spec.SecurityContext.FSGroup = pj.Spec.DecorationConfig.FsGroup
+		}
+	}
+
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest != nil && *pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest {
 		for i, container := range spec.Containers {
 			if container.Resources.Requests == nil {

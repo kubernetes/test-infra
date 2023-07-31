@@ -526,6 +526,20 @@ type DecorationConfig struct {
 	// PodUnscheduledTimeout defines how long the controller will wait to abort a prowjob
 	// stuck in an unscheduled state. Specific for OrgRepo or Cluster. If not set, it has a fallback inside plank field.
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
+
+	// RunAsUser defines UID for process in all containers running in a Pod.
+	// This field will not override the existing ProwJob's PodSecurityContext.
+	// Equivalent to PodSecurityContext's RunAsUser
+	RunAsUser *int64 `json:"run_as_user,omitempty"`
+	// RunAsGroup defines GID of process in all containers running in a Pod.
+	// This field will not override the existing ProwJob's PodSecurityContext.
+	// Equivalent to PodSecurityContext's RunAsGroup
+	RunAsGroup *int64 `json:"run_as_group,omitempty"`
+	// FsGroup defines special supplemental group ID used in all containers in a Pod.
+	// This allows to change the ownership of particular volumes by kubelet.
+	// This field will not override the existing ProwJob's PodSecurityContext.
+	// Equivalent to PodSecurityContext's FsGroup
+	FsGroup *int64 `json:"fs_group,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -748,6 +762,17 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 		merged.PodUnscheduledTimeout = def.PodUnscheduledTimeout
 	}
 
+	if merged.RunAsUser == nil {
+		merged.RunAsUser = def.RunAsUser
+	}
+
+	if merged.RunAsGroup == nil {
+		merged.RunAsGroup = def.RunAsGroup
+	}
+
+	if merged.FsGroup == nil {
+		merged.FsGroup = def.FsGroup
+	}
 	return &merged
 }
 
