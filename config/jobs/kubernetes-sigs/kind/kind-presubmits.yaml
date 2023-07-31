@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/kind:
   - name: pull-kind-build
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/kind
     always_run: true
@@ -16,6 +17,13 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
   - name: pull-kind-test
     decorate: true
     path_alias: sigs.k8s.io/kind
@@ -32,6 +40,13 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
   - name: pull-kind-verify
     decorate: true
     path_alias: sigs.k8s.io/kind
@@ -48,6 +63,13 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   # GA-only variant
