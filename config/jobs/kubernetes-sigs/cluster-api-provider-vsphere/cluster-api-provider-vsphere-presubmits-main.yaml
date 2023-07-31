@@ -57,8 +57,8 @@ presets:
       secretName: capv-ipam-kubeconfig
       defaultMode: 256
       items:
-        - key: capv-services.conf
-          path: capv-services.conf
+      - key: capv-services.conf
+        path: capv-services.conf
 - labels:
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
   env:
@@ -80,63 +80,32 @@ presets:
 presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
   - name: pull-cluster-api-provider-vsphere-apidiff-main
-    always_run: true
+    branches:
+    - ^main$
+    always_run: false
+    # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
+    run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     optional: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
-          command:
-          - runner.sh
-          args:
-          - ./hack/ci-apidiff.sh
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
+        command:
+        - runner.sh
+        args:
+        - ./hack/ci-apidiff.sh
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-apidiff
+      testgrid-tab-name: pr-apidiff-main
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Checks for API changes in the PR
 
-  - name: pull-cluster-api-provider-vsphere-verify-markdown
-    always_run: false
-    run_if_changed: '.*\.md$'
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    spec:
-      containers:
-      - image: gcr.io/cluster-api-provider-vsphere/extra/mdlint:0.17.0
-        command:
-        - /nodejs/bin/node
-        args:
-        - /md/lint
-        - -i
-        - vendor
-        - -i
-        - contrib/haproxy/openapi
-        - .
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-verify-markdown
-      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
-      description: Verifies the markdown has been linted
-
-  - name: pull-cluster-api-provider-vsphere-verify-shell
-    always_run: false
-    run_if_changed: '.*\.\w*sh$'
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    spec:
-      containers:
-      - image: gcr.io/cluster-api-provider-vsphere/extra/shellcheck:v0.6.0
-        command:
-        - /bin/shellcheck.sh
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-verify-shell
-      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
-      description: Verifies the shell scripts have been linted
-
   - name: pull-cluster-api-provider-vsphere-verify-main
+    branches:
+    - ^main$
+    labels:
+      preset-dind-enabled: "true"
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
@@ -144,19 +113,24 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         command:
+        - runner.sh
+        args:
         - make
         - verify
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-verify
+      testgrid-tab-name: pr-verify-main
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
 
-  - name: pull-cluster-api-provider-vsphere-test
+  - name: pull-cluster-api-provider-vsphere-test-main
     branches:
-    # The script this job runs is not in all branches.
     - ^main$
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum|main\.go)'
+    # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
+    run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
@@ -172,53 +146,55 @@ presubmits:
         - test
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-test
+      testgrid-tab-name: pr-test-main
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs unit tests
 
-  - name: pull-cluster-api-provider-vsphere-integration-test
+  - name: pull-cluster-api-provider-vsphere-test-integration-main
+    branches:
+    - ^main$
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile|go\.mod|go\.sum|main\.go)'
+    # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
+    run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-    branches:
-    - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-            capabilities:
-              add: ["NET_ADMIN"]
-          resources:
-            requests:
-              cpu: "4000m"
-              memory: "6Gi"
-          command:
-            - runner.sh
-          args:
-            - make
-            - test-integration
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-integration
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-test-integration
+      testgrid-tab-name: pr-test-integration-main
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs integration tests
 
-  - name: pull-cluster-api-provider-vsphere-e2e
+  - name: pull-cluster-api-provider-vsphere-e2e-main
     branches:
-      - ^main$
+    - ^main$
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
-    run_if_changed: '^((api|cmd|config|contrib|controllers|packaging|pkg|test)/|Dockerfile|Makefile|hack/e2e\.sh|go\.mod|go\.sum|main\.go)'
+    # Run if go files, scripts or configuration changed (we use the same for all jobs for simplicity).
+    run_if_changed: '^((apis|config|controllers|feature|hack|packaging|pkg|test|webhooks)/|Dockerfile|go\.mod|go\.sum|main\.go|Makefile)'
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
@@ -243,13 +219,13 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-e2e
+      testgrid-tab-name: pr-e2e-main
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs only PR Blocking e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-full-e2e
+  - name: pull-cluster-api-provider-vsphere-e2e-full-main
     branches:
-      - ^main$
+    - ^main$
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
@@ -268,7 +244,7 @@ presubmits:
         - ./hack/e2e.sh
         env:
         - name: GINKGO_SKIP
-          value: "\\[clusterctl-Upgrade\\] \\[specialized-infra\\] \\[Conformance\\]"
+          value: "\\[Conformance\\] \\[specialized-infra\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -280,20 +256,19 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-full-e2e
+      testgrid-tab-name: pr-e2e-full-main
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs all e2e tests
 
-  - name: pull-cluster-api-provider-vsphere-conformance
+  - name: pull-cluster-api-provider-vsphere-conformance-main
     branches:
-      - ^main$
+    - ^main$
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-e2e-config: "true"
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
       preset-kind-volume-mounts: "true"
     always_run: false
-    optional: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     max_concurrency: 3
@@ -318,6 +293,6 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: pr-conformance
+      testgrid-tab-name: pr-conformance-main
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-vsphere-alerts@kubernetes.io
       description: Runs conformance tests for CAPV

@@ -523,6 +523,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - lint
+        cluster-api-provider-vsphere:
+          required_status_checks:
+            contexts:
+            - lint
         cluster-proportional-autoscaler:
           branches:
             gh-pages:
@@ -820,6 +824,8 @@ tide:
         - "cla/linuxfoundation"
         repos:
           cluster-api:
+            from-branch-protection: true
+          cluster-api-provider-vsphere:
             from-branch-protection: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
