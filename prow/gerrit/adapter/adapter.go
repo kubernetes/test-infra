@@ -20,7 +20,6 @@ package adapter
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"net/url"
 	"strconv"
 	"strings"
@@ -312,17 +311,13 @@ func (c *Controller) Sync() {
 		timeProcessChangesForProject := time.Now()
 		var wg sync.WaitGroup
 		wg.Add(len(changes))
-
-		// Randomly permute the slice of changes to reduce the chance of processing repos sequentially.
-		// We can improve on this by properly parrellelizing repo processing, but this is a less invasive
-		// temporary mitigation.
-		rand.Shuffle(
-			len(changes),
-			func(i, j int) { changes[i], changes[j] = changes[j], changes[i] },
-		)
-
 		changeChan := make(chan Change)
-		for i := 0; i < c.workerPoolSize; i++ {
+
+		poolSize := c.workerPoolSize
+		if poolSize > len(changes) {
+			poolSize = len(changes)
+		}
+		for i := 0; i < poolSize; i++ {
 			go c.processChange(latest, changeChan, log, &wg)
 		}
 		// We need to call time.Now() outside this loop since <- will block
