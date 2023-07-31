@@ -249,15 +249,26 @@ func (c *Client) authenticateOnce() {
 		return
 	}
 
-	c.lock.Lock()
-	defer c.lock.Unlock()
 	logrus.Info("New gerrit token, updating handler authentication...")
-	c.previousToken = current
+	c.lock.Lock()
+	c.previousToken = current // We need the write lock for this.
+	c.lock.Unlock()
 
 	// update auth token for each instance
-	for _, handler := range c.handlers {
+	for _, handler := range c.getAllHandlers() {
 		handler.authService.SetCookieAuth("o", current)
 	}
+}
+
+// getAllHandlers copies the handler map while holding the read lock.
+func (c *Client) getAllHandlers() map[string]*gerritInstanceHandler {
+	c.lock.RLock()
+	copied := make(map[string]*gerritInstanceHandler, len(c.handlers))
+	for instance, handler := range c.handlers {
+		copied[instance] = handler
+	}
+	c.lock.RUnlock()
+	return copied
 }
 
 // Authenticate client calls using the specified file.
@@ -349,10 +360,8 @@ func (c *Client) UpdateClients(instances map[string]map[string]*config.GerritQue
 // QueryChanges queries for all changes from all projects after lastUpdate time
 // returns an instance:changes map
 func (c *Client) QueryChanges(lastState LastSyncState, rateLimit int) map[string][]ChangeInfo {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
 	result := map[string][]ChangeInfo{}
-	for _, h := range c.handlers {
+	for _, h := range c.getAllHandlers() {
 		lastStateForInstance := lastState[h.instance]
 		changes := h.queryAllChanges(lastStateForInstance, rateLimit)
 		if len(changes) == 0 {
@@ -366,8 +375,8 @@ func (c *Client) QueryChanges(lastState LastSyncState, rateLimit int) map[string
 
 func (c *Client) QueryChangesForInstance(instance string, lastState LastSyncState, rateLimit int) []ChangeInfo {
 	c.lock.RLock()
-	defer c.lock.RUnlock()
 	h, ok := c.handlers[instance]
+	c.lock.RUnlock()
 	if !ok {
 		logrus.WithField("instance", instance).WithField("laststate", lastState).Warn("Instance not registered as handlers.")
 		return []ChangeInfo{}
@@ -387,8 +396,8 @@ func (c *Client) QueryChangesForProject(instance, project string, lastUpdate tim
 	log := logrus.WithContext(context.Background()).WithField("instance", instance)
 
 	c.lock.RLock()
-	defer c.lock.RUnlock()
 	h, ok := c.handlers[instance]
+	c.lock.RUnlock()
 	if !ok {
 		return []ChangeInfo{}, fmt.Errorf("instance handler for %q not found, it might not have been initialized yet", instance)
 	}
@@ -507,12 +516,21 @@ func (c *Client) GetBranchRevision(instance, project, branch string) (string, er
 
 // Account returns gerrit account for the given instance
 func (c *Client) Account(instance string) (*gerrit.AccountInfo, error) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	if existing, ok := c.accounts[instance]; ok {
+	c.lock.RLock()
+	existing, ok := c.accounts[instance]
+	c.lock.RUnlock()
+	if ok {
 		return existing, nil
 	}
 
+	// Looks like we need to populate the value so get the write lock, but then check again.
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if existing, ok := c.accounts[instance]; ok {
+		// We lost the race and some other thread populated the value for us.
+		return existing, nil
+	}
+	// We won the race, so try to poplulate the value.
 	handler, ok := c.handlers[instance]
 	if !ok {
 		return nil, errors.New("no handlers found")
