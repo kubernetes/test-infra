@@ -1,6 +1,7 @@
 periodics:
 - name: ci-npd-build
-  cluster: k8s-infra-prow-build
+  # TODO(kubernetes/kubernetes#119211): switch to k8s-infra-prow-build once it has been properly configured
+  cluster: default
   interval: 2h
   decorate: true
   labels:
@@ -36,7 +37,7 @@ periodics:
     testgrid-alert-stale-results-hours: '24'
     testgrid-num-columns-recent: '30'
 - name: ci-npd-test
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:
