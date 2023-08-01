@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-client/haskell:
   - name: kubernetes-clients-haskell-unit-tests
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     optional: true
@@ -17,5 +18,12 @@ presubmits:
 
           stack upgrade
           stack test --system-ghc --no-install-ghc --allow-different-user
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-create-test-group: 'true'
