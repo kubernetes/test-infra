@@ -1411,6 +1411,55 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			},
 		},
 		{
+			name: "branch protection with manually required triggered jobs",
+			config: Config{
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Orgs: map[string]Org{
+							"org": {
+								Policy: Policy{
+									RequireManuallyTriggeredJobs: &yes,
+								},
+							},
+						},
+					},
+					Tide: Tide{
+						TideGitHubConfig: TideGitHubConfig{
+							ContextOptions: TideContextPolicyOptions{
+								TideContextPolicy: TideContextPolicy{
+									FromBranchProtection: &yes,
+								},
+							},
+						},
+					},
+				},
+				JobConfig: JobConfig{
+					PresubmitsStatic: map[string][]Presubmit{
+						"org/repo": {
+							Presubmit{
+								Reporter: Reporter{
+									Context: "pr1",
+								},
+								AlwaysRun: false,
+								Optional:  false,
+							},
+							Presubmit{
+								Reporter: Reporter{
+									Context: "pr2",
+								},
+								AlwaysRun: true,
+							},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts:          []string{"pr1", "pr2"},
+				RequiredIfPresentContexts: []string{},
+				OptionalContexts:          []string{},
+			},
+		},
+		{
 			name: "manually defined policy",
 			config: Config{
 				ProwConfig: ProwConfig{

@@ -218,17 +218,18 @@ func mergeRestrictions(parent, child *Restrictions) *Restrictions {
 // Apply returns a policy that merges the child into the parent
 func (p Policy) Apply(child Policy) Policy {
 	return Policy{
-		Unmanaged:                  selectBool(p.Unmanaged, child.Unmanaged),
-		Protect:                    selectBool(p.Protect, child.Protect),
-		RequiredStatusChecks:       mergeContextPolicy(p.RequiredStatusChecks, child.RequiredStatusChecks),
-		Admins:                     selectBool(p.Admins, child.Admins),
-		RequiredLinearHistory:      selectBool(p.RequiredLinearHistory, child.RequiredLinearHistory),
-		AllowForcePushes:           selectBool(p.AllowForcePushes, child.AllowForcePushes),
-		AllowDeletions:             selectBool(p.AllowDeletions, child.AllowDeletions),
-		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
-		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
-		Exclude:                    unionStrings(p.Exclude, child.Exclude),
-		Include:                    unionStrings(p.Include, child.Include),
+		Unmanaged:                    selectBool(p.Unmanaged, child.Unmanaged),
+		Protect:                      selectBool(p.Protect, child.Protect),
+		RequiredStatusChecks:         mergeContextPolicy(p.RequiredStatusChecks, child.RequiredStatusChecks),
+		Admins:                       selectBool(p.Admins, child.Admins),
+		RequiredLinearHistory:        selectBool(p.RequiredLinearHistory, child.RequiredLinearHistory),
+		AllowForcePushes:             selectBool(p.AllowForcePushes, child.AllowForcePushes),
+		AllowDeletions:               selectBool(p.AllowDeletions, child.AllowDeletions),
+		RequireManuallyTriggeredJobs: selectBool(p.RequireManuallyTriggeredJobs, child.RequireManuallyTriggeredJobs),
+		Restrictions:                 mergeRestrictions(p.Restrictions, child.Restrictions),
+		RequiredPullRequestReviews:   mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
+		Exclude:                      unionStrings(p.Exclude, child.Exclude),
+		Include:                      unionStrings(p.Include, child.Include),
 	}
 }
 
