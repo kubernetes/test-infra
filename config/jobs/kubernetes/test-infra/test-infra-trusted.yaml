@@ -15,10 +15,7 @@ postsubmits:
         - --github-endpoint=http://ghproxy.default.svc.cluster.local
         - --github-endpoint=https://api.github.com
         - --github-token-path=/etc/github-token/oauth
-        # TODO: uncomment below to
-        # re-enable sync once Peribolos tool
-        # is fixed for managing team repo perms
-        # - --confirm
+        - --confirm
         volumeMounts:
         - name: github
           mountPath: /etc/github-token
@@ -565,10 +562,7 @@ periodics:
       - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - --github-endpoint=https://api.github.com
       - --github-token-path=/etc/github-token/oauth
-      # TODO: uncomment below to
-      # re-enable sync once Peribolos tool
-      # is fixed for managing team repo perms
-      # - --confirm
+      - --confirm
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
