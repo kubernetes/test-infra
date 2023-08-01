@@ -20,8 +20,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    # TODO: update to release-1.10 when Go 1.20 is backported to kubekins-e2e.
-    base_ref: release-1.8
+    base_ref: release-1.10
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes-sigs
@@ -39,6 +38,7 @@ periodics:
     preset-capz-windows-parallel: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-azure-capz-sa-cred: "true"
   spec:
     containers:
     - command:
@@ -72,10 +72,11 @@ periodics:
     preset-capz-windows-common-126: "true"
     preset-capz-windows-2019: "true"
     preset-windows-private-registry-cred: "true"
+    preset-azure-capz-sa-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.8
+    base_ref: release-1.10
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: windows-testing
