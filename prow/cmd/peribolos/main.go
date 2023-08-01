@@ -61,7 +61,12 @@ type options struct {
 	ignoreSecretTeams bool
 	allowRepoArchival bool
 	allowRepoPublish  bool
-	github            flagutil.GitHubOptions
+	// TODO(MadhavJivrajani): this is a temporary mitigation to help
+	// fix a configuration mishap:
+	// https://kubernetes.slack.com/archives/CHGFYJVAN/p1690906660582369
+	// There is no real use for this, remove once things are in good shape.
+	skipRemovals bool
+	github       flagutil.GitHubOptions
 
 	logLevel string
 }
@@ -94,6 +99,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.fixRepos, "fix-repos", false, "Create/update repositories if set")
 	flags.BoolVar(&o.allowRepoArchival, "allow-repo-archival", false, "If set, archiving repos is allowed while updating repos")
 	flags.BoolVar(&o.allowRepoPublish, "allow-repo-publish", false, "If set, making private repos public is allowed while updating repos")
+	flags.BoolVar(&o.skipRemovals, "skip-removals", false, "If set, peribolos does not make removals of any kind")
 	flags.StringVar(&o.logLevel, "log-level", logrus.InfoLevel.String(), fmt.Sprintf("Logging level, one of %v", logrus.AllLevels))
 	o.github.AddCustomizedFlags(flags, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	if err := flags.Parse(args); err != nil {
@@ -138,11 +144,19 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 		return fmt.Errorf("--fix-team-repos requires --fix-teams")
 	}
 
+	if o.skipRemovals && (o.fixTeams || o.fixTeamRepos || o.fixTeamMembers || o.fixOrg || o.fixOrgMembers) {
+		return fmt.Errorf("--skip-removals requires atleast one of --fix-teams, --fix-team-repos, --fix-team-members, --fix-org, --fix-org-members")
+	}
+
 	level, err := logrus.ParseLevel(o.logLevel)
 	if err != nil {
 		return fmt.Errorf("--log-level invalid: %w", err)
 	}
 	logrus.SetLevel(level)
+
+	if o.skipRemovals {
+		logrus.Warnln("--skip-removals is being used. This flag is not supported and will be removed")
+	}
 
 	return nil
 }
@@ -496,7 +510,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		return err
 	}
 
-	return configureMembers(have, want, invitees, adder, remover)
+	return configureMembers(have, want, invitees, opt, adder, remover)
 }
 
 type memberships struct {
@@ -521,7 +535,7 @@ func (m *memberships) normalize() {
 	m.super = normalize(m.super)
 }
 
-func configureMembers(have, want memberships, invitees sets.Set[string], adder func(user string, super bool) error, remover func(user string) error) error {
+func configureMembers(have, want memberships, invitees sets.Set[string], opts options, adder func(user string, super bool) error, remover func(user string) error) error {
 	have.normalize()
 	want.normalize()
 	if both := want.super.Intersection(want.members); len(both) > 0 {
@@ -544,9 +558,11 @@ func configureMembers(have, want memberships, invitees sets.Set[string], adder f
 		}
 	}
 
-	for u := range remove {
-		if err := remover(u); err != nil {
-			errs = append(errs, err)
+	if !opts.skipRemovals {
+		for u := range remove {
+			if err := remover(u); err != nil {
+				errs = append(errs, err)
+			}
 		}
 	}
 
@@ -850,7 +866,7 @@ func configureOrg(opt options, client github.Client, orgName string, orgConfig o
 			logrus.Infof("Skipping team repo permissions configuration")
 			continue
 		}
-		if err := configureTeamRepos(client, githubTeams, name, orgName, team); err != nil {
+		if err := configureTeamRepos(client, opt, githubTeams, name, orgName, team); err != nil {
 			return fmt.Errorf("failed to configure %s team %s repos: %w", orgName, name, err)
 		}
 	}
@@ -1074,7 +1090,7 @@ func configureTeamAndMembers(opt options, client github.Client, githubTeams map[
 	// Configure team members
 	if !opt.fixTeamMembers {
 		logrus.Infof("Skipping %s member configuration", name)
-	} else if err = configureTeamMembers(client, orgName, gt, team, opt.ignoreInvitees); err != nil {
+	} else if err = configureTeamMembers(client, opt, orgName, gt, team, opt.ignoreInvitees); err != nil {
 		if opt.confirm {
 			return fmt.Errorf("failed to update %s members: %w", name, err)
 		}
@@ -1151,7 +1167,7 @@ type teamRepoClient interface {
 }
 
 // configureTeamRepos updates the list of repos that the team has permissions for when necessary
-func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Team, name, orgName string, team org.Team) error {
+func configureTeamRepos(client teamRepoClient, opts options, githubTeams map[string]github.Team, name, orgName string, team org.Team) error {
 	gt, ok := githubTeams[name]
 	if !ok { // configureTeams is buggy if this is the case
 		return fmt.Errorf("%s not found in id list", name)
@@ -1189,7 +1205,9 @@ func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Tea
 		var err error
 		switch permission {
 		case github.None:
-			err = client.RemoveTeamRepoBySlug(orgName, gt.Slug, repo)
+			if !opts.skipRemovals {
+				err = client.RemoveTeamRepoBySlug(orgName, gt.Slug, repo)
+			}
 		case github.Admin:
 			err = client.UpdateTeamRepoBySlug(orgName, gt.Slug, repo, github.RepoAdmin)
 		case github.Write:
@@ -1208,7 +1226,7 @@ func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Tea
 	}
 
 	for childName, childTeam := range team.Children {
-		if err := configureTeamRepos(client, githubTeams, childName, orgName, childTeam); err != nil {
+		if err := configureTeamRepos(client, opts, githubTeams, childName, orgName, childTeam); err != nil {
 			updateErrors = append(updateErrors, fmt.Errorf("failed to configure %s child team %s repos: %w", orgName, childName, err))
 		}
 	}
@@ -1240,7 +1258,7 @@ func teamInvitations(client teamMembersClient, orgName, teamSlug string) (sets.S
 }
 
 // configureTeamMembers will add/update people to the appropriate role on the team, and remove anyone else.
-func configureTeamMembers(client teamMembersClient, orgName string, gt github.Team, team org.Team, ignoreInvitees bool) error {
+func configureTeamMembers(client teamMembersClient, opts options, orgName string, gt github.Team, team org.Team, ignoreInvitees bool) error {
 	// Get desired state
 	wantMaintainers := sets.New[string](team.Maintainers...)
 	wantMembers := sets.New[string](team.Members...)
@@ -1309,5 +1327,5 @@ func configureTeamMembers(client teamMembersClient, orgName string, gt github.Te
 
 	want := memberships{members: wantMembers, super: wantMaintainers}
 	have := memberships{members: haveMembers, super: haveMaintainers}
-	return configureMembers(have, want, invitees, adder, remover)
+	return configureMembers(have, want, invitees, opts, adder, remover)
 }
