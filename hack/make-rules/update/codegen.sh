@@ -57,10 +57,18 @@ ensure-protoc-deps(){
   # Install protoc
   if [[ ! -f "_bin/protoc/bin/protoc" ]]; then
     mkdir -p _bin/protoc
+    OS="linux"
+    if [[ $(uname -s) == "Darwin" ]]; then
+          OS="osx"
+    fi
+    ARCH="x86_64"
+    if [[ $(uname -m) == "arm64" ]]; then
+      ARCH="aarch_64"
+    fi
     # See https://developers.google.com/protocol-buffers/docs/news/2022-05-06 for
     # a note on the versioning scheme change.
     PROTOC_VERSION=21.9
-    PROTOC_ZIP="protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+    PROTOC_ZIP="protoc-${PROTOC_VERSION}-${OS}-${ARCH}.zip"
     curl -OL "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/${PROTOC_ZIP}"
     unzip -o $PROTOC_ZIP -d _bin/protoc bin/protoc
     unzip -o $PROTOC_ZIP -d _bin/protoc 'include/*'
