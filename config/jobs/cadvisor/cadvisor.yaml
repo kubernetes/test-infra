@@ -19,6 +19,7 @@ presets:
 presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
+    cluster: eks-prow-build-cluster
     always_run: true
     labels:
       preset-service-account: "true"
@@ -58,6 +59,7 @@ presubmits:
 
   kubernetes/kubernetes: # Temporary test for https://github.com/kubernetes/kubernetes/pull/116517
   - name: pull-cadvisor-e2e-kubernetes
+    cluster: eks-prow-build-cluster
     always_run: false
     labels:
       preset-service-account: "true"
@@ -96,6 +98,7 @@ presubmits:
       testgrid-tab-name: cadvisor-temp
 periodics:
 - name: ci-cadvisor-e2e
+  cluster: eks-prow-build-cluster
   interval: 8h
   labels:
     preset-service-account: "true"
