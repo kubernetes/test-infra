@@ -253,9 +253,11 @@ func (c *Controller) processChange(latest client.LastSyncState, changeChan <-cha
 		now := time.Now()
 
 		result := client.ResultSuccess
-		if err := c.triggerJobs(log, instance, change); err != nil {
-			result = client.ResultError
-			log.WithError(err).Info("Failed to trigger jobs based on change")
+		if !c.shouldSkipProcessingChange(instance, change) {
+			if err := c.triggerJobs(log, instance, change); err != nil {
+				result = client.ResultError
+				log.WithError(err).Info("Failed to trigger jobs based on change")
+			}
 		}
 		gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
 
@@ -523,6 +525,23 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 	// (through this same function).
 	delete(c.inRepoConfigFailuresTracker, key)
 	return nil
+}
+
+// shouldSkipProcessingChange determines if we chan skip processing the change when there is no new commit or relavent commands in the comment messages
+func (c *Controller) shouldSkipProcessingChange(instance string, change client.ChangeInfo) bool {
+	lastUpdate, exists := c.tracker.Current()[instance][change.Project]
+	if !exists {
+		lastUpdate = time.Now()
+	}
+
+	for _, message := range currentMessages(change, lastUpdate) {
+		if pjutil.TestRe.MatchString(message.Message) || pjutil.RetestRe.MatchString(message.Message) || pjutil.TestAllRe.MatchString(message.Message) {
+			return false
+		}
+	}
+
+	revision := change.Revisions[change.CurrentRevision]
+	return !revision.Created.Before(lastUpdate)
 }
 
 // triggerJobs creates new presubmit/postsubmit prowjobs base off the gerrit changes
