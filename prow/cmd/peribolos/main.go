@@ -154,6 +154,10 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	}
 	logrus.SetLevel(level)
 
+	if o.skipRemovals {
+		logrus.Warnln("--skip-removals is being used. This flag should eventually be removed")
+	}
+
 	return nil
 }
 
