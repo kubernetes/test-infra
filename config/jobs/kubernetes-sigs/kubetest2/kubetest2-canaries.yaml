@@ -127,7 +127,8 @@ presubmits:
             /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id \;
             --query 'Parameters[0].[Value]' --output text);
           kubetest2 noop --test=node -- \;
-            --provider=aws --repo-root=. --instance-type=m6a.large \;
+            --provider=aws --repo-root=. --instance-type=m6a.large --focus-regex="\[NodeConformance\]" \;
+            --test-args='--kubelet-flags="--cgroup-driver=systemd --runtime-cgroups=/system.slice/containerd.service"' \;
             --images=$AMI_ID --user-data-file=config/ubuntu2204.yaml
 
   - name: pull-kubetest2-gce-node-e2e
