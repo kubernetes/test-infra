@@ -57,7 +57,7 @@ periodics:
           --up --down \
           --cloud-provider=digitalocean \
           --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
-          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3" \
+          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=private" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -80,6 +80,62 @@ periodics:
     testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-gossip
+- name: e2e-kops-do-calico-dns-none
+  cron: '54 5-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-do-credential: "true"
+    preset-do-spaces-credential: "true"
+    preset-do-ssh: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+        -v 2 \
+        --up --down \
+        --cloud-provider=digitalocean \
+        --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+        --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=none" \
+        --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+        --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+        --test=kops \
+        -- \
+        --ginkgo-args="--debug" \
+        --test-package-marker=stable.txt \
+        --parallel 15 \
+      resources:
+        limits:
+          memory: "3Gi"
+        requests:
+          cpu: "2"
+          memory: "3Gi"
+  annotations:
+    test.kops.k8s.io/cloud: digitalocean
+    test.kops.k8s.io/k8s_version: 'stable'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: 'calico'
+    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: e2e-kops-do-calico-dns-none
 - name: e2e-kops-do-calico-fqdn
   cron: '54 2-20/8 * * *'
   labels:
