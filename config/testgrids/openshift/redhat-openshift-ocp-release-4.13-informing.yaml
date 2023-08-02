@@ -5328,8 +5328,7 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-ovn-ppc64le-powervs
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-ovn-remote-libvirt-ppc64le
   name: periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-ovn-remote-libvirt-ppc64le
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-ovn-remote-libvirt-s390x
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-ovn-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-ovn-remote-libvirt-s390x
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.13-ocp-e2e-ovn-serial-aws-arm64
