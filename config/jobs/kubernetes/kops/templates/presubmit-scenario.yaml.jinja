@@ -15,6 +15,9 @@
       preset-aws-credential: "true"
       {%- endif %}
       preset-dind-enabled: "true"
+      {%- if use_preset_for_account_creds %}
+      {{use_preset_for_account_creds}}: "true"
+      {%- endif %}
     max_concurrency: 1
     decorate: true
     decoration_config:

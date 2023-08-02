@@ -257,7 +257,8 @@ def presubmit_test(branch='master',
                    artifacts=None,
                    env=None,
                    template_path=None,
-                   use_boskos=False):
+                   use_boskos=False,
+                   use_preset_for_account_creds=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
         if distro == "channels":
@@ -334,6 +335,7 @@ def presubmit_test(branch='master',
         env=env,
         template_path=template_path,
         boskos_resource_type=boskos_resource_type,
+        use_preset_for_account_creds=use_preset_for_account_creds,
     )
 
     spec = {
@@ -1102,6 +1104,7 @@ def generate_presubmits_scale():
             always_run=False,
             artifacts='$(ARTIFACTS)',
             test_timeout_minutes=450,
+            use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
             env={
                 'CNI_PLUGIN': "amazonvpc",
                 'KUBE_NODE_COUNT': "500",
