@@ -2,7 +2,9 @@
 
 reviewers:
 - cjwagner
+- sig-contributor-experience-technical-leads
 approvers:
 - cjwagner
+- sig-contributor-experience-technical-leads
 labels:
  - area/prow/peribolos
