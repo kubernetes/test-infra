@@ -16,10 +16,10 @@ presubmits:
         - verify
         resources:
           limits:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 4
             memory: 4Gi
         securityContext:
           privileged: true
@@ -39,10 +39,10 @@ presubmits:
         - build-all
         resources:
           limits:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
           requests:
-            cpu: 1
+            cpu: 2
             memory: 4Gi
         securityContext:
           privileged: true
