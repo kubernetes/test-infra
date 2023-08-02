@@ -18,7 +18,7 @@ spec:
       serviceAccountName: prow-pipeline
       containers:
       - name: pipeline
-        image: gcr.io/k8s-prow/pipeline:v20230801-42fdc2b8de
+        image: gcr.io/k8s-prow/pipeline:v20230802-d51826a399
         args:
         - --all-contexts
         - --config=/etc/prow-config/config.yaml
