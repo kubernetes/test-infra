@@ -113,7 +113,7 @@ periodics:
         --up --down \
         --cloud-provider=digitalocean \
         --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
-        --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns-none" \
+        --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --dns=none" \
         --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
         --kubernetes-version=https://dl.k8s.io/release/stable.txt \
         --test=kops \
