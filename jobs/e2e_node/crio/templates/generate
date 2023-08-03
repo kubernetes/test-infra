@@ -33,7 +33,7 @@ declare -A CONFIGURATIONS=(
     ["crio_cgrpv2"]="root"
     ["crio_cgrpv2_serial"]="root authorized-key"
     ["crio_cgrpv2_k8s_infra_prow_build"]="root authorized-key"
-    ["crio_swap1g"]="root cgroups-v1 authorized-key swap-1G"
+    ["crio_swap1g"]="root authorized-key swap-1G"
 )
 
 CONTAINER_RUNTIME=$(which podman 2>/dev/null) ||
