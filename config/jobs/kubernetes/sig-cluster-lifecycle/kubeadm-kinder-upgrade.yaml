@@ -2,7 +2,7 @@
 periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-28-latest
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 2h
   decorate: true
   labels:
@@ -90,7 +90,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-26-1-27
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   labels:
@@ -134,7 +134,7 @@ periodics:
           cpu: 2000m
 
 - name: ci-kubernetes-e2e-kubeadm-kinder-upgrade-1-25-1-26
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   interval: 12h
   decorate: true
   labels:
