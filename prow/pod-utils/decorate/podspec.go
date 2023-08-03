@@ -846,6 +846,15 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		}
 	}
 
+	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.SchedulingOptions != nil {
+		if pj.Spec.DecorationConfig.SchedulingOptions.Affinity != nil && spec.Affinity == nil {
+			spec.Affinity = pj.Spec.DecorationConfig.SchedulingOptions.Affinity
+		}
+		if pj.Spec.DecorationConfig.SchedulingOptions.Tolerations != nil && spec.Tolerations == nil {
+			spec.Tolerations = pj.Spec.DecorationConfig.SchedulingOptions.Tolerations
+		}
+	}
+
 	if pj.Spec.DecorationConfig != nil && pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest != nil && *pj.Spec.DecorationConfig.SetLimitEqualsMemoryRequest {
 		for i, container := range spec.Containers {
 			if container.Resources.Requests == nil {
