@@ -68,6 +68,7 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-scale-amazonvpc-using-cl2
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: false
