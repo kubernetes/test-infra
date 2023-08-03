@@ -2,11 +2,6 @@
   "ignition": {
     "version": "3.3.0"
   },
-  "kernelArguments": {
-    "shouldExist": [
-      "systemd.unified_cgroup_hierarchy=0"
-    ]
-  },
   "storage": {
     "files": [
       {

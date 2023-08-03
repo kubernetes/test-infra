@@ -140,6 +140,3 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
-kernel_arguments:
-  should_exist:
-    - systemd.unified_cgroup_hierarchy=0
