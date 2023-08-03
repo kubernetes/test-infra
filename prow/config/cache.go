@@ -51,6 +51,8 @@ var inRepoConfigCacheMetrics = struct {
 	evictionsManual *prometheus.CounterVec
 	// How many entries are in the cache?
 	cacheUsageSize *prometheus.GaugeVec
+	// How long does it take for GetProwYAML() to run?
+	getProwYAMLDuration *prometheus.HistogramVec
 }{
 	lookups: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "inRepoConfigCache_lookups",
@@ -97,6 +99,14 @@ var inRepoConfigCacheMetrics = struct {
 		"org",
 		"repo",
 	}),
+	getProwYAMLDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "inRepoConfigCache_GetProwYAML_duration",
+		Help:    "Histogram of seconds spent retrieving the ProwYAML (inrepoconfig), by org and repo.",
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600},
+	}, []string{
+		"org",
+		"repo",
+	}),
 }
 
 func init() {
@@ -106,6 +116,7 @@ func init() {
 	prometheus.MustRegister(inRepoConfigCacheMetrics.evictionsForced)
 	prometheus.MustRegister(inRepoConfigCacheMetrics.evictionsManual)
 	prometheus.MustRegister(inRepoConfigCacheMetrics.cacheUsageSize)
+	prometheus.MustRegister(inRepoConfigCacheMetrics.getProwYAMLDuration)
 }
 
 func mkCacheEventCallback(counterVec *prometheus.CounterVec) cache.EventCallback {
@@ -316,6 +327,12 @@ func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter 
 
 // GetProwYAML returns the ProwYAML value stored in the InRepoConfigCache.
 func (cache *InRepoConfigCache) GetProwYAML(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	timeGetProwYAML := time.Now()
+	defer func() {
+		orgRepo := NewOrgRepo(identifier)
+		inRepoConfigCacheMetrics.getProwYAMLDuration.WithLabelValues(orgRepo.Org, orgRepo.Repo).Observe((float64(time.Since(timeGetProwYAML).Seconds())))
+	}()
+
 	c := cache.configAgent.Config()
 
 	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
