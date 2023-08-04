@@ -163,6 +163,73 @@ func fakeProwYAMLGetter(
 	return &res, nil
 }
 
+func TestSkipChangeProcessingChecks(t *testing.T) {
+	now := time.Now()
+	instance := "gke-host"
+	project := "private-cloud"
+	latest := client.LastSyncState{}
+	latest[instance] = make(map[string]time.Time)
+	latest[instance][project] = now.Add(-time.Hour)
+	cases := []struct {
+		name     string
+		instance string
+		change   gerrit.ChangeInfo
+		latest   client.LastSyncState
+		result   bool
+	}{
+		{
+			name:     "should not skip change processing when revision is new",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Created: makeStamp(now)},
+				}},
+			latest: latest,
+			result: false,
+		},
+		{
+			name:     "should not skip change processing when comment contains test related commands",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Number: 10, Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date:           makeStamp(now),
+						Message:        "/test all",
+						RevisionNumber: 10,
+					},
+				}},
+			latest: latest,
+			result: false,
+		},
+		{
+			name:     "should skip change processing when revision is old and does not contain relevant commands",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Number: 10, Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date:           makeStamp(now),
+						Message:        "LGTM",
+						RevisionNumber: 10,
+					},
+				}},
+			latest: latest,
+			result: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := shouldSkipProcessingChange(tc.instance, tc.change, tc.latest); got != tc.result {
+				t.Errorf("expected skip change processing checks returns %t, got %t", tc.result, got)
+			}
+		})
+	}
+}
+
 func TestHandleInRepoConfigError(t *testing.T) {
 	change := gerrit.ChangeInfo{ID: "1", CurrentRevision: "1"}
 	instanceName := "instance"

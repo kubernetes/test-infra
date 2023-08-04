@@ -253,13 +253,14 @@ func (c *Controller) processChange(latest client.LastSyncState, changeChan <-cha
 		now := time.Now()
 
 		result := client.ResultSuccess
-		if !c.shouldSkipProcessingChange(instance, change, latest) {
+		if !shouldSkipProcessingChange(instance, change, latest) {
 			if err := c.triggerJobs(log, instance, change); err != nil {
 				result = client.ResultError
 				log.WithError(err).Info("Failed to trigger jobs based on change")
 			}
+		} else {
+			log.Info("Skipped triggering jobs for this change.")
 		}
-		log.Info("No relevant update in this change for Gerrit adapter, its processing is skipped.")
 		gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
 
 		c.latestMux.Lock()
@@ -529,7 +530,7 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 }
 
 // shouldSkipProcessingChange returns true when there is no new commit or relevant commands in the comment messages
-func (c *Controller) shouldSkipProcessingChange(instance string, change client.ChangeInfo, latest client.LastSyncState) bool {
+func shouldSkipProcessingChange(instance string, change client.ChangeInfo, latest client.LastSyncState) bool {
 	lastUpdate, exists := latest[instance][change.Project]
 	if !exists {
 		lastUpdate = time.Now()
@@ -541,12 +542,18 @@ func (c *Controller) shouldSkipProcessingChange(instance string, change client.C
 	}
 
 	for _, message := range currentMessages(change, lastUpdate) {
-		if pjutil.TestRe.MatchString(message.Message) || pjutil.RetestRe.MatchString(message.Message) || pjutil.TestAllRe.MatchString(message.Message) {
+		if messageContainsJobTriggeringCommand(message) {
 			return false
 		}
 	}
 
 	return true
+}
+
+func messageContainsJobTriggeringCommand(message gerrit.ChangeMessageInfo) bool {
+	return pjutil.TestRe.MatchString(message.Message) ||
+		pjutil.RetestRe.MatchString(message.Message) ||
+		pjutil.TestAllRe.MatchString(message.Message)
 }
 
 // triggerJobs creates new presubmit/postsubmit prowjobs base off the gerrit changes
