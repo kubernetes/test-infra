@@ -258,7 +258,7 @@ func processGitHub(ctx context.Context, o *Options, prh PRHandler) error {
 		return nil
 	}
 
-	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(secret.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
+	if err := MinimalGitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(secret.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
 		return fmt.Errorf("push changes to the remote branch: %w", err)
 	}
 
@@ -466,7 +466,7 @@ func GitCommitSignoffAndPush(remote, remoteBranch, name, email, message string, 
 	if err := gitCommit(name, email, message, stdout, stderr, signoff); err != nil {
 		return err
 	}
-	return gitPush(remote, remoteBranch, stdout, stderr, dryrun)
+	return MinimalGitPush(remote, remoteBranch, stdout, stderr, dryrun)
 }
 func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bool) error {
 	if err := Call(stdout, stderr, gitCmd, "add", "-A"); err != nil {
@@ -485,7 +485,11 @@ func gitCommit(name, email, message string, stdout, stderr io.Writer, signoff bo
 	return nil
 }
 
-func gitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool) error {
+// MinimalGitPush pushes the content of the local repository to the remote, checking to make
+// sure that there are real changes that need updating by diffing the tree refs, ensuring that
+// no metadata-only pushes occur, as those re-trigger tests, remove LGTM, and cause churn whithout
+// changing the content being proposed in the PR.
+func MinimalGitPush(remote, remoteBranch string, stdout, stderr io.Writer, dryrun bool) error {
 	if err := Call(stdout, stderr, gitCmd, "remote", "add", forkRemoteName, remote); err != nil {
 		return fmt.Errorf("add remote: %w", err)
 	}
