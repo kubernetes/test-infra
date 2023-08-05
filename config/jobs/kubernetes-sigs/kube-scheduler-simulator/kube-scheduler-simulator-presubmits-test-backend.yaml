@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/kube-scheduler-simulator:
   - name: pull-kube-scheduler-simulator-backend-unit-test
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-kube-scheduler-simulator-backend-unit-test
@@ -19,3 +20,10 @@ presubmits:
         - >
           make mod-download &&
           make test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/kube-scheduler-simulator:
   - name: pull-kube-scheduler-simulator-backend-lint
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-kube-scheduler-simulator-backend-lint
@@ -21,7 +22,15 @@ presubmits:
           make tools &&
           export PATH="${PATH}:${GOPATH}/bin" &&
           make lint
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-kube-scheduler-simulator-frontend-lint
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-kube-scheduler-simulator-frontend-lint
@@ -40,3 +49,10 @@ presubmits:
           cd ./web &&
           yarn install --frozen-lockfile &&
           yarn run lint
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
