@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-nested-build
+  cluster: eks-prow-build-cluster
   interval: 4h
   decorate: true
   extra_refs:
@@ -21,10 +22,14 @@ periodics:
         requests:
           memory: "6Gi"
           cpu: "2"
+        limits:
+          memory: "6Gi"
+          cpu: "2"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-nested
     testgrid-tab-name: periodic-cluster-api-provider-nested-build
 - name: periodic-cluster-api-provider-nested-test
+  cluster: eks-prow-build-cluster
   interval: 4h
   decorate: true
   extra_refs:
@@ -44,6 +49,9 @@ periodics:
       - "./scripts/ci-test.sh"
       resources:
         requests:
+          memory: "6Gi"
+          cpu: "2"
+        limits:
           memory: "6Gi"
           cpu: "2"
   annotations:
