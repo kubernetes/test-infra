@@ -3,7 +3,7 @@
 presubmits:
   kubernetes-csi/livenessprobe:
   - name: pull-kubernetes-csi-livenessprobe-1-24-on-kubernetes-1-24
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -57,7 +57,7 @@ presubmits:
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: false
     optional: true
     decorate: true
@@ -100,7 +100,7 @@ presubmits:
             memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-livenessprobe-1-25-on-kubernetes-1-25
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -154,7 +154,7 @@ presubmits:
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: false
     optional: true
     decorate: true
@@ -197,7 +197,7 @@ presubmits:
             memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-livenessprobe-1-26-on-kubernetes-1-26
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: true
     decorate: true
@@ -251,7 +251,7 @@ presubmits:
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: false
     optional: true
     decorate: true
@@ -294,7 +294,7 @@ presubmits:
             memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-livenessprobe-alpha-1-25-on-kubernetes-1-25
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: false
     optional: true
     decorate: true
@@ -345,7 +345,7 @@ presubmits:
             memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-livenessprobe-unit
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_report: false

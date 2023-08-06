@@ -3,7 +3,7 @@
 presubmits:
   kubernetes-csi/lib-volume-populator:
   - name: pull-kubernetes-csi-lib-volume-populator
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_report: false
