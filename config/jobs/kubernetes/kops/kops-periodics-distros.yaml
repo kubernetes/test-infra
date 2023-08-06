@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-10-amd64-20230601-1398' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-10-amd64-20230802-1460' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -94,7 +94,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20230717-1444' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20230802-1460' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -157,7 +157,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-12-amd64-20230711-1438' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-12-amd64-20230802-1460' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -220,7 +220,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230714' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230725' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -283,7 +283,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20230714' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20230725' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -346,7 +346,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230719' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230728' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -409,7 +409,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230719' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20230728' --channel=alpha --networking=cilium --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -472,7 +472,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230628.0-x86_64-gp2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/amzn2-ami-kernel-5.10-hvm-2.0.20230727.0-x86_64-gp2' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
@@ -535,7 +535,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='137112412989/al2023-ami-2023.1.20230705.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='137112412989/al2023-ami-2023.1.20230725.0-kernel-6.1-x86_64' --channel=alpha --networking=cilium --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://dl.k8s.io/release/stable.txt \
           --test=kops \
