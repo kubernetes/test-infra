@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/boskos:
     - name: pull-boskos-build-test-verify
+      cluster: eks-prow-build-cluster
       decorate: true
       always_run: true
       path_alias: sigs.k8s.io/boskos
@@ -17,6 +18,10 @@ presubmits:
             resources:
               requests:
                 cpu: 4000m
+                memory: 4Gi
+              limits:
+                cpu: 4000m
+                memory: 4Gi
       annotations:
         testgrid-dashboards: sig-testing-boskos
         testgrid-tab-name: pull-build-test-verify
