@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/gengo:
   - name: pull-gengo-test
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-api-machinery-gengo
       testgrid-tab-name: test
@@ -17,8 +18,16 @@ presubmits:
           args:
             - -c
             - 'go test -v -race ./...'
+          resources:
+            requests:
+              memory: 4Gi
+              cpu: 2
+            limits:
+              memory: 4Gi
+              cpu: 2
 
   - name: pull-gengo-verify
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-api-machinery-gengo
       testgrid-tab-name: verify
@@ -36,3 +45,10 @@ presubmits:
            - -c
            - |
             go run ./examples/import-boss/main.go -i $(go list k8s.io/gengo/... | grep -v import-boss/tests | paste -sd',' -) --verify-only
+          resources:
+            requests:
+              memory: 4Gi
+              cpu: 2
+            limits:
+              memory: 4Gi
+              cpu: 2
