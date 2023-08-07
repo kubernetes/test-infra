@@ -330,10 +330,10 @@ func (c *controller) cancelPipelineRun(pContext string, pipeline *pipelinev1beta
 	if err != nil {
 		return err
 	}
-	if pipeline.Spec.Status == pipelinev1beta1.PipelineRunSpecStatusCancelled {
+	if pipeline.Spec.Status == pipelinev1beta1.PipelineRunSpecStatusCancelledRunFinally {
 		return nil
 	}
-	pipeline.Spec.Status = pipelinev1beta1.PipelineRunSpecStatusCancelled
+	pipeline.Spec.Status = pipelinev1beta1.PipelineRunSpecStatusCancelledRunFinally
 	_, err = p.client.TektonV1beta1().PipelineRuns(pipeline.Namespace).Update(context.TODO(), pipeline, metav1.UpdateOptions{})
 	return err
 }
@@ -503,7 +503,7 @@ func reconcile(c reconciler, key string) error {
 		logrus.Infof("Observed finished: %s", key)
 		return nil
 	case cancelledState(pj.Status.State):
-		if p != nil && p.Spec.Status != pipelinev1beta1.PipelineRunSpecStatusCancelled {
+		if p != nil && p.Spec.Status != pipelinev1beta1.PipelineRunSpecStatusCancelledRunFinally {
 			if err = c.cancelPipelineRun(ctx, p); err != nil {
 				return fmt.Errorf("failed to cancel pipelineRun: %w", err)
 			}
