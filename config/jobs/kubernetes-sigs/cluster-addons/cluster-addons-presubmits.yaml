@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/cluster-addons:
   - name: pull-cluster-addons-unit-test
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-addons
     always_run: true
@@ -10,6 +11,13 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - "./hack/unit-test.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-addons
       testgrid-tab-name: pr-unit-test
