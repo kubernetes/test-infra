@@ -140,7 +140,7 @@ job_cluster() {
   local repo=$1
 
   case "$repo" in
-   external-snapshotter|external-resizer)
+   external-snapshotter|external-resizer|lib-volume-populator|livenessprobe|node-driver-registrar|volume-data-source-validator)
      echo "eks-prow-build-cluster"
      ;;
    *)
