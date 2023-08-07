@@ -180,7 +180,7 @@ periodics:
   cluster: eks-prow-build-cluster
   decorate: true
   decoration_config:
-    timeout: 5m
+    timeout: 10m
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -209,10 +209,10 @@ periodics:
         value: /workspace/k8s.io/kubernetes
       resources:
         limits:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
         requests:
-          cpu: 2
+          cpu: 4
           memory: 4Gi
       # docker-in-docker needs privileged mode
       securityContext:
