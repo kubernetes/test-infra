@@ -8,7 +8,6 @@ presubmits:
     branches:
     - ^release-1.3$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         command:
@@ -33,7 +32,6 @@ presubmits:
     - ^release-1.3$
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         command:
@@ -59,7 +57,6 @@ presubmits:
     branches:
     - ^release-1.3$
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         command:
@@ -85,7 +82,6 @@ presubmits:
     - ^release-1.3$
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
@@ -109,7 +105,6 @@ presubmits:
     - ^release-1.3$
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
@@ -144,7 +139,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
@@ -178,7 +172,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
@@ -214,7 +207,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
@@ -253,7 +245,6 @@ presubmits:
     - ^release-1.3$
     path_alias: sigs.k8s.io/cluster-api
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
@@ -295,7 +286,6 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
