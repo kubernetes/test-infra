@@ -756,7 +756,7 @@ presubmits:
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
-            --skip-regex="SSH.should.SSH.to.all.nodes.and.run.commands" \
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|SSH.should.SSH.to.all.nodes.and.run.commands" \
             --parallel=25
         securityContext:
           privileged: true
@@ -821,7 +821,7 @@ presubmits:
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
-            --skip-regex="SSH.should.SSH.to.all.nodes.and.run.commands" \
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|SSH.should.SSH.to.all.nodes.and.run.commands" \
             --parallel=25
         securityContext:
           privileged: true

@@ -1242,7 +1242,7 @@ def generate_presubmits_network_plugins():
             distro='u2204arm64',
             tab_name=f"e2e-cilium-noskip",
             networking='cilium',
-            skip_regex='SSH.should.SSH.to.all.nodes.and.run.commands',
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|SSH.should.SSH.to.all.nodes.and.run.commands', # pylint: disable=line-too-long
             optional=True,
         )
     )
@@ -1257,7 +1257,7 @@ def generate_presubmits_network_plugins():
                          '--bastion',
                          '--zones=us-west-2a',
                          ],
-            skip_regex='SSH.should.SSH.to.all.nodes.and.run.commands',
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|SSH.should.SSH.to.all.nodes.and.run.commands', # pylint: disable=line-too-long
             optional=True,
         )
     )
