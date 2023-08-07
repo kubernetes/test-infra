@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/network-policy-api:
   - name: pull-network-policy-api-verify
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-network-policy-api
       testgrid-tab-name: verify
@@ -20,7 +21,15 @@ presubmits:
         args:
           - make
           - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-network-policy-api-crd-e2e
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-network-policy-api
       testgrid-tab-name: crd-e2e
@@ -43,3 +52,10 @@ presubmits:
           # docker-in-docker needs privileged mode.
           securityContext:
             privileged: true
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 2
+              memory: 4Gi
