@@ -129,6 +129,9 @@ dashboards:
   - name: pull-kubernetes-node-e2e-containerd-kubetest2
     test_group_name: pull-kubernetes-node-e2e-containerd-kubetest2
     base_options: width=10
+  - name: pull-kubernetes-node-e2e-containerd-ec2-kubetest2
+    test_group_name: pull-kubernetes-node-e2e-ec2-containerd-kubetest2
+    base_options: width=10
   - name: pull-kubernetes-node-e2e-containerd-features-kubetest2
     test_group_name: pull-kubernetes-node-e2e-containerd-features-kubetest2
     base_options: width=10
