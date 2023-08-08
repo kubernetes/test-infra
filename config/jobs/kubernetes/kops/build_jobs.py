@@ -1235,32 +1235,6 @@ def generate_presubmits_network_plugins():
                 )
             )
 
-    # See which tests no longer need to be skipped on Cilium
-    results.append(
-        presubmit_test(
-            name=f"pull-kops-e2e-cni-cilium-noskip",
-            distro='u2204arm64',
-            tab_name=f"e2e-cilium-noskip",
-            networking='cilium',
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|SSH.should.SSH.to.all.nodes.and.run.commands', # pylint: disable=line-too-long
-            optional=True,
-        )
-    )
-    results.append(
-        presubmit_test(
-            name=f"pull-kops-e2e-cni-cilium-ipv6-noskip",
-            distro='u2204arm64',
-            tab_name=f"e2e-cilium-ipv6-noskip",
-            networking='cilium',
-            extra_flags=['--ipv6',
-                         '--topology=private',
-                         '--bastion',
-                         '--zones=us-west-2a',
-                         ],
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|SSH.should.SSH.to.all.nodes.and.run.commands', # pylint: disable=line-too-long
-            optional=True,
-        )
-    )
     return results
 
 ############################
