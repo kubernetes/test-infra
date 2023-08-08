@@ -80,11 +80,11 @@ func (session *Session) Merge() error {
 	if !session.stage.Start() {
 		return nil
 	}
-	defer session.stage.Release()
 	err := session.Client.AddLabel(session.OwnerLogin, session.MainRepo, session.UpdatePRNumber, "approved")
 	if err != nil {
 		return fmt.Errorf("cannot merge update pull request. %w", err)
 	}
+	session.stage.Release()
 	session.Next()
 	return nil
 }
@@ -232,7 +232,6 @@ func (session *Session) Process() error {
 	if !session.stage.Start() {
 		return nil
 	}
-	defer session.stage.Release()
 	err := func() error {
 		processStatus := github.Status{
 			State:       github.StatusPending,
@@ -262,6 +261,7 @@ func (session *Session) Process() error {
 		session.Succeed(processStatus, fmt.Sprintf("Successful in %s.", time.Since(session.stage.StartedAt()).Round(time.Second)))
 		return nil
 	}()
+	session.stage.Release()
 	if err == nil {
 		session.Next()
 	}
@@ -272,7 +272,6 @@ func (session *Session) Deliver() error {
 	if !session.stage.Start() {
 		return nil
 	}
-	defer session.stage.Release()
 	err := func() error {
 		deliverStatus := github.Status{
 			Context: "auto-update / deliver-pr",
@@ -298,6 +297,7 @@ func (session *Session) Deliver() error {
 		session.Succeed(deliverStatus, fmt.Sprintf("Successful in %s.", time.Since(startedAt).Round(time.Second)))
 		return nil
 	}()
+	session.stage.Release()
 	if err == nil {
 		session.Next()
 	}
@@ -383,7 +383,6 @@ func (session *Session) HandleSubmodulePR() error {
 	if !session.stage.Start() {
 		return nil
 	}
-	defer session.stage.Release()
 	mergedCount := 0
 	for _, submodule := range session.Submodules {
 		// In case HandleSubmodulePR is invoked directly, refresh pull request here
@@ -406,6 +405,7 @@ func (session *Session) HandleSubmodulePR() error {
 			return fmt.Errorf("cannot merge pull request %s, error: %w", submodule.PRInfo.HTMLURL, err)
 		}
 	}
+	session.stage.Release()
 	if mergedCount == len(session.Submodules) {
 		session.Next()
 	}
@@ -416,7 +416,6 @@ func (session *Session) UpdateSubmodule() error {
 	if !session.stage.Start() {
 		return nil
 	}
-	defer session.stage.Release()
 	err := func() error {
 		repo, err := session.Git.ClientFor(session.OwnerLogin, session.MainRepo)
 		if err != nil {
@@ -466,6 +465,7 @@ func (session *Session) UpdateSubmodule() error {
 		})
 		return repo.PushToCentral(session.UpdateBaseBranch, true)
 	}()
+	session.stage.Release()
 	if err == nil {
 		session.Next()
 	}
@@ -589,7 +589,8 @@ func (session *Session) CheckAndUpdate() error {
 	approved := PRApproved(client, session.UpdatePR)
 	passed := ChecksPassed(client, session.OwnerLogin, session.MainRepo, session.UpdateSHA)
 	if approved && passed && session.SubmodulesReady() {
-		session.RequestStage(utypes.SUBMERGING)
+		session.stage.Release()
+		session.Next()
 		return nil
 	} else {
 		return &NotReadyError{message: "update pull request and submodules are not ready"}

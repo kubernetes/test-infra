@@ -45,7 +45,8 @@ func handlePullRequestEvent(agent plugins.Agent, pullRequestEvent github.PullReq
 							!submodule.PRInfo.Merged && pullRequestEvent.PullRequest.Merged {
 							submodule.MergedSHA = *pullRequestEvent.PullRequest.MergeSHA
 							if session.IsStage(utypes.SUBMERGING) && session.SubmoduleMerged() {
-								session.RequestStage(utypes.UPDATING)
+								session.stage.Release()
+								session.Next();
 							}
 						}
 						submodule.PRInfo = &pullRequestEvent.PullRequest
