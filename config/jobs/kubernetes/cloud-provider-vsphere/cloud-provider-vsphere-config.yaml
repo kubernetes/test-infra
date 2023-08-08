@@ -213,7 +213,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
-    run_if_changed: '\.go$|go.mod'
+    run_if_changed: '\.go$|go.mod|Dockerfile|Makefile'
     skip_report: false
     spec:
       containers:
