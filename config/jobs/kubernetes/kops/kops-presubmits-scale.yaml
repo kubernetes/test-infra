@@ -124,7 +124,7 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-ff02749ef8-a423a.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
+          value: "s3://k8s-infra-kops-scale-tests"
         - name: KOPS_IRSA
           value: "true"
         resources:
