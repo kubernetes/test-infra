@@ -14,7 +14,7 @@ presets:
         value: "true"
 presubmits:
  kubernetes/kubernetes:
- - name: pull-kubernetes-node-e2e-containerd-ec2-kubetest2
+ - name: pull-kubernetes-node-e2e-ec2-containerd-kubetest2
    skip_branches:
      - release-\d+\.\d+  # per-release image
    annotations:
@@ -54,7 +54,7 @@ presubmits:
               --stage provider-aws-test-infra \
               --up \
               --down \
-              --user-data-file=./../../sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/ubuntu2204.yaml \
+              --user-data-file=${GOPATH}/src/sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2/config/ubuntu2204.yaml \
               --ssh-user=ec2-user \
               --ssh-env=aws \
               --test=ginkgo \
