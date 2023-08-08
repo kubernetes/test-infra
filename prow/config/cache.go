@@ -49,6 +49,10 @@ var inRepoConfigCacheMetrics = struct {
 	// How many times have we tried to remove a cached key because its value
 	// construction failed?
 	evictionsManual *prometheus.CounterVec
+	// How many entries are in the cache?
+	cacheUsageSize *prometheus.GaugeVec
+	// How long does it take for GetProwYAML() to run?
+	getProwYAMLDuration *prometheus.HistogramVec
 }{
 	lookups: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "inRepoConfigCache_lookups",
@@ -88,6 +92,21 @@ var inRepoConfigCacheMetrics = struct {
 		"org",
 		"repo",
 	}),
+	cacheUsageSize: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "inRepoConfigCache_cache_usage_size",
+		Help: "Size of the cache (how many entries it is holding) by org and repo.",
+	}, []string{
+		"org",
+		"repo",
+	}),
+	getProwYAMLDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "inRepoConfigCache_GetProwYAML_duration",
+		Help:    "Histogram of seconds spent retrieving the ProwYAML (inrepoconfig), by org and repo.",
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600},
+	}, []string{
+		"org",
+		"repo",
+	}),
 }
 
 func init() {
@@ -96,6 +115,8 @@ func init() {
 	prometheus.MustRegister(inRepoConfigCacheMetrics.misses)
 	prometheus.MustRegister(inRepoConfigCacheMetrics.evictionsForced)
 	prometheus.MustRegister(inRepoConfigCacheMetrics.evictionsManual)
+	prometheus.MustRegister(inRepoConfigCacheMetrics.cacheUsageSize)
+	prometheus.MustRegister(inRepoConfigCacheMetrics.getProwYAMLDuration)
 }
 
 func mkCacheEventCallback(counterVec *prometheus.CounterVec) cache.EventCallback {
@@ -166,6 +187,47 @@ func NewInRepoConfigCache(
 	if err != nil {
 		return nil, err
 	}
+
+	// This records all OrgRepos we've seen so far during the lifetime of the
+	// process. The main purpose is to allow reporting of 0 counts for OrgRepos
+	// whose keys have been evicted by the lruCache.
+	seenOrgRepos := make(map[OrgRepo]int)
+
+	cacheSizeMetrics := func() {
+		// Record all unique orgRepo combinations we've seen so far.
+		for _, key := range lruCache.Keys() {
+			org, repo, err := keyToOrgRepo(key)
+			if err != nil {
+				// This should only happen if we are deliberately using things
+				// other than a CacheKey as the key.
+				logrus.Warnf("programmer error: could not report cache size metrics for a key entry: %v", err)
+				continue
+			}
+			orgRepo := OrgRepo{org, repo}
+			if count, ok := seenOrgRepos[orgRepo]; ok {
+				seenOrgRepos[orgRepo] = count + 1
+			} else {
+				seenOrgRepos[orgRepo] = 1
+			}
+		}
+		// For every single org and repo in the cache, report how many key
+		// entries there are.
+		for orgRepo, count := range seenOrgRepos {
+			inRepoConfigCacheMetrics.cacheUsageSize.WithLabelValues(
+				orgRepo.Org, orgRepo.Repo).Set(float64(count))
+			// Reset the counter back down to 0 because it may be that by the
+			// time of the next interval, the last key for this orgRepo will be
+			// evicted. At that point we still want to report a count of 0.
+			seenOrgRepos[orgRepo] = 0
+		}
+	}
+
+	go func() {
+		for {
+			cacheSizeMetrics()
+			time.Sleep(30 * time.Second)
+		}
+	}()
 
 	cache := &InRepoConfigCache{
 		lruCache,
@@ -265,6 +327,12 @@ func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter 
 
 // GetProwYAML returns the ProwYAML value stored in the InRepoConfigCache.
 func (cache *InRepoConfigCache) GetProwYAML(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	timeGetProwYAML := time.Now()
+	defer func() {
+		orgRepo := NewOrgRepo(identifier)
+		inRepoConfigCacheMetrics.getProwYAMLDuration.WithLabelValues(orgRepo.Org, orgRepo.Repo).Observe((float64(time.Since(timeGetProwYAML).Seconds())))
+	}()
+
 	c := cache.configAgent.Config()
 
 	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)

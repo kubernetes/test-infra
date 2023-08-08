@@ -292,9 +292,9 @@ func (c *Controller) Sync() {
 			gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe(float64(time.Since(now).Seconds()))
 		}()
 
-		// Ignore the error. It is already logged.
 		timeQueryChangesForProject := time.Now()
 
+		// Ignore the error. It is already logged.
 		changes, err := c.gc.QueryChangesForProject(instance, project, syncTime, c.config().Gerrit.RateLimit)
 		queryResult := func() string {
 			if err == nil {
