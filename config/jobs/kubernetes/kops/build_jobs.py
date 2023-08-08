@@ -494,6 +494,13 @@ def generate_misc():
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
                    extra_dashboards=['kops-network-plugins']),
+        build_test(name_override="kops-gce-cni-cilium-k8s-ci",
+                   cloud="gce",
+                   k8s_version="ci",
+                   networking="cilium",
+                   runs_per_day=1,
+                   extra_flags=["--gce-service-account=default"],
+                   extra_dashboards=['kops-network-plugins']),
 
         # A special test for Calico CNI on Debian 11
         build_test(name_override="kops-aws-cni-calico-deb11",
@@ -1235,32 +1242,6 @@ def generate_presubmits_network_plugins():
                 )
             )
 
-    # See which tests no longer need to be skipped on Cilium
-    results.append(
-        presubmit_test(
-            name=f"pull-kops-e2e-cni-cilium-noskip",
-            distro='u2204arm64',
-            tab_name=f"e2e-cilium-noskip",
-            networking='cilium',
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|SSH.should.SSH.to.all.nodes.and.run.commands', # pylint: disable=line-too-long
-            optional=True,
-        )
-    )
-    results.append(
-        presubmit_test(
-            name=f"pull-kops-e2e-cni-cilium-ipv6-noskip",
-            distro='u2204arm64',
-            tab_name=f"e2e-cilium-ipv6-noskip",
-            networking='cilium',
-            extra_flags=['--ipv6',
-                         '--topology=private',
-                         '--bastion',
-                         '--zones=us-west-2a',
-                         ],
-            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|SSH.should.SSH.to.all.nodes.and.run.commands', # pylint: disable=line-too-long
-            optional=True,
-        )
-    )
     return results
 
 ############################
