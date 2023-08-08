@@ -16,6 +16,13 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         command:
         - runner.sh
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "2"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
         args:
         - make
         - verify
@@ -34,6 +41,13 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         command:
         - runner.sh
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "2"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
         args:
         - make
         - build
@@ -52,6 +66,13 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         command:
         - runner.sh
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "2"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
         args:
         - make
         - unit-test
@@ -72,6 +93,13 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
         command:
         - runner.sh
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "2"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
         args:
         - make
         - e2e-test
