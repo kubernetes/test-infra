@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/apiserver-network-proxy:
   - name: pull-apiserver-network-proxy-test
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_report: false
     decorate: true
@@ -12,11 +13,19 @@ presubmits:
         - make
         args:
         - test
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
       testgrid-tab-name: pr-test
       description: Tests the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-docker-build-amd64
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_report: false
     decorate: true
@@ -34,11 +43,19 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
       testgrid-tab-name: pr-docker-build-amd64
       description: Build amd64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-docker-build-arm64
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_report: false
     decorate: true
@@ -56,11 +73,19 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
       testgrid-tab-name: pr-docker-build-arm64
       description: Build arm64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-make-lint
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_report: false
     decorate: true
@@ -75,6 +100,13 @@ presubmits:
         args:
         - make
         - lint
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: 2
+          limits:
+            memory: 8Gi
+            cpu: 2
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
       testgrid-tab-name: pr-make-lint
