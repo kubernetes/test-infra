@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/custom-metrics-apiserver:
   - name: pull-custom-metrics-apiserver-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/custom-metrics-apiserver
@@ -12,10 +13,18 @@ presubmits:
         args:
         - verify
         - --always-make
+        resources:
+          limits:
+            cpu: 6
+            memory: 8Gi
+          requests:
+            cpu: 6
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
       testgrid-tab-name: pr-verify
   - name: pull-custom-metrics-apiserver-build-test-adapter
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/custom-metrics-apiserver
@@ -26,10 +35,18 @@ presubmits:
         - make
         args:
         - build-test-adapter
+        resources:
+          limits:
+            cpu: 6
+            memory: 8Gi
+          requests:
+            cpu: 6
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
       testgrid-tab-name: pr-build-test-adapter
   - name: pull-custom-metrics-apiserver-test
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/custom-metrics-apiserver
@@ -40,6 +57,13 @@ presubmits:
         - make
         args:
         - test
+        resources:
+          limits:
+            cpu: 6
+            memory: 8Gi
+          requests:
+            cpu: 6
+            memory: 8Gi
     annotations:
       testgrid-dashboards: sig-instrumentation-custom-metrics-apiserver
       testgrid-tab-name: pr-test
