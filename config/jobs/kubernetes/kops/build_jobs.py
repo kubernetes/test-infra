@@ -494,6 +494,13 @@ def generate_misc():
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
                    extra_dashboards=['kops-network-plugins']),
+        build_test(name_override="kops-gce-cni-cilium-k8s-ci",
+                   cloud="gce",
+                   k8s_version="ci",
+                   networking="cilium",
+                   runs_per_day=1,
+                   extra_flags=["--gce-service-account=default"],
+                   extra_dashboards=['kops-network-plugins']),
 
         # A special test for Calico CNI on Debian 11
         build_test(name_override="kops-aws-cni-calico-deb11",
