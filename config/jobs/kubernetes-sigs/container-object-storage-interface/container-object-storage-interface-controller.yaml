@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/container-object-storage-interface-controller:
   - name: pull-container-object-storage-interface-controller-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/container-object-storage-interface-controller
@@ -14,8 +15,16 @@ presubmits:
         command:
         # Plain make runs also verify
         - make
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 
   - name: pull-container-object-storage-interface-controller-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/container-object-storage-interface-controller
@@ -30,3 +39,10 @@ presubmits:
         - make
         args:
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
