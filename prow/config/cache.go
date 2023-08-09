@@ -194,6 +194,8 @@ func NewInRepoConfigCache(
 	seenOrgRepos := make(map[OrgRepo]int)
 
 	cacheSizeMetrics := func() {
+		lruCache.Mutex.Lock()         // Lock the mutex
+		defer lruCache.Mutex.Unlock() // Unlock the mutex when done
 		// Record all unique orgRepo combinations we've seen so far.
 		for _, key := range lruCache.Keys() {
 			org, repo, err := keyToOrgRepo(key)
