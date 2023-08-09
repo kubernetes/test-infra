@@ -1,9 +1,10 @@
 periodics:
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-release-1-3
-  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -21,6 +22,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       args:
@@ -45,10 +47,6 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: 32Gi
-        limits:
-          cpu: 7300m
-          memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-18-1-19
@@ -56,9 +54,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-release-1-3
-  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -76,6 +75,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       args:
@@ -100,10 +100,6 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: 32Gi
-        limits:
-          cpu: 7300m
-          memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-19-1-20
@@ -111,9 +107,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-release-1-3
-  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -131,6 +128,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       args:
@@ -155,10 +153,6 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: 32Gi
-        limits:
-          cpu: 7300m
-          memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-20-1-21
@@ -166,9 +160,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-1-3
-  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -186,6 +181,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       args:
@@ -210,10 +206,6 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: 32Gi
-        limits:
-          cpu: 7300m
-          memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-21-1-22
@@ -221,9 +213,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-1-3
-  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -241,6 +234,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       args:
@@ -265,10 +259,6 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: 32Gi
-        limits:
-          cpu: 7300m
-          memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-22-1-23
@@ -276,9 +266,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-23-1-24-release-1-3
-  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -296,6 +287,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       args:
@@ -320,10 +312,6 @@ periodics:
       resources:
         requests:
           cpu: 7300m
-          memory: 32Gi
-        limits:
-          cpu: 7300m
-          memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-23-1-24
@@ -331,9 +319,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-24-1-25-release-1-3
-  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -351,6 +340,7 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
@@ -375,10 +365,6 @@ periodics:
         resources:
           requests:
             cpu: 7300m
-            memory: 32Gi
-          limits:
-            cpu: 7300m
-            memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-24-1-25
@@ -386,9 +372,10 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-25-1-26-release-1-3
-  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes-sigs
@@ -406,6 +393,7 @@ periodics:
       base_ref: master
       path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
         args:
@@ -430,10 +418,6 @@ periodics:
         resources:
           requests:
             cpu: 7300m
-            memory: 32Gi
-          limits:
-            cpu: 7300m
-            memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-25-1-26
