@@ -29,6 +29,8 @@ presubmits:
    optional: true
    cluster: eks-prow-build-cluster
    decorate: true
+   decoration_config:
+     timeout: 4h
    extra_refs:
      - org: kubernetes-sigs
        repo: provider-aws-test-infra
