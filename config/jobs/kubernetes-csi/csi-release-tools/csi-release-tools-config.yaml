@@ -3,7 +3,7 @@
 presubmits:
   kubernetes-csi/csi-release-tools:
   - name: pull-kubernetes-csi-csi-release-tools
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_report: false
@@ -35,7 +35,7 @@ presubmits:
             memory: "9Gi"
             cpu: 4
   - name: pull-kubernetes-csi-release-tools-csi-test
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -76,7 +76,7 @@ presubmits:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
   - name: pull-kubernetes-csi-release-tools-external-provisioner
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
@@ -178,7 +178,7 @@ presubmits:
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v6.1.0"
   - name: pull-kubernetes-csi-release-tools-csi-driver-host-path
-    cluster: default
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
     decorate: true
