@@ -253,7 +253,7 @@ func (c *Controller) processChange(latest client.LastSyncState, changeChan <-cha
 		now := time.Now()
 
 		result := client.ResultSuccess
-		if !shouldSkipProcessingChange(instance, change, latest) {
+		if !c.shouldSkipProcessingChange(instance, change, latest) {
 			if err := c.triggerJobs(log, instance, change); err != nil {
 				result = client.ResultError
 				log.WithError(err).Info("Failed to trigger jobs based on change")
@@ -530,7 +530,7 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 }
 
 // shouldSkipProcessingChange returns true when there is no new commit or relevant commands in the comment messages
-func shouldSkipProcessingChange(instance string, change client.ChangeInfo, latest client.LastSyncState) bool {
+func (c *Controller) shouldSkipProcessingChange(instance string, change client.ChangeInfo, latest client.LastSyncState) bool {
 	lastUpdate, exists := latest[instance][change.Project]
 	if !exists {
 		lastUpdate = time.Now()
@@ -542,7 +542,7 @@ func shouldSkipProcessingChange(instance string, change client.ChangeInfo, lates
 	}
 
 	for _, message := range currentMessages(change, lastUpdate) {
-		if messageContainsJobTriggeringCommand(message) {
+		if c.messageContainsJobTriggeringCommand(message) {
 			return false
 		}
 	}
@@ -550,8 +550,8 @@ func shouldSkipProcessingChange(instance string, change client.ChangeInfo, lates
 	return true
 }
 
-func messageContainsJobTriggeringCommand(message gerrit.ChangeMessageInfo) bool {
-	return pjutil.TestRe.MatchString(message.Message) ||
+func (c *Controller) messageContainsJobTriggeringCommand(message gerrit.ChangeMessageInfo) bool {
+	return c.configAgent.Config().Gerrit.GetAllowedPresubmitTriggerRegex().MatchString(message.Message) ||
 		pjutil.RetestRe.MatchString(message.Message) ||
 		pjutil.TestAllRe.MatchString(message.Message)
 }

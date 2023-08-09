@@ -80,7 +80,8 @@ const (
 )
 
 var (
-	DefaultDiffOpts []cmp.Option = []cmp.Option{cmpopts.IgnoreFields(TideBranchMergeType{}, "Regexpr")}
+	DefaultDiffOpts []cmp.Option = []cmp.Option{cmpopts.IgnoreFields(TideBranchMergeType{}, "Regexpr"),
+		cmpopts.IgnoreUnexported(Gerrit{})}
 )
 
 // Config is a read-only snapshot of the config.
@@ -921,17 +922,26 @@ type Gerrit struct {
 	// job runs for a given CL.
 	DeckURL        string                `json:"deck_url,omitempty"`
 	OrgReposConfig *GerritOrgRepoConfigs `json:"org_repos_config,omitempty"`
-	// AllowedPresubmitTriggerRe is used to match presubmit test related commands in comments
-	AllowedPresubmitTriggerRe          *CopyableRegexp
-	AllowedPresubmitTriggerReRawString string `json:"allowed_presubmit_trigger_re,omitempty"`
+	// allowedPresubmitTriggerRe is used to match presubmit test related commands in comments
+	allowedPresubmitTriggerRe          *CopyableRegexp
+	AllowedPresubmitTriggerReRawString string `json:"allowed_presubmit_trigger_re_raw_string,omitempty"`
 }
 
-func setAllowedPresubmitTriggerRegex(g *Gerrit) error {
+func (g *Gerrit) GetAllowedPresubmitTriggerRegex() *CopyableRegexp {
+	return g.allowedPresubmitTriggerRe
+}
+
+func (g *Gerrit) SetAllowedPresubmitTriggerRegex() error {
+	// falls back to matching all strings when configuration is empty
+	if g.AllowedPresubmitTriggerReRawString == "" {
+		g.AllowedPresubmitTriggerReRawString = ".*"
+		return nil
+	}
 	re, err := regexp.Compile(g.AllowedPresubmitTriggerReRawString)
 	if err != nil {
 		return err
 	}
-	g.AllowedPresubmitTriggerRe = &CopyableRegexp{re}
+	g.allowedPresubmitTriggerRe = &CopyableRegexp{re}
 	return nil
 }
 
@@ -2442,7 +2452,7 @@ func parseProwConfig(c *Config) error {
 		c.Gerrit.RateLimit = 5
 	}
 
-	if err := setAllowedPresubmitTriggerRegex(&c.Gerrit); err != nil {
+	if err := c.Gerrit.SetAllowedPresubmitTriggerRegex(); err != nil {
 		return err
 	}
 

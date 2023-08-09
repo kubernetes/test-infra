@@ -170,6 +170,14 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 	latest := client.LastSyncState{}
 	latest[instance] = make(map[string]time.Time)
 	latest[instance][project] = now.Add(-time.Hour)
+	c := &Controller{
+		configAgent: &config.Agent{},
+	}
+	c.configAgent.Set(&config.Config{ProwConfig: config.ProwConfig{Gerrit: config.Gerrit{AllowedPresubmitTriggerReRawString: "(?mi)/test\\s.*"}}})
+	err := c.configAgent.Config().Gerrit.SetAllowedPresubmitTriggerRegex()
+	if err != nil {
+		t.Fatalf("failed to set presubmit trigger regex: %s", err.Error())
+	}
 	cases := []struct {
 		name     string
 		instance string
@@ -223,7 +231,7 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := shouldSkipProcessingChange(tc.instance, tc.change, tc.latest); got != tc.result {
+			if got := c.shouldSkipProcessingChange(tc.instance, tc.change, tc.latest); got != tc.result {
 				t.Errorf("expected skip change processing checks returns %t, got %t", tc.result, got)
 			}
 		})

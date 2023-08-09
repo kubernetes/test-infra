@@ -1053,8 +1053,7 @@ gerrit:
 			expected: Gerrit{
 				TickInterval:                       &metav1.Duration{Duration: time.Minute},
 				RateLimit:                          5,
-				AllowedPresubmitTriggerRe:          &CopyableRegexp{},
-				AllowedPresubmitTriggerReRawString: "",
+				AllowedPresubmitTriggerReRawString: ".*",
 			},
 		},
 		{
@@ -1067,10 +1066,9 @@ gerrit:
   allowed_presubmit_trigger_re: "/test presubmit"
 `,
 			expected: Gerrit{
+				AllowedPresubmitTriggerReRawString: ".*",
 				TickInterval:                       &metav1.Duration{Duration: time.Second * 2},
 				RateLimit:                          10,
-				AllowedPresubmitTriggerRe:          &CopyableRegexp{},
-				AllowedPresubmitTriggerReRawString: "/test presubmit",
 			},
 		},
 		{
@@ -1084,9 +1082,9 @@ gerrit:
     - repo-b
 `,
 			expected: Gerrit{
-				TickInterval:              &metav1.Duration{Duration: time.Minute},
-				RateLimit:                 5,
-				AllowedPresubmitTriggerRe: &CopyableRegexp{},
+				TickInterval:                       &metav1.Duration{Duration: time.Minute},
+				RateLimit:                          5,
+				AllowedPresubmitTriggerReRawString: ".*",
 				OrgReposConfig: &GerritOrgRepoConfigs{
 					{
 						Org:   "org-a",
@@ -1109,9 +1107,9 @@ gerrit:
     - repo-d
 `,
 			expected: Gerrit{
-				TickInterval:              &metav1.Duration{Duration: time.Minute},
-				RateLimit:                 5,
-				AllowedPresubmitTriggerRe: &CopyableRegexp{},
+				TickInterval:                       &metav1.Duration{Duration: time.Minute},
+				RateLimit:                          5,
+				AllowedPresubmitTriggerReRawString: ".*",
 				OrgReposConfig: &GerritOrgRepoConfigs{
 					{
 						Org:   "org-a",
@@ -1143,8 +1141,8 @@ gerrit:
 				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
 			}
 
-			if diff := cmp.Diff(tc.expected, cfg.Gerrit, cmpopts.EquateEmpty()); diff != "" {
-				t.Errorf("got diff: %s", diff)
+			if d := cmp.Diff(tc.expected, cfg.Gerrit, cmpopts.EquateEmpty(), cmpopts.IgnoreUnexported(Gerrit{})); d != "" {
+				t.Errorf("got d: %s", d)
 			}
 		})
 	}
@@ -8189,7 +8187,7 @@ deck:
 default_job_timeout: 24h0m0s
 gangway: {}
 gerrit:
-  AllowedPresubmitTriggerRe: {}
+  allowed_presubmit_trigger_re_raw_string: .*
   ratelimit: 5
   tick_interval: 1m0s
 github:
@@ -8271,7 +8269,7 @@ deck:
 default_job_timeout: 24h0m0s
 gangway: {}
 gerrit:
-  AllowedPresubmitTriggerRe: {}
+  allowed_presubmit_trigger_re_raw_string: .*
   ratelimit: 5
   tick_interval: 1m0s
 github:
@@ -8346,7 +8344,7 @@ deck:
 default_job_timeout: 24h0m0s
 gangway: {}
 gerrit:
-  AllowedPresubmitTriggerRe: {}
+  allowed_presubmit_trigger_re_raw_string: .*
   ratelimit: 5
   tick_interval: 1m0s
 github:
@@ -8426,7 +8424,7 @@ deck:
 default_job_timeout: 24h0m0s
 gangway: {}
 gerrit:
-  AllowedPresubmitTriggerRe: {}
+  allowed_presubmit_trigger_re_raw_string: .*
   ratelimit: 5
   tick_interval: 1m0s
 github:
