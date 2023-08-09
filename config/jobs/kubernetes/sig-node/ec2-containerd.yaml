@@ -44,7 +44,7 @@ presubmits:
            - bash
            - -c
            - |
-             go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+             GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
              kubetest2 ec2 \
               --build \
               --instance-type=m6a.large  \
