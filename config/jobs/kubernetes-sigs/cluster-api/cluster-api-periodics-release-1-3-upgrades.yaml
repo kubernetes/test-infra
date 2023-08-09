@@ -1,6 +1,7 @@
 periodics:
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-release-1-3
+  cluster: eks-prow-build-cluster
   interval: 24h
   decorate: true
   decoration_config:
@@ -22,7 +23,6 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
-    serviceAccountName: prowjob-default-sa
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
       args:
@@ -47,6 +47,10 @@ periodics:
       resources:
         requests:
           cpu: 7300m
+          memory: 32Gi
+        limits:
+          cpu: 7300m
+          memory: 32Gi
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.3
     testgrid-tab-name: capi-e2e-release-1-3-1-18-1-19
