@@ -299,7 +299,15 @@ func (c *Controller) processSingleProject(instance, project string) {
 		}
 		return client.ResultError
 	}()
+	log = log.WithFields(logrus.Fields{
+		"lastUpdate":    syncTime.String(),
+		"queryStart":    timeQueryChangesForProject.String(),
+		"queryDuration": time.Since(timeQueryChangesForProject).String(),
+		"changeCount":   len(changes),
+		"result":        queryResult,
+	})
 	gerritMetrics.gerritRepoQueryDuration.WithLabelValues(instance, project, queryResult).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
+	checkAndLogQuery(log, changes)
 
 	if len(changes) == 0 {
 		return
@@ -328,6 +336,17 @@ func (c *Controller) processSingleProject(instance, project string) {
 	gerritMetrics.changeProcessDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeProcessChangesForProject).Seconds())))
 	close(changeChan)
 	c.tracker.Update(latest)
+}
+
+func checkAndLogQuery(log *logrus.Entry, changes []gerrit.ChangeInfo) {
+	seen := sets.NewInt()
+	for _, change := range changes {
+		if seen.Has(change.Number) {
+			log.WithField("change", change.Number).Error("Gerrit API bug! Received multiple updates for a change from a single query.")
+		}
+		seen.Insert(change.Number)
+	}
+	log.Infof("Query returned changes: %v", seen.List())
 }
 
 // Sync looks for newly made gerrit changes
