@@ -294,7 +294,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
       testgrid-tab-name: capi-pr-e2e-full-release-1-5
-  - name: pull-cluster-api-e2e-workload-upgrade-1-27-latest-release-1-5
+  - name: pull-cluster-api-e2e-workload-upgrade-1-27-1-28-release-1-5
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -325,9 +325,9 @@ presubmits:
           - name: KUBERNETES_VERSION_UPGRADE_FROM
             value: "stable-1.27"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.28"
+            value: "stable-1.28"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.5.7-0"
+            value: "3.5.9-0"
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "v1.10.1"
           - name: GINKGO_FOCUS
@@ -340,7 +340,7 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.5
-      testgrid-tab-name: capi-pr-e2e-release-1-5-1-27-latest
+      testgrid-tab-name: capi-pr-e2e-release-1-5-1-27-1-28
   # This job is experimental for now. Please do not duplicate it to release branches.
   - name: pull-cluster-api-e2e-scale-release-1-5-experimental
     labels:
