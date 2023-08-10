@@ -30,16 +30,24 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    # The Windows 1.24 jobs should stay on CAPZ release-1.6 for now because later versions build CNM and CCM
-    # images from k-sigs/cluster-provider-azure repo and the container image builds are not working.
-    base_ref: release-1.6
+    base_ref: release-1.10
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: false
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
     workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: sig-release-1.24
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - command:
       - runner.sh
-      - ./scripts/ci-conformance.sh
+      - ./capz/run-capz-e2e.sh
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.24
       name: ""
       resources:
@@ -48,6 +56,10 @@ periodics:
           memory: 9Gi
       securityContext:
         privileged: true
+      env:
+        # Skip tests that require etcd image for 1.24 Windows jobs because the etcd image referenced in this branch does not container Windows images.
+        - name: GINKGO_SKIP
+          value: \[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|Aggregator.Should.be.able.to.support.the.1.17.Sample.API.Server|be.restarted.with.a.GRPC.liveness.probe
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-release-1.24-informing, sig-windows-1.24-release, sig-windows-signal
@@ -69,23 +81,32 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    # The Windows 1.24 jobs should stay on CAPZ release-1.6 for now because later versions build CNM and CCM
-    # images from k-sigs/cluster-provider-azure repo and the container image builds are not working.
-    base_ref: release-1.6
+    base_ref: release-1.10
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: false
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
     workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: sig-release-1.24
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.24
         command:
           - "runner.sh"
-          - "./scripts/ci-conformance.sh"
+          - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
         env:
-        # Skip tests that require etcd image for 1.24 Windows jobs because the etcd image referenced in this branch does not container Windows images.
+        - name: GINKGO_FOCUS
+          value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
         - name: GINKGO_SKIP
-          value: \[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|Aggregator.Should.be.able.to.support.the.1.17.Sample.API.Server|be.restarted.with.a.GRPC.liveness.probe
+          value: \[LinuxOnly\]|device.plugin.for.Windows|RebootHost|\[sig-autoscaling\].\[Feature:HPA\]
         resources:
           requests:
             cpu: 2
