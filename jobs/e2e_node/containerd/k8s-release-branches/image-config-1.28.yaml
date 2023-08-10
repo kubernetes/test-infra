@@ -1,0 +1,6 @@
+images:
+    # TODO(mmiranda96): update to cos-beta once COS releases their beta family
+  cos-dev:
+    image_family: cos-dev
+    project: cos-cloud
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/containerd/init.yaml,cni-template</workspace/test-infra/jobs/e2e_node/containerd/cni.template,containerd-config</workspace/test-infra/jobs/e2e_node/containerd/config-systemd.toml"
