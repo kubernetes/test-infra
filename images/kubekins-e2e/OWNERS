@@ -9,13 +9,16 @@ reviewers:
 - puerco
 - saschagrunert
 - spiffxp
+- Verolop
 - xmudrii
 approvers:
 - BenTheElder
+- cpanato
 - justaugustus
-- spiffxp
+- xmudrii
 emeritus_approvers:
 - amwat
+- spiffxp
 
 labels:
 - sig/release
