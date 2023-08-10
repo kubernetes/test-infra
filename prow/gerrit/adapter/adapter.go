@@ -272,67 +272,86 @@ func (c *Controller) processChange(latest client.LastSyncState, changeChan <-cha
 	}
 }
 
+func (c *Controller) processSingleProject(instance, project string) {
+	// Assumes the passed in instance was already normalized with https:// prefix.
+	log := logrus.WithFields(logrus.Fields{"host": instance, "repo": project})
+	tracker := c.tracker.Current()
+	syncTime := time.Now()
+	if projects, ok := tracker[instance]; ok {
+		if t, ok := projects[project]; ok {
+			syncTime = t
+		}
+	}
+	latest := tracker.DeepCopy()
+
+	now := time.Now()
+	defer func() {
+		gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe(float64(time.Since(now).Seconds()))
+	}()
+
+	timeQueryChangesForProject := time.Now()
+
+	// Ignore the error. It is already logged.
+	changes, err := c.gc.QueryChangesForProject(instance, project, syncTime, c.config().Gerrit.RateLimit)
+	queryResult := func() string {
+		if err == nil {
+			return client.ResultSuccess
+		}
+		return client.ResultError
+	}()
+	log = log.WithFields(logrus.Fields{
+		"lastUpdate":    syncTime.String(),
+		"queryStart":    timeQueryChangesForProject.String(),
+		"queryDuration": time.Since(timeQueryChangesForProject).String(),
+		"changeCount":   len(changes),
+		"result":        queryResult,
+	})
+	gerritMetrics.gerritRepoQueryDuration.WithLabelValues(instance, project, queryResult).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
+	checkAndLogQuery(log, changes)
+
+	if len(changes) == 0 {
+		return
+	}
+
+	timeProcessChangesForProject := time.Now()
+	var wg sync.WaitGroup
+	wg.Add(len(changes))
+	changeChan := make(chan Change)
+
+	poolSize := c.workerPoolSize
+	if poolSize > len(changes) {
+		poolSize = len(changes)
+	}
+	for i := 0; i < poolSize; i++ {
+		go c.processChange(latest, changeChan, log, &wg)
+	}
+	// We need to call time.Now() outside this loop since <- will block
+	// while there are no more available worker threads possibly causing
+	// time.Now() to be called later than intended.
+	timeChangesCreated := time.Now()
+	for _, change := range changes {
+		changeChan <- Change{changeInfo: change, instance: instance, created: timeChangesCreated}
+	}
+	wg.Wait()
+	gerritMetrics.changeProcessDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeProcessChangesForProject).Seconds())))
+	close(changeChan)
+	c.tracker.Update(latest)
+}
+
+func checkAndLogQuery(log *logrus.Entry, changes []gerrit.ChangeInfo) {
+	seen := sets.NewInt()
+	for _, change := range changes {
+		if seen.Has(change.Number) {
+			log.WithField("change", change.Number).Error("Gerrit API bug! Received multiple updates for a change from a single query.")
+		}
+		seen.Insert(change.Number)
+	}
+	log.Infof("Query returned changes: %v", seen.List())
+}
+
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
 func (c *Controller) Sync() {
-	processSingleProject := func(instance, project string) {
-		// Assumes the passed in instance was already normalized with https:// prefix.
-		log := logrus.WithFields(logrus.Fields{"host": instance, "repo": project})
-		tracker := c.tracker.Current()
-		syncTime := time.Now()
-		if projects, ok := tracker[instance]; ok {
-			if t, ok := projects[project]; ok {
-				syncTime = t
-			}
-		}
-		latest := tracker.DeepCopy()
-
-		now := time.Now()
-		defer func() {
-			gerritMetrics.changeSyncDuration.WithLabelValues(instance, project).Observe(float64(time.Since(now).Seconds()))
-		}()
-
-		timeQueryChangesForProject := time.Now()
-
-		// Ignore the error. It is already logged.
-		changes, err := c.gc.QueryChangesForProject(instance, project, syncTime, c.config().Gerrit.RateLimit)
-		queryResult := func() string {
-			if err == nil {
-				return client.ResultSuccess
-			}
-			return client.ResultError
-		}()
-		gerritMetrics.gerritRepoQueryDuration.WithLabelValues(instance, project, queryResult).Observe((float64(time.Since(timeQueryChangesForProject).Seconds())))
-
-		if len(changes) == 0 {
-			return
-		}
-
-		timeProcessChangesForProject := time.Now()
-		var wg sync.WaitGroup
-		wg.Add(len(changes))
-		changeChan := make(chan Change)
-
-		poolSize := c.workerPoolSize
-		if poolSize > len(changes) {
-			poolSize = len(changes)
-		}
-		for i := 0; i < poolSize; i++ {
-			go c.processChange(latest, changeChan, log, &wg)
-		}
-		// We need to call time.Now() outside this loop since <- will block
-		// while there are no more available worker threads possibly causing
-		// time.Now() to be called later than intended.
-		timeChangesCreated := time.Now()
-		for _, change := range changes {
-			changeChan <- Change{changeInfo: change, instance: instance, created: timeChangesCreated}
-		}
-		wg.Wait()
-		gerritMetrics.changeProcessDuration.WithLabelValues(instance, project).Observe((float64(time.Since(timeProcessChangesForProject).Seconds())))
-		close(changeChan)
-		c.tracker.Update(latest)
-	}
-
 	// Identify projects without worker threads
 	id := func(instance, project string) string { return fmt.Sprintf("%s/%s", instance, project) }
 	needsWorker := map[string][]string{}
@@ -368,7 +387,7 @@ func (c *Controller) Sync() {
 						time.Sleep(timeDiff)
 					}
 					previousRun = time.Now()
-					processSingleProject(instance, project)
+					c.processSingleProject(instance, project)
 				}
 			}(instance, project, staggerPosition)
 			staggerPosition++
