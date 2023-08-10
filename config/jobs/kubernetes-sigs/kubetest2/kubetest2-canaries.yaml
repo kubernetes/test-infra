@@ -14,6 +14,11 @@ presubmits:
     - base_ref: master
       org: kubernetes
       repo: cloud-provider-gcp
+      path_alias: k8s.io/cloud-provider-gcp
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -165,6 +170,30 @@ presubmits:
         command:
         - runner.sh
         args:
+        - "./kubetest2-tester-node/ci-tests/gce-test.sh"
+
+  - name: pull-kubetest2-kind-build-up-down
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/kubetest2
+    labels:
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+        command:
+        - runner.sh
+        args:
         - "/bin/bash"
         - "-c"
         - set -o errexit;
@@ -172,8 +201,7 @@ presubmits:
           set -o pipefail;
           set -o xtrace;
           make install-all;
-          cd ${GOPATH}/src/k8s.io/kubernetes;
-          kubetest2 noop --test=node -- \;
-            --provider=gce --repo-root=. --gcp-zone=us-west1-b --focus-regex="\[NodeConformance\]" \;
-            --test-args='--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service"' \;
-            --instance-type=e2-standard-2 --image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-systemd.yaml
+          go install sigs.k8s.io/kind@v0.20.0;
+          kubetest2 kind --up --down --test=exec -- kubectl get all -A
+        securityContext:
+          privileged: true
