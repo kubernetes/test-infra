@@ -1884,6 +1884,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: e11d21
+        description: PR is missing an area label
+        name: do-not-merge/needs-area
+        target: prs
+        prowPlugin: require-matching-label
+        addedBy: prow
   kubernetes-sigs/cluster-api-operator:
     labels:
       - color: c7def8

@@ -855,6 +855,18 @@ require_matching_label:
   issues: true
   prs: true
   regexp: ^priority/
+- missing_label: do-not-merge/needs-area
+  org: kubernetes-sigs
+  repo: cluster-api
+  issues: false
+  prs: true
+  regexp: ^area/
+  missing_comment: |
+    This PR is currently missing an area label, which is used to identify the modified component when generating release notes.
+
+    Area labels can be added by org members by writing `/area ${COMPONENT}` in a comment
+    
+    Please see the [labels list](https://github.com/kubernetes/test-infra/blob/master/label_sync/labels.md#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs) for possible areas.
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: cluster-api

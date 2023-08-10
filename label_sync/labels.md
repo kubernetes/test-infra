@@ -9,6 +9,7 @@
 - [Labels that apply to all repos, only for issues](#labels-that-apply-to-all-repos-only-for-issues)
 - [Labels that apply to all repos, only for PRs](#labels-that-apply-to-all-repos-only-for-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-for-both-issues-and-prs)
+- [Labels that apply to kubernetes-sigs/cluster-api, only for PRs](#labels-that-apply-to-kubernetes-sigscluster-api-only-for-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-operator, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-operator-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-aws, for both issues and PRs](#labels-that-apply-to-kubernetes-sigscluster-api-provider-aws-for-both-issues-and-prs)
 - [Labels that apply to kubernetes-sigs/cluster-api-provider-aws, only for issues](#labels-that-apply-to-kubernetes-sigscluster-api-provider-aws-only-for-issues)
@@ -223,6 +224,12 @@ larger set of contributors to apply/remove them.
 | <a id="kind/design" href="#kind/design">`kind/design`</a> | Categorizes issue or PR as related to design.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="kind/proposal" href="#kind/proposal">`kind/proposal`</a> | Issues or PRs related to proposals.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="kind/release-blocking" href="#kind/release-blocking">`kind/release-blocking`</a> | Issues or PRs that need to be closed before the next CAPI release| approvers |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
+## Labels that apply to kubernetes-sigs/cluster-api, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="do-not-merge/needs-area" href="#do-not-merge/needs-area">`do-not-merge/needs-area`</a> | PR is missing an area label| prow |  [require-matching-label](https://git.k8s.io/test-infra/prow/plugins/require-matching-label) |
 
 ## Labels that apply to kubernetes-sigs/cluster-api-operator, for both issues and PRs
 

@@ -660,6 +660,7 @@ tide:
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
     - kubernetes-sigs/cloud-provider-azure
+    - kubernetes-sigs/cluster-api
     labels:
     - lgtm
     - approved
@@ -772,6 +773,23 @@ tide:
     - do-not-merge/work-in-progress
     - needs-rebase
     - needs-kind
+  - repos:
+    - kubernetes-sigs/cluster-api
+    labels:
+      - lgtm
+      - approved
+      - "cncf-cla: yes"
+    missingLabels:
+      - do-not-merge
+      - do-not-merge/blocked-paths
+      - do-not-merge/contains-merge-commits
+      - do-not-merge/hold
+      - do-not-merge/invalid-commit-message
+      - do-not-merge/invalid-owners-file
+      - do-not-merge/needs-area
+      - do-not-merge/release-note-label-needed
+      - do-not-merge/work-in-progress
+      - needs-rebase
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
