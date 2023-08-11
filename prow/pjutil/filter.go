@@ -29,9 +29,6 @@ import (
 
 var TestAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
 
-// TestRe provides the regex for `/test job-name`
-var TestRe = regexp.MustCompile(`/test\s+(\w+)`)
-
 // RetestRe provides the regex for `/retest`
 var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
