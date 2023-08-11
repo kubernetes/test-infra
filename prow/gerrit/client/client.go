@@ -663,6 +663,8 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 
 	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
 	var start int
+	// change number -> count of times seen
+	seenCount := map[int]int{}
 
 	for {
 		opt.Limit = rateLimit
@@ -682,7 +684,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 
 		if changes == nil || len(*changes) == 0 {
 			log.Info("No more changes")
-			return pending, nil
+			break
 		}
 
 		log.WithField("changes", len(*changes)).Debug("Found gerrit changes from page.")
@@ -703,7 +705,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 			// stop when we find a change last updated before lastUpdate
 			if !updated.After(lastUpdate) {
 				log.Debug("No more recently updated changes")
-				return pending, nil
+				break
 			}
 
 			// process recently updated change
@@ -716,6 +718,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 					continue
 				}
 				log.Debug("Found merged change")
+				seenCount[change.Number]++
 				pending = append(pending, change)
 			case New:
 				// we need to make sure the change update is from a fresh commit change
@@ -755,6 +758,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 				if !newMessages {
 					log.Debug("Found updated change")
 				}
+				seenCount[change.Number]++
 				pending = append(pending, change)
 			default:
 				// change has been abandoned, do nothing
@@ -762,6 +766,18 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 			}
 		}
 	}
+	// Remove any duplicate entries. Duplicates occur when entries move between pages while we are making a paginated query.
+	for number, count := range seenCount {
+		// We have count-1 duplicates to remove, keep the latest one we found.
+		for i := 0; count > 1 && i < len(pending); i++ {
+			if pending[i].Number == number {
+				pending = append(pending[:i], pending[i+1:]...)
+				i-- // process this index again since it has changed
+				count--
+			}
+		}
+	}
+	return pending, nil
 }
 
 // ChangedFilesProvider lists (in lexicographic order) the files changed as part of a Gerrit patchset.
