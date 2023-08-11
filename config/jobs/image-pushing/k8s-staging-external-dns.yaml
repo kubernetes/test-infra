@@ -21,4 +21,5 @@ postsubmits:
               - --project=k8s-staging-external-dns
               - --scratch-bucket=gs://k8s-staging-external-dns-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --version-tag-filter=v*
               - .
