@@ -551,9 +551,9 @@ func (c *Controller) shouldSkipProcessingChange(instance string, change client.C
 }
 
 func (c *Controller) messageContainsJobTriggeringCommand(message gerrit.ChangeMessageInfo) bool {
-	return c.configAgent.Config().Gerrit.GetAllowedPresubmitTriggerRegex().MatchString(message.Message) ||
-		pjutil.RetestRe.MatchString(message.Message) ||
-		pjutil.TestAllRe.MatchString(message.Message)
+	return pjutil.RetestRe.MatchString(message.Message) ||
+		pjutil.TestAllRe.MatchString(message.Message) ||
+		c.configAgent.Config().Gerrit.ShouldTriggerPresubmitJobs(message.Message)
 }
 
 // triggerJobs creates new presubmit/postsubmit prowjobs base off the gerrit changes

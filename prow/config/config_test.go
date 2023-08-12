@@ -1051,9 +1051,8 @@ func TestGerritRawYaml(t *testing.T) {
 gerrit:
 `,
 			expected: Gerrit{
-				TickInterval:                       &metav1.Duration{Duration: time.Minute},
-				RateLimit:                          5,
-				AllowedPresubmitTriggerReRawString: ".*",
+				TickInterval: &metav1.Duration{Duration: time.Minute},
+				RateLimit:    5,
 			},
 		},
 		{
@@ -1063,10 +1062,10 @@ gerrit:
 gerrit:
   tick_interval: 2s
   ratelimit: 10
-  allowed_presubmit_trigger_re: "/test presubmit"
+  allowed_presubmit_trigger_re: "/test units"
 `,
 			expected: Gerrit{
-				AllowedPresubmitTriggerReRawString: ".*",
+				AllowedPresubmitTriggerReRawString: "/test units",
 				TickInterval:                       &metav1.Duration{Duration: time.Second * 2},
 				RateLimit:                          10,
 			},
@@ -1082,9 +1081,8 @@ gerrit:
     - repo-b
 `,
 			expected: Gerrit{
-				TickInterval:                       &metav1.Duration{Duration: time.Minute},
-				RateLimit:                          5,
-				AllowedPresubmitTriggerReRawString: ".*",
+				TickInterval: &metav1.Duration{Duration: time.Minute},
+				RateLimit:    5,
 				OrgReposConfig: &GerritOrgRepoConfigs{
 					{
 						Org:   "org-a",
@@ -1107,9 +1105,8 @@ gerrit:
     - repo-d
 `,
 			expected: Gerrit{
-				TickInterval:                       &metav1.Duration{Duration: time.Minute},
-				RateLimit:                          5,
-				AllowedPresubmitTriggerReRawString: ".*",
+				TickInterval: &metav1.Duration{Duration: time.Minute},
+				RateLimit:    5,
 				OrgReposConfig: &GerritOrgRepoConfigs{
 					{
 						Org:   "org-a",
@@ -8187,7 +8184,6 @@ deck:
 default_job_timeout: 24h0m0s
 gangway: {}
 gerrit:
-  allowed_presubmit_trigger_re_raw_string: .*
   ratelimit: 5
   tick_interval: 1m0s
 github:
@@ -8269,7 +8265,6 @@ deck:
 default_job_timeout: 24h0m0s
 gangway: {}
 gerrit:
-  allowed_presubmit_trigger_re_raw_string: .*
   ratelimit: 5
   tick_interval: 1m0s
 github:
@@ -8344,7 +8339,6 @@ deck:
 default_job_timeout: 24h0m0s
 gangway: {}
 gerrit:
-  allowed_presubmit_trigger_re_raw_string: .*
   ratelimit: 5
   tick_interval: 1m0s
 github:
@@ -8424,7 +8418,6 @@ deck:
 default_job_timeout: 24h0m0s
 gangway: {}
 gerrit:
-  allowed_presubmit_trigger_re_raw_string: .*
   ratelimit: 5
   tick_interval: 1m0s
 github:

@@ -173,11 +173,7 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 	c := &Controller{
 		configAgent: &config.Agent{},
 	}
-	c.configAgent.Set(&config.Config{ProwConfig: config.ProwConfig{Gerrit: config.Gerrit{AllowedPresubmitTriggerReRawString: "(?mi)/test\\s.*"}}})
-	err := c.configAgent.Config().Gerrit.SetAllowedPresubmitTriggerRegex()
-	if err != nil {
-		t.Fatalf("failed to set presubmit trigger regex: %s", err.Error())
-	}
+	c.configAgent.Set(&config.Config{ProwConfig: config.ProwConfig{Gerrit: config.Gerrit{AllowedPresubmitTriggerReRawString: ""}}})
 	cases := []struct {
 		name     string
 		instance string
@@ -210,22 +206,6 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 				}},
 			latest: latest,
 			result: false,
-		},
-		{
-			name:     "should skip change processing when revision is old and does not contain relevant commands",
-			instance: instance,
-			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
-				Revisions: map[string]gerrit.RevisionInfo{
-					"10": {Number: 10, Created: makeStamp(now.Add(-2 * time.Hour))},
-				}, Messages: []gerrit.ChangeMessageInfo{
-					{
-						Date:           makeStamp(now),
-						Message:        "LGTM",
-						RevisionNumber: 10,
-					},
-				}},
-			latest: latest,
-			result: true,
 		},
 	}
 

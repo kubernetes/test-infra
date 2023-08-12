@@ -452,7 +452,7 @@ gangway:
             # "PROJECT".
             endpoint_api_consumer_type: ' '
 gerrit:
-    allowed_presubmit_trigger_re_raw_string: ' '
+    allowed_presubmit_trigger_re: ' '
     # DeckURL is the root URL of Deck. This is used to construct links to
     # job runs for a given CL.
     deck_url: ' '

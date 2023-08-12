@@ -924,25 +924,14 @@ type Gerrit struct {
 	OrgReposConfig *GerritOrgRepoConfigs `json:"org_repos_config,omitempty"`
 	// allowedPresubmitTriggerRe is used to match presubmit test related commands in comments
 	allowedPresubmitTriggerRe          *CopyableRegexp
-	AllowedPresubmitTriggerReRawString string `json:"allowed_presubmit_trigger_re_raw_string,omitempty"`
+	AllowedPresubmitTriggerReRawString string `json:"allowed_presubmit_trigger_re,omitempty"`
 }
 
-func (g *Gerrit) GetAllowedPresubmitTriggerRegex() *CopyableRegexp {
-	return g.allowedPresubmitTriggerRe
-}
-
-func (g *Gerrit) SetAllowedPresubmitTriggerRegex() error {
-	// falls back to matching all strings when configuration is empty
+func (g *Gerrit) ShouldTriggerPresubmitJobs(message string) bool {
 	if g.AllowedPresubmitTriggerReRawString == "" {
-		g.AllowedPresubmitTriggerReRawString = ".*"
-		return nil
+		return true
 	}
-	re, err := regexp.Compile(g.AllowedPresubmitTriggerReRawString)
-	if err != nil {
-		return err
-	}
-	g.allowedPresubmitTriggerRe = &CopyableRegexp{re}
-	return nil
+	return g.allowedPresubmitTriggerRe.MatchString(message)
 }
 
 // GerritOrgRepoConfigs is config for repos.
@@ -2452,9 +2441,11 @@ func parseProwConfig(c *Config) error {
 		c.Gerrit.RateLimit = 5
 	}
 
-	if err := c.Gerrit.SetAllowedPresubmitTriggerRegex(); err != nil {
+	re, err := regexp.Compile(c.Gerrit.AllowedPresubmitTriggerReRawString)
+	if err != nil {
 		return err
 	}
+	c.Gerrit.allowedPresubmitTriggerRe = &CopyableRegexp{re}
 
 	if c.Tide.Gerrit != nil {
 		if c.Tide.Gerrit.RateLimit == 0 {
