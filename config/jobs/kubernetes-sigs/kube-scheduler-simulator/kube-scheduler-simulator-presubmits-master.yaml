@@ -24,11 +24,11 @@ presubmits:
           make lint
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 6Gi
   - name: pull-kube-scheduler-simulator-frontend-lint
     cluster: eks-prow-build-cluster
     annotations:
