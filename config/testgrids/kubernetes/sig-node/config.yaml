@@ -69,9 +69,6 @@ dashboards:
     - name: pull-kubernetes-node-e2e-containerd-ec2
       test_group_name: pull-kubernetes-node-e2e-containerd-ec2
       base_options: width=10
-    - name: pull-kubernetes-node-e2e-containerd-ec2-kubetest2
-      test_group_name: pull-kubernetes-node-e2e-ec2-containerd-kubetest2
-      base_options: width=10
     - name: pull-kubernetes-node-e2e-containerd-ec2-canary
       test_group_name: pull-kubernetes-node-e2e-containerd-ec2-canary
       base_options: width=10
