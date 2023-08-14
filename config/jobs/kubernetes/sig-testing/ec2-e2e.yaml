@@ -47,6 +47,7 @@ presubmits:
                --test=ginkgo \
                -- \
                --use-built-binaries true \
+               --parallel=30 \
                --skip-regex='\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
           env:
             - name: USE_DOCKERIZED_BUILD
