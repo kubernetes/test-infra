@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-csi/csi-driver-host-path:
   - name: pull-kubernetes-csi-csi-driver-host-path-windows
+    cluster: k8s-infra-prow-build
     always_run: false
     decorate: true
     skip_report: false
@@ -38,4 +39,8 @@ presubmits:
           value: "prepull-head.yaml"
         resources:
           requests:
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4

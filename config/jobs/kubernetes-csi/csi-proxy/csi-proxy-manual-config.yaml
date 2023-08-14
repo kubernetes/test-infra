@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-csi/csi-proxy:
   - name: pull-kubernetes-csi-csi-proxy-integration
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_report: false
@@ -50,3 +51,10 @@ presubmits:
           value: "us-west1-b"
         securityContext:
             privileged: true
+        resources:
+          requests:
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4

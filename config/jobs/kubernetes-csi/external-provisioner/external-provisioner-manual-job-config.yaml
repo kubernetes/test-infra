@@ -3,6 +3,7 @@
 presubmits:
   kubernetes-csi/external-provisioner:
   - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-26
+    cluster: eks-prow-build-cluster
     always_run: true
     optional: false
     decorate: true
@@ -47,12 +48,13 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
   - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-master
+    cluster: eks-prow-build-cluster
     always_run: false
     optional: true
     decorate: true
@@ -97,8 +99,8 @@ presubmits:
           privileged: true
         resources:
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4

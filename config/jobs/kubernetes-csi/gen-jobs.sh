@@ -140,11 +140,12 @@ job_cluster() {
   local repo=$1
 
   case "$repo" in
-   external-snapshotter|external-resizer|lib-volume-populator|livenessprobe|node-driver-registrar|volume-data-source-validator)
-     echo "eks-prow-build-cluster"
+   # Add any jobs that should be excluded from the community clusters here 
+   "")
+     echo "default"
      ;;
    *)
-     echo "default"
+     echo "eks-prow-build-cluster"
      ;;
   esac
 
