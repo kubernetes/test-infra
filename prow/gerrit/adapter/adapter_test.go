@@ -167,9 +167,7 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 	now := time.Now()
 	instance := "gke-host"
 	project := "private-cloud"
-	latest := client.LastSyncState{}
-	latest[instance] = make(map[string]time.Time)
-	latest[instance][project] = now.Add(-time.Hour)
+	var lastUpdateTime = now.Add(-time.Hour)
 	c := &Controller{
 		configAgent: &config.Agent{},
 	}
@@ -178,7 +176,7 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 		name     string
 		instance string
 		change   gerrit.ChangeInfo
-		latest   client.LastSyncState
+		latest   time.Time
 		result   bool
 	}{
 		{
@@ -188,7 +186,7 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 				Revisions: map[string]gerrit.RevisionInfo{
 					"10": {Created: makeStamp(now)},
 				}},
-			latest: latest,
+			latest: lastUpdateTime,
 			result: false,
 		},
 		{
@@ -204,14 +202,21 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 						RevisionNumber: 10,
 					},
 				}},
-			latest: latest,
+			latest: lastUpdateTime,
 			result: false,
+		},
+		{
+			name:     "should not skip change processing when last project sync time is unknown",
+			instance: instance,
+			change:   gerrit.ChangeInfo{},
+			latest:   time.Time{},
+			result:   false,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := c.shouldSkipProcessingChange(tc.instance, tc.change, tc.latest); got != tc.result {
+			if got := c.shouldSkipProcessingChange(tc.change, tc.latest); got != tc.result {
 				t.Errorf("expected skip change processing checks returns %t, got %t", tc.result, got)
 			}
 		})

@@ -237,7 +237,7 @@ type Change struct {
 	created    time.Time
 }
 
-func (c *Controller) processChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup) {
+func (c *Controller) processChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup, lastProjectSyncTime time.Time) {
 	for changeStruct := range changeChan {
 		change := changeStruct.changeInfo
 		instance := changeStruct.instance
@@ -253,7 +253,7 @@ func (c *Controller) processChange(latest client.LastSyncState, changeChan <-cha
 		now := time.Now()
 
 		result := client.ResultSuccess
-		if !c.shouldSkipProcessingChange(instance, change, latest) {
+		if !c.shouldSkipProcessingChange(change, lastProjectSyncTime) {
 			if err := c.triggerJobs(log, instance, change); err != nil {
 				result = client.ResultError
 				log.WithError(err).Info("Failed to trigger jobs based on change")
@@ -281,9 +281,12 @@ func (c *Controller) processSingleProject(instance, project string) {
 	log := logrus.WithFields(logrus.Fields{"host": instance, "repo": project})
 	tracker := c.tracker.Current()
 	syncTime := time.Now()
+	// Having a separate variable makes sure we do not skip changes from a project that does not exist in the tracker
+	var lastProjectSyncTime time.Time
 	if projects, ok := tracker[instance]; ok {
 		if t, ok := projects[project]; ok {
 			syncTime = t
+			lastProjectSyncTime = t
 		}
 	}
 	latest := tracker.DeepCopy()
@@ -327,7 +330,7 @@ func (c *Controller) processSingleProject(instance, project string) {
 		poolSize = len(changes)
 	}
 	for i := 0; i < poolSize; i++ {
-		go c.processChange(latest, changeChan, log, &wg)
+		go c.processChange(latest, changeChan, log, &wg, lastProjectSyncTime)
 	}
 	// We need to call time.Now() outside this loop since <- will block
 	// while there are no more available worker threads possibly causing
@@ -530,18 +533,17 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 }
 
 // shouldSkipProcessingChange returns true when there is no new commit or relevant commands in the comment messages
-func (c *Controller) shouldSkipProcessingChange(instance string, change client.ChangeInfo, latest client.LastSyncState) bool {
-	lastUpdate, exists := latest[instance][change.Project]
-	if !exists {
-		lastUpdate = time.Now()
-	}
-
-	revision := change.Revisions[change.CurrentRevision]
-	if revision.Created.After(lastUpdate) {
+func (c *Controller) shouldSkipProcessingChange(change client.ChangeInfo, lastProjectSyncTime time.Time) bool {
+	if lastProjectSyncTime.IsZero() {
 		return false
 	}
 
-	for _, message := range currentMessages(change, lastUpdate) {
+	revision := change.Revisions[change.CurrentRevision]
+	if revision.Created.After(lastProjectSyncTime) {
+		return false
+	}
+
+	for _, message := range currentMessages(change, lastProjectSyncTime) {
 		if c.messageContainsJobTriggeringCommand(message) {
 			return false
 		}
