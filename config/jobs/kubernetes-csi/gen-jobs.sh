@@ -390,7 +390,7 @@ EOF
         # Update only when the newer version is known to not cause issues,
         # otherwise presubmit jobs may start to fail for reasons that are
         # unrelated to the PR. Testing against the latest Kubernetes is covered
-        # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
+        # by periodic jobs (see https://testgrid.k8s.io/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$kubernetes.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
