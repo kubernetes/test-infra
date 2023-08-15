@@ -79,10 +79,6 @@ def build_test(cloud='aws',
     if networking == 'kopeio' and distro in ('flatcar', 'flatcararm64'):
         return None
 
-    # Won't backport the rp_filter fixes to kops 1.23
-    if networking == 'cilium' and distro == 'u2204'and kops_version == '1.23':
-        return None
-
     if extra_flags is None:
         extra_flags = []
 
@@ -422,8 +418,6 @@ def generate_grid():
         for distro in distro_options:
             for k8s_version in k8s_versions:
                 for kops_version in kops_versions:
-                    if networking == 'cilium-eni' and kops_version in ['1.25']:
-                        continue
                     results.append(
                         build_test(cloud="aws",
                                    distro=distro,
@@ -1054,9 +1048,6 @@ def generate_upgrades():
                        env=env,
                        )
         )
-        # k8s 1.19 has issues with our server side apply logic for addons
-        if 'v1.19.' in k8s_a:
-            continue
         results.append(
             build_test(name_override=job_name + "-many-addons",
                        distro='u2004',
