@@ -3,6 +3,7 @@
 presubmits:
   kubernetes-csi/csi-driver-iscsi:
   - name: pull-csi-driver-iscsi-sanity
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/csi-driver-iscsi
@@ -21,6 +22,13 @@ presubmits:
         - sanity-test
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: "9Gi"
+            cpu: 4
+          limits:
+            memory: "9Gi"
+            cpu: 4
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-iscsi-sanity
