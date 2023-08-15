@@ -207,6 +207,7 @@ presubmits:
 
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
+    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: true
@@ -224,6 +225,13 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
 periodics:
 - interval: 6h
   name: ci-kubernetes-e2e-gce-alpha-api
