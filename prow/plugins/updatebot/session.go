@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -55,6 +56,7 @@ type Session struct {
 	Client           plugins.PluginGitHubClient
 	Git              git.ClientFactory
 	Logger           *logrus.Entry
+	SubmodulesUpdated bool
 
 	stage                     utypes.Stage // int of the update process
 	mut                       sync.RWMutex
@@ -308,9 +310,10 @@ func (session *Session) DelayedConclude() error {
 	if !session.stage.Start() {
 		return nil
 	}
-	defer session.stage.Release()
 	time.Sleep(10 * time.Second)
-	return session.Conclude()
+	session.Conclude()
+	session.stage.Release()
+	return session.CheckAndUpdate()
 }
 
 func (session *Session) Conclude() error {
@@ -337,7 +340,8 @@ func (session *Session) SubmoduleMerged() bool {
 }
 
 func (session *Session) ConcludeSubmoduleStatus(submodule *SubmoduleInfo) error {
-	if submodule.Status == nil {
+	if submodule.Status == nil || session.Stage() > utypes.WAITING {
+		// Don't update any status after WAITING stage
 		return nil
 	} else if submodule.MergedSHA == "" {
 		owner := session.OwnerLogin
@@ -362,11 +366,6 @@ func (session *Session) ConcludeSubmoduleStatus(submodule *SubmoduleInfo) error 
 			}
 		}
 	}
-	err := session.CheckAndUpdate()
-	var notReady NotReadyError
-	if err != nil && !errors.As(err, &notReady) {
-		return fmt.Errorf("failed to update, %w", err)
-	}
 	return nil
 }
 
@@ -384,6 +383,7 @@ func (session *Session) HandleSubmodulePR() error {
 		return nil
 	}
 	mergedCount := 0
+	var errs []error
 	for _, submodule := range session.Submodules {
 		// In case HandleSubmodulePR is invoked directly, refresh pull request here
 		if submodule.PRInfo != nil {
@@ -400,16 +400,19 @@ func (session *Session) HandleSubmodulePR() error {
 			mergedCount++
 			continue
 		}
-		err := session.Client.AddLabel(session.OwnerLogin, submodule.BaseInfo.Name, submodule.PRInfo.Number, "skip-review")
+		err := session.
+		Client.AddLabel(session.OwnerLogin, submodule.BaseInfo.Name, submodule.PRInfo.Number, "skip-review")
 		if err != nil {
-			return fmt.Errorf("cannot merge pull request %s, error: %w", submodule.PRInfo.HTMLURL, err)
+			errs = append(errs, err)
 		}
 	}
 	session.stage.Release()
-	if mergedCount == len(session.Submodules) {
+	if len(errs) == 0 && mergedCount == len(session.Submodules) {
 		session.Next()
+		return nil
+	} else {
+		return errs[0]
 	}
-	return nil
 }
 
 func (session *Session) UpdateSubmodule() error {
@@ -417,6 +420,26 @@ func (session *Session) UpdateSubmodule() error {
 		return nil
 	}
 	err := func() error {
+		updateStatus, err := FilteredStatusFromGitHub(session.Client, session.OwnerLogin, session.MainRepo, session.UpdateSHA, "auto-update / update-submodules")
+		var nfe *NotFoundError
+		if err != nil && !errors.As(err, &nfe)  {
+			return err
+		}
+		if updateStatus != nil {
+			if updateStatus.State == github.StatusSuccess {
+				session.SubmodulesUpdated = true
+			}
+		} else {
+			updateStatus = &github.Status{
+				State:       github.StatusPending,
+				Context:     "auto-update / update-submodules",
+				Description: "Updating submodules",
+			}
+			session.CreateStatus(*updateStatus)
+		}
+		if session.SubmodulesUpdated {
+			return nil
+		}
 		repo, err := session.Git.ClientFor(session.OwnerLogin, session.MainRepo)
 		if err != nil {
 			return fmt.Errorf("cannot create git client for %s/%s, error: %w", session.OwnerLogin, session.MainRepo, err)
@@ -530,14 +553,26 @@ func (session *Session) deliverUpdatePR(submodule *SubmoduleInfo) error {
 		}
 	}
 	// Get pull request as long as possible
-	pullRequests, err := gc.GetPullRequests(session.OwnerLogin, submodule.BaseInfo.Name)
-	if err != nil {
-		return err
+	// First get pull request from existing status
+	if submodule.Status.Description == "Waiting for checks to complete..." {
+		// Extract pull request number from target url
+		url := submodule.Status.TargetURL
+		index := strings.LastIndex(url, "/")
+		number, err := strconv.Atoi(url[index+1 : len(url)-1])
+		if err == nil {
+			submodule.PRInfo, _ = gc.GetPullRequest(session.OwnerLogin, submodule.BaseInfo.Name, number)
+		}
 	}
-	for _, pullRequest := range pullRequests {
-		if pullRequest.Head.Repo == pullRequest.Base.Repo && pullRequest.Head.Ref == session.UpdateHeadBranch && pullRequest.Base.Ref == session.UpdateBaseBranch {
-			submodule.PRInfo = &pullRequest
-			break
+	if submodule.PRInfo == nil {
+		pullRequests, err := gc.GetPullRequests(session.OwnerLogin, submodule.BaseInfo.Name)
+		if err != nil {
+			return err
+		}
+		for _, pullRequest := range pullRequests {
+			if pullRequest.Head.Repo == pullRequest.Base.Repo && pullRequest.Head.Ref == session.UpdateHeadBranch && pullRequest.Base.Ref == session.UpdateBaseBranch {
+				submodule.PRInfo = &pullRequest
+				break
+			}
 		}
 	}
 	if submodule.MergedSHA != "" {
@@ -589,7 +624,6 @@ func (session *Session) CheckAndUpdate() error {
 	approved := PRApproved(client, session.UpdatePR)
 	passed := ChecksPassed(client, session.OwnerLogin, session.MainRepo, session.UpdateSHA)
 	if approved && passed && session.SubmodulesReady() {
-		session.stage.Release()
 		session.Next()
 		return nil
 	} else {

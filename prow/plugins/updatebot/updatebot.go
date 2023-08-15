@@ -82,7 +82,8 @@ func handleStatusEvent(agent plugins.Agent, statusEvent github.StatusEvent) erro
 		if session.OwnerLogin == statusEvent.Repo.Owner.Login {
 			for _, submodule := range session.Submodules {
 				if submodule.BaseInfo.Name == statusEvent.Repo.Name && submodule.PRInfo != nil && submodule.PRInfo.Head.SHA == statusEvent.SHA {
-					return session.ConcludeSubmoduleStatus(submodule)
+					session.ConcludeSubmoduleStatus(submodule)
+					return session.CheckAndUpdate()
 				}
 			}
 		}
@@ -103,7 +104,8 @@ func handleWorkflowRunEvent(agent plugins.Agent, workflowRunEvent github.Workflo
 					} else {
 						for _, submodule := range session.Submodules {
 							if submodule.BaseInfo.Name == workflowRunEvent.Repo.Name {
-								return session.ConcludeSubmoduleStatus(submodule)
+								session.ConcludeSubmoduleStatus(submodule)
+								return session.CheckAndUpdate()
 							}
 						}
 					}
@@ -183,6 +185,7 @@ func TriggerUpdate(agent plugins.Agent, pullRequest *github.PullRequest) (err er
 			UpdateBaseBranch: pullRequest.Base.Ref,
 			Submodules:       map[string]*SubmoduleInfo{},
 			stage:            utypes.CreateStage(utypes.IDLE),
+			SubmodulesUpdated: false,
 		}
 		session.mut.Lock()
 		bot, err := agent.GitHubClient.BotUser()
