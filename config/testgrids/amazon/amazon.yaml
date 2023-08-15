@@ -1,0 +1,13 @@
+#
+# Start dashboards
+#
+dashboards:
+- name: amazon-ec2
+
+#
+# Start dashboard groups
+#
+dashboard_groups:
+- name: amazon
+  dashboard_names:
+  - amazon-ec2

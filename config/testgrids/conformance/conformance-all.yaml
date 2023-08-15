@@ -3,6 +3,7 @@ dashboard_groups:
   dashboard_names:
     - conformance-all
     - conformance-apisnoop
+    - conformance-ec2
     - conformance-gce
     - conformance-kind
     - conformance-cloud-provider-huaweicloud
@@ -97,6 +98,7 @@ dashboards:
       test_group_name: ci-gardener-e2e-conformance-alicloud-v1.22
 
 - name: conformance-apisnoop
+- name: conformance-ec2
 - name: conformance-gce
 
 - name: conformance-cloud-provider-huaweicloud
