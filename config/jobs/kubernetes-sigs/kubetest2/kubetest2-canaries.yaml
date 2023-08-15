@@ -133,7 +133,7 @@ presubmits:
             --query 'Parameters[0].[Value]' --output text);
           kubetest2 noop --test=node -- \;
             --provider=aws --repo-root=. --instance-type=m6a.large --focus-regex="\[NodeConformance\]" \;
-            --test-args='--kubelet-flags="--cgroup-driver=systemd --runtime-cgroups=/system.slice/containerd.service"' \;
+            --test-args='--kubelet-flags="--cgroup-driver=systemd"' \;
             --images=$AMI_ID --user-data-file=config/ubuntu2204.yaml
 
   - name: pull-kubetest2-gce-node-e2e

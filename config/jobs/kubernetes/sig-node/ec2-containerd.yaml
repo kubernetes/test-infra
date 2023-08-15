@@ -48,7 +48,7 @@ periodics:
             - name: FOCUS
               value: \[NodeConformance\]
             - name: TEST_ARGS
-              value: '--container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 8
@@ -93,7 +93,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 8
@@ -145,7 +145,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -195,7 +195,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 8
@@ -249,7 +249,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -300,7 +300,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
-              value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=cgroupfs"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -352,7 +352,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-arm64.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -399,7 +399,7 @@ periodics:
             - name: SKIP
               value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 8
@@ -408,6 +408,7 @@ periodics:
               cpu: 8
               memory: 10Gi
   - name: ci-cgroupv1-containerd-node-e2e-serial-ec2-eks
+    # are you sure this is a cgroupsv1 job? it using systemd
     interval: 6h
     annotations:
       testgrid-dashboards: sig-node-containerd,amazon-ec2
@@ -447,7 +448,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 8
@@ -502,7 +503,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
@@ -555,7 +556,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 8
@@ -612,7 +613,7 @@ periodics:
             - name: IMAGE_CONFIG_FILE
               value: aws-instance-eks.yaml
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           # docker-in-docker needs privileged mode
           securityContext:
             privileged: true
