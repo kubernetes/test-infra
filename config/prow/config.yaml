@@ -466,6 +466,12 @@ branch-protection:
             - stage-bots
         website:
           protect: true
+          enforce_admins: false
+          required_status_checks:
+            contexts:
+              - EasyCLA
+          exclude:
+            - "^dev-" # don't protect dev branches
     kubernetes-client:
       protect: true
       required_status_checks:
