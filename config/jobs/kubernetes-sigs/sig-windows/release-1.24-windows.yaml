@@ -27,6 +27,7 @@ periodics:
     preset-capz-windows-parallel: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -78,6 +79,7 @@ periodics:
     preset-capz-windows-2019: "true"
     preset-capz-containerd-1-6-latest: "true"
     preset-capz-serial-slow: "true"
+    preset-windows-private-registry-cred: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
