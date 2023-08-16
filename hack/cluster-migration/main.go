@@ -75,7 +75,7 @@ func main() {
 
 	jobs := allStaticJobs(c)
 	clusterStats := getClusterStatistics(jobs)
-	printClusterStatistics(clusterStats, len(jobs))
+	printClusterStatistics(clusterStats, getTotalJobs(jobs))
 	if config.repoReport {
 		repoStats := getRepoStatistics(jobs)
 		printRepoStatistics(repoStats)
@@ -101,6 +101,14 @@ func allStaticJobs(c *cfg.Config) map[string][]cfg.JobBase {
 	}
 
 	return jobs
+}
+
+func getTotalJobs(jobs map[string][]cfg.JobBase) int {
+	total := 0
+	for _, job := range jobs {
+		total += len(job)
+	}
+	return total
 }
 
 func getPercentage(int1, int2 int) string {
