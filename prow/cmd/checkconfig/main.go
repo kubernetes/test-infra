@@ -123,6 +123,7 @@ const (
 	validateLabelWarning                          = "validate-label"
 	requiredJobAnnotationsWarning                 = "required-job-annotations"
 	periodicDefaultCloneWarning                   = "periodic-default-clone-config"
+	presubmitTestRegex                            = "(?mi)/test\\s.*"
 
 	defaultHourlyTokens = 3000
 	defaultAllowedBurst = 100
@@ -451,8 +452,10 @@ func validate(o options) error {
 	// validate rerun commands match presubmit job triggering regex
 	for _, presubmits := range cfg.JobConfig.PresubmitsStatic {
 		for _, p := range presubmits {
-			if !cfg.Gerrit.ShouldTriggerPresubmitJobs(p.RerunCommand) {
-				errs = append(errs, fmt.Errorf("rerun command %s in job %s does not conform to test command requirements", p.RerunCommand, p.Name))
+			if !cfg.Gerrit.IsAllowedPresubmitTrigger(p.RerunCommand) {
+				errs = append(errs, fmt.Errorf("rerun command %s in job %s does not conform to test command requirements,"+
+					"please make sure the trigger regex is a subset of %s and the rerun command matches the trigger regex",
+					p.RerunCommand, p.Name, presubmitTestRegex))
 			}
 		}
 	}
@@ -1155,21 +1158,22 @@ func validateInRepoConfig(cfg *config.Config, filepath, repoIdentifier string, s
 		return fmt.Errorf("failed to read Prow YAML: %w", err)
 	}
 
+	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
+		return fmt.Errorf("failed to validate Prow YAML: %w", err)
+	}
+
 	var errs []error
-	for _, presubmits := range cfg.PresubmitsStatic {
-		for _, pre := range presubmits {
-			if !cfg.Gerrit.ShouldTriggerPresubmitJobs(pre.RerunCommand) {
-				errs = append(errs, fmt.Errorf("rerun command %s in job %s does not conform to test command requirements", pre.RerunCommand, pre.Name))
-			}
+	for _, pre := range prowYAML.Presubmits {
+		if !cfg.Gerrit.IsAllowedPresubmitTrigger(pre.RerunCommand) {
+			errs = append(errs, fmt.Errorf("rerun command %s in job %s does not conform to test command requirements,"+
+				"please make sure the trigger regex is a subset of %s and the rerun command matches the trigger regex",
+				pre.RerunCommand, pre.Name, presubmitTestRegex))
 		}
 	}
 	if len(errs) > 0 {
 		return utilerrors.NewAggregate(errs)
 	}
 
-	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
-		return fmt.Errorf("failed to validate Prow YAML: %w", err)
-	}
 	return nil
 }
 

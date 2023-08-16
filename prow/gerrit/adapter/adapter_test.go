@@ -19,6 +19,7 @@ package adapter
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"sync"
 	"testing"
 	"time"
@@ -171,7 +172,13 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 	c := &Controller{
 		configAgent: &config.Agent{},
 	}
-	c.configAgent.Set(&config.Config{ProwConfig: config.ProwConfig{Gerrit: config.Gerrit{AllowedPresubmitTriggerReRawString: ""}}})
+	presubmitTriggerRawString := "(?mi)/test\\s.*"
+	c.configAgent.Set(&config.Config{ProwConfig: config.ProwConfig{Gerrit: config.Gerrit{AllowedPresubmitTriggerReRawString: presubmitTriggerRawString}}})
+	presubmitTriggerRegex, err := regexp.Compile(presubmitTriggerRawString)
+	if err != nil {
+		t.Fatalf("failed to compile regex for allowed presubmit triggers: %s", err.Error())
+	}
+	c.configAgent.Config().Gerrit.AllowedPresubmitTriggerRe = &config.CopyableRegexp{Regexp: presubmitTriggerRegex}
 	cases := []struct {
 		name     string
 		instance string
@@ -206,11 +213,36 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 			result: false,
 		},
 		{
-			name:     "should not skip change processing when last project sync time is unknown",
+			name:     "should not skip change processing when comment contains custom test name",
 			instance: instance,
-			change:   gerrit.ChangeInfo{},
-			latest:   time.Time{},
-			result:   false,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Number: 10, Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date:           makeStamp(now),
+						Message:        "/test integration",
+						RevisionNumber: 10,
+					},
+				}},
+			latest: lastUpdateTime,
+			result: false,
+		},
+		{
+			name:     "should skip change processing when command does not conform to requirements",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Number: 10, Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date:           makeStamp(now),
+						Message:        "LGTM",
+						RevisionNumber: 10,
+					},
+				}},
+			latest: now,
+			result: true,
 		},
 	}
 

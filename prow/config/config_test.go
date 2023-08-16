@@ -1138,7 +1138,7 @@ gerrit:
 				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
 			}
 
-			if d := cmp.Diff(tc.expected, cfg.Gerrit, cmpopts.EquateEmpty(), cmpopts.IgnoreUnexported(Gerrit{})); d != "" {
+			if d := cmp.Diff(tc.expected, cfg.Gerrit, cmpopts.EquateEmpty(), cmpopts.IgnoreFields(Gerrit{}, "AllowedPresubmitTriggerRe")); d != "" {
 				t.Errorf("got d: %s", d)
 			}
 		})
