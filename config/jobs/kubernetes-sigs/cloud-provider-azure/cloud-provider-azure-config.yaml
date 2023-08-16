@@ -542,7 +542,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz runs Azure specific e2e tests with cloud controller manager and multiple standard load balancers.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-multi-slb-capz
-    always_run: false
+    skip_if_only_changed: "^docs/|^site/|^helm/|^pkg/azclient/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
     decorate: true
     decoration_config:
       timeout: 3h
