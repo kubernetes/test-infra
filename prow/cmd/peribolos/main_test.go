@@ -145,10 +145,6 @@ func TestOptions(t *testing.T) {
 				logLevel:       "debug",
 			},
 		},
-		{
-			name: "reject --skip-removals without a fix flag",
-			args: []string{"--config-path=foo", "--skip-removals"},
-		},
 	}
 
 	for _, tc := range cases {

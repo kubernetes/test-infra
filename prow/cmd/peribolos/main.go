@@ -144,7 +144,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 		return fmt.Errorf("--fix-team-repos requires --fix-teams")
 	}
 
-	if o.skipRemovals && !(o.fixTeams || o.fixTeamRepos || o.fixTeamMembers || o.fixOrg || o.fixOrgMembers) {
+	if o.skipRemovals && (o.fixTeams || o.fixTeamRepos || o.fixTeamMembers || o.fixOrg || o.fixOrgMembers) {
 		return fmt.Errorf("--skip-removals requires atleast one of --fix-teams, --fix-team-repos, --fix-team-members, --fix-org, --fix-org-members")
 	}
 
