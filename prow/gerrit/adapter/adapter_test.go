@@ -241,7 +241,7 @@ func TestSkipChangeProcessingChecks(t *testing.T) {
 						RevisionNumber: 10,
 					},
 				}},
-			latest: now,
+			latest: lastUpdateTime,
 			result: true,
 		},
 	}

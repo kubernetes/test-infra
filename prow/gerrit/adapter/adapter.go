@@ -281,7 +281,6 @@ func (c *Controller) processSingleProject(instance, project string) {
 	log := logrus.WithFields(logrus.Fields{"host": instance, "repo": project})
 	tracker := c.tracker.Current()
 	syncTime := time.Now()
-	// Having a separate variable makes sure we do not skip changes from a project that does not exist in the tracker
 	if projects, ok := tracker[instance]; ok {
 		if t, ok := projects[project]; ok {
 			syncTime = t

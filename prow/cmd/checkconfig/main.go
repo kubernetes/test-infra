@@ -123,7 +123,6 @@ const (
 	validateLabelWarning                          = "validate-label"
 	requiredJobAnnotationsWarning                 = "required-job-annotations"
 	periodicDefaultCloneWarning                   = "periodic-default-clone-config"
-	presubmitTestRegex                            = "(?mi)/test\\s.*"
 
 	defaultHourlyTokens = 3000
 	defaultAllowedBurst = 100
@@ -455,7 +454,7 @@ func validate(o options) error {
 			if !cfg.Gerrit.IsAllowedPresubmitTrigger(p.RerunCommand) {
 				errs = append(errs, fmt.Errorf("rerun command %s in job %s does not conform to test command requirements,"+
 					"please make sure the trigger regex is a subset of %s and the rerun command matches the trigger regex",
-					p.RerunCommand, p.Name, presubmitTestRegex))
+					p.RerunCommand, p.Name, cfg.Gerrit.AllowedPresubmitTriggerReRawString))
 			}
 		}
 	}
@@ -1167,7 +1166,7 @@ func validateInRepoConfig(cfg *config.Config, filepath, repoIdentifier string, s
 		if !cfg.Gerrit.IsAllowedPresubmitTrigger(pre.RerunCommand) {
 			errs = append(errs, fmt.Errorf("rerun command %s in job %s does not conform to test command requirements,"+
 				"please make sure the trigger regex is a subset of %s and the rerun command matches the trigger regex",
-				pre.RerunCommand, pre.Name, presubmitTestRegex))
+				pre.RerunCommand, pre.Name, cfg.Gerrit.AllowedPresubmitTriggerReRawString))
 		}
 	}
 	if len(errs) > 0 {
