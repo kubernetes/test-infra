@@ -18,7 +18,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"reflect"
 	"regexp"
 	"strings"
@@ -450,7 +449,7 @@ tide:
 			if err := yaml.Unmarshal([]byte(testCase.yamlConfig), &config); err != nil {
 				t.Fatalf("unmarshal error: %v", err)
 			}
-			if diff := cmp.Diff(&testCase.wantConfig, &config, cmpopts.IgnoreUnexported(Gerrit{})); diff != "" {
+			if diff := cmp.Diff(&testCase.wantConfig, &config); diff != "" {
 				t.Errorf("merge method configurations differ: %s", diff)
 			}
 		})
