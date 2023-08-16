@@ -80,7 +80,8 @@ const (
 )
 
 var (
-	DefaultDiffOpts []cmp.Option = []cmp.Option{cmpopts.IgnoreFields(TideBranchMergeType{}, "Regexpr")}
+	DefaultDiffOpts []cmp.Option = []cmp.Option{cmpopts.IgnoreFields(TideBranchMergeType{}, "Regexpr"),
+		cmpopts.IgnoreUnexported(Gerrit{})}
 )
 
 // Config is a read-only snapshot of the config.
@@ -912,7 +913,7 @@ func (p Plank) GetJobURLPrefix(pj *prowapi.ProwJob) string {
 
 // Gerrit is config for the gerrit controller.
 type Gerrit struct {
-	// TickInterval is how often we do a sync with binded gerrit instance.
+	// TickInterval is how often we do a sync with bound gerrit instance.
 	TickInterval *metav1.Duration `json:"tick_interval,omitempty"`
 	// RateLimit defines how many changes to query per gerrit API call
 	// default is 5.
@@ -921,6 +922,13 @@ type Gerrit struct {
 	// job runs for a given CL.
 	DeckURL        string                `json:"deck_url,omitempty"`
 	OrgReposConfig *GerritOrgRepoConfigs `json:"org_repos_config,omitempty"`
+	// AllowedPresubmitTriggerRe is used to match presubmit test related commands in comments
+	AllowedPresubmitTriggerRe          *CopyableRegexp `json:"-"`
+	AllowedPresubmitTriggerReRawString string          `json:"allowed_presubmit_trigger_re,omitempty"`
+}
+
+func (g *Gerrit) IsAllowedPresubmitTrigger(message string) bool {
+	return g.AllowedPresubmitTriggerRe.MatchString(message)
 }
 
 // GerritOrgRepoConfigs is config for repos.
@@ -2429,6 +2437,12 @@ func parseProwConfig(c *Config) error {
 	if c.Gerrit.RateLimit == 0 {
 		c.Gerrit.RateLimit = 5
 	}
+
+	re, err := regexp.Compile(c.Gerrit.AllowedPresubmitTriggerReRawString)
+	if err != nil {
+		return fmt.Errorf("failed to compile regex for allowed presubmit triggers: %s", err.Error())
+	}
+	c.Gerrit.AllowedPresubmitTriggerRe = &CopyableRegexp{re}
 
 	if c.Tide.Gerrit != nil {
 		if c.Tide.Gerrit.RateLimit == 0 {

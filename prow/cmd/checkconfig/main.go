@@ -448,6 +448,17 @@ func validate(o options) error {
 		}
 	}
 
+	// validate rerun commands match presubmit job triggering regex
+	for _, presubmits := range cfg.JobConfig.PresubmitsStatic {
+		for _, p := range presubmits {
+			if !cfg.Gerrit.IsAllowedPresubmitTrigger(p.RerunCommand) {
+				errs = append(errs, fmt.Errorf("rerun command %s in job %s does not conform to test command requirements,"+
+					"please make sure the trigger regex is a subset of %s and the rerun command matches the trigger regex",
+					p.RerunCommand, p.Name, cfg.Gerrit.AllowedPresubmitTriggerReRawString))
+			}
+		}
+	}
+
 	return utilerrors.NewAggregate(errs)
 }
 func policyIsStrict(p config.Policy) bool {
@@ -1145,9 +1156,23 @@ func validateInRepoConfig(cfg *config.Config, filepath, repoIdentifier string, s
 	if err != nil {
 		return fmt.Errorf("failed to read Prow YAML: %w", err)
 	}
+
 	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
 		return fmt.Errorf("failed to validate Prow YAML: %w", err)
 	}
+
+	var errs []error
+	for _, pre := range prowYAML.Presubmits {
+		if !cfg.Gerrit.IsAllowedPresubmitTrigger(pre.RerunCommand) {
+			errs = append(errs, fmt.Errorf("rerun command %s in job %s does not conform to test command requirements,"+
+				"please make sure the trigger regex is a subset of %s and the rerun command matches the trigger regex",
+				pre.RerunCommand, pre.Name, cfg.Gerrit.AllowedPresubmitTriggerReRawString))
+		}
+	}
+	if len(errs) > 0 {
+		return utilerrors.NewAggregate(errs)
+	}
+
 	return nil
 }
 

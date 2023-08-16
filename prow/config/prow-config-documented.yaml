@@ -452,11 +452,12 @@ gangway:
             # "PROJECT".
             endpoint_api_consumer_type: ' '
 gerrit:
+    allowed_presubmit_trigger_re: ' '
     # DeckURL is the root URL of Deck. This is used to construct links to
     # job runs for a given CL.
     deck_url: ' '
     org_repos_config: null
-    # TickInterval is how often we do a sync with binded gerrit instance.
+    # TickInterval is how often we do a sync with bound gerrit instance.
     tick_interval: 0s
 # GitHubOptions allows users to control how prow applications display GitHub website links.
 github:

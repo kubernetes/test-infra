@@ -19,6 +19,7 @@ package adapter
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"sync"
 	"testing"
 	"time"
@@ -161,6 +162,97 @@ func fakeProwYAMLGetter(
 		Postsubmits: postsubmits,
 	}
 	return &res, nil
+}
+
+func TestSkipChangeProcessingChecks(t *testing.T) {
+	now := time.Now()
+	instance := "gke-host"
+	project := "private-cloud"
+	var lastUpdateTime = now.Add(-time.Hour)
+	c := &Controller{
+		configAgent: &config.Agent{},
+	}
+	presubmitTriggerRawString := "(?mi)/test\\s.*"
+	c.configAgent.Set(&config.Config{ProwConfig: config.ProwConfig{Gerrit: config.Gerrit{AllowedPresubmitTriggerReRawString: presubmitTriggerRawString}}})
+	presubmitTriggerRegex, err := regexp.Compile(presubmitTriggerRawString)
+	if err != nil {
+		t.Fatalf("failed to compile regex for allowed presubmit triggers: %s", err.Error())
+	}
+	c.configAgent.Config().Gerrit.AllowedPresubmitTriggerRe = &config.CopyableRegexp{Regexp: presubmitTriggerRegex}
+	cases := []struct {
+		name     string
+		instance string
+		change   gerrit.ChangeInfo
+		latest   time.Time
+		result   bool
+	}{
+		{
+			name:     "should not skip change processing when revision is new",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Created: makeStamp(now)},
+				}},
+			latest: lastUpdateTime,
+			result: false,
+		},
+		{
+			name:     "should not skip change processing when comment contains test related commands",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Number: 10, Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date:           makeStamp(now),
+						Message:        "/test all",
+						RevisionNumber: 10,
+					},
+				}},
+			latest: lastUpdateTime,
+			result: false,
+		},
+		{
+			name:     "should not skip change processing when comment contains custom test name",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Number: 10, Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date:           makeStamp(now),
+						Message:        "/test integration",
+						RevisionNumber: 10,
+					},
+				}},
+			latest: lastUpdateTime,
+			result: false,
+		},
+		{
+			name:     "should skip change processing when command does not conform to requirements",
+			instance: instance,
+			change: gerrit.ChangeInfo{ID: "1", CurrentRevision: "10", Project: project,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"10": {Number: 10, Created: makeStamp(now.Add(-2 * time.Hour))},
+				}, Messages: []gerrit.ChangeMessageInfo{
+					{
+						Date:           makeStamp(now),
+						Message:        "LGTM",
+						RevisionNumber: 10,
+					},
+				}},
+			latest: lastUpdateTime,
+			result: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := c.shouldSkipProcessingChange(tc.change, tc.latest); got != tc.result {
+				t.Errorf("expected skip change processing checks returns %t, got %t", tc.result, got)
+			}
+		})
+	}
 }
 
 func TestHandleInRepoConfigError(t *testing.T) {

@@ -1062,10 +1062,12 @@ gerrit:
 gerrit:
   tick_interval: 2s
   ratelimit: 10
+  allowed_presubmit_trigger_re: "/test units"
 `,
 			expected: Gerrit{
-				TickInterval: &metav1.Duration{Duration: time.Second * 2},
-				RateLimit:    10,
+				AllowedPresubmitTriggerReRawString: "/test units",
+				TickInterval:                       &metav1.Duration{Duration: time.Second * 2},
+				RateLimit:                          10,
 			},
 		},
 		{
@@ -1136,8 +1138,8 @@ gerrit:
 				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
 			}
 
-			if diff := cmp.Diff(tc.expected, cfg.Gerrit, cmpopts.EquateEmpty()); diff != "" {
-				t.Errorf("got diff: %s", diff)
+			if d := cmp.Diff(tc.expected, cfg.Gerrit, cmpopts.EquateEmpty(), cmpopts.IgnoreFields(Gerrit{}, "AllowedPresubmitTriggerRe")); d != "" {
+				t.Errorf("got d: %s", d)
 			}
 		})
 	}
