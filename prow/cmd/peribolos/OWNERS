@@ -1,10 +1,16 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
+- cblecker
 - cjwagner
-- sig-contributor-experience-technical-leads
+- MadhavJivrajani
+- nikhita
+- Priyankasaggu11929
 approvers:
+- cblecker
 - cjwagner
-- sig-contributor-experience-technical-leads
+- MadhavJivrajani
+- nikhita
+- Priyankasaggu11929
 labels:
  - area/prow/peribolos
