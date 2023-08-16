@@ -4319,7 +4319,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-ci-4.10-upgrade-from-stable-4.9-from-stable-4.8-e2e-aws-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.10-console-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-credentials-request-freeze
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-credentials-request-freeze
   name: periodic-ci-openshift-release-master-nightly-4.10-credentials-request-freeze
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-e2e-alibaba
   name: periodic-ci-openshift-release-master-nightly-4.10-e2e-alibaba
