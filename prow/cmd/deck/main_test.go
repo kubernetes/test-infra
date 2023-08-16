@@ -700,7 +700,7 @@ func Test_gatherOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
-					InRepoConfigCacheSize:                 1000,
+					InRepoConfigCacheSize:                 200,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
