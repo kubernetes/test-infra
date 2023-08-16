@@ -466,6 +466,9 @@ branch-protection:
             - stage-bots
         website:
           protect: true
+          branches:
+            release-1.27:
+              protect: true
     kubernetes-client:
       protect: true
       required_status_checks:
