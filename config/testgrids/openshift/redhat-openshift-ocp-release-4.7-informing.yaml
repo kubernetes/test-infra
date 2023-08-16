@@ -1930,7 +1930,8 @@ test_groups:
   name: periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-vsphere-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.7-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.7-console-aws
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.7-credentials-request-freeze
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.7-credentials-request-freeze
   name: periodic-ci-openshift-release-master-nightly-4.7-credentials-request-freeze
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.7-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.7-e2e-aws-fips
