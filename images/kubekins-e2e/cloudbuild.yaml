@@ -45,7 +45,7 @@ substitutions:
   _GO_VERSION: 1.13.5
   _K8S_RELEASE: stable
   _KIND_VERSION: ''
-  _KUBETEST2_VERSION: 'latest'
+  _KUBETEST2_VERSION: 'master'
   _YQ_VERSION: v4.23.1
 timeout: 1800s  
 options:

@@ -93,9 +93,11 @@ RUN if [ -n "${KIND_VERSION}" ]; then \
     fi
 
 # install kubetest2 binaries if a version is provided
+# kubetest2 must be installed from git as the makefile embeds the git short hash and the day it was built.
 ARG KUBETEST2_VERSION
 RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
-    go install sigs.k8s.io/kubetest2/...@"${KUBETEST2_VERSION}"; \
+    git clone --depth=1 --branch ${KUBETEST2_VERSION}  https://github.com/kubernetes-sigs/kubetest2.git  /tmp/kubetest2 && \
+    cd /tmp/kubetest2 && make install-all && rm -rf /tmp/kubetest2; \
     fi
 
 # configure dockerd to use mirror.gcr.io
