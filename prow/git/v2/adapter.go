@@ -59,6 +59,12 @@ func (a *clientFactoryAdapter) ClientFor(org, repo string) (RepoClient, error) {
 	return &repoClientAdapter{Repo: r}, err
 }
 
+// v1 clients do not support customizing pre-repo options.
+func (a *clientFactoryAdapter) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpts) (RepoClient, error) {
+	r, err := a.Client.Clone(org, repo)
+	return &repoClientAdapter{Repo: r}, err
+}
+
 type repoClientAdapter struct {
 	*git.Repo
 }

@@ -681,6 +681,13 @@ func (cf *testClientFactory) ClientFor(org, repo string) (git.RepoClient, error)
 	return &fetchOnlyNoCleanRepoClient{cf.rcMap[repo]}, nil
 }
 
+func (cf *testClientFactory) ClientForWithRepoOpts(org, repo string, repoOpts git.RepoOpts) (git.RepoClient, error) {
+	cf.clientsCreated++
+	// Returning this RepoClient ensures that only Fetch() is called and that Close() is not.
+
+	return &fetchOnlyNoCleanRepoClient{cf.rcMap[repo]}, nil
+}
+
 type fetchOnlyNoCleanRepoClient struct {
 	git.RepoClient // This will be nil during testing, we override the functions that are allowed to be used.
 }

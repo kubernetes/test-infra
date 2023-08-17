@@ -35,6 +35,10 @@ type ClientFactory interface {
 	ClientFromDir(org, repo, dir string) (RepoClient, error)
 	// ClientFor creates a client that operates on a new clone of the repo.
 	ClientFor(org, repo string) (RepoClient, error)
+	// ClientForWithRepoOpts is like ClientFor, but allows you to customize the
+	// setup of the cloned repo (such as sparse checkouts instead of using the
+	// default full clone).
+	ClientForWithRepoOpts(org, repo string, repoOpts RepoOpts) (RepoClient, error)
 
 	// Clean removes the caches used to generate clients
 	Clean() error
@@ -73,6 +77,21 @@ type ClientFactoryOpts struct {
 	CookieFilePath string
 	// If set, cacheDir persist. Otherwise temp dir will be used for CacheDir
 	Persist *bool
+}
+
+// These options are scoped to the repo, not the ClientFactory level. The reason
+// for the separation is to allow a single process to have for example repos
+// that are both sparsely checked out and non-sparsely checked out.
+type RepoOpts struct {
+	// sparseCheckoutDirs is the list of directories that the working tree
+	// should have. If non-nil and empty, then the working tree only has files
+	// reachable from the root. If non-nil and non-empty, then those additional
+	// directories from the root are also checked out (populated) in the working
+	// tree, recursively.
+	SparseCheckoutDirs []string
+	// This is the `--share` flag to `git clone`. For cloning from a local
+	// source, it allows bypassing the copying of all objects.
+	ShareObjectsWithSourceRepo bool
 }
 
 // Apply allows to use a ClientFactoryOpts as Opt
@@ -278,15 +297,25 @@ func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error)
 	return client, err
 }
 
-// ClientFor returns a repository client for the specified repository.
+// ClientFor wraps around ClientForWithRepoOpts using the default RepoOpts{}
+// (empty value). Originally, ClientFor was not a wrapper at all and did the
+// work inside ClientForWithRepoOpts itself, but it did this without RepoOpts.
+// When RepoOpts was created, we made ClientFor wrap around
+// ClientForWithRepoOpts to preserve behavior of existing callers of ClientFor.
+func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
+	return c.ClientForWithRepoOpts(org, repo, RepoOpts{})
+}
+
+// ClientForWithRepoOpts returns a repository client for the specified repository.
 // This function may take a long time if it is the first time cloning the repo.
 // In that case, it must do a full git mirror clone. For large repos, this can
-// take a while. Once that is done, it will do a git fetch instead of a clone,
-// which will usually take at most a few seconds.
+// take a while. Once that is done, it will do a git remote update (essentially
+// git fetch) for the mirror clone, which will usually take at most a few
+// seconds, before creating a secondary clone from this (updated) mirror.
 //
 // org and repo are used for determining where the repo is cloned, cloneURI
 // overrides org/repo for cloning.
-func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
+func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpts) (RepoClient, error) {
 	cacheDir := path.Join(c.cacheDir, org, repo)
 	c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "dir": cacheDir}).Debug("Creating a client from the cache.")
 	cacheClientCacher, _, _, err := c.bootstrapClients(org, repo, cacheDir)
@@ -324,7 +353,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	}
 
 	// initialize the new derivative repo from the cache
-	if err := repoClientCloner.Clone(cacheDir); err != nil {
+	if err := repoClientCloner.CloneWithRepoOpts(cacheDir, repoOpts); err != nil {
 		return nil, err
 	}
 
