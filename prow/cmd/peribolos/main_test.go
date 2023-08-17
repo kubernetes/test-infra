@@ -145,10 +145,6 @@ func TestOptions(t *testing.T) {
 				logLevel:       "debug",
 			},
 		},
-		{
-			name: "reject --skip-removals without a fix flag",
-			args: []string{"--config-path=foo", "--skip-removals"},
-		},
 	}
 
 	for _, tc := range cases {
@@ -336,15 +332,14 @@ func (c *fakeClient) RemoveTeamMembershipBySlug(org, teamSlug, user string) erro
 
 func TestConfigureMembers(t *testing.T) {
 	cases := []struct {
-		name         string
-		want         memberships
-		have         memberships
-		remove       sets.Set[string]
-		members      sets.Set[string]
-		supers       sets.Set[string]
-		invitees     sets.Set[string]
-		err          bool
-		skipRemovals bool
+		name     string
+		want     memberships
+		have     memberships
+		remove   sets.Set[string]
+		members  sets.Set[string]
+		supers   sets.Set[string]
+		invitees sets.Set[string]
+		err      bool
 	}{
 		{
 			name: "forgot to remove duplicate entry",
@@ -410,21 +405,6 @@ func TestConfigureMembers(t *testing.T) {
 			supers:  sets.New[string]("new-admin"),
 		},
 		{
-			name: "some of everything; skip removals",
-			have: memberships{
-				super:   sets.New[string]("keep-admin", "drop-admin"),
-				members: sets.New[string]("keep-member", "drop-member"),
-			},
-			want: memberships{
-				members: sets.New[string]("keep-member", "drop-member", "new-member"),
-				super:   sets.New[string]("keep-admin", "drop-admin", "new-admin"),
-			},
-			remove:       sets.Set[string]{},
-			members:      sets.New[string]("new-member"),
-			supers:       sets.New[string]("new-admin"),
-			skipRemovals: true,
-		},
-		{
 			name: "ensure case insensitivity",
 			have: memberships{
 				super:   sets.New[string]("lower"),
@@ -473,7 +453,7 @@ func TestConfigureMembers(t *testing.T) {
 				return nil
 			}
 
-			err := configureMembers(tc.have, tc.want, tc.invitees, options{skipRemovals: tc.skipRemovals}, adder, remover)
+			err := configureMembers(tc.have, tc.want, tc.invitees, adder, remover)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -659,22 +639,6 @@ func TestConfigureOrgMembers(t *testing.T) {
 			admins:     []string{"keep-admin", "drop-admin"},
 			members:    []string{"keep-member", "drop-member"},
 			remove:     []string{"drop-admin", "drop-member"},
-			addMembers: []string{"new-member"},
-			addAdmins:  []string{"new-admin"},
-		},
-		{
-			name: "some of everything; skipRemovals",
-			config: org.Config{
-				Admins:  []string{"keep-admin", "new-admin"},
-				Members: []string{"keep-member", "new-member"},
-			},
-			opt: options{
-				maximumDelta: 0.5,
-				skipRemovals: true,
-			},
-			admins:     []string{"keep-admin", "drop-admin"},
-			members:    []string{"keep-member", "drop-member"},
-			remove:     []string{},
 			addMembers: []string{"new-member"},
 			addAdmins:  []string{"new-admin"},
 		},
@@ -1304,7 +1268,6 @@ func TestConfigureTeamMembers(t *testing.T) {
 		invitees       sets.Set[string]
 		team           org.Team
 		slug           string
-		skipRemovals   bool
 	}{
 		{
 			name: "fail when listing fails",
@@ -1334,19 +1297,6 @@ func TestConfigureTeamMembers(t *testing.T) {
 			remove:         sets.New[string]("drop-maintainer", "drop-member"),
 			addMembers:     sets.New[string]("new-member"),
 			addMaintainers: sets.New[string]("new-maintainer"),
-		},
-		{
-			name: "some of everything; skip removals",
-			team: org.Team{
-				Maintainers: []string{"keep-maintainer", "new-maintainer"},
-				Members:     []string{"keep-member", "new-member"},
-			},
-			maintainers:    sets.New[string]("keep-maintainer", "drop-maintainer"),
-			members:        sets.New[string]("keep-member", "drop-member"),
-			remove:         sets.Set[string]{},
-			addMembers:     sets.New[string]("new-member"),
-			addMaintainers: sets.New[string]("new-maintainer"),
-			skipRemovals:   true,
 		},
 		{
 			name: "do not reinvitee invitees",
@@ -1399,7 +1349,7 @@ func TestConfigureTeamMembers(t *testing.T) {
 				newAdmins:  sets.Set[string]{},
 				newMembers: sets.Set[string]{},
 			}
-			err := configureTeamMembers(fc, options{skipRemovals: tc.skipRemovals}, "", gt, tc.team, tc.ignoreInvitees)
+			err := configureTeamMembers(fc, "", gt, tc.team, tc.ignoreInvitees)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -2371,7 +2321,6 @@ func TestConfigureTeamRepos(t *testing.T) {
 		failRemove    bool
 		expected      map[string][]github.Repo
 		expectedErr   bool
-		skipRemovals  bool
 	}{
 		{
 			name:        "githubTeams cache not containing team errors",
@@ -2459,50 +2408,6 @@ func TestConfigureTeamRepos(t *testing.T) {
 				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
 				{Name: "admin", Permissions: github.RepoPermissions{Pull: true}},
 			}},
-		},
-		{
-			name:        "change in permission on existing gets updated; changing to none leads to deletion",
-			githubTeams: map[string]github.Team{"team": {ID: 1, Slug: "team"}},
-			teamName:    "team",
-			team: org.Team{
-				Repos: map[string]github.RepoPermissionLevel{
-					"read":  github.None, // this should be deleted
-					"write": github.Write,
-					"admin": github.Read,
-				},
-			},
-			existingRepos: map[string][]github.Repo{"team": {
-				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true}},
-			}},
-			expected: map[string][]github.Repo{"team": {
-				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Pull: true}},
-			}},
-		},
-		{
-			name:        "change in permission on existing gets updated; changing to none leads to deletion; skipRemovals",
-			githubTeams: map[string]github.Team{"team": {ID: 1, Slug: "team"}},
-			teamName:    "team",
-			team: org.Team{
-				Repos: map[string]github.RepoPermissionLevel{
-					"read":  github.None, // this should be deleted, but won't happen because skipRemovals
-					"write": github.Write,
-					"admin": github.Read,
-				},
-			},
-			existingRepos: map[string][]github.Repo{"team": {
-				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true}},
-			}},
-			expected: map[string][]github.Repo{"team": {
-				{Name: "read", Permissions: github.RepoPermissions{Pull: true}},
-				{Name: "write", Permissions: github.RepoPermissions{Pull: true, Triage: true, Push: true}},
-				{Name: "admin", Permissions: github.RepoPermissions{Pull: true}},
-			}},
-			skipRemovals: true,
 		},
 		{
 			name:        "omitted requirement gets removed",
@@ -2612,7 +2517,7 @@ func TestConfigureTeamRepos(t *testing.T) {
 			failUpdate: testCase.failUpdate,
 			failRemove: testCase.failRemove,
 		}
-		err := configureTeamRepos(&client, options{skipRemovals: testCase.skipRemovals}, testCase.githubTeams, testCase.teamName, "org", testCase.team)
+		err := configureTeamRepos(&client, testCase.githubTeams, testCase.teamName, "org", testCase.team)
 		if err == nil && testCase.expectedErr {
 			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
