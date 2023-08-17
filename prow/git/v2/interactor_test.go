@@ -39,29 +39,29 @@ func TestInteractor_Clone(t *testing.T) {
 	}{
 		{
 			name: "happy case",
-			dir:  "/else",
-			from: "/somewhere",
+			dir:  "/secondaryclone",
+			from: "/mirrorclone",
 			responses: map[string]execResponse{
-				"clone /somewhere /else": {
+				"clone /mirrorclone /secondaryclone": {
 					out: []byte(`ok`),
 				},
 			},
 			expectedCalls: [][]string{
-				{"clone", "/somewhere", "/else"},
+				{"clone", "/mirrorclone", "/secondaryclone"},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "clone fails",
-			dir:  "/else",
-			from: "/somewhere",
+			dir:  "/secondaryclone",
+			from: "/mirrorclone",
 			responses: map[string]execResponse{
-				"clone /somewhere /else": {
+				"clone /mirrorclone /secondaryclone": {
 					err: errors.New("oops"),
 				},
 			},
 			expectedCalls: [][]string{
-				{"clone", "/somewhere", "/else"},
+				{"clone", "/mirrorclone", "/secondaryclone"},
 			},
 			expectedErr: true,
 		},
