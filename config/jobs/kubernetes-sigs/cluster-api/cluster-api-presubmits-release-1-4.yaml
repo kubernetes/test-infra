@@ -254,7 +254,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
       testgrid-tab-name: capi-pr-e2e-full-release-1-4
-  - name: pull-cluster-api-e2e-workload-upgrade-1-27-latest-release-1-4
+  - name: pull-cluster-api-e2e-workload-upgrade-1-26-1-27-release-1-4
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -283,13 +283,13 @@ presubmits:
             - name: ALWAYS_BUILD_KIND_IMAGES
               value: "true"
             - name: KUBERNETES_VERSION_UPGRADE_FROM
-              value: "stable-1.27"
+              value: "stable-1.26"
             - name: KUBERNETES_VERSION_UPGRADE_TO
-              value: "ci/latest-1.28"
+              value: "stable-1.27"
             - name: ETCD_VERSION_UPGRADE_TO
-              value: "3.5.7-0"
+              value: "3.5.6-0"
             - name: COREDNS_VERSION_UPGRADE_TO
-              value: "v1.10.1"
+              value: "v1.9.3"
             - name: GINKGO_FOCUS
               value: "\\[K8s-Upgrade\\]"
           # we need privileged mode in order to do docker in docker
@@ -300,4 +300,4 @@ presubmits:
               cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.4
-      testgrid-tab-name: capi-pr-e2e-release-1-4-1-27-latest
+      testgrid-tab-name: capi-pr-e2e-release-1-4-1-26-1-27
