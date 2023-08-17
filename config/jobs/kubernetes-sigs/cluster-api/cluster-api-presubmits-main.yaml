@@ -113,7 +113,7 @@ presubmits:
         # To check the latest available envtest in Kubebuilder for the minor version we determined above, please
         # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
         - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-          value: "1.24.2"
+          value: "1.25.0"
         resources:
           requests:
             cpu: 7300m
@@ -294,7 +294,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-full-main
-  - name: pull-cluster-api-e2e-workload-upgrade-1-27-latest-main
+  - name: pull-cluster-api-e2e-workload-upgrade-1-28-latest-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -323,11 +323,11 @@ presubmits:
           - name: ALWAYS_BUILD_KIND_IMAGES
             value: "true"
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.27"
+            value: "stable-1.28"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.28"
+            value: "ci/latest-1.29"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.5.7-0"
+            value: "3.5.9-0"
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "v1.10.1"
           - name: GINKGO_FOCUS
@@ -340,7 +340,7 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-1-27-latest
+      testgrid-tab-name: capi-pr-e2e-main-1-28-latest
   # This job is experimental for now. Please do not duplicate it to release branches.
   - name: pull-cluster-api-e2e-scale-main-experimental
     labels:
