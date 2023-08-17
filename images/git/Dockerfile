@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:v20211015-92dc282
+FROM gcr.io/k8s-prow/alpine:v20230718-8d3170488d
 
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
