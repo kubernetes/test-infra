@@ -186,7 +186,9 @@ periodics:
       - name: GINKGO_SKIP
         value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]|\\[Scale\\]"
       # This value determines the minimum Kubernetes
-      # supported version for Cluster API management cluster.
+      # supported version for Cluster API management cluster
+      # and can be found by referring to [Supported Kubernetes Version](https://cluster-api.sigs.k8s.io/reference/versions.html#supported-kubernetes-versions)
+      # docs (look for minimum supported k8s version for management cluster, i.e N-3).
       # Please also make sure to refer a version where a kindest/node image exists
       # for (see https://github.com/kubernetes-sigs/kind/releases/tag)
       - name: KUBERNETES_VERSION_MANAGEMENT
