@@ -117,7 +117,7 @@ presubmits:
               cpu: 8
               memory: 10Gi
 periodics:
-- interval: 12h
+- interval: 6h
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-ec2-conformance-latest
   annotations:
@@ -174,7 +174,7 @@ periodics:
           requests:
             cpu: 8
             memory: 10Gi
-- interval: 12h
+- interval: 6h
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-ec2-arm64-conformance-latest
   annotations:
@@ -231,7 +231,7 @@ periodics:
           requests:
             cpu: 8
             memory: 10Gi
-- interval: 12h
+- interval: 6h
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-e2e-ubuntu-ec2-containerd
   annotations:
@@ -289,7 +289,7 @@ periodics:
           requests:
             cpu: 8
             memory: 10Gi
-- interval: 12h
+- interval: 6h
   cluster: eks-prow-build-cluster
   name: ci-kubernetes-e2e-ubuntu-ec2-arm64-containerd
   annotations:
