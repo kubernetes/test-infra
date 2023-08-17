@@ -96,7 +96,7 @@ RUN if [ -n "${KIND_VERSION}" ]; then \
 # kubetest2 must be installed from git as the makefile embeds the git short hash and the day it was built.
 ARG KUBETEST2_VERSION
 RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
-    git clone --depth=1 --branch ${KUBETEST2_VERSION}  https://github.com/kubernetes-sigs/kubetest2.git  /tmp/kubetest2 && \
+    git clone https://github.com/kubernetes-sigs/kubetest2.git /tmp/kubetest2 && \
     cd /tmp/kubetest2 && make install-all && rm -rf /tmp/kubetest2; \
     fi
 
