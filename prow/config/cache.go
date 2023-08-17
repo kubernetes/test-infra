@@ -152,8 +152,6 @@ type InRepoConfigCache struct {
 
 // NewInRepoConfigCache creates a new LRU cache for ProwYAML values, where the keys
 // are CacheKeys (that is, JSON strings) and values are pointers to ProwYAMLs.
-// The provided git.ClientFactory will be wrapped with NewInRepoConfigGitCache() so
-// ensure the input parameter is not prewrapped with this.
 func NewInRepoConfigCache(
 	size int,
 	configAgent prowConfigAgentClient,
@@ -237,7 +235,7 @@ func NewInRepoConfigCache(
 		configAgent,
 		// Make the cache be able to handle cache misses (by calling out to Git
 		// to construct the ProwYAML value).
-		NewInRepoConfigGitCache(gitClientFactory),
+		gitClientFactory,
 	}
 
 	return cache, nil
