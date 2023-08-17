@@ -70,7 +70,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20230816-18997b36a0
+      - image: gcr.io/k8s-prow/checkconfig:v20230817-a7555751ac
         command:
         - checkconfig
         args:
@@ -104,7 +104,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20230816-18997b36a0
+      - image: gcr.io/k8s-prow/checkconfig:v20230817-a7555751ac
         command:
         - checkconfig
         args:
