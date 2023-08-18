@@ -614,23 +614,16 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			if tc.dontPassGitClient {
 				testGC = nil
 			}
-			testGCCached := NewInRepoConfigGitCache(testGC)
 
-			var p, pCached *ProwYAML
-			var errCached error
+			var p *ProwYAML
 			if headSHA == baseSHA {
 				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA)
-				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, baseSHA)
 			} else {
 				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
-				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, baseSHA, headSHA)
 			}
 
 			if err := tc.validate(p, err); err != nil {
 				t.Fatal(err)
-			}
-			if errCached := tc.validate(pCached, errCached); errCached != nil {
-				t.Fatal(errCached)
 			}
 		})
 	}
@@ -701,83 +694,6 @@ func (rc *fetchOnlyNoCleanRepoClient) Close() error {
 	panic("This is not supposed to be called")
 }
 
-// TestInRepoConfigGitCacheConcurrency validates the following properties of InRepoConfigGitCache
-// - RepoClients are protected from concurrent use.
-// - Use of a RepoClient for one repo does not prevent concurrent use of a RepoClient for another repo.
-// - RepoClients are reused, only 1 client is created per repo.
-func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
-	t.Parallel()
-
-	lg, c, _ := localgit.NewV2()
-	rcMap := make(map[string]git.RepoClient)
-	for _, repo := range []string{"repo1", "repo2"} {
-		if err := lg.MakeFakeRepo("org", repo); err != nil {
-			t.Fatal(err)
-		}
-		rc, err := c.ClientFor("org", repo)
-		if err != nil {
-			t.Fatal(err)
-		}
-		rcMap[repo] = rc
-	}
-	cf := &testClientFactory{
-		rcMap: rcMap,
-	}
-	cache := NewInRepoConfigGitCache(cf)
-	org, repo1, repo2 := "org", "repo1", "repo2"
-	// block channels are populated from the main thread, signal channels are read from the main thread.
-	signal := make(chan bool)
-	// We make Threads 1 and 2 both write to sharedRepo1State, so that the race
-	// detector can catch a case where both threads could attempt to write to it
-	// at the same time. As long as ClientFor() hands out locked clients (that
-	// are only unlocked with Clean()), Threads 1 and 2 will not write to
-	// sharedRepo1State at the same time.
-	sharedRepo1State := 0
-
-	// Thread 1: gets a client for repo1, signals on signal1, then blocks on block1 before Clean()ing the repo1 client.
-	go func() {
-		client, err := cache.ClientFor(org, repo1)
-		if err != nil {
-			t.Errorf("Unexpected error getting repo client for thread 1: %v.", err)
-			return
-		}
-		sharedRepo1State++
-		client.Clean()
-		signal <- true
-	}()
-
-	// Thread 2: gets a client for repo1, signals success on signal2, then Clean()s the repo1 client.
-	go func() {
-		client, err := cache.ClientFor(org, repo1)
-		if err != nil {
-			t.Errorf("Unexpected error getting repo client for thread 2: %v.", err)
-			return
-		}
-		sharedRepo1State++
-		client.Clean()
-		signal <- true
-	}()
-
-	// Thread 3: gets a client for repo2, signals success on signal3, then Clean()s the repo2 client.
-	go func() {
-		client, err := cache.ClientFor(org, repo2)
-		if err != nil {
-			t.Errorf("Unexpected error getting repo client for thread 3: %v.", err)
-			return
-		}
-		client.Clean()
-		signal <- true
-	}()
-
-	for i := 0; i < 3; i++ {
-		<-signal
-	}
-
-	if cf.clientsCreated != 2 {
-		t.Errorf("Expected 2 clients to be created, but got %d.", cf.clientsCreated)
-	}
-}
-
 func TestInRepoConfigClean(t *testing.T) {
 	t.Parallel()
 	org, repo := "org", "repo"
@@ -796,26 +712,23 @@ func TestInRepoConfigClean(t *testing.T) {
 	cf := &testClientFactory{
 		rcMap: rcMap,
 	}
-	cache := NewInRepoConfigGitCache(cf)
 
 	// First time clone should work
-	repoClient, err := cache.ClientFor(org, repo)
+	repoClient, err := cf.ClientFor(org, repo)
 	if err != nil {
 		t.Fatalf("Unexpected error getting repo client for thread 1: %v.", err)
 	}
-	repoClient.Clean()
 
 	// Now dirty the repo
-	casted := cache.(*InRepoConfigGitCache)
-	clonedRepo := casted.cache["org/repo"]
-	dir := clonedRepo.RepoClient.Directory()
+	dir := repoClient.Directory()
 	f := path.Join(dir, "new-file")
 	if err := os.WriteFile(f, []byte("something"), 0644); err != nil {
 		t.Fatal(err)
 	}
+	repoClient.Clean()
 
 	// Second time should be none dirty
-	repoClient, err = cache.ClientFor(org, repo)
+	repoClient, err = cf.ClientFor(org, repo)
 	if err != nil {
 		t.Fatalf("Unexpected error getting repo client for thread 1: %v.", err)
 	}
