@@ -124,6 +124,8 @@ type Client struct {
 	// map of instance to gerrit account
 	accounts map[string]*gerrit.AccountInfo
 
+	httpClient http.Client
+
 	authentication func() (string, error)
 	previousToken  string
 	lock           sync.RWMutex
@@ -168,32 +170,25 @@ func (rt *roundTripperWithThrottleAndHeader) RoundTrip(r *http.Request) (*http.R
 
 // NewClient returns a new gerrit client
 func NewClient(instances map[string]map[string]*config.GerritQueryFilter, maxQPS, maxBurst int) (*Client, error) {
-	c := &Client{
-		handlers: map[string]*gerritInstanceHandler{},
-		accounts: map[string]*gerrit.AccountInfo{},
-	}
 	roundTripper := &roundTripperWithThrottleAndHeader{upstream: http.DefaultTransport}
 	roundTripper.Throttle(maxQPS*3600, maxBurst)
 
-	for instance := range instances {
-		httpClient := http.Client{
-			Transport: roundTripper,
-		}
+	c := &Client{
+		handlers: map[string]*gerritInstanceHandler{},
+		accounts: map[string]*gerrit.AccountInfo{},
 
-		gc, err := gerrit.NewClient(instance, &httpClient)
+		httpClient: http.Client{
+			Transport: roundTripper,
+		},
+	}
+
+	for instance := range instances {
+		handler, err := c.newInstanceHandler(instance, instances[instance])
 		if err != nil {
 			return nil, err
 		}
 
-		c.handlers[instance] = &gerritInstanceHandler{
-			instance:       instance,
-			projects:       instances[instance],
-			authService:    gc.Authentication,
-			accountService: gc.Accounts,
-			changeService:  gc.Changes,
-			projectService: gc.Projects,
-			log:            logrus.WithField("host", instance),
-		}
+		c.handlers[instance] = handler
 	}
 
 	return c, nil
@@ -320,6 +315,23 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 	}
 }
 
+func (c *Client) newInstanceHandler(instance string, projects map[string]*config.GerritQueryFilter) (*gerritInstanceHandler, error) {
+	gc, err := gerrit.NewClient(instance, &c.httpClient)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gerrit client: %w", err)
+	}
+
+	return &gerritInstanceHandler{
+		instance:       instance,
+		projects:       projects,
+		authService:    gc.Authentication,
+		accountService: gc.Accounts,
+		changeService:  gc.Changes,
+		projectService: gc.Projects,
+		log:            logrus.WithField("host", instance),
+	}, nil
+}
+
 // UpdateClients update gerrit clients with new instances map
 func (c *Client) UpdateClients(instances map[string]map[string]*config.GerritQueryFilter) error {
 	// Recording in newHandlers, so that deleted instances can be handled.
@@ -335,22 +347,13 @@ func (c *Client) UpdateClients(instances map[string]map[string]*config.GerritQue
 			newHandlers[instance] = handler
 			continue
 		}
-		gc, err := gerrit.NewClient(instance, nil)
+		handler, err := c.newInstanceHandler(instance, instances[instance])
 		if err != nil {
-			logrus.WithField("instance", instance).WithError(err).Error("Creating gerrit client.")
+			logrus.WithField("host", instance).WithError(err).Error("Failed to create gerrit instance handler.")
 			errs = append(errs, err)
 			continue
 		}
-
-		newHandlers[instance] = &gerritInstanceHandler{
-			instance:       instance,
-			projects:       instances[instance],
-			authService:    gc.Authentication,
-			accountService: gc.Accounts,
-			changeService:  gc.Changes,
-			projectService: gc.Projects,
-			log:            logrus.WithField("host", instance),
-		}
+		newHandlers[instance] = handler
 	}
 	c.handlers = newHandlers
 
