@@ -19,7 +19,7 @@ spec:
       serviceAccountName: halogen
       containers:
       - name: halogen
-        image: gcr.io/k8s-prow/analyze:v20230817-a7555751ac
+        image: gcr.io/k8s-prow/analyze:v20230818-271b876ddf
         args:
         - --project=k8s-prow
         - --region=us-central1
