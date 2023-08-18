@@ -242,7 +242,6 @@ lgtm:
   - kubernetes/cloud-provider-aws
   - kubernetes/k8s.io
   - kubernetes/kops
-  - kubernetes/publishing-bot
   - kubernetes/release
   - kubernetes/repo-infra
   - kubernetes/sig-release
