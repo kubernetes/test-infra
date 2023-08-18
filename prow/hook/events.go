@@ -29,7 +29,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const failedCommentCoerceFmt = "Could not coerce %s event to a GenericCommentEvent. Unknown 'action': %q."
+const FailedCommentCoerceFmt = "Could not coerce %s event to a GenericCommentEvent. Unknown 'action': %q."
 
 const eventTypeField = "event-type"
 
@@ -102,7 +102,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 	}
 	action := GenericCommentAction(string(re.Action))
 	if action == "" {
-		l.Errorf(failedCommentCoerceFmt, "pull_request_review", string(re.Action))
+		l.Errorf(FailedCommentCoerceFmt, "pull_request_review", string(re.Action))
 		return
 	}
 	s.handleGenericComment(
@@ -160,7 +160,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 	}
 	action := GenericCommentAction(string(rce.Action))
 	if action == "" {
-		l.Errorf(failedCommentCoerceFmt, "pull_request_review_comment", string(rce.Action))
+		l.Errorf(FailedCommentCoerceFmt, "pull_request_review_comment", string(rce.Action))
 		return
 	}
 	s.handleGenericComment(
@@ -219,7 +219,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	action := GenericCommentAction(string(pr.Action))
 	if action == "" {
 		if !nonCommentPullRequestActions[pr.Action] {
-			l.Infof(failedCommentCoerceFmt, "pull_request", string(pr.Action))
+			l.Infof(FailedCommentCoerceFmt, "pull_request", string(pr.Action))
 		}
 		return
 	}
@@ -305,7 +305,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	action := GenericCommentAction(string(i.Action))
 	if action == "" {
 		if !nonCommentIssueActions[i.Action] {
-			l.Errorf(failedCommentCoerceFmt, "issues", string(i.Action))
+			l.Errorf(FailedCommentCoerceFmt, "issues", string(i.Action))
 		}
 		return
 	}
@@ -364,7 +364,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 	}
 	action := GenericCommentAction(string(ic.Action))
 	if action == "" {
-		l.Errorf(failedCommentCoerceFmt, "issue_comment", string(ic.Action))
+		l.Errorf(FailedCommentCoerceFmt, "issue_comment", string(ic.Action))
 		return
 	}
 	s.handleGenericComment(
