@@ -88,6 +88,7 @@ type cacher interface {
 type cloner interface {
 	// Clone clones the repository from a local path.
 	Clone(from string) error
+	CloneWithRepoOpts(from string, repoOpts RepoOpts) error
 }
 
 // MergeOpt holds options for git merge operations.
@@ -139,9 +140,45 @@ func (i *interactor) IsDirty() (bool, error) {
 
 // Clone clones the repository from a local path.
 func (i *interactor) Clone(from string) error {
+	return i.CloneWithRepoOpts(from, RepoOpts{})
+}
+
+// CloneWithRepoOpts clones the repository from a local path, but additionally
+// use any repository options (RepoOpts) to customize the clone behavior.
+func (i *interactor) CloneWithRepoOpts(from string, repoOpts RepoOpts) error {
 	i.logger.Infof("Creating a clone of the repo at %s from %s", i.dir, from)
-	if out, err := i.executor.Run("clone", from, i.dir); err != nil {
+	cloneArgs := []string{"clone"}
+
+	if repoOpts.ShareObjectsWithSourceRepo {
+		cloneArgs = append(cloneArgs, "--shared")
+	}
+
+	// Handle sparse checkouts.
+	if repoOpts.SparseCheckoutDirs != nil {
+		cloneArgs = append(cloneArgs, "--sparse")
+	}
+
+	cloneArgs = append(cloneArgs, []string{from, i.dir}...)
+
+	if out, err := i.executor.Run(cloneArgs...); err != nil {
 		return fmt.Errorf("error creating a clone: %w %v", err, string(out))
+	}
+
+	// For sparse checkouts, we have to do some additional housekeeping after
+	// the clone is completed. We use Git's global "-C <directory>" flag to
+	// switch to that directory before running the "sparse-checkout" command,
+	// because otherwise the command will fail (because it will try to run the
+	// command in the $PWD, which is not the same as the just-created clone
+	// directory (i.dir)).
+	if repoOpts.SparseCheckoutDirs != nil {
+		if len(repoOpts.SparseCheckoutDirs) == 0 {
+			return nil
+		}
+		sparseCheckoutArgs := []string{"-C", i.dir, "sparse-checkout", "set"}
+		sparseCheckoutArgs = append(sparseCheckoutArgs, repoOpts.SparseCheckoutDirs...)
+		if out, err := i.executor.Run(sparseCheckoutArgs...); err != nil {
+			return fmt.Errorf("error setting it to a sparse checkout: %w %v", err, string(out))
+		}
 	}
 	return nil
 }

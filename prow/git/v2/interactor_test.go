@@ -39,29 +39,29 @@ func TestInteractor_Clone(t *testing.T) {
 	}{
 		{
 			name: "happy case",
-			dir:  "/else",
-			from: "/somewhere",
+			dir:  "/secondaryclone",
+			from: "/mirrorclone",
 			responses: map[string]execResponse{
-				"clone /somewhere /else": {
+				"clone /mirrorclone /secondaryclone": {
 					out: []byte(`ok`),
 				},
 			},
 			expectedCalls: [][]string{
-				{"clone", "/somewhere", "/else"},
+				{"clone", "/mirrorclone", "/secondaryclone"},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "clone fails",
-			dir:  "/else",
-			from: "/somewhere",
+			dir:  "/secondaryclone",
+			from: "/mirrorclone",
 			responses: map[string]execResponse{
-				"clone /somewhere /else": {
+				"clone /mirrorclone /secondaryclone": {
 					err: errors.New("oops"),
 				},
 			},
 			expectedCalls: [][]string{
-				{"clone", "/somewhere", "/else"},
+				{"clone", "/mirrorclone", "/secondaryclone"},
 			},
 			expectedErr: true,
 		},
@@ -80,6 +80,118 @@ func TestInteractor_Clone(t *testing.T) {
 				logger:   logrus.WithField("test", testCase.name),
 			}
 			actualErr := i.Clone(testCase.from)
+			if testCase.expectedErr && actualErr == nil {
+				t.Errorf("%s: expected an error but got none", testCase.name)
+			}
+			if !testCase.expectedErr && actualErr != nil {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, actualErr)
+			}
+			if actual, expected := e.records, testCase.expectedCalls; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect git calls: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+func TestInteractor_CloneWithRepoOpts(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		dir           string
+		from          string
+		remote        RemoteResolver
+		repoOpts      RepoOpts
+		responses     map[string]execResponse
+		expectedCalls [][]string
+		expectedErr   bool
+	}{
+		{
+			name:     "blank RepoOpts",
+			dir:      "/secondaryclone",
+			from:     "/mirrorclone",
+			repoOpts: RepoOpts{},
+			responses: map[string]execResponse{
+				"clone /mirrorclone /secondaryclone": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"clone", "/mirrorclone", "/secondaryclone"},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "shared git objects",
+			dir:  "/secondaryclone",
+			from: "/mirrorclone",
+			repoOpts: RepoOpts{
+				SparseCheckoutDirs:         nil,
+				ShareObjectsWithSourceRepo: true,
+			},
+			responses: map[string]execResponse{
+				"clone --shared /mirrorclone /secondaryclone": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"clone", "--shared", "/mirrorclone", "/secondaryclone"},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "shared git objects and sparse checkout (toplevel only)",
+			dir:  "/secondaryclone",
+			from: "/mirrorclone",
+			repoOpts: RepoOpts{
+				SparseCheckoutDirs:         []string{},
+				ShareObjectsWithSourceRepo: true,
+			},
+			responses: map[string]execResponse{
+				"clone --shared --sparse /mirrorclone /secondaryclone": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"clone", "--shared", "--sparse", "/mirrorclone", "/secondaryclone"},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "shared git objects and sparse checkout (toplevel+subdirs)",
+			dir:  "/secondaryclone",
+			from: "/mirrorclone",
+			repoOpts: RepoOpts{
+				SparseCheckoutDirs:         []string{"a", "b"},
+				ShareObjectsWithSourceRepo: true,
+			},
+			responses: map[string]execResponse{
+				"clone --shared --sparse /mirrorclone /secondaryclone": {
+					out: []byte(`ok`),
+				},
+				"-C /secondaryclone sparse-checkout set a b": {
+					out: []byte(`ok`),
+				},
+			},
+			expectedCalls: [][]string{
+				{"clone", "--shared", "--sparse", "/mirrorclone", "/secondaryclone"},
+				{"-C", "/secondaryclone", "sparse-checkout", "set", "a", "b"},
+			},
+			expectedErr: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			e := fakeExecutor{
+				records:   [][]string{},
+				responses: testCase.responses,
+			}
+			i := interactor{
+				executor: &e,
+				remote:   testCase.remote,
+				dir:      testCase.dir,
+				logger:   logrus.WithField("test", testCase.name),
+			}
+			actualErr := i.CloneWithRepoOpts(testCase.from, testCase.repoOpts)
 			if testCase.expectedErr && actualErr == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
