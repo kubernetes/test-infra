@@ -1178,7 +1178,7 @@ branch-protection:
         unauthorized-app:
           restrictions:
             apps:
-            - nocontent-app  
+            - nocontent-app
         unauthorized-collaborator:
           restrictions:
             users:
@@ -2504,7 +2504,7 @@ func TestValidateRequest(t *testing.T) {
 			errs: []error{fmt.Errorf("the following apps are not authorized for %s/%s: [%s]", "org", "repo", "bar")},
 		},
 		{
-			name: "restrict to unathorized collaborator results in error",
+			name: "restrict to unauthorized collaborator results in error",
 			request: &github.BranchProtectionRequest{
 				Restrictions: &github.RestrictionsRequest{
 					Users: &[]string{"foo"},

@@ -659,7 +659,7 @@ func TestCreateWithRetry(t *testing.T) {
 
 			result, err := fakeProwJobClient.ProwV1().ProwJobs("").List(context.Background(), metav1.ListOptions{})
 			if err != nil {
-				t.Fatalf("faile to list prowjobs: %v", err)
+				t.Fatalf("failed to list prowjobs: %v", err)
 			}
 
 			if len(result.Items) != 1 {

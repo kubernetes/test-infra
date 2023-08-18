@@ -96,17 +96,17 @@ func TestDiskCachePruning(t *testing.T) {
 
 	numberPartitions, err := getNumberOfCachePartitions(cacheDir)
 	if err != nil {
-		t.Fatalf("failed to get number of cache paritions: %v", err)
+		t.Fatalf("failed to get number of cache partitions: %v", err)
 	}
 	if numberPartitions != 2 {
-		t.Fatalf("expected two cache paritions, one for the app and one for the app installation, got %d", numberPartitions)
+		t.Fatalf("expected two cache partitions, one for the app and one for the app installation, got %d", numberPartitions)
 	}
 
 	ghcache.Prune(cacheDir, func() time.Time { return now.Add(expiryDuration).Add(time.Second) })
 
 	numberPartitions, err = getNumberOfCachePartitions(cacheDir)
 	if err != nil {
-		t.Fatalf("failed to get number of cache paritions: %v", err)
+		t.Fatalf("failed to get number of cache partitions: %v", err)
 	}
 	if numberPartitions != 1 {
 		t.Errorf("expected one cache partition for the app as the one for the installation should be cleaned up, got  %d", numberPartitions)
@@ -118,7 +118,7 @@ func getNumberOfCachePartitions(cacheDir string) (int, error) {
 	for _, suffix := range []string{"temp", "data"} {
 		entries, err := os.ReadDir(path.Join(cacheDir, suffix))
 		if err != nil {
-			return result, fmt.Errorf("faield to list: %w", err)
+			return result, fmt.Errorf("failed to list: %w", err)
 		}
 		if result == 0 {
 			result = len(entries)

@@ -4739,7 +4739,7 @@ func TestValidateTriggering(t *testing.T) {
 			errExpected: true,
 		},
 		{
-			name: "Triger unset, rerun command set, err",
+			name: "Trigger unset, rerun command set, err",
 			presubmit: Presubmit{
 				RerunCommand: "my-rerun-command",
 				Reporter: Reporter{
@@ -8748,7 +8748,7 @@ func TestHasConfigFor(t *testing.T) {
 				actualIsGlobal, actualOrgs, actualRepos := fuzzedAndManipulatedConfig.HasConfigFor()
 
 				if expectIsGlobal != actualIsGlobal {
-					t.Errorf("exepcted isGlobal: %t, got: %t", expectIsGlobal, actualIsGlobal)
+					t.Errorf("expected isGlobal: %t, got: %t", expectIsGlobal, actualIsGlobal)
 				}
 
 				if diff := cmp.Diff(expectOrgs, actualOrgs); diff != "" {

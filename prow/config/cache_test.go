@@ -210,7 +210,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 			// If the InRepoConfig is disabled for this repo, then the returned
 			// value should be an empty &ProwYAML{}. Also, the cache miss should
 			// not result in adding this entry into the cache (because the value
-			// will be a meaninless empty &ProwYAML{}).
+			// will be a meaningless empty &ProwYAML{}).
 			name:                "CacheMiss/InRepoConfigDisabled",
 			valConstructor:      goodValConstructor,
 			cacheInitialState:   nil,

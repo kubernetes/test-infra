@@ -3006,7 +3006,7 @@ func TestValidateRepos(t *testing.T) {
 			expectError: true,
 		},
 		{
-			description: "finds name confict between previous and current names",
+			description: "finds name conflict between previous and current names",
 			config: map[string]org.Repo{
 				"repo":     {Previously: []string{"conflict"}},
 				"conflict": {Description: &description},
@@ -3014,7 +3014,7 @@ func TestValidateRepos(t *testing.T) {
 			expectError: true,
 		},
 		{
-			description: "finds name confict between two previous names",
+			description: "finds name conflict between two previous names",
 			config: map[string]org.Repo{
 				"repo":         {Previously: []string{"conflict"}},
 				"another-repo": {Previously: []string{"conflict"}},

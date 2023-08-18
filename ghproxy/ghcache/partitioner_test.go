@@ -89,7 +89,7 @@ func TestPartitioningRoundTripper(t *testing.T) {
 	}
 	for name, roundTripper := range creator.roundTrippers {
 		if !roundTripper.used {
-			t.Errorf("roundtripper %q wasnt used", name)
+			t.Errorf("roundtripper %q wasn't used", name)
 		}
 	}
 }

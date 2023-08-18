@@ -523,7 +523,7 @@ func TestHandle(t *testing.T) {
 			usesAppsAuth: false,
 		},
 		{
-			name:    "override nonexistant checkrun",
+			name:    "override nonexistent checkrun",
 			comment: "/override foobar",
 			checkruns: &github.CheckRunList{
 				CheckRuns: []github.CheckRun{

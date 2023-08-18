@@ -182,7 +182,7 @@ func TestAppsAuth(t *testing.T) {
 			},
 		},
 		{
-			name:          "App installation auth success, installations and token is requsted",
+			name:          "App installation auth success, installations and token is requested",
 			cachedAppSlug: utilpointer.String("ci-app"),
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("org")
@@ -228,7 +228,7 @@ func TestAppsAuth(t *testing.T) {
 			},
 		},
 		{
-			name: "App installation auth success, slug, installations and token is requsted",
+			name: "App installation auth success, slug, installations and token is requested",
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("org")
 				return err
@@ -285,7 +285,7 @@ func TestAppsAuth(t *testing.T) {
 			},
 		},
 		{
-			name:          "App installation auth with custom base url with path is successful, slug, installations and token are requsted",
+			name:          "App installation auth with custom base url with path is successful, slug, installations and token are requested",
 			githubBaseURL: "https://corp.internal/api/v3",
 			doRequest: func(c Client) error {
 				_, err := c.GetOrg("org")

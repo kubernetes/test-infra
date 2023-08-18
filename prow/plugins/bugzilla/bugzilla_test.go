@@ -1391,7 +1391,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug: &bugzilla.Bug{},
 		},
 		{
-			name:   "closed PR with multiple exernal links removes link, does not change bug state, and comments",
+			name:   "closed PR with multiple external links removes link, does not change bug state, and comments",
 			merged: false,
 			closed: true,
 			bugs:   []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},

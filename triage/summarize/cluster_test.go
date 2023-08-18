@@ -50,7 +50,7 @@ func TestClusterTest(t *testing.T) {
 	f3 := failure{FailureText: "long message immediately preceding exit code 1"}
 	f4 := failure{FailureText: "long message immediately preceding exit code 2"}
 	testCases = append(testCases, testCase{
-		"Long strings, slight diference",
+		"Long strings, slight difference",
 		[]failure{f3, f4},
 		failuresGroup{
 			f3.FailureText: []failure{
@@ -72,7 +72,7 @@ func TestClusterTest(t *testing.T) {
 	f5 := failure{FailureText: generatedString + "1 2 "}
 	f6 := failure{FailureText: generatedString + "3 4 "}
 	testCases = append(testCases, testCase{
-		"Huge strings, slight diference",
+		"Huge strings, slight difference",
 		[]failure{f1, f5, f6},
 		failuresGroup{
 			f1.FailureText: []failure{

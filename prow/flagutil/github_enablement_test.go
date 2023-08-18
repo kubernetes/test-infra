@@ -92,7 +92,7 @@ func TestEnablementChecker(t *testing.T) {
 		expectAllowed           bool
 	}{
 		{
-			name:          "Defalt allows everything",
+			name:          "Default allows everything",
 			expectAllowed: true,
 		},
 		{

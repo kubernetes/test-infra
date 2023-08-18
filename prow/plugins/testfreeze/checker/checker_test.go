@@ -51,7 +51,7 @@ func TestInTestFreeze(t *testing.T) {
 		assert  func(*Result, error)
 	}{
 		{
-			name: "success no test freez",
+			name: "success no test freeze",
 			prepare: func(mock *checkerfakes.FakeChecker) {
 				mock.ListRefsReturns([]*plumbing.Reference{
 					tag("wrong"),       // unable to parse this tag, but don't error
@@ -104,7 +104,7 @@ func TestInTestFreeze(t *testing.T) {
 			},
 		},
 		{
-			name: "error no latest releae branch found",
+			name: "error no latest release branch found",
 			prepare: func(mock *checkerfakes.FakeChecker) {
 				mock.ListRefsReturns([]*plumbing.Reference{
 					tag("1.22.0"),

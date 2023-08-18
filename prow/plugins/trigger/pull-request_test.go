@@ -210,7 +210,7 @@ func TestHandlePullRequest(t *testing.T) {
 			prIsDraft:   true,
 		},
 		{
-			name: "Trusted user switch PR from draft to normal shoud build",
+			name: "Trusted user switch PR from draft to normal should build",
 
 			Author:      "t",
 			ShouldBuild: true,
@@ -523,14 +523,14 @@ func TestHandlePullRequest(t *testing.T) {
 				}
 
 				if pj.Status.State != prowapi.AbortedState {
-					t.Errorf("exptected job %s to be aborted, found state: %v", tc.jobToAbort.Name, pj.Status.State)
+					t.Errorf("expected job %s to be aborted, found state: %v", tc.jobToAbort.Name, pj.Status.State)
 				}
 				if pj.Complete() {
-					t.Errorf("exptected job %s to not be set to complete.", tc.jobToAbort.Name)
+					t.Errorf("expected job %s to not be set to complete.", tc.jobToAbort.Name)
 				}
 			}
 			if cmp.Diff(tc.issueLabelsAdded, g.IssueLabelsAdded) != "" {
-				t.Errorf("exptected added issue labels %v to match %v", tc.issueLabelsAdded, g.IssueLabelsAdded)
+				t.Errorf("expected added issue labels %v to match %v", tc.issueLabelsAdded, g.IssueLabelsAdded)
 			}
 		})
 	}
@@ -617,7 +617,7 @@ func TestAbortAllJobs(t *testing.T) {
 			}
 
 			if err := abortAllJobs(client, pr); err != nil {
-				t.Fatalf("error caling abortAllJobs: %v", err)
+				t.Fatalf("error calling abortAllJobs: %v", err)
 			}
 
 			pj, err := pjClient.ProwV1().ProwJobs("").Get(context.Background(), pj().Name, metav1.GetOptions{})

@@ -558,7 +558,7 @@ func TestFilterOutDisabledJiraProjects(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			output := filterOutDisabledJiraProjects(tc.candidates, tc.jiraConfig)
 			if diff := cmp.Diff(tc.expectedOutput, output); diff != "" {
-				t.Fatalf("actual output differes from expected output: %s", diff)
+				t.Fatalf("actual output differs from expected output: %s", diff)
 			}
 		})
 	}

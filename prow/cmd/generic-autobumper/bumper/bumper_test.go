@@ -253,7 +253,7 @@ func TestGetAssignment(t *testing.T) {
 		expectResKeyword     string
 	}{
 		{
-			description:      "AssignTo takes precedence over oncall setings",
+			description:      "AssignTo takes precedence over oncall settings",
 			assignTo:         "some-user",
 			expectResKeyword: "/cc @some-user",
 		},

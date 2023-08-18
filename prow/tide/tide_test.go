@@ -3687,7 +3687,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 			},
 		},
 		{
-			name: "Inrepoconfig jobs do not get included if headref doesnt match",
+			name: "Inrepoconfig jobs do not get included if headref doesn't match",
 			prs: []CodeReviewCommon{
 				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2, func(pr *PullRequest) {
 					pr.HeadRefOID = githubql.String("sha2")
@@ -3765,7 +3765,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to get presubmits for batch: %v", err)
 			}
-			// Clear regexes, otherwise DeepEqual comparison wont work
+			// Clear regexes, otherwise DeepEqual comparison won't work
 			config.ClearCompiledRegexes(presubmits)
 			if !apiequality.Semantic.DeepEqual(tc.expected, presubmits) {
 				t.Errorf("returned presubmits do not match expected, diff: %v\n", diff.ObjectReflectDiff(tc.expected, presubmits))
@@ -4013,7 +4013,7 @@ func (c *indexingClient) List(ctx context.Context, list ctrlruntimeclient.Object
 func prowYAMLGetterForHeadRefs(headRefsToLookFor []string, ps []config.Presubmit) config.ProwYAMLGetter {
 	return func(_ *config.Config, _ git.ClientFactory, _, _ string, headRefs ...string) (*config.ProwYAML, error) {
 		if len(headRefsToLookFor) != len(headRefs) {
-			return nil, fmt.Errorf("expcted %d headrefs, got %d", len(headRefsToLookFor), len(headRefs))
+			return nil, fmt.Errorf("expected %d headrefs, got %d", len(headRefsToLookFor), len(headRefs))
 		}
 		var presubmits []config.Presubmit
 		if sets.New[string](headRefsToLookFor...).Equal(sets.New[string](headRefs...)) {

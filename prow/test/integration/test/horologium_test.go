@@ -63,7 +63,7 @@ func TestLaunchProwJob(t *testing.T) {
 	}
 
 	// Horologium itself is pretty good at handling the configmap update, but
-	// not kubelet, accoriding to
+	// not kubelet, according to
 	// https://github.com/kubernetes/kubernetes/issues/30189 kubelet syncs
 	// configmap updates on existing pods every minute, which is a long wait.
 	// The proposed fix in the issue was updating the deployment, which imo

@@ -175,7 +175,7 @@ func TestCacheStorage(t *testing.T) {
 			return nil
 		})
 		if err != nil {
-			t.Fatalf("Got unepected error getting cache key for test case '%s': %v", tc.Name, err)
+			t.Fatalf("Got unexpected error getting cache key for test case '%s': %v", tc.Name, err)
 		}
 	}
 

@@ -1516,7 +1516,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			},
 		},
 		{
-			name: "both static and inrepoconfig jobs are consired",
+			name: "both static and inrepoconfig jobs are considered",
 			config: Config{
 				JobConfig: JobConfig{
 					PresubmitsStatic: map[string][]Presubmit{

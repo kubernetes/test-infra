@@ -27,7 +27,7 @@ import (
 // our client implements Client
 var _ Client = &client{}
 
-// our logger implements the leveledLogger inteface
+// our logger implements the leveledLogger interface
 var _ retryablehttp.LeveledLogger = &retryableHTTPLogrusWrapper{}
 
 func TestJiraErrorStatusCode(t *testing.T) {

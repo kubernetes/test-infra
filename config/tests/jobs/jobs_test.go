@@ -706,7 +706,7 @@ func checkKubekinsPresets(jobName string, spec *coreapi.PodSpec, labels map[stri
 			}
 		}
 
-		if scenario == "kubenetes_e2e" {
+		if scenario == "kubernetes_e2e" {
 			ssh = false
 			for key, val := range labels {
 				if (key == "preset-k8s-ssh" || key == "preset-aws-ssh") && val == "true" {
@@ -1099,7 +1099,7 @@ func TestClusterName(t *testing.T) {
 	jobsToFix := 0
 	jobs := allStaticJobs()
 	for _, job := range jobs {
-		// Useful for identifiying how many jobs are running a specific cluster by omitting from this list
+		// Useful for identifying how many jobs are running a specific cluster by omitting from this list
 		validClusters := []string{"default", "test-infra-trusted", "k8s-infra-prow-build", "k8s-infra-prow-build-trusted", "eks-prow-build-cluster"}
 		if !slices.Contains(validClusters, job.Cluster) || job.Cluster == "" {
 			err := fmt.Errorf("must run in one of these clusters: %v, found: %v", validClusters, job.Cluster)

@@ -522,7 +522,7 @@ func Test_GetSimplifiedPathTeams(t *testing.T) {
 		{name: "the team itself", args: args{path: "/teams/3673574"}, want: "/teams/:id"},
 		{name: "members", args: args{path: "/teams/3005744/members"}, want: "/teams/:id/members"},
 		{name: "all repos", args: args{path: "/teams/1020908/repos"}, want: "/teams/:id/repos"},
-		{name: "inviations", args: args{path: "/teams/1135236/invitations"}, want: "/teams/:id/invitations"},
+		{name: "invitations", args: args{path: "/teams/1135236/invitations"}, want: "/teams/:id/invitations"},
 		{name: "a repo", args: args{path: "/teams/2984756/repos/openshift/gcp-project-operator"}, want: "/teams/:id/repos/:org/:repo"},
 		{name: "a member", args: args{path: "/teams/3224926/memberships/deads2k"}, want: "/teams/:id/memberships/:user"},
 	}

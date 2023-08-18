@@ -135,6 +135,6 @@ func TestGetJobLabelMap(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expected, jobLabelMap) {
-		t.Errorf("Unexpected mis-match: %s", diff.ObjectReflectDiff(expected, jobLabelMap))
+		t.Errorf("Unexpected mismatch: %s", diff.ObjectReflectDiff(expected, jobLabelMap))
 	}
 }

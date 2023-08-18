@@ -581,7 +581,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 		}
 		botUser, err := fc.BotUser()
 		if err != nil {
-			t.Fatalf("For case %s, could not get Bot nam", tc.name)
+			t.Fatalf("For case %s, could not get Bot name", tc.name)
 		}
 		ic := github.IssueComment{
 			User: github.User{

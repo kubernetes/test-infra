@@ -51,7 +51,7 @@ func TestGetConfig(t *testing.T) {
 			want: def,
 		},
 		{
-			name: "configure highligher",
+			name: "configure highlighter",
 			raw:  `{"highlighter": {"endpoint": "service", "pin": true}}`,
 			want: func() parsedConfig {
 				d := def

@@ -1200,7 +1200,7 @@ func TestSpecFromJobBase(t *testing.T) {
 			},
 			verify: func(pj prowapi.ProwJobSpec) error {
 				if !pj.Hidden {
-					return errors.New("hidden property didnt get copied")
+					return errors.New("hidden property didn't get copied")
 				}
 				return nil
 			},

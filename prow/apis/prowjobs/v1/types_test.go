@@ -267,7 +267,7 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 			},
 		},
 		{
-			name: "ingnore interrupts set",
+			name: "ignore interrupts set",
 			provided: &DecorationConfig{
 				UploadIgnoresInterrupts: &truth,
 			},
@@ -277,7 +277,7 @@ func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 			},
 		},
 		{
-			name: "do not ingnore interrupts ",
+			name: "do not ignore interrupts ",
 			provided: &DecorationConfig{
 				UploadIgnoresInterrupts: &lies,
 			},

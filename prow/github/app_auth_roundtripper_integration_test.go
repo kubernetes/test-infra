@@ -51,7 +51,7 @@ func TestGetOrg(t *testing.T) {
 		"http://localhost:8888",
 	)
 	if err != nil {
-		t.Fatalf("failed to constuct client: %v", err)
+		t.Fatalf("failed to construct client: %v", err)
 	}
 
 	if _, err := client.GetOrg(org); err != nil {

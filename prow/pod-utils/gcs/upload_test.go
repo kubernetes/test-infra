@@ -92,7 +92,7 @@ func TestUploadNewReaderFunc(t *testing.T) {
 		wantReaderFuncMeta readerFuncMetadata
 	}{
 		{
-			name:          "Succeed on firt retry",
+			name:          "Succeed on first retry",
 			isErrExpected: false,
 			readerFuncOpts: readerFuncOptions{
 				newFailsOnNthAttempt:   -1,

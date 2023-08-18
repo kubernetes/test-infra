@@ -57,7 +57,7 @@ func TestVariable(t *testing.T) {
 }
 
 func TestSimplify(t *testing.T) {
-	s := NewSimplifier(L("", // shadow element mimicing the root
+	s := NewSimplifier(L("", // shadow element mimicking the root
 		L(""),
 		L("repos",
 			V("owner",
