@@ -116,12 +116,6 @@ presubmits:
           value: "true"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
           value: "25"
-        - name: PODS_PER_NODE
-          value: "1"
-        - name: BIG_GROUP_SIZE
-          value: "5"
-        - name: MEDIUM_GROUP_SIZE
-          value: "5"
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
