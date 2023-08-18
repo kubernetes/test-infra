@@ -161,7 +161,7 @@ func (i *interactor) CloneWithRepoOpts(from string, repoOpts RepoOpts) error {
 		cloneArgs = append(cloneArgs, "--sparse")
 	}
 
-	cloneArgs = append(cloneArgs, []string{from, i.dir}...)
+	cloneArgs = append(cloneArgs, from, i.dir)
 
 	if out, err := i.executor.Run(cloneArgs...); err != nil {
 		return fmt.Errorf("error creating a clone: %w %v", err, string(out))
