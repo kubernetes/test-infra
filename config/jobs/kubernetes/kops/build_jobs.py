@@ -96,7 +96,9 @@ def build_test(cloud='aws',
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
 
-    validation_wait = '20m' if distro in ('flatcar', 'flatcararm64') else None
+    validation_wait = None
+    if distro in ('flatcar', 'flatcararm64') or (distro in ('amzn2', 'rhel8') and kops_version in ('1.26', '1.27')): # pylint: disable=line-too-long
+        validation_wait = '20m'
 
     suffix = ""
     if cloud and cloud != "aws":
