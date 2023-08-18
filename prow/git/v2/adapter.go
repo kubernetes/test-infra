@@ -59,10 +59,10 @@ func (a *clientFactoryAdapter) ClientFor(org, repo string) (RepoClient, error) {
 	return &repoClientAdapter{Repo: r}, err
 }
 
-// v1 clients do not support customizing pre-repo options.
+// v1 clients do not support customizing pre-repo options. This is a blocker for
+// using with inrepoconfig clones.
 func (a *clientFactoryAdapter) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpts) (RepoClient, error) {
-	r, err := a.Client.Clone(org, repo)
-	return &repoClientAdapter{Repo: r}, err
+	return nil, errors.New("no ClientForWithRepoOpts implementation exists in the v1 repo client")
 }
 
 type repoClientAdapter struct {
