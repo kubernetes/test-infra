@@ -556,10 +556,7 @@ func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCache, erro
 
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized, exit with an error.
-	cache, err := config.NewInRepoConfigCache(
-		10,
-		ca,
-		cf)
+	cache, err := config.NewInRepoConfigCache(10, ca, cf)
 	if err != nil {
 		t.Errorf("error creating cache: %v", err)
 	}
