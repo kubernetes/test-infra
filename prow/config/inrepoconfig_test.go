@@ -31,10 +31,6 @@ import (
 
 var defaultBranch = localgit.DefaultBranch("")
 
-func TestDefaultProwYAMLGetter(t *testing.T) {
-	testDefaultProwYAMLGetter(localgit.New, t)
-}
-
 func TestDefaultProwYAMLGetterV2(t *testing.T) {
 	testDefaultProwYAMLGetter(localgit.NewV2, t)
 }
