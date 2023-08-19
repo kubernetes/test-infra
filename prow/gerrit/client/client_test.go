@@ -29,7 +29,6 @@ import (
 	gerrit "github.com/andygrunwald/go-gerrit"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/io"
 )
@@ -324,9 +323,8 @@ func TestQueryChange(t *testing.T) {
 		lastUpdate map[string]time.Time
 		changes    map[string][]gerrit.ChangeInfo
 		comments   map[string]map[string][]gerrit.CommentInfo
-		// expected
-		revisions map[string][]string
-		messages  map[string][]gerrit.ChangeMessageInfo
+		revisions  map[string][]string
+		messages   map[string][]gerrit.ChangeMessageInfo
 	}{
 		{
 			name: "no changes",
@@ -345,7 +343,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now.Add(-time.Hour)),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -369,7 +366,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "bar~branch~random-string",
-						Number:          1,
 						ChangeID:        "random-string",
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
@@ -454,7 +450,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "100",
-						Number:          100,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -486,7 +481,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -512,7 +506,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -538,7 +531,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -562,7 +554,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -586,7 +577,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "evil",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -610,7 +600,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -623,7 +612,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "2",
-						Number:          2,
 						CurrentRevision: "2-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -649,7 +637,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -662,7 +649,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "2",
-						Number:          2,
 						CurrentRevision: "2-1",
 						Updated:         makeStamp(now.Add(-time.Hour)),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -689,7 +675,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -702,7 +687,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "2",
-						Number:          2,
 						CurrentRevision: "2-1",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -717,7 +701,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "boo",
 						ID:              "3",
-						Number:          3,
 						CurrentRevision: "3-2",
 						Updated:         makeStamp(now),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -733,7 +716,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "evil",
 						ID:              "4",
-						Number:          4,
 						CurrentRevision: "4-1",
 						Updated:         makeStamp(now.Add(-time.Hour)),
 						Revisions: map[string]gerrit.RevisionInfo{
@@ -760,7 +742,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Submitted:       newStamp(now),
@@ -782,7 +763,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Submitted:       newStamp(now),
@@ -802,7 +782,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Submitted:       newStamp(now.Add(-2 * time.Minute)),
@@ -822,7 +801,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "1",
-						Number:          1,
 						CurrentRevision: "1-1",
 						Updated:         makeStamp(now),
 						Status:          "ABANDONED",
@@ -851,7 +829,6 @@ func TestQueryChange(t *testing.T) {
 					{
 						Project:         "bar",
 						ID:              "2",
-						Number:          2,
 						CurrentRevision: "2-1",
 						Updated:         makeStamp(now),
 						Submitted:       newStamp(now.Add(-time.Hour)),
@@ -867,48 +844,6 @@ func TestQueryChange(t *testing.T) {
 				},
 			},
 			revisions: map[string][]string{},
-		},
-		{
-			name: "one up-to-date change found twice due to pagination. Duplicate should be removed",
-			lastUpdate: map[string]time.Time{
-				"bar": now.Add(-time.Hour),
-			},
-			changes: map[string][]gerrit.ChangeInfo{
-				"foo": {
-					{
-						Project:         "bar",
-						ID:              "1",
-						Number:          1,
-						CurrentRevision: "1-1",
-						Updated:         makeStamp(now.Add(-time.Minute)),
-						Revisions: map[string]gerrit.RevisionInfo{
-							"1-1": {
-								Created: makeStamp(now.Add(-time.Minute)),
-							},
-						},
-						Status: "NEW",
-					},
-					{
-						Project:         "bar",
-						ID:              "1",
-						Number:          1,
-						CurrentRevision: "1-2",
-						Updated:         makeStamp(now),
-						Revisions: map[string]gerrit.RevisionInfo{
-							"1-1": {
-								Created: makeStamp(now.Add(-time.Minute)),
-							},
-							"1-2": {
-								Created: makeStamp(now),
-							},
-						},
-						Status: "NEW",
-					},
-				},
-			},
-			revisions: map[string][]string{
-				"foo": {"1-2"},
-			},
 		},
 	}
 
@@ -942,14 +877,9 @@ func TestQueryChange(t *testing.T) {
 
 		revisions := map[string][]string{}
 		messages := map[string][]gerrit.ChangeMessageInfo{}
-		seen := sets.NewInt()
 		for instance, changes := range changes {
 			revisions[instance] = []string{}
 			for _, change := range changes {
-				if seen.Has(change.Number) {
-					t.Errorf("Change number %d appears multiple times in the query results.", change.Number)
-				}
-				seen.Insert(change.Number)
 				revisions[instance] = append(revisions[instance], change.CurrentRevision)
 				messages[change.ChangeID] = append(messages[change.ChangeID], change.Messages...)
 			}
