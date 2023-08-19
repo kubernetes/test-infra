@@ -1,62 +1,87 @@
 # sigs.k8s.io/descheduler presubmits
 presubmits:
   kubernetes-sigs/descheduler:
-  - name: pull-descheduler-verify-release-1-22
+  - name: pull-descheduler-verify-release-1-28
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-release-1.22
+      testgrid-tab-name: pull-descheduler-verify-release-1.28
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.22$
+    - ^release-1.28$
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.16.14
+      - image: public.ecr.aws/docker/library/golang:1.20.7
         command:
         - make
         args:
         - verify
-  - name: pull-descheduler-verify-build-release-1-22
+        resources:
+          limits:
+            cpu: 6
+            memory: 4Gi
+          requests:
+            cpu: 6
+            memory: 4Gi
+  - name: pull-descheduler-verify-build-release-1-28
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-build-release-1.22
+      testgrid-tab-name: pull-descheduler-verify-build-release-1.28
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.22$
+    - ^release-1.28$
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.16.14
+      - image: public.ecr.aws/docker/library/golang:1.20.7
         command:
         - make
         args:
         - build
-  - name: pull-descheduler-unit-test-release-1-22
+        resources:
+          limits:
+            cpu: 6
+            memory: 4Gi
+          requests:
+            cpu: 6
+            memory: 4Gi
+  - name: pull-descheduler-unit-test-release-1-28
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-unit-test-release-1.22
+      testgrid-tab-name: pull-descheduler-unit-test-release-1.28
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.22$
+    - ^release-1.28$
     always_run: false
     run_if_changed: '\.go$'
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.16.14
+      - image: public.ecr.aws/docker/library/golang:1.20.7
         command:
         - make
         args:
         - test-unit
-  - name: pull-descheduler-test-e2e-k8s-release-1-22-1-22
+        resources:
+          limits:
+            cpu: 6
+            memory: 4Gi
+          requests:
+            cpu: 6
+            memory: 4Gi
+  - name: pull-descheduler-test-e2e-k8s-release-1-28-1-28
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-22-1.22
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-28-1.28
     decorate: true
     decoration_config:
       timeout: 20m
@@ -65,7 +90,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.22
+    - release-1.28
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -74,7 +99,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.22.1"
+          value: "v1.28.0"
         - name: KIND_E2E
           value: "true"
         args:
@@ -83,10 +108,18 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-test-e2e-k8s-release-1-22-1-21
+        resources:
+          limits:
+            cpu: 6
+            memory: 4Gi
+          requests:
+            cpu: 6
+            memory: 4Gi
+  - name: pull-descheduler-test-e2e-k8s-release-1-28-1-27
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-22-1.21
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-28-1.27
     decorate: true
     decoration_config:
       timeout: 20m
@@ -95,7 +128,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.22
+    - release-1.28
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -104,7 +137,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.21.2"
+          value: "v1.27.3"
         - name: KIND_E2E
           value: "true"
         args:
@@ -113,10 +146,18 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-test-e2e-k8s-release-1-22-1-20
+        resources:
+          limits:
+            cpu: 6
+            memory: 4Gi
+          requests:
+            cpu: 6
+            memory: 4Gi
+  - name: pull-descheduler-test-e2e-k8s-release-1-28-1-26
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-22-1.20
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-28-1.26
     decorate: true
     decoration_config:
       timeout: 20m
@@ -125,7 +166,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.22
+    - release-1.28
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -134,7 +175,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.20.7"
+          value: "v1.26.6"
         - name: KIND_E2E
           value: "true"
         args:
@@ -143,3 +184,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 6
+            memory: 4Gi
+          requests:
+            cpu: 6
+            memory: 4Gi
