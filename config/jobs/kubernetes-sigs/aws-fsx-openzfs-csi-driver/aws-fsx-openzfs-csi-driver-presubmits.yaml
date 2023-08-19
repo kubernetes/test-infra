@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/aws-fsx-openzfs-csi-driver:
   - name: pull-aws-fsx-openzfs-csi-driver-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -15,6 +16,13 @@ presubmits:
         args:
         - make
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-fsx-openzfs-csi-driver
       testgrid-tab-name: unit-test
@@ -39,6 +47,13 @@ presubmits:
         - test-sanity
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-fsx-openzfs-csi-driver
       testgrid-tab-name: sanity-test
