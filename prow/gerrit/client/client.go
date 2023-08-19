@@ -658,7 +658,7 @@ func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, p
 }
 
 func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]gerrit.ChangeInfo, error) {
-	var pending []gerrit.ChangeInfo
+	pendingChanges := make(map[int]gerrit.ChangeInfo)
 
 	var opt gerrit.QueryChangeOptions
 	opt.Query = append(opt.Query, strings.Join(append(additionalFilters, "project:"+project), "+"))
@@ -685,7 +685,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 
 		if changes == nil || len(*changes) == 0 {
 			log.Info("No more changes")
-			return pending, nil
+			goto return_result
 		}
 
 		log.WithField("changes", len(*changes)).Debug("Found gerrit changes from page.")
@@ -706,7 +706,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 			// stop when we find a change last updated before lastUpdate
 			if !updated.After(lastUpdate) {
 				log.Debug("No more recently updated changes")
-				return pending, nil
+				goto return_result
 			}
 
 			// process recently updated change
@@ -719,7 +719,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 					continue
 				}
 				log.Debug("Found merged change")
-				pending = append(pending, change)
+				pendingChanges[change.Number] = change
 			case New:
 				// we need to make sure the change update is from a fresh commit change
 				rev, ok := change.Revisions[change.CurrentRevision]
@@ -758,13 +758,19 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 				if !newMessages {
 					log.Debug("Found updated change")
 				}
-				pending = append(pending, change)
+				pendingChanges[change.Number] = change
 			default:
 				// change has been abandoned, do nothing
 				log.Debug("Ignored change")
 			}
 		}
 	}
+return_result:
+	result := []gerrit.ChangeInfo{}
+	for _, change := range pendingChanges {
+		result = append(result, change)
+	}
+	return result, nil
 }
 
 // ChangedFilesProvider lists (in lexicographic order) the files changed as part of a Gerrit patchset.
