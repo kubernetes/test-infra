@@ -29,6 +29,7 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/tot: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
   k8s.io/test-infra/prow/cmd/prow-controller-manager: gcr.io/k8s-prow/git-custom-k8s-auth:v20230307-5398de3144
   k8s.io/test-infra/prow/cmd/admission: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
+  k8s.io/test-infra/prow/cmd/webhook-server: gcr.io/distroless/static:nonroot@sha256:9ecc53c269509f63c69a266168e4a687c7eb8c0cfd753bd8bfcaa4f58a90876f
   k8s.io/test-infra/prow/cmd/mkpj: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
   k8s.io/test-infra/prow/cmd/mkpod: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
   k8s.io/test-infra/prow/cmd/pipeline: gcr.io/k8s-prow/alpine:v20230718-8d3170488d
