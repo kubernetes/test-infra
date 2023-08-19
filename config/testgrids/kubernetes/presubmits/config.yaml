@@ -4,6 +4,7 @@ dashboard_groups:
   - presubmits-alibaba-cloud-csi-driver
   - presubmits-cloud-provider-alibaba
   - presubmits-cloud-provider-vsphere-blocking
+  - presubmits-ec2
   - presubmits-kops
   - presubmits-kube-batch
   - presubmits-kubernetes-blocking
@@ -147,3 +148,4 @@ dashboards:
 - name: presubmits-misc
 - name: presubmits-node-problem-detector
 - name: presubmits-test-infra
+- name: presubmits-ec2
