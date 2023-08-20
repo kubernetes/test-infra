@@ -76,7 +76,7 @@ presubmits:
         args:
         - bash
         - -c
-        - pip3 install reformat-gherkin==3.0.0 --ignore-installed PyYAML && make verify-gherkin
+        - pip3 install reformat-gherkin==3.0.1 --ignore-installed PyYAML && make verify-gherkin
         resources:
           limits:
             cpu: 1
