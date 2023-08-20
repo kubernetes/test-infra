@@ -129,6 +129,8 @@ presubmits:
       preset-e2e-containerd-ec2: "true"
       preset-dind-enabled: "true"
     path_alias: sigs.k8s.io/provider-aws-test-infra
+    always_run: true
+    optional: false
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
@@ -186,6 +188,8 @@ presubmits:
       preset-e2e-containerd-ec2: "true"
       preset-dind-enabled: "true"
     path_alias: sigs.k8s.io/provider-aws-test-infra
+    always_run: true
+    optional: false
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
