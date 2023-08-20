@@ -150,7 +150,7 @@ periodics:
           - bash
           - -c
           - |
-            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@v0.1.0
             kubetest2 ec2 \
              --build \
              --target-build-arch linux/amd64 \
@@ -207,7 +207,7 @@ periodics:
           - bash
           - -c
           - |
-            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@v0.1.0
             kubetest2 ec2 \
              --build \
              --target-build-arch linux/arm64 \
@@ -264,7 +264,7 @@ periodics:
           - bash
           - -c
           - |
-            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@v0.1.0
             kubetest2 ec2 \
              --build \
              --target-build-arch linux/amd64 \
@@ -322,7 +322,7 @@ periodics:
           - bash
           - -c
           - |
-            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@latest
+            GOPROXY=direct go install sigs.k8s.io/provider-aws-test-infra/kubetest2-ec2@v0.1.0
             kubetest2 ec2 \
              --build \
              --target-build-arch linux/arm64 \
