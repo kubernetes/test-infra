@@ -1,52 +1,77 @@
 # sigs.k8s.io/cluster-capacity presubmits
 presubmits:
   kubernetes-sigs/cluster-capacity:
-  - name: pull-cluster-capacity-verify-gofmt-release-1-21
+  - name: pull-cluster-capacity-verify-gofmt-release-1-28
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.21$
+    - ^release-1.28$
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.16.14
+      - image: public.ecr.aws/docker/library/golang:1.20.7
         command:
         - make
         args:
         - verify-gofmt
-  - name: pull-cluster-capacity-verify-build-release-1-21
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-verify-build-release-1-28
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.21$
+    - ^release-1.28$
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.16.14
+      - image: public.ecr.aws/docker/library/golang:1.20.7
         command:
         - make
         args:
         - build
-  - name: pull-cluster-capacity-unit-test-release-1-21
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-unit-test-release-1-28
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
     # The script this job runs is not in all branches.
-    - ^release-1.21$
+    - ^release-1.28$
     always_run: true
     spec:
       containers:
-      - image: public.ecr.aws/docker/library/golang:1.16.14
+      - image: public.ecr.aws/docker/library/golang:1.20.7
         command:
         - make
         args:
         - test-unit
-  - name: pull-cluster-capacity-test-e2e-k8s-release-1-21-1-21
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-28-1-28
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.21-1.21
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.28-1.28
     decorate: true
     decoration_config:
       timeout: 20m
@@ -56,7 +81,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.21
+    - release-1.28
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -65,7 +90,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.21.2"
+          value: "v1.28.0"
         - name: KIND_E2E
           value: "true"
         args:
@@ -74,10 +99,18 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-cluster-capacity-test-e2e-k8s-release-1-21-1-20
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-28-1-27
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.21-1.20
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.28-1.27
     decorate: true
     decoration_config:
       timeout: 20m
@@ -87,7 +120,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.21
+    - release-1.28
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -96,7 +129,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.20.7"
+          value: "v1.27.3"
         - name: KIND_E2E
           value: "true"
         args:
@@ -105,10 +138,18 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-cluster-capacity-test-e2e-k8s-release-1-21-1-19
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-28-1-26
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.21-1.19
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.28-1.26
     decorate: true
     decoration_config:
       timeout: 20m
@@ -118,7 +159,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - release-1.21
+    - release-1.28
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -127,7 +168,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.19.7"
+          value: "v1.26.6"
         - name: KIND_E2E
           value: "true"
         args:
@@ -136,3 +177,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi

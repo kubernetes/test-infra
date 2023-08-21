@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/cluster-capacity:
   - name: pull-cluster-capacity-verify-gofmt-release-1-25
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
@@ -15,7 +16,15 @@ presubmits:
         - make
         args:
         - verify-gofmt
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
   - name: pull-cluster-capacity-verify-build-release-1-25
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
@@ -29,7 +38,15 @@ presubmits:
         - make
         args:
         - build
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
   - name: pull-cluster-capacity-unit-test-release-1-25
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     branches:
@@ -43,7 +60,15 @@ presubmits:
         - make
         args:
         - test-unit
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
   - name: pull-cluster-capacity-test-e2e-k8s-release-1-25-1-25
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.25-1.25
@@ -65,7 +90,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.25.2"
+          value: "v1.25.11"
         - name: KIND_E2E
           value: "true"
         args:
@@ -74,7 +99,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
   - name: pull-cluster-capacity-test-e2e-k8s-release-1-25-1-24
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.25-1.24
@@ -96,7 +129,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.24.4"
+          value: "v1.24.13"
         - name: KIND_E2E
           value: "true"
         args:
@@ -105,7 +138,15 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
   - name: pull-cluster-capacity-test-e2e-k8s-release-1-25-1-23
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.25-1.23
@@ -127,7 +168,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.23.3"
+          value: "v1.23.17"
         - name: KIND_E2E
           value: "true"
         args:
@@ -136,3 +177,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
