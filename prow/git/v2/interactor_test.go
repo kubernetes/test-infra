@@ -472,44 +472,36 @@ func TestInteractor_BranchExists(t *testing.T) {
 	}
 }
 
-func TestInteractor_CommitExists(t *testing.T) {
+func TestInteractor_ObjectExists(t *testing.T) {
 	var testCases = []struct {
 		name          string
+		object        string
 		responses     map[string]execResponse
 		expectedCalls [][]string
 		expectedOut   bool
-		expectedErr   bool
+		// ObjectExists always returns a nil error, so we don't test it.
 	}{
 		{
-			name: "happy case",
+			name:   "happy case",
+			object: "abc123",
 			responses: map[string]execResponse{
-				"branch --contains abc123": {out: []byte("")},
+				"cat-file -e abc123": {out: []byte("")},
 			},
 			expectedCalls: [][]string{
-				{"branch", "--contains", "abc123"},
+				{"cat-file", "-e", "abc123"},
 			},
 			expectedOut: true,
 		},
 		{
-			name: "Does not exist",
+			name:   "Does not exist",
+			object: "000000",
 			responses: map[string]execResponse{
-				"branch --contains abc123": {out: []byte(""), err: errors.New("error: no such commit abc123")},
+				"cat-file -e 000000": {out: []byte(""), err: errors.New("")},
 			},
 			expectedCalls: [][]string{
-				{"branch", "--contains", "abc123"},
+				{"cat-file", "-e", "000000"},
 			},
 			expectedOut: false,
-		},
-		{
-			name: "error",
-			responses: map[string]execResponse{
-				"branch --contains abc123": {out: []byte(""), err: errors.New("error: malformed object name abc123")},
-			},
-			expectedCalls: [][]string{
-				{"branch", "--contains", "abc123"},
-			},
-			expectedOut: false,
-			expectedErr: true,
 		},
 	}
 
@@ -523,13 +515,7 @@ func TestInteractor_CommitExists(t *testing.T) {
 				executor: &e,
 				logger:   logrus.WithField("test", testCase.name),
 			}
-			actualOut, err := i.CommitExists("abc123")
-			if err != nil && !testCase.expectedErr {
-				t.Errorf("did not expect error, but got err: %v", err)
-			}
-			if err == nil && testCase.expectedErr {
-				t.Error("expected error but did not get one")
-			}
+			actualOut, _ := i.ObjectExists(testCase.object)
 			if testCase.expectedOut != actualOut {
 				t.Errorf("%s: got incorrect output: expected %v, got %v", testCase.name, testCase.expectedOut, actualOut)
 			}

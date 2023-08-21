@@ -93,8 +93,8 @@ func (a *repoClientAdapter) PushToNamedFork(forkName, branch string, force bool)
 	return a.Repo.PushToNamedFork(forkName, branch, force)
 }
 
-func (a *repoClientAdapter) CommitExists(sha string) (bool, error) {
-	return false, errors.New("no CommitExists implementation exists in the v1 repo client")
+func (a *repoClientAdapter) ObjectExists(sha string) (bool, error) {
+	return false, errors.New("no ObjectExists implementation exists in the v1 repo client")
 }
 
 func (a *repoClientAdapter) PushToCentral(branch string, force bool) error {

@@ -182,7 +182,7 @@ func prowYAMLGetter(
 
 func ensureCommits(repo git.RepoClient, baseSHA string, headSHAs ...string) error {
 	//Ensure baseSHA exists.
-	if exists, _ := repo.CommitExists(baseSHA); !exists {
+	if exists, _ := repo.ObjectExists(baseSHA); !exists {
 		if err := repo.Fetch(baseSHA); err != nil {
 			return fmt.Errorf("failed to fetch baseSHA: %s: %v", baseSHA, err)
 		}
@@ -190,7 +190,7 @@ func ensureCommits(repo git.RepoClient, baseSHA string, headSHAs ...string) erro
 	//Ensure headSHAs exist
 	for _, sha := range headSHAs {
 		// This is best effort. No need to check for error
-		if exists, _ := repo.CommitExists(sha); !exists {
+		if exists, _ := repo.ObjectExists(sha); !exists {
 			if err := repo.Fetch(sha); err != nil {
 				return fmt.Errorf("failed to fetch headSHA: %s: %v", sha, err)
 			}
