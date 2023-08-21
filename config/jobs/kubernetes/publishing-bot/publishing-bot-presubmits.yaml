@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/publishing-bot:
   - name: pull-publishing-bot-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: k8s.io/publishing-bot
@@ -9,10 +10,18 @@ presubmits:
       - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - make
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: build
   - name: pull-publishing-bot-test
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: k8s.io/publishing-bot
@@ -22,10 +31,18 @@ presubmits:
         command:
         - make
         - test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: test
   - name: pull-publishing-bot-validate-rules
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: k8s.io/publishing-bot
@@ -44,10 +61,18 @@ presubmits:
         - -mod=mod
         - k8s.io/publishing-bot/cmd/validate-rules
         - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: validate-rules
   - name: pull-publishing-bot-test-kubernetes-master
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     decoration_config:
@@ -75,13 +100,13 @@ presubmits:
             privileged: true
           resources:
             requests:
-              cpu: 300m
+              cpu: 2
               memory: 2Gi
             limits:
               cpu: 2
               memory: 2Gi
   - name: pull-publishing-bot-image
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: "k8s.io/publishing-bot"
     always_run: true
@@ -116,6 +141,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubernetes/kubernetes:
   - name: pull-publishing-bot-validate
+    cluster: eks-prow-build-cluster
     always_run: false
     decorate: true
     path_alias: k8s.io/kubernetes
@@ -137,6 +163,13 @@ presubmits:
         - -mod=mod
         - k8s.io/publishing-bot/cmd/validate-rules
         - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: validate
