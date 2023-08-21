@@ -658,14 +658,25 @@ func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, p
 }
 
 func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, additionalFilters ...string) ([]gerrit.ChangeInfo, error) {
-	pendingChanges := make(map[int]gerrit.ChangeInfo)
-
 	var opt gerrit.QueryChangeOptions
 	opt.Query = append(opt.Query, strings.Join(append(additionalFilters, "project:"+project), "+"))
 	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES", "LABELS"}
 
 	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
 	var start int
+
+	pending := []gerrit.ChangeInfo{}
+	// Deduplicate changes repeated due to pagination, preserving order, and
+	// keeping the last seen.
+	seenPos := map[int]int{}
+	add := func(ci gerrit.ChangeInfo) {
+		if p, ok := seenPos[ci.Number]; ok {
+			pending[p] = ci
+			return
+		}
+		seenPos[ci.Number] = len(pending)
+		pending = append(pending, ci)
+	}
 
 	for {
 		opt.Limit = rateLimit
@@ -685,7 +696,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 
 		if changes == nil || len(*changes) == 0 {
 			log.Info("No more changes")
-			goto return_result
+			return pending, nil
 		}
 
 		log.WithField("changes", len(*changes)).Debug("Found gerrit changes from page.")
@@ -706,7 +717,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 			// stop when we find a change last updated before lastUpdate
 			if !updated.After(lastUpdate) {
 				log.Debug("No more recently updated changes")
-				goto return_result
+				return pending, nil
 			}
 
 			// process recently updated change
@@ -719,7 +730,7 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 					continue
 				}
 				log.Debug("Found merged change")
-				pendingChanges[change.Number] = change
+				add(change)
 			case New:
 				// we need to make sure the change update is from a fresh commit change
 				rev, ok := change.Revisions[change.CurrentRevision]
@@ -758,19 +769,13 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 				if !newMessages {
 					log.Debug("Found updated change")
 				}
-				pendingChanges[change.Number] = change
+				add(change)
 			default:
 				// change has been abandoned, do nothing
 				log.Debug("Ignored change")
 			}
 		}
 	}
-return_result:
-	result := []gerrit.ChangeInfo{}
-	for _, change := range pendingChanges {
-		result = append(result, change)
-	}
-	return result, nil
 }
 
 // ChangedFilesProvider lists (in lexicographic order) the files changed as part of a Gerrit patchset.
