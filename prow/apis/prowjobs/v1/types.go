@@ -350,7 +350,13 @@ func (rac *RerunAuthConfig) IsAllowAnyone() bool {
 }
 
 type ReporterConfig struct {
-	Slack *SlackReporterConfig `json:"slack,omitempty"`
+	ResultStore *ResultStoreReporter `json:"resultstore,omitempty"`
+	Slack       *SlackReporterConfig `json:"slack,omitempty"`
+}
+
+type ResultStoreReporter struct {
+	// Presence of ProjectID is required to report during alpha.
+	ProjectID string `json:"project_id,omitempty"`
 }
 
 type SlackReporterConfig struct {
