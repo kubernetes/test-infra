@@ -332,34 +332,12 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 		c.repoLocks[cacheDir] = &sync.Mutex{}
 	}
 	c.masterLock.Unlock()
-	c.repoLocks[cacheDir].Lock()
-	defer c.repoLocks[cacheDir].Unlock()
-	if _, err := os.Stat(path.Join(cacheDir, "HEAD")); os.IsNotExist(err) {
-		// we have not yet cloned this repo, we need to do a full clone
-		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
-			return nil, err
-		}
-		if err := cacheClientCacher.MirrorClone(); err != nil {
-			return nil, err
-		}
-	} else if err != nil {
-		// something unexpected happened
-		return nil, err
-	} else {
-		// We have cloned the repo previously, but will refresh it. By default
-		// we refresh all refs with a call to `git remote update`.
-		//
-		// This is the default behavior if FetchCommits is empty or nil (i.e.,
-		// when we don't define a targeted list of commits to fetch directly).
-		if len(repoOpts.FetchCommits) == 0 {
-			if err := cacheClientCacher.RemoteUpdate(); err != nil {
-				return nil, err
-			}
-		}
-	}
 
-	// Clone the secondary clone (local clone with checked out files) from the
-	// primary (bare repo).
+	// First create or update the primary clone (in "cacheDir").
+	c.ensureFreshPrimary(cacheDir, cacheClientCacher, repoOpts)
+
+	// Initialize the new derivative repo (secondary clone) from the primary
+	// clone. This is a local clone operation.
 	if err := repoClientCloner.CloneWithRepoOpts(cacheDir, repoOpts); err != nil {
 		return nil, err
 	}
@@ -382,6 +360,36 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	}
 
 	return repoClient, nil
+}
+
+func (c *clientFactory) ensureFreshPrimary(cacheDir string, cacheClientCacher cacher, repoOpts RepoOpts) error {
+	c.repoLocks[cacheDir].Lock()
+	defer c.repoLocks[cacheDir].Unlock()
+	if _, err := os.Stat(path.Join(cacheDir, "HEAD")); os.IsNotExist(err) {
+		// we have not yet cloned this repo, we need to do a full clone
+		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
+			return err
+		}
+		if err := cacheClientCacher.MirrorClone(); err != nil {
+			return err
+		}
+	} else if err != nil {
+		// something unexpected happened
+		return err
+	} else {
+		// We have cloned the repo previously, but will refresh it. By default
+		// we refresh all refs with a call to `git remote update`.
+		//
+		// This is the default behavior if FetchCommits is empty or nil (i.e.,
+		// when we don't define a targeted list of commits to fetch directly).
+		if len(repoOpts.FetchCommits) == 0 {
+			if err := cacheClientCacher.RemoteUpdate(); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // Clean removes the caches used to generate clients
