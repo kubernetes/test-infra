@@ -80,8 +80,6 @@ type cacher interface {
 	MirrorClone() error
 	// RemoteUpdate fetches all updates from the remote.
 	RemoteUpdate() error
-	// Fsck verifies the connectivity and validity of the repo and returns true if passed
-	Fsck() (bool, error)
 }
 
 // cloner knows how to clone repositories from a central cache
@@ -369,14 +367,6 @@ func (i *interactor) MergeAndCheckout(baseSHA string, mergeStrategy string, head
 		}
 	}
 	return nil
-}
-
-func (i *interactor) Fsck() (bool, error) {
-	i.logger.Info("Running file system check")
-	if out, err := i.executor.Run("fsck"); err != nil {
-		return false, fmt.Errorf("error running git file system check: %w %v", err, string(out))
-	}
-	return true, nil
 }
 
 // Am tries to apply the patch in the given path into the current branch
