@@ -671,7 +671,12 @@ func (h *gerritInstanceHandler) queryChangesForProjectWithoutMetrics(log logrus.
 	seenPos := map[int]int{}
 	add := func(ci gerrit.ChangeInfo) {
 		if p, ok := seenPos[ci.Number]; ok {
+			for ; p < len(pending)-1; p++ {
+				pending[p] = pending[p+1]
+				seenPos[pending[p].Number]--
+			}
 			pending[p] = ci
+			seenPos[ci.Number] = p
 			return
 		}
 		seenPos[ci.Number] = len(pending)

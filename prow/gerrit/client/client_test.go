@@ -20,7 +20,6 @@ import (
 	"context"
 	"path/filepath"
 	"reflect"
-	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -890,6 +889,19 @@ func TestQueryChange(t *testing.T) {
 					},
 					{
 						Project:         "bar",
+						ID:              "2",
+						Number:          2,
+						CurrentRevision: "2-1",
+						Updated:         makeStamp(now.Add(-time.Minute)),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"2-1": {
+								Created: makeStamp(now.Add(-time.Minute)),
+							},
+						},
+						Status: "NEW",
+					},
+					{
+						Project:         "bar",
 						ID:              "1",
 						Number:          1,
 						CurrentRevision: "1-2",
@@ -907,7 +919,7 @@ func TestQueryChange(t *testing.T) {
 				},
 			},
 			revisions: map[string][]string{
-				"foo": {"1-2"},
+				"foo": {"2-1", "1-2"},
 			},
 		},
 	}
@@ -938,7 +950,7 @@ func TestQueryChange(t *testing.T) {
 		}
 
 		testLastSync := LastSyncState{"foo": tc.lastUpdate, "baz": tc.lastUpdate}
-		changes := client.QueryChanges(testLastSync, 5)
+		changes := client.QueryChanges(testLastSync, 2)
 
 		revisions := map[string][]string{}
 		messages := map[string][]gerrit.ChangeMessageInfo{}
@@ -953,7 +965,6 @@ func TestQueryChange(t *testing.T) {
 				revisions[instance] = append(revisions[instance], change.CurrentRevision)
 				messages[change.ChangeID] = append(messages[change.ChangeID], change.Messages...)
 			}
-			sort.Strings(revisions[instance])
 		}
 
 		if !reflect.DeepEqual(revisions, tc.revisions) {
