@@ -203,7 +203,6 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		repoLocks:      map[string]*sync.Mutex{},
 		logger:         logrus.WithField("client", "git"),
 		cookieFilePath: o.CookieFilePath,
-		verifiedRepos:  map[string]bool{},
 	}, nil
 }
 
@@ -215,14 +214,13 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 		return nil, err
 	}
 	return &clientFactory{
-		cacheDir:      cacheDir,
-		remote:        &pathResolverFactory{baseDir: baseDir},
-		gitUser:       gitUser,
-		censor:        censor,
-		masterLock:    &sync.Mutex{},
-		repoLocks:     map[string]*sync.Mutex{},
-		logger:        logrus.WithField("client", "git"),
-		verifiedRepos: map[string]bool{},
+		cacheDir:   cacheDir,
+		remote:     &pathResolverFactory{baseDir: baseDir},
+		gitUser:    gitUser,
+		censor:     censor,
+		masterLock: &sync.Mutex{},
+		repoLocks:  map[string]*sync.Mutex{},
+		logger:     logrus.WithField("client", "git"),
 	}, nil
 }
 
@@ -232,7 +230,6 @@ type clientFactory struct {
 	censor         Censor
 	logger         *logrus.Entry
 	cookieFilePath string
-	verifiedRepos  map[string]bool
 
 	// cacheDir is the root under which cached clones of repos are created
 	cacheDir string
@@ -242,16 +239,6 @@ type clientFactory struct {
 	masterLock *sync.Mutex
 	// repoLocks guard mutating access to subdirectories under the cacheDir
 	repoLocks map[string]*sync.Mutex
-}
-
-func cloneDir(cacheDir string, cacheClientCacher cacher) error {
-	if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
-		return err
-	}
-	if err := cacheClientCacher.MirrorClone(); err != nil {
-		return err
-	}
-	return nil
 }
 
 // bootstrapClients returns a repository client and cloner for a dir.
@@ -269,7 +256,8 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	remote := c.remote
+	var remote RemoteResolverFactory
+	remote = c.remote
 	client := &repoClient{
 		publisher: publisher{
 			remotes: remotes{
@@ -341,15 +329,20 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	defer c.repoLocks[cacheDir].Unlock()
 	if _, err := os.Stat(path.Join(cacheDir, "HEAD")); os.IsNotExist(err) {
 		// we have not yet cloned this repo, we need to do a full clone
-		if err := cloneDir(cacheDir, cacheClientCacher); err != nil {
+		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
+			return nil, err
+		}
+		if err := cacheClientCacher.MirrorClone(); err != nil {
 			return nil, err
 		}
 	} else if err != nil {
 		// something unexpected happened
 		return nil, err
-		// we have cloned the repo previously, ensure it is valid and refresh it
-	} else if err := c.ensureValidUpdatedCache(cacheDir, cacheClientCacher); err != nil {
-		return nil, err
+	} else {
+		// we have cloned the repo previously, but will refresh it
+		if err := cacheClientCacher.RemoteUpdate(); err != nil {
+			return nil, err
+		}
 	}
 
 	// initialize the new derivative repo from the cache
@@ -358,30 +351,6 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	}
 
 	return repoClient, nil
-}
-
-// Ensures that the repos in the cache are valid, clean, and up to date
-func (c *clientFactory) ensureValidUpdatedCache(cacheDir string, cacheClientCacher cacher) error {
-	// We only need to verify that the repos are valid once on startup
-	if _, ok := c.verifiedRepos[cacheDir]; !ok {
-		// Ensure it is valid
-		if valid, _ := cacheClientCacher.Fsck(); !valid {
-			if err := os.RemoveAll(cacheDir); err != nil {
-				return err
-			}
-			if err := cloneDir(cacheDir, cacheClientCacher); err != nil {
-				return err
-			}
-			c.verifiedRepos[cacheDir] = true
-			return nil
-		}
-	}
-	// Ensure it is up to date
-	if err := cacheClientCacher.RemoteUpdate(); err != nil {
-		return err
-	}
-	c.verifiedRepos[cacheDir] = true
-	return nil
 }
 
 // Clean removes the caches used to generate clients
