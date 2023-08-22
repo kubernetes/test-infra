@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: pull-node-feature-discovery-verify-release-0-13
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     branches:
     - ^release-0.13
@@ -14,7 +15,15 @@ presubmits:
       - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - scripts/test-infra/verify.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-node-feature-discovery-verify-docs-release-0-13
+    cluster: eks-prow-build-cluster
     run_if_changed: "^docs/"
     branches:
     - ^release-0.13
@@ -28,7 +37,15 @@ presubmits:
       - image: ruby:slim
         command:
         - scripts/test-infra/mdlint.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-node-feature-discovery-build-release-0-13
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     branches:
     - ^release-0.13
@@ -42,3 +59,10 @@ presubmits:
       - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - scripts/test-infra/build.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
