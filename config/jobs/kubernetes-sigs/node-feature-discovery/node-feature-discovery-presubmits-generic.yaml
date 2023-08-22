@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: pull-node-feature-discovery-verify-release-06-09
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
     branches:
     - ^release-0.6
@@ -17,6 +18,13 @@ presubmits:
       - image: public.ecr.aws/docker/library/golang:1.16
         command:
         - scripts/test-infra/verify.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-node-feature-discovery-build-image-generic
     cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^demo/|^deployment/|^\\.github/|\\.(md)$|^(README|LICENSE|OWNERS)$"
