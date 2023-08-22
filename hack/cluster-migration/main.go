@@ -32,6 +32,7 @@ type Config struct {
 	configPath    string
 	jobConfigPath string
 	repoReport    bool
+	repo          string
 }
 
 type repoConfig struct {
@@ -82,7 +83,7 @@ func main() {
 	var config Config
 	flag.StringVar(&config.configPath, "config", "../../config/prow/config.yaml", "Path to prow config")
 	flag.StringVar(&config.jobConfigPath, "job-config", "../../config/jobs", "Path to prow job config")
-	// flag.StringVar(&config.jobConfigPath, "job-config", "../../config/jobs", "Path to prow job config")
+	flag.StringVar(&config.repo, "repo", "", "Find eligible jobs for a specific repo")
 	flag.BoolVar(&config.repoReport, "repo-report", false, "Detailed report of all repo status")
 	flag.Parse()
 
@@ -99,10 +100,30 @@ func main() {
 	clusterStats := getClusterStatistics(jobs)
 	repoStats := getRepoStatistics(jobs)
 
+	if config.repo != "" {
+		printJobStats(config.repo, repoStats[config.repo])
+		return
+	}
+
 	reportTotalJobs(repoStats)
 	printClusterStatistics(clusterStats)
 	if config.repoReport {
 		printRepoStatistics(repoStats)
+	}
+}
+
+// The function `printJobStats` prints the status of jobs in a given repository,
+func printJobStats(repo string, repoConfig repoConfig) {
+	format := "%-70v is %s%v\033[0m\n" // \033[0m resets color back to default after printing
+
+	for _, job := range repoConfig.jobs {
+		if job.jobBase.Cluster != "default" {
+			fmt.Printf(format, job.jobBase.Name, "\033[33m", "done") // \033[33m sets text color to yellow
+		} else if checkIfEligible(job.jobBase) {
+			fmt.Printf(format, job.jobBase.Name, "\033[32m", "eligible") // \033[32m sets text color to green
+		} else {
+			fmt.Printf(format, job.jobBase.Name, "\033[31m", "not eligible") // \033[31m sets text color to red
+		}
 	}
 }
 
