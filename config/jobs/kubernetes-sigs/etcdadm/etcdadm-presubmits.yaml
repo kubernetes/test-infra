@@ -2,6 +2,7 @@
 presubmits:
   kubernetes-sigs/etcdadm:
   - name: pull-etcdadm-verify
+    cluster: eks-prow-build-cluster
     path_alias: "sigs.k8s.io/etcdadm"
     always_run: true
     decorate: true
@@ -10,10 +11,18 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - "./hack/verify-all.sh"
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-etcdadm
       testgrid-tab-name: pr-verify
   - name: pull-etcdadm-test-init
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
     path_alias: "sigs.k8s.io/etcdadm"
@@ -28,6 +37,13 @@ presubmits:
         command:
         - "runner.sh"
         - "./test/e2e/init.sh"
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-etcdadm
       testgrid-tab-name: pr-test-init
