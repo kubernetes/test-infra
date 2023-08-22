@@ -1,0 +1,87 @@
+periodics:
+- name: periodic-publishing-bot
+  cluster: k8s-infra-prow-build-trusted
+  annotations:
+    testgrid-dashboards: sig-release-publishing-bot
+    testgrid-tab-name: periodic
+  spec:
+    initContainers:
+    - name: initialize-repos
+      command:
+      - /init-repo
+      - --alsologtostderr
+      - --config=/etc/munge-config/config
+      - --rules-file=/etc/publisher-rules/config
+      - 2>&1
+      image: gcr.io/k8s-staging-publishing-bot/k8s-publishing-bot
+      imagePullPolicy: Always
+      resources:
+        requests:
+          cpu: 300m
+          memory: 200Mi
+        limits:
+          cpu: 2
+          memory: 1639Mi
+      volumeMounts:
+      - mountPath: /etc/munge-config
+        name: munge-config
+      - mountPath: /go-workspace
+        name: publisher-gopath
+      - mountPath: /etc/publisher-rules
+        name: publisher-rules
+      - mountPath: /.cache
+        name: cache
+    containers:
+    - name: publisher
+      command:
+      - /publishing-bot
+      - --alsologtostderr
+      - --config=/etc/munge-config/config
+      - --token-file=/etc/secret-volume/token
+      - --interval=0
+      - --server-port=8080
+      - 2>&1
+      image: gcr.io/k8s-staging-publishing-bot/k8s-publishing-bot
+      imagePullPolicy: Always
+      resources:
+        requests:
+          cpu: 300m
+          memory: 200Mi
+        limits:
+          cpu: 2
+          memory: 1639Mi
+      volumeMounts:
+      - mountPath: /etc/munge-config
+        name: munge-config
+      - mountPath: /etc/publisher-rules
+        name: publisher-rules
+      - mountPath: /etc/secret-volume
+        name: secret-volume
+      - mountPath: /netrc
+        name: netrc
+      - mountPath: /gitrepos
+        name: repo
+      - mountPath: /go-workspace
+        name: publisher-gopath
+      - mountPath: /.cache
+        name: cache
+    volumes:
+    - name: munge-config
+      configMap:
+        name: publisher-config
+    - name: publisher-rules
+      configMap:
+        name: publisher-rules
+    - name: secret-volume
+      secret:
+        secretName: publishing-bot-github-token
+    - name: repo
+      emptyDir: {}
+    - name: cache
+      emptyDir: {}
+    - name: netrc
+      emptyDir:
+        medium: Memory
+    - name: publisher-gopath
+      persistentVolumeClaim:
+        claimName: publishing-bot-pvc
