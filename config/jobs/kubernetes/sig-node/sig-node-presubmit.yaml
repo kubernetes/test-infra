@@ -2134,7 +2134,7 @@ presubmits:
             - name: SKIP
               value: \[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
             - name: TEST_ARGS
-              value: '--kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+              value: '--kubelet-flags="--cgroup-driver=systemd"'
           resources:
             limits:
               cpu: 8
@@ -2177,7 +2177,7 @@ presubmits:
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance.yaml
               - name: TEST_ARGS
-                value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+                value: '--kubelet-flags="--cgroup-driver=systemd"'
             resources:
               limits:
                 cpu: 4
@@ -2221,7 +2221,7 @@ presubmits:
               - name: IMAGE_CONFIG_FILE
                 value: aws-instance-eks.yaml
               - name: TEST_ARGS
-                value: '--container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+                value: '--kubelet-flags="--cgroup-driver=systemd"'
             resources:
               limits:
                 cpu: 4
