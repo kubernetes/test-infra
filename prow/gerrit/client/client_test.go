@@ -315,6 +315,132 @@ func TestUpdateClients(t *testing.T) {
 	}
 }
 
+func TestDedupeIntoResult(t *testing.T) {
+	var testcases = []struct {
+		name  string
+		input []gerrit.ChangeInfo
+		want  []gerrit.ChangeInfo
+	}{
+		{
+			name:  "no changes",
+			input: []gerrit.ChangeInfo{},
+			want:  []gerrit.ChangeInfo{},
+		},
+		{
+			name: "no dupes",
+			input: []gerrit.ChangeInfo{
+				{
+					Number:          1,
+					CurrentRevision: "1-1",
+				},
+				{
+					Number:          2,
+					CurrentRevision: "2-1",
+				},
+			},
+			want: []gerrit.ChangeInfo{
+				{
+					Number:          1,
+					CurrentRevision: "1-1",
+				},
+				{
+					Number:          2,
+					CurrentRevision: "2-1",
+				},
+			},
+		},
+		{
+			name: "single dupe",
+			input: []gerrit.ChangeInfo{
+				{
+					Number:          1,
+					CurrentRevision: "1-1",
+				},
+				{
+					Number:          2,
+					CurrentRevision: "2-1",
+				},
+				{
+					Number:          1,
+					CurrentRevision: "1-2",
+				},
+			},
+			want: []gerrit.ChangeInfo{
+				{
+					Number:          2,
+					CurrentRevision: "2-1",
+				},
+				{
+					Number:          1,
+					CurrentRevision: "1-2",
+				},
+			},
+		},
+		{
+			name: "many dupes",
+			input: []gerrit.ChangeInfo{
+				{
+					Number:          1,
+					CurrentRevision: "1-1",
+				},
+				{
+					Number:          2,
+					CurrentRevision: "2-1",
+				},
+				{
+					Number:          1,
+					CurrentRevision: "1-2",
+				},
+				{
+					Number:          2,
+					CurrentRevision: "2-2",
+				},
+				{
+					Number:          1,
+					CurrentRevision: "1-3",
+				},
+				{
+					Number:          1,
+					CurrentRevision: "1-4",
+				},
+				{
+					Number:          3,
+					CurrentRevision: "3-1",
+				},
+			},
+			want: []gerrit.ChangeInfo{
+				{
+					Number:          2,
+					CurrentRevision: "2-2",
+				},
+				{
+					Number:          1,
+					CurrentRevision: "1-4",
+				},
+				{
+					Number:          3,
+					CurrentRevision: "3-1",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		deduper := &deduper{
+			result:  []gerrit.ChangeInfo{},
+			seenPos: make(map[int]int),
+		}
+
+		for _, ci := range tc.input {
+			deduper.dedupeIntoResult(ci)
+		}
+
+		if diff := cmp.Diff(tc.want, deduper.result); diff != "" {
+			t.Fatalf("Output mismatch. Want(-), got(+):\n%s", diff)
+		}
+	}
+}
+
 func TestQueryChange(t *testing.T) {
 	now := time.Now().UTC()
 
