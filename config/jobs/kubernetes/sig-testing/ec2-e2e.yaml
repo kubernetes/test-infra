@@ -73,8 +73,9 @@ presubmits:
       preset-e2e-containerd-ec2: "true"
       preset-dind-enabled: "true"
     path_alias: k8s.io/kubernetes
-    always_run: false
+    always_run: true
     optional: true
+    skip_report: true
     cluster: eks-prow-build-cluster
     decorate: true
     decoration_config:
