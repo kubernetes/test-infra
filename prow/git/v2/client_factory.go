@@ -92,13 +92,6 @@ type RepoOpts struct {
 	// This is the `--share` flag to `git clone`. For cloning from a local
 	// source, it allows bypassing the copying of all objects.
 	ShareObjectsWithSourceRepo bool
-	// FetchCommits list only those commit SHAs which are needed. If the commit
-	// already exists, it is not fetched to save network costs. If FetchCommits
-	// is set, we do not call RemoteUpdate() for the primary clone (git cache).
-	FetchCommits []string
-	// NoFetchTags determines whether we disable fetching tag objects). Defaults
-	// to false (tag objects are fetched).
-	NoFetchTags bool
 }
 
 // Apply allows to use a ClientFactoryOpts as Opt
@@ -346,18 +339,9 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 		// something unexpected happened
 		return nil, err
 	} else {
-		// We have cloned the repo previously, but will refresh it. By default
-		// we refresh all refs with a call to `git remote update`.
-		if repoOpts.FetchCommits == nil {
-			if err := cacheClientCacher.RemoteUpdate(); err != nil {
-				return nil, err
-			}
-		} else if len(repoOpts.FetchCommits) > 0 {
-			// Targeted fetch. Only fetch those commits which we want, and only
-			// if they are missing.
-			if err := ensureCommits(repoClient, repoOpts); err != nil {
-				return nil, err
-			}
+		// we have cloned the repo previously, but will refresh it
+		if err := cacheClientCacher.RemoteUpdate(); err != nil {
+			return nil, err
 		}
 	}
 
@@ -372,28 +356,4 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 // Clean removes the caches used to generate clients
 func (c *clientFactory) Clean() error {
 	return os.RemoveAll(c.cacheDir)
-}
-
-func ensureCommits(repoClient RepoClient, repoOpts RepoOpts) error {
-	fetchArgs := []string{}
-
-	if repoOpts.NoFetchTags {
-		fetchArgs = append(fetchArgs, "--no-tags")
-	}
-
-	// For each commit SHA, check if it already exists. If so, don't bother
-	// fetching it.
-	for _, commitSHA := range repoOpts.FetchCommits {
-		if exists, _ := repoClient.ObjectExists(commitSHA); exists {
-			continue
-		}
-
-		fetchArgs = append(fetchArgs, commitSHA)
-	}
-
-	if err := repoClient.Fetch(fetchArgs...); err != nil {
-		return fmt.Errorf("failed to fetch %s: %v", fetchArgs, err)
-	}
-
-	return nil
 }
