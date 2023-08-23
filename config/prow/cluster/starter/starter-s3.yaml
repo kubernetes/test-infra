@@ -15,7 +15,7 @@ metadata:
 data:
   plugins.yaml: |
     plugins:
-      << your_github_org >>:
+      $GITHUB_ORG:
         plugins:
         - approve
         - assign
@@ -38,8 +38,8 @@ metadata:
   namespace: prow
   name: github-token
 stringData:
-  cert: <<insert-downloaded-cert-here>>
-  appid: <<insert-the-app-id-here>>
+  cert: $GITHUB_TOKEN
+  appid: "$GITHUB_APP_ID"
 ---
 apiVersion: v1
 kind: Secret
@@ -48,7 +48,7 @@ metadata:
   name: hmac-token
 stringData:
   # Generate via `openssl rand -hex 20`. This is the secret used in the GitHub webhook configuration
-  hmac: << insert-hmac-token-here >>
+  hmac: $HMAC_TOKEN
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -89,11 +89,11 @@ data:
 
     plank:
       job_url_prefix_config:
-        "*": https://prow.<< your-domain.com >>/view/
+        "*": https://$PROW_HOST/view/
       report_templates:
         '*': >-
-            [Full PR test history](https://prow.<< your-domain.com >>/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}).
-            [Your PR dashboard](https://prow.<< your-domain.com >>/pr?query=is:pr+state:open+author:{{with
+            [Full PR test history](https://$PROW_HOST/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}).
+            [Your PR dashboard](https://$PROW_HOST/pr?query=is:pr+state:open+author:{{with
             index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}).
       default_decoration_config_entries:
         - config:
@@ -103,7 +103,7 @@ data:
           github_api_endpoints:
             - http://ghproxy
             - https://api.github.com
-          github_app_id: "<<insert-the-app-id-here>>"
+          github_app_id: "$GITHUB_APP_ID"
           github_app_private_key_secret:
             name: github-token
             key: cert
@@ -125,7 +125,7 @@ data:
         - do-not-merge/work-in-progress
         - do-not-merge/invalid-owners-file
         orgs:
-        - << your_github_org >>
+        - $GITHUB_ORG
 
     decorate_all_jobs: true
     periodics:
@@ -494,7 +494,7 @@ spec:
       port:
         number: 80
   rules:
-  - host: prow.<< your-domain.com >>
+  - host: $PROW_HOST
     http:
       paths:
       - path: /
@@ -1259,11 +1259,11 @@ stringData:
   service-account.json: |
     {
       "region": "minio",
-      "access_key": "<<CHANGE_ME_MINIO_ROOT_USER>>",
+      "access_key": "$MINIO_ROOT_USER",
       "endpoint": "minio.prow.svc.cluster.local",
       "insecure": true,
       "s3_force_path_style": true,
-      "secret_key": "<<CHANGE_ME_MINIO_ROOT_PASSWORD>>"
+      "secret_key": "$MINIO_ROOT_PASSWORD"
     }
 ---
 apiVersion: v1
@@ -1275,11 +1275,11 @@ stringData:
   service-account.json: |
     {
       "region": "minio",
-      "access_key": "<<CHANGE_ME_MINIO_ROOT_USER>>",
+      "access_key": "$MINIO_ROOT_USER",
       "endpoint": "minio.prow.svc.cluster.local",
       "insecure": true,
       "s3_force_path_style": true,
-      "secret_key": "<<CHANGE_ME_MINIO_ROOT_PASSWORD>>"
+      "secret_key": "$MINIO_ROOT_PASSWORD"
     }
 ---
 apiVersion: apps/v1
@@ -1325,9 +1325,9 @@ spec:
         - /data
         env:
         - name: MINIO_ROOT_USER
-          value: "<<CHANGE_ME_MINIO_ROOT_USER>>"
+          value: "$MINIO_ROOT_USER"
         - name: MINIO_ROOT_PASSWORD
-          value: "<<CHANGE_ME_MINIO_ROOT_PASSWORD>>"
+          value: "$MINIO_ROOT_PASSWORD"
         - name: MINIO_REGION_NAME
           value: minio
         ports:
