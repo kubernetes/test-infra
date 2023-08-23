@@ -1,0 +1,53 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-capz-windows-1-28
+    always_run: false
+    branches:
+    - release-1.28
+    decorate: true
+    extra_refs:
+    - base_ref: release-1.10
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      repo: cluster-api-provider-azure
+      workdir: false
+    - base_ref: release-1.28
+      org: kubernetes-sigs
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      repo: cloud-provider-azure
+    - org: kubernetes-sigs
+      repo: windows-testing
+      base_ref: master
+      path_alias: k8s.io/windows-testing
+      workdir: true
+    labels:
+      preset-azure-anonymous-pull: "true"
+      preset-azure-capz-sa-cred: "true"
+      preset-azure-cred-only: "true"
+      preset-capz-containerd-1-7-latest: "true"
+      preset-capz-windows-2022: "true"
+      preset-capz-windows-common-pull: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-windows-private-registry-cred: "true"
+    optional: true
+    path_alias: k8s.io/kubernetes
+    run_if_changed: azure.*\.go$|.*windows\.go$|test/e2e/windows/.*
+    spec:
+      containers:
+      - command:
+        - "runner.sh"
+        - "env"
+        - "./capz/run-capz-e2e.sh"
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.28
+        name: ""
+        resources:
+          requests:
+            cpu: "2"
+            memory: 9Gi
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-1-28
+      testgrid-num-columns-recent: '30'

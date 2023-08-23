@@ -11,7 +11,7 @@ presets:
     value: "Standard_D4s_v3"
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-capz-windows
+  - name: pull-kubernetes-e2e-capz-windows-master
     decorate: true
     always_run: false
     optional: true
