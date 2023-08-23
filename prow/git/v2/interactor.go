@@ -84,7 +84,7 @@ type cacher interface {
 	// RemoteUpdate fetches all updates from the remote.
 	RemoteUpdate() error
 	// FetchCommits fetches only the given commits.
-	FetchCommits(bool, []string) error
+	FetchCommits([]string) error
 }
 
 // cloner knows how to clone repositories from a central cache
@@ -428,12 +428,8 @@ func (i *interactor) Am(path string) error {
 
 // FetchCommits only fetches those commits which we want, and only if they are
 // missing.
-func (i *interactor) FetchCommits(noFetchTags bool, commitSHAs []string) error {
-	fetchArgs := []string{"--no-write-fetch-head"}
-
-	if noFetchTags {
-		fetchArgs = append(fetchArgs, "--no-tags")
-	}
+func (i *interactor) FetchCommits(commitSHAs []string) error {
+	fetchArgs := []string{"--no-write-fetch-head", "--no-tags"}
 
 	// For each commit SHA, check if it already exists. If so, don't bother
 	// fetching it.

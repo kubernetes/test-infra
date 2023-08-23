@@ -141,10 +141,6 @@ type RepoOpts struct {
 	// already exists, it is not fetched to save network costs. If FetchCommits
 	// is set, we do not call RemoteUpdate() for the primary clone (git cache).
 	FetchCommits sets.Set[string]
-
-	// NoFetchTags determines whether we disable fetching tag objects). Defaults
-	// to false (tag objects are fetched).
-	NoFetchTags bool
 }
 
 // Apply allows to use a ClientFactoryOpts as Opt
@@ -418,7 +414,7 @@ func (c *clientFactory) ensureFreshPrimary(
 		// Targeted fetch. Only fetch those commits which we want, and only if
 		// they are missing.
 		timeBeforeFetchBySha := time.Now()
-		if err := cacheClientCacher.FetchCommits(repoOpts.NoFetchTags, repoOpts.FetchCommits.UnsortedList()); err != nil {
+		if err := cacheClientCacher.FetchCommits(repoOpts.FetchCommits.UnsortedList()); err != nil {
 			return err
 		}
 		gitMetrics.fetchByShaDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeFetchBySha).Seconds())))

@@ -60,9 +60,6 @@ var inrepoconfigRepoOpts = git.RepoOpts{
 	// The sparse checkout would avoid creating another copy of Git objects
 	// from the mirror clone into the secondary clone.
 	ShareObjectsWithSourceRepo: true,
-	// Disable fetching tag objects, because they are redundant and useless (we
-	// already have baseSHA and headSHAs).
-	NoFetchTags: true,
 }
 
 var inrepoconfigMetrics = struct {

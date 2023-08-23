@@ -153,15 +153,11 @@ git reset --hard ${baseSHA}
 		t.Fatal(err)
 	}
 
-	var repoOpts = git.RepoOpts{
-		NoFetchTags: true,
-	}
-
 	// repoClient points to our local copy of this repo. We will use it to
 	// figure out the base SHA and head SHAs. Because we are not sharing objects
 	// (ShareObjectsWithSourceRepo is false in repoOpts), the repoClient will be
 	// a full mirror clone.
-	repoClient, err := gc.ClientForWithRepoOpts("fakegitserver/repo", repoSetup.Name, repoOpts)
+	repoClient, err := gc.ClientForWithRepoOpts("fakegitserver/repo", repoSetup.Name, git.RepoOpts{})
 	if err != nil {
 		t.Fatal(err)
 	}
