@@ -272,6 +272,43 @@ this-is-from-repo3
 `,
 		},
 		{
+			name: "inrepoconfig-presubmit3-repeat (same as inrepoconfig-presubmit3; exercise refresh-existing-primary-clone code path)",
+			// Skip repo setup on fakegitserver because it was already created
+			// in the previous test case.
+			repoSetups: []fakegitserver.RepoSetup{},
+			msg: fakepubsub.PubSubMessageForSub{
+				Attributes: map[string]string{
+					subscriber.ProwEventType: subscriber.PresubmitProwJobEvent,
+				},
+				Data: subscriber.ProwJobEvent{
+					Name: "trigger-inrepoconfig-presubmit-via-pubsub-repo3",
+					Refs: &prowjobv1.Refs{
+						Org:      "https://fakegitserver.default/repo",
+						Repo:     "repo3",
+						RepoLink: "https://fakegitserver.default/repo/repo3",
+						BaseSHA:  Repo3HEADsha,
+						BaseRef:  "master",
+						CloneURI: "https://fakegitserver.default/repo/repo3",
+						// We need a different number of pull SHAs (headSHAs) to
+						// avoid hitting the same ProwYAML cached entry from the
+						// previous test (to force the git fetch and lookup).
+						Pulls: []prowjobv1.Pull{
+							{
+								Number: 1,
+								SHA:    Repo3PR1sha,
+							},
+						},
+					},
+					Labels: map[string]string{
+						kube.GerritRevision: "123",
+					},
+				},
+			},
+			expected: `hello from trigger-inrepoconfig-presubmit-via-pubsub-repo3
+this-is-from-repo3
+`,
+		},
+		{
 			name: "inrepoconfig-presubmit4-with-nested-directory",
 			repoSetups: []fakegitserver.RepoSetup{
 				{
@@ -374,6 +411,18 @@ this-is-from-repo5
 		t.Fatal(err)
 	}
 
+	// Create all git repos on fakegitserver.
+	for _, tt := range tests {
+		// Set up repos on FGS for just this test case.
+		fgsClient := fakegitserver.NewClient("http://localhost/fakegitserver", 5*time.Second)
+		for _, repoSetup := range tt.repoSetups {
+			err := fgsClient.SetupRepo(repoSetup)
+			if err != nil {
+				t.Fatalf("FGS repo setup failed: %v", err)
+			}
+		}
+	}
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -406,15 +455,6 @@ this-is-from-repo5
 			fpsClient, err := fakepubsub.NewClient("project1", fmt.Sprintf("%s:%d", PubsubEmulatorHost, *fakepubsubNodePort))
 			if err != nil {
 				t.Fatalf("Failed creating fakepubsub client")
-			}
-
-			// Set up repos on FGS for just this test case.
-			fgsClient := fakegitserver.NewClient("http://localhost/fakegitserver", 5*time.Second)
-			for _, repoSetup := range tt.repoSetups {
-				err := fgsClient.SetupRepo(repoSetup)
-				if err != nil {
-					t.Fatalf("FGS repo setup failed: %v", err)
-				}
 			}
 
 			// Create a unique test case ID (UID) for this particular test
