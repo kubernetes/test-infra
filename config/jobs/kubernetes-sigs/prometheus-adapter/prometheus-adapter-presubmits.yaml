@@ -48,6 +48,8 @@ presubmits:
     cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
+    skip_branches:
+      - release-0.10
     decoration_config:
       timeout: 20m
     labels:
