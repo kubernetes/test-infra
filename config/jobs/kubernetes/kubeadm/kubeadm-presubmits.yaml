@@ -63,3 +63,102 @@ presubmits:
           requests:
             memory: "9000Mi"
             cpu: 2000m
+
+  # kinder canary presubmits
+  - name: pull-kubeadm-kinder-verify-canary
+    cluster: eks-prow-build-cluster
+    path_alias: "k8s.io/kubeadm"
+    decorate: true
+    run_if_changed: '^kinder\/.*$'
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - "./kinder/hack/verify-all.sh"
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 9000Mi
+          requests:
+            cpu: 2000m
+            memory: 9000Mi
+      tolerations:
+      - key: "dedicated"
+        value: "kind-tests"
+        operator: "Equal"
+        effect: "NoSchedule"
+      nodeSelector:
+        kind-exclusive: "true"
+
+  - name: pull-kubeadm-kinder-upgrade-latest-canary
+    cluster: eks-prow-build-cluster
+    optional: false
+    decorate: true
+    run_if_changed: '^kinder\/.*$'
+    skip_branches:
+    - release-\d+\.\d+ # revisit once the k/kubeadm repo has branches
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decoration_config:
+      timeout: 40m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
+        - "../kubeadm/kinder/ci/kinder-run.sh"
+        args:
+        - "presubmit-upgrade-latest"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "9000Mi"
+            cpu: 2000m
+          limits:
+            cpu: 2000m
+            memory: 9000Mi
+      tolerations:
+      - key: "dedicated"
+        value: "kind-tests"
+        operator: "Equal"
+        effect: "NoSchedule"
+      nodeSelector:
+        kind-exclusive: "true"
+
+  # operator canary presubmits
+  - name: pull-kubeadm-operator-verify-canary
+    cluster: eks-prow-build-cluster
+    path_alias: "k8s.io/kubeadm"
+    decorate: true
+    run_if_changed: '^operator\/.*$'
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+        command:
+        - runner.sh
+        - "./operator/hack/verify-all.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "9000Mi"
+            cpu: 2000m
+          limits:
+            cpu: 2000m
+            memory: 9000Mi
+      tolerations:
+      - key: "dedicated"
+        value: "kind-tests"
+        operator: "Equal"
+        effect: "NoSchedule"
+      nodeSelector:
+        kind-exclusive: "true"
