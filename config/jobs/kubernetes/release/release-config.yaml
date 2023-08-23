@@ -460,6 +460,7 @@ presubmits:
 periodics:
 # package tests
 - name: periodic-release-verify-packages-debs
+  cluster: eks-prow-build-cluster
   interval: 6h
   annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
@@ -478,11 +479,19 @@ periodics:
       command:
       - make
       - verify-published-debs
+      resources:
+        limits:
+          memory: 2Gi
+          cpu: 4
+        requests:
+          memory: 2Gi
+          cpu: 4
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
         slug: release-managers
 - name: periodic-release-verify-packages-rpms
+  cluster: eks-prow-build-cluster
   interval: 6h
   annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
@@ -502,6 +511,13 @@ periodics:
       - sh
       - "-c"
       - "yum install -y make jq && make verify-published-rpms"
+      resources:
+        limits:
+          memory: 2Gi
+          cpu: 4
+        requests:
+          memory: 2Gi
+          cpu: 4
   rerun_auth_config:
     github_team_slugs:
       - org: kubernetes
