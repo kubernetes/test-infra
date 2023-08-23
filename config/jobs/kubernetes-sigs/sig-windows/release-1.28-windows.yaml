@@ -1,0 +1,119 @@
+presets:
+- labels:
+    preset-capz-windows-common-128: "true"
+  env:
+  - name: "KUBERNETES_VERSION"
+    value: "latest-1.28"
+  - name: E2E_ARGS
+    value: "-kubetest.use-ci-artifacts"
+  - name: WINDOWS
+    value: "true"
+  - name: TEST_WINDOWS #temp to unblock failing jobs on windows while we fix this in capz (https://github.com/kubernetes/kubernetes/issues/116474)
+    value: "true"
+  - name: AZURE_NODE_MACHINE_TYPE
+    value: "Standard_D4s_v3"
+periodics:
+- name: ci-kubernetes-e2e-capz-windows-1-28
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-release-1.28-informing, sig-windows-1.28-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-1-28
+  decorate: true
+  decoration_config:
+    timeout: 4h0m0s
+  extra_refs:
+  - base_ref: release-1.10
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    repo: cluster-api-provider-azure
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/windows-testing
+    repo: windows-testing
+    workdir: true
+  - base_ref: relese-1.28
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    repo: cloud-provider-azure
+  interval: 3h
+  labels:
+    preset-azure-anonymous-pull: "true"
+    preset-azure-capz-sa-cred: "true"
+    preset-azure-cred-only: "true"
+    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-windows-2019: "true"
+    preset-capz-windows-common-128: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-windows-private-registry-cred: "true"
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      - env
+      - KUBERNETES_VERSION=latest-1.28
+      - ./capz/run-capz-e2e.sh
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.28
+      name: ""
+      resources:
+        requests:
+          cpu: "2"
+          memory: 9Gi
+      securityContext:
+        privileged: true
+- name: ci-kubernetes-e2e-capz-1-28-windows-serial-slow
+  interval: 48h
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true" # Sets REGISTRY which is needed when building CCM/CNM images
+    preset-capz-containerd-1-7-latest: "true"
+    preset-capz-serial-slow: "true"
+    preset-capz-gmsa-setup: "true"
+    preset-capz-windows-common-128: "true"
+    preset-capz-windows-2022: "true"
+    preset-windows-private-registry-cred: "true"
+    preset-azure-capz-sa-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.10
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: false
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: sigs.k8s.io/windows-testing
+    workdir: true
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: release-1.28
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.28
+        command:
+          - "runner.sh"
+          - "env"
+          - "KUBERNETES_VERSION=latest-1.28"
+          - "./capz/run-capz-e2e.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+        env:
+          - name: GINKGO_FOCUS
+            value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
+          - name: GINKGO_SKIP
+            value: \[LinuxOnly\]|device.plugin.for.Windows|RebootHost|\[sig-autoscaling\].\[Feature:HPA\]
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-windows-1.28-release, sig-windows-signal
+    testgrid-tab-name: capz-windows-1-28-serial-slow
