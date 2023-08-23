@@ -44,3 +44,56 @@ periodics:
         requests:
           memory: "9000Mi"
           cpu: 2000m
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-learner-mode-latest-canary
+  cluster: eks-prow-build-cluster
+  interval: 2h
+  decorate: true
+  labels:
+    preset-dind-enabled: 'true'
+    preset-kind-volume-mounts: 'true'
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: kubeadm-kinder-learner-mode-latest-canary
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
+    description: 'OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create
+      a cluster using etcd learner mode to join control-plane and run kubeadm-e2e
+      and the conformance suite'
+    testgrid-num-columns-recent: '20'
+    testgrid-num-failures-to-alert: '8'
+    testgrid-alert-stale-results-hours: '16'
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: main
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      command:
+      - runner.sh
+      - ../kubeadm/kinder/ci/kinder-run.sh
+      args:
+      - learner-mode-latest
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          memory: 9000Mi
+          cpu: 2000m
+        requests:
+          memory: 9000Mi
+          cpu: 2000m
+    tolerations:
+    - key: dedicated
+      value: kind-tests
+      operator: Equal
+      effect: NoSchedule
+    nodeSelector:
+      kind-exclusive: 'true'
