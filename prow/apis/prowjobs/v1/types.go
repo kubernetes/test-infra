@@ -618,7 +618,7 @@ func (g *CensoringOptions) ApplyDefault(def *CensoringOptions) *CensoringOptions
 	return &merged
 }
 
-// ApplyDefault applies the defaults for CensoringOptions decorations. If a field has a zero value,
+// ApplyDefault applies the defaults for SchedulingOptions decorations. If a field has a zero value,
 // it replaces that with the value set in def.
 func (g *SchedulingOptions) ApplyDefault(def *SchedulingOptions) *SchedulingOptions {
 	if g == nil && def == nil {
