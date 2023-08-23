@@ -122,6 +122,42 @@ presubmits:
           requests:
             cpu: 7
             memory: 12Gi
+  - name: pull-kubernetes-linter-hints-eks
+    cluster: eks-prow-build-cluster
+    decorate: true
+    always_run: false
+    # This job will always remain optional because linting may fail because of issues that do not
+    # need to be addressed. The job has to fail nonetheless to make it visible in GitHub that there
+    # were such issues.
+    optional: true
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: sig-testing-misc
+      description: Runs golangci-lint with a configuration for new code that reports also issues which do not need to be fixed.
+      testgrid-alert-email: patrick.ohly@intel.com
+      testgrid-num-failures-to-alert: "15"
+    path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - /bin/sh
+        - "-c"
+        - "hack/verify-golangci-lint.sh -r ${PULL_BASE_SHA} -n"
+        resources:
+          # Consider reducing memory limits after looking at real data from
+          # https://monitoring-eks.prow.k8s.io/d/53g2x7OZz/jobs?orgId=1&refresh=30s&var-org=kubernetes&var-repo=kubernetes&var-job=All
+          limits:
+            cpu: 7
+            memory: 12Gi
+          requests:
+            cpu: 7
+            memory: 12Gi
   - name: pull-kubernetes-verify-go-canary
     cluster: k8s-infra-prow-build
     always_run: false
