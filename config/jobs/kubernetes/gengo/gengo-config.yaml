@@ -17,7 +17,7 @@ presubmits:
             - bash
           args:
             - -c
-            - 'go test -v -race ./...'
+            - 'go test -v -race ./... && (cd ./examples/defaulter-gen/_output_tests && go test -v -race ./...)'
           resources:
             requests:
               memory: 4Gi
@@ -43,8 +43,7 @@ presubmits:
             - bash
           args:
            - -c
-           - |
-            go run ./examples/import-boss/main.go -i $(go list k8s.io/gengo/... | grep -v import-boss/tests | paste -sd',' -) --verify-only
+           - hack/verify-examples.sh
           resources:
             requests:
               memory: 4Gi
