@@ -153,14 +153,14 @@ presubmits:
               cd kubetest2-ec2 && GOPROXY=direct go install .
               VERSION=$(curl -Ls https://dl.k8s.io/ci/latest.txt)
               kubetest2 ec2 \
-                --stage https://dl.k8s.io/ci/ \
-                --version $VERSION \
-                --up \
-                --down
+               --stage https://dl.k8s.io/ci/ \
+               --version $VERSION \
+               --up \
+               --down \
                --test=ginkgo \
                -- \
                --parallel=30 \
-               --focus-regex='Pods should be submitted and removed'
+              --focus-regex='Pods should be submitted and removed'
           env:
             - name: USE_DOCKERIZED_BUILD
               value: "true"
