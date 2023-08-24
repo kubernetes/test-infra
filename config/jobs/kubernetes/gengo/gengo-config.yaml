@@ -17,7 +17,7 @@ presubmits:
             - bash
           args:
             - -c
-            - 'go test -v -race ./...'
+            - 'go test -v -race ./... k8s.io/gengo/examples/defaulter-gen/output_tests/...'
           resources:
             requests:
               memory: 4Gi
@@ -45,6 +45,21 @@ presubmits:
            - -c
            - |
             go run ./examples/import-boss/main.go -i $(go list k8s.io/gengo/... | grep -v import-boss/tests | paste -sd',' -) --verify-only
+          resources:
+            requests:
+              memory: 4Gi
+              cpu: 2
+            limits:
+              memory: 4Gi
+              cpu: 2
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+          command:
+            - runner.sh
+            - bash
+          args:
+           - -c
+           - |
+            hack/verify-examples.sh
           resources:
             requests:
               memory: 4Gi
