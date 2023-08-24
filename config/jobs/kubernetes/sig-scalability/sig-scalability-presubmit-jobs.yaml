@@ -804,32 +804,6 @@ presubmits:
             cpu: 1
             memory: "2Gi"
 
-  # TODO(jprzychodzen): Remove after deprecation of release-1.19
-  - name: pull-perf-tests-verify-all
-    decorate: true
-    always_run: true
-    skip_branches:
-    - release-1.1[2-8] # Presubmit has been implemented for 1.19+ releases
-    - master # It's covered by 'pull-perf-tests-verify-all-python' and 'pull-perf-tests-verify-test'
-    path_alias: "k8s.io/perf-tests"
-    annotations:
-      testgrid-dashboards: presubmits-kubernetes-scalability
-      testgrid-tab-name: pull-perf-tests-verify-all
-    spec:
-      containers:
-      - image: public.ecr.aws/docker/library/golang:1.20
-        command:
-        - make
-        args:
-        - verify-all
-        resources:
-          requests:
-            cpu: 1
-            memory: "2Gi"
-          limits:
-            cpu: 1
-            memory: "2Gi"
-
   - name: pull-perf-tests-verify-all-python
     decorate: true
     always_run: true
