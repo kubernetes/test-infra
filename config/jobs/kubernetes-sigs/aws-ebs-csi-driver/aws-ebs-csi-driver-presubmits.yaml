@@ -50,6 +50,7 @@ presubmits:
       description: aws ebs csi driver test helm chart on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -64,12 +65,20 @@ presubmits:
         args:
         - make
         - verify
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: verify
       description: aws ebs csi driver basic code verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-unit
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -84,6 +93,13 @@ presubmits:
         args:
         - make
         - test
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: pull-unit-test
