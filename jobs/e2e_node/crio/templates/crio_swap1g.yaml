@@ -132,7 +132,6 @@ systemd:
         [Unit]
         Description=Enable swap on CoreOS
         Before=crio-install.service
-        ConditionFirstBoot=no
 
         [Service]
         Type=oneshot
