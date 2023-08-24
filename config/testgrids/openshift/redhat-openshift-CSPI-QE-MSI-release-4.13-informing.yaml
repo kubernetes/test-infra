@@ -19,6 +19,168 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-aws-ipi-4.13-ci
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-aws-ipi-4.13-ci
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-hypershift-4.13-candidate
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-hypershift-4.13-candidate
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-rosa-4.14-candidate
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-rosa-4.14-candidate
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-multi-cluster-install-uninstall-aws-4.13-ci-4.14-nightly
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-multi-cluster-install-uninstall-aws-4.13-ci-4.14-nightly
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-v4.13-stage-multi-cluster-install-uninstall-aws-env
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-v4.13-stage-multi-cluster-install-uninstall-aws-env
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-CSPI-QE-MSI-multi-cluster-smoke-v4.13-multicluster-aws-4.13-nightly-hypershift-4.13-candidate-smoke
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-CSPI-QE-MSI-multi-cluster-smoke-v4.13-multicluster-aws-4.13-nightly-hypershift-4.13-candidate-smoke
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-rhods-addon-baseline-fips
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -218,6 +380,18 @@ dashboards:
     test_group_name: periodic-ci-CSPI-QE-MSI-rhods-rhoam-v4.13-stage-co-exist-rosa-rhods-rhoam
   name: redhat-openshift-CSPI-QE-MSI-release-4.13-informing
 test_groups:
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-aws-ipi-4.13-ci
+  name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-aws-ipi-4.13-ci
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-hypershift-4.13-candidate
+  name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-hypershift-4.13-candidate
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-rosa-4.14-candidate
+  name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-cluster-install-uninstall-rosa-4.14-candidate
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-multi-cluster-install-uninstall-aws-4.13-ci-4.14-nightly
+  name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-multi-cluster-install-uninstall-aws-4.13-ci-4.14-nightly
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-v4.13-stage-multi-cluster-install-uninstall-aws-env
+  name: periodic-ci-CSPI-QE-MSI-cluster-install-uninstall-v4.13-stage-multi-cluster-install-uninstall-aws-env
+- gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-multi-cluster-smoke-v4.13-multicluster-aws-4.13-nightly-hypershift-4.13-candidate-smoke
+  name: periodic-ci-CSPI-QE-MSI-multi-cluster-smoke-v4.13-multicluster-aws-4.13-nightly-hypershift-4.13-candidate-smoke
 - gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-rhods-addon-baseline-fips
   name: periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-osd-rhods-addon-baseline-fips
 - gcs_prefix: origin-ci-test/logs/periodic-ci-CSPI-QE-MSI-rhods-addon-interop-v4.13-GA-production-smoke-rosa-rhods-addon-baseline-fips
