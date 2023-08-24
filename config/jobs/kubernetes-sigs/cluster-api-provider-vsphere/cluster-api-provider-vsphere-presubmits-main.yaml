@@ -85,6 +85,7 @@ presets:
 presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
   - name: pull-cluster-api-provider-vsphere-apidiff-main
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     always_run: false
@@ -100,12 +101,20 @@ presubmits:
         - runner.sh
         args:
         - ./hack/ci-apidiff.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-apidiff-main
       description: Checks for API changes in the PR
 
   - name: pull-cluster-api-provider-vsphere-verify-main
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     labels:
@@ -124,11 +133,19 @@ presubmits:
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
       testgrid-tab-name: pr-verify-main
 
   - name: pull-cluster-api-provider-vsphere-test-main
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     always_run: false
@@ -140,8 +157,12 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
         resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
           requests:
-            cpu: "500m"
+            cpu: 2
+            memory: 4Gi
         command:
         - runner.sh
         args:
@@ -153,6 +174,7 @@ presubmits:
       description: Runs unit tests
 
   - name: pull-cluster-api-provider-vsphere-test-integration-main
+    cluster: eks-prow-build-cluster
     branches:
     - ^main$
     labels:
@@ -172,9 +194,12 @@ presubmits:
           capabilities:
             add: ["NET_ADMIN"]
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            cpu: "4000m"
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
         command:
         - runner.sh
         args:
