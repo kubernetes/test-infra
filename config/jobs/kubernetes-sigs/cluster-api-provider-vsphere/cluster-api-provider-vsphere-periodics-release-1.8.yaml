@@ -1,5 +1,6 @@
 periodics:
 - name: periodic-cluster-api-provider-vsphere-test-release-1-8
+  cluster: eks-prow-build-cluster
   interval: 1h
   decorate: true
   rerun_auth_config:
@@ -15,8 +16,12 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
       resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
         requests:
-          cpu: "500m"
+          cpu: 2
+          memory: 4Gi
       command:
       - runner.sh
       args:
@@ -30,6 +35,7 @@ periodics:
     description: Runs unit tests
 
 - name: periodic-cluster-api-provider-vsphere-test-integration-release-1-8
+  cluster: eks-prow-build-cluster
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -53,9 +59,12 @@ periodics:
         capabilities:
           add: ["NET_ADMIN"]
       resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
         requests:
-          cpu: "4000m"
-          memory: "6Gi"
+          cpu: 4
+          memory: 6Gi
       command:
       - runner.sh
       args:
