@@ -327,11 +327,6 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	if err != nil {
 		return nil, err
 	}
-	c.masterLock.Lock()
-	if _, exists := c.repoLocks[cacheDir]; !exists {
-		c.repoLocks[cacheDir] = &sync.Mutex{}
-	}
-	c.masterLock.Unlock()
 
 	// First create or update the primary clone (in "cacheDir").
 	c.ensureFreshPrimary(cacheDir, cacheClientCacher, repoOpts)
@@ -363,8 +358,19 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 }
 
 func (c *clientFactory) ensureFreshPrimary(cacheDir string, cacheClientCacher cacher, repoOpts RepoOpts) error {
-	c.repoLocks[cacheDir].Lock()
-	defer c.repoLocks[cacheDir].Unlock()
+	// Protect access to the shared repoLocks map.
+	var repoLock *sync.Mutex
+	c.masterLock.Lock()
+	if _, exists := c.repoLocks[cacheDir]; exists {
+		repoLock = c.repoLocks[cacheDir]
+	} else {
+		repoLock = &sync.Mutex{}
+		c.repoLocks[cacheDir] = repoLock
+	}
+	c.masterLock.Unlock()
+
+	repoLock.Lock()
+	defer repoLock.Unlock()
 	if _, err := os.Stat(path.Join(cacheDir, "HEAD")); os.IsNotExist(err) {
 		// we have not yet cloned this repo, we need to do a full clone
 		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
