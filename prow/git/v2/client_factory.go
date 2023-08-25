@@ -404,7 +404,7 @@ func (c *clientFactory) Clean() error {
 }
 
 func ensureCommits(repoClient RepoClient, repoOpts RepoOpts) error {
-	fetchArgs := []string{}
+	fetchArgs := []string{"--no-write-fetch-head"}
 
 	if repoOpts.NoFetchTags {
 		fetchArgs = append(fetchArgs, "--no-tags")
