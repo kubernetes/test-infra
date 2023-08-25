@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cloud-provider-azure:
   - name: pull-cloud-provider-azure-check
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
     decorate: true
     path_alias: sigs.k8s.io/cloud-provider-azure
@@ -605,6 +606,7 @@ presubmits:
       description: "Runs Azure specific e2e tests with cloud controller manager and multiple standard load balancers."
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-unit
+    cluster: eks-prow-build-cluster
     skip_if_only_changed: "^docs/|^site/|^helm/|^tests/e2e/|^kubetest2-aks/|^.pipelines/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)|^examples/|^tests/k8s-azure/manifest$|netlify.toml|.codespellignore"
     decorate: true
     path_alias: sigs.k8s.io/cloud-provider-azure
@@ -620,6 +622,13 @@ presubmits:
         args:
         - make
         - test-unit
+        resources:
+          limits:
+            memory: "9Gi"
+            cpu: "2"
+          requests:
+            memory: "9Gi"
+            cpu: "2"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-unit
