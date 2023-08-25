@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 )
 
@@ -95,7 +96,8 @@ type RepoOpts struct {
 	// FetchCommits list only those commit SHAs which are needed. If the commit
 	// already exists, it is not fetched to save network costs. If FetchCommits
 	// is set, we do not call RemoteUpdate() for the primary clone (git cache).
-	FetchCommits []string
+	FetchCommits sets.Set[string]
+
 	// NoFetchTags determines whether we disable fetching tag objects). Defaults
 	// to false (tag objects are fetched).
 	NoFetchTags bool
@@ -346,7 +348,7 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	// the cacher will run on the primary, not secondary (and without --shared,
 	// this will have no effect on the secondary); we have to handle that case
 	// gracefully (perhaps with some logging also).
-	if len(repoOpts.FetchCommits) > 0 {
+	if repoOpts.FetchCommits.Len() > 0 {
 		// Targeted fetch. Only fetch those commits which we want, and only
 		// if they are missing.
 		if err := ensureCommits(repoClient, repoOpts); err != nil {
@@ -388,7 +390,7 @@ func (c *clientFactory) ensureFreshPrimary(cacheDir string, cacheClientCacher ca
 		//
 		// This is the default behavior if FetchCommits is empty or nil (i.e.,
 		// when we don't define a targeted list of commits to fetch directly).
-		if len(repoOpts.FetchCommits) == 0 {
+		if repoOpts.FetchCommits.Len() == 0 {
 			if err := cacheClientCacher.RemoteUpdate(); err != nil {
 				return err
 			}
@@ -413,7 +415,7 @@ func ensureCommits(repoClient RepoClient, repoOpts RepoOpts) error {
 	// For each commit SHA, check if it already exists. If so, don't bother
 	// fetching it.
 	var missingCommits bool
-	for _, commitSHA := range repoOpts.FetchCommits {
+	for _, commitSHA := range repoOpts.FetchCommits.UnsortedList() {
 		if exists, _ := repoClient.ObjectExists(commitSHA); exists {
 			continue
 		}
