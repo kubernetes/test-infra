@@ -87,6 +87,8 @@ type cloner interface {
 	// Clone clones the repository from a local path.
 	Clone(from string) error
 	CloneWithRepoOpts(from string, repoOpts RepoOpts) error
+	// FetchCommits fetches only the given commits.
+	FetchCommits(bool, []string) error
 }
 
 // MergeOpt holds options for git merge operations.
@@ -387,6 +389,40 @@ func (i *interactor) Am(path string) error {
 		i.logger.WithError(abortErr).Warningf("Aborting patch apply failed with output: %s", string(abortOut))
 	}
 	return errors.New(string(bytes.TrimPrefix(out, []byte("The copy of the patch that failed is found in: .git/rebase-apply/patch"))))
+}
+
+// FetchCommits only fetches those commits which we want, and only if they are
+// missing.
+func (i *interactor) FetchCommits(noFetchTags bool, commitSHAs []string) error {
+	fetchArgs := []string{"--no-write-fetch-head"}
+
+	if noFetchTags {
+		fetchArgs = append(fetchArgs, "--no-tags")
+	}
+
+	// For each commit SHA, check if it already exists. If so, don't bother
+	// fetching it.
+	var missingCommits bool
+	for _, commitSHA := range commitSHAs {
+		if exists, _ := i.ObjectExists(commitSHA); exists {
+			continue
+		}
+
+		fetchArgs = append(fetchArgs, commitSHA)
+		missingCommits = true
+	}
+
+	// Skip the fetch operation altogether if nothing is missing (we already
+	// fetched everything previously at some point).
+	if !missingCommits {
+		return nil
+	}
+
+	if err := i.Fetch(fetchArgs...); err != nil {
+		return fmt.Errorf("failed to fetch %s: %v", fetchArgs, err)
+	}
+
+	return nil
 }
 
 // RemoteUpdate fetches all updates from the remote.

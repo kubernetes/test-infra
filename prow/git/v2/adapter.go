@@ -115,6 +115,10 @@ func (a *repoClientAdapter) FetchFromRemote(resolver RemoteResolver, branch stri
 	return errors.New("no FetchFromRemote implementation exists in the v1 repo client")
 }
 
+func (a *repoClientAdapter) FetchCommits(noFetchTags bool, commitSHAs []string) error {
+	return errors.New("no FetchCommits implementation exists in the v1 repo client")
+}
+
 func (a *repoClientAdapter) RemoteUpdate() error {
 	return errors.New("no RemoteUpdate implementation exists in the v1 repo client")
 }

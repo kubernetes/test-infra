@@ -351,7 +351,7 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	if repoOpts.FetchCommits.Len() > 0 {
 		// Targeted fetch. Only fetch those commits which we want, and only
 		// if they are missing.
-		if err := ensureCommits(repoClient, repoOpts); err != nil {
+		if err := repoClientCloner.FetchCommits(repoOpts.NoFetchTags, repoOpts.FetchCommits.UnsortedList()); err != nil {
 			return nil, err
 		}
 	}
@@ -403,36 +403,4 @@ func (c *clientFactory) ensureFreshPrimary(cacheDir string, cacheClientCacher ca
 // Clean removes the caches used to generate clients
 func (c *clientFactory) Clean() error {
 	return os.RemoveAll(c.cacheDir)
-}
-
-func ensureCommits(repoClient RepoClient, repoOpts RepoOpts) error {
-	fetchArgs := []string{"--no-write-fetch-head"}
-
-	if repoOpts.NoFetchTags {
-		fetchArgs = append(fetchArgs, "--no-tags")
-	}
-
-	// For each commit SHA, check if it already exists. If so, don't bother
-	// fetching it.
-	var missingCommits bool
-	for _, commitSHA := range repoOpts.FetchCommits.UnsortedList() {
-		if exists, _ := repoClient.ObjectExists(commitSHA); exists {
-			continue
-		}
-
-		fetchArgs = append(fetchArgs, commitSHA)
-		missingCommits = true
-	}
-
-	// Skip the fetch operation altogether if nothing is missing (we already
-	// fetched everything previously at some point).
-	if !missingCommits {
-		return nil
-	}
-
-	if err := repoClient.Fetch(fetchArgs...); err != nil {
-		return fmt.Errorf("failed to fetch %s: %v", fetchArgs, err)
-	}
-
-	return nil
 }
