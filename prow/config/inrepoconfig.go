@@ -30,6 +30,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	gerritsource "k8s.io/test-infra/prow/gerrit/source"
 
 	"k8s.io/test-infra/prow/git/types"
@@ -141,7 +142,10 @@ func prowYAMLGetter(
 
 	timeBeforeClone := time.Now()
 	repoOpts := inrepoconfigRepoOpts
-	repoOpts.FetchCommits = append(headSHAs, baseSHA)
+	// For Gerrit, the baseSHA could appear as a headSHA for postsubmits if the
+	// change was a fast-forward merge. So we need to dedupe it with sets.
+	repoOpts.FetchCommits = sets.New(baseSHA)
+	repoOpts.FetchCommits.Insert(headSHAs...)
 	repo, err := gc.ClientForWithRepoOpts(orgRepo.Org, orgRepo.Repo, repoOpts)
 	inrepoconfigMetrics.gitCloneDuration.WithLabelValues(orgRepo.Org, orgRepo.Repo).Observe((float64(time.Since(timeBeforeClone).Seconds())))
 	if err != nil {
