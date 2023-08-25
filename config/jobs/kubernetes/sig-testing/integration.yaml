@@ -2,7 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   # this replaces the bootstrap / scenario based job going forward
   - name: pull-kubernetes-integration
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     skip_branches:
@@ -12,38 +12,6 @@ presubmits:
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20240111-cf1d81388e-master
-        command:
-        - runner.sh
-        args:
-        - ./hack/jenkins/test-dockerized.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            cpu: 6
-            memory: 15Gi
-          requests:
-            cpu: 6
-            memory: 15Gi
-  - name: pull-kubernetes-integration-eks
-    cluster: eks-prow-build-cluster
-    always_run: false
-    optional: true
-    decorate: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    annotations:
-      fork-per-release: "false"
-      testgrid-dashboards: sig-testing-e2e-framework
-      testgrid-tab-name: integration-eks
     path_alias: k8s.io/kubernetes
     labels:
       preset-service-account: "true"
