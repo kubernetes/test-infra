@@ -101,6 +101,12 @@ type RepoOpts struct {
 	// NoFetchTags determines whether we disable fetching tag objects). Defaults
 	// to false (tag objects are fetched).
 	NoFetchTags bool
+	// PrimaryCloneUpdateCommits are any additional SHAs we need to fetch into
+	// the primary clone to bring it up to speed. This should at least be the
+	// current base branch SHA. Needed when we're using shared objects because
+	// otherwise the primary will slowly get stale with no updates to it after
+	// its initial creation.
+	PrimaryCloneUpdateCommits sets.Set[string]
 }
 
 // Apply allows to use a ClientFactoryOpts as Opt
@@ -392,6 +398,10 @@ func (c *clientFactory) ensureFreshPrimary(cacheDir string, cacheClientCacher ca
 		// when we don't define a targeted list of commits to fetch directly).
 		if repoOpts.FetchCommits.Len() == 0 {
 			if err := cacheClientCacher.RemoteUpdate(); err != nil {
+				return err
+			}
+		} else if repoOpts.PrimaryCloneUpdateCommits.Len() > 0 {
+			if err := cacheClientCacher.FetchCommits(repoOpts.NoFetchTags, repoOpts.PrimaryCloneUpdateCommits.UnsortedList()); err != nil {
 				return err
 			}
 		}
