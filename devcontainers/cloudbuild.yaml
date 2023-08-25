@@ -1,0 +1,46 @@
+steps:
+  # Step 1: Clone kubernetes/kubernetes repository
+  - name: 'gcr.io/cloud-builders/git'
+    args: ['clone', 'https://github.com/kubernetes/kubernetes.git']
+
+  # Step 1.1: Clone your custom .devcontainer repository
+  - name: 'gcr.io/cloud-builders/git'
+    args: ['clone', 'https://github.com/craiglpeters/kubernetes-devcontainer.git']
+
+  # Step 2: Copy the .devcontainer folder from your repo to the workspace
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'cp -r kubernetes-devcontainer/.github/.devcontainer .'
+
+  # Step 3: Install NodeJS (required for npm)
+  - name: 'gcr.io/cloud-builders/wget'
+    args: ['https://nodejs.org/dist/v14.17.0/node-v14.17.0-linux-x64.tar.xz']
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'tar -xvf node-v14.17.0-linux-x64.tar.xz && mv node-v14.17.0-linux-x64 /usr/local/'
+
+  # Step 4: Install devcontainer-cli via npm
+  - name: 'gcr.io/cloud-builders/gsutil'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'export PATH=$PATH:/usr/local/node-v14.17.0-linux-x64/bin && npm install -g @devcontainers/cli'
+
+  # Step 5: Use devcontainer-cli to build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'devcontainer-cli build'
+
+  # Step 6: Tag the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['tag', 'local_image_name_or_id', 'gcr.io/$PROJECT_ID/k8s-dev:latest']
+
+  # Step 7: Push the Docker image to GCR
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/k8s-dev:latest']
