@@ -106,7 +106,6 @@ presubmits:
               cpu: 2
               memory: 2Gi
   - name: pull-publishing-bot-image
-    cluster: eks-prow-build-cluster
     decorate: true
     path_alias: "k8s.io/publishing-bot"
     always_run: true
