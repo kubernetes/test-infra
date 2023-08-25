@@ -53,12 +53,9 @@ var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster
 // Loaded at TestMain.
 var c *cfg.Config
 
+// TODO: (rjsadow) figure out a better way to incorporate all/any community clusters
 func isCritical(clusterName string) bool {
-	return clusterName == "k8s-infra-prow-build"
-}
-
-func isEKSCluster(clusterName string) bool {
-	return clusterName == "eks-prow-build-cluster"
+	return clusterName == "k8s-infra-prow-build" || clusterName == "eks-prow-build-cluster"
 }
 
 func TestMain(m *testing.M) {
@@ -1082,7 +1079,7 @@ func TestKubernetesMergeBlockingJobsCIPolicy(t *testing.T) {
 		// job Pod must qualify for Guaranteed QoS
 		errs := verifyPodQOSGuaranteed(job.Spec, true)
 		if !isCritical(job.Cluster) {
-			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build, found: %v", job.Cluster))
+			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build or eks-prow-build-cluster, found: %v", job.Cluster))
 		}
 		branches := job.Branches
 		if len(errs) > 0 {
@@ -1120,7 +1117,7 @@ func TestKubernetesReleaseBlockingJobsCIPolicy(t *testing.T) {
 		}
 		// job Pod must qualify for Guaranteed QoS
 		errs := verifyPodQOSGuaranteed(job.Spec, true)
-		if !isCritical(job.Cluster) && !isEKSCluster(job.Cluster) {
+		if !isCritical(job.Cluster) {
 			errs = append(errs, fmt.Errorf("must run in cluster: k8s-infra-prow-build or eks-prow-build-cluster, found: %v", job.Cluster))
 		}
 		if len(errs) > 0 {
@@ -1137,7 +1134,7 @@ func TestK8sInfraProwBuildJobsCIPolicy(t *testing.T) {
 	jobsToFix := 0
 	jobs := allStaticJobs()
 	for _, job := range jobs {
-		if job.Spec == nil || (!isCritical(job.Cluster) && !isEKSCluster(job.Cluster)) {
+		if job.Spec == nil || !isCritical(job.Cluster) {
 			continue
 		}
 		// job Pod must qualify for Guaranteed QoS
