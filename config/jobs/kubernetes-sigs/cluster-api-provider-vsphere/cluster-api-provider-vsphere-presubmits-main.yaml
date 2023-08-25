@@ -174,7 +174,7 @@ presubmits:
       description: Runs unit tests
 
   - name: pull-cluster-api-provider-vsphere-test-integration-main
-    cluster: eks-prow-build-cluster
+    cluster: k8s-infra-prow-build
     branches:
     - ^main$
     labels:

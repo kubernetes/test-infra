@@ -35,7 +35,7 @@ periodics:
     description: Runs unit tests
 
 - name: periodic-cluster-api-provider-vsphere-test-integration-release-1-5
-  cluster: eks-prow-build-cluster
+  cluster: k8s-infra-prow-build
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
