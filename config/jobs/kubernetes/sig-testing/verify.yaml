@@ -45,7 +45,7 @@ presubmits:
             cpu: 7
             memory: 12Gi
   - name: pull-kubernetes-verify-strict-lint
-    cluster: k8s-infra-prow-build
+    cluster: eks-prow-build-cluster
     decorate: true
     # This entire job is currently experimental. If it turns out to be useful,
     # the job can be removed and the same check can run as part of pull-kubernetes-verify
@@ -61,9 +61,6 @@ presubmits:
       testgrid-alert-email: patrick.ohly@intel.com
       testgrid-num-failures-to-alert: "15"
     path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
@@ -75,57 +72,16 @@ presubmits:
         - "-c"
         - "hack/verify-golangci-lint.sh -r ${PULL_BASE_SHA} -s"
         resources:
-          # Consider reducing memory limits after govet memory usage issue is
-          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
           limits:
-            cpu: 7
+            cpu: 5
             memory: 12Gi
           requests:
-            cpu: 7
+            cpu: 5
             memory: 12Gi
   - name: pull-kubernetes-linter-hints
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: true
-    # This job will always remain optional because linting may fail because of issues that do not
-    # need to be addressed. The job has to fail nonetheless to make it visible in GitHub that there
-    # were such issues.
-    optional: true
-    skip_branches:
-    - release-\d+.\d+ # per-release job
-    annotations:
-      fork-per-release: "true"
-      testgrid-dashboards: sig-testing-misc
-      description: Runs golangci-lint with a configuration for new code that reports also issues which do not need to be fixed.
-      testgrid-alert-email: patrick.ohly@intel.com
-      testgrid-num-failures-to-alert: "15"
-    path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230513-7e1db2f1bb-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - /bin/sh
-        - "-c"
-        - "hack/verify-golangci-lint.sh -r ${PULL_BASE_SHA} -n"
-        resources:
-          # Consider reducing memory limits after govet memory usage issue is
-          # addressed in https://github.com/kubernetes/kubernetes/issues/93822
-          limits:
-            cpu: 7
-            memory: 12Gi
-          requests:
-            cpu: 7
-            memory: 12Gi
-  - name: pull-kubernetes-linter-hints-eks
     cluster: eks-prow-build-cluster
     decorate: true
-    always_run: false
+    always_run: true
     # This job will always remain optional because linting may fail because of issues that do not
     # need to be addressed. The job has to fail nonetheless to make it visible in GitHub that there
     # were such issues.
@@ -151,12 +107,13 @@ presubmits:
         - "hack/verify-golangci-lint.sh -r ${PULL_BASE_SHA} -n"
         resources:
           # It peaks at around 7 cores of the EKS cluster. We can fit more jobs onto
-          # a node without a real slowdown by requesting one quarter of a node (= 4).
+          # a node without much slowdown by requesting one third of a node
+          # (= 3 * 5 + 1 for kubelet).
           limits:
-            cpu: 4
+            cpu: 5
             memory: 12Gi
           requests:
-            cpu: 4
+            cpu: 5
             memory: 12Gi
   - name: pull-kubernetes-verify-go-canary
     cluster: k8s-infra-prow-build
