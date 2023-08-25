@@ -1,0 +1,119 @@
+presubmits:
+   kubernetes-sigs/ibm-powervs-block-csi-driver:
+   - name: pull-ibm-powervs-block-csi-driver-build-test-release-0-4
+     cluster: eks-prow-build-cluster
+     always_run: true
+     decorate: true
+     labels:
+       preset-dind-enabled: "true"
+     path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
+     annotations:
+       testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
+       testgrid-tab-name: build-test-release-0-4
+       description: Build test in ibm-powervs-block-csi-driver repo.
+     branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.4
+     spec:
+       containers:
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.26
+         command:
+         - runner.sh
+         args:
+         - make
+         - driver
+         resources:
+           limits:
+             cpu: 2
+             memory: 4Gi
+           requests:
+             cpu: 2
+             memory: 4Gi
+         securityContext:
+           privileged: true
+
+   - name: pull-ibm-powervs-block-csi-driver-image-build-test-release-0-4
+     cluster: eks-prow-build-cluster
+     always_run: true
+     decorate: true
+     labels:
+       preset-dind-enabled: "true"
+     path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
+     annotations:
+       testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
+       testgrid-tab-name: image-build-test-release-0-4
+       description: Build image test in ibm-powervs-block-csi-driver repo.
+     branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.4
+     spec:
+       containers:
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.26
+         command:
+         - runner.sh
+         args:
+         - make
+         - image
+         resources:
+           limits:
+             cpu: 2
+             memory: 4Gi
+           requests:
+             cpu: 2
+             memory: 4Gi
+         securityContext:
+           privileged: true
+
+   - name: pull-ibm-powervs-block-csi-driver-unit-test-release-0-4
+     cluster: eks-prow-build-cluster
+     always_run: true
+     decorate: true
+     path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
+     annotations:
+       testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
+       testgrid-tab-name: unit-test-release-0-4
+       description: Unit tests in ibm-powervs-block-csi-driver repo.
+     branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.4
+     spec:
+       containers:
+       - image: public.ecr.aws/docker/library/golang:1.19
+         command:
+         - make
+         args:
+         - test
+         resources:
+           limits:
+             cpu: 2
+             memory: 4Gi
+           requests:
+             cpu: 2
+             memory: 4Gi
+
+   - name: pull-ibm-powervs-block-csi-driver-verify-test-release-0-4
+     cluster: eks-prow-build-cluster
+     always_run: true
+     decorate: true
+     path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
+     annotations:
+       testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
+       testgrid-tab-name: verify-test-release-0-4
+       description: ibm-powervs-block-csi-driver basic code verification.
+     branches:
+      # The script this job runs is not in all branches.
+      - ^release-0.4
+     spec:
+       containers:
+       - image: public.ecr.aws/docker/library/golang:1.19
+         command:
+         - make
+         args:
+         - verify
+         resources:
+           limits:
+             cpu: 2
+             memory: 4Gi
+           requests:
+             cpu: 2
+             memory: 4Gi
