@@ -7,7 +7,7 @@ presubmits:
     run_if_changed: '\.go$|hack/check-format\.sh'
     decorate: true
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
@@ -35,7 +35,7 @@ presubmits:
     run_if_changed: '\.go$|hack/check-lint\.sh'
     decorate: true
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
@@ -63,7 +63,7 @@ presubmits:
     run_if_changed: '\.go$|hack/check-vet\.sh'
     decorate: true
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
@@ -91,7 +91,7 @@ presubmits:
     run_if_changed: '\.go$|hack/check-staticcheck\.sh$|go.mod'
     decorate: true
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
@@ -118,7 +118,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -147,7 +147,7 @@ presubmits:
     cluster: eks-prow-build-cluster
     decorate: true
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -179,7 +179,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -212,7 +212,7 @@ presubmits:
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     extra_refs:
     - org: kubernetes
       repo: test-infra
@@ -261,7 +261,7 @@ presubmits:
       preset-cloud-provider-vsphere-e2e-config: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - ^release-1.2[4-6]$
+    - ^release-1.2[2-6]$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
