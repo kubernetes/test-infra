@@ -1021,6 +1021,7 @@ def generate_upgrades():
         kops_b = versions[1][0]
         k8s_b = versions[1][1]
         job_name = f"kops-aws-upgrade-k{shorten(k8s_a)}-ko{shorten(kops_a)}-to-k{shorten(k8s_b)}-ko{shorten(kops_b)}" # pylint: disable=line-too-long
+        runs_per_day = 3 if kops_b == 'latest' else 1
         env = {
             'KOPS_VERSION_A': kops_a,
             'K8S_VERSION_A': k8s_a,
@@ -1044,7 +1045,7 @@ def generate_upgrades():
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades'],
-                       runs_per_day=8,
+                       runs_per_day=runs_per_day,
                        test_timeout_minutes=120,
                        scenario='upgrade-ab',
                        env=env,
@@ -1059,7 +1060,7 @@ def generate_upgrades():
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades-many-addons'],
                        test_timeout_minutes=120,
-                       runs_per_day=4,
+                       runs_per_day=runs_per_day,
                        scenario='upgrade-ab',
                        env=addonsenv,
                        )

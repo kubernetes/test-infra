@@ -68,7 +68,6 @@ presubmits:
 
 # {"cloud": "aws", "distro": "u2204", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: presubmit-kops-aws-scale-amazonvpc-using-cl2
-    cluster: eks-prow-build-cluster
     branches:
     - master
     always_run: false
@@ -125,14 +124,11 @@ presubmits:
         - name: CLUSTER_NAME
           value: "e2e-ff02749ef8-a423a.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
-          value: "s3://k8s-infra-kops-scale-tests"
+          value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
           value: "true"
         resources:
           requests:
-            cpu: "2"
-            memory: "6Gi"
-          limits:
             cpu: "2"
             memory: "6Gi"
     annotations:
