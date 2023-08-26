@@ -1,5 +1,8 @@
 
   - name: {{job_name}}
+    {%- if scenario == 'scalability' %}
+    cluster: eks-prow-build-cluster
+    {%- endif %}
     branches:
     - {{branch}}
     {%- if run_if_changed %}
@@ -58,3 +61,8 @@
           requests:
             cpu: "2"
             memory: "6Gi"
+          {%- if scenario == 'scalability' %}
+          limits:
+            cpu: "2"
+            memory: "6Gi"
+          {%- endif %}
