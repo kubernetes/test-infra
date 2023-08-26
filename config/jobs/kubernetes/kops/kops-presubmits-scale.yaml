@@ -124,12 +124,12 @@ presubmits:
           value: "3"
         - name: CONTROL_PLANE_SIZE
           value: "c6g.16xlarge"
+        - name: KOPS_STATE_STORE
+          value: "s3://k8s-infra-kops-scale-tests"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
           value: "e2e-ff02749ef8-a423a.test-cncf-aws.k8s.io"
-        - name: KOPS_STATE_STORE
-          value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
           value: "true"
         resources:

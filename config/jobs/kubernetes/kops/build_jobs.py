@@ -298,7 +298,8 @@ def presubmit_test(branch='master',
         name_hash = hashlib.md5(name.encode()).hexdigest()
         env['CLOUD_PROVIDER'] = cloud
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
-        env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
+        if 'KOPS_STATE_STORE' not in env:
+            env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         if extra_flags:
             env['KOPS_EXTRA_FLAGS'] = " ".join(extra_flags)
         if irsa and cloud == "aws":
@@ -1113,6 +1114,7 @@ def generate_presubmits_scale():
                 'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "25",
                 'CONTROL_PLANE_COUNT': "3",
                 'CONTROL_PLANE_SIZE': "c6g.16xlarge",
+                'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests"
             }
         )
     ]
