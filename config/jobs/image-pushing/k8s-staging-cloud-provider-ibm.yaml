@@ -49,7 +49,7 @@ postsubmits:
             slug: ibm-powervs-block-csi-driver-maintainers
         github_users:
           - mkumatag
-          - Madhan-SWE
+          - yussufsh
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
