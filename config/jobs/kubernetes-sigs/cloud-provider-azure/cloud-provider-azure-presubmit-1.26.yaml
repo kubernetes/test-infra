@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/cloud-provider-azure:
     - name: pull-cloud-provider-azure-check-1-26
+      cluster: eks-prow-build-cluster
       skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       path_alias: sigs.k8s.io/cloud-provider-azure
@@ -192,6 +193,7 @@ presubmits:
         description: "Runs Azure specific tests with cloud-provider-azure release-1.26 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
         testgrid-num-columns-recent: "30"
     - name: pull-cloud-provider-azure-unit-1-26
+      cluster: eks-prow-build-cluster
       skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^\\.github/|^.pipelines/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       path_alias: sigs.k8s.io/cloud-provider-azure
@@ -207,6 +209,13 @@ presubmits:
             args:
               - make
               - test-unit
+            resources:
+              limits:
+                memory: "9Gi"
+                cpu: "2"
+              requests:
+                memory: "9Gi"
+                cpu: "2"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-26-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-unit-1-26
