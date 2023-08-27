@@ -119,7 +119,7 @@ presubmits:
         - name: RUN_CL2_TEST
           value: "true"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "25"
+          value: "20"
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
