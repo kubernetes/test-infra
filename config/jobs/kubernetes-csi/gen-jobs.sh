@@ -262,12 +262,8 @@ expand_tests () {
 pull_optional() {
     local tests="$1"
     local kubernetes="$2"
-    local deployment_suffix="$3"
 
-    # https://github.com/kubernetes-csi/csi-driver-host-path/pull/282 has not been merged yet,
-    # therefore pull jobs which depend on the new deployment flavors have to be optional.
-    # TODO: remove this check once merged.
-    if [ "$tests" == "alpha" ] || [ "$deployment_suffix" ] ; then
+    if [ "$tests" == "alpha" ]; then
         echo "true"
     elif [ "$kubernetes" == "$experimental_k8s_version" ]; then
         # New k8s versions may require updates to kind or release-tools.
@@ -368,7 +364,7 @@ EOF
   - name: $(job_name "pull" "$repo" "$tests" "$deployment$deployment_suffix" "$kubernetes")
     cluster: $(job_cluster "$repo")
     always_run: $(pull_alwaysrun "$tests")
-    optional: $(pull_optional "$tests" "$kubernetes" "$deployment_suffix")
+    optional: $(pull_optional "$tests" "$kubernetes")
     decorate: true
     skip_report: false
     skip_branches: [$(skip_branches $repo)]
