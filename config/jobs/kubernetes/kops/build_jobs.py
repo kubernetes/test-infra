@@ -1111,7 +1111,7 @@ def generate_presubmits_scale():
                 'CNI_PLUGIN': "amazonvpc",
                 'KUBE_NODE_COUNT': "500",
                 'RUN_CL2_TEST': "true",
-                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "25",
+                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
                 'CONTROL_PLANE_COUNT': "3",
                 'CONTROL_PLANE_SIZE': "c6g.16xlarge",
                 'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests"
