@@ -1266,8 +1266,8 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss using a stable capz release."
 - cron: '0 18 * * *'  # Run at 18:00 UTC everyday
-  # cloud-provider-azure-master-credential-provider-vmss-capz runs Azure specific credential provider tests periodically using a stable capz release on vmss.
-  name: cloud-provider-azure-master-credential-provider-vmss-capz
+  # cloud-provider-azure-master-credential-provider-capz runs Azure specific credential provider tests periodically using a stable capz release.
+  name: cloud-provider-azure-master-credential-provider-capz
   decorate: true
   decoration_config:
     timeout: 4h
@@ -1315,18 +1315,17 @@ periodics:
           value: "Standard"
         - name: CLUSTER_PROVISIONING_TOOL # cloud-provider-azure config
           value: "capz"
-        # Windows test needs further investigation
-        # - name: TEST_WINDOWS # CAPZ config
-        #   value: "true"
+        - name: TEST_WINDOWS # CAPZ config
+          value: "true"
         - name: TEST_ACR_CREDENTIAL_PROVIDER # CAPZ config
           value: "true"
         - name: LABEL_FILTER # cloud-provider-azure config
           value: "OOT-Credential"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-master-credential-provider-vmss-capz
+    testgrid-tab-name: cloud-provider-azure-master-credential-provider-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs Azure specific credential provider tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss using a stable capz release."
+    description: "Runs Azure specific credential provider tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release."
 - cron: '0 18 * * *'  # Run at 18:00 UTC everyday
   # cloud-provider-azure-conformance-vmss-capz runs Kubernetes conformance tests periodically on vmss.
   name: cloud-provider-azure-conformance-vmss-capz
