@@ -26,7 +26,7 @@ periodics:
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/networking: amazonvpc
-    testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops
     testgrid-tab-name: ec2-master-scale-performance
   spec:
     containers:
