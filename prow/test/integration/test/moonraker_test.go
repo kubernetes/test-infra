@@ -74,16 +74,6 @@ func TestMoonrakerBurst(t *testing.T) {
 echo hello > README.txt
 git add README.txt
 git commit -m "commit 1"
-
-# Create fake PRs. These are "Gerrit" style refs under refs/changes/*.
-for num in $(seq 1 100); do
-	git checkout -d master
-	echo "${num}" > "${num}"
-	git add "${num}"
-	git commit -m "PR${num}"
-	git update-ref "refs/changes/00/123/${num}" HEAD
-done
-
 git checkout master
 
 echo this-is-from-repo%s > README.txt
@@ -111,6 +101,22 @@ EOF
 
 git add .prow/presubmits.yaml
 git commit -m "add inrepoconfig for my-presubmit"
+baseSHA=$(git rev-parse HEAD)
+
+# Create fake PRs. These are "Gerrit" style refs under refs/changes/*.
+for num in $(seq 1 100); do
+	git checkout -d ${baseSHA}
+    # Modify the presubmit name to match the unique num.
+	sed -i "s,my-presubmit,my-presubmit (ref refs/changes/00/123/${num})," .prow/presubmits.yaml
+
+	git add .prow/presubmits.yaml
+
+	git commit -m "PR${num}"
+	git update-ref "refs/changes/00/123/${num}" HEAD
+done
+
+git checkout master
+git reset --hard ${baseSHA}
 `
 
 	repoSetup := fakegitserver.RepoSetup{
@@ -126,8 +132,13 @@ git commit -m "add inrepoconfig for my-presubmit"
 		t.Fatalf("FGS repo setup failed: %v", err)
 	}
 
-	// Clone the repo out of FGS to determine the base SHA of master branch for
-	// repo-moonraker-stres-test, as well as the 100 different PR head SHAs.
+	// Clone the repo out of FGS to our local disk to determine the base SHA of
+	// master branch for repo-moonraker-stres-test, as well as the 100 different
+	// PR head SHAs. We want to figure out the base SHA (master branch HEAD SHA)
+	// and head SHAs (SHAs of each of the 100 changes we created during
+	// repoSetup above) programmatically, so that we don't have to do it
+	// manually as part of writing this test (or making changes to it in the
+	// future).
 	cacheDirBase := "/var/tmp"
 
 	trueVal := true
@@ -143,13 +154,13 @@ git commit -m "add inrepoconfig for my-presubmit"
 	}
 
 	var repoOpts = git.RepoOpts{
-		ShareObjectsWithSourceRepo: true,
-		NoFetchTags:                true,
+		NoFetchTags: true,
 	}
 
-	// repoClient points to the *secondary* clone. Still, because we share all
-	// objects with the primary, it effectively behaves like the primary with
-	// all of the (mirrored) refs in it.
+	// repoClient points to our local copy of this repo. We will use it to
+	// figure out the base SHA and head SHAs. Because we are not sharing objects
+	// (ShareObjectsWithSourceRepo is false in repoOpts), the repoClient will be
+	// a full mirror clone.
 	repoClient, err := gc.ClientForWithRepoOpts("fakegitserver/repo", repoSetup.Name, repoOpts)
 	if err != nil {
 		t.Fatal(err)
@@ -162,11 +173,15 @@ git commit -m "add inrepoconfig for my-presubmit"
 	}
 	baseSHA = strings.TrimSuffix(baseSHA, "\n")
 
-	// We fetch all refs/changes/* into the secondary clone. Although we share
-	// the underlying SHA objects (ShareObjectsWithSourceRepo), we don't know
-	// what these SHAs look like yet. However, we do know that the
-	// refs/changes/* files act as pointers to the SHAs, so fetch these refs.
-	repoClient.Fetch("refs/changes/*:refs/changes/*")
+	// Determine the SHAs for all changes in refs/changes/* (all 100 of them).
+	// We'll then spawn 100 goroutines and make each one fetch one of these 100
+	// SHAs. We have to fetch the refs from FGS, because the repoClient we are
+	// using is for the secondary clone on disk and does not have a mirror clone
+	// (it only has refs from the primary mirror).
+	remoteResolver := func() (string, error) {
+		return "http://localhost/fakegitserver/repo/moonraker-burst", nil
+	}
+	repoClient.FetchFromRemote(remoteResolver, "refs/changes/*:refs/changes/*")
 	refs := []string{}
 	for i := 1; i <= 100; i++ {
 		ref := fmt.Sprintf("refs/changes/00/123/%d", i)
@@ -175,11 +190,6 @@ git commit -m "add inrepoconfig for my-presubmit"
 	refsToShas, err := repoClient.RevParseN(refs)
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	headSHAs := []string{}
-	for _, headSHA := range refsToShas {
-		headSHAs = append(headSHAs, headSHA)
 	}
 
 	// Set up client to talk to Moonraker inside the KIND cluster. The moonraker
@@ -200,35 +210,37 @@ git commit -m "add inrepoconfig for my-presubmit"
 		t.Fatal(err)
 	}
 
-	var want = config.Presubmit{
-		JobBase: config.JobBase{
-			Name: "my-presubmit",
-			UtilityConfig: config.UtilityConfig{
-				Decorate: &trueVal,
-			},
-			Spec: &v1.PodSpec{
-				Containers: []v1.Container{
-					{
-						Image:   "localhost:5001/alpine",
-						Command: []string{"sh"},
-						Args: []string{
-							"-c",
-							`set -eu
-echo "hello from my-presubmit"
+	want := func(ref string) config.Presubmit {
+		return config.Presubmit{
+			JobBase: config.JobBase{
+				Name: fmt.Sprintf("my-presubmit (ref %s)", ref),
+				UtilityConfig: config.UtilityConfig{
+					Decorate: &trueVal,
+				},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Image:   "localhost:5001/alpine",
+							Command: []string{"sh"},
+							Args: []string{
+								"-c",
+								fmt.Sprintf(`set -eu
+echo "hello from my-presubmit (ref %s)"
 cat README.txt
-`,
+`, ref),
+							},
 						},
 					},
 				},
 			},
-		},
+		}
 	}
 
 	// Collect errors from the workers. This is because otherwise we get a
 	// "call to (*T).Fatal from a non-test goroutine" error.
 	errs := make(chan error, 1)
 
-	var sendGetProwYAMLRequest = func(t *testing.T, headSHA string) {
+	var sendGetProwYAMLRequest = func(t *testing.T, ref, headSHA string) {
 		got, err := moonrakerClient.GetProwYAML(&prowjobv1.Refs{
 			// org is the URL of the "org" for the repo, as seen from inside the
 			// KIND cluster (because moonraker is running inside the KIND
@@ -257,7 +269,7 @@ cat README.txt
 
 		// Check that the gotPresubmit is what we expect (what we created in the
 		// createRepoWithPRs bit at the beginning of this test function above).
-		if diff := cmp.Diff(gotPresubmit, want, cmpopts.IgnoreUnexported(
+		if diff := cmp.Diff(gotPresubmit, want(ref), cmpopts.IgnoreUnexported(
 			config.Presubmit{},
 			config.Brancher{},
 			config.RegexpChangeMatcher{})); diff != "" {
@@ -267,13 +279,15 @@ cat README.txt
 		}
 	}
 
-	// Now create the burst of 100 requests.
-	for i := 1; i <= 100; i++ {
-		go sendGetProwYAMLRequest(t, headSHAs[i-1])
+	// Now create the burst of 100 requests (each one with its own unique
+	// headSHA). It is at this point that moonraker will learn of the
+	// moonraker-burst repo we've created in FGS.
+	for ref, headSHA := range refsToShas {
+		go sendGetProwYAMLRequest(t, ref, headSHA)
 	}
 
 	// Check that all 100 requests finished successfully.
-	for i := 1; i <= 100; i++ {
+	for range refsToShas {
 		err := <-errs
 		if err != nil {
 			t.Fatal(err)

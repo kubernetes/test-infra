@@ -83,6 +83,8 @@ type cacher interface {
 	MirrorClone() error
 	// RemoteUpdate fetches all updates from the remote.
 	RemoteUpdate() error
+	// FetchCommits fetches only the given commits.
+	FetchCommits(bool, []string) error
 }
 
 // cloner knows how to clone repositories from a central cache
@@ -90,8 +92,6 @@ type cloner interface {
 	// Clone clones the repository from a local path.
 	Clone(from string) error
 	CloneWithRepoOpts(from string, repoOpts RepoOpts) error
-	// FetchCommits fetches only the given commits.
-	FetchCommits(bool, []string) error
 }
 
 // MergeOpt holds options for git merge operations.
