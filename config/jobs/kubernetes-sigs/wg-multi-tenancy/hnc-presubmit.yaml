@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/hierarchical-namespaces:
   - name: pull-hnc-test
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: wg-multi-tenancy-hnc
       testgrid-tab-name: presubmit-tests
@@ -12,3 +13,10 @@ presubmits:
       - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - ./hack/ci-test.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi

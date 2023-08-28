@@ -6,6 +6,7 @@
 postsubmits:
   kubernetes-sigs/hierarchical-namespaces:
   - name: hnc-postsubmit-test
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-dashboards: wg-multi-tenancy-hnc
       testgrid-tab-name: postsubmit-tests
@@ -28,15 +29,19 @@ postsubmits:
         securityContext:
           privileged: true # Required for docker-in-docker
         resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
           requests:
-            cpu: 1
-            memory: "4Gi"
+            cpu: 2
+            memory: 4Gi
 
 # The periodics are the same as the postsubmits, but we run them occasionally
 # to ensure there's no flakiness during periods where there aren't lots of
 # submissions. Please keep them as closely in sync as possible.
 periodics:
 - name: hnc-periodic-test
+  cluster: eks-prow-build-cluster
   annotations:
     testgrid-dashboards: wg-multi-tenancy-hnc
     testgrid-tab-name: periodic-e2e-tests
@@ -63,6 +68,9 @@ periodics:
       securityContext:
         privileged: true # Required for docker-in-docker
       resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
         requests:
-          cpu: 1
-          memory: "4Gi"
+          cpu: 2
+          memory: 4Gi
