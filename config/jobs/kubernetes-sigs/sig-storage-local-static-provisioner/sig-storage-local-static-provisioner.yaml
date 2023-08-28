@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/sig-storage-local-static-provisioner:
   - name: pull-sig-storage-local-static-provisioner
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -16,7 +17,16 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+
   - name: pull-sig-storage-local-static-provisioner-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -28,7 +38,16 @@ presubmits:
         args:
         - make
         - verify
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+
   - name: pull-sig-storage-local-static-provisioner-test
+    cluster: eks-prow-build-cluster
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
@@ -45,6 +64,14 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+
   - name: pull-sig-storage-local-static-provisioner-e2e
     always_run: true
     decorate: true
