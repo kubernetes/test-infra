@@ -1,0 +1,76 @@
+periodics:
+- name: ci-kubernetes-e2e-kops-aws-scale-amazonvpc-using-cl2
+  cluster: eks-prow-build-cluster
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential-boskos-scale-001-kops: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 480m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    path_alias: k8s.io/kops
+    workdir: true
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/distro: u2204
+    test.kops.k8s.io/k8s_version: stable
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/networking: amazonvpc
+    testgrid-dashboards: kops-misc, sig-cluster-lifecycle-kops
+    testgrid-tab-name: ec2-master-scale-performance
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./tests/e2e/scenarios/scalability/run-test.sh
+      securityContext:
+        privileged: true
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      - name: GOPATH
+        value: /home/prow/go
+      - name: ARTIFACTS
+        value: $(ARTIFACTS)
+      - name: CNI_PLUGIN
+        value: "amazonvpc"
+      - name: KUBE_NODE_COUNT
+        value: "500"
+      - name: RUN_CL2_TEST
+        value: "true"
+      - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
+        value: "20"
+      - name: CONTROL_PLANE_COUNT
+        value: "3"
+      - name: CONTROL_PLANE_SIZE
+        value: "c6g.16xlarge"
+      - name: KOPS_STATE_STORE
+        value: "s3://k8s-infra-kops-scale-tests"
+      - name: CLOUD_PROVIDER
+        value: "aws"
+      - name: CLUSTER_NAME
+        value: "e2e-ff02749ef8-a423a.test-cncf-aws.k8s.io"
+      - name: KOPS_IRSA
+        value: "true"
+      resources:
+        requests:
+          cpu: "2"
+          memory: "6Gi"
+        limits:
+          cpu: "2"
+          memory: "6Gi"
