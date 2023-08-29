@@ -2,6 +2,7 @@
 presubmits:
   kubernetes/system-validators:
   - name: pull-system-validators-verify
+    cluster: eks-prow-build-cluster
     path_alias: "k8s.io/system-validators"
     always_run: true
     decorate: true
@@ -10,6 +11,13 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
         command:
         - "./hack/verify-all.sh"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-system-validators
       testgrid-tab-name: pr-verify
