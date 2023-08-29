@@ -147,6 +147,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-image-builder
       testgrid-tab-name: pr-goss-populate
   - name: pull-container-image-build
+    cluster: eks-prow-build-cluster
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -163,8 +164,11 @@ presubmits:
             - "./images/capi/scripts/ci-container-image.sh"
           resources:
             requests:
-              cpu: "4000m"
-              memory: "6Gi"
+              cpu: 4
+              memory: 6Gi
+            limits:
+              cpu: 4
+              memory: 6Gi
           securityContext:
             privileged: true
             capabilities:
