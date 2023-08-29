@@ -17,11 +17,11 @@ presubmits:
         - scripts/test-infra/verify.sh
         resources:
           limits:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 2
-            memory: 4Gi
+            cpu: 4
+            memory: 8Gi
   - name: pull-node-feature-discovery-verify-docs-release-0-13
     cluster: eks-prow-build-cluster
     run_if_changed: "^docs/"
