@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/controller-runtime:
   - name: pull-controller-runtime-test
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     path_alias: sigs.k8s.io/controller-runtime
@@ -14,11 +15,16 @@ presubmits:
         - ./hack/ci-check-everything.sh
         resources:
           requests:
-            cpu: "7000m"
+            cpu: 7
+            memory: 14Gi
+          limits:
+            cpu: 7
+            memory: 14Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: controller-runtime-main
   - name: pull-controller-runtime-apidiff
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     optional: true
@@ -30,6 +36,13 @@ presubmits:
       - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - ./hack/apidiff.sh
+        resources:
+          requests:
+            cpu: 2
+            memory: 4Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: controller-runtime-main-apidiff

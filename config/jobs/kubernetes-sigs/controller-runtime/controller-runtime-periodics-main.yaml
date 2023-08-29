@@ -1,6 +1,7 @@
 periodics:
 - interval: 6h
   name: periodic-controller-runtime-test
+  cluster: eks-prow-build-cluster
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
@@ -13,7 +14,11 @@ periodics:
       - ./hack/ci-check-everything.sh
       resources:
         requests:
-          cpu: "7000m"
+          cpu: 7
+          memory: 14Gi
+        limits:
+          cpu: 7
+          memory: 14Gi
   annotations:
     testgrid-dashboards: sig-api-machinery-kubebuilder
     testgrid-tab-name: controller-runtime-periodic-main
