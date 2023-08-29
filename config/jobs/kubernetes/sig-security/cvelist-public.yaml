@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-security/cvelist-public:
   - name: validate-cve-files
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: false
     optional: true
@@ -17,6 +18,13 @@ presubmits:
           apt update && apt -y install jq; \
           [[ -f validate-k8s.sh ]] || (git fetch https://github.com/kubernetes-security/cvelist-public.git validate && git checkout FETCH_HEAD -- validate-k8s.sh); \
           git diff --name-only --diff-filter=d $PULL_BASE_SHA...$PULL_PULL_SHA | grep "\/CVE.*json$" | xargs ./validate-k8s.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-security-cvelist-public
