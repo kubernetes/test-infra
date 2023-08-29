@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-alibaba-cloud:
   - name: pull-cloud-provider-alibaba-cloud-check
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
     - master
@@ -14,12 +15,20 @@ presubmits:
         args:
         - make
         - check
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: presubmits-cloud-provider-alibaba
       testgrid-tab-name: check
       description: alibaba cloud provider checks
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-alibaba-cloud-unit-test
+    cluster: eks-prow-build-cluster
     always_run: true
     branches:
     - master
@@ -33,6 +42,13 @@ presubmits:
         args:
         - make
         - unit-test
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: presubmits-cloud-provider-alibaba
       testgrid-tab-name: unit-test
