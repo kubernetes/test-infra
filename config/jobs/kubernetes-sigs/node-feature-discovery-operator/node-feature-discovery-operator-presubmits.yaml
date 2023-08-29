@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/node-feature-discovery-operator:
   - name: pull-node-feature-discovery-operator-verify
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_branches:
     - gh-pages
@@ -14,7 +15,15 @@ presubmits:
       - image: public.ecr.aws/docker/library/golang:1.20
         command:
         - scripts/test-infra/verify.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-node-feature-discovery-operator-verify-docs
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_branches:
     - gh-pages
@@ -28,7 +37,15 @@ presubmits:
       - image: ruby:slim
         command:
         - scripts/test-infra/mdlint.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-node-feature-discovery-operator-build-image
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_branches:
     - gh-pages
@@ -49,7 +66,15 @@ presubmits:
         - runner.sh
         args:
         - scripts/test-infra/build-image.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
   - name: pull-node-feature-discovery-operator-build-gh-pages
+    cluster: eks-prow-build-cluster
     always_run: true
     skip_branches:
     - gh-pages
@@ -69,3 +94,10 @@ presubmits:
         - runner.sh
         args:
         - scripts/test-infra/build-gh-pages.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
