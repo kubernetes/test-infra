@@ -17,9 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"sort"
 	"strings"
 
@@ -32,24 +35,38 @@ type Config struct {
 	configPath    string
 	jobConfigPath string
 	repoReport    bool
+	repo          string
+	output        string
 }
 
-type repoConfig struct {
-	totalJobs     int
-	completedJobs int
-	eligibleJobs  int
-	jobs          []jobConfig
+type status struct {
+	TotalJobs     int             `json:"totalJobs"`
+	CompletedJobs int             `json:"completedJobs"`
+	EligibleJobs  int             `json:"eligibleJobs"`
+	Clusters      []clusterStatus `json:"clusters"`
 }
 
-type jobConfig struct {
-	jobBase  cfg.JobBase
-	eligible bool
+type clusterStatus struct {
+	ClusterName  string       `json:"clusterName"`
+	EligibleJobs int          `json:"eligibleJobs"`
+	TotalJobs    int          `json:"totalJobs"`
+	RepoStatus   []repoStatus `json:"repoStatus"`
 }
 
-type ClusterStat struct {
-	EligibleCount int
-	TotalCount    int
+type repoStatus struct {
+	RepoName     string      `json:"repoName"`
+	EligibleJobs int         `json:"eligibleJobs"`
+	TotalJobs    int         `json:"totalJobs"`
+	Jobs         []jobStatus `json:"jobs"`
 }
+
+type jobStatus struct {
+	JobName    string      `json:"jobName"`
+	JobDetails cfg.JobBase `json:"jobDetails"`
+	Eligible   bool        `json:"eligible"`
+}
+
+var config Config
 
 func (c *Config) validate() error {
 	if c.configPath == "" {
@@ -62,47 +79,199 @@ func loadConfig(configPath, jobConfigPath string) (*cfg.Config, error) {
 	return cfg.Load(configPath, jobConfigPath, nil, "")
 }
 
-func reportTotalJobs(jobs map[string]repoConfig) {
-	total := 0
-	eligible := 0
-	for _, job := range jobs {
-		total += job.totalJobs
-		eligible += job.eligibleJobs
+// The function "reportTotalJobs" prints the total number of jobs, completed jobs, and eligible jobs.
+func reportTotalJobs(s status) {
+	fmt.Printf("Total jobs: %v\n", s.TotalJobs)
+	fmt.Printf("Completed jobs: %v\n", s.CompletedJobs)
+	fmt.Printf("Eligible jobs: %v\n", s.EligibleJobs)
+}
+
+// The function "reportClusterStats" prints the statistics of each cluster in a sorted order.
+func reportClusterStats(s status) {
+	printHeader()
+	sortedClusters := []string{}
+	for _, cluster := range s.Clusters {
+		sortedClusters = append(sortedClusters, cluster.ClusterName)
 	}
-	fmt.Printf("Total jobs: %v\n", total)
-	fmt.Printf("Total eligible jobs: %v\n", eligible)
-	fmt.Printf("Currently ineligible jobs: %v\n", total-eligible)
+	sort.Strings(sortedClusters)
+
+	for _, cluster := range sortedClusters {
+		for _, c := range s.Clusters {
+			if c.ClusterName == cluster {
+				printClusterStat(cluster, c, s.Clusters)
+			}
+		}
+	}
+}
+
+// The function "printHeader" prints a formatted header for displaying cluster information.
+func printHeader() {
+	format := "%-30v %-15v (%v)\n"
+	header := fmt.Sprintf("\n"+format, "Cluster", "Eligible/Total", "Percent")
+	separator := strings.Repeat("-", len(header))
+	fmt.Print(header, separator+"\n")
+}
+
+// The function "printClusterStat" prints the status of a cluster, including the number of eligible and
+// total jobs, as well as the percentage of eligible and total jobs compared to all clusters.
+func printClusterStat(clusterName string, stat clusterStatus, allStats []clusterStatus) {
+	format := "%-30v %-15v (%v/%v)\n"
+	eligibleP := getPercentage(stat.EligibleJobs, getTotalEligible(allStats))
+	totalP := getPercentage(stat.TotalJobs, getTotalJobs(allStats))
+	fmt.Printf(format, clusterName, fmt.Sprintf("%v/%v", stat.EligibleJobs, stat.TotalJobs), printPercentage(eligibleP), printPercentage(totalP))
+}
+
+// The function `getTotalEligible` calculates the total number of eligible jobs from a given list of
+// cluster statuses.
+func getTotalEligible(allStats []clusterStatus) int {
+	total := 0
+	for _, stat := range allStats {
+		total += stat.EligibleJobs
+	}
+	return total
+}
+
+// The function "getTotalJobs" calculates the total number of jobs from a given slice of clusterStatus
+// structs.
+func getTotalJobs(allStats []clusterStatus) int {
+	total := 0
+	for _, stat := range allStats {
+		total += stat.TotalJobs
+	}
+	return total
+}
+
+// The function `printRepoStatistics` prints statistics for repositories, including completion status,
+// eligibility, remaining jobs, and percentage complete.
+func printRepoStatistics(s status) {
+	format := "%-55v  %-10v %-20v %-10v (%v)\n"
+	header := fmt.Sprintf("\n"+format, "Repository", "Complete", "Eligible(Total)", "Remaining", "Percent")
+	separator := strings.Repeat("-", len(header))
+
+	fmt.Print(header)
+	fmt.Println(separator)
+
+	sortedRepos := []string{}
+	for _, cluster := range s.Clusters {
+		for _, repo := range cluster.RepoStatus {
+			if !slices.Contains(sortedRepos, repo.RepoName) {
+				sortedRepos = append(sortedRepos, repo.RepoName)
+			}
+		}
+	}
+	sort.Strings(sortedRepos)
+
+	for _, repo := range sortedRepos {
+		total := 0
+		complete := 0
+		eligible := 0
+		for _, cluster := range s.Clusters {
+			for _, r := range cluster.RepoStatus {
+				if r.RepoName == repo {
+					total += r.TotalJobs
+					eligible += r.EligibleJobs
+					if cluster.ClusterName != "default" {
+						complete += r.TotalJobs
+					}
+				}
+			}
+		}
+		remaining := eligible - complete
+		percent := getPercentage(complete, eligible)
+		fmt.Printf(format, repo, complete, fmt.Sprintf("%v(%v)", eligible, total), remaining, printPercentage(percent))
+	}
 }
 
 func getRepo(path string) string {
 	return strings.Split(path, "/")[1]
 }
 
-func main() {
-	var config Config
-	flag.StringVar(&config.configPath, "config", "../../config/prow/config.yaml", "Path to prow config")
-	flag.StringVar(&config.jobConfigPath, "job-config", "../../config/jobs", "Path to prow job config")
-	// flag.StringVar(&config.jobConfigPath, "job-config", "../../config/jobs", "Path to prow job config")
-	flag.BoolVar(&config.repoReport, "repo-report", false, "Detailed report of all repo status")
-	flag.Parse()
-
-	if err := config.validate(); err != nil {
-		log.Fatal(err)
+// The function `getStatus` calculates the status of jobs based on their clusters and repositories.
+func getStatus(jobs map[string][]cfg.JobBase) status {
+	s := status{}
+	for repo, jobConfigs := range jobs {
+		for _, job := range jobConfigs {
+			cluster, eligible := getJobStatus(job)
+			s.TotalJobs++
+			if cluster != "" && cluster != "default" {
+				s.CompletedJobs++
+			} else {
+				cluster = "default"
+			}
+			if eligible {
+				s.EligibleJobs++
+			}
+			if !containsCluster(s.Clusters, cluster) {
+				s.Clusters = append(s.Clusters, clusterStatus{ClusterName: cluster})
+			}
+			for i, c := range s.Clusters {
+				if c.ClusterName == cluster {
+					s.Clusters[i].TotalJobs++
+					if eligible {
+						s.Clusters[i].EligibleJobs++
+					}
+					if !containsRepo(s.Clusters[i].RepoStatus, repo) {
+						s.Clusters[i].RepoStatus = append(s.Clusters[i].RepoStatus, repoStatus{RepoName: repo})
+					}
+					for j, r := range s.Clusters[i].RepoStatus {
+						if r.RepoName == repo {
+							s.Clusters[i].RepoStatus[j].TotalJobs++
+							if eligible {
+								s.Clusters[i].RepoStatus[j].EligibleJobs++
+							}
+							s.Clusters[i].RepoStatus[j].Jobs = append(s.Clusters[i].RepoStatus[j].Jobs, jobStatus{JobName: job.Name, JobDetails: job, Eligible: eligible})
+						}
+					}
+				}
+			}
+		}
 	}
+	return s
+}
 
-	c, err := loadConfig(config.configPath, config.jobConfigPath)
-	if err != nil {
-		log.Fatalf("Could not load config: %v", err)
+func getJobStatus(job cfg.JobBase) (string, bool) {
+	if job.Cluster != "default" {
+		return job.Cluster, true
 	}
+	return "", checkIfEligible(job)
+}
 
-	jobs := allStaticJobs(c)
-	clusterStats := getClusterStatistics(jobs)
-	repoStats := getRepoStatistics(jobs)
+func containsCluster(clusters []clusterStatus, cluster string) bool {
+	for _, c := range clusters {
+		if c.ClusterName == cluster {
+			return true
+		}
+	}
+	return false
+}
 
-	reportTotalJobs(repoStats)
-	printClusterStatistics(clusterStats)
-	if config.repoReport {
-		printRepoStatistics(repoStats)
+func containsRepo(repos []repoStatus, repo string) bool {
+	for _, r := range repos {
+		if r.RepoName == repo {
+			return true
+		}
+	}
+	return false
+}
+
+// The function `printJobStats` prints the status of jobs in a given repository,
+func printJobStats(repo string, status status) {
+	format := "%-70v is %s%v\033[0m\n" // \033[0m resets color back to default after printing
+
+	for _, cluster := range status.Clusters {
+		for _, repoStatus := range cluster.RepoStatus {
+			if repoStatus.RepoName == repo {
+				for _, job := range repoStatus.Jobs {
+					if cluster.ClusterName != "default" {
+						fmt.Printf(format, job.JobName, "\033[33m", "done") // \033[33m sets text color to yellow
+					} else if job.Eligible {
+						fmt.Printf(format, job.JobName, "\033[32m", "eligible") // \033[32m sets text color to green
+					} else {
+						fmt.Printf(format, job.JobName, "\033[31m", "not eligible") // \033[31m sets text color to red
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -127,25 +296,31 @@ func allStaticJobs(c *cfg.Config) map[string][]cfg.JobBase {
 	return jobs
 }
 
-func getPercentage(int1, int2 int) string {
+func getPercentage(int1, int2 int) float64 {
 	if int2 == 0 {
-		return "100.00%"
+		return 100
 	}
-	return fmt.Sprintf("%.2f%%", float64(int1)/float64(int2)*100)
+	return float64(int1) / float64(int2) * 100
 }
 
-func getSortedKeys[V any](m map[string]V) []string {
-	var keys []string
-	for key := range m {
-		keys = append(keys, key)
-	}
-
-	// Sort the keys in alphabetical order
-	sort.Strings(keys)
-	return keys
+func printPercentage(f float64) string {
+	return fmt.Sprintf("%.2f%%", f)
 }
 
-// The function checks if a job is eligible based on its cluster, labels, containers, and volumes.
+// checkIfEligible determines if a given job is eligible based on its cluster, labels, containers, and volumes.
+// To be eligible:
+// - The job must belong to one of the specified valid community clusters.
+// - The job's labels must not contain any disallowed substrings. The only current disallowed substring is "cred".
+// - The job's containers must not have any disallowed attributes. The disallowed attributes include:
+//   - Environment variables containing the substring "cred".
+//   - Environment variables derived from secrets.
+//   - Arguments containing any of the disallowed arguments.
+//   - Commands containing any of the disallowed commands.
+//   - Volume mounts containing any of the disallowed words like "cred" or "secret".
+//
+// - The job's volumes must not contain any disallowed volumes. Volumes are considered disallowed if:
+//   - Their name contains the substring "cred".
+//   - They are of type Secret but their name is not in the list of allowed secret names.
 func checkIfEligible(job cfg.JobBase) bool {
 	validClusters := []string{"test-infra-trusted", "k8s-infra-prow-build", "k8s-infra-prow-build-trusted", "eks-prow-build-cluster"}
 	if slices.Contains(validClusters, job.Cluster) {
@@ -176,7 +351,7 @@ func containsDisallowedLabel(labels map[string]string) bool {
 // arguments, or commands.
 func containsDisallowedAttributes(container v1.Container) bool {
 	for _, env := range container.Env {
-		if strings.Contains(env.Name, "cred") {
+		if strings.Contains(strings.ToLower(env.Name), "cred") {
 			return true
 		}
 		if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
@@ -223,155 +398,56 @@ func containsDisallowedVolumeMount(volumeMounts []v1.VolumeMount) bool {
 // The function checks if a list of volumes contains any disallowed volumes based on their name or if
 // they are of type Secret.
 func containsDisallowedVolume(volumes []v1.Volume) bool {
+	allowedVolSecretNames := []string{"service-account"}
 	for _, vol := range volumes {
-		if strings.Contains(vol.Name, "cred") || vol.Secret != nil {
+		if strings.Contains(strings.ToLower(vol.Name), "cred") || (vol.Secret != nil && !containsAny(vol.Secret.SecretName, allowedVolSecretNames)) {
 			return true
 		}
 	}
 	return false
 }
 
-// The `getClusterStatistics` function takes a slice of `cfg.JobBase` objects as input and returns a
-// map where the keys are cluster names and the values are slices of job names belonging to each
-// cluster.
-func getClusterStatistics(jobs map[string][]cfg.JobBase) map[string][]jobConfig {
-	clusterMap := map[string][]jobConfig{}
-	for _, job := range jobs {
-		for _, j := range job {
-			// Get the existing value from the map, or use the zero value if not present
-			config := clusterMap[j.Cluster]
-			jobConfig := jobConfig{
-				jobBase:  j,
-				eligible: checkIfEligible(j),
-			}
+func main() {
+	flag.StringVar(&config.configPath, "config", "../../config/prow/config.yaml", "Path to prow config")
+	flag.StringVar(&config.jobConfigPath, "job-config", "../../config/jobs", "Path to prow job config")
+	flag.StringVar(&config.repo, "repo", "", "Find eligible jobs for a specific repo")
+	flag.StringVar(&config.output, "output", "", "Output format (default, json)")
+	flag.BoolVar(&config.repoReport, "repo-report", false, "Detailed report of all repo status")
+	flag.Parse()
 
-			config = append(config, jobConfig)
+	if err := config.validate(); err != nil {
+		log.Fatal(err)
+	}
 
-			// Store the modified value back in the map
-			clusterMap[j.Cluster] = config
+	c, err := loadConfig(config.configPath, config.jobConfigPath)
+	if err != nil {
+		log.Fatalf("Could not load config: %v", err)
+	}
+
+	jobs := allStaticJobs(c)
+	status := getStatus(jobs)
+
+	if config.output == "json" {
+		bt, err := json.Marshal(status)
+		if err != nil {
+			log.Fatal(err)
 		}
+
+		var out bytes.Buffer
+		json.Indent(&out, bt, "", " ")
+		out.WriteTo(os.Stdout)
+		println("\n")
+		return
 	}
-	return clusterMap
-}
 
-// The `getClusterStatistics` function takes a slice of `cfg.JobBase` objects as input and returns a
-// map where the keys are cluster names and the values are slices of job names belonging to each
-// cluster.
-func getRepoStatistics(jobs map[string][]cfg.JobBase) map[string]repoConfig {
-	repoMap := map[string]repoConfig{}
-	for key, job := range jobs {
-
-		for _, j := range job {
-			// fJob := strings.TrimPrefix(j.PathAlias, "k8s.io/")
-			// fJob = strings.TrimPrefix(fJob, "sigs.k8s.io/")
-
-			// Get the existing value from the map, or use the zero value if not present
-			config := repoMap[key]
-			jobConfig := jobConfig{
-				jobBase:  j,
-				eligible: checkIfEligible(j),
-			}
-
-			config.totalJobs++
-			if j.Cluster != "default" {
-				config.completedJobs++
-			}
-
-			if jobConfig.eligible {
-				config.eligibleJobs++
-			}
-
-			config.jobs = append(config.jobs, jobConfig)
-
-			// Store the modified value back in the map
-			repoMap[key] = config
-		}
+	if config.repo != "" {
+		printJobStats(config.repo, status)
+		return
 	}
-	return repoMap
-}
 
-func printClusterStatistics(clusterMap map[string][]jobConfig) {
-	stats := aggregateClusterStatistics(clusterMap)
-	printHeader()
-	for _, key := range getSortedKeys(clusterMap) {
-		printClusterStat(key, stats[key], stats)
-	}
-	printAggregateStats(stats)
-}
-
-func aggregateClusterStatistics(clusterMap map[string][]jobConfig) map[string]ClusterStat {
-	stats := make(map[string]ClusterStat)
-	for key, jobs := range clusterMap {
-		total, eligible := 0, 0
-		for _, j := range jobs {
-			total++
-			if j.eligible {
-				eligible++
-			}
-		}
-		stats[key] = ClusterStat{EligibleCount: eligible, TotalCount: total}
-	}
-	return stats
-}
-
-func printHeader() {
-	format := "%-30v %-15v (%v)\n"
-	header := fmt.Sprintf("\n"+format, "Cluster", "Eligible/Total", "Percent")
-	separator := strings.Repeat("-", len(header))
-	fmt.Print(header, separator+"\n")
-}
-
-func printClusterStat(clusterName string, stat ClusterStat, allStats map[string]ClusterStat) {
-	format := "%-30v %-15v (%v/%v)\n"
-	eligibleP := getPercentage(stat.EligibleCount, getTotalEligible(allStats))
-	totalP := getPercentage(stat.TotalCount, getTotalJobs(allStats))
-	fmt.Printf(format, clusterName, fmt.Sprintf("%v/%v", stat.EligibleCount, stat.TotalCount), eligibleP, totalP)
-}
-
-func printAggregateStats(allStats map[string]ClusterStat) {
-	// Assuming "default" is GKE, aggregate other clusters as Community
-	gkeStat, communityStat := allStats["default"], ClusterStat{}
-	for key, stat := range allStats {
-		if key != "default" {
-			communityStat.EligibleCount += stat.EligibleCount
-			communityStat.TotalCount += stat.TotalCount
-		}
-	}
-	fmt.Printf("\nGoogle jobs    %v/%v (%v/%v)\n", gkeStat.EligibleCount, gkeStat.TotalCount, getPercentage(gkeStat.EligibleCount, getTotalEligible(allStats)), getPercentage(gkeStat.TotalCount, getTotalJobs(allStats)))
-	fmt.Printf("Community jobs %v/%v (%v/%v)\n", communityStat.EligibleCount, communityStat.TotalCount, getPercentage(communityStat.EligibleCount, getTotalEligible(allStats)), getPercentage(communityStat.TotalCount, getTotalJobs(allStats)))
-}
-
-func getTotalEligible(allStats map[string]ClusterStat) int {
-	total := 0
-	for _, stat := range allStats {
-		total += stat.EligibleCount
-	}
-	return total
-}
-
-func getTotalJobs(allStats map[string]ClusterStat) int {
-	total := 0
-	for _, stat := range allStats {
-		total += stat.TotalCount
-	}
-	return total
-}
-
-// The function `printRepoStatistics` prints a report of repository statistics, including the number of
-// jobs in each repository and the percentage of jobs in each repository compared to the total number of
-// jobs.
-func printRepoStatistics(repoMap map[string]repoConfig) {
-	format := "%-55v  %-10v %-20v %-10v (%v)\n"
-	header := fmt.Sprintf("\n"+format, "Repository", "Complete", "Eligible(Total)", "Remaining", "Percent")
-	separator := strings.Repeat("-", len(header))
-
-	fmt.Print(header)
-	fmt.Println(separator)
-
-	for _, key := range getSortedKeys(repoMap) {
-		total := fmt.Sprintf("%v(%v)", repoMap[key].eligibleJobs, repoMap[key].totalJobs)
-		remaining := repoMap[key].eligibleJobs - repoMap[key].completedJobs
-		percent := getPercentage(repoMap[key].completedJobs, repoMap[key].eligibleJobs)
-		fmt.Printf(format, key, repoMap[key].completedJobs, total, remaining, percent)
+	reportTotalJobs(status)
+	reportClusterStats(status)
+	if config.repoReport {
+		printRepoStatistics(status)
 	}
 }
