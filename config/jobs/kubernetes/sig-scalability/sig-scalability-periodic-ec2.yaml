@@ -16,6 +16,10 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
     repo: kops
     base_ref: master
     path_alias: k8s.io/kops
