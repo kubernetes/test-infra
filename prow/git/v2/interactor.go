@@ -80,8 +80,6 @@ type cacher interface {
 	MirrorClone() error
 	// RemoteUpdate fetches all updates from the remote.
 	RemoteUpdate() error
-	// FetchCommits fetches only the given commits.
-	FetchCommits(bool, []string) error
 }
 
 // cloner knows how to clone repositories from a central cache
