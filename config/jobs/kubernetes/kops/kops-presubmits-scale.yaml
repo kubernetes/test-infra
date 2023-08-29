@@ -115,7 +115,7 @@ presubmits:
         - name: CNI_PLUGIN
           value: "amazonvpc"
         - name: KUBE_NODE_COUNT
-          value: "500"
+          value: "1000"
         - name: RUN_CL2_TEST
           value: "true"
         - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
