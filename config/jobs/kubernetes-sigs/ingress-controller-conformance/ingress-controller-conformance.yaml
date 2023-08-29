@@ -74,9 +74,7 @@ presubmits:
         command:
         - runner.sh
         args:
-        - bash
-        - -c
-        - pip3 install reformat-gherkin==2.0.0 --ignore-installed PyYAML && make verify-gherkin
+        - ./hack/verify-gherkin.sh
         resources:
           limits:
             cpu: 1
