@@ -68,6 +68,31 @@ type jobStatus struct {
 
 var config Config
 
+var allowedSecretNames = []string{
+	"service-account",
+	"aws-credentials-607362164682",
+	"aws-credentials-768319786644",
+	"aws-credentials-boskos-scale-001-kops",
+	"aws-ssh-key-secret",
+	"ssh-key-secret",
+}
+
+var allowedLabelNames = []string{
+	"preset-aws-credential",
+	"preset-aws-ssh",
+}
+
+var allowedVolumeNames = []string{
+	"aws-cred",
+}
+
+var allowedEnvironmentVariables = []string{
+	"GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+	"E2E_GOOGLE_APPLICATION_CREDENTIALS",
+	"GOOGLE_APPLICATION_CREDENTIALS",
+	"AWS_SHARED_CREDENTIALS_FILE",
+}
+
 func (c *Config) validate() error {
 	if c.configPath == "" {
 		return fmt.Errorf("--config must set")
@@ -352,7 +377,47 @@ func checkIfEligible(job cfg.JobBase) bool {
 // The function checks if any label in a given map contains the substring "cred".
 func containsDisallowedLabel(labels map[string]string) bool {
 	for key := range labels {
-		if strings.Contains(key, "cred") {
+		if checkContains(key, "cred") && !labelIsAllowed(key) {
+			return true
+		}
+	}
+	return false
+}
+
+func checkContains(s string, substring string) bool {
+	return strings.Contains(strings.ToLower(s), strings.ToLower(substring))
+}
+
+func labelIsAllowed(label string) bool {
+	for _, allowedLabel := range allowedLabelNames {
+		if checkContains(label, allowedLabel) {
+			return true
+		}
+	}
+	return false
+}
+
+func volumeIsAllowed(volumeName string) bool {
+	for _, allowedVolume := range allowedVolumeNames {
+		if volumeName == allowedVolume {
+			return true
+		}
+	}
+	return false
+}
+
+func secretIsAllowed(secretName string) bool {
+	for _, allowedSecret := range allowedSecretNames {
+		if secretName == allowedSecret {
+			return true
+		}
+	}
+	return false
+}
+
+func envVarIsAllowed(envVar string) bool {
+	for _, allowedEnvVar := range allowedEnvironmentVariables {
+		if allowedEnvVar == envVar {
 			return true
 		}
 	}
@@ -363,14 +428,14 @@ func containsDisallowedLabel(labels map[string]string) bool {
 // arguments, or commands.
 func containsDisallowedAttributes(container v1.Container) bool {
 	for _, env := range container.Env {
-		if strings.Contains(strings.ToLower(env.Name), "cred") {
+		if checkContains(env.Name, "cred") && !envVarIsAllowed(env.Name) {
 			return true
 		}
-		if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
+		if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil && !secretIsAllowed(env.ValueFrom.SecretKeyRef.Key) {
 			return true
 		}
 	}
-	disallowedArgs := []string{"gcloud", "gcp"}
+	disallowedArgs := []string{"gcloud", "gcp", "gce"}
 	for _, arg := range container.Args {
 		if containsAny(arg, disallowedArgs) {
 			return true
@@ -388,7 +453,7 @@ func containsDisallowedAttributes(container v1.Container) bool {
 // strings.
 func containsAny(s string, disallowed []string) bool {
 	for _, word := range disallowed {
-		if strings.Contains(strings.ToLower(s), word) {
+		if checkContains(s, word) {
 			return true
 		}
 	}
@@ -400,7 +465,7 @@ func containsAny(s string, disallowed []string) bool {
 func containsDisallowedVolumeMount(volumeMounts []v1.VolumeMount) bool {
 	disallowedWords := []string{"cred", "secret"}
 	for _, vol := range volumeMounts {
-		if containsAny(vol.Name, disallowedWords) || containsAny(vol.MountPath, disallowedWords) {
+		if (containsAny(vol.Name, disallowedWords) || containsAny(vol.MountPath, disallowedWords)) && !volumeIsAllowed(vol.Name) {
 			return true
 		}
 	}
@@ -410,9 +475,8 @@ func containsDisallowedVolumeMount(volumeMounts []v1.VolumeMount) bool {
 // The function checks if a list of volumes contains any disallowed volumes based on their name or if
 // they are of type Secret.
 func containsDisallowedVolume(volumes []v1.Volume) bool {
-	allowedVolSecretNames := []string{"service-account"}
 	for _, vol := range volumes {
-		if strings.Contains(strings.ToLower(vol.Name), "cred") || (vol.Secret != nil && !containsAny(vol.Secret.SecretName, allowedVolSecretNames)) {
+		if (checkContains(vol.Name, "cred") && !volumeIsAllowed(vol.Name)) || (vol.Secret != nil && !secretIsAllowed(vol.Secret.SecretName)) {
 			return true
 		}
 	}
