@@ -22,4 +22,4 @@ cd "${REPO_ROOT}"
 
 echo "Linting"
 shopt -s extglob globstar
-python3 ./hack/pylint_bin.py $( ls !(gubernator|external|vendor|jenkins|scenarios|triage|boskos|bazel-*)/**/*.py | grep -v analyze-memory-profiles )
+python3 ./hack/pylint_bin.py $( ls !(gubernator|external|vendor|jenkins|scenarios|triage|boskos|bazel-*|config)/**/*.py | grep -v analyze-memory-profiles )
