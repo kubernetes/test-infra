@@ -26,6 +26,7 @@ triggers:
 - repos:
   - containerd/containerd
   join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
+  trigger_github_workflows: true
 - repos:
   - bazelbuild
 - repos:
