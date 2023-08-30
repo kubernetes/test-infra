@@ -152,7 +152,7 @@ func (i *interactor) CloneWithRepoOpts(from string, repoOpts RepoOpts) error {
 	i.logger.Infof("Creating a clone of the repo at %s from %s", i.dir, from)
 	cloneArgs := []string{"clone"}
 
-	if repoOpts.ShareObjectsWithSourceRepo {
+	if repoOpts.ShareObjectsWithPrimaryClone {
 		cloneArgs = append(cloneArgs, "--shared")
 	}
 

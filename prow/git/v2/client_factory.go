@@ -136,7 +136,7 @@ type RepoOpts struct {
 	// primary is updated with RemoteUpdate() the `--prune` flag may end up
 	// deleting objects in the primary (which could adversely affect the
 	// secondary).
-	ShareObjectsWithSourceRepo bool
+	ShareObjectsWithPrimaryClone bool
 	// NeededCommits list only those commit SHAs which are needed. If the commit
 	// already exists, it is not fetched to save network costs. If NeededCommits
 	// is set, we do not call RemoteUpdate() for the primary clone (git cache).
@@ -357,7 +357,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 // org and repo are used for determining where the repo is cloned, cloneURI
 // overrides org/repo for cloning.
 func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpts) (RepoClient, error) {
-	if repoOpts.ShareObjectsWithSourceRepo && repoOpts.NeededCommits.Len() == 0 {
+	if repoOpts.ShareObjectsWithPrimaryClone && repoOpts.NeededCommits.Len() == 0 {
 		return nil, fmt.Errorf("programmer error: cannot share objects between primary and secondary without targeted fetches (NeededCommits)")
 	}
 

@@ -59,7 +59,7 @@ var inrepoconfigRepoOpts = git.RepoOpts{
 	SparseCheckoutDirs: []string{inRepoConfigDirName, inRepoConfigFileName},
 	// The sparse checkout would avoid creating another copy of Git objects
 	// from the mirror clone into the secondary clone.
-	ShareObjectsWithSourceRepo: true,
+	ShareObjectsWithPrimaryClone: true,
 }
 
 var inrepoconfigMetrics = struct {
