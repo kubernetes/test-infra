@@ -147,6 +147,10 @@ periodics:
     repo: cloud-provider-gcp
     base_ref: master
     path_alias: k8s.io/cloud-provider-gcp
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
