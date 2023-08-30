@@ -1,6 +1,6 @@
 module k8s.io/test-infra/hack/tools
 
-go 1.18
+go 1.21
 
 require (
 	github.com/bazelbuild/buildtools v0.0.0-20211007154642-8dd79e56e98e
