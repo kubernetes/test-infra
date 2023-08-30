@@ -8,6 +8,12 @@ dashboard_groups:
     - sig-node-dynamic-resource-allocation
     - sig-node-presubmits
     - sig-node-ec2
+    - sig-node-gce
+    - sig-node-al2023
+    - sig-node-grid
+    - sig-node-cos
+    - sig-node-u2204
+    - sig-node-u2204-gke
     # These dashboards are for out-of-tree SIG Node projects
     - sig-node-cadvisor
     - sig-node-cri-tools
@@ -173,3 +179,9 @@ dashboards:
       alert_mail_to_addresses: eduard.bartosh@intel.com
 - name: sig-node-presubmits
 - name: sig-node-image-pushes
+- name: sig-node-gce
+- name: sig-node-al2023
+- name: sig-node-grid
+- name: sig-node-cos
+- name: sig-node-u2204
+- name: sig-node-u2204-gke

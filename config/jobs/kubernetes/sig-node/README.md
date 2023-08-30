@@ -41,7 +41,14 @@
 
 ## Naming Convention
 
-(pull|ci)-{$cri}-{$cgroup}-{$os}-{$test-type}-release-{$release-branch}
+(pull|ci)-(kubernetes-e2e|node-e2e)-{$cri}-{$os}-{$arch}-(ec2|gce)-{$test-scenario}-release-{$release-branch}
+
+Examples:
+  - ci-node-e2e-containerd-ubuntu-arm64-ec2-conformance-release-master
+  - ci-kubernetes-e2e-containerd-ubuntu-amd64-gce-conformance-release-master
+  - ci-kubernetes-e2e-containerd-ubuntu-amd64-gce-cgroupv1-conformance-release-master
+
+cgroupsv1 is deprecated and will be tested as a test-scenario
 
 **Note:** Specify variable value in the name only if it isn’t set to default in a test tab.
 

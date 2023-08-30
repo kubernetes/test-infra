@@ -1,0 +1,119 @@
+{% if arch == "amd64" %}
+    {% set ec2_ami_arch="x86_64" %}
+{%- else %}
+    {% set ec2_ami_arch="arm64" %}
+{% endif %}
+{% set gcp_zones=["us-central1-a", "us-central1-b"] %}
+
+- name: {{ job_name }}
+  cron: '{{cron}}'
+  labels:
+    {%- if cloud == "ec2" %}
+    preset-e2e-containerd-ec2: "true"
+    {%- else %}
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    {%- endif %}
+    {%- if arch == "arm64" %}
+    preset-dind-enabled: "true"
+    {%- endif %}
+  decorate: true
+  decoration_config:
+    timeout: {{ job_timeout }}
+  {%- if cloud == "ec2" %}
+  cluster: eks-prow-build-cluster
+  {%- elif cloud == "gce" %}
+  cluster: k8s-infra-prow-build
+  {%- endif %}
+  extra_refs:
+  {%- if cloud == "ec2" %}
+    - org: kubernetes-sigs
+      repo: provider-aws-test-infra
+      base_ref: main
+      path_alias: sigs.k8s.io/provider-aws-test-infra
+  {%- endif %}
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+  {%- if cloud == "gce" %}
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+  {%- endif %}
+  spec:
+    {%- if cloud == "ec2" %}
+    serviceAccountName: node-e2e-tests
+    {%- endif %}
+    containers:
+    - command:
+      - runner.sh
+{%- if cloud == "ec2" %}
+      args:
+        - bash
+        - -c
+        - |
+          cd ${GOPATH}/src/sigs.k8s.io/provider-aws-test-infra
+        {%- if "u2204" in distro %}
+          AMI_ID=$(aws ssm get-parameters --names \
+            /aws/service/canonical/ubuntu/server/22.04/stable/current/{{ arch }}/hvm/ebs-gp2/ami-id \
+            --query 'Parameters[0].[Value]' --output text)
+        {%- elif "al2023" in distro %}
+          AMI_ID=$(aws ssm get-parameters --names \
+            /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-{{ ec2_ami_arch }} \
+            --query 'Parameters[0].[Value]' --output text)        
+        {%- endif %}
+          kubetest2 noop --test=node -- \
+            --provider=ec2 --repo-root=. \
+            --instance-type={{ instance_type }} \
+            --focus-regex="{{ focus_regex }}" \
+            --skip-regex="{{ skip_regex }}" \
+            --timeout={{ test_timeout }} \
+            --paralellism={{ test_parallelism }} \
+        {%- if arch == "arm64" %}
+            --use-dockerized-build=true \
+            --target-build-arch=linux/arm64 \
+        {%- endif %}
+            --test-args='{{ test_args }}' \
+            --images=$AMI_ID --user-data-file={{ user_data_file }}
+{%- elif cloud == "gce" %}
+      args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --provider=gce
+        - --gcp-zone={{ gcp_zones|random }}
+        - --parallelism={{ test_parallelism }}
+        - --focus-regex="{{ focus_regex }}"
+        - --skip-regex="{{ skip_regex }}"
+        - --instance-type="{{ instance_type }}"
+        - --timeout={{ test_timeout }}"
+        {%- if arch == "arm64" %}
+        - --use-dockerized-build=true
+        - --target-build-arch=linux/arm64
+        {%- endif %}
+        - --test-args='{{ test_args }}'
+        - --image-config-file={{ image_config_file }}
+{%- endif %}
+
+    {%- if env | length > 1 %}
+      env:
+      {%- for key, val in env.items() %}
+      - name: {{ key }}
+        value: '{{ val }}'
+      {%- endfor %}
+    {%- endif %} 
+      image: {{image}}
+      imagePullPolicy: Always
+      {%- if arch == "arm64" %}
+      securityContext:
+        privileged: true
+      {%- endif %}
+      resources:
+        requests:
+          cpu: 4
+          memory: 6Gi
+        limits:
+          cpu: 4
+          memory: 6Gi
