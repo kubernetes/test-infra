@@ -95,6 +95,10 @@ type repoClient struct {
 type ClientFactoryOpts struct {
 	// Host, defaults to "github.com" if unset
 	Host string
+	// Whether to use HTTP. By default, HTTPS is used (overrides UseSSH).
+	//
+	// TODO (listx): Combine HTTPS, HTTP, and SSH schemes into a single enum.
+	UseInsecureHTTP *bool
 	// UseSSH, defaults to false
 	UseSSH *bool
 	// The directory in which the cache should be
@@ -143,6 +147,9 @@ type RepoOpts struct {
 func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	if cfo.Host != "" {
 		target.Host = cfo.Host
+	}
+	if cfo.UseInsecureHTTP != nil {
+		target.UseInsecureHTTP = cfo.UseInsecureHTTP
 	}
 	if cfo.UseSSH != nil {
 		target.UseSSH = cfo.UseSSH
@@ -234,6 +241,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	} else {
 		remote = &httpResolverFactory{
 			host:     o.Host,
+			http:     *o.UseInsecureHTTP,
 			username: o.Username,
 			token:    o.Token,
 		}
