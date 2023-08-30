@@ -42,6 +42,9 @@ type Interactor interface {
 	Checkout(commitlike string) error
 	// RevParse runs `git rev-parse`
 	RevParse(commitlike string) (string, error)
+	// RevParseN runs `git rev-parse`, but takes a slice of git revisions, and
+	// returns a map of the git revisions as keys and the SHAs as values.
+	RevParseN(rev []string) (map[string]string, error)
 	// BranchExists determines if a branch with the name exists
 	BranchExists(branch string) bool
 	// ObjectExists determines if the Git object exists locally
@@ -213,6 +216,38 @@ func (i *interactor) RevParse(commitlike string) (string, error) {
 		return "", fmt.Errorf("error parsing %q: %w %v", commitlike, err, string(out))
 	}
 	return string(out), nil
+}
+
+func (i *interactor) RevParseN(revs []string) (map[string]string, error) {
+	if len(revs) == 0 {
+		return nil, errors.New("input revs must have at least 1 element")
+	}
+
+	i.logger.Infof("Parsing revisions %q", revs)
+
+	arg := append([]string{"rev-parse"}, revs...)
+
+	out, err := i.executor.Run(arg...)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing %q: %w %v", revs, err, string(out))
+	}
+
+	ret := make(map[string]string)
+	got := strings.Split(string(out), "\n")
+
+	// We expect the length to be at least 2. This is because if we have the
+	// minimal number of elements (just 1), "got" should look like ["abcdef...",
+	// "\n"] because the trailing newline should be its own element.
+	if len(got) < 2 {
+		return nil, fmt.Errorf("expected parsed output to be at least 2 elements, got %d", len(got))
+	}
+	got = got[:len(got)-1] // Drop last element "\n".
+
+	for i, sha := range got {
+		ret[revs[i]] = sha
+	}
+
+	return ret, nil
 }
 
 // BranchExists returns true if branch exists in heads.
