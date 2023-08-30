@@ -72,7 +72,7 @@ var inrepoconfigMetrics = struct {
 	gitCloneDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "inrepoconfig_git_client_acquisition_duration",
 		Help:    "Seconds taken for acquiring a git client (may include an initial clone operation).",
-		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 1800, 3600},
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 600, 1200},
 	}, []string{
 		"org",
 		"repo",
@@ -80,7 +80,7 @@ var inrepoconfigMetrics = struct {
 	gitOtherDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "inrepoconfig_git_other_duration",
 		Help:    "Seconds taken after acquiring a git client and performing all other git operations (to read the ProwYAML of the repo).",
-		Buckets: []float64{0.1, 0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600},
+		Buckets: []float64{0.1, 0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 600},
 	}, []string{
 		"org",
 		"repo",

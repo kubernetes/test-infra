@@ -78,7 +78,7 @@ var gerritMetrics = struct {
 	triggerLatency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_trigger_latency",
 		Help:    "Histogram of seconds between triggering event and ProwJob creation time.",
-		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 600, 1200},
 	}, []string{
 		"org",
 		// We would normally omit 'repo' to avoid excessive cardinality due to the number of buckets, but we need the data.
@@ -95,7 +95,7 @@ var gerritMetrics = struct {
 	processSingleChangeDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_process_single_change_duration",
 		Help:    "Histogram of seconds spent processing a single gerrit change, by instance and repo.",
-		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600},
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 600},
 	}, []string{
 		"org",
 		"repo",
@@ -103,24 +103,24 @@ var gerritMetrics = struct {
 	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_process_duration",
 		Help:    "Histogram of seconds spent processing changes, by instance and repo. This measures the portion of a sync after we've queried for changes.",
-		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600, 1200},
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 600, 1200},
 	}, []string{
 		"org", "repo",
 	}),
 	changeSyncDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_instance_change_sync_duration",
 		Help:    "Histogram of seconds spent syncing changes from a single gerrit instance or repo. Includes gerrit_repo_query_duration and gerrit_instance_process_duration.",
-		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 600, 1200},
 	}, []string{"org", "repo"}),
 	gerritRepoQueryDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_repo_query_duration",
 		Help:    "Histogram of seconds spent querying a repo's changes. Includes time spent for rate limiting ourselves.",
-		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 240},
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 240},
 	}, []string{"org", "repo", "result"}),
 	pickupChangeLatency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "gerrit_pickup_change_latency",
 		Help:    "Histogram of seconds a query result had to wait after it was retrieved from the Gerrit API but before it was picked up for processing by a worker thread.",
-		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 60, 120, 240},
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 240},
 	}, []string{"org", "repo"}),
 }
 
