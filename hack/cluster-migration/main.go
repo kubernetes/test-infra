@@ -83,7 +83,7 @@ func loadConfig(configPath, jobConfigPath string) (*cfg.Config, error) {
 func reportTotalJobs(s status) {
 	fmt.Printf("Total jobs: %v\n", s.TotalJobs)
 	fmt.Printf("Completed jobs: %v\n", s.CompletedJobs)
-	fmt.Printf("Eligible jobs: %v\n", s.EligibleJobs)
+	fmt.Printf("Eligible jobs: %v\n", s.EligibleJobs-s.CompletedJobs)
 }
 
 // The function "reportClusterStats" prints the statistics of each cluster in a sorted order.
@@ -98,7 +98,12 @@ func reportClusterStats(s status) {
 	for _, cluster := range sortedClusters {
 		for _, c := range s.Clusters {
 			if c.ClusterName == cluster {
-				printClusterStat(cluster, c, s.Clusters)
+				if cluster == "default" {
+					printDefaultClusterStats(cluster, c, s.Clusters)
+					continue
+				} else {
+					printClusterStat(cluster, c, s.Clusters)
+				}
 			}
 		}
 	}
@@ -106,19 +111,26 @@ func reportClusterStats(s status) {
 
 // The function "printHeader" prints a formatted header for displaying cluster information.
 func printHeader() {
-	format := "%-30v %-15v (%v)\n"
-	header := fmt.Sprintf("\n"+format, "Cluster", "Eligible/Total", "Percent")
+	format := "%-30v %-20v %v\n"
+	header := fmt.Sprintf("\n"+format, "Cluster", "Total(Eligible)", "% of Total(% of Eligible)")
 	separator := strings.Repeat("-", len(header))
 	fmt.Print(header, separator+"\n")
+}
+
+func printDefaultClusterStats(clusterName string, stat clusterStatus, allStats []clusterStatus) {
+	format := "%-30v %-20v %-10v(%v)\n"
+	eligibleP := getPercentage(stat.EligibleJobs, getTotalEligible(allStats))
+	totalP := getPercentage(stat.TotalJobs, getTotalJobs(allStats))
+	fmt.Printf(format, clusterName, fmt.Sprintf("%v(%v)", stat.TotalJobs, stat.EligibleJobs), printPercentage(totalP), printPercentage(eligibleP))
 }
 
 // The function "printClusterStat" prints the status of a cluster, including the number of eligible and
 // total jobs, as well as the percentage of eligible and total jobs compared to all clusters.
 func printClusterStat(clusterName string, stat clusterStatus, allStats []clusterStatus) {
-	format := "%-30v %-15v (%v/%v)\n"
+	format := "%-30v %-20v %-10v(%v)\n"
 	eligibleP := getPercentage(stat.EligibleJobs, getTotalEligible(allStats))
 	totalP := getPercentage(stat.TotalJobs, getTotalJobs(allStats))
-	fmt.Printf(format, clusterName, fmt.Sprintf("%v/%v", stat.EligibleJobs, stat.TotalJobs), printPercentage(eligibleP), printPercentage(totalP))
+	fmt.Printf(format, clusterName, stat.TotalJobs, printPercentage(totalP), printPercentage(eligibleP))
 }
 
 // The function `getTotalEligible` calculates the total number of eligible jobs from a given list of
@@ -145,7 +157,7 @@ func getTotalJobs(allStats []clusterStatus) int {
 // eligibility, remaining jobs, and percentage complete.
 func printRepoStatistics(s status) {
 	format := "%-55v  %-10v %-20v %-10v (%v)\n"
-	header := fmt.Sprintf("\n"+format, "Repository", "Complete", "Eligible(Total)", "Remaining", "Percent")
+	header := fmt.Sprintf("\n"+format, "Repository", "Complete", "Total(Eligible)", "Remaining", "Percent")
 	separator := strings.Repeat("-", len(header))
 
 	fmt.Print(header)
@@ -178,7 +190,7 @@ func printRepoStatistics(s status) {
 		}
 		remaining := eligible - complete
 		percent := getPercentage(complete, eligible)
-		fmt.Printf(format, repo, complete, fmt.Sprintf("%v(%v)", eligible, total), remaining, printPercentage(percent))
+		fmt.Printf(format, repo, complete, fmt.Sprintf("%v(%v)", total, eligible), remaining, printPercentage(percent))
 	}
 }
 
