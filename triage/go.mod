@@ -2,7 +2,7 @@
 
 module k8s.io/test-infra/triage
 
-go 1.18
+go 1.21
 
 require (
 	k8s.io/apimachinery v0.22.0
