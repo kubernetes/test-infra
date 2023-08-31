@@ -23,11 +23,29 @@ import (
 	"path"
 	"runtime"
 	"sync"
+	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 )
+
+var gitMetrics = struct {
+	fetchByShaDuration *prometheus.HistogramVec
+}{
+	fetchByShaDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "git_fetch_by_sha_duration",
+		Help:    "Histogram of seconds spent fetching commit SHAs, by org and repo.",
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 450, 600, 750, 900, 1050, 1200},
+	}, []string{
+		"org", "repo",
+	}),
+}
+
+func init() {
+	prometheus.MustRegister(gitMetrics.fetchByShaDuration)
+}
 
 // ClientFactory knows how to create clientFactory for repos
 type ClientFactory interface {
@@ -351,9 +369,11 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	if repoOpts.FetchCommits.Len() > 0 {
 		// Targeted fetch. Only fetch those commits which we want, and only
 		// if they are missing.
+		timeBeforeFetchBySha := time.Now()
 		if err := repoClientCloner.FetchCommits(repoOpts.NoFetchTags, repoOpts.FetchCommits.UnsortedList()); err != nil {
 			return nil, err
 		}
+		gitMetrics.fetchByShaDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeFetchBySha).Seconds())))
 	}
 
 	return repoClient, nil
