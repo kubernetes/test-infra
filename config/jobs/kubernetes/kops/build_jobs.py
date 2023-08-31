@@ -1116,6 +1116,25 @@ def generate_presubmits_scale():
                 'CONTROL_PLANE_SIZE': "c6g.16xlarge",
                 'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests"
             }
+        ),
+        presubmit_test(
+            name='presubmit-kops-aws-small-scale-amazonvpc-using-cl2',
+            scenario='scalability',
+            # only helps with setting the right anotation test.kops.k8s.io/networking
+            networking='amazonvpc',
+            always_run=False,
+            artifacts='$(ARTIFACTS)',
+            test_timeout_minutes=450,
+            use_preset_for_account_creds='preset-aws-credential-boskos-scale-001-kops',
+            env={
+                'CNI_PLUGIN': "amazonvpc",
+                'KUBE_NODE_COUNT': "100",
+                'RUN_CL2_TEST': "true",
+                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
+                'CONTROL_PLANE_COUNT': "3",
+                'CONTROL_PLANE_SIZE': "c6g.16xlarge",
+                'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests"
+            }
         )
     ]
     return results
