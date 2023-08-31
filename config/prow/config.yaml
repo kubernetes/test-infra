@@ -526,7 +526,7 @@ branch-protection:
         cluster-api-provider-kubevirt:
           required_status_checks:
             contexts:
-            - unit_test
+            - "unit_test (ubuntu-latest)"
             - integration
             - go-linter
             - check-gen
