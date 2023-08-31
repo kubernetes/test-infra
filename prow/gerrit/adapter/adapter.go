@@ -58,6 +58,7 @@ var gerritMetrics = struct {
 	changeSyncDuration          *prometheus.HistogramVec
 	gerritRepoQueryDuration     *prometheus.HistogramVec
 	pickupChangeLatency         *prometheus.HistogramVec
+	jobCreationDuration         *prometheus.HistogramVec
 }{
 	processingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "gerrit_processing_results",
@@ -122,6 +123,14 @@ var gerritMetrics = struct {
 		Help:    "Histogram of seconds a query result had to wait after it was retrieved from the Gerrit API but before it was picked up for processing by a worker thread.",
 		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 240},
 	}, []string{"org", "repo"}),
+	jobCreationDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_job_creation_duration",
+		Help:    "Histogram of seconds spent creating a ProwJob object in the K8s API server of the Prow service cluster, by instance and repo.",
+		Buckets: []float64{0.1, 0.2, 0.5, 0.75, 1, 2, 5, 7.5, 10, 15, 20},
+	}, []string{
+		"org",
+		"repo",
+	}),
 }
 
 func init() {
@@ -134,6 +143,7 @@ func init() {
 	prometheus.MustRegister(gerritMetrics.changeSyncDuration)
 	prometheus.MustRegister(gerritMetrics.gerritRepoQueryDuration)
 	prometheus.MustRegister(gerritMetrics.pickupChangeLatency)
+	prometheus.MustRegister(gerritMetrics.jobCreationDuration)
 }
 
 type prowJobClient interface {
@@ -761,10 +771,12 @@ func (c *Controller) triggerJobs(logger logrus.FieldLogger, instance string, cha
 
 		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
 		logger := logger.WithField("prowjob", pj.Name)
+		timeBeforeCreate := time.Now()
 		if _, err := c.prowJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
 			logger.WithError(err).Errorf("Failed to create ProwJob")
 			continue
 		}
+		gerritMetrics.jobCreationDuration.WithLabelValues(instance, change.Project).Observe((float64(time.Since(timeBeforeCreate).Seconds())))
 		logger.Infof("Triggered new job")
 		if eventTime, ok := triggerTimes[pj.Spec.Job]; ok {
 			gerritMetrics.triggerLatency.WithLabelValues(instance, change.Project).Observe(float64(time.Since(eventTime).Seconds()))
