@@ -32,7 +32,8 @@ import (
 )
 
 var gitMetrics = struct {
-	fetchByShaDuration *prometheus.HistogramVec
+	fetchByShaDuration     *prometheus.HistogramVec
+	secondaryCloneDuration *prometheus.HistogramVec
 }{
 	fetchByShaDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "git_fetch_by_sha_duration",
@@ -41,10 +42,18 @@ var gitMetrics = struct {
 	}, []string{
 		"org", "repo",
 	}),
+	secondaryCloneDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "git_secondary_clone_duration",
+		Help:    "Histogram of seconds spent creating the secondary clone, by org and repo.",
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60},
+	}, []string{
+		"org", "repo",
+	}),
 }
 
 func init() {
 	prometheus.MustRegister(gitMetrics.fetchByShaDuration)
+	prometheus.MustRegister(gitMetrics.secondaryCloneDuration)
 }
 
 // ClientFactory knows how to create clientFactory for repos
@@ -353,9 +362,11 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 
 	// Initialize the new derivative repo (secondary clone) from the primary
 	// clone. This is a local clone operation.
+	timeBeforeSecondaryClone := time.Now()
 	if err := repoClientCloner.CloneWithRepoOpts(cacheDir, repoOpts); err != nil {
 		return nil, err
 	}
+	gitMetrics.secondaryCloneDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeSecondaryClone).Seconds())))
 
 	// Here we do a targeted fetch, if the repoOpts for the secondary clone
 	// asked for it.
