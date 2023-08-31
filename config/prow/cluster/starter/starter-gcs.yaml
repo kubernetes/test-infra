@@ -96,7 +96,7 @@ data:
             [Your PR dashboard](https://$PROW_HOST/pr?query=is:pr+state:open+author:{{with
             index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}).
       default_decoration_config_entries:
-        - config:
+      - config:
           gcs_configuration:
             bucket: gs://your-bucket-name
             path_strategy: explicit
