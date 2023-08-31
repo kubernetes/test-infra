@@ -35,34 +35,35 @@ jobs:
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
-  ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-default:
-    args:
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+  # TODO(1.29): Uncomment this when adding jobs for release-1.29 branch.
+  # ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
+  #   interval: 1h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseBlocking: true
+  # ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
+  #   interval: 1h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseBlocking: true
+  # ci-kubernetes-e2e-gce-cos-k8sbeta-default:
+  #   args:
+  #   - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+  #   interval: 1h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseBlocking: true
+  # ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
+  #   interval: 1h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseInforming: true
+  #   testgridNumFailuresToAlert: 6
+  # ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
+  #   interval: 1h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseInforming: true
+  #   testgridNumFailuresToAlert: 6
+  # ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
+  #   interval: 1h
+  #   sigOwners: [sig-cloud-provider-gcp]
+  #   releaseBlocking: true
 
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
@@ -250,31 +251,32 @@ k8sVersions:
     - --extract=ci/latest
     - --extract-ci-bucket=k8s-release-dev
     version: master
-  beta:
+  # TODO(1.29): Uncomment this when adding jobs for release-1.29 branch.
+  # beta:
+  #   args:
+  #   - --extract=ci/latest-1.28
+  #   - --extract-ci-bucket=k8s-release-dev
+  #   version: '1.28'
+  stable1:
     args:
     - --extract=ci/latest-1.28
     - --extract-ci-bucket=k8s-release-dev
     version: '1.28'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.27
     - --extract-ci-bucket=k8s-release-dev
     version: '1.27'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.26
     - --extract-ci-bucket=k8s-release-dev
     version: '1.26'
-  stable3:
+  stable4:
     args:
     - --extract=ci/latest-1.25
     - --extract-ci-bucket=k8s-release-dev
     version: '1.25'
-  stable4:
-    args:
-    - --extract=ci/latest-1.24
-    - --extract-ci-bucket=k8s-release-dev
-    version: '1.24'
 
 testSuites:
   alphafeatures:
@@ -418,26 +420,27 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=master
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-master
-  beta:
+  # beta:
+  # TODO(1.29): Uncomment this when adding jobs for release-1.29 branch.
+  #   args:
+  #   - --repo=k8s.io/kubernetes=release-1.28
+  #   prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.28
+  stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.28
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.28
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.27
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.27
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.26
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.26
-  stable3:
+  stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.25
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.25
-  stable4:
-    args:
-    - --repo=k8s.io/kubernetes=release-1.24
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20230727-ea685f8747-1.24
 
 nodeTestSuites:
   default:
