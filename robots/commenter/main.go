@@ -230,7 +230,6 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 	problems := []string{}
 	log.Printf("Found %d matches", len(issues))
 	if random {
-		rand.Seed(time.Now().UnixNano())
 		rand.Shuffle(len(issues), func(i, j int) {
 			issues[i], issues[j] = issues[j], issues[i]
 		})
