@@ -23,7 +23,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -279,9 +278,6 @@ func validateFlags(o *options) error {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("Running kubetest version: %s\n", gitTag)
-
-	// Initialize global pseudo random generator. Initializing it to select random AWS Zones.
-	rand.Seed(time.Now().UnixNano())
 
 	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)
 	o := defineFlags()

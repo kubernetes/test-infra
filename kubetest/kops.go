@@ -40,6 +40,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 
+	cryptorand "crypto/rand"
+
 	"golang.org/x/crypto/ssh"
 
 	"k8s.io/test-infra/kubetest/e2e"
@@ -894,7 +896,7 @@ func setupGCEStateStore(projectId string) (*string, error) {
 // gceBucketName generates a name for GCE state store bucket
 func gceBucketName(projectId string) string {
 	b := make([]byte, 2)
-	rand.Read(b)
+	cryptorand.Read(b)
 	s := hex.EncodeToString(b)
 	return strings.Join([]string{projectId, "state", s}, "-")
 }

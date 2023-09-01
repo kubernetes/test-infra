@@ -28,7 +28,6 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -465,8 +464,6 @@ func main() {
 		workDir = path.Join(workDir, getRepoClonedName(o.repo))
 	}
 
-	// Using math/rand instead of crypto/rand so we don't need to handle errors
-	rand.Seed(time.Now().UTC().UnixNano())
 	branchName := fmt.Sprintf("gerritOnboarding_%d", rand.Int())
 
 	if err = fetchMetaConfig(o.host, o.repo, branchName, workDir); err != nil {
