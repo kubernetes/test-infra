@@ -6,6 +6,7 @@ dashboard_groups:
   - sig-security-cvelist-public
   - sig-security-snyk-scan
   - sig-security-cve-feed
+  - sig-security-govulncheck-presubmit
 
 # Dashboards
 #
@@ -13,3 +14,4 @@ dashboards:
 - name: sig-security-cvelist-public
 - name: sig-security-snyk-scan
 - name: sig-security-cve-feed
+- name: sig-security-govulncheck-presubmit

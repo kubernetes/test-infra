@@ -1,0 +1,37 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: check-govulncheck-results
+    cluster: eks-prow-build-cluster
+    decorate: true
+    decoration_config:
+      timeout: 5m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+      - org: kubernetes
+        repo: sig-security
+        base_ref: main
+        workdir: true
+    always_run: false
+    optional: true
+    run_if_changed: '^(go.mod|go.sum|vendor)'
+    spec:
+      containers:
+      - image: golang
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          cd ../kubernetes
+          ../sig-security/sig-security-tooling/govulncheck/hack/govulncheck-presubmit.sh
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-dashboards: sig-security-govulncheck-presubmit
+      description: Runs `govulncheck` for PRs related to go module changes
