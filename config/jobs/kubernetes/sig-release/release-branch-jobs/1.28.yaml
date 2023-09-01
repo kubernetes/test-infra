@@ -710,6 +710,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+        - --env=CLOUD_PROVIDER_FLAG=gce
         - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.1
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.7
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd

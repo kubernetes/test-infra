@@ -235,6 +235,7 @@ presubmits:
             - --build=quick
             - --cluster=
             - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+            - --env=CLOUD_PROVIDER_FLAG=gce
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -352,7 +353,8 @@ presubmits:
         - --ginkgo-parallel=1
         - --build=quick
         - --cluster=
-        - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false
+        - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+        - --env=CLOUD_PROVIDER_FLAG=gce
         - --env=KUBE_PROXY_DAEMONSET=true
         - --env=ENABLE_POD_PRIORITY=true
         - --env=ENABLE_APISERVER_TRACING=true
@@ -589,6 +591,7 @@ periodics:
           - --
           - --check-leaked-resources
           - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+          - --env=CLOUD_PROVIDER_FLAG=gce
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.7.5
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.9
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -638,6 +641,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false,InTreePluginGCEUnregister=false
+      - --env=CLOUD_PROVIDER_FLAG=gce
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest
@@ -667,7 +671,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+      - --env=CLOUD_PROVIDER_FLAG=gce
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest-fast
