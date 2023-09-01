@@ -73,14 +73,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-okd-installer-e2e-aws-upgrade
+    name: release-openshift-okd-fcos-installer-e2e-aws-upgrade-from-fcos-stable
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-okd-installer-e2e-aws-upgrade
+    test_group_name: release-openshift-okd-fcos-installer-e2e-aws-upgrade-from-fcos-stable
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -100,14 +100,122 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-okd-installer-e2e-gcp-upgrade
+    name: release-openshift-okd-fcos-installer-e2e-gcp-upgrade-from-fcos-stable
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-okd-installer-e2e-gcp-upgrade
+    test_group_name: release-openshift-okd-fcos-installer-e2e-gcp-upgrade-from-fcos-stable
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-next
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-next
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-stable
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-stable
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-next
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-next
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-stable
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-stable
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -492,10 +600,18 @@ test_groups:
   name: periodic-ci-openshift-qe-ocp-qe-perfscale-ci-main-ocp-qe-perfscale-ci-tests
 - gcs_prefix: origin-ci-test/logs/periodic-ci-redhat-chaos-krkn-hub-main-rosa-4.13-nightly-ocp-qe-perfscale-ci-tests-rosa
   name: periodic-ci-redhat-chaos-krkn-hub-main-rosa-4.13-nightly-ocp-qe-perfscale-ci-tests-rosa
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-installer-e2e-aws-upgrade
-  name: release-openshift-okd-installer-e2e-aws-upgrade
-- gcs_prefix: origin-ci-test/logs/release-openshift-okd-installer-e2e-gcp-upgrade
-  name: release-openshift-okd-installer-e2e-gcp-upgrade
+- gcs_prefix: origin-ci-test/logs/release-openshift-okd-fcos-installer-e2e-aws-upgrade-from-fcos-stable
+  name: release-openshift-okd-fcos-installer-e2e-aws-upgrade-from-fcos-stable
+- gcs_prefix: origin-ci-test/logs/release-openshift-okd-fcos-installer-e2e-gcp-upgrade-from-fcos-stable
+  name: release-openshift-okd-fcos-installer-e2e-gcp-upgrade-from-fcos-stable
+- gcs_prefix: origin-ci-test/logs/release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-next
+  name: release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-next
+- gcs_prefix: origin-ci-test/logs/release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-stable
+  name: release-openshift-okd-scos-installer-e2e-aws-upgrade-from-scos-stable
+- gcs_prefix: origin-ci-test/logs/release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-next
+  name: release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-next
+- gcs_prefix: origin-ci-test/logs/release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-stable
+  name: release-openshift-okd-scos-installer-e2e-gcp-upgrade-from-scos-stable
 - gcs_prefix: origin-ci-test/logs/release-openshift-origin-assemble
   name: release-openshift-origin-assemble
 - gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade
