@@ -23,11 +23,47 @@ import (
 	"path"
 	"runtime"
 	"sync"
+	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 )
+
+var gitMetrics = struct {
+	ensureFreshPrimaryDuration *prometheus.HistogramVec
+	fetchByShaDuration         *prometheus.HistogramVec
+	secondaryCloneDuration     *prometheus.HistogramVec
+}{
+	ensureFreshPrimaryDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "git_ensure_fresh_primary_duration",
+		Help:    "Histogram of seconds spent ensuring that the primary is fresh, by org and repo.",
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 450, 600, 750, 900, 1050, 1200},
+	}, []string{
+		"org", "repo",
+	}),
+	fetchByShaDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "git_fetch_by_sha_duration",
+		Help:    "Histogram of seconds spent fetching commit SHAs, by org and repo.",
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60, 90, 120, 180, 300, 450, 600, 750, 900, 1050, 1200},
+	}, []string{
+		"org", "repo",
+	}),
+	secondaryCloneDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "git_secondary_clone_duration",
+		Help:    "Histogram of seconds spent creating the secondary clone, by org and repo.",
+		Buckets: []float64{0.5, 1, 2, 5, 10, 20, 30, 45, 60},
+	}, []string{
+		"org", "repo",
+	}),
+}
+
+func init() {
+	prometheus.MustRegister(gitMetrics.ensureFreshPrimaryDuration)
+	prometheus.MustRegister(gitMetrics.fetchByShaDuration)
+	prometheus.MustRegister(gitMetrics.secondaryCloneDuration)
+}
 
 // ClientFactory knows how to create clientFactory for repos
 type ClientFactory interface {
@@ -331,13 +367,17 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	}
 
 	// First create or update the primary clone (in "cacheDir").
+	timeBeforeEnsureFreshPrimary := time.Now()
 	c.ensureFreshPrimary(cacheDir, cacheClientCacher, repoOpts)
+	gitMetrics.ensureFreshPrimaryDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeEnsureFreshPrimary).Seconds())))
 
 	// Initialize the new derivative repo (secondary clone) from the primary
 	// clone. This is a local clone operation.
+	timeBeforeSecondaryClone := time.Now()
 	if err := repoClientCloner.CloneWithRepoOpts(cacheDir, repoOpts); err != nil {
 		return nil, err
 	}
+	gitMetrics.secondaryCloneDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeSecondaryClone).Seconds())))
 
 	// Here we do a targeted fetch, if the repoOpts for the secondary clone
 	// asked for it.
@@ -351,9 +391,11 @@ func (c *clientFactory) ClientForWithRepoOpts(org, repo string, repoOpts RepoOpt
 	if repoOpts.FetchCommits.Len() > 0 {
 		// Targeted fetch. Only fetch those commits which we want, and only
 		// if they are missing.
+		timeBeforeFetchBySha := time.Now()
 		if err := repoClientCloner.FetchCommits(repoOpts.NoFetchTags, repoOpts.FetchCommits.UnsortedList()); err != nil {
 			return nil, err
 		}
+		gitMetrics.fetchByShaDuration.WithLabelValues(org, repo).Observe((float64(time.Since(timeBeforeFetchBySha).Seconds())))
 	}
 
 	return repoClient, nil
