@@ -436,6 +436,8 @@ periodics:
       - --check-leaked-resources
       - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
       - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
+      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
+      - --env=CLOUD_PROVIDER_FLAG=gce
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
