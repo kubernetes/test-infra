@@ -68,6 +68,7 @@ approve:
   - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
+  - kubernetes-sigs/external-dns
   require_self_approval: true
   lgtm_acts_as_approve: false
 - repos:
