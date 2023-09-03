@@ -198,8 +198,6 @@ periodics:
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
-      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
-      - --env=CLOUD_PROVIDER_FLAG=gce
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project

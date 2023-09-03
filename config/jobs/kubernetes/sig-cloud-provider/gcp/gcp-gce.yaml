@@ -553,8 +553,6 @@ periodics:
       - --check-leaked-resources
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
-      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
-      - --env=CLOUD_PROVIDER_FLAG=gce
       - --gcp-master-image=gci
       - --gcp-node-image=gci
       - --gcp-nodes=4
@@ -776,8 +774,6 @@ periodics:
       - --cluster=err-e2e
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
-      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
-      - --env=CLOUD_PROVIDER_FLAG=gce
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
