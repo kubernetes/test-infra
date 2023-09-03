@@ -101,8 +101,6 @@ periodics:
       - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
-      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
-      - --env=CLOUD_PROVIDER_FLAG=gce
       - --gcp-nodes=5000
       - --gcp-project-type=scalability-scale-project
       - --gcp-zone=us-east1-b
@@ -200,8 +198,6 @@ periodics:
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
-      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false
-      - --env=CLOUD_PROVIDER_FLAG=gce
       - --gcp-node-image=gci
       - --gcp-nodes=100
       - --gcp-project-type=scalability-project
