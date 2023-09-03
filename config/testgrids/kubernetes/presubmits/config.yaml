@@ -85,9 +85,6 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-cos-canary
     test_group_name: pull-kubernetes-e2e-gce-cos-canary
     base_options: width=10
-  - name: pull-kubernetes-e2e-gce-canary
-    test_group_name: pull-kubernetes-e2e-gce-canary
-    base_options: width=10
   - name: pull-kubernetes-e2e-kind-canary
     test_group_name: pull-kubernetes-e2e-kind-canary
     base_options: width=10
