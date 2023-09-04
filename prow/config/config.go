@@ -1585,10 +1585,6 @@ type RocketChatReporter struct {
 // Use `org/repo`, `org` or `*` as key and an `RocketChatReporter` struct as value.
 type RocketChatReporterConfigs map[string]RocketChatReporter
 
-// RocketChatReporterConfig represents the config for the RocketChat reporter(s).
-// Use `org/repo`, `org` or `*` as key and an `RocketChatReporter` struct as value.
-type RocketChatReporterConfig map[string]RocketChatReporter
-
 func (cfg RocketChatReporterConfigs) GetRocketChatReporter(refs *prowapi.Refs) RocketChatReporter {
 	if refs == nil {
 		return cfg["*"]
