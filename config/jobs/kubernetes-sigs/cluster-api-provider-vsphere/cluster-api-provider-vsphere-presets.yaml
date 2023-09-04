@@ -1,0 +1,83 @@
+presets:
+- labels:
+    preset-cluster-api-provider-vsphere-e2e-config-test: "true"
+  env:
+  - name: GOVC_URL
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-url
+  - name: GOVC_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-user
+  - name: GOVC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-password
+  - name: VSPHERE_TLS_THUMBPRINT
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-vcenter-thumbprint
+  - name: VM_SSH_PUB_KEY
+    valueFrom:
+      secretKeyRef:
+        name: cluster-api-provider-vsphere-ci
+        key: vmc-e2e-vm-ssh.pubkey
+  volumeMounts:
+  - name: vmc-e2e-vm-ssh-key
+    mountPath: /root/ssh/.private-key
+  - name: vmc-vpn
+    mountPath: /root/.openvpn
+  - name: vmc-capv-services-kubeconfig
+    mountPath: /root/ipam-conf
+  volumes:
+  - name: vmc-e2e-vm-ssh-key
+    secret:
+      secretName: cluster-api-provider-vsphere-ci
+      defaultMode: 256
+      items:
+      - key: vmc-e2e-vm-ssh.key
+        path: private-key
+  - name: vmc-vpn
+    secret:
+      secretName: cluster-api-provider-vsphere-ci
+      defaultMode: 256
+      items:
+      - key: vmc-vpn-config.ovpn
+        path: prow.ovpn
+      - key: vmc-vpn-client.crt
+        path: client.crt
+      - key: vmc-vpn-client.key
+        path: client.key
+      - key: vmc-vpn-ca.crt
+        path: ca.crt
+      - key: vmc-vpn-tls.key
+        path: tls.key
+  - name: vmc-capv-services-kubeconfig
+    secret:
+      secretName: cluster-api-provider-vsphere-ci
+      defaultMode: 256
+      items:
+      - key: vmc-capv-services.kubeconfig
+        path: capv-services.conf
+- labels:
+    preset-cluster-api-provider-vsphere-gcs-creds-test: "true"
+  env:
+  - name: GCR_KEY_FILE
+    value: /root/.capv/keyfile.json
+  volumeMounts:
+  - name: capv-gcs-keyfile
+    mountPath: /root/.capv
+    readOnly: true
+  volumes:
+  - name: capv-gcs-keyfile
+    secret:
+      secretName: cluster-api-provider-vsphere-ci
+      items:
+      - key: capv-gcs-keyfile.json
+        path: keyfile.json
+        mode: 288
