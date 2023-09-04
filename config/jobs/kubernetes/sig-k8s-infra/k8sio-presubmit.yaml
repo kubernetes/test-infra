@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/k8s.io:
   - name: pull-k8sio-groups-test
+    cluster: eks-prow-build-cluster
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-groups
@@ -18,6 +19,13 @@ presubmits:
         - -C
         - ./groups
         - test
+        resources:
+          limits:
+            cpu: 1
+            memory: "512Mi"
+          requests:
+            cpu: 1
+            memory: "512Mi"
         env:
         - name: GO111MODULE
           value: "on"
@@ -215,6 +223,7 @@ presubmits:
             cpu: 1
             memory: "512Mi"
   - name: pull-k8sio-dns-validate-config
+    cluster: eks-prow-build-cluster
     run_if_changed: "^dns/"
     annotations:
       testgrid-dashboards: sig-k8s-infra-k8sio
@@ -228,3 +237,10 @@ presubmits:
           args:
             - -c
             - "cd dns && make validate-config"
+          resources:
+            limits:
+              cpu: 1
+              memory: "512Mi"
+            requests:
+              cpu: 1
+              memory: "512Mi"
