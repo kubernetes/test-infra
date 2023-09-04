@@ -284,8 +284,7 @@ testSuites:
     - --timeout=180m
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false,InTreePluginGCEUnregister=false
-    - --env=CLOUD_PROVIDER_FLAG=gce
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,InTreePluginGCEUnregister=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
