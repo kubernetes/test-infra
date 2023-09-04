@@ -70,7 +70,7 @@ type prowJobClient interface {
 }
 
 type ownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error)
 }
 
 type overrideClient interface {
@@ -153,7 +153,7 @@ func presubmitForContext(presubmits []config.Presubmit, context string) *config.
 	return nil
 }
 
-func (c client) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+func (c client) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error) {
 	return c.ownersClient.LoadRepoOwners(org, repo, base)
 }
 

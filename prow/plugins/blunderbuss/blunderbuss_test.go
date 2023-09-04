@@ -101,7 +101,7 @@ type fakeRepoownersClient struct {
 	foc *fakeOwnersClient
 }
 
-func (froc fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+func (froc fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error) {
 	return froc.foc, nil
 }
 
@@ -207,6 +207,10 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 
 func (foc *fakeOwnersClient) TopLevelApprovers() sets.Set[string] {
 	return sets.Set[string]{}
+}
+
+func (foc *fakeOwnersClient) OwnersAliases() repoowners.RepoAliases {
+	return make(repoowners.RepoAliases)
 }
 
 var (

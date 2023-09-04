@@ -67,7 +67,7 @@ type githubClient interface {
 }
 
 type ownersClient interface {
-	LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (repoowners.RepoOwner, error)
+	LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (repoowners.RepoOwnerWithAliases, error)
 }
 
 type info struct {

@@ -52,7 +52,7 @@ type fakeRepoownersClient struct {
 	foc *fakeOwnersClient
 }
 
-func (froc *fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+func (froc *fakeRepoownersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error) {
 	return froc.foc, nil
 }
 
@@ -126,6 +126,10 @@ func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleCo
 
 func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	return repoowners.FullConfig{}, nil
+}
+
+func (foc *fakeOwnersClient) OwnersAliases() repoowners.RepoAliases {
+	return make(repoowners.RepoAliases)
 }
 
 type fakeClient struct {
@@ -317,7 +321,7 @@ func (c *fakeClient) Create(_ context.Context, pj *prowapi.ProwJob, _ metav1.Cre
 	return pj, nil
 }
 
-func (c *fakeClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+func (c *fakeClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error) {
 	return c.owners.LoadRepoOwners(org, repo, base)
 }
 

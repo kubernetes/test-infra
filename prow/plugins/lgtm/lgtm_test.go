@@ -45,13 +45,13 @@ type fakeOwnersClient struct {
 	reviewers map[string]layeredsets.String
 }
 
-func (f *fakeOwnersClient) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (repoowners.RepoOwner, error) {
+func (f *fakeOwnersClient) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (repoowners.RepoOwnerWithAliases, error) {
 	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
 }
 
 var _ repoowners.Interface = &fakeOwnersClient{}
 
-func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
+func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error) {
 	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
 }
 
@@ -91,6 +91,10 @@ func (f *fakeRepoOwners) AllReviewers() sets.Set[string] {
 
 func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames {
 	return ownersconfig.FakeFilenames
+}
+
+func (f *fakeRepoOwners) OwnersAliases() repoowners.RepoAliases {
+	return make(repoowners.RepoAliases)
 }
 
 type fakePruner struct {

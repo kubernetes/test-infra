@@ -103,7 +103,7 @@ type ownersClient interface {
 }
 
 type repoownersClient interface {
-	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerWithAliases, error)
 }
 
 type githubClient interface {
