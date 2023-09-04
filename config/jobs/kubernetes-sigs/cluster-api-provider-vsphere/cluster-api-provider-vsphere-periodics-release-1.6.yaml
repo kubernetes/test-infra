@@ -80,8 +80,8 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-e2e-full-release-1-6
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
+    preset-cluster-api-provider-vsphere-e2e-config-test: "true"
+    preset-cluster-api-provider-vsphere-gcs-creds-test: "true"
     preset-kind-volume-mounts: "true"
   interval: 24h
   decorate: true
@@ -123,8 +123,8 @@ periodics:
 - name: periodic-cluster-api-provider-vsphere-conformance-release-1-6
   labels:
     preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-cluster-api-provider-vsphere-gcs-creds: "true"
+    preset-cluster-api-provider-vsphere-e2e-config-test: "true"
+    preset-cluster-api-provider-vsphere-gcs-creds-test: "true"
     preset-kind-volume-mounts: "true"
   interval: 24h
   decorate: true
