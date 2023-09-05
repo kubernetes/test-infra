@@ -22,10 +22,10 @@ presubmits:
         resources:
           limits:
             cpu: 1
-            memory: "512Mi"
+            memory: "1Gi"
           requests:
             cpu: 1
-            memory: "512Mi"
+            memory: "1Gi"
         env:
         - name: GO111MODULE
           value: "on"
