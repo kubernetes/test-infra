@@ -124,10 +124,6 @@ presubmits:
           value: "50"
         - name: CL2_RATE_LIMIT_POD_CREATION
           value: "false"
-        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
-          value: "true"
-        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
-          value: "99.5"
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE
