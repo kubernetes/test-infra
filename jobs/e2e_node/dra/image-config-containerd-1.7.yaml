@@ -1,0 +1,5 @@
+images:
+  ubuntu:
+    image_family: pipeline-1-24
+    project: ubuntu-os-gke-cloud
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/dra/init-containerd-1.7.yaml"
