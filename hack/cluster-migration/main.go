@@ -68,6 +68,31 @@ type jobStatus struct {
 
 var config Config
 
+var allowedSecretNames = []string{
+	"service-account",
+	"aws-credentials-607362164682",
+	"aws-credentials-768319786644",
+	"aws-credentials-boskos-scale-001-kops",
+	"aws-ssh-key-secret",
+	"ssh-key-secret",
+}
+
+var allowedLabelNames = []string{
+	"preset-aws-credential",
+	"preset-aws-ssh",
+}
+
+var allowedVolumeNames = []string{
+	"aws-cred",
+}
+
+var allowedEnvironmentVariables = []string{
+	"GOOGLE_APPLICATION_CREDENTIALS_DEPRECATED",
+	"E2E_GOOGLE_APPLICATION_CREDENTIALS",
+	"GOOGLE_APPLICATION_CREDENTIALS",
+	"AWS_SHARED_CREDENTIALS_FILE",
+}
+
 func (c *Config) validate() error {
 	if c.configPath == "" {
 		return fmt.Errorf("--config must set")
@@ -83,7 +108,7 @@ func loadConfig(configPath, jobConfigPath string) (*cfg.Config, error) {
 func reportTotalJobs(s status) {
 	fmt.Printf("Total jobs: %v\n", s.TotalJobs)
 	fmt.Printf("Completed jobs: %v\n", s.CompletedJobs)
-	fmt.Printf("Eligible jobs: %v\n", s.EligibleJobs)
+	fmt.Printf("Eligible jobs: %v\n", s.EligibleJobs-s.CompletedJobs)
 }
 
 // The function "reportClusterStats" prints the statistics of each cluster in a sorted order.
@@ -98,7 +123,12 @@ func reportClusterStats(s status) {
 	for _, cluster := range sortedClusters {
 		for _, c := range s.Clusters {
 			if c.ClusterName == cluster {
-				printClusterStat(cluster, c, s.Clusters)
+				if cluster == "default" {
+					printDefaultClusterStats(cluster, c, s.Clusters)
+					continue
+				} else {
+					printClusterStat(cluster, c, s.Clusters)
+				}
 			}
 		}
 	}
@@ -106,19 +136,26 @@ func reportClusterStats(s status) {
 
 // The function "printHeader" prints a formatted header for displaying cluster information.
 func printHeader() {
-	format := "%-30v %-15v (%v)\n"
-	header := fmt.Sprintf("\n"+format, "Cluster", "Eligible/Total", "Percent")
+	format := "%-30v %-20v %v\n"
+	header := fmt.Sprintf("\n"+format, "Cluster", "Total(Eligible)", "% of Total(% of Eligible)")
 	separator := strings.Repeat("-", len(header))
 	fmt.Print(header, separator+"\n")
+}
+
+func printDefaultClusterStats(clusterName string, stat clusterStatus, allStats []clusterStatus) {
+	format := "%-30v %-20v %-10v(%v)\n"
+	eligibleP := getPercentage(stat.EligibleJobs, getTotalEligible(allStats))
+	totalP := getPercentage(stat.TotalJobs, getTotalJobs(allStats))
+	fmt.Printf(format, clusterName, fmt.Sprintf("%v(%v)", stat.TotalJobs, stat.EligibleJobs), printPercentage(totalP), printPercentage(eligibleP))
 }
 
 // The function "printClusterStat" prints the status of a cluster, including the number of eligible and
 // total jobs, as well as the percentage of eligible and total jobs compared to all clusters.
 func printClusterStat(clusterName string, stat clusterStatus, allStats []clusterStatus) {
-	format := "%-30v %-15v (%v/%v)\n"
+	format := "%-30v %-20v %-10v(%v)\n"
 	eligibleP := getPercentage(stat.EligibleJobs, getTotalEligible(allStats))
 	totalP := getPercentage(stat.TotalJobs, getTotalJobs(allStats))
-	fmt.Printf(format, clusterName, fmt.Sprintf("%v/%v", stat.EligibleJobs, stat.TotalJobs), printPercentage(eligibleP), printPercentage(totalP))
+	fmt.Printf(format, clusterName, stat.TotalJobs, printPercentage(totalP), printPercentage(eligibleP))
 }
 
 // The function `getTotalEligible` calculates the total number of eligible jobs from a given list of
@@ -145,7 +182,7 @@ func getTotalJobs(allStats []clusterStatus) int {
 // eligibility, remaining jobs, and percentage complete.
 func printRepoStatistics(s status) {
 	format := "%-55v  %-10v %-20v %-10v (%v)\n"
-	header := fmt.Sprintf("\n"+format, "Repository", "Complete", "Eligible(Total)", "Remaining", "Percent")
+	header := fmt.Sprintf("\n"+format, "Repository", "Complete", "Total(Eligible)", "Remaining", "Percent")
 	separator := strings.Repeat("-", len(header))
 
 	fmt.Print(header)
@@ -178,7 +215,7 @@ func printRepoStatistics(s status) {
 		}
 		remaining := eligible - complete
 		percent := getPercentage(complete, eligible)
-		fmt.Printf(format, repo, complete, fmt.Sprintf("%v(%v)", eligible, total), remaining, printPercentage(percent))
+		fmt.Printf(format, repo, complete, fmt.Sprintf("%v(%v)", total, eligible), remaining, printPercentage(percent))
 	}
 }
 
@@ -340,7 +377,47 @@ func checkIfEligible(job cfg.JobBase) bool {
 // The function checks if any label in a given map contains the substring "cred".
 func containsDisallowedLabel(labels map[string]string) bool {
 	for key := range labels {
-		if strings.Contains(key, "cred") {
+		if checkContains(key, "cred") && !labelIsAllowed(key) {
+			return true
+		}
+	}
+	return false
+}
+
+func checkContains(s string, substring string) bool {
+	return strings.Contains(strings.ToLower(s), strings.ToLower(substring))
+}
+
+func labelIsAllowed(label string) bool {
+	for _, allowedLabel := range allowedLabelNames {
+		if checkContains(label, allowedLabel) {
+			return true
+		}
+	}
+	return false
+}
+
+func volumeIsAllowed(volumeName string) bool {
+	for _, allowedVolume := range allowedVolumeNames {
+		if volumeName == allowedVolume {
+			return true
+		}
+	}
+	return false
+}
+
+func secretIsAllowed(secretName string) bool {
+	for _, allowedSecret := range allowedSecretNames {
+		if secretName == allowedSecret {
+			return true
+		}
+	}
+	return false
+}
+
+func envVarIsAllowed(envVar string) bool {
+	for _, allowedEnvVar := range allowedEnvironmentVariables {
+		if allowedEnvVar == envVar {
 			return true
 		}
 	}
@@ -351,14 +428,14 @@ func containsDisallowedLabel(labels map[string]string) bool {
 // arguments, or commands.
 func containsDisallowedAttributes(container v1.Container) bool {
 	for _, env := range container.Env {
-		if strings.Contains(strings.ToLower(env.Name), "cred") {
+		if checkContains(env.Name, "cred") && !envVarIsAllowed(env.Name) {
 			return true
 		}
-		if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
+		if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil && !secretIsAllowed(env.ValueFrom.SecretKeyRef.Key) {
 			return true
 		}
 	}
-	disallowedArgs := []string{"gcloud", "gcp"}
+	disallowedArgs := []string{"gcloud", "gcp", "gce"}
 	for _, arg := range container.Args {
 		if containsAny(arg, disallowedArgs) {
 			return true
@@ -376,7 +453,7 @@ func containsDisallowedAttributes(container v1.Container) bool {
 // strings.
 func containsAny(s string, disallowed []string) bool {
 	for _, word := range disallowed {
-		if strings.Contains(strings.ToLower(s), word) {
+		if checkContains(s, word) {
 			return true
 		}
 	}
@@ -388,7 +465,7 @@ func containsAny(s string, disallowed []string) bool {
 func containsDisallowedVolumeMount(volumeMounts []v1.VolumeMount) bool {
 	disallowedWords := []string{"cred", "secret"}
 	for _, vol := range volumeMounts {
-		if containsAny(vol.Name, disallowedWords) || containsAny(vol.MountPath, disallowedWords) {
+		if (containsAny(vol.Name, disallowedWords) || containsAny(vol.MountPath, disallowedWords)) && !volumeIsAllowed(vol.Name) {
 			return true
 		}
 	}
@@ -398,9 +475,8 @@ func containsDisallowedVolumeMount(volumeMounts []v1.VolumeMount) bool {
 // The function checks if a list of volumes contains any disallowed volumes based on their name or if
 // they are of type Secret.
 func containsDisallowedVolume(volumes []v1.Volume) bool {
-	allowedVolSecretNames := []string{"service-account"}
 	for _, vol := range volumes {
-		if strings.Contains(strings.ToLower(vol.Name), "cred") || (vol.Secret != nil && !containsAny(vol.Secret.SecretName, allowedVolSecretNames)) {
+		if (checkContains(vol.Name, "cred") && !volumeIsAllowed(vol.Name)) || (vol.Secret != nil && !secretIsAllowed(vol.Secret.SecretName)) {
 			return true
 		}
 	}

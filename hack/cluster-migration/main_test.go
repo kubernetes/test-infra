@@ -128,6 +128,26 @@ func TestGetJobStatus_DefaultClusterEligible(t *testing.T) {
 		},
 		//
 		{
+			name: "Test Case: Job has an allowed cred label",
+			job: cfg.JobBase{
+				Cluster: "default",
+				Labels: map[string]string{
+					"preset-aws-credential": "someValue",
+					"preset-aws-ssh":        "someValue",
+				},
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "someContainer",
+						},
+					},
+				},
+			},
+			expectedCluster:  "",
+			expectedEligible: true,
+		},
+		//
+		{
 			name: "Test Case: Job container environment is derived from a secret",
 			job: cfg.JobBase{
 				Cluster: "default",
@@ -154,6 +174,32 @@ func TestGetJobStatus_DefaultClusterEligible(t *testing.T) {
 		},
 		//
 		{
+			name: "Test Case: Job container environment is derived from an allowed secret",
+			job: cfg.JobBase{
+				Cluster: "default",
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "someContainer",
+							Env: []v1.EnvVar{
+								{
+									Name: "someVariable",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											Key: "aws-ssh-key-secret",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedCluster:  "",
+			expectedEligible: true,
+		},
+		//
+		{
 			name: "Test Case: Jobs container environment has \"cred\" in the name",
 			job: cfg.JobBase{
 				Cluster: "default",
@@ -172,6 +218,27 @@ func TestGetJobStatus_DefaultClusterEligible(t *testing.T) {
 			},
 			expectedCluster:  "",
 			expectedEligible: false,
+		},
+		//
+		{
+			name: "Test Case: Jobs container environment is an allowed variable",
+			job: cfg.JobBase{
+				Cluster: "default",
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "someContainer",
+							Env: []v1.EnvVar{
+								{
+									Name: "AWS_SHARED_CREDENTIALS_FILE",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedCluster:  "",
+			expectedEligible: true,
 		},
 		//
 		{
@@ -356,6 +423,27 @@ func TestGetJobStatus_DefaultClusterEligible(t *testing.T) {
 		},
 		//
 		{
+			name: "Test Case: Job volume contains allowed volume name",
+			job: cfg.JobBase{
+				Cluster: "default",
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "someContainer",
+						},
+					},
+					Volumes: []v1.Volume{
+						{
+							Name: "aws-cred",
+						},
+					},
+				},
+			},
+			expectedCluster:  "",
+			expectedEligible: true,
+		},
+		//
+		{
 			name: "Test Case: Job volume is derived from unapproved secret",
 			job: cfg.JobBase{
 				Cluster: "default",
@@ -379,6 +467,32 @@ func TestGetJobStatus_DefaultClusterEligible(t *testing.T) {
 			},
 			expectedCluster:  "",
 			expectedEligible: false,
+		},
+		//
+		{
+			name: "Test Case: Job volume is derived from approved secret",
+			job: cfg.JobBase{
+				Cluster: "default",
+				Spec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "someContainer",
+						},
+					},
+					Volumes: []v1.Volume{
+						{
+							Name: "someVolume",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "ssh-key-secret",
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedCluster:  "",
+			expectedEligible: true,
 		},
 		//
 		{
