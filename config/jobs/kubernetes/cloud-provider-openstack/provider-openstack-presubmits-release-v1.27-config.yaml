@@ -10,7 +10,7 @@ presubmits:
     always_run: false
     branches:
       - ^release-1.27$
-    run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
     decoration_config:
@@ -47,7 +47,7 @@ presubmits:
     always_run: false
     branches:
       - ^release-1.27$
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
     decoration_config:
@@ -84,7 +84,7 @@ presubmits:
     always_run: false
     branches:
       - ^release-1.27$
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/|Dockerfile|tests\/playbooks)'
     optional: false
     decorate: true
     decoration_config:
@@ -114,7 +114,7 @@ presubmits:
   - name: openstack-cloud-csi-cinder-sanity-test-release-127
     cluster: eks-prow-build-cluster
     always_run: false
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/|Dockerfile|tests\/playbooks)'
     decorate: true
     branches:
       - ^release-1.27$
@@ -141,7 +141,7 @@ presubmits:
   - name: openstack-cloud-csi-manila-sanity-test-release-127
     cluster: eks-prow-build-cluster
     always_run: false
-    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/|Dockerfile|tests\/playbooks)'
     decorate: true
     branches:
       - ^release-1.27$
