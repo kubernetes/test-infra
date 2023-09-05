@@ -1,6 +1,7 @@
 presubmits:
   kubernetes-sigs/aws-encryption-provider:
   - name: pull-aws-encryption-provider-verify
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     max_concurrency: 5
@@ -15,12 +16,20 @@ presubmits:
         env:
         - name: GO111MODULE
           value: "on"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-encryption-provider
       testgrid-tab-name: verify
       description: aws-encryption-provider verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-encryption-provider-unittest
+    cluster: eks-prow-build-cluster
     decorate: true
     always_run: true
     max_concurrency: 5
@@ -37,6 +46,13 @@ presubmits:
         env:
         - name: GO111MODULE
           value: "on"
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 2
+            memory: 4Gi
     annotations:
       testgrid-dashboards: provider-aws-encryption-provider
       testgrid-tab-name: unit-test
