@@ -34,26 +34,26 @@ mode="${1:-}"
 shift || true
 case "$mode" in
 --minor)
-    if [[ -z "$@" ]]; then
-      go get -u ./...
-    else
-      go get -u "$@"
-    fi
-    ;;
+  if [[ -z "$@" ]]; then
+    go get -u ./...
+  else
+    go get -u "$@"
+  fi
+  ;;
 --patch)
-    if [[ -z "$@" ]]; then
-      go get -u=patch ./...
-    else
-      go get -u=patch "$@"
-    fi
-    ;;
+  if [[ -z "$@" ]]; then
+    go get -u=patch ./...
+  else
+    go get -u=patch "$@"
+  fi
+  ;;
 "")
-    # Just validate, or maybe manual go.mod edit
-    ;;
+  # Just validate, or maybe manual go.mod edit
+  ;;
 *)
-    echo "Usage: $(basename "$0") [--patch|--minor] [packages]" >&2
-    exit 1
-    ;;
+  echo "Usage: $(basename "$0") [--patch|--minor] [packages]" >&2
+  exit 1
+  ;;
 esac
 
 echo "Updating go mod tidy"
