@@ -118,8 +118,16 @@ presubmits:
           value: "1000"
         - name: RUN_CL2_TEST
           value: "true"
-        - name: CL2_SCHEDULER_THROUGHPUT_THRESHOLD
-          value: "20"
+        - name: CL2_LOAD_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_DELETE_TEST_THROUGHPUT
+          value: "50"
+        - name: CL2_RATE_LIMIT_POD_CREATION
+          value: "false"
+        - name: CL2_ENABLE_API_AVAILABILITY_MEASUREMENT
+          value: "true"
+        - name: CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD
+          value: "99.5"
         - name: CONTROL_PLANE_COUNT
           value: "3"
         - name: CONTROL_PLANE_SIZE

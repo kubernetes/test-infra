@@ -1112,7 +1112,11 @@ def generate_presubmits_scale():
                 'CNI_PLUGIN': "amazonvpc",
                 'KUBE_NODE_COUNT': "1000",
                 'RUN_CL2_TEST': "true",
-                'CL2_SCHEDULER_THROUGHPUT_THRESHOLD': "20",
+                'CL2_LOAD_TEST_THROUGHPUT': "50",
+                'CL2_DELETE_TEST_THROUGHPUT': "50",
+                'CL2_RATE_LIMIT_POD_CREATION': "false",
+                'CL2_ENABLE_API_AVAILABILITY_MEASUREMENT': "true",
+                'CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD': "99.5",
                 'CONTROL_PLANE_COUNT': "3",
                 'CONTROL_PLANE_SIZE': "c6g.16xlarge",
                 'KOPS_STATE_STORE' : "s3://k8s-infra-kops-scale-tests"
