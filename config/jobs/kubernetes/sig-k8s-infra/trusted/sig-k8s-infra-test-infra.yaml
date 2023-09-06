@@ -61,7 +61,7 @@ periodics:
       - --jq=/usr/bin/jq
 
 - name: ci-test-infra-triage
-  interval: 12h
+  interval: 4h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   decoration_config:
