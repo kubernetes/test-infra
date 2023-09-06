@@ -1,0 +1,51 @@
+#cloud-config
+
+write_files:
+- content: |
+    {
+      "cniVersion": "0.2.0",
+      "name": "mynet",
+      "type": "bridge",
+      "bridge": "cni0",
+      "isGateway": true,
+      "ipMasq": true,
+      "ipam": {
+        "type": "host-local",
+        "subnet": "10.22.0.0/16",
+        "routes": [
+          { "dst": "0.0.0.0/0" }
+        ]
+      }
+    }
+  path: /etc/cni/net.d/10-mynet.conf
+
+runcmd:
+  - echo "This will install and configure containerd 1.7 for DRA tests"
+
+  - echo "Stopping containerd"
+  - systemctl stop containerd
+
+  - echo "Download and install CNI plugins"
+  - mkdir -p /tmp/containerd
+  - 'curl -sSL --fail --retry 5 --retry-delay 3 --silent --show-error -o /tmp/containerd/cni.tgz https://storage.googleapis.com/k8s-artifacts-cni/release/v1.0.1/cni-plugins-linux-amd64-v1.0.1.tgz'
+  - mkdir -p /opt/cni/bin
+  - tar xzf /tmp/containerd/cni.tgz -C /opt/cni/bin --overwrite
+
+  - echo "Download and install Containerd 1.7"
+  - 'curl -sSL --fail --retry 5 --retry-delay 3 --silent --show-error -o /tmp/containerd/containerd.tgz https://github.com/containerd/containerd/releases/download/v1.7.5/containerd-1.7.5-linux-amd64.tar.gz'
+  - tar xzf /tmp/containerd/containerd.tgz -C /usr --overwrite
+
+  - echo "Configure Containerd"
+  - mkdir -p /etc/containerd
+  - containerd config default > /etc/containerd/config.toml
+  - echo "Enabling CDI"
+  - sed -ie 's/enable_cdi = false/enable_cdi = true/' /etc/containerd/config.toml
+
+  - echo "Restarting containerd"
+  - systemctl daemon-reload
+  - systemctl restart containerd
+
+  - echo "Containerd version is:"
+  - ctr version
+
+  - echo "Configuration complete"

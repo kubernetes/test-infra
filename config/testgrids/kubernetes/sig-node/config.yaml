@@ -171,5 +171,10 @@ dashboards:
     test_group_name: pull-kubernetes-node-e2e-crio-dra
     alert_options:
       alert_mail_to_addresses: eduard.bartosh@intel.com
+  - name: pull-node-dra-containerd-1-7
+    test_group_name: pull-kubernetes-node-e2e-containerd-1-7-dra
+    alert_options:
+      alert_mail_to_addresses: eduard.bartosh@intel.com
+
 - name: sig-node-presubmits
 - name: sig-node-image-pushes
