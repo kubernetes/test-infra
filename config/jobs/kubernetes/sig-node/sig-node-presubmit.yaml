@@ -2160,7 +2160,6 @@ presubmits:
         - --scenario=kubernetes_e2e
         - -- # end bootstrap args, scenario args below
         - --deployment=node
-        - --env=KUBE_SSH_USER=core
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates="DynamicResourceAllocation=true" --service-feature-gates="DynamicResourceAllocation=true --runtime-config=resource.k8s.io/v1alpha2=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
@@ -2168,9 +2167,6 @@ presubmits:
         - --test_args=--focus="\[Feature:DynamicResourceAllocation\]" --skip="\[Flaky\]"
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/dra/image-config-containerd-1.7.yaml
-        env:
-        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
-          value: "1"
         resources:
           requests:
             cpu: 4
