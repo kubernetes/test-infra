@@ -2,11 +2,13 @@
 
 reviewers:
 - cpanato
-- MorrisLaw
+- gottwald
 - prksu
 - timoreimann
 approvers:
 - cpanato
-- MorrisLaw
+- gottwald
 - prksu
 - timoreimann
+emeritus_approvers:
+- MorrisLaw
