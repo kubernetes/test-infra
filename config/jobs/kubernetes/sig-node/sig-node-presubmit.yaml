@@ -653,7 +653,7 @@ presubmits:
             - --
             - --deployment=node
             - --gcp-zone=us-west1-b
-            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+            - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
             - --node-tests=true
             - --provider=gce
@@ -716,7 +716,7 @@ presubmits:
         - --parallelism=1
         - --focus-regex=\[Feature:CPUManager\]
         - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
-        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial-resource-managers.yaml
   - name: pull-kubernetes-node-kubelet-serial-topology-manager
     cluster: k8s-infra-prow-build
     always_run: false
