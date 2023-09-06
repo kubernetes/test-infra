@@ -1,14 +1,14 @@
 variants:
   experimental:
     CONFIG: experimental
-    GO_VERSION: 1.20.7
+    GO_VERSION: 1.21.0
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
     KUBETEST2_VERSION: latest
   go-canary:
     CONFIG: go-canary
-    GO_VERSION: 1.21rc2
+    GO_VERSION: 1.21.0
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
@@ -21,13 +21,13 @@ variants:
     KIND_VERSION: 0.17.0
   master:
     CONFIG: master
-    GO_VERSION: 1.20.7
+    GO_VERSION: 1.21.0
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
   main:
     CONFIG: main
-    GO_VERSION: 1.20.7
+    GO_VERSION: 1.21.0
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
@@ -53,11 +53,5 @@ variants:
     CONFIG: '1.25'
     GO_VERSION: 1.20.7
     K8S_RELEASE: stable-1.25
-    BAZEL_VERSION: 3.4.1
-    OLD_BAZEL_VERSION: 2.2.0
-  '1.24':
-    CONFIG: '1.24'
-    GO_VERSION: 1.20.7
-    K8S_RELEASE: stable-1.24
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
