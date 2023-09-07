@@ -2,19 +2,7 @@
 
 module k8s.io/test-infra
 
-replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
-
-replace (
-	github.com/Azure/azure-sdk-for-go => github.com/Azure/azure-sdk-for-go v63.3.0+incompatible
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
-	// Upstream is unmaintained. This fork introduces two important changes:
-	// * We log an error if writing a cache key fails (e.G. because disk is full)
-	// * We inject a header that allows ghproxy to detect if the response was revalidated or a cache miss
-	github.com/gregjones/httpcache => github.com/alvaroaleman/httpcache v0.0.0-20210618195546-ab9a1a3f8a38
-
-	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
-	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
-)
+replace github.com/Azure/azure-sdk-for-go => github.com/Azure/azure-sdk-for-go v63.3.0+incompatible
 
 require (
 	bitbucket.org/creachadair/stringset v0.0.9
@@ -35,6 +23,10 @@ require (
 	github.com/bazelbuild/buildtools v0.0.0-20200922170545-10384511ce98
 	github.com/blang/semver/v4 v4.0.0
 	github.com/bwmarrin/snowflake v0.0.0
+	// Upstream is unmaintained. This fork introduces two important changes:
+	// * We log an error if writing a cache key fails (e.G. because disk is full)
+	// * We inject a header that allows ghproxy to detect if the response was revalidated or a cache miss
+	github.com/cjwagner/httpcache v0.0.0-20230907212505-d4841bbad466
 	github.com/clarketm/json v1.13.4
 	github.com/client9/misspell v0.3.4
 	github.com/denormal/go-gitignore v0.0.0-20180930084346-ae8ad1d07817
@@ -58,7 +50,6 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
-	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.2
