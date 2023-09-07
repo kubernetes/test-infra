@@ -276,7 +276,7 @@ presubmits:
         workdir: true
       - org: kubernetes
         repo: kubernetes
-        base_ref: master
+        base_ref: release-1.28
         path_alias: k8s.io/kubernetes
         workdir: false
     spec:
@@ -1036,7 +1036,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.28
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -1098,7 +1098,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.28
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -1167,7 +1167,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.28
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -1346,7 +1346,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.28
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -1411,7 +1411,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.28
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -1479,7 +1479,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.28
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -1545,7 +1545,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.28
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
